@@ -46,7 +46,7 @@ _Meet the toolkit, Buddy:_
 
 ```bash
 buddy install # installs all dependencies
-buddy dev # starts one of the dev servers (components, functions, views, or docs)
+buddy dev # starts one of the dev servers (frontend, API, components, docs, desktop, etc.)
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
@@ -259,7 +259,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🪄 **AI** _deep AI integrations & foundational model access_
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
-- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac—without requirements_
+- ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac (dependency-free binaries)_
 - 📀 **Database** _SQLite, MySQL, Postgres, PlanetScale, and more_
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
@@ -276,9 +276,9 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🌪️ **Validation** _e2e type-safety (true frontend & backend harmony)_
 - 🎯 **X-Ray** _all you need to debug, log & analyze_
 
-### Cloud
+### Cloud Development
 
-_Create your personal or professional Vercel/Netlify style cloud, based on MIT-licensed OSS._
+_Develop & maintain cloud infrastructure with ease. “Imagine Vercel, Vapor and Forge having been unified.”_
 
 - ☁️ **Server** _local development server & production-ready servers out-of-the-box_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
