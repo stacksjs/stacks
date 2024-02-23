@@ -1,8 +1,30 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external vitepress --external @stacksjs/config --external @stacksjs/alias --external @stacksjs/path --external @stacksjs/vite --external @stacksjs/server --external @stacksjs/env --external @stacksjs/cli --external @vite-pwa/vitepress --external vitepress-plugin-twoslash --target node', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/docs...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'node',
+  external: [
+    'vitepress',
+    '@stacksjs/config',
+    '@stacksjs/alias',
+    '@stacksjs/path',
+    '@stacksjs/vite',
+    '@stacksjs/server',
+    '@stacksjs/env',
+    '@stacksjs/cli',
+    '@vite-pwa/vitepress',
+    'vitepress-plugin-twoslash',
+  ],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/docs`)

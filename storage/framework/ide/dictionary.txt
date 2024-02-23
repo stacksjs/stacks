@@ -262,6 +262,7 @@ singleline
 singlestore
 sizecheck
 solana
+Spatie
 Squeezy
 stackblitz
 stacksjs

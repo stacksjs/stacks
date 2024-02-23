@@ -1,8 +1,37 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/cli --external @stacksjs/config --external @stacksjs/error-handling --external @stacksjs/types --external @maizzle/framework --external @novu/stateless --external @novu/emailjs --external @novu/mailgun --external @novu/mailjet --external @novu/mandrill --external @novu/netcore --external @novu/node --external @novu/nodemailer --external @novu/postmark --external @novu/sendgrid --external @novu/ses --external json5 --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/email...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/config',
+    '@stacksjs/error-handling',
+    '@stacksjs/types',
+    '@maizzle/framework',
+    '@novu/stateless',
+    '@novu/emailjs',
+    '@novu/mailgun',
+    '@novu/mailjet',
+    '@novu/mandrill',
+    '@novu/netcore',
+    '@novu/node',
+    '@novu/nodemailer',
+    '@novu/postmark',
+    '@novu/sendgrid',
+    '@novu/ses',
+    'json5',
+  ],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/email`)

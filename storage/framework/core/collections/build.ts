@@ -1,8 +1,18 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external collect.js', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/collections...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  external: ['collect.js'],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/collections`)

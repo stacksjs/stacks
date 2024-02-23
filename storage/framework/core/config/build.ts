@@ -1,8 +1,32 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/types --external @stacksjs/tunnel --external @stacksjs/env --external @stacksjs/path --external @stacksjs/validation --external @stacksjs/path --external @vinejs/compiler --external pluralize --external @stacksjs/strings --external dinero.js --external @dinero.js/currencies --external validator --external @vinejs/vine --external @stacksjs/validation --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/config...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  external: [
+    '@stacksjs/types',
+    '@stacksjs/tunnel',
+    '@stacksjs/env',
+    '@stacksjs/path',
+    '@stacksjs/validation',
+    '@vinejs/compiler',
+    'pluralize',
+    '@stacksjs/strings',
+    'dinero.js',
+    '@dinero.js/currencies',
+    'validator',
+    '@vinejs/vine',
+  ],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/config`)

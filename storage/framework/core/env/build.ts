@@ -1,8 +1,22 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts --external fs-extra --external @stacksjs/validation --outdir dist --format esm --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/env...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  external: [
+    'fs-extra',
+    '@stacksjs/validation',
+  ],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/env`)

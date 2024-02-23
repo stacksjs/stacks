@@ -1,8 +1,29 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/faker --external @stacksjs/path --external @stacksjs/query-builder --external @stacksjs/storage --external @stacksjs/strings --external @stacksjs/utils --external kysely --external mysql2 --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/database...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  external: [
+    '@stacksjs/config',
+    '@stacksjs/faker',
+    '@stacksjs/path',
+    '@stacksjs/query-builder',
+    '@stacksjs/storage',
+    '@stacksjs/strings',
+    '@stacksjs/utils',
+    'kysely',
+    'mysql2',
+  ],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/database`)

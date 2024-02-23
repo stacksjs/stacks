@@ -7,6 +7,7 @@ await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   target: 'bun',
+
   external: [
     'vite',
     '@antfu/install-pkg',
@@ -23,6 +24,7 @@ await Bun.build({
     'cac',
     '@stacksjs/collections',
   ],
+
   plugins: [
     dts({
       withSourceMap: true, // optional
