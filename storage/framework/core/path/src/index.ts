@@ -4,9 +4,6 @@ import { $ } from 'bun'
 import { log } from '@stacksjs/logging'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
-// eslint-disable-next-line ts/no-require-imports, ts/no-var-requires
-const resolveHotfix = require('pathe').resolve
-
 /**
  * Returns the path to the `actions` directory. The actions directory
  * contains the core Stacks' actions. An action
@@ -350,6 +347,9 @@ export function paymentsPath(path?: string) {
 // all paths ultimately build on the projectPath
 export function projectPath(filePath = '') {
   let path = process.cwd()
+
+  // eslint-disable-next-line ts/no-require-imports, ts/no-var-requires
+  const resolveHotfix = require('pathe').resolve
 
   // need to also account for this being called in the ./storage/framework folder
   while (path.includes('storage'))
