@@ -14,6 +14,7 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
@@ -39,7 +40,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "eslint-plugin-svelte": "^2.35.1",
-    "eslint-ts-patch": "^8.55.0-1",
     "svelte-eslint-parser": "^0.33.1"
   },
   "peerDependenciesMeta": {
@@ -113,7 +113,6 @@
     "eslint": "^8.56.0",
     "eslint-flat-config-viewer": "^0.1.11",
     "eslint-plugin-format": "^0.1.0",
-    "eslint-ts-patch": "^8.55.0-1",
     "lint-staged": "^15.2.2",
     "rimraf": "^5.0.5",
     "tsup": "^8.0.2",
