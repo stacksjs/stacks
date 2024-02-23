@@ -4,6 +4,9 @@ import { $ } from 'bun'
 import { log } from '@stacksjs/logging'
 import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
+// eslint-disable-next-line ts/no-require-imports, ts/no-var-requires
+const resolveHotfix = require('pathe').resolve
+
 /**
  * Returns the path to the `actions` directory. The actions directory
  * contains the core Stacks' actions. An action
@@ -350,9 +353,9 @@ export function projectPath(filePath = '') {
 
   // need to also account for this being called in the ./storage/framework folder
   while (path.includes('storage'))
-    path = resolve(path, '..')
+    path = resolveHotfix(path, '..')
 
-  return resolve(path, filePath)
+  return resolveHotfix(path, filePath)
 }
 
 export async function findProjectPath(project: string) {
@@ -525,6 +528,11 @@ export function xRayPath(path?: string) {
 
 export function homeDir(path?: string) {
   return os.homedir() + (path ? (path.startsWith('/') ? '' : '/') + path : '~')
+}
+
+export const test = {
+  appPath,
+  projectPath,
 }
 
 export const path = {

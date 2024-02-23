@@ -1,4 +1,4 @@
-import { path as p } from '@stacksjs/path'
+import { commandsPath, projectStoragePath } from '@stacksjs/path'
 import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
@@ -44,7 +44,7 @@ export default {
     name: 'My Custom CLI',
     command: 'my-custom-cli',
     description: 'Stacks is a full-stack framework for TypeScript.',
-    source: p.appPath('commands'),
+    source: commandsPath(),
     deploy: false,
   },
 
@@ -124,7 +124,7 @@ export default {
 
     connections: {
       sqlite: {
-        database: p.projectStoragePath('framework/database/stacks.sqlite'),
+        database: projectStoragePath('framework/database/stacks.sqlite'),
         prefix: '',
       },
     },
