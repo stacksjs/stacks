@@ -58,7 +58,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.129.0"
+    "aws-cdk-lib": "^2.130.0"
   },
   "dependencies": {
     "@aws-sdk/client-route-53": "^3.515.0",
@@ -68,10 +68,10 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.129.0"
+    "aws-cdk-lib": "^2.130.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.129.0"
+    "aws-cdk-lib": "^2.130.0"
   }
 }
