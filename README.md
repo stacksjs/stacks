@@ -239,7 +239,7 @@ Read more here about the Stacks CLI in the documentation.
 
 The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It consists of the following engines:
 
-### Stacks Frontend
+### Frontend Development
 
 _Develop dynamic UIs with helpers for atomic design, and much more._
 
@@ -252,7 +252,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 📚 **Library** _auto-builds & manages component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
 
-### Stacks Backend
+### Backend Development
 
 _Develop serverless (or server) functions with countless helpers to build scalable & fast APIs._
 
@@ -276,7 +276,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🌪️ **Validation** _e2e type-safety (true frontend & backend harmony)_
 - 🎯 **X-Ray** _all you need to debug, log & analyze_
 
-### Stacks Cloud
+### Cloud
 
 _Create your personal or professional Vercel/Netlify style cloud, based on MIT-licensed OSS._
 
@@ -291,7 +291,7 @@ _Create your personal or professional Vercel/Netlify style cloud, based on MIT-l
 - 🚜 **Maintenance** _maintain your cloud infrastructure with ease using Buddy & Stacks_
 - 🚦 **Infrastructure as Code** _version-controlled cloud infrastructure (AWS, Google next?)_
 
-### Stacks CI/CD
+### CI/CD
 
 _Focus on coding, not publishing._
 
@@ -299,9 +299,9 @@ _Focus on coding, not publishing._
 - 0️⃣ **Zero Downtime** _deploy with confidence using a zero-downtime deployment strategy_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
-### Stacks DX
+### Developer Experience (DX)
 
-_Enhanced productivity for developers. No more creating boilerplate._
+Convention over configuration, while staying wholly configurable. _No more boilerplate._
 
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
