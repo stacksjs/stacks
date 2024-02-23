@@ -1,4 +1,7 @@
 import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
+
+log.info(`Building @stacksjs/actions`)
 
 await Bun.build({
   entrypoints: [
@@ -81,5 +84,4 @@ await Bun.build({
   target: 'bun',
 })
 
-// eslint-disable-next-line no-console
-console.log('Build complete ✅')
+log.success(`Built @stacksjs/actions`)

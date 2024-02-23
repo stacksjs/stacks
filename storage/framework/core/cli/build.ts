@@ -1,8 +1,33 @@
-import { log, runCommand } from './src'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun --bun build ./src/index.ts --outdir dist --external vite --external @antfu/install-pkg --external @stacksjs/config --external @stacksjs/types --external @stacksjs/tunnel --external @stacksjs/logging --external prompts --external @stacksjs/utils --external @stacksjs/validation --external @stacksjs/error-handling --external ora --external kolorist --external cac --external @stacksjs/collections --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/cli...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  target: 'bun',
+  external: [
+    'vite',
+    '@antfu/install-pkg',
+    '@stacksjs/config',
+    '@stacksjs/types',
+    '@stacksjs/tunnel',
+    '@stacksjs/logging',
+    'prompts',
+    '@stacksjs/utils',
+    '@stacksjs/validation',
+    '@stacksjs/error-handling',
+    'ora',
+    'kolorist',
+    'cac',
+    '@stacksjs/collections',
+  ],
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/cli`)

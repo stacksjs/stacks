@@ -1,8 +1,42 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const result = await runCommand('bun build ./src/index.ts ./src/cli.ts --outdir dist --format esm --external @stacksjs/actions --external @stacksjs/enums --external @stacksjs/config --external @stacksjs/dns --external @stacksjs/error-handling --external @stacksjs/cli --external @stacksjs/cloud --external @stacksjs/logging --external @stacksjs/utils --external @stacksjs/validation --external @stacksjs/path --external @stacksjs/storage --external @stacksjs/types --external @aws-sdk/client-route-53 --splitting --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/buddy...`)
+
+await Bun.build({
+  entrypoints: [
+    './src/index.ts',
+    './src/cli.ts',
+  ],
+
+  outdir: './dist',
+
+  format: 'esm',
+  target: 'bun',
+  splitting: true,
+
+  external: [
+    '@stacksjs/actions',
+    '@stacksjs/enums',
+    '@stacksjs/config',
+    '@stacksjs/dns',
+    '@stacksjs/error-handling',
+    '@stacksjs/cli',
+    '@stacksjs/cloud',
+    '@stacksjs/logging',
+    '@stacksjs/utils',
+    '@stacksjs/validation',
+    '@stacksjs/path',
+    '@stacksjs/storage',
+    '@stacksjs/types',
+    '@aws-sdk/client-route-53',
+  ],
+
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/buddy`)

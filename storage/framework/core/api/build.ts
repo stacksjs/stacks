@@ -1,7 +1,23 @@
-import { runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-const command: string = 'bun build ./src/index.ts --outdir dist --format esm --target bun'
+log.info(`Building @stacksjs/api...`)
 
-await runCommand(command, {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: [
+    './src/index.ts',
+  ],
+
+  outdir: './dist',
+
+  format: 'esm',
+  target: 'bun',
+
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
+
+log.success(`Built @stacksjs/api`)

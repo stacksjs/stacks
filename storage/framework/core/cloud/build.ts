@@ -1,12 +1,91 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
+import { log } from '@stacksjs/logging'
 
-await runCommand('bun build ./src/index.ts --outfile ./dist/index.js --outdir ./dist/ --external @aws-sdk/client-cloudformation --external @aws-sdk/client-cloudwatch-logs --external @aws-sdk/client-ec2 --external @aws-sdk/client-efs --external @aws-sdk/client-iam --external @aws-sdk/client-ssm --external @aws-sdk/lambda --external @aws-sdk/client-route-53-domains --external @aws-sdk/client-s3 --external @stacksjs/config --external @stacksjs/error-handling --external @stacksjs/logging --external @stacksjs/path --external @stacksjs/utils --external @stacksjs/strings --external @stacksjs/storage --external aws-cdk-lib --external constructs --external @stacksjs/env --external @smithy/types --external @smithy/protocol-http --external @aws-sdk/middleware-logger --external @aws-sdk/middleware-recursion-detection --external @aws-sdk/middleware-host-header --external @smithy/property-provider --external @aws-crypto/crc32 --external @smithy/util-hex-encoding --external @smithy/smithy-client --external @smithy/signature-v4 --external @smithy/util-endpoints --external @aws-sdk/util-endpoints --external @smithy/util-middleware --external @aws-sdk/middleware-user-agent --external @smithy/util-config-provider --external @smithy/config-resolver --external @smithy/middleware-content-length --external @smithy/middleware-endpoint --external @smithy/util-retry --external @smithy/service-error-classification --external @smithy/middleware-retry --external @smithy/core --external @aws-sdk/core --external @smithy/middleware-serde --external fast-xml-parser --external @smithy/shared-ini-file-loader --external @smithy/credential-provider-imds --external @aws-sdk/credential-provider-env --external @aws-sdk/client-sso --external @aws-sdk/credential-provider-sso --external @aws-sdk/credential-provider-ini --external @aws-sdk/credential-provider-process --external @aws-sdk/credential-provider-web-identity --external universalify  --external graceful-fs --external fs-extra --external fast-glob --external kleur --external @stacksjs/cli --external @aws-sdk/middleware-signing --external @smithy/eventstream-serde-config-resolver --external @aws-sdk/client-lambda --target bun', {
-  cwd: import.meta.dir,
+log.info(`Building @stacksjs/cloud...`)
+
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outfile: './dist/index.js',
+  outdir: './dist',
+  target: 'bun',
+  
+  external: [
+    '@aws-sdk/client-cloudformation',
+    '@aws-sdk/client-cloudwatch-logs',
+    '@aws-sdk/client-ec2',
+    '@aws-sdk/client-efs',
+    '@aws-sdk/client-iam',
+    '@aws-sdk/client-ssm',
+    '@aws-sdk/lambda',
+    '@aws-sdk/client-route-53-domains',
+    '@aws-sdk/client-s3',
+    '@stacksjs/config',
+    '@stacksjs/error-handling',
+    '@stacksjs/logging',
+    '@stacksjs/path',
+    '@stacksjs/utils',
+    '@stacksjs/strings',
+    '@stacksjs/storage',
+    'aws-cdk-lib',
+    'constructs',
+    '@stacksjs/env',
+    '@smithy/types',
+    '@smithy/protocol-http',
+    '@aws-sdk/middleware-logger',
+    '@aws-sdk/middleware-recursion-detection',
+    '@aws-sdk/middleware-host-header',
+    '@smithy/property-provider',
+    '@aws-crypto/crc32',
+    '@smithy/util-hex-encoding',
+    '@smithy/smithy-client',
+    '@smithy/signature-v4',
+    '@smithy/util-endpoints',
+    '@aws-sdk/util-endpoints',
+    '@smithy/util-middleware',
+    '@aws-sdk/middleware-user-agent',
+    '@smithy/util-config-provider',
+    '@smithy/config-resolver',
+    '@smithy/middleware-content-length',
+    '@smithy/middleware-endpoint',
+    '@smithy/util-retry',
+    '@smithy/service-error-classification',
+    '@smithy/middleware-retry',
+    '@smithy/core',
+    '@aws-sdk/core',
+    '@smithy/middleware-serde',
+    'fast-xml-parser',
+    '@smithy/shared-ini-file-loader',
+    '@smithy/credential-provider-imds',
+    '@aws-sdk/credential-provider-env',
+    '@aws-sdk/client-sso',
+    '@aws-sdk/credential-provider-sso',
+    '@aws-sdk/credential-provider-ini',
+    '@aws-sdk/credential-provider-process',
+    '@aws-sdk/credential-provider-web-identity',
+    'universalify',
+    'graceful-fs',
+    'fs-extra',
+    'fast-glob',
+    'kleur',
+    '@stacksjs/cli',
+    '@aws-sdk/middleware-signing',
+    '@smithy/eventstream-serde-config-resolver',
+    '@aws-sdk/client-lambda',
+  ],
+
+  plugins: [
+    dts({
+      withSourceMap: true, // optional
+    }),
+  ],
 })
 
-const result = await runCommand('bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js --outdir ./dist/', {
-  cwd: import.meta.dir,
+// Building the edge/origin-request separately
+await Bun.build({
+  entrypoints: ['./src/edge/origin-request.ts'],
+  outfile: './dist/origin-request.js',
+  outdir: './dist',
+  // Specify any additional options if needed
 })
 
-if (result.isErr())
-  log.error(result.error)
+log.success(`Built @stacksjs/cloud`)
