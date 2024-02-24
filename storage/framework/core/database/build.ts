@@ -8,6 +8,7 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+
   external: [
     '@stacksjs/config',
     '@stacksjs/faker',
@@ -19,6 +20,7 @@ await Bun.build({
     'kysely',
     'mysql2',
   ],
+
   plugins: [
     dts({
       withSourceMap: true, // optional

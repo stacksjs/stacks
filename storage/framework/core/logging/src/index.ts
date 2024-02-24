@@ -20,6 +20,7 @@ export function logLevel() {
 
   if (verboseRegex.test(buddyOptions().trim()))
     return 4
+
   return logConfig.level
 }
 

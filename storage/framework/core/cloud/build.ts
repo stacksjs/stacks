@@ -8,7 +8,7 @@ await Bun.build({
   outfile: './dist/index.js',
   outdir: './dist',
   target: 'bun',
-  
+
   external: [
     '@aws-sdk/client-cloudformation',
     '@aws-sdk/client-cloudwatch-logs',

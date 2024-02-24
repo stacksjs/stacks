@@ -52,12 +52,12 @@
   },
   "peerDependencies": {
     "@stacksjs/vite": "workspace:*",
-    "bun-plugin-dts-auto": "^0.3.0",
+    "bun-plugin-dts-auto": "^0.4.1",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
     "@stacksjs/vite": "workspace:*",
-    "bun-plugin-dts-auto": "^0.3.0",
+    "bun-plugin-dts-auto": "^0.4.1",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {

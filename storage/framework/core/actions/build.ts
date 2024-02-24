@@ -1,7 +1,9 @@
 import dts from 'bun-plugin-dts-auto'
-import { log } from '@stacksjs/logging'
+import { dim, log } from '@stacksjs/cli'
 
-log.info(`Building @stacksjs/actions`)
+log.info(`Building @stacksjs/actions...`)
+
+const startTime = Date.now()
 
 await Bun.build({
   entrypoints: [
@@ -77,11 +79,14 @@ await Bun.build({
 
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      outDir: `${import.meta.dir}/dist/types`,
     }),
   ],
 
   target: 'bun',
 })
 
-log.success(`Built @stacksjs/actions`)
+const endTime = Date.now()
+const timeTaken = endTime - startTime
+
+log.success(`${dim(`[${timeTaken}ms]`)} Built @stacksjs/actions`)

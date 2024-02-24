@@ -21,15 +21,15 @@ for dir in $dirs; do
     continue
   fi
 
-  echo ""
-  echo "🏗️  Building..."
-  echo "📦 $dir"
+#  echo ""
+#  echo "🏗️  Building..."
+#  echo "📦 $dir"
 
   # Change to the directory
   cd $dir
 
   # Build the package
-  bun run build
+  bun build.ts
 
   # Check if the build command was successful
   if [ $? -ne 0 ]; then
@@ -37,7 +37,7 @@ for dir in $dirs; do
     exit 1
   fi
 
-  echo "✅ Build complete"
+#  echo "✅ Build complete"
   echo ""
 
   # Change back to the original directory

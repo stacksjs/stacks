@@ -8,11 +8,13 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+
   external: [
     'vite',
     'bun',
     '@stacksjs/utils',
   ],
+
   plugins: [
     dts({
       withSourceMap: true, // optional
