@@ -19,7 +19,7 @@ import { basename, delimiter, dirname, extname, isAbsolute, join, normalize, nor
  * ```
  */
 export function actionsPath(path?: string) {
-  return corePath(`actions/src/${path || ''}`)
+  return corePath(`actions/${path || ''}`)
 }
 
 export function relativeActionsPath(path?: string) {

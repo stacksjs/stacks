@@ -1,4 +1,5 @@
 import dts from 'bun-plugin-dts-auto'
+import { path as p } from '@stacksjs/path'
 import { dim, log } from '@stacksjs/cli'
 
 log.info(`Building @stacksjs/actions...`)
@@ -80,6 +81,7 @@ await Bun.build({
   plugins: [
     dts({
       outDir: `${import.meta.dir}/dist/types`,
+      // cwd: import.meta.dirname,
     }),
   ],
 

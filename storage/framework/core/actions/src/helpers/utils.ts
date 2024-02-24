@@ -15,7 +15,7 @@ import { err, handleError } from '@stacksjs/error-handling'
  */
 export async function runAction(action: string, options?: ActionOptions): Promise<Result<Subprocess, Error>> {
   const opts = buddyOptions()
-  const path = p.relativeActionsPath(`${action}.ts`)
+  const path = p.relativeActionsPath(`src/${action}.ts`)
   const cmd = `bun --bun ${path} ${opts}`.trimEnd()
   const optionsWithCwd = {
     cwd: options?.cwd || p.projectPath(),
