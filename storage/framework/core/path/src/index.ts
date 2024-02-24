@@ -2,7 +2,7 @@ import process from 'node:process'
 import os from 'node:os'
 import { $ } from 'bun'
 import { log } from '@stacksjs/logging'
-import { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath } from 'pathe'
+import { basename, delimiter, dirname, extname, isAbsolute, join, normalize, normalizeString, relative, resolve, sep, toNamespacedPath } from 'pathe'
 
 /**
  * Returns the path to the `actions` directory. The actions directory
@@ -530,11 +530,6 @@ export function homeDir(path?: string) {
   return os.homedir() + (path ? (path.startsWith('/') ? '' : '/') + path : '~')
 }
 
-export const test = {
-  appPath,
-  projectPath,
-}
-
 export const path = {
   actionsPath,
   userActionsPath,
@@ -646,18 +641,16 @@ export const path = {
   delimiter,
   dirname,
   extname,
-  format,
   isAbsolute,
   join,
   normalize,
   normalizeString,
-  parse,
   relative,
   resolve,
   sep,
   toNamespacedPath,
 }
 
-export { basename, delimiter, dirname, extname, format, isAbsolute, join, normalize, normalizeString, parse, relative, resolve, sep, toNamespacedPath }
+export { basename, delimiter, dirname, extname, isAbsolute, join, normalize, normalizeString, relative, resolve, sep, toNamespacedPath }
 
 export default path

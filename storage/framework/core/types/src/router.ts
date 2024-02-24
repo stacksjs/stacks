@@ -71,3 +71,23 @@ export interface RouteGroupOptions {
   prefix?: string
   middleware?: Route['middleware']
 }
+
+type Prefix = string
+
+export interface RouterInterface {
+  get: (url: Route['url'], callback: Route['callback']) => Promise<this>
+  post: (url: Route['url'], callback: Route['callback']) => this
+  view: (url: Route['url'], callback: Route['callback']) => this
+  redirect: (url: Route['url'], callback: Route['callback'], status?: RedirectCode) => this
+  delete: (url: Route['url'], callback: Route['callback']) => this
+  patch: (url: Route['url'], callback: Route['callback']) => this
+  put: (url: Route['url'], callback: Route['callback']) => this
+  email: (url: Route['url']) => Promise<this>
+  health: () => Promise<this>
+  job: (url: Route['url']) => Promise<this>
+  action: (url: Route['url']) => Promise<this>
+  group: (options: Prefix | RouteGroupOptions, callback: () => void) => this
+  name: (name: string) => this
+  middleware: (middleware: Route['middleware']) => this
+  getRoutes: () => Promise<Route[]>
+}

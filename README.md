@@ -228,7 +228,6 @@ buddy test:types # runs typecheck
 stx fresh
 buddy fresh
 bud fresh
-buddy fresh
 ```
 
 </details>
