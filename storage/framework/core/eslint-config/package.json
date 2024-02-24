@@ -34,7 +34,7 @@
   },
   "peerDependencies": {
     "@unocss/eslint-plugin": ">=0.58.5",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-plugin-format": "^0.1.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
@@ -110,7 +110,7 @@
     "@types/eslint": "^8.56.3",
     "@types/node": "^20.11.20",
     "@unocss/eslint-plugin": "^0.58.5",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-flat-config-viewer": "^0.1.11",
     "eslint-plugin-format": "^0.1.0",
     "lint-staged": "^15.2.2",
