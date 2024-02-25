@@ -8,6 +8,7 @@ dirs.sort((a, b) => a.localeCompare(b))
 const startTime = Date.now()
 
 for (const dir of dirs) {
+  // bun-create has only nested dirs, no need to build
   if (dir.includes('bun-create'))
     continue
 

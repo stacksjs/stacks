@@ -45,7 +45,7 @@
     "src"
   ],
   "scripts": {
-    "build": "bun --bun build.ts",
+    "build": "bun --bun build.ts && cp -r ./dist/types/src/* ./dist/types && rm -rf ./dist/types/src && cp -r ./dist/src/* ./dist && rm -rf ./dist/src",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },

@@ -1,10 +1,5 @@
 import dts from 'bun-plugin-dts-auto'
 import { path as p } from '@stacksjs/path'
-import { dim, log } from '@stacksjs/cli'
-
-log.info(`Building @stacksjs/actions...`)
-
-const startTime = Date.now()
 
 await Bun.build({
   entrypoints: [
@@ -80,15 +75,12 @@ await Bun.build({
 
   plugins: [
     dts({
-      outDir: `${import.meta.dir}/dist/types`,
-      // cwd: import.meta.dirname,
+      cwd: import.meta.dir,
+      outDir: p.actionsPath(`dist/types`),
     }),
   ],
 
   target: 'bun',
 })
 
-const endTime = Date.now()
-const timeTaken = endTime - startTime
-
-log.success(`${dim(`[${timeTaken}ms]`)} Built @stacksjs/actions`)
+// oddly, it stores in the ./dist/src folder, so we have to copy the contents one level down

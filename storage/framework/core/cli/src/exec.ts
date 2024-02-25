@@ -84,8 +84,8 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  * ```
  */
 export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
-  log.debug('Running execSync:', command)
-  log.debug('execSync Options:', options)
+  log.debug('Running ExecSync:', command)
+  log.debug('ExecSync Options:', options)
 
   const cmd = Array.isArray(command)
     ? command
