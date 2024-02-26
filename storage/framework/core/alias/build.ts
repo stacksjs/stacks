@@ -9,16 +9,15 @@ await Bun.build({
   ],
 
   outdir: './dist',
+  format: 'esm',
 
   external: [
     '@stacksjs/path',
   ],
 
-  format: 'esm',
-
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })

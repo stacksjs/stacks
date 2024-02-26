@@ -10,7 +10,7 @@ await Bun.build({
   external: ['collect.js'],
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })

@@ -27,10 +27,12 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
       "bun": "./src/*",
+      "types": "./dist/*.d.ts",
       "import": "./dist/*"
     }
   },
@@ -45,7 +47,7 @@
     "src"
   ],
   "scripts": {
-    "build": "bun --bun build.ts && cp -r ./dist/types/src/* ./dist/types && rm -rf ./dist/types/src && cp -r ./dist/src/* ./dist && rm -rf ./dist/src",
+    "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },

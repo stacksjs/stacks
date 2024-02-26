@@ -1,7 +1,8 @@
 import dts from 'bun-plugin-dts-auto'
-import { path as p } from '@stacksjs/path'
 
 await Bun.build({
+  root: './src',
+
   entrypoints: [
     './src/index.ts',
     './src/build/component-libs.ts',
@@ -76,11 +77,8 @@ await Bun.build({
   plugins: [
     dts({
       cwd: import.meta.dir,
-      outDir: p.actionsPath(`dist/types`),
     }),
   ],
 
   target: 'bun',
 })
-
-// oddly, it stores in the ./dist/src folder, so we have to copy the contents one level down

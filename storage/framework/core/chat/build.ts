@@ -5,9 +5,11 @@ log.info(`Building @stacksjs/chat...`)
 
 await Bun.build({
   entrypoints: ['./src/index.ts'],
+
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+
   external: [
     '@novu/stateless',
     '@stacksjs/cli',
@@ -17,9 +19,10 @@ await Bun.build({
     '@novu/node',
     '@novu/slack',
   ],
+
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })

@@ -4,17 +4,18 @@ import { log } from '@stacksjs/logging'
 log.info(`Building @stacksjs/ai...`)
 
 await Bun.build({
+  root: './src',
+
   entrypoints: [
     './src/index.ts',
   ],
 
   outdir: './dist',
-
   format: 'esm',
 
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })

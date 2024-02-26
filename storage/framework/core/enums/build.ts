@@ -9,7 +9,7 @@ await Bun.build({
   format: 'esm',
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })

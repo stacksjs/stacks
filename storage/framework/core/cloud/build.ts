@@ -5,7 +5,6 @@ log.info(`Building @stacksjs/cloud...`)
 
 await Bun.build({
   entrypoints: ['./src/index.ts'],
-  outfile: './dist/index.js',
   outdir: './dist',
   target: 'bun',
 
@@ -75,7 +74,7 @@ await Bun.build({
 
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })
@@ -83,9 +82,13 @@ await Bun.build({
 // Building the edge/origin-request separately
 await Bun.build({
   entrypoints: ['./src/edge/origin-request.ts'],
-  outfile: './dist/origin-request.js',
   outdir: './dist',
   // Specify any additional options if needed
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
 
 log.success(`Built @stacksjs/cloud`)

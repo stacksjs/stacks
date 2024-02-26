@@ -7,10 +7,15 @@ await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
-  external: ['bun', '@stacksjs/vite'],
+
+  external: [
+    'bun',
+    '@stacksjs/vite',
+  ],
+
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })

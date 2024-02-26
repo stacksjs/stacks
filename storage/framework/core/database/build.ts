@@ -23,7 +23,7 @@ await Bun.build({
 
   plugins: [
     dts({
-      withSourceMap: true, // optional
+      cwd: import.meta.dir,
     }),
   ],
 })
