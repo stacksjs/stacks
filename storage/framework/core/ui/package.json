@@ -65,7 +65,7 @@
     "pinia": "^2.1.7",
     "unocss": "^0.58.5",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.19",
+    "vue": "^3.4.20",
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
@@ -73,7 +73,7 @@
     "@iconify-json/heroicons": "^1.1.20",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.186",
+    "@iconify/json": "^2.2.187",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -84,7 +84,7 @@
     "unocss": "^0.58.5",
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.19",
+    "vue": "^3.4.20",
     "vue-tsc": "^1.8.27"
   },
   "devDependencies": {
