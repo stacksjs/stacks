@@ -8,6 +8,7 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'node',
+
   plugins: [
     dts({
       cwd: import.meta.dir,

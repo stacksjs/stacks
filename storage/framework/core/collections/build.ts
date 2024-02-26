@@ -7,7 +7,11 @@ await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
-  external: ['collect.js'],
+
+  external: [
+    'collect.js',
+  ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

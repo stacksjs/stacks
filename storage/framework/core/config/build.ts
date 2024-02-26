@@ -8,6 +8,7 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+
   external: [
     '@stacksjs/types',
     '@stacksjs/tunnel',
@@ -22,6 +23,7 @@ await Bun.build({
     'validator',
     '@vinejs/vine',
   ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

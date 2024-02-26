@@ -8,6 +8,7 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'node',
+
   external: [
     'vitepress',
     '@stacksjs/config',
@@ -20,6 +21,7 @@ await Bun.build({
     '@vite-pwa/vitepress',
     'vitepress-plugin-twoslash',
   ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

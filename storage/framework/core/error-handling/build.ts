@@ -8,11 +8,13 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'node',
+
   external: [
     '@stacksjs/cli',
     '@stacksjs/path',
     '@stacksjs/storage',
   ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

@@ -8,10 +8,12 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+
   external: [
     'fs-extra',
     '@stacksjs/validation',
   ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,
