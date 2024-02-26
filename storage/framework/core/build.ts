@@ -12,8 +12,8 @@ for (const dir of dirs) {
   if (dir.includes('bun-create'))
     continue
 
-  log.info(`Building ${dir}...`)
-
+  const pkgName = `@stacksjs/${p.basename(dir)}`
+  log.info(`Building ${pkgName}...`)
   const startTime = Date.now()
 
   // Run the build command in each directory
@@ -24,7 +24,7 @@ for (const dir of dirs) {
   const endTime = Date.now()
   const timeTaken = endTime - startTime
 
-  log.success(`${dim(`[${timeTaken}ms]`)} Built ${dir}`)
+  log.success(`${dim(`[${timeTaken}ms]`)} Built ${pkgName}`)
 }
 
 const endTime = Date.now()
