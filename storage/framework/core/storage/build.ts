@@ -18,7 +18,8 @@ await Bun.build({
     '@stacksjs/error-handling',
     '@stacksjs/whois',
     '@stacksjs/arrays',
-    '@stacksjs/strings',
+    'fast-glob',
+    'fs-extra',
   ],
 
   plugins: [

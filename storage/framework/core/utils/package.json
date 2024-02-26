@@ -70,7 +70,6 @@
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.0",
     "export-size": "^0.7.0",
-    "rimraf": "^5.0.5",
     "yaml": "^2.4.0"
   },
   "dependencies": {

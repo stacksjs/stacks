@@ -17,7 +17,6 @@
   },
   "keywords": [
     "path",
-    "pathe",
     "paths",
     "utilities",
     "functions",
@@ -47,8 +46,7 @@
   },
   "dependencies": {
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "pathe": "^1.1.2"
+    "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

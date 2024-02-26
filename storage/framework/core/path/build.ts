@@ -6,6 +6,12 @@ await Bun.build({
   format: 'esm',
   target: 'bun',
 
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/logging',
+    'bun',
+  ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

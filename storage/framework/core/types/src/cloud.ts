@@ -31,6 +31,8 @@ export type CountryCode =
 type Environment = 'development' | 'staging' | 'production'
 
 export interface CloudOptions {
+  type: 'serverless' // | 'server' coming soon
+
   driver: 'aws'
 
   // eslint-disable-next-line ts/ban-types

@@ -50,8 +50,11 @@ const sidebar = {
       items: [
         { text: 'Routing', link: '/basics/routing' },
         { text: 'Middleware', link: '/basics/middleware' },
-        { text: 'Actions', link: '/basics/actions' },
+        { text: 'Models', link: '/basics/models' },
         { text: 'Views', link: '/basics/views' },
+        { text: 'Actions', link: '/basics/actions' },
+        { text: 'Commands', link: '/basics/commands' },
+        { text: 'Jobs', link: '/basics/jobs' },
         { text: 'Components', link: '/basics/components' },
         { text: 'Functions', link: '/basics/functions' },
         { text: 'Validation', link: '/basics/validation' },
@@ -286,9 +289,7 @@ const sidebar = {
         },
 
         { text: 'Bootstrap', link: '/guide/bootstrap' },
-
         { text: 'CI / CD', link: '/guide/ci' },
-
         { text: 'Model-View-Action', link: '/guide/model-view-action' },
 
         {

@@ -10,6 +10,7 @@ import security from './security'
  * any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  type: 'serverless',
   driver: 'aws',
   firewall: security.firewall,
   environments: ['production', 'staging', 'development'],

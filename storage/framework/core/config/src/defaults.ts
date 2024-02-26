@@ -65,6 +65,8 @@ export default {
   },
 
   cloud: {
+    type: 'serverless',
+
     driver: 'aws',
 
     storage: {},

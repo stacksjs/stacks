@@ -8,6 +8,7 @@ await Bun.build({
 
   external: [
     '@stacksjs/cli',
+    '@stacksjs/logging',
     '@stacksjs/arrays',
     '@stacksjs/collections',
     '@stacksjs/config',
@@ -18,8 +19,10 @@ await Bun.build({
     '@stacksjs/storage',
     '@stacksjs/types',
     '@stacksjs/validation',
+    '@stacksjs/strings',
     'bun',
     'dinero.js',
+    '@dinero.js/currencies',
     'export-size',
     'hookable',
     'js-yaml',
@@ -29,7 +32,11 @@ await Bun.build({
     'p-limit',
     'vue',
     'vueuse',
+    '@vueuse/math',
+    '@vueuse/head',
+    // 'pretty-bytes',
     'yaml',
+    'magic-regexp',
   ],
 
   plugins: [

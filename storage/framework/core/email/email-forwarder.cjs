@@ -344,8 +344,8 @@ exports.sendMessage = function (data) {
 }
 
 /**
- * Handler function to be invoked by AWS Lambda with an inbound SES email as
- * the event.
+ * Handler function to be invoked by AWS Lambda,
+ * with an inbound SES email as the event.
  *
  * @param {object} event - Lambda event from inbound email received by AWS SES.
  * @param {object} context - Lambda context object.

@@ -12,7 +12,12 @@ await Bun.build({
     '@stacksjs/error-handling',
     '@stacksjs/types',
     '@maizzle/framework',
+    'vue-email',
+    '@vue-email/compiler',
     'json5',
+    '@stacksjs/path',
+    '@aws-sdk/client-ses',
+    '@novu/ses',
   ],
 
   plugins: [

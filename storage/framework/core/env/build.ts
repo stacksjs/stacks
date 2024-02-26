@@ -8,6 +8,7 @@ await Bun.build({
 
   external: [
     'fs-extra',
+    '@stacksjs/path',
     '@stacksjs/validation',
   ],
 
