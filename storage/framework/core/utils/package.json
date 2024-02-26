@@ -71,7 +71,7 @@
     "bun-plugin-yml": "^0.3.0",
     "export-size": "^0.7.0",
     "rimraf": "^5.0.5",
-    "yaml": "^2.3.4"
+    "yaml": "^2.4.0"
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -103,7 +103,7 @@
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
     "rimraf": "^5.0.5",
-    "yaml": "^2.3.4"
+    "yaml": "^2.4.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
