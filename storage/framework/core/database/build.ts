@@ -1,8 +1,6 @@
 import dts from 'bun-plugin-dts-auto'
 import { log } from '@stacksjs/logging'
 
-log.info(`Building @stacksjs/database...`)
-
 await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
@@ -27,5 +25,3 @@ await Bun.build({
     }),
   ],
 })
-
-log.success(`Built @stacksjs/database`)

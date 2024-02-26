@@ -1,7 +1,4 @@
 import dts from 'bun-plugin-dts-auto'
-import { log } from '@stacksjs/logging'
-
-log.info(`Building @stacksjs/api...`)
 
 await Bun.build({
   entrypoints: [
@@ -18,5 +15,3 @@ await Bun.build({
     }),
   ],
 })
-
-log.success(`Built @stacksjs/api`)

@@ -321,7 +321,6 @@ vsix
 vslot
 vsrc
 vstyle
-vue-demi
 vueform
 vueuse
 wafv

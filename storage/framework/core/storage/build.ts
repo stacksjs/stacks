@@ -1,8 +1,29 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external aws-cdk-lib --external constructs --external @stacksjs/config --external @stacksjs/arrays --external @stacksjs/path --external @stacksjs/error-handling --external @stacksjs/cli --external fs-extra --external fast-glob --external @stacksjs/logging --external @stacksjs/cli --external @stacksjs/strings --target bun', {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/config',
+    '@stacksjs/env',
+    '@stacksjs/error-handling',
+    '@stacksjs/types',
+    '@stacksjs/strings',
+    '@stacksjs/logging',
+    '@stacksjs/path',
+    '@stacksjs/error-handling',
+    '@stacksjs/whois',
+    '@stacksjs/arrays',
+    '@stacksjs/strings',
+  ],
+
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
-
-if (result.isErr())
-  log.error(result.error)

@@ -1,7 +1,7 @@
 // import { calculatePagination, currentPage, filterName, totalPages } from '@stacksjs/search-engine'
 // import { isObject, isString, useStorage } from '@stacksjs/utils'
 // import type { Ref, TableStore } from '@stacksjs/types'
-// import { computed } from 'vue-demi'
+// import { computed } from 'vue'
 //
 // const table = (useStorage('table', determineState()).value as TableStore)
 //

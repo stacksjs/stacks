@@ -1,9 +1,23 @@
-import { runCommand } from '@stacksjs/cli'
-import { handleError } from '@stacksjs/error-handling'
+import dts from 'bun-plugin-dts-auto'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external change-case --external title-case --external validator --external pluralize --external slugify --external detect-indent --external detect-newline', {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+
+  external: [
+    'change-case',
+    'title-case',
+    'validator',
+    'pluralize',
+    'slugify',
+    'detect-indent',
+    'detect-newline',
+  ],
+
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
-
-if (result.isErr())
-  handleError(result.error)

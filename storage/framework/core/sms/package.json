@@ -64,18 +64,6 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
-  "optionalDependencies": {
-    "@novu/gupshup": "^0.23.1",
-    "@novu/nexmo": "^0.23.1",
-    "@novu/node": "^0.23.1",
-    "@novu/plivo": "^0.23.1",
-    "@novu/sms77": "^0.23.1",
-    "@novu/sns": "^0.23.1",
-    "@novu/stateless": "^0.23.1",
-    "@novu/telnyx": "^0.23.1",
-    "@novu/termii": "^0.23.1",
-    "@novu/twilio": "^0.23.1"
-  },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*"

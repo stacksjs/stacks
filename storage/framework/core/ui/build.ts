@@ -1,8 +1,23 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
 
-const result = await runCommand('bun build ./src/index.ts ./src/components.ts --outdir dist --format esm --external @stacksjs/config --external unocss --external @headlessui/vue --external @julr/unocss-preset-forms --external vue --external pinia --target bun', {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@stacksjs/config',
+    'unocss',
+    '@headlessui/vue',
+    '@julr/unocss-preset-forms',
+    'vue',
+    'pinia',
+  ],
+
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
-
-if (result.isErr())
-  log.error(result.error)

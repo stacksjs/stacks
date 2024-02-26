@@ -1,7 +1,4 @@
 import dts from 'bun-plugin-dts-auto'
-import { log } from '@stacksjs/logging'
-
-log.info(`Building @stacksjs/ai...`)
 
 await Bun.build({
   root: './src',
@@ -19,5 +16,3 @@ await Bun.build({
     }),
   ],
 })
-
-log.success(`Built @stacksjs/ai`)

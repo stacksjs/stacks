@@ -1,8 +1,40 @@
-import { log, runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/cli --external @stacksjs/path --external @stacksjs/storage --external @stacksjs/arrays --external @stacksjs/types --external @stacksjs/actions --external @stacksjs/env --external export-size --external yaml --external js-yaml --external vue --external rimraf --external @stacksjs/enums --external @dinero.js/currencies --external dinero.js --external bun --external neverthrow --external macroable --external hookable --external perfect-debounce --external vue-demi --external @vueuse/shared --external @vueuse/math --external p-limit --external @vueuse/core --external @vueuse/head --external @stacksjs/error-handling --external @stacksjs/strings --external @stacksjs/validation --target bun', {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/arrays',
+    '@stacksjs/collections',
+    '@stacksjs/config',
+    '@stacksjs/env',
+    '@stacksjs/error-handling',
+    '@stacksjs/objects',
+    '@stacksjs/path',
+    '@stacksjs/storage',
+    '@stacksjs/types',
+    '@stacksjs/validation',
+    'bun',
+    'dinero.js',
+    'export-size',
+    'hookable',
+    'js-yaml',
+    'macroable',
+    'neverthrow',
+    'perfect-debounce',
+    'p-limit',
+    'vue',
+    'vueuse',
+    'yaml',
+  ],
+
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
-
-if (result.isErr())
-  log.error(result.error)

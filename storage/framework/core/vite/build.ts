@@ -1,9 +1,55 @@
-import { runCommand } from '@stacksjs/cli'
-import { handleError } from '@stacksjs/error-handling'
+import dts from 'bun-plugin-dts-auto'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external markdown-it-shikiji --external unplugin-vue-macros/vite --external vite-plugin-webfont-dl --external unplugin-vue-markdown/vite --external unplugin-auto-import/vite --external @intlify/unplugin-vue-i18n/vite --external defu --external @stacksjs/types --external @stacksjs/path --external unplugin-vue-components/vite --external unocss/vite --external @stacksjs/config --external @stacksjs/cli --external vitepress --external vite --external vite-plugin-inspect --external vite-plugin-vue-layouts --external unplugin-vue-router --external unplugin-vue-router/vite --external vite-plugin-pwa --external @vitejs/plugin-vue --external @stacksjs/alias --external vite-ssg-sitemap --external @stacksjs/server --external @stacksjs/env --external @unhead/vue --external markdown-it-link-attributes --external vite-plugin-vue-devtools --external vite-plugin-pages --target bun', {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/config',
+    '@stacksjs/env',
+    '@stacksjs/error-handling',
+    '@stacksjs/server',
+    '@stacksjs/types',
+    '@stacksjs/utils',
+    'bun',
+    'export-size',
+    'hookable',
+    'js-yaml',
+    'macroable',
+    'neverthrow',
+    'perfect-debounce',
+    'p-limit',
+    'vue',
+    'vueuse',
+    'yaml',
+    'vite',
+    'vite-plugin-inspect',
+    'vite-plugin-vue-layouts',
+    'vite-ssg-sitemap',
+    'vitepress',
+    'vite-plugin-pwa',
+    'vite-plugin-pages',
+    'vite-plugin-webfont-dl',
+    'vite-plugin-vue-devtools',
+    'unocss',
+    'unplugin-auto-import/vite',
+    'unplugin-vue-components/vite',
+    'unplugin-vue-macros/vite',
+    'unplugin-vue-markdown/vite',
+    'unplugin-vue-router/vite',
+    '@intlify/unplugin-vue-i18n/vite',
+    'defu',
+    'markdown-it-shikiji',
+    'markdown-it-link-attributes',
+    '@unhead/vue',
+  ],
+
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
-
-if (result.isErr())
-  handleError(result.error)

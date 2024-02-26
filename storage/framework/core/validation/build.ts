@@ -1,5 +1,23 @@
-import { runCommand } from '@stacksjs/cli'
+import dts from 'bun-plugin-dts-auto'
 
-await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @vinejs/vine --external @stacksjs/vite --external @stacksjs/strings --external @stacksjs/types --external @stacksjs/validation --external @dinero.js/currencies --external dinero.js --target bun', {
-  cwd: import.meta.dir,
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@vinejs/vine',
+    '@stacksjs/vite',
+    '@stacksjs/strings',
+    '@stacksjs/types',
+    '@dinero.js/currencies',
+    'dinero.js',
+  ],
+
+  plugins: [
+    dts({
+      cwd: import.meta.dir,
+    }),
+  ],
 })
