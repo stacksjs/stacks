@@ -164,7 +164,6 @@ mailgun
 mailjet
 mailparser
 mailpit
-maizzle
 marvinpinto
 mattpocock
 mdit
@@ -190,7 +189,6 @@ nexe
 nexmo
 nitropack
 noopener
-novu
 npmjs
 npmrc
 nprogress

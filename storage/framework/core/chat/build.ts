@@ -8,13 +8,8 @@ await Bun.build({
   target: 'bun',
 
   external: [
-    '@novu/stateless',
     '@stacksjs/cli',
     '@stacksjs/error-handling',
-    '@novu/discord',
-    '@novu/ms-teams',
-    '@novu/node',
-    '@novu/slack',
   ],
 
   plugins: [

@@ -26,9 +26,7 @@
     "slack",
     "discord",
     "webhooks",
-    "stacks",
-    "Maizzle",
-    "maizzle"
+    "stacks"
   ],
   "exports": {
     ".": {

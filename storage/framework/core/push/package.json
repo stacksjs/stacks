@@ -46,15 +46,11 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@novu/node": "^0.23.1",
-    "@novu/stateless": "^0.23.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*"
   },
   "dependencies": {
-    "@novu/node": "^0.23.1",
-    "@novu/stateless": "^0.23.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*"

@@ -35,10 +35,6 @@ export interface ServicesOptions {
     apiKey: string
     region: string
   }
-
-  novu?: {
-    key: string
-  }
 }
 
 export type ServicesConfig = Partial<ServicesOptions>

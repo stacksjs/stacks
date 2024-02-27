@@ -26,8 +26,7 @@
     "slack",
     "discord",
     "webhooks",
-    "stacks",
-    "maizzle"
+    "stacks"
   ],
   "exports": {
     ".": {
@@ -65,7 +64,6 @@
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.7.6",
     "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -74,29 +72,6 @@
     "@stacksjs/push": "workspace:*",
     "@stacksjs/sms": "workspace:*",
     "@stacksjs/types": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@novu/discord": "^0.23.1",
-    "@novu/emailjs": "^0.23.1",
-    "@novu/gupshup": "^0.23.1",
-    "@novu/mailgun": "^0.23.1",
-    "@novu/mailjet": "^0.23.1",
-    "@novu/mandrill": "^0.23.1",
-    "@novu/netcore": "^0.23.1",
-    "@novu/nexmo": "^0.23.1",
-    "@novu/node": "^0.23.1",
-    "@novu/nodemailer": "^0.23.1",
-    "@novu/plivo": "^0.23.1",
-    "@novu/postmark": "^0.23.1",
-    "@novu/sendgrid": "^0.23.1",
-    "@novu/ses": "^0.23.1",
-    "@novu/slack": "^0.23.1",
-    "@novu/sms77": "^0.23.1",
-    "@novu/sns": "^0.23.1",
-    "@novu/stateless": "^0.23.1",
-    "@novu/telnyx": "^0.23.1",
-    "@novu/termii": "^0.23.1",
-    "@novu/twilio": "^0.23.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

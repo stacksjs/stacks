@@ -48,25 +48,16 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
-    "@novu/stateless": "^0.23.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "@novu/stateless": "^0.23.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@novu/discord": "^0.23.1",
-    "@novu/ms-teams": "^0.23.1",
-    "@novu/node": "^0.23.1",
-    "@novu/slack": "^0.23.1",
-    "@novu/stateless": "^0.23.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
