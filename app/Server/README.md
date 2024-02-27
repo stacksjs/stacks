@@ -1,14 +1,6 @@
-# What are Notifications?
+# What is this Server directory?
 
-Notifications are a way to define a message that should be sent somewhere. It is a unified API to send a message across multiple channels, such as email, SMS, Push Notifications, and social channels.
-
-## Get Started
-
-The following command will bootstrap a new notification in the `app/Notifications` directory.
-
-```sh
-buddy make:notification Welcome
-```
+Currently, the Server directory, including the `Preload.ts`, is used to define the preloaded functionality by the local Bun process.
 
 ## 🚜 Contributing
 

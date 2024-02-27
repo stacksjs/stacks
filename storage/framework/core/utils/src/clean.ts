@@ -1,17 +1,15 @@
 import { path as p } from '@stacksjs/path'
-import { rimraf } from './delete'
+import { $ } from 'bun'
 
 export async function cleanProject() {
-  return await rimraf([
-    p.projectPath('bun.lockb'),
-    p.projectPath('yarn.lock'),
-    p.projectPath('node_modules/'),
-    p.frameworkPath('dist'),
-    p.frameworkPath('node_modules'),
-    p.frameworkPath('**/dist'),
-    p.frameworkPath('**/node_modules'),
-    p.frameworkCloudPath('cdk.out/'),
-    p.frameworkCloudPath('cdk.context.json'),
-    p.frameworkCloudPath('dist.zip'),
-  ])
+  await $`rm -rf ${p.projectPath('bun.lockb')}`
+  await $`rm -rf ${p.projectPath('yarn.lock')}` // just in case
+  await $`rm -rf ${p.projectPath('node_modules/')}`
+  await $`rm -rf ${p.frameworkPath('dist')}`
+  await $`rm -rf ${p.frameworkPath('node_modules')}`
+  await $`rm -rf ${p.frameworkPath('**/dist')}`
+  await $`rm -rf ${p.frameworkPath('**/node_modules')}`
+  await $`rm -rf ${p.frameworkCloudPath('cdk.out/')}`
+  await $`rm -rf ${p.frameworkCloudPath('cdk.context.json')}`
+  await $`rm -rf ${p.frameworkCloudPath('dist.zip')}`
 }
