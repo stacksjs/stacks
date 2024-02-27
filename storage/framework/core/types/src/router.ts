@@ -49,10 +49,10 @@ export interface Route {
   statusCode?: StatusCode
 }
 
-export interface MiddlewareType {
+export interface MiddlewareOptions {
   name: string
+  description?: string
   priority: number
-
   handle: Function
 }
 

@@ -1,13 +1,12 @@
 import { appPath } from '@stacksjs/path'
-import type { MiddlewareType } from '@stacksjs/types'
+import type { MiddlewareOptions } from '@stacksjs/types'
 
-export class Middleware implements MiddlewareType {
+export class Middleware implements MiddlewareOptions {
   name: string
   priority: number
-
   handle: Function
 
-  constructor(data: MiddlewareType) {
+  constructor(data: MiddlewareOptions) {
     this.name = data.name
     this.priority = data.priority
     this.handle = data.handle
