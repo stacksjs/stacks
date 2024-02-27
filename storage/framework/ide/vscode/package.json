@@ -43,7 +43,6 @@
     "vue.volar",
     "vue.vscode-typescript-vue-plugin",
     "dbaeumer.vscode-eslint",
-    "vitest.explorer",
     "streetsidesoftware.code-spell-checker",
     "antfu.unocss",
     "davidanson.vscode-markdownlint",

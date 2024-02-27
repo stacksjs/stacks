@@ -113,4 +113,6 @@ export function timeout(cronTime: string | Date | DateTime): number {
   return new CronTime(cronTime).getTimeout()
 }
 
+export type Scheduler = (typeof Schedule)[]
+
 export default Schedule

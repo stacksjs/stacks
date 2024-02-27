@@ -12,6 +12,7 @@ await Bun.build({
   splitting: true,
 
   external: [
+    '@stacksjs/ai',
     '@stacksjs/actions',
     '@stacksjs/enums',
     '@stacksjs/config',

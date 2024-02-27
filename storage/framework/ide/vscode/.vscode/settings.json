@@ -1,19 +1,6 @@
 {
-  "vue.inlayHints.missingProps": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.preferGoToSourceDefinition": true,
-  "eslint.experimental.useFlatConfig": true,
-  // Disable the default formatter, use eslint instead
-  "prettier.enable": false,
-  "editor.formatOnSave": false,
-
-  // Auto fix
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "never"
-  },
-
-  // Silent the stylistic rules in you IDE, but still auto fix them
+  // JavaScript
+  "prettier.enable": false,   // Disable the default formatter, use eslint instead
   // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
     { "rule": "style/*", "severity": "off" },
@@ -26,7 +13,6 @@
     { "rule": "*quotes", "severity": "off" },
     { "rule": "*semi", "severity": "off" }
   ],
-
   // Enable eslint for all supported languages
   "eslint.validate": [
     "javascript",
@@ -42,44 +28,37 @@
     "yaml",
     "toml"
   ],
-
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "[stx]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
   },
+
+  // TypeScript
+  "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
+  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/unocss.config.ts",
+
+  // JSON
   "[jsonc]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
+
+  // YAML
   "[yaml]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-  "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
-    "editor.formatOnSave": true
-  },
+
+  // Shell
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
 
-  "editor.quickSuggestions": {
-    "strings": true
+  // Markdown
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true
   },
-  "files.associations": {
-    "buddy": "typescript",
-    "*.stx": "vue"
-  },
-  "vsicons.associations.files": [
-    {
-      "icon": "public/favicon",
-      "extensions": ["stx"],
-      "format": "svg"
-    }
-  ],
-  "git.enableSmartCommit": true,
-  "npm.enableRunFromFolder": true,
-  "npm.packageManager": "bun",
-  "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./storage/framework/core/ui/src/unocss.config.ts",
   "markdownlint.ignore": [
     "CHANGELOG.md"
   ],
@@ -97,6 +76,32 @@
     },
     "MD041": false
   },
+
+  // Stacks
+  "vue.inlayHints.missingProps": true,
+  "typescript.preferGoToSourceDefinition": true,
+  "eslint.experimental.useFlatConfig": true,
+  "[stx]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "files.associations": {
+    "buddy": "typescript",
+    "*.stx": "vue"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "vsicons.associations.files": [
+    {
+      "icon": "${workspaceFolder}/public/favicon.svg",
+      "extensions": ["stx"],
+      "format": "svg"
+    }
+  ],
+  "git.enableSmartCommit": true,
+  "npm.enableRunFromFolder": true,
+  "npm.packageManager": "bun",
+  "editor.gotoLocation.multipleDefinitions": "goto",
   "search.exclude": {
     "**/node_modules": true,
     "**/cdk.out": true,

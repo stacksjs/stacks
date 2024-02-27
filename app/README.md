@@ -1,6 +1,6 @@
-# What is this Server directory?
+# The App Directory
 
-Currently, the Server directory is used to define the preloaded functionality by the local Bun process. Soon, it will also be used to define the Cloud container.
+The Stacks App directory is where you would store
 
 ## 🚜 Contributing
 

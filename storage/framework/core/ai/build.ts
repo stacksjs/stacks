@@ -10,6 +10,11 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
 
+  external: [
+    '@aws-sdk/client-bedrock-runtime',
+    '@aws-sdk/client-bedrock',
+  ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

@@ -16,6 +16,11 @@ for (const dir of dirs) {
   log.info(`Building ${pkgName}...`)
   const startTime = Date.now()
 
+  // rm the dist folder before building
+  await $`rm -rf ${p.resolve(dir, 'dist')}`
+
+  log.debug(`Cleaned dist folder`)
+
   // Run the build command in each directory
   await runCommand('bun run build', {
     cwd: dir,

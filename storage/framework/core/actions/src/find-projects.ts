@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { findStacksProjects } from '@stacksjs/utils'
 import { log } from '@stacksjs/logging'
-import { parseOptions } from 'stacks/cli'
+import { parseOptions } from '@stacksjs/cli'
 
 try {
   const options = parseOptions()

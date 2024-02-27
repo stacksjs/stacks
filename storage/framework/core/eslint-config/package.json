@@ -29,7 +29,7 @@
     "dev": "bunx --bun tsup --format esm,cjs --watch & eslint-flat-config-viewer",
     "lint": "bun run stub && eslint .",
     "prepack": "bun run build",
-    "test": "bunx vitest",
+    "test": "bun test",
     "typecheck": "bunx tsc --noEmit"
   },
   "peerDependencies": {

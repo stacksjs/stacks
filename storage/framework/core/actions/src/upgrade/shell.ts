@@ -1,10 +1,10 @@
 import process from 'node:process'
 import { $ } from 'bun'
-import { path as p } from 'stacks/path'
-import { log } from 'stacks/logging'
-import { ExitCode } from 'stacks/types'
-import { writeFile } from 'stacks/storage'
-import { italic, runCommand } from 'stacks/cli'
+import { path as p } from '@stacksjs/path'
+import { log } from '@stacksjs/logging'
+import { ExitCode } from '@stacksjs/types'
+import { writeFile } from '@stacksjs/storage'
+import { italic, runCommand } from '@stacksjs/cli'
 
 const homePath = (await $`echo $HOME`.text()).trim()
 const zshrcPath = p.join(homePath, '.zshrc')
