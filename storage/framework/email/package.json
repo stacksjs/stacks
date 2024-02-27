@@ -10,6 +10,6 @@
   },
   "dependencies": {
     "@stacksjs/path": "workspace:*",
-    "@vue-email/compiler": "^0.8.13"
+    "@vue-email/compiler": "^0.8.14"
   }
 }

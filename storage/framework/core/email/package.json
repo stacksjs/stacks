@@ -60,8 +60,8 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "aws-sdk": "^2.1565.0",
-    "vue-email": "^0.8.9"
+    "aws-sdk": "^2.1566.0",
+    "vue-email": "^0.8.10"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
