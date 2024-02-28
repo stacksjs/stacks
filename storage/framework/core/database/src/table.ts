@@ -9,8 +9,8 @@ export class Table {
     return column;
   }
 
-  string(name: string): Column {
-    const column = new Column(name, 'varchar(255)');
+  string(name: string, varchar: number = 255): Column {
+    const column = new Column(name, `varchar(${varchar})`);
     this.columns.push(column);
     return column;
   }
