@@ -6,5 +6,8 @@ export class Column {
     return this;
   }
 
-  // Add other methods for column definitions as needed
+  defaultTo(value: any): this {
+    this.options.default = value;
+    return this;
+  }
 }
