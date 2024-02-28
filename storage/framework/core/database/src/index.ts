@@ -1,9 +1,13 @@
-// export * from './migrations'
 // export * from './seeder''
 import { Kysely, MysqlDialect } from 'kysely'
 import { createPool } from 'mysql2'
 import type { ColumnType, Generated } from 'kysely'
 import { BunWorkerDialect } from './kysely-bun-worker'
+
+export * from './schema'
+export * from './migrations'
+export * from './types'
+export * from './utils'
 
 // const driver = config.database.default
 const driver = 'mysql'
