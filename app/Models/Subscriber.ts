@@ -3,10 +3,10 @@ import { validator } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
-  name: 'Subscriber',
-  table: 'subscribers',
-  // primaryKey: 'id', // defaults to `id`
-  // autoIncrement: true, // defaults to true
+  name: 'Subscriber', // defaults to the sanitized file name
+  table: 'subscribers', // defaults to the lowercase, plural name of the model
+  primaryKey: 'id', // defaults to `id`
+  autoIncrement: true, // defaults to true
 
   traits: {
     useSoftDeletes: true, // defaults to false
@@ -15,6 +15,7 @@ export default {
     },
   },
 
+  // relationships
   belongsTo: 'User',
 
   fields: {
@@ -24,7 +25,7 @@ export default {
         message: '`subscribed` must be a boolean',
       },
 
-      factory: () => faker.random.boolean(),
+      factory: () => faker.datatype.boolean(),
     },
   },
 } satisfies Model

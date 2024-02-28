@@ -24,6 +24,4 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-
-  apiRouter: 'file-based', // 'file-based'
 } satisfies AppConfig

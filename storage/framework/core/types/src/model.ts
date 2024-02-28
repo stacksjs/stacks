@@ -25,16 +25,20 @@ interface Base {}
 export interface ModelOptions extends Base {
   name: string // defaults to the file name of the model
   table: string // defaults to the lowercase, plural name of the model
+  primaryKey?: string // defaults to `id`
+  autoIncrement?: boolean // defaults to true
 
   traits: {
-    authenticatable?: boolean | AuthOptions // defaults to false
     useUuid?: boolean // defaults to false
+    useTimestamps?: boolean | TimestampOptions // defaults to true
+    useSoftDeletes?: boolean | SoftDeleteOptions // defaults to false
+
+    useAuth?: boolean | AuthOptions // defaults to false
+    authenticatable?: boolean | AuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchEngineSettings // defaults to false
     searchable?: boolean | SearchEngineSettings // useSearch alias
-    useTimestamps?: boolean | TimestampOptions // defaults to true
-    useSoftDeletes?: boolean | SoftDeleteOptions // defaults to false
   }
 
   fields: Fields
@@ -45,6 +49,7 @@ export interface ModelOptions extends Base {
     model: string // should be typed as ModelName
     foreignKey?: string
   }
+  belongsTo: string // belongsTo: 'User'
   belongsToMany: object
   hasThrough: {
     model: string // should be typed as ModelName

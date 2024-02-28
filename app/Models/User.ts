@@ -5,18 +5,19 @@ import type { Model } from '@stacksjs/types'
 export default {
   name: 'User', // defaults to the sanitized file name
   table: 'users', // defaults to the lowercase, plural name of the model
-  // primaryKey: 'id', // defaults to `id`
-  // autoIncrement: true, // defaults to true
+  primaryKey: 'id', // defaults to `id`
+  autoIncrement: true, // defaults to true
 
-  // "traits"
-  useUuid: true, // instead of `auto-incrementing id`, defaults to false
-  useSearch: true, // defaults to false, also accepts SearchEngineSettings
-  useSoftDeletes: true, // defaults to false, also accepts SearchEngineSettings
-  useSeed: { // defaults to a count of 10
-    count: 10,
+  traits: {
+    authenticatable: true, // defaults to false
+    useTimestamps: true, // defaults to true
+    useSeeder: { // defaults to a count of 10
+      count: 10,
+    },
+    useSearch: true, // defaults to false
+    useSoftDeletes: true, // defaults to false
+    // useUuid: true, // defaults to false
   },
-
-  // useAuth: true, // defaults to false, also accepts AuthSettings or TokenSettings
 
   fields: {
     name: {
