@@ -11,12 +11,16 @@ The following command will bootstrap a new migration file in the `database/migra
 
 ```bash
 buddy make:migration create_users_table
+# apply updates to the migrations, as needed
+buddy migrate
 ```
 
 And this command will bootstrap a new seed file in the `database/seeds` directory:
 
 ```bash
 buddy make:seed users
+# apply updates to the seeds, as needed
+buddy seed
 ```
 
 Click here to learn more.

@@ -8,10 +8,11 @@ export default {
   // primaryKey: 'id', // defaults to `id`
   // autoIncrement: true, // defaults to true
 
-  // "traits"
-  useSoftDeletes: true, // defaults to false, also accepts SearchEngineSettings
-  useSeeder: { // defaults to a count of 10
-    count: 10,
+  traits: {
+    useSoftDeletes: true, // defaults to false
+    useSeeder: { // defaults to a count of 10
+      count: 10,
+    },
   },
 
   belongsTo: 'User',

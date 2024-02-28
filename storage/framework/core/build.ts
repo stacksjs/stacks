@@ -1,6 +1,7 @@
 import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { dim, log, runCommand } from '@stacksjs/cli'
+// import { $ } from 'bun'
 
 const dirs = await glob(p.resolve('./', '*'), { onlyDirectories: true })
 dirs.sort((a, b) => a.localeCompare(b))
@@ -17,7 +18,15 @@ for (const dir of dirs) {
   const startTime = Date.now()
 
   // rm the dist folder before building
-  await $`rm -rf ${p.resolve(dir, 'dist')}`
+  // await $`rm -rf ${p.resolve(dir, 'dist')}`
+  const distPath = p.resolve(dir, 'dist');
+
+  // Check if the dist folder exists
+  if (await fs.exists(distPath)) {
+    await runCommand('rm -rf dist', {
+      cwd: dir, // Change this to 'dir' to correctly set the working directory
+    });
+  }
 
   log.debug(`Cleaned dist folder`)
 
