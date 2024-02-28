@@ -50,14 +50,14 @@
   },
   "peerDependencies": {
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.56.3",
+    "@types/eslint": "^8.56.4",
     "eslint": "^8.57.0",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },
   "dependencies": {
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.56.3",
+    "@types/eslint": "^8.56.4",
     "eslint": "^8.57.0",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
