@@ -1,6 +1,9 @@
-# The App Folder
+# The Database Folder
 
-The Stacks App directory is where you would store
+The database directory is where you would store your custom migrations and seeds.
+
+> [!TIP]
+> You may not need the database folder at all. Defining your models may be enough for your use case. Read more.
 
 ## 🚜 Contributing
 
