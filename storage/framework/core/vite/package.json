@@ -110,7 +110,7 @@
     "vite-plugin-full-reload": "^1.1.0",
     "vite-plugin-inspect": "^0.8.3",
     "vite-plugin-pages": "^0.32.0",
-    "vite-plugin-pwa": "^0.19.1",
+    "vite-plugin-pwa": "^0.19.2",
     "vite-plugin-vue-markdown": "^0.23.8",
     "vite-ssg": "^0.23.6",
     "vite-ssg-sitemap": "^0.6.1"
