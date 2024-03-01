@@ -66,6 +66,7 @@
     "@aws-sdk/client-ses": "^3.525.0",
     "@aws-sdk/client-sesv2": "^3.525.0",
     "@aws-sdk/client-ssm": "^3.525.0",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",

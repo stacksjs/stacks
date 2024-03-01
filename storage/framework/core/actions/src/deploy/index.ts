@@ -5,7 +5,7 @@ import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 
 await runCommand('bun run build', {
-  cwd: p.frameworkPath(),
+  cwd: p.corePath(),
 })
 
 if (storage.hasFiles(p.projectPath('docs'))) {

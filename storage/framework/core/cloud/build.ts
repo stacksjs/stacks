@@ -15,6 +15,7 @@ await Bun.build({
     '@aws-sdk/lambda',
     '@aws-sdk/client-route-53-domains',
     '@aws-sdk/client-s3',
+    '@stacksjs/cli',
     '@stacksjs/config',
     '@stacksjs/error-handling',
     '@stacksjs/logging',

@@ -1,6 +1,7 @@
 import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { dim, log, runCommand } from '@stacksjs/cli'
+import { bold, dim, log, runCommand } from '@stacksjs/cli'
+
 // import { $ } from 'bun'
 
 const dirs = await glob(p.resolve('./', '*'), { onlyDirectories: true })
@@ -19,13 +20,13 @@ for (const dir of dirs) {
 
   // rm the dist folder before building
   // await $`rm -rf ${p.resolve(dir, 'dist')}`
-  const distPath = p.resolve(dir, 'dist');
+  const distPath = p.resolve(dir, 'dist')
 
   // Check if the dist folder exists
   if (await fs.exists(distPath)) {
     await runCommand('rm -rf dist', {
       cwd: dir, // Change this to 'dir' to correctly set the working directory
-    });
+    })
   }
 
   log.debug(`Cleaned dist folder`)
@@ -55,10 +56,10 @@ for (const dir of dirs) {
 
     const relativeFilePath = p.relative(dir, file).replace('dist/', '')
     // eslint-disable-next-line no-console
-    console.log(`${dim(`[${sizeStr}]`)} ${dim('dist/')}${relativeFilePath}`)
+    console.log(`${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`)
   }
 
-  log.success(`${dim(`[${timeTaken}ms]`)} Built ${pkgName}`)
+  log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${pkgName}`)
 }
 
 const endTime = Date.now()

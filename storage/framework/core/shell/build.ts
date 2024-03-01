@@ -6,6 +6,10 @@ await Bun.build({
   format: 'esm',
   target: 'bun',
 
+  external: [
+    'bun',
+  ],
+
   plugins: [
     dts({
       cwd: import.meta.dir,

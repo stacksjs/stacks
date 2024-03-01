@@ -30,7 +30,7 @@
 //     uuid: uuidv1(),
 //   }
 //
-//   // ->	Start the chain.
+//   // -> Start the chain.
 //   load_the_email(container)
 //     .then((container) => {
 //       return extract_data(container)
@@ -66,7 +66,7 @@
 //       Key: container.key,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.getObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
@@ -75,7 +75,7 @@
 //       // 2. Save the email for the next promise.
 //       container.email.json = JSON.parse(data.Body)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -102,24 +102,24 @@
 //     const to_domain = tmp_to[1]
 //
 //     // 3. Based on the email name, we replace all the + characters, that
-//     // 	can be used to organize ones on-line accounts in to /, this way
-//     // 	we can build a S3 patch which will automatically organize
-//     // 	all the email in structured folder.
+//     //  can be used to organize ones on-line accounts in to /, this way
+//     //  we can build a S3 patch which will automatically organize
+//     //  all the email in structured folder.
 //     const to_account = tmp_to[0].replace(/\+/g, '/')
 //
 //     // 4. Get the domain name of the email which in our case will
-//     // 	become the company name.
+//     //  become the company name.
 //     const from_domain = tmp_from[1]
 //
 //     // 5. Get the name of who sent us the email.
 //     const from_account = tmp_from[0]
 //
 //     // 6. Create a human readable time stamp that matches the format
-//     // 	S3 Provides in its Event.
+//     //  S3 Provides in its Event.
 //     const date = moment().format('ddd, DD MMM YYYY HH:MM:SS ZZ')
 //
 //     // 7. Create the path where the email needs to be moved
-//     // 	so it is properly organized.
+//     //  so it is properly organized.
 //     const path = `sent/${
 //         to_domain
 //         }/${
@@ -138,7 +138,7 @@
 //     // 8. Save the path for the next promise.
 //     container.path = path
 //
-//     // ->	Move to the next chain.
+//     // -> Move to the next chain.
 //     return resolve(container)
 //   })
 // }
@@ -150,7 +150,7 @@
 //     console.info('generate_the_raw_email')
 //
 //     // 1. Crete the email based on the message object which holds all the
-//     // 	necessary information.
+//     //  necessary information.
 //     const mail = new MailComposer(container.email.json)
 //
 //     // 2. Take the email and compile it down to its text form for storage.
@@ -162,7 +162,7 @@
 //       // 2. Save the raw email so we can save it as is in to S3.
 //       container.email.raw = raw_message
 //
-//       // ->	Move to the next promise
+//       // -> Move to the next promise
 //       return resolve(container)
 //     })
 //   })
@@ -186,7 +186,7 @@
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain
+//       // -> Move to the next chain
 //       return resolve(container)
 //     })
 //   })
@@ -213,13 +213,13 @@
 //       Body: container.email.raw,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.putObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -237,13 +237,13 @@
 //       Key: container.path,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.copyObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -260,13 +260,13 @@
 //       Key: container.key,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.deleteObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -283,13 +283,13 @@
 //       Key: `tmp/email_out/raw/${container.uuid}`,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.deleteObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })

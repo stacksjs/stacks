@@ -5,7 +5,7 @@ import type { GeneratorOptions } from '@stacksjs/types'
 import { runCommand } from '@stacksjs/cli'
 import { runNpmScript } from '@stacksjs/utils'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import { runAction } from '../helpers'
+import { runAction } from '../helpers/utils'
 
 // import { files } from '@stacksjs/storage'
 

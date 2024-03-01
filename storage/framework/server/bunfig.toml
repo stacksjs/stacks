@@ -1,4 +1,7 @@
-preload = [ "../core/bun-plugin-yml/src/index.ts" ]
+preload = [
+  "../../../node_modules/bun-plugin-yml/src/index.ts",
+  "../../../node_modules/bun-plugin-env/src/index.ts"
+]
 
 [install]
 # set default registry as a string

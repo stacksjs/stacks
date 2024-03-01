@@ -8,7 +8,7 @@ export enum NpmScript {
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
   BuildStacks = 'build:stacks',
-  Clean = 'rimraf bun.lockb node_modules/ stacks/**/dist',
+  Clean = 'bunx rimraf bun.lockb node_modules/ stacks/**/dist',
   Dev = 'dev',
   DevApi = 'dev:api',
   DevDocs = 'dev:docs',

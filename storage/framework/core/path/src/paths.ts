@@ -1,5 +1,3 @@
-import { log } from '@stacksjs/logging'
-import { runCommandSync } from '@stacksjs/cli'
 import process from 'node:process'
 import os from 'node:os'
 import {
@@ -10,12 +8,14 @@ import {
   isAbsolute,
   join,
   normalize,
+  parse,
   relative,
   resolve,
-  parse,
   sep,
-  toNamespacedPath
-} from "node:path";
+  toNamespacedPath,
+} from 'node:path'
+import { runCommandSync } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 
 /**
  * Returns the path to the `actions` directory. The `actions` directory
@@ -562,7 +562,9 @@ export function coreEnvPath(path?: string): string {
  * @param type - The type of examples to filter by ('vue-components' or 'web-components').
  * @returns The absolute path to the specified type of examples within the `examples` directory.
  */
-export function examplesPath(type: 'vue-components' | 'web-components'): string {
+export function examplesPath(
+  type: 'vue-components' | 'web-components',
+): string {
   return frameworkPath(`examples/${type || ''}`)
 }
 
@@ -585,7 +587,10 @@ export function fakerPath(path?: string): string {
  * @param options.cwd - Specifies a custom working directory.
  * @returns The absolute or relative path to the specified file or directory within the framework directory.
  */
-export function frameworkPath(path?: string, options?: { relative?: boolean, cwd?: string }): string {
+export function frameworkPath(
+  path?: string,
+  options?: { relative?: boolean, cwd?: string },
+): string {
   const absolutePath = projectStoragePath(`framework/${path || ''}`)
 
   if (options?.relative)
@@ -642,7 +647,10 @@ export function langPath(path?: string): string {
  * @param options.relative - If true, returns the path relative to the current working directory.
  * @returns The absolute or relative path to the specified file or directory within the `layouts` directory.
  */
-export function layoutsPath(path?: string, options?: { relative?: boolean }): string {
+export function layoutsPath(
+  path?: string,
+  options?: { relative?: boolean },
+): string {
   const absolutePath = resourcesPath(`layouts/${path || ''}`)
 
   if (options?.relative)
@@ -788,7 +796,9 @@ export function onboardingPath(path?: string): string {
  * @param type - The type of the library ('vue-components', 'web-components', or 'functions') for which to return the package.json path.
  * @returns The absolute path to the specified package.json file within the framework directory.
  */
-export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions'): string {
+export function packageJsonPath(
+  type: 'vue-components' | 'web-components' | 'functions',
+): string {
   if (type === 'vue-components')
     return frameworkPath('libs/components/vue/package.json')
 
@@ -837,8 +847,7 @@ export function paymentsPath(path?: string): string {
 export function projectPath(filePath = ''): string {
   let path = process.cwd()
 
-  while (path.includes('storage'))
-    path = resolve(path, '..')
+  while (path.includes('storage')) path = resolve(path, '..')
 
   return resolve(path, filePath)
 }
@@ -855,7 +864,10 @@ export async function findProjectPath(project: string): Promise<string> {
   log.debug('ProjectList in findProjectPath', projectList)
 
   // get the list of all Stacks project paths (on the system)
-  const projects = projectList.split('\n').filter((line: string) => line.startsWith('   - ')).map((line: string) => line.trim().substring(4))
+  const projects = projectList
+    .split('\n')
+    .filter((line: string) => line.startsWith('   - '))
+    .map((line: string) => line.trim().substring(4))
   log.debug('Projects in findProjectPath:', projects)
 
   // since we are targeting a specific project, find its path
@@ -1372,7 +1384,6 @@ export {
   normalize,
   relative,
   resolve,
-  parse,
   sep,
   toNamespacedPath,
 }

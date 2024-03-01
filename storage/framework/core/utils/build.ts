@@ -12,6 +12,7 @@ await Bun.build({
     '@stacksjs/arrays',
     '@stacksjs/collections',
     '@stacksjs/config',
+    '@stacksjs/enums',
     '@stacksjs/env',
     '@stacksjs/error-handling',
     '@stacksjs/objects',
@@ -32,11 +33,14 @@ await Bun.build({
     'p-limit',
     'vue',
     'vueuse',
+    '@vueuse/core',
     '@vueuse/math',
     '@vueuse/head',
+    '@vueuse/shared',
     // 'pretty-bytes',
     'yaml',
     'magic-regexp',
+    'vue-demi',
   ],
 
   plugins: [

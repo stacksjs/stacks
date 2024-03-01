@@ -24,7 +24,9 @@ export async function svelte(
     pluginSvelte,
     parserSvelte,
   ] = await Promise.all([
+    // @ts-expect-error - optional deps
     interopDefault(import('eslint-plugin-svelte')),
+    // @ts-expect-error - optional deps
     interopDefault(import('svelte-eslint-parser')),
   ] as const)
 
@@ -88,6 +90,7 @@ export async function svelte(
 
         ...stylistic
           ? {
+              'style/indent': 'off', // superseded by svelte/indent
               'style/no-trailing-spaces': 'off', // superseded by svelte/no-trailing-spaces
               'svelte/derived-has-same-inputs-outputs': 'error',
               'svelte/html-closing-bracket-spacing': 'error',

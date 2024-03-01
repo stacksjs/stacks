@@ -17,11 +17,9 @@ async function cleanAndCopy(sourcePath: string, targetPath: string) {
 
 async function useCustomOrDefaultServerConfig() {
   if (hasFiles(projectPath('server'))) {
-    await runCommand(`rm -rf ../../../server/build.ts`, {
-      cwd: projectPath('server'),
-    })
+    // if we have a custom server configuration, use it by copying it to the server directory
     await runCommand(`cp -r ../../../server .`, {
-      cwd: projectPath('server'),
+      cwd: frameworkPath('server'),
     })
 
     return log.info('Using custom server configuration')

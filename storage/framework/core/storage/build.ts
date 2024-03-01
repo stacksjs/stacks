@@ -20,6 +20,7 @@ await Bun.build({
     '@stacksjs/arrays',
     'fast-glob',
     'fs-extra',
+    'bun',
   ],
 
   plugins: [
