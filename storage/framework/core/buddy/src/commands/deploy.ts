@@ -69,7 +69,7 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
   // TODO: add check for whether the local APP_ENV is getting deployed, if so, ask if the user meant to deploy `dev`
   if (domain.includes('localhost')) {
     log.info('You are deploying to a local environment.')
-    log.info('Please set your .env or ./config/app.ts properly.')
+    log.info('Please set your .env or ./config/app.ts properly. The domain we are deploying cannot be a `localhost` domain.')
     console.log('')
     log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
     console.log('')
