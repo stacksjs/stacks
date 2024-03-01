@@ -1,7 +1,7 @@
 # please note, this file is auto-generated based on your ./config & local machine
 dependencies:
   aws.amazon.com/cli: ^2.13.7
-  bun.sh: ^1.0.16
+  bun.sh: ^1.0.29
   caddyserver.com: ^2.7.4
   dns.lookup.dog: ^0.1.0
   info-zip.org/zip: ^3.0

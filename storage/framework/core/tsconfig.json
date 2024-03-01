@@ -16,7 +16,11 @@
       "buddy": ["./buddy/src/index.ts"],
       "buddy/*": ["./buddy/src/*"],
       "Actions/*": ["../../../app/Actions/*"],
+      "Commands/*": ["../../../app/Commands/*"],
       "Jobs/*": ["../../../app/Jobs/*"],
+      "Middleware/*": ["../../../app/Middleware/*"],
+      "Models/*": ["../../../app/Models/*"],
+      "Notifications/*": ["../../../app/Notifications/*"],
       "~/*": ["../../../*"]
     },
     "resolveJsonModule": true,

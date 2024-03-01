@@ -1,31 +1,30 @@
 {
-  "name": "@stacksjs/logging",
+  "name": "bun-reverse-proxy",
   "type": "module",
   "version": "0.58.73",
-  "description": "The Stacks logging system.",
+  "description": "A modern reverse proxy, powered by Bun.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/logging#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/whois#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/logging"
+    "directory": "./storage/framework/core/whois"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "logging",
+    "reverse proxy",
+    "bun",
     "stacks",
-    "framework",
     "typescript",
     "javascript"
   ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
-      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -33,8 +32,6 @@
       "import": "./dist/*"
     }
   },
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "contributors": [
     "Chris Breuer <chris@stacksjs.org>"
   ],
@@ -48,18 +45,7 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*"
-  },
-  "dependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "consola": "^3.2.3"
-  },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "@stacksjs/development": "workspace:*"
   }
 }

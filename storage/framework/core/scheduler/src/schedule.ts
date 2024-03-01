@@ -98,6 +98,17 @@ export class Schedule {
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
   }
 
+  // job and action methods need to be added and they accept a path string param
+  job(path: string) {
+    log.info(`Scheduling job: ${path}`)
+    return this
+  }
+
+  action(path: string) {
+    log.info(`Scheduling action: ${path}`)
+    return this
+  }
+
   static command(cmd: string) {
     // log.info(`Executing command: ${cmd}`)
     this.cmd = cmd
@@ -113,6 +124,6 @@ export function timeout(cronTime: string | Date | DateTime): number {
   return new CronTime(cronTime).getTimeout()
 }
 
-export type Scheduler = (typeof Schedule)[]
+export type Scheduler = typeof Schedule
 
 export default Schedule
