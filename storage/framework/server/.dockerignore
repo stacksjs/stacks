@@ -13,4 +13,4 @@ helm-charts
 .editorconfig
 .idea
 coverage*
-core/*/cdk.out/
+cdk.out

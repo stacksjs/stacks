@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
-import { logger as logConfig } from '@stacksjs/config'
+import { config } from '@stacksjs/config'
 import { logsPath } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
 import type { Prompt } from '@stacksjs/cli'
@@ -17,11 +17,14 @@ export function logLevel() {
    * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
    */
   const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
+  const opts = buddyOptions()
+  console.log('opts:', opts)
+  console.log('config:::', config)
 
-  if (verboseRegex.test(buddyOptions().trim()))
+  if (verboseRegex.test(opts))
     return 4
 
-  return logConfig.level
+  return config.logger.level
 }
 
 export const logger = createConsola({

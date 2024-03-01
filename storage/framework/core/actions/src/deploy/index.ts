@@ -14,15 +14,11 @@ if (storage.hasFiles(p.projectPath('docs'))) {
   })
 }
 
-if (config.app.docMode !== true) { // when in docs mode, we disregard building views
+if (config.app.docMode !== true) { // when in docMode, we can disregard building views
   await runCommand('bun run build', {
     cwd: p.frameworkPath('views'),
   })
 }
-
-// await runCommand('bun run build-layer', {
-//   cwd: p.corePath('cloud'),
-// })
 
 // await runCommand('bun run build-edge', {
 //   cwd: p.corePath('cloud'),

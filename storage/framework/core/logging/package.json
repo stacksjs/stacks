@@ -49,10 +49,12 @@
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "consola": "^3.2.3"
   },
