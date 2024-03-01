@@ -2,12 +2,16 @@ import dts from 'bun-plugin-dts-auto'
 
 await Bun.build({
   root: './src',
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
 
   entrypoints: [
-    './src/index.ts',
     './src/build/component-libs.ts',
     './src/build/core.ts',
     './src/build/stacks.ts',
+    './src/database/seed.ts',
+    './src/deploy/index.ts',
     './src/dev/index.ts',
     './src/dev/components.ts',
     './src/dev/docs.ts',
@@ -31,7 +35,6 @@ await Bun.build({
     './src/upgrade/dependencies.ts',
     './src/upgrade/framework.ts',
     './src/upgrade/index.ts',
-    './src/index.ts',
     './src/add.ts',
     './src/build.ts',
     './src/bump.ts',
@@ -39,22 +42,19 @@ await Bun.build({
     './src/clean.ts',
     './src/commit.ts',
     './src/copy-types.ts',
-    './src/deploy/index.ts',
     './src/examples.ts',
     './src/fresh.ts',
+    './src/index.ts',
     './src/key-generate.ts',
     './src/make.ts',
     './src/prepublish.ts',
     './src/release.ts',
-    './src/database/seed.ts',
     './src/test.ts',
     './src/tinker.ts',
     './src/typecheck.ts',
     './src/types.ts',
     './src/upgrade.ts',
   ],
-
-  outdir: './dist',
 
   external: [
     '@stacksjs/path',
@@ -64,14 +64,15 @@ await Bun.build({
     '@stacksjs/enums',
     '@stacksjs/storage',
     '@stacksjs/utils',
+    'markdown-it',
+    'vue-component-meta',
     '@stacksjs/strings',
     '@stacksjs/config',
     '@stacksjs/error-handling',
     '@stacksjs/env',
     '@stacksjs/security',
     '@stacksjs/database',
-    'markdown-it',
-    'vue-component-meta',
+    'bun',
   ],
 
   plugins: [
@@ -79,6 +80,4 @@ await Bun.build({
       cwd: import.meta.dir,
     }),
   ],
-
-  target: 'bun',
 })

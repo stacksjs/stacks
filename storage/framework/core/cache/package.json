@@ -57,7 +57,7 @@
     "@stacksjs/config": "workspace:*"
   },
   "optionalDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.525.0",
+    "@aws-sdk/client-dynamodb": "^3.523.0",
     "ioredis": "^5.3.2"
   },
   "devDependencies": {

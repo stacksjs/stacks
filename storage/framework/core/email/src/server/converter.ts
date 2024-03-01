@@ -35,7 +35,7 @@
 //     },
 //   }
 //
-//   // ->	Start the chain.
+//   // -> Start the chain.
 //   load_the_email(container)
 //     .then((container) => {
 //       return remove_extension(container)
@@ -67,7 +67,7 @@
 //       Key: container.key,
 //     }
 //
-//     // ->	Execute the query
+//     // -> Execute the query
 //     s3.getObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors
 //       if (error)
@@ -76,7 +76,7 @@
 //       // 2. Save the email for the next promise
 //       container.raw_email = data.Body
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -99,7 +99,7 @@
 //     // were in the email title for example.
 //     container.key = tmp.join('.')
 //
-//     // ->	Move to the next chain.
+//     // -> Move to the next chain.
 //     return resolve(container)
 //   })
 // }
@@ -118,7 +118,7 @@
 //       container.parsed.text = parsed.text
 //       container.parsed.attachments = parsed.attachments
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -136,13 +136,13 @@
 //       Body: container.parsed.text,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.putObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -160,7 +160,7 @@
 //     if (!container.parsed.html) {
 //       console.info('save_html - skipped')
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     }
 //
@@ -173,13 +173,13 @@
 //       Body: container.parsed.html,
 //     }
 //
-//     // ->	Execute the query.
+//     // -> Execute the query.
 //     s3.putObject(params, (error: any, data: any) => {
 //       // 1. Check for internal errors.
 //       if (error)
 //         return reject(error)
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //   })
@@ -195,11 +195,11 @@
 //     loop(1, (error: any) => {
 //       // <<> Check if there was an error.
 //       if (error) {
-//         // ->	Stop everything and surface the error.
+//         // -> Stop everything and surface the error.
 //         return reject(container)
 //       }
 //
-//       // ->	Move to the next chain.
+//       // -> Move to the next chain.
 //       return resolve(container)
 //     })
 //
@@ -282,7 +282,7 @@
 //       }
 //
 //       // 14. Create the full key path with the object at the end.
-//       const key = 	`${path}/attachments/${cid}${file_name}`
+//       const key =  `${path}/attachments/${cid}${file_name}`
 //
 //       // 15. Set the query.
 //       const params = {
@@ -291,13 +291,13 @@
 //         Body: file_body,
 //       }
 //
-//       // ->	Execute the query.
+//       // -> Execute the query.
 //       s3.putObject(params, (error: any, data: any) => {
 //         // 1. Check for internal errors.
 //         if (error)
 //           return callback(error)
 //
-//         // ->	Move to the next chain.
+//         // -> Move to the next chain.
 //         return loop(count, callback)
 //       })
 //     }

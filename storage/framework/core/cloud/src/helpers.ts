@@ -11,9 +11,9 @@ import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { config } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
+import { runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
-import { rimraf } from '@stacksjs/utils'
 import { slug } from '@stacksjs/strings'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
@@ -387,10 +387,12 @@ export async function deleteParameterStore() {
 
 export async function deleteCdkRemnants() {
   try {
-    return ok(await rimraf([
-      p.cloudPath('cdk.out/'),
-      p.cloudPath('cdk.context.json'),
-    ]))
+    // TODO: use $ once we can use CDK past Bun v1.0.8
+    return ok(
+      await runCommand(
+        `bunx rimraf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`,
+      ),
+    )
   }
   catch (error) {
     return err(handleError('Error deleting CDK remnants', error as Error))

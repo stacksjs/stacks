@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
-import { CAC } from 'cac'
+import type { CAC } from '@stacksjs/cli'
+import { cli, log } from '@stacksjs/cli'
 import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
@@ -20,21 +20,28 @@ process.on('unhandledRejection', (error: Error) => {
 })
 
 async function main() {
-  // const buddy = cli('buddy')
-  const buddy = new CAC('buddy')
+  const buddy = cli('buddy')
 
   // the following commands are not dependent on the project being initialized
   cmd.setup(buddy)
   cmd.key(buddy)
 
   // before running any commands, ensure the project is already initialized
-  await ensureProjectIsInitialized()
+  const isAppKeySet = await ensureProjectIsInitialized()
+  if (isAppKeySet) {
+    log.info('Project is initialized')
+  }
+  else {
+    log.warn('Your `APP_KEY` is not yet')
+    // TODO: add prompt to set the key
+    process.exit(1)
+  }
 
   cmd.build(buddy)
   cmd.changelog(buddy)
   cmd.clean(buddy)
   cmd.cloud(buddy)
-  // cmd.commit(buddy)
+  cmd.commit(buddy)
   cmd.configure(buddy)
   cmd.dev(buddy)
   cmd.domains(buddy)
@@ -48,15 +55,14 @@ async function main() {
   cmd.install(buddy)
   cmd.lint(buddy)
   cmd.list(buddy)
-  // cmd.make(buddy)
-  // cmd.migrate(buddy)
+  cmd.make(buddy)
+  cmd.migrate(buddy)
   cmd.release(buddy)
-  // cmd.seed(buddy)
+  cmd.seed(buddy)
   cmd.setup(buddy)
-  // cmd.example(buddy)
-  // cmd.test(buddy)
+  cmd.test(buddy)
   cmd.version(buddy)
-  // cmd.prepublish(buddy)
+  cmd.prepublish(buddy)
   cmd.upgrade(buddy)
 
   // dynamic imports

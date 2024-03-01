@@ -1,9 +1,8 @@
 export * from './action'
 export * from './dev'
 export * from './generate'
-export * from './helpers'
+export * from './helpers/utils'
 
-export { examples as runExample } from './examples'
 export { commit as runCommit } from './commit'
 export { add as runAdd } from './add'
 
