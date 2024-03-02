@@ -1,2 +1,3 @@
 #!/usr/bin/env bun
+// TODO: should be a symlink to the prod-compiled `buddy` binary
 import('./storage/framework/core/buddy/src/cli')
