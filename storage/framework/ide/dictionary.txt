@@ -33,6 +33,7 @@ bunx
 cardano
 cback
 certificatemanager
+certutil
 changelist
 changelogen
 changelogithub
