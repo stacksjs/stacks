@@ -50,11 +50,11 @@
     "vite-bundle-visualizer": "^1.0.1",
     "vite-plugin-inspect": "^0.8.3",
     "vite-plugin-pwa": "^0.19.2",
-    "vite-plugin-vue-devtools": "^7.0.15",
+    "vite-plugin-vue-devtools": "^7.0.16",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-plugin-webfont-dl": "^3.9.1",
     "vite-ssg": "^0.23.6",
     "vite-ssg-sitemap": "^0.6.1",
-    "vue-tsc": "^2.0.1"
+    "vue-tsc": "^2.0.2"
   }
 }
