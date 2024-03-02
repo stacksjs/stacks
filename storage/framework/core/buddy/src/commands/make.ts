@@ -10,7 +10,9 @@ import {
   makePage,
   makeStack,
 } from '@stacksjs/actions'
-import { intro, italic, outro } from '@stacksjs/cli'
+import { intro, italic, outro, runCommand } from '@stacksjs/cli'
+import { localUrl } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
@@ -26,7 +28,8 @@ export function make(buddy: CLI) {
     migration: 'Create a new migration',
     factory: 'Create a new factory',
     notification: 'Create a new notification',
-    stack: 'Create a new new stack',
+    stack: 'Create a new stack',
+    certificate: 'Create a new SSL Certificate',
     select: 'What are you trying to make?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -278,6 +281,29 @@ export function make(buddy: CLI) {
       }
 
       log.info(path, name)
+    })
+
+  buddy
+    .command('make:certificate', descriptions.certificate)
+    .alias('make:cert')
+    .example('buddy make:certificate')
+    .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:certificate` ...', options)
+
+      const domain = await localUrl()
+      log.info(`Creating SSL certificate...`)
+
+      await runCommand(`mkcert ${domain}`, {
+        cwd: p.projectStoragePath('keys'),
+      })
+
+      log.success('Certificate created')
+
+      log.info(`Installing SSL certificate...`)
+      await runCommand(`mkcert -install`, {
+        cwd: p.projectStoragePath('keys'),
+      })
+      log.success('Certificate installed')
     })
 
   buddy.on('make:*', () => {

@@ -1,4 +1,5 @@
-import type { schedule } from '@stacksjs/scheduler'
+import process from 'node:process'
+import { schedule } from '@stacksjs/scheduler'
 
 /**
  * **Scheduler**
@@ -12,6 +13,6 @@ export default function () {
   schedule.action('name').everyFiveMinutes()
 }
 
-process.on('SIGINT', function () {
+process.on('SIGINT', () => {
   schedule.gracefulShutdown().then(() => process.exit(0))
 })

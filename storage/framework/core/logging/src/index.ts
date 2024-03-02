@@ -18,8 +18,8 @@ export function logLevel() {
    */
   const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
   const opts = buddyOptions()
-  console.log('opts:', opts)
-  console.log('config:::', config)
+  // console.log('opts:', opts)
+  // console.log('config:::', config)
 
   if (verboseRegex.test(opts))
     return 4

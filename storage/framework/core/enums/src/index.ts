@@ -86,7 +86,6 @@ export enum Action {
   Prepublish = 'prepublish',
   Release = 'release', // ✅
   ShowFeatureTestReport = 'show-feature-test-report',
-  StartCaddy = 'start-caddy',
   Test = 'test',
   TestUi = 'test-ui',
   TestUnit = 'test-unit',

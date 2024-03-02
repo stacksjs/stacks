@@ -3,11 +3,14 @@ import * as https from 'node:https'
 import * as fs from 'node:fs'
 import path from 'node:path'
 import type { Buffer } from 'node:buffer'
+import { localUrl } from '@stacksjs/config'
+
+const localhostUrl = await localUrl()
 
 // Load SSL certificate and key
 const options = {
-  key: fs.readFileSync(path.resolve(__dirname, '../../../../../server/stacks.localhost-key.pem')),
-  cert: fs.readFileSync(path.resolve(__dirname, '../../../../../server/stacks.localhost.pem')),
+  key: fs.readFileSync(path.resolve(__dirname, `../../../../../server/${localhostUrl}-key.pem`)),
+  cert: fs.readFileSync(path.resolve(__dirname, `../../../../../server/${localhostUrl}.pem`)),
 }
 
 const server: https.Server = https.createServer(options)

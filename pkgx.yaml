@@ -2,7 +2,6 @@
 dependencies:
   aws.amazon.com/cli: ^2.13.7
   bun.sh: ^1.0.29
-  caddyserver.com: ^2.7.4
   dns.lookup.dog: ^0.1.0
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
@@ -14,3 +13,4 @@ dependencies:
   stedolan.github.io/jq: ^1.7
   httpie.io: ^3.2.2
   rust-lang.org: ^1.74.1 # optional, for certain dev purposes only
+  mozilla.org/nss: ^3.92.0 # only needed for certutil, so the CA can be automatically installed in Firefox

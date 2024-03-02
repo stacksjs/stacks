@@ -30,9 +30,6 @@ browserslist
 bumpp
 bundleconfig
 bunx
-Bußmann
-caddyfile
-caddyserver
 cardano
 cback
 certificatemanager
