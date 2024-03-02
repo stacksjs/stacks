@@ -7,12 +7,11 @@ await Bun.build({
   target: 'bun',
 
   external: [
-    '@stacksjs/config',
-    '@stacksjs/types',
     '@stacksjs/cli',
-    '@stacksjs/path',
+    '@stacksjs/config',
     '@stacksjs/error-handling',
-    'consola',
+    '@stacksjs/path',
+    '@stacksjs/types',
   ],
 
   plugins: [

@@ -45,14 +45,7 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
-  "peerDependencies": {
-    "localtunnel": "^2.0.2"
-  },
-  "dependencies": {
-    "localtunnel": "^2.0.2"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@types/localtunnel": "^2.0.4"
+    "@stacksjs/development": "workspace:*"
   }
 }

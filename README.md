@@ -13,14 +13,14 @@
 
 Stacks is a rapid development framework, where the goal is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. _An all-in-one toolkit that meets all your full stack needs._
 
-- Web & Desktop applications
-- Serverless & traditional APIs
-- Cloud infrastructure creation & maintenance
+- Web & Desktop Applications _(including system tray apps)_
+- Serverless & Traditional APIs
+- Cloud Infrastructure Creation & Maintenance
 - Interactive CLIs
-- Framework-agnostic component & function libraries
+- Framework-agnostic Component & Function Libraries
 - Deployment & Release Manager _(CI & CD)_
 
-In other words, Stacks helps you, as a developer, every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what & why_ of your project, all while enabling you to always stay completely in control & ownership of your & your user’s data.
+In other words, Stacks helps you, as a developer, every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what & why_ of your project, all while enabling you to always stay in control & ownership of your _(& your user’s)_ data.
 
 > “Convention over configuration” is the Stacks mantra. _- Chris_
 
@@ -33,7 +33,7 @@ It’s incredibly easy to get started with this framework. Simply run the follow
 ```bash
 curl -Ssf stacksjs.org/install | sh # wip
 
-# alternatively, if Bun >= v1.0.26 is installed already,
+# alternatively, if Bun >= v1.0.30 is installed already,
 # you may also get started via:
 bunx stacks new my-project
 ```
