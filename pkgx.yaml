@@ -7,6 +7,7 @@ dependencies:
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
   mailpit.axllent.org: ^1.10.0
+  mkcert.dev: ^1.4.4
   npmjs.com: ^9.7.2 # can soon be removed when Bun-native support is released
   redis.io: ^7.0.11
   sqlite.org: ^3.42.0

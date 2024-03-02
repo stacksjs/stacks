@@ -844,12 +844,18 @@ export function paymentsPath(path?: string): string {
  * @param filePath - The relative path to append to the project path. Defaults to an empty string.
  * @returns The absolute path to the specified file or directory within the project directory.
  */
-export function projectPath(filePath = ''): string {
+export function projectPath(filePath = '', options?: { relative: boolean }): string {
   let path = process.cwd()
 
   while (path.includes('storage')) path = resolve(path, '..')
 
-  return resolve(path, filePath)
+  const finalPath = resolve(path, filePath)
+
+  // If the `relative` option is true, return the path relative to the current working directory
+  if (options?.relative)
+    return relative(process.cwd(), finalPath)
+
+  return finalPath
 }
 
 /**
