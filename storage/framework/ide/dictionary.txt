@@ -29,6 +29,7 @@ brotli
 browserslist
 bumpp
 bundleconfig
+bunnel
 bunx
 cardano
 cback
