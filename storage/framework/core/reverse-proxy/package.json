@@ -45,6 +45,10 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
+  "dependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "c12": "^1.9.0"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
   }
