@@ -102,6 +102,8 @@ buddy dev:docs # starts local docs dev server
 buddy dev docs # also starts the local docs dev server (colon is optional for all commands)
 buddy development # `buddy dev` alias
 
+buddy share # creates a sharable link to your local project
+
 # for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
 buddy serve
 buddy serve:components

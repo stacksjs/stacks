@@ -41,7 +41,7 @@
     "src"
   ],
   "scripts": {
-    "build": "bun --bun build.ts",
+    "build": "bun build.ts && bun compile.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },

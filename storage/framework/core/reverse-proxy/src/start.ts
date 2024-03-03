@@ -2,9 +2,8 @@ import * as net from 'node:net'
 import * as https from 'node:https'
 import * as fs from 'node:fs'
 import path from 'node:path'
-import process from 'node:process'
 import type { Buffer } from 'node:buffer'
-import config from './reverse-proxy.config'
+import config from '../reverse-proxy.config'
 
 interface Option {
   from: string // domain to proxy, e.g. localhost:3000

@@ -1,18 +1,25 @@
+import process from 'node:process'
 import { cli as command } from '@stacksjs/cli'
 import { startProxy } from '../src/start'
+import { config } from '../src/config'
 import { version } from '../package.json'
 
 const cli = command('reverse-proxy')
 
 cli
   .command('start', 'Start the Reverse Proxy Server')
-  .action(() => {
-    const option = {
-      from: 'localhost:3006',
-      to: 'stacksjs.localhost',
+  .action(async () => {
+    // eslint-disable-next-line no-console
+    console.log('config', config)
+
+    if (!config) {
+      console.error('No config found')
+      process.exit(1)
     }
 
-    startProxy(option)
+    // Assuming config is an object where each key-value pair represents a proxy mapping
+    for (const [from, to] of Object.entries(config))
+      await startProxy({ from, to }) // Ensure startProxy can handle being called like this
   })
 
 cli

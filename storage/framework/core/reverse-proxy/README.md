@@ -5,7 +5,7 @@ A modern reverse proxy. Pretty dev URLs for your local projects, with simplicity
 ## ☘️ Features
 
 - Reverse Proxy
-- HTTPS by default
+- SSL support
 - Custom domains
 
 ## 🤖 Usage

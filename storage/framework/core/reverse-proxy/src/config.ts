@@ -1,13 +1,11 @@
-import path from 'node:path'
-import { loadConfig, watchConfig } from 'c12'
+import { loadConfig } from 'c12'
 
 // Get loaded config
 const { config } = await loadConfig({
   name: 'reverse-proxy',
   defaults: {
-    from: 'localhost:3006', // 3000
-    to: 'stacks.localhost',
+    'localhost:3000': 'stacks.localhost',
   },
 })
 
-console.log('Loaded config:', config)
+export { config }
