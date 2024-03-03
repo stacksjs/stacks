@@ -1,10 +1,12 @@
 # Reverse Proxy
 
-A modern reverse proxy for Bun.
+A modern reverse proxy. Pretty dev URLs for your local projects, with simplicity and flexibility.
 
 ## ☘️ Features
 
 - Reverse Proxy
+- HTTPS by default
+- Custom domains
 
 ## 🤖 Usage
 

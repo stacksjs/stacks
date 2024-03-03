@@ -246,7 +246,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🤖 **Functions** _primitive to develop business logic (and grant your UI superpowers)_
 - 🎨 **UI Kit** _modern & deeply-integrated components_
 - 🌐 **Web** _“a routing & templating engine that makes sense”_
-- 🖥️ **Desktop** _transforms your web app into desktop app, plus more_
+- 🖥️ **Desktop** _transforms your web app into a desktop app, plus more_
 - 📝 **Documentation** _markdown-based documentation, auto-generated_
 - 📚 **Library** _auto-builds & manages component & function libraries_
 - ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
@@ -281,6 +281,7 @@ _Develop & maintain cloud infrastructure with ease. “Imagine Vercel, Vapor and
 
 - ☁️ **Server** _local development server & production-ready servers out-of-the-box_
 - ⛅️ **Serverless** _on-demand, auto-scaling, zero maintenance_
+- ⏰ **Alarms** _built-in cloud infrastructure monitoring to avoid surprises_
 - 🚏 **CDN** _zero-config, low-latency, request life-cycle hooks, optimized request compressions (Brotli & gzip)_
 - 🔀 **Domain** _version-controlled & zero-config domain management (e.g. DNS management)_
 - 🤖 **AI** _fine-tune a foundational model using your application data_
@@ -294,7 +295,7 @@ _Develop & maintain cloud infrastructure with ease. “Imagine Vercel, Vapor and
 
 _Focus on coding, not publishing._
 
-- 🚀 **Deployment Manager** _take the sweat out of production deployments—zero-setup push-to-deploy_
+- 🚀 **Deployment Manager** _takes the sweat out of production deployments—zero-setup push-to-deploy_
 - 0️⃣ **Zero Downtime** _deploy with confidence using a zero-downtime deployment strategy_
 - 📫 **Release Manager** _libraries (component & function) auto-published to npm, git helpers, and more_
 
@@ -309,9 +310,9 @@ Convention over configuration, while staying wholly configurable. _No more boile
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
 - ✨ **Git Workflows** _committing with ease_
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
-- ⏩ **Code Snippets** _say goodbye to the boilerplate—thank you Sarah Drasner_
+- ⏩ **Code Snippets** _goodbye to the boilerplate code—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
-- 🛠️ **Utilities** _Collections, VueUse, and more_
+- 🛠️ **Essential Utilities** _powers at your fingertips. Collections, VueUse, and more_
 - 👥 **Team Management** _manage your team & their permissions_
 - 🧪 **Streamlined Testing** _unit & e2e tests powered by Bun, Vitest & Playwright_
 
