@@ -3,97 +3,113 @@ import * as https from 'node:https'
 import * as fs from 'node:fs'
 import path from 'node:path'
 import type { Buffer } from 'node:buffer'
-import { localUrl } from '@stacksjs/config'
+import config from './config'
 
-const localhostUrl = await localUrl()
-
-// Load SSL certificate and key
-const options = {
-  key: fs.readFileSync(path.resolve(__dirname, `../../../../../server/${localhostUrl}-key.pem`)),
-  cert: fs.readFileSync(path.resolve(__dirname, `../../../../../server/${localhostUrl}.pem`)),
+interface ConfigEntry {
+  from: string
+  to: string
+  ssl: {
+    key: Buffer
+    cert: Buffer
+  }
 }
+type Options = ConfigEntry | ConfigEntry[]
 
-const server: https.Server = https.createServer(options)
-
-server.on('secureConnection', (clientToProxySocket: net.Socket) => {
+export function startReverseProxy(options: Options): void {
+  // Start the reverse proxy
   // eslint-disable-next-line no-console
-  console.log('Client connected to proxy')
+  console.log('Starting reverse proxy')
 
-  clientToProxySocket.once('data', (data: Buffer) => {
-    const dataStr: string = data.toString()
-
-    // Default to HTTPS port since all connections are secure
-    let serverPort: number = 443
-    let serverAddress: string = 'localhost'
-
-    // eslint-disable-next-line no-console
-    console.log(dataStr)
-
-    // Extract the host from the HTTP request
-    const hostHeader = dataStr.split('Host: ')[1]?.split('\r\n')[0]
-
-    // eslint-disable-next-line no-console
-    console.log('hostHeader', hostHeader)
-
-    if (hostHeader?.includes('stacks.localhost')) {
-      // If the request is for stacks.localhost, proxy to localhost:3006
-      serverPort = 3006
-    }
-    else {
-      // For other hosts, extract the address normally
-      serverAddress = hostHeader ?? 'localhost'
+  for (const [key, value] of Object.entries(config)) {
+    const ssl = {
+      key: fs.readFileSync(path.resolve(__dirname, `../../../../../storage/keys/${key}-key.pem`)),
+      cert: fs.readFileSync(path.resolve(__dirname, `../../../../../storage/keys/${key}.pem`)),
     }
 
     // eslint-disable-next-line no-console
-    console.log('serverAddress', serverAddress, 'serverPort', serverPort)
+    console.log(`Key: ${key}, Value: ${value}`)
+    const server: https.Server = https.createServer(ssl)
 
-    // Creating a connection from proxy to destination server
-    const proxyToServerSocket: net.Socket = net.createConnection({
-      host: serverAddress,
-      port: serverPort,
-    }, () => {
+    server.on('secureConnection', (clientToProxySocket: net.Socket) => {
       // eslint-disable-next-line no-console
-      console.log('Proxy to server set up')
+      console.log('Client connected to proxy')
+
+      clientToProxySocket.once('data', (data: Buffer) => {
+        const dataStr: string = data.toString()
+        const hostHeader = dataStr.split('Host: ')[1]?.split('\r\n')[0]
+
+        // eslint-disable-next-line no-console
+        console.log(dataStr)
+        // eslint-disable-next-line no-console
+        console.log('hostHeader', hostHeader)
+
+        // Default to HTTPS port since all connections are secure
+        let serverPort: number = 443
+        const serverAddress: string = 'localhost'
+
+        // Check if the hostHeader matches any key in the config
+        const matchingKey = Object.keys(config).find(key => hostHeader === config[key])
+        if (matchingKey) {
+          // Extract the port from the matching key (assuming the format "localhost:PORT")
+          const port = matchingKey.split(':')[1]
+          if (port)
+            serverPort = Number.parseInt(port, 10)
+
+          // The serverAddress remains 'localhost' or could be adjusted based on your setup
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('serverAddress', serverAddress, 'serverPort', serverPort)
+
+        // Creating a connection from proxy to destination server
+        const proxyToServerSocket: net.Socket = net.createConnection({
+          host: serverAddress,
+          port: serverPort,
+        }, () => {
+          // eslint-disable-next-line no-console
+          console.log('Proxy to server set up')
+        })
+
+        // Since all connections are secure, no need to write 'HTTP/1.1 200 OK\r\n\r\n'
+        proxyToServerSocket.write(data)
+
+        clientToProxySocket.pipe(proxyToServerSocket)
+        proxyToServerSocket.pipe(clientToProxySocket)
+
+        proxyToServerSocket.on('error', (err: Error) => {
+          // eslint-disable-next-line no-console
+          console.log('Proxy to server error')
+          console.error(err)
+        })
+
+        clientToProxySocket.on('error', (err: Error) => {
+          // eslint-disable-next-line no-console
+          console.log('Client to proxy error')
+          console.error(err)
+        })
+      })
     })
 
-    // Since all connections are secure, no need to write 'HTTP/1.1 200 OK\r\n\r\n'
-    proxyToServerSocket.write(data)
-
-    clientToProxySocket.pipe(proxyToServerSocket)
-    proxyToServerSocket.pipe(clientToProxySocket)
-
-    proxyToServerSocket.on('error', (err: Error) => {
+    server.on('error', (err: Error) => {
       // eslint-disable-next-line no-console
-      console.log('Proxy to server error')
+      console.log('Some internal server error occurred')
       console.error(err)
     })
 
-    clientToProxySocket.on('error', (err: Error) => {
+    server.on('close', () => {
       // eslint-disable-next-line no-console
-      console.log('Client to proxy error')
-      console.error(err)
+      console.log('Client disconnected')
     })
-  })
-})
 
-server.on('error', (err: Error) => {
-  // eslint-disable-next-line no-console
-  console.log('Some internal server error occurred')
-  console.error(err)
-})
-
-server.on('close', () => {
-  // eslint-disable-next-line no-console
-  console.log('Client disconnected')
-})
-
-server.listen(
-  {
-    host: '0.0.0.0',
-    port: 8080,
-  },
-  () => {
-    // eslint-disable-next-line no-console
-    console.log('Server listening on 0.0.0.0:8080')
-  },
-)
+    server.listen(
+      {
+        host: '0.0.0.0',
+        port: 8080,
+      },
+      () => {
+        // eslint-disable-next-line no-console
+        console.log('Server listening on 0.0.0.0:8080')
+      },
+    )
+  }
+}
