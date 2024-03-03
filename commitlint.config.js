@@ -1,23 +1,23 @@
-const { readdirSync } = require('node:fs')
-const { resolve } = require('node:path')
-const { kebabCase } = require('change-case')
-const git = require('./config/git.ts')
+import { fs } from '@stacksjs/storage'
+import { resolve } from '@stacksjs/path'
+import { kebabCase } from '@stacksjs/strings'
+import git from './config/git'
 
-const toDelete = ['readme-md']
+const ignore = ['readme-md']
 
-const components = readdirSync(resolve(__dirname, './resources/components'))
-  .map(item => kebabCase(item.replace(/.vue/g, '')))
-  .filter(item => !toDelete.includes(item))
+const components = fs.readdirSync(resolve(__dirname, './resources/components'))
+  .map(item => kebabCase(item.replace(/.stx/g, '')))
+  .filter(item => !ignore.includes(item))
 
-const functions = readdirSync(resolve(__dirname, './resources/functions'))
+const functions = fs.readdirSync(resolve(__dirname, './resources/functions'))
   .map(item => kebabCase(item.replace(/.ts/g, '')))
-  .filter(item => !toDelete.includes(item))
+  .filter(item => !ignore.includes(item))
 
-const scopes = [...git.default.scopes, ...components, ...functions]
+const scopes = [...git.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
 
 /** @type {import('cz-git').UserConfig} */
-module.exports = {
+export default {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
     'scope-enum': [
@@ -27,8 +27,8 @@ module.exports = {
     ],
   },
   prompt: {
-    messages: git.default.messages,
-    types: git.default.types,
+    messages: git.messages,
+    types: git.types,
     useEmoji: false,
     themeColorCode: '',
     scopes: uniqueScopes,
