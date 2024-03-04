@@ -6,11 +6,26 @@ import { version } from '../package.json'
 
 const cli = command('reverse-proxy')
 
+interface Options {
+  from?: string
+  to?: string
+  keyPath?: string
+  certPath?: string
+}
+
 cli
   .command('start', 'Start the Reverse Proxy Server')
-  .action(async () => {
-    // eslint-disable-next-line no-console
-    console.log('config', config)
+  .option('--from <from>', 'The URL to proxy from')
+  .option('--to <to>', 'The URL to proxy to')
+  .option('--keyPath <path>', 'Absolute path to the SSL key')
+  .option('--certPath <path>', 'Absolute path to the SSL certificate')
+  // .option('--project <project>', 'The project to start the proxy for')
+  .option('--all', 'Start all proxies', { default: true })
+  .example('reverse-proxy start --from localhost:3000 --to my-project.localhost')
+  .example('reverse-proxy start --from localhost:3000 --to localhost:3001')
+  .example('reverse-proxy start --from localhost:3000 --to my-project.test --keyPath /absolute/path/to/key --certPath /absolute/path/to/cert')
+  .action(async (options?: Options) => {
+    const from = options?.from
 
     if (!config) {
       console.error('No config found')
@@ -18,8 +33,18 @@ cli
     }
 
     // Assuming config is an object where each key-value pair represents a proxy mapping
-    for (const [from, to] of Object.entries(config))
-      await startProxy({ from, to }) // Ensure startProxy can handle being called like this
+    for (const [from, to] of Object.entries(config)) {
+      console.log(`Starting proxy from ${from} to ${to}`)
+      console.log('options?.keyPath:', options?.keyPath)
+      console.log('options?.certPath:', options?.certPath)
+
+      startProxy({
+        from: options?.from ?? from,
+        to: options?.to ?? to,
+        keyPath: options?.keyPath,
+        certPath: options?.certPath,
+      })
+    }
   })
 
 cli

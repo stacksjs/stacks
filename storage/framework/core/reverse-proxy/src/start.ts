@@ -3,12 +3,12 @@ import * as https from 'node:https'
 import * as fs from 'node:fs'
 import path from 'node:path'
 import type { Buffer } from 'node:buffer'
+import { log } from '@stacksjs/cli'
 import config from '../reverse-proxy.config'
 
 interface Option {
   from: string // domain to proxy, e.g. localhost:3000
   to?: string // domain to proxy to, defaults to stacks.localhost
-  path?: string // absolute path to the project to proxy
   keyPath?: string // absolute path to the key
   certPath?: string // absolute path to the cert
 }
@@ -32,8 +32,7 @@ export function startProxies(options: Options): void {
 
 export function startServer(option: Option): void {
   // Start the reverse proxy
-  // eslint-disable-next-line no-console
-  console.log('Starting Reverse Proxy Server')
+  log.info('Starting Reverse Proxy Server')
 
   const keyPath = option.keyPath || path.resolve(__dirname, `../../../../../storage/keys/${option.to}.key`)
   const key = fs.readFileSync(keyPath)

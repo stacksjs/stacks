@@ -5,21 +5,36 @@ A modern reverse proxy. Pretty dev URLs for your local projects, with simplicity
 ## ☘️ Features
 
 - Reverse Proxy
-- SSL support
-- Custom domains
+- SSL Support
+- Custom Domains
+- Dependency-free Binary
 
 ## 🤖 Usage
 
 ```bash
 bun install -d bun-reverse-proxy
+# brew install reverse-proxy
+# pkgx install reverse-proxy
 ```
 
 Now, you can use it in your project:
 
 ```js
-import proxy from 'bun-reverse-proxy'
+import { startProxy } from 'bun-reverse-proxy'
 
-console.log(proxy)
+startProxy({
+  from: 'localhost:3000',
+  to: 'my-project.localhost'
+})
+```
+
+### CLI
+
+```bash
+reverse-proxy --from localhost:3000 --to my-project.localhost
+reverse-proxy --from localhost:3000 --to my-project.test --keyPath ./key.pem --certPath ./cert.pem
+reverse-proxy --help
+reverse-proxy --version
 ```
 
 Learn more in the docs.

@@ -47,15 +47,22 @@ _Meet the toolkit, Buddy:_
 ```bash
 buddy install # installs all dependencies
 buddy dev # starts one of the dev servers (frontend, API, components, docs, desktop, etc.)
+buddy share # creates a sharable link of your local project
 buddy build # follow CLI prompts to select which library (or server) to build
 buddy commit # follow CLI prompts for committing changes
 buddy release # creates the releases for the stack & consequently, publishes them to npm
 buddy upgrade # auto-update all deps & the Stacks framework
 
-buddy make:model Car # scaffolds a model
-buddy make:component HelloWorld # scaffolds a component
-buddy make:function HelloWorld # scaffolds a function
-buddy make:view hello-world # scaffolds a page (https://my-project.test/hello-world)
+buddy make:component HelloWorld # scaffolds a Component
+buddy make:function HelloWorld # scaffolds a Function
+buddy make:model Car # scaffolds a Model
+buddy make:action UpdateCar # scaffolds an Action
+buddy make:view HelloWorld # scaffolds a Page (https://my-project.test/hello-world)
+buddy make:command Inspire # scaffolds a Command
+buddy make:job SendEmail # scaffolds a Job
+buddy make:middleware Logger # scaffolds a new Middleware
+buddy make:notification WelcomeEmail # scaffolds a Notification
+buddy make:lang de # scaffolds a language file
 
 buddy list # lists all available commands
 buddy --help
