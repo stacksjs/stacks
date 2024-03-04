@@ -57,7 +57,8 @@ buddy make:component HelloWorld # scaffolds a Component
 buddy make:function HelloWorld # scaffolds a Function
 buddy make:model Car # scaffolds a Model
 buddy make:action UpdateCar # scaffolds an Action
-buddy make:view HelloWorld # scaffolds a Page (https://my-project.test/hello-world)
+buddy make:migration create_cars_table # scaffolds a Migration
+buddy make:view Car # scaffolds a Page (https://my-project.test/car)
 buddy make:command Inspire # scaffolds a Command
 buddy make:job SendEmail # scaffolds a Job
 buddy make:middleware Logger # scaffolds a new Middleware
