@@ -34,10 +34,6 @@ cli
 
     // Assuming config is an object where each key-value pair represents a proxy mapping
     for (const [from, to] of Object.entries(config)) {
-      console.log(`Starting proxy from ${from} to ${to}`)
-      console.log('options?.keyPath:', options?.keyPath)
-      console.log('options?.certPath:', options?.certPath)
-
       startProxy({
         from: options?.from ?? from,
         to: options?.to ?? to,

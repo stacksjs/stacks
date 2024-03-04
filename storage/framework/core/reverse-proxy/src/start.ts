@@ -1,10 +1,11 @@
 import * as net from 'node:net'
 import * as https from 'node:https'
 import * as fs from 'node:fs'
-import path from 'node:path'
 import type { Buffer } from 'node:buffer'
-import { log } from '@stacksjs/cli'
+import { bold, green, log } from '@stacksjs/cli'
+import { path } from '@stacksjs/path'
 import config from '../reverse-proxy.config'
+import { version } from '../package.json'
 
 interface Option {
   from: string // domain to proxy, e.g. localhost:3000
@@ -31,12 +32,11 @@ export function startProxies(options: Options): void {
 }
 
 export function startServer(option: Option): void {
-  // Start the reverse proxy
-  log.info('Starting Reverse Proxy Server')
+  log.debug('Starting Reverse Proxy Server')
 
-  const keyPath = option.keyPath || path.resolve(__dirname, `../../../../../storage/keys/${option.to}.key`)
+  const keyPath = option.keyPath ?? path.projectStoragePath(`keys/${option.to}-key.pem`)
   const key = fs.readFileSync(keyPath)
-  const certPath = option.certPath || path.resolve(__dirname, `../../../../../storage/keys/${option.to}.pem`)
+  const certPath = option.certPath ?? path.projectStoragePath(`keys/${option.to}.pem`)
   const cert = fs.readFileSync(certPath)
 
   const server: https.Server = https.createServer({
@@ -122,7 +122,13 @@ export function startServer(option: Option): void {
     },
     () => {
       // eslint-disable-next-line no-console
-      console.log('Server listening on 0.0.0.0:8080')
+      console.log('')
+      // eslint-disable-next-line no-console
+      console.log(`  ${green(bold('reverse-proxy'))} ${green(`v${version}`)}`)
+      // eslint-disable-next-line no-console
+      console.log('')
+      // eslint-disable-next-line no-console
+      console.log(`  ${green('➜')}  ${option.from} ➜ ${option.to}`)
     },
   )
 }

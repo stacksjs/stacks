@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "c12": "^1.9.0"
   },
   "devDependencies": {
