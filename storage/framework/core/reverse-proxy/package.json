@@ -17,6 +17,7 @@
   },
   "keywords": [
     "reverse proxy",
+    "proxy",
     "bun",
     "stacks",
     "typescript",
@@ -31,6 +32,9 @@
       "bun": "./src/*",
       "import": "./dist/*"
     }
+  },
+  "bin": {
+    "reverse-proxy": "./dist/cli.js"
   },
   "contributors": [
     "Chris Breuer <chris@stacksjs.org>"
@@ -48,6 +52,7 @@
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
     "c12": "^1.9.0"
   },
   "devDependencies": {

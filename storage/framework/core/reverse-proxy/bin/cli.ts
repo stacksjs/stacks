@@ -1,4 +1,6 @@
-import { cli as command } from '@stacksjs/cli'
+import os from 'node:os'
+import { cli as command, log } from '@stacksjs/cli'
+import { fs } from '@stacksjs/storage'
 import { startProxy } from '../src/start'
 import { config } from '../src/config'
 import { version } from '../package.json'
@@ -47,6 +49,58 @@ cli
     else {
       // eslint-disable-next-line no-console
       console.log('No proxies found in the config')
+    }
+  })
+
+cli
+  .command('update:etc-hosts', 'Update the /etc/hosts file with the proxy domains. Please note, this command requires sudo/admin permissions.')
+  .alias('update-etc-hosts')
+  .example('sudo reverse-proxy update:etc-hosts')
+  .example('sudo reverse-proxy update-etc-hosts')
+  .action(async () => {
+    log.info('Ensuring /etc/hosts file covers the proxy domains...')
+    const hostsFilePath = os.platform() === 'win32'
+      ? 'C:\\Windows\\System32\\drivers\\etc\\hosts'
+      : '/etc/hosts'
+
+    if (config && typeof config === 'object') {
+      const entriesToAdd = Object.entries(config).map(([from, to]) => `127.0.0.1 ${to} # reverse-proxy mapping for ${from}`)
+      try {
+        let currentHostsContent = fs.readFileSync(hostsFilePath, 'utf8')
+        let updated = false
+
+        for (const entry of entriesToAdd) {
+          const to = entry.split(' ')[1]
+          // Check if the entry (domain) is already in the file
+          if (!currentHostsContent.includes(to)) {
+          // If not, append it
+            currentHostsContent += `\n${entry}`
+            updated = true
+          }
+          else {
+            log.info(`Entry for ${to} already exists in the hosts file.`)
+          }
+        }
+
+        if (updated) {
+          fs.writeFileSync(hostsFilePath, currentHostsContent, 'utf8')
+
+          log.success('Hosts file updated with latest proxy domains.')
+        }
+        else {
+          log.info('No new entries were added to the hosts file.')
+        }
+      }
+      catch (error) {
+        if (error.code === 'EACCES')
+          console.error('Permission denied. Please run this command with administrative privileges.')
+        else
+          console.error(`An error occurred: ${error.message}`)
+      }
+    }
+    else {
+      // eslint-disable-next-line no-console
+      console.log('No proxies found. Is your config configured properly?')
     }
   })
 
