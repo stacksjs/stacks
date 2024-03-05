@@ -358,7 +358,7 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-The framework and any of its over 80 packages will always be free. We are very excited to see which parts of the world Stacks ends up in. _We would love to receive a postcard—which we publish on our website. Thanks to Spatie for this wonderful idea._
+Two things are true: Stacks OSS will always stay open-source, and we do/would love to receive postcards from wherever Stacks is used! 🌍 _And we also publish them on our website. -Thank you, Spatie_
 
 Our address: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA, USA
 
