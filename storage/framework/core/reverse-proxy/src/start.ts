@@ -6,7 +6,6 @@ import type { Buffer } from 'node:buffer'
 import { bold, green, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { version } from '../package.json'
-import { config } from './config'
 
 interface Option {
   from?: string // domain to proxy from, defaults to localhost:3000
@@ -17,25 +16,7 @@ interface Option {
 
 type Options = Option | Option[]
 
-export function startProxy(option?: Option): void {
-  startProxies(option)
-}
-
-export function startProxies(options?: Options): void {
-  if (Array.isArray(options)) {
-    options.forEach((option: Option) => {
-      startServer(option)
-    })
-  }
-  else {
-    startServer(options)
-  }
-}
-
-export function startServer(option: Option = {
-  from: 'localhost:3000',
-  to: 'stacks.localhost',
-}): void {
+export function startServer(option: Option = { from: 'localhost:3000', to: 'stacks.localhost' }): void {
   log.debug('Starting Reverse Proxy Server')
 
   const key = fs.readFileSync(option.keyPath ?? path.projectStoragePath(`keys/localhost-key.pem`))
@@ -108,4 +89,19 @@ function setupReverseProxy({ key, cert, hostname, port, option }: { key: Buffer,
     res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` })
     res.end()
   }).listen(80)
+}
+
+export function startProxy(option?: Option): void {
+  startProxies(option)
+}
+
+export function startProxies(options?: Options): void {
+  if (Array.isArray(options)) {
+    options.forEach((option: Option) => {
+      startServer(option)
+    })
+  }
+  else {
+    startServer(options)
+  }
 }

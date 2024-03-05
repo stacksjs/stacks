@@ -8,6 +8,7 @@ A modern reverse proxy. Pretty dev URLs for your local projects, with simplicity
 - SSL Support
 - Custom Domains
 - Auto HTTP to HTTPS Redirection
+- /etc/hosts Management
 - Dependency-free Binary
 
 ## 🤖 Usage
