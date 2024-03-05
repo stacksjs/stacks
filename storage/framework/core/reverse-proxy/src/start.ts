@@ -1,14 +1,15 @@
 import * as net from 'node:net'
+import * as http from 'node:http'
 import * as https from 'node:https'
 import * as fs from 'node:fs'
 import type { Buffer } from 'node:buffer'
 import { bold, green, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
-import config from '../reverse-proxy.config'
 import { version } from '../package.json'
+import { config } from './config'
 
 interface Option {
-  from: string // domain to proxy, e.g. localhost:3000
+  from?: string // domain to proxy from, defaults to localhost:3000
   to?: string // domain to proxy to, defaults to stacks.localhost
   keyPath?: string // absolute path to the key
   certPath?: string // absolute path to the cert
@@ -16,11 +17,11 @@ interface Option {
 
 type Options = Option | Option[]
 
-export function startProxy(option: Option): void {
+export function startProxy(option?: Option): void {
   startProxies(option)
 }
 
-export function startProxies(options: Options): void {
+export function startProxies(options?: Options): void {
   if (Array.isArray(options)) {
     options.forEach((option: Option) => {
       startServer(option)
@@ -31,104 +32,80 @@ export function startProxies(options: Options): void {
   }
 }
 
-export function startServer(option: Option): void {
+export function startServer(option: Option = {
+  from: 'localhost:3000',
+  to: 'stacks.localhost',
+}): void {
   log.debug('Starting Reverse Proxy Server')
 
-  const keyPath = option.keyPath ?? path.projectStoragePath(`keys/${option.to}-key.pem`)
-  const key = fs.readFileSync(keyPath)
-  const certPath = option.certPath ?? path.projectStoragePath(`keys/${option.to}.pem`)
-  const cert = fs.readFileSync(certPath)
+  const key = fs.readFileSync(option.keyPath ?? path.projectStoragePath(`keys/localhost-key.pem`))
+  const cert = fs.readFileSync(option.certPath ?? path.projectStoragePath(`keys/localhost-cert.pem`))
 
-  const server: https.Server = https.createServer({
-    key,
-    cert,
+  // Parse the option.from URL to dynamically set hostname and port
+  const fromUrl = new URL(option.from ? (option.from.startsWith('http') ? option.from : `http://${option.from}`) : 'http://localhost:3000')
+  const hostname = fromUrl.hostname
+  const port = Number.parseInt(fromUrl.port) || (fromUrl.protocol === 'https:' ? 443 : 80)
+
+  // Attempt to connect to the specified host and port
+  const socket = net.connect(port, hostname, () => {
+    log.debug(`Successfully connected to ${option.from}`)
+    socket.end()
+
+    // Proceed with setting up the reverse proxy after successful connection
+    setupReverseProxy({ key, cert, hostname, port, option })
   })
 
-  server.on('secureConnection', (clientToProxySocket: net.Socket) => {
-    // eslint-disable-next-line no-console
-    console.log('Client connected to proxy')
+  socket.on('error', (err) => {
+    log.error(`Failed to connect to ${option.from}: ${err.message}`)
+    throw new Error(`Cannot start reverse proxy because ${option.from} is unreachable.`)
+  })
+}
 
-    clientToProxySocket.once('data', (data: Buffer) => {
-      const dataStr: string = data.toString()
-      const hostHeader = dataStr.split('Host: ')[1]?.split('\r\n')[0]
+function setupReverseProxy({ key, cert, hostname, port, option }: { key: Buffer, cert: Buffer, hostname: string, port: number, option: Option }): void {
+  // This server will act as a reverse proxy
+  const httpsServer = https.createServer({ key, cert }, (req, res) => {
+    // Define the target server's options
+    const options = {
+      hostname,
+      port,
+      path: req.url,
+      method: req.method,
+      headers: req.headers,
+    }
 
-      // eslint-disable-next-line no-console
-      console.log(dataStr)
-      // eslint-disable-next-line no-console
-      console.log('hostHeader', hostHeader)
+    // Create a request to the target server
+    const proxyReq = http.request(options, (proxyRes) => {
+    // Set the statusCode and headers from the proxied response
+      res.writeHead(proxyRes.statusCode || 500, proxyRes.headers)
+      // Pipe the proxied response's body directly to the original response
+      proxyRes.pipe(res, { end: true })
+    })
 
-      // Default to HTTPS port since all connections are secure
-      let serverPort: number = 443
-      const serverAddress: string = 'localhost'
+    // Pipe the original request body directly to the proxied request
+    req.pipe(proxyReq, { end: true })
 
-      // Check if the hostHeader matches any key in the config
-      const matchingKey = Object.keys(config).find(key => hostHeader === config[key])
-      if (matchingKey) {
-        // Extract the port from the matching key (assuming the format "localhost:PORT")
-        const port = matchingKey.split(':')[1]
-        if (port)
-          serverPort = Number.parseInt(port, 10)
-
-        // The serverAddress remains 'localhost' or could be adjusted based on your setup
-      }
-
-      // eslint-disable-next-line no-console
-      console.log('serverAddress', serverAddress, 'serverPort', serverPort)
-
-      // Creating a connection from proxy to destination server
-      const proxyToServerSocket: net.Socket = net.createConnection({
-        host: serverAddress,
-        port: serverPort,
-      }, () => {
-        // eslint-disable-next-line no-console
-        console.log('Proxy to server set up')
-      })
-
-      // Since all connections are secure, no need to write 'HTTP/1.1 200 OK\r\n\r\n'
-      proxyToServerSocket.write(data)
-
-      clientToProxySocket.pipe(proxyToServerSocket)
-      proxyToServerSocket.pipe(clientToProxySocket)
-
-      proxyToServerSocket.on('error', (err: Error) => {
-        // eslint-disable-next-line no-console
-        console.log('Proxy to server error')
-        console.error(err)
-      })
-
-      clientToProxySocket.on('error', (err: Error) => {
-        // eslint-disable-next-line no-console
-        console.log('Client to proxy error')
-        console.error(err)
-      })
+    // Handle errors
+    proxyReq.on('error', (err) => {
+      console.error('Proxy to server error:', err)
+      res.writeHead(500)
+      res.end('Proxy error')
     })
   })
 
-  server.on('error', (err: Error) => {
+  httpsServer.listen(443, '0.0.0.0', () => {
     // eslint-disable-next-line no-console
-    console.log('Some internal server error occurred')
-    console.error(err)
+    console.log('')
+    // eslint-disable-next-line no-console
+    console.log(`  ${green(bold('reverse-proxy'))} ${green(`v${version}`)}`)
+    // eslint-disable-next-line no-console
+    console.log('')
+    // eslint-disable-next-line no-console
+    console.log(`  ${green('➜')}  ${option.from} ➜ ${option.to}`)
   })
 
-  server.on('close', () => {
-    // eslint-disable-next-line no-console
-    console.log('Client disconnected')
-  })
-
-  server.listen(
-    {
-      host: '0.0.0.0',
-      port: 8080,
-    },
-    () => {
-      // eslint-disable-next-line no-console
-      console.log('')
-      // eslint-disable-next-line no-console
-      console.log(`  ${green(bold('reverse-proxy'))} ${green(`v${version}`)}`)
-      // eslint-disable-next-line no-console
-      console.log('')
-      // eslint-disable-next-line no-console
-      console.log(`  ${green('➜')}  ${option.from} ➜ ${option.to}`)
-    },
-  )
+  // http to https redirect
+  http.createServer((req, res) => {
+    res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` })
+    res.end()
+  }).listen(80)
 }

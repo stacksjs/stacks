@@ -7,6 +7,7 @@ A modern reverse proxy. Pretty dev URLs for your local projects, with simplicity
 - Reverse Proxy
 - SSL Support
 - Custom Domains
+- Auto HTTP to HTTPS Redirection
 - Dependency-free Binary
 
 ## 🤖 Usage
@@ -37,7 +38,23 @@ reverse-proxy --help
 reverse-proxy --version
 ```
 
-Learn more in the docs.
+### Configuration
+
+You can also use a configuration file:
+
+```ts
+export default {
+  'localhost:3000': 'stacksjs.localhost'
+}
+```
+
+Then run:
+
+```bash
+reverse-proxy start
+```
+
+And your config will be loaded from `reverse-proxy.config.ts` _(or `reverse-proxy.config.js`)_. Learn more in the docs.
 
 ## 🧪 Testing
 

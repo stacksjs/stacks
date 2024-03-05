@@ -65,7 +65,7 @@ async function writeToLogFile(message: string) {
 export interface Log {
   info: (...args: any[]) => void
   success: (msg: string) => void
-  error: (err: string | Error, options?: any) => void
+  error: (err: string | Error, options?: any | Error) => void
   warn: (arg: string) => void
   debug: (...args: any[]) => void
   // start: logger.Start
@@ -90,8 +90,14 @@ export const log: Log = {
     await writeToLogFile(`SUCCESS: ${msg}`)
   },
 
-  async error(err: string | Error, options?: any) {
-    handleError(err, options) // Assuming handleError logs the error
+  async error(err: string | Error, options?: any | Error) {
+    if (err instanceof Error)
+      handleError(err, options)
+    else if (options instanceof Error)
+      handleError(options)
+    else
+      handleError(err, options)
+
     await writeToLogFile(`ERROR: ${err}`)
   },
 

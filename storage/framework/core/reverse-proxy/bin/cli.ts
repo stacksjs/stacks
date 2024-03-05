@@ -19,7 +19,6 @@ cli
   .option('--to <to>', 'The URL to proxy to')
   .option('--keyPath <path>', 'Absolute path to the SSL key')
   .option('--certPath <path>', 'Absolute path to the SSL certificate')
-  // .option('--project <project>', 'The project to start the proxy for')
   .option('--all', 'Start all proxies', { default: true })
   .example('reverse-proxy start --from localhost:3000 --to my-project.localhost')
   .example('reverse-proxy start --from localhost:3000 --to localhost:3001')

@@ -41,7 +41,6 @@
   },
   "extensionPack": [
     "vue.volar",
-    "vue.vscode-typescript-vue-plugin",
     "dbaeumer.vscode-eslint",
     "streetsidesoftware.code-spell-checker",
     "antfu.unocss",
