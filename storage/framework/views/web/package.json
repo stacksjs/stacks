@@ -26,7 +26,7 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.1.30",
+    "@iconify-json/carbon": "^1.1.31",
     "@intlify/unplugin-vue-i18n": "^2.0.0",
     "@types/markdown-it-link-attributes": "^3.0.4",
     "@types/nprogress": "^0.2.3",
@@ -46,7 +46,7 @@
     "unplugin-vue-macros": "^2.7.10",
     "unplugin-vue-markdown": "^0.26.0",
     "unplugin-vue-router": "^0.8.4",
-    "vite": "^5.1.4",
+    "vite": "^5.1.5",
     "vite-bundle-visualizer": "^1.0.1",
     "vite-plugin-inspect": "^0.8.3",
     "vite-plugin-pwa": "^0.19.2",

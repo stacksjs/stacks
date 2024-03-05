@@ -49,7 +49,7 @@
     "prepublishOnly": "bun --bun run build"
   },
   "dependencies": {
-    "@formkit/tempo": "^0.0.13",
+    "@formkit/tempo": "^0.0.14",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
