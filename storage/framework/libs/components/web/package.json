@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "build": "vite build -c ../build/web-components.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

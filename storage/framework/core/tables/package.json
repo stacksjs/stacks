@@ -30,7 +30,8 @@
     "dev": "vite",
     "build": "echo 'Coming soon'",
     "preview": "vite preview",
-    "dev:components": "vite -c vite.config.ts"
+    "dev:components": "vite -c vite.config.ts",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/search-engine": "workspace:*",

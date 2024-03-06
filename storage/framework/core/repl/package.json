@@ -46,7 +46,7 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/tinker": "workspace:*"

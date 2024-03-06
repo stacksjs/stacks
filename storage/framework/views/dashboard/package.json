@@ -44,7 +44,7 @@
     "dev:app": "bunx tauri dev",
     "build": "bunx vite build -c ../../core/vite/src/dashboard.ts",
     "build:app": "bunx tauri build",
-    "prepublishOnly": "bun --bun run build",
+    "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {

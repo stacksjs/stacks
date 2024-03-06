@@ -30,7 +30,8 @@
     "lint": "bun run stub && eslint .",
     "prepack": "bun run build",
     "test": "bun test",
-    "typecheck": "bunx tsc --noEmit"
+    "typecheck": "bunx tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@unocss/eslint-plugin": ">=0.58.5",

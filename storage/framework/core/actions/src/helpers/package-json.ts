@@ -72,7 +72,7 @@ export async function generatePackageJson(type: PackageJsonType) {
   ],
   "scripts": {
     "build": "vite build -c ../build/${config}.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

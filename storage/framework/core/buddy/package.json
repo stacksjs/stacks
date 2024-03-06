@@ -69,7 +69,7 @@
     "build": "bun --bun build.ts && bun run compile",
     "compile": "bun compile.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/actions": "workspace:*",

@@ -47,7 +47,7 @@
     "build": "bun --bun build.ts",
     "build:inbound": "bun --bun build-inbound.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",

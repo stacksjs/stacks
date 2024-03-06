@@ -34,7 +34,7 @@
   "scripts": {
     "dev": "vite -c ../../../core/vite/src/components.ts",
     "build": "vite build -c ../../../core/vite/src/components.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"
