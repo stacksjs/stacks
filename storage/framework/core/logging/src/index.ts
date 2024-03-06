@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { appendFile } from 'node:fs/promises'
 import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
@@ -45,20 +46,10 @@ export const logFilePath = logsPath('console.log')
 async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
   try {
-    const file = Bun.file(logFilePath)
-    const writer = file.writer()
-    const text = await file.text()
-    writer.write(`${text}\n`)
-    writer.write(`${formattedMessage}\n`)
-    await writer.end()
+    await appendFile(logFilePath, formattedMessage)
   }
   catch (error) {
-    // Assuming the error is due to the file not existing
-    // Create the file and then write the message
-    const file = Bun.file(logFilePath) // Use the create option
-    const writer = file.writer()
-    writer.write(`${formattedMessage}\n`)
-    await writer.end()
+    console.error('Failed to write to log file:', error)
   }
 }
 
