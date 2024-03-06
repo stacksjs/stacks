@@ -37,7 +37,7 @@
     "critters": "^0.0.21",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shikiji": "^0.10.2",
-    "rollup": "^4.12.0",
+    "rollup": "^4.12.1",
     "shikiji": "^0.10.2",
     "taze": "^0.13.3",
     "unocss": "^0.58.5",
