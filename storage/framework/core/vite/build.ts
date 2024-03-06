@@ -21,7 +21,6 @@ await Bun.build({
     'macroable',
     'neverthrow',
     'perfect-debounce',
-    'p-limit',
     'vue',
     'vueuse',
     'yaml',

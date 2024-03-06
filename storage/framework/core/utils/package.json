@@ -98,7 +98,6 @@
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
     "magic-regexp": "^0.7.0",
-    "p-limit": "^5.0.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
     "yaml": "^2.4.1"
