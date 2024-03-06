@@ -1,4 +1,5 @@
 import { logsPath } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 
 interface ErrorOptions {
   silent?: boolean
@@ -29,12 +30,12 @@ export class ErrorHandler {
 
   static async writeErrorToFile(err: Error) {
     const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
-    const file = Bun.file(this.logFile)
-    const writer = file.writer()
-    const text = await file.text()
-    writer.write(`${text}\n`)
-    writer.write(`${formattedError}\n`)
-    await writer.end()
+    try {
+      await fs.appendFile(logFilePath, formattedError)
+    }
+    catch (error) {
+      console.error('Failed to write to error file:', error)
+    }
   }
 
   static writeErrorToConsole(err: string | Error, options?: ErrorOptions) {
