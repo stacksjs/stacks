@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.59.1...v0.59.1-1-g1815dd088
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.59.1...v0.59.1-1-g1815dd088)
+
+### 🏡 Chore
+
+- Wip ([1815dd088](https://github.com/stacksjs/stacks/commit/1815dd088))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.59.0...v0.59.0-2-g7a322a3ca
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.59.0...v0.59.0-2-g7a322a3ca)
