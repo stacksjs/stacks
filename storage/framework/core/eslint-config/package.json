@@ -85,7 +85,7 @@
     "eslint-plugin-markdown": "^3.0.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-no-only-tests": "^3.1.0",
-    "eslint-plugin-perfectionist": "^2.5.0",
+    "eslint-plugin-perfectionist": "^2.6.0",
     "eslint-plugin-toml": "^0.9.2",
     "eslint-plugin-unicorn": "^51.0.1",
     "eslint-plugin-unused-imports": "^3.1.0",
