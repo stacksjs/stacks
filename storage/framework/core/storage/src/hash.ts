@@ -5,7 +5,7 @@ import { fs } from './fs'
 
 export function hashFileOrDirectory(path: string, hash: Hash): void {
   // Check if the path exists before proceeding
-  if (!existsSync(path)) {
+  if (!fs.existsSync(path)) {
     console.error(`Path does not exist: ${path}`)
     // Handle the non-existent path as needed (e.g., skip or log)
     return
