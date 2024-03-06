@@ -1,5 +1,5 @@
 {
-  "name": "bunnel",
+  "name": "@stacksjs/tunnel",
   "type": "module",
   "version": "0.58.73",
   "description": "Local development tunnel.",

@@ -673,7 +673,6 @@ declare global {
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
   const signal: typeof import('../core/signals/src/index')['signal']
-  const signalsPath: typeof import('../core/path/src/index')['signalsPath']
   const sleep: typeof import('../core/utils/src/sleep')['sleep']
   const slugPath: typeof import('../core/path/src/index')['slugPath']
   const sms77: typeof import('../core/sms/src/drivers/index')['sms77']
@@ -1628,7 +1627,6 @@ declare module 'vue' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly signal: UnwrapRef<typeof import('../core/signals/src/index')['signal']>
-    readonly signalsPath: UnwrapRef<typeof import('../core/path/src/index')['signalsPath']>
     readonly sleep: UnwrapRef<typeof import('../core/utils/src/sleep')['sleep']>
     readonly slugPath: UnwrapRef<typeof import('../core/path/src/index')['slugPath']>
     readonly sms77: UnwrapRef<typeof import('../core/sms/src/drivers/index')['sms77']>
@@ -2570,7 +2568,6 @@ declare module '@vue/runtime-core' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly signal: UnwrapRef<typeof import('../core/signals/src/index')['signal']>
-    readonly signalsPath: UnwrapRef<typeof import('../core/path/src/index')['signalsPath']>
     readonly sleep: UnwrapRef<typeof import('../core/utils/src/sleep')['sleep']>
     readonly slugPath: UnwrapRef<typeof import('../core/path/src/index')['slugPath']>
     readonly sms77: UnwrapRef<typeof import('../core/sms/src/drivers/index')['sms77']>

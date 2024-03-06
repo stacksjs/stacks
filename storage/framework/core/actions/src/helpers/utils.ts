@@ -1,6 +1,7 @@
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { storage } from '@stacksjs/storage'
 import { log } from '@stacksjs/logging'
+import { err } from '@stacksjs/error-handling'
 import * as p from '@stacksjs/path'
 import type { ActionOptions } from '@stacksjs/types'
 
@@ -41,6 +42,7 @@ export async function runActions(actions: string[], options?: ActionOptions) {
     return err('No actions were specified')
 
   for (const action of actions) {
+    log.debug(`running action "${action}"`)
     if (!hasAction(action))
       return err(`The specified action "${action}" does not exist`)
   }
@@ -52,11 +54,13 @@ export async function runActions(actions: string[], options?: ActionOptions) {
     ...options,
   }
 
-  const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`${action}.ts`)} ${opts}`)
+  const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
+
+  log.debug('commands:', commands)
 
   return await runCommands(commands, o)
 }
 
 export function hasAction(action: string) {
-  return storage.isFile(p.actionsPath(`${action}.ts`))
+  return storage.isFile(p.actionsPath(`src/${action}.ts`))
 }

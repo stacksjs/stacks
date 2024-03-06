@@ -69,7 +69,6 @@
   ],
   "exclude": [
     "../**/cdk.out",
-    "../commitlint.config.cjs",
     "../**/dist",
     "../**/fixtures",
     "../node_modules",

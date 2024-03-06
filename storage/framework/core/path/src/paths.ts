@@ -1050,16 +1050,6 @@ export function schedulerPath(path?: string) {
 }
 
 /**
- * Returns the path to the `signals` directory within the core directory.
- *
- * @param path - The relative path to the file or directory within the `signals` directory.
- * @returns The absolute path to the specified file or directory within the `signals` directory.
- */
-export function signalsPath(path?: string) {
-  return corePath(`signals/${path || ''}`)
-}
-
-/**
  * Returns the path to the `slug` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the slug directory.
@@ -1338,7 +1328,6 @@ export const path = {
   schedulerPath,
   settingsPath,
   smsPath,
-  signalsPath,
   slugPath,
   scriptsPath,
   securityPath,

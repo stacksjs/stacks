@@ -49,6 +49,7 @@
     "prepublishOnly": "bun --bun run build"
   },
   "peerDependencies": {
+    "@commitlint/cli": "^19.0.3",
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.56.5",
     "eslint": "^8.57.0",
@@ -56,6 +57,7 @@
     "publint": "^0.2.7"
   },
   "dependencies": {
+    "@commitlint/cli": "^19.0.3",
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.56.5",
     "eslint": "^8.57.0",

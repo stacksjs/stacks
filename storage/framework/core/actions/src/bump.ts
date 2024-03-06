@@ -9,10 +9,10 @@ await runCommand(changelogCommand, {
 })
 
 const bumpCommand = options?.dryRun
-  ? 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --no-push'
-  : 'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all'
+  ? 'bunx bumpp ./core/package.json ./core/**/package.json ./ide/vscode/package.json --no-push'
+  : 'bunx bumpp ./core/package.json ./core/**/package.json ./ide/vscode/package.json --all'
 
 await runCommand(bumpCommand, {
-  cwd: p.frameworkPath(),
+  cwd: p.frameworkPath('core'),
   stdin: 'inherit',
 })
