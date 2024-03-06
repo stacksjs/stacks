@@ -26,7 +26,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: Use cached node_modules
+      - name: Use Cached node_modules
         uses: actions/cache@v4
         with:
           path: node_modules
@@ -37,12 +37,12 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Publish framework
+      - name: Publish Framework
         run: ./storage/framework/scripts/publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish dummy libraries
+      - name: Publish Dummy Libraries
         run: bunx pnpm --filter='./storage/framework' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -57,7 +57,7 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
-      - name: Create GitHub release
+      - name: Create GitHub Release
         run: bunx changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
