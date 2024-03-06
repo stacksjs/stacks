@@ -1,7 +1,7 @@
 {
   "name": "stacks-raycast",
   "type": "module",
-  "version": "0.59.7",
+  "version": "0.59.8",
   "description": "The Stacks Raycast plugin.",
   "scripts": {
     "build": "echo 'No build step required yet.'"
