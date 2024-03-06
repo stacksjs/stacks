@@ -269,7 +269,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac (dependency-free binaries)_
-- 📀 **Database** _SQLite, MySQL, Postgres, PlanetScale, and more_
+- 📀 **Database** _SQLite, MySQL, Postgres, and more_
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_

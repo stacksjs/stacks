@@ -41,12 +41,10 @@ export const logger = createConsola({
 
 export { consola }
 
-export const logFilePath = logsPath('console.log')
-
 async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
   try {
-    await appendFile(logFilePath, formattedMessage)
+    await appendFile(logsPath('console.log'), formattedMessage)
   }
   catch (error) {
     console.error('Failed to write to log file:', error)

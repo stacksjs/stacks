@@ -423,11 +423,6 @@ export default {
       apiKey: '',
     },
 
-    planetscale: {
-      appId: '',
-      apiKey: '',
-    },
-
     supabase: {
       appId: '',
       apiKey: '',

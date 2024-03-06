@@ -27,8 +27,6 @@ export default {
       prefix: '',
     },
 
-    planetscale: {},
-
     postgres: {},
   },
 

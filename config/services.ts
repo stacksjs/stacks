@@ -31,11 +31,6 @@ export default {
     apiKey: '',
   },
 
-  planetscale: {
-    appId: '',
-    apiKey: '',
-  },
-
   stripe: {
     appId: '',
     apiKey: '',

@@ -31,7 +31,7 @@ export default {
   API_PREFIX: validate.string(),
   DOCS_PREFIX: validate.string(),
 
-  DB_CONNECTION: validate.enum(['mysql', 'sqlite', 'postgres', 'planetscale']),
+  DB_CONNECTION: validate.enum(['mysql', 'sqlite', 'postgres']),
   DB_HOST: validate.string(),
   DB_PORT: validate.number(),
   DB_DATABASE: validate.string(),
