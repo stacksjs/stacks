@@ -133,14 +133,14 @@ export interface OptionsFormatters {
   /**
    * Custom options for Prettier.
    *
-   * By default it's controlled by our own config.
+   * By default it’s controlled by our own config.
    */
   prettierOptions?: VendoredPrettierOptions
 
   /**
    * Custom options for dprint.
    *
-   * By default it's controlled by our own config.
+   * By default it’s controlled by our own config.
    */
   dprintOptions?: boolean
 }

@@ -238,7 +238,7 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
     }
 
     // The callback wrapper checks if it needs to sleep another period or not
-    // and does the real callback logic when it's time.
+    // and does the real callback logic when it’s time.
     const callbackWrapper = () => {
       const diff = startTime + timeout - Date.now()
 

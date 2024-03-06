@@ -9,7 +9,7 @@ const s3 = new S3({ apiVersion: '2006-03-01' })
 
 // oddly, this somehow does not play well within a CDK construct
 // so we need to use the AWS SDK directly to create the rule
-// unsure whether it's an AWS or implementation issue
+// unsure whether it’s an AWS or implementation issue
 
 // need to query S3 to get the bucket name, based on whether the name contains -email-
 // which is indicative of the email bucket created by the CDK construct

@@ -163,7 +163,7 @@ export function cloud(buddy: CLI) {
       // TODO: this should not be necessary but for some reason some buckets with versions aren't properly getting deleted
       // and because of that, we simply run the command several times, because eventually the versions will be deleted
       // and consequently the buckets will be deleted
-      // the reason we are using 7 as the number of times to run the command is because it's the most amount of times I have had to run it to get it to delete everything
+      // the reason we are using 7 as the number of times to run the command is because it’s the most amount of times I have had to run it to get it to delete everything
       try {
         log.info('Finalizing the removal of your cloud resources.')
         log.info('This will take a few moments...')

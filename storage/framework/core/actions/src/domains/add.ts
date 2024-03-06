@@ -33,8 +33,8 @@ await updateNameservers(nameServers)
 
 const registrar: string = (await whois(domain, true)).parsedData.Registrar
 
-// usually for Route53 registered domains, we don't need to update create a hosted zone as it's already
-// done for us. But in case it's not, we still need to ensure it's created before we can deploy
+// usually for Route53 registered domains, we don't need to update create a hosted zone as it’s already
+// done for us. But in case it’s not, we still need to ensure it’s created before we can deploy
 if (registrar.includes('Amazon')) {
   if (options.deploy) {
     await runCommand('buddy deploy')

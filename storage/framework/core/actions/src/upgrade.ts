@@ -21,7 +21,7 @@ export function checkForUncommittedChanges(options: UpgradeOptions) {
   catch (error: any) {
     if (error.status === 1) {
       // even though the ./stacks folder should not be edited, instead config values should be adjusted,
-      // there is a chance that users may apply local core edits, as it's totally acceptable, as long as
+      // there is a chance that users may apply local core edits, as it’s totally acceptable, as long as
       // the user knows what they are doing. There is also a change that simply the deps within stacks
       // folder have been updated and that could produce a diff.
       if (!options?.force) {

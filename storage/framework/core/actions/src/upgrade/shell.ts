@@ -16,7 +16,7 @@ $.cwd(p.dirname(zshrcPath))
 let data = await $`cat ${p.basename(zshrcPath)}`.text()
 
 // Manipulate the data
-const pluginLineRegex = /^(?!#).*plugins=\(([^)]+)\)/m // ensure it's not a comment
+const pluginLineRegex = /^(?!#).*plugins=\(([^)]+)\)/m // ensure it’s not a comment
 const match = data.match(pluginLineRegex)
 
 if (match) {
@@ -27,10 +27,10 @@ if (match) {
     process.exit(ExitCode.FatalError)
   }
 
-  // 2. Add buddy to the list of plugins if it's not already there
+  // 2. Add buddy to the list of plugins if it’s not already there
   if (!plugins.includes('buddy')) {
     plugins.push('buddy')
-    // Trim each plugin name and ensure it's formatted correctly
+    // Trim each plugin name and ensure it’s formatted correctly
     const formattedPlugins = plugins.map(plugin => plugin.trim()).join('\n    ')
     const newPluginLine = `plugins=(\n    ${formattedPlugins}\n)`
     // Replace the old plugin line with the new one

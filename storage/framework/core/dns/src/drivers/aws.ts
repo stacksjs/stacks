@@ -48,7 +48,7 @@ export async function deleteHostedZone(domainName: string) {
   return ok('success')
 }
 
-// sometimes it's useful to delete all records but keep the hosted zone
+// sometimes it’s useful to delete all records but keep the hosted zone
 // for example, if you want to keep the nameservers
 export async function deleteHostedZoneRecords(domainName: string) {
   const route53 = new Route53()

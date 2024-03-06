@@ -23,7 +23,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ## 🤖 Usage
 
-Because this project is optimized toward the development of easily reusable & composable component libraries, it's very easy to use (and distribute):
+Because this project is optimized toward the development of easily reusable & composable component libraries, it’s very easy to use (and distribute):
 
 ```vue
 <script setup lang="ts">

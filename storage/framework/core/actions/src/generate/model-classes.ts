@@ -58,7 +58,7 @@ export class UserModel {
         if (prop in target)
           return target[prop]
 
-        // If it's a method on the UserModel, bind it
+        // If it’s a method on the UserModel, bind it
         const method = this[prop as keyof this]
         if (typeof method === 'function')
           return method.bind(this)

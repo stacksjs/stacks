@@ -563,15 +563,15 @@ Well, you can still use Prettier to format files that are not supported well by 
 
 ### dprint?
 
-[dprint](https://dprint.dev/) is also a great formatter that with more abilities to customize. However, it's in the same model as Prettier which reads the AST and reprints the code from scratch. This means it's similar to Prettier, which ignores the original line breaks and might also cause the inconsistent diff. So in general, we prefer to use ESLint to format and lint JavaScript/TypeScript code.
+[dprint](https://dprint.dev/) is also a great formatter that with more abilities to customize. However, it’s in the same model as Prettier which reads the AST and reprints the code from scratch. This means it’s similar to Prettier, which ignores the original line breaks and might also cause the inconsistent diff. So in general, we prefer to use ESLint to format and lint JavaScript/TypeScript code.
 
 Meanwhile, we do have dprint integrations for formatting other files such as `.md`. See [formatters](#formatters) for more details.
 
 ### How to format CSS?
 
-You can opt-in to the [`formatters`](#formatters) feature to format your CSS. Note that it's only doing formatting, but not linting. If you want proper linting support, give [`stylelint`](https://stylelint.io/) a try.
+You can opt-in to the [`formatters`](#formatters) feature to format your CSS. Note that it’s only doing formatting, but not linting. If you want proper linting support, give [`stylelint`](https://stylelint.io/) a try.
 
-### I prefer XXX...
+### I prefer XXX
 
 Sure, you can configure and override rules locally in your project to fit your needs. If that still does not work for you, you can always fork this repo and maintain your own.
 
