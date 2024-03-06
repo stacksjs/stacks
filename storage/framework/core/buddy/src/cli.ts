@@ -29,7 +29,7 @@ async function main() {
   // before running any commands, ensure the project is already initialized
   const isAppKeySet = await ensureProjectIsInitialized()
   if (isAppKeySet) {
-    log.info('Project is initialized')
+    log.debug('Project is initialized')
   }
   else {
     log.warn('Your `APP_KEY` is not yet')

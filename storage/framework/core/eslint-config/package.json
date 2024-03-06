@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/eslint-config",
   "type": "module",
-  "version": "0.59.8",
+  "version": "0.59.9",
   "description": "The Stacks.js ESLint config preset, heavily inspired by Anthony's ESLint config.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com> (https://github.com/antfu/)",
   "license": "MIT",

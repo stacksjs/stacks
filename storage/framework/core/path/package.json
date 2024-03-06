@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/path",
   "type": "module",
-  "version": "0.59.8",
+  "version": "0.59.9",
   "description": "The Stacks path.",
   "author": "Chris Breuer",
   "license": "MIT",

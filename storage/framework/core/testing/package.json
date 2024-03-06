@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/testing",
   "type": "module",
-  "version": "0.59.8",
+  "version": "0.59.9",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "license": "MIT",
