@@ -25,7 +25,7 @@ export class DeploymentStack {
 
     new s3deploy.BucketDeployment(scope, 'Website', {
       sources: [s3deploy.Source.asset(this.websiteSource, {
-        assetHash: websiteSourceHash,
+        assetHash: websiteSourceHash(),
         assetHashType: AssetHashType.CUSTOM,
       })],
       destinationBucket: props.publicBucket,
