@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/whois",
   "type": "module",
-  "version": "0.59.6",
+  "version": "0.59.7",
   "description": "Easily get whois info.",
   "author": "Chris Breuer",
   "license": "MIT",
