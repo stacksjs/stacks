@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/queue",
   "type": "module",
-  "version": "0.58.73",
+  "version": "0.59.1",
   "description": "The Stacks Queue system.",
   "author": "Chris Breuer",
   "license": "MIT",
