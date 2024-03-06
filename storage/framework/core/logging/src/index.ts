@@ -1,12 +1,13 @@
 import process from 'node:process'
-import { appendFile } from 'node:fs/promises'
+import { appendFile, mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { logsPath } from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
 import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
+import { logsPath } from '@stacksjs/path'
 
 export function logLevel() {
   /**
@@ -44,7 +45,16 @@ export { consola }
 async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
   try {
-    await appendFile(logsPath('console.log'), formattedMessage)
+    try {
+      const logFilePath = logsPath('console.log')
+      // Ensure the directory exists
+      await mkdir(dirname(logFilePath), { recursive: true })
+      // Append the message to the log file
+      await appendFile(logFilePath, formattedMessage)
+    }
+    catch (error) {
+      console.error('Failed to write to log file:', error)
+    }
   }
   catch (error) {
     console.error('Failed to write to log file:', error)
