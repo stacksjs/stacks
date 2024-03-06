@@ -41,7 +41,7 @@ jobs:
         run: bun buddy key:generate
 
       - name: Prepublish # these packages are required for the "Publish framework" step
-        run: cd storage/framework && bun run build
+        run: cd storage/framework/core && bun run build
 
       - name: Publish framework
         run: ./storage/framework/scripts/publish
