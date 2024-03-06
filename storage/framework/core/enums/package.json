@@ -36,6 +36,7 @@
   },
   "files": [
     "README.md",
+    "dist",
     "src"
   ],
   "scripts": {
