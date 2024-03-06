@@ -1,6 +1,7 @@
 import { hashPaths } from '@stacksjs/storage'
 import { path as p } from '@stacksjs/path'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 
 export function originRequestFunctionHash() {
   try {
