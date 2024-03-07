@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/build",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.59.10",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "license": "MIT",
