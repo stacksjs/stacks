@@ -34,7 +34,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue-macros/volar": "^0.18.11",
     "@vue/test-utils": "^2.4.4",
-    "critters": "^0.0.21",
+    "critters": "^0.0.22",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shikiji": "^0.10.2",
     "rollup": "^4.12.1",
