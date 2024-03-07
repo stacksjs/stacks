@@ -1,4 +1,4 @@
-import { logsPath } from '@stacksjs/path'
+import { dirname, logsPath } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 
 interface ErrorOptions {
