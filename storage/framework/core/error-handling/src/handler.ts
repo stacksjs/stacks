@@ -1,5 +1,5 @@
 import { dirname, logsPath } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import fs from 'fs-extra'
 
 interface ErrorOptions {
   silent?: boolean

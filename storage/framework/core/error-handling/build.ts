@@ -9,7 +9,6 @@ await Bun.build({
   external: [
     '@stacksjs/cli',
     '@stacksjs/path',
-    '@stacksjs/storage',
   ],
 
   plugins: [

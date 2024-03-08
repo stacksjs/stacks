@@ -43,9 +43,8 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     detached: options?.background || false,
     cwd: options?.cwd || import.meta.dir,
     // env: { ...e, ...options?.env },
-    onExit(_subprocess, exitCode, _signalCode, _error) {
-      if (exitCode && exitCode !== ExitCode.Success)
-        process.exit(exitCode)
+    onExit(subprocess, exitCode, signalCode, error) {
+      exitHandler('spawn', subprocess, exitCode, signalCode, error)
     },
   })
 
@@ -103,12 +102,26 @@ export async function execSync(command: string | string[], options?: CliOptions)
     stderr: options?.stderr ?? 'inherit',
     cwd: options?.cwd ?? import.meta.dir,
     // env: { ...Bun.env, ...options?.env },
-    onExit(_subprocess, exitCode, _signalCode, _error) {
-      // console.log('onExit', { subprocess, exitCode, signalCode, error })
-      if (exitCode !== ExitCode.Success && exitCode)
-        process.exit(exitCode)
+    onExit(subprocess, exitCode, signalCode, error) {
+      exitHandler('spawnSync', subprocess, exitCode, signalCode, error)
     },
   })
 
   return proc.stdout.toString()
+}
+
+// @ts-expect-error - missing types is okay here but can be improved later on
+function exitHandler(type: 'spawn' | 'spawnSync', subprocess, exitCode, signalCode, error) {
+  log.debug(`exitHandler: ${type}`)
+  log.debug('subprocess', subprocess)
+  log.debug('exitCode', exitCode)
+  log.debug('signalCode', signalCode)
+
+  if (error) {
+    log.error(error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  if (exitCode !== ExitCode.Success && exitCode)
+    process.exit(exitCode)
 }
