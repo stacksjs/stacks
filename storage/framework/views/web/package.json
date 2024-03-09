@@ -15,7 +15,7 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@unhead/vue": "^1.8.11",
+    "@unhead/vue": "^1.8.12",
     "@unocss/reset": "^0.58.5",
     "@vueuse/core": "^10.9.0",
     "@vueuse/head": "^2.0.0",
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.1.31",
-    "@intlify/unplugin-vue-i18n": "^3.0.0",
+    "@intlify/unplugin-vue-i18n": "^3.0.1",
     "@types/markdown-it-link-attributes": "^3.0.4",
     "@types/nprogress": "^0.2.3",
     "@unocss/eslint-config": "^0.58.5",

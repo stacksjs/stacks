@@ -47,12 +47,12 @@
   "peerDependencies": {
     "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.27.2"
+    "kysely": "^0.27.3"
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.27.2"
+    "kysely": "^0.27.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
