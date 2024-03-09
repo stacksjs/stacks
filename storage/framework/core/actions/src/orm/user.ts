@@ -1,3 +1,6 @@
+// TODO: this whole file needs to be auto-generated
+// but ultimately, it should be generated to here storage/framework/orm/UserModel.ts
+
 import process from 'node:process'
 import { db } from '@stacksjs/database'
 import type { Collection } from '@stacksjs/collections'
