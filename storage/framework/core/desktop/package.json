@@ -61,7 +61,7 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^1.5.3",
-    "@tauri-apps/cli": "^1.5.10",
+    "@tauri-apps/cli": "^1.5.11",
     "unified-network": "^0.6.4",
     "unstorage": "^1.10.1",
     "vue": "^3.4.21"
@@ -70,7 +70,7 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^1.5.3",
-    "@tauri-apps/cli": "^1.5.10",
+    "@tauri-apps/cli": "^1.5.11",
     "unified-network": "^0.6.4",
     "unstorage": "^1.10.1",
     "vue": "^3.4.21"

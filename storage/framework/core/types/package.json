@@ -81,7 +81,7 @@
     "vue": "^3.4.21"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.131.0",
+    "aws-cdk-lib": "^2.132.0",
     "typescript": "^5.4.2"
   }
 }
