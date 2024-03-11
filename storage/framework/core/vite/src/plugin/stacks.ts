@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-// @ts-expect-error - unsure why this is an error because those are valid exports
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'

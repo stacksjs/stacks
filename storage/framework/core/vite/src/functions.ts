@@ -1,11 +1,12 @@
 import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
+import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
 // import { autoImports } from '.'
 
-export const functionsConfig: ViteConfig = {
+export const functionsConfig: UserConfig = {
   root: functionsPath(),
   envDir: projectPath(),
   envPrefix: '',

@@ -57,7 +57,6 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
   }
 }
 
-// @ts-expect-error - resolve this later
 export default defineConfig(({ command }) => {
   if (command === 'serve')
     return webComponentsConfig

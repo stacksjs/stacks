@@ -1,5 +1,4 @@
 import { examplesPath } from '@stacksjs/path'
-import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import { defineConfig } from 'vite'
 
@@ -10,9 +9,9 @@ export const webComponentsExampleConfig = {
     alias,
   },
 
-  server: server({
-    type: 'example',
-  }),
+  // server: server({
+  //   type: 'example',
+  // }),
 
   // plugins: [
   //   uiEngine(true),

@@ -1,6 +1,4 @@
 import { kolorist as c } from '@stacksjs/cli'
-
-// @ts-expect-error - unsure why this is an error because those are valid exports
 import type { ViteDevServer } from 'vite'
 import { version } from '../../package.json'
 

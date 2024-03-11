@@ -1,6 +1,7 @@
 import v, { Vine as Validator } from '@vinejs/vine'
 import { MoneyValidator } from './types/money'
 
+// @ts-expect-error - investigate why this is not working
 Validator.macro('money', () => {
   return new MoneyValidator()
 })

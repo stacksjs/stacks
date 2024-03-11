@@ -1,6 +1,6 @@
 import { ViteSSG } from 'vite-ssg'
 import { setupLayouts } from 'virtual:generated-layouts'
-import { routes } from 'vue-router/auto/routes'
+import { routes } from 'vue-router/auto-routes'
 import { resourcesPath } from '@stacksjs/path'
 import App from './App.stx'
 import type { UserModule } from './types'
