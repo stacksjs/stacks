@@ -1,4 +1,6 @@
 import process from 'node:process'
+
+// @ts-expect-error wip
 import { schedule } from '@stacksjs/scheduler'
 
 /**
