@@ -1,5 +1,3 @@
-import dts from 'bun-plugin-dts-auto'
-
 await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
@@ -42,9 +40,4 @@ await Bun.build({
     'vue-demi',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })

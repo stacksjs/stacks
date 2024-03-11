@@ -1,5 +1,3 @@
-import dts from 'bun-plugin-dts-auto'
-
 await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
@@ -70,11 +68,6 @@ await Bun.build({
     '@aws-sdk/client-lambda',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })
 
 // Building the edge/origin-request separately
@@ -82,9 +75,4 @@ await Bun.build({
   entrypoints: ['./src/edge/origin-request.ts'],
   outdir: './dist',
   // Specify any additional options if needed
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })

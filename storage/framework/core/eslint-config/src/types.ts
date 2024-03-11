@@ -88,13 +88,6 @@ export interface OptionsVue extends OptionsOverrides {
    * @default true
    */
   sfcBlocks?: boolean | VueBlocksOptions
-
-  /**
-   * Vue version. Apply different rules set from `eslint-plugin-vue`.
-   *
-   * @default 3
-   */
-  vueVersion?: 2 | 3
 }
 
 export type OptionsTypescript =

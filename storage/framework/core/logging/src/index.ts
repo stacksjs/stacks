@@ -42,7 +42,7 @@ export const logger = createConsola({
 
 export { consola }
 
-async function writeToLogFile(message: string) {
+export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
   try {
     try {

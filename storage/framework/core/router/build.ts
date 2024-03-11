@@ -7,7 +7,6 @@
 // if (result.isErr())
 //   log.error(result.error)
 
-import dts from 'bun-plugin-dts-auto'
 import { log } from '@stacksjs/logging'
 
 log.info(`Building @stacksjs/router...`)
@@ -23,11 +22,6 @@ await Bun.build({
     '@stacksjs/logging',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })
 
 log.success(`Built @stacksjs/router`)

@@ -1,5 +1,3 @@
-import dts from 'bun-plugin-dts-auto'
-
 await Bun.build({
   root: './src',
 
@@ -15,9 +13,4 @@ await Bun.build({
     '@aws-sdk/client-bedrock',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })

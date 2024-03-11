@@ -1,5 +1,3 @@
-import dts from 'bun-plugin-dts-auto'
-
 await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
@@ -23,9 +21,4 @@ await Bun.build({
     'bun',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })
