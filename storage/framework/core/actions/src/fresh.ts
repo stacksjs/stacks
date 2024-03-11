@@ -2,6 +2,7 @@ import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { runCommand } from '@stacksjs/cli'
 import { logger } from '@stacksjs/logging'
+import { handleError } from '@stacksjs/error-handling'
 import { projectPath } from '@stacksjs/path'
 import { cleanProject } from '@stacksjs/utils'
 

@@ -110,8 +110,8 @@ export class Schedule {
   }
 
   static command(cmd: string) {
-    // log.info(`Executing command: ${cmd}`)
-    this.cmd = cmd
+    log.info(`Executing command: ${cmd}`)
+    // this.cmd = cmd
     return this
   }
 }

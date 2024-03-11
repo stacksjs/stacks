@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 const apiKey = ''
 
 const stripe = new Stripe(apiKey, {
-  apiVersion: '2023-08-16',
+  apiVersion: '2023-10-16',
 })
 
 // TODO: learn about subscriptions

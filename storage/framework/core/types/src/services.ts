@@ -14,6 +14,11 @@ export interface ServicesOptions {
     apiKey: string
   }
 
+  lemonSqueezy?: {
+    appId: string
+    apiKey: string
+  }
+
   stripe?: {
     appId: string
     apiKey: string

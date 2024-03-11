@@ -259,6 +259,10 @@ export async function createMigration(options: MakeOptions) {
   const optionName = options.name
   // const table = options.tableName
   const table = 'dummy-name'
+
+  if (!optionName[0])
+    throw new Error('options.name is required and cannot be empty')
+
   const name = optionName[0].toUpperCase() + optionName.slice(1)
   const path = frameworkPath(`database/migrations/${name}.ts`)
 
@@ -277,13 +281,17 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     log.success(`Successfully created your migration file at stacks/database/migrations/${name}.ts`)
   }
-  catch (error) {
+  catch (error: any) {
     log.error(error)
   }
 }
 
 export async function createModel(options: MakeOptions) {
   const optionName = options.name
+
+  if (!optionName[0])
+    throw new Error('options.name is required and cannot be empty')
+
   const name = optionName[0].toUpperCase() + optionName.slice(1)
   const path = projectPath(`app/Models/${name}.ts`)
   try {
@@ -316,7 +324,7 @@ export default <Model> {
 
     log.success(`Successfully created your model at app/Models/${name}.ts`)
   }
-  catch (error) {
+  catch (error: any) {
     log.error(error)
   }
 }

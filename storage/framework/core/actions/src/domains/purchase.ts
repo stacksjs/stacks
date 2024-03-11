@@ -5,6 +5,8 @@ import { purchaseDomain } from '@stacksjs/cloud'
 import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
+import type { CountryCode } from '@aws-sdk/client-route-53-domains'
+import { ContactType } from '@aws-sdk/client-route-53-domains'
 
 const c = config.dns.contactInfo
 if (!c) {
@@ -24,7 +26,7 @@ const defaultOptions: PurchaseOptions = {
   registrantAddressLine2: c.addressLine2 as string,
   registrantCity: c.city as string,
   registrantState: c.state as string,
-  registrantCountry: c.countryCode as string,
+  registrantCountry: c.countryCode as CountryCode,
   registrantZip: c.zip as string,
   registrantPhone: c.phoneNumber as string,
   registrantEmail: c.email as string,
@@ -35,7 +37,7 @@ const defaultOptions: PurchaseOptions = {
   adminAddressLine2: c.admin?.addressLine2 || c.addressLine2 as string,
   adminCity: c.admin?.city || c.city as string,
   adminState: c.admin?.state || c.state as string,
-  adminCountry: c.admin?.countryCode || c.countryCode as string,
+  adminCountry: c.admin?.countryCode as CountryCode || c.countryCode as string,
   adminZip: c.admin?.zip || c.zip as string,
   adminPhone: c.admin?.phoneNumber as string || c.phoneNumber as string,
   adminEmail: c.admin?.email || c.email as string,
@@ -46,14 +48,14 @@ const defaultOptions: PurchaseOptions = {
   techAddressLine2: c.tech?.addressLine2 || c.addressLine2 as string,
   techCity: c.tech?.city || c.city as string,
   techState: c.tech?.state || c.state as string,
-  techCountry: c.tech?.countryCode || c.countryCode as string,
+  techCountry: c.tech?.countryCode as CountryCode || c.countryCode as string,
   techZip: c.tech?.zip || c.zip as string,
   techPhone: c.tech?.phoneNumber as string || c.phoneNumber as string,
   techEmail: c.tech?.email || c.email as string,
   privacyAdmin: c.privacyAdmin || c.privacy || true,
   privacyTech: c.privacyTech || c.privacy || true,
   privacyRegistrant: c.privacyRegistrant || c.privacy || true,
-  contactType: 'person',
+  contactType: ContactType.PERSON,
   verbose: false,
 }
 

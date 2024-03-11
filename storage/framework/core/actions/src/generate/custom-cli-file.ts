@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { writeTextFile } from '@stacksjs/storage'
+import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { cli } from '@stacksjs/config'
 

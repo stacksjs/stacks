@@ -49,6 +49,8 @@
   "exclude": [
     "./dist",
     "./**/dist",
+    "./test",
+    "./**/test",
     "./tests",
     "./**/tests",
     "./node_modules",
