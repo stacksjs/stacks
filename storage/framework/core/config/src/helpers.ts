@@ -1,4 +1,4 @@
-import type { AppConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, SecurityConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
+import type { AppConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, SecurityConfig, ServicesConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
 import { createLocalTunnel } from '@stacksjs/tunnel'
 import { config } from '.'
 
@@ -235,7 +235,7 @@ export function defineServices(config: ServicesConfig) {
   return config
 }
 
-export function defineSms(config: SmsConfig) {
+export function defineSms(config: any) {
   return config
 }
 
