@@ -2,6 +2,19 @@
 
 ## To learn more, visit https://stacksjs.org/docs/guide/bootstrap
 
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# Check for required commands
+for cmd in git bun mkfifo; do
+  if ! command_exists "$cmd"; then
+    echo "Error: '$cmd' is required but not installed. Please install $cmd and try again."
+    exit 1
+  fi
+done
+
 if [ -n "$1" ]; then
   # Check if the directory exists
   if [ -d "storage/framework/core" ]; then # determines whether we are in a Stacks context
@@ -11,13 +24,17 @@ if [ -n "$1" ]; then
       echo "Project $1 exists locally. Please use a different name & run again."
       exit 1
     else
-      git clone https://github.com/stacksjs/stacks.git $1
+      git clone https://github.com/stacksjs/stacks.git "$1"
       cd "$1" || exit 1
 
       # Save current project directory path
       projectDir=$(pwd)
 
       # Run the pkgx-install script (in case it’s already installed, it will be updated to the latest version)
+      if ! command_exists "./storage/framework/scripts/pkgx-install"; then
+        echo "Error: pkgx-install script not found in './storage/framework/scripts/pkgx-install'. Please check your installation and try again."
+        exit 1
+      fi
       "./storage/framework/scripts/pkgx-install"
 
       echo "Installing project dependencies via bun..."
@@ -50,12 +67,18 @@ cd "$PROJECT_ROOT" || exit 1
 # Run the pkgx-install script
 case "$*" in
   *--verbose*)
+    if [ ! -f "$SCRIPT_PATH" ]; then
+      echo "Error: Script path $SCRIPT_PATH does not exist."
+      exit 1
+    fi
     "$SCRIPT_PATH"
-    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
     ;;
   *)
+    if [ ! -f "$SCRIPT_PATH" ]; then
+      echo "Error: Script path $SCRIPT_PATH does not exist."
+      exit 1
+    fi
     "$SCRIPT_PATH" > /dev/null 2>&1
-    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup
     ;;
 esac
 
