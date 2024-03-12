@@ -8,7 +8,7 @@ command_exists() {
 }
 
 # Check for required commands
-for cmd in git bun mkfifo; do
+for cmd in git mkfifo; do
   if ! command_exists "$cmd"; then
     echo "Error: '$cmd' is required but not installed. Please install $cmd and try again."
     exit 1
@@ -85,8 +85,16 @@ esac
 # Create a named pipe
 mkfifo /tmp/pipe
 
+# Bun is assumed to be installed after it's initial set up
 # Run the command, send output to both the console and the pipe
-bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
+if ! command_exists bun; then
+  # We'll use pgkx with bun to get
+  pkgx bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
+  exit 1
+else
+  bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
+fi
+
 
 # Read from the pipe, add timestamps, and append to the file
 while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/pipe >> "$LOG_PATH"
