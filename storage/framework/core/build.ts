@@ -11,7 +11,7 @@ const startTime = Date.now()
 
 for (const dir of dirs) {
   // bun-create has only nested dirs, no need to build
-  if (dir.includes('bun-create'))
+  if (dir.includes('bun-create') || dir.includes('dist'))
     continue
 
   const pkgName = `@stacksjs/${p.basename(dir)}`

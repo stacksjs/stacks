@@ -1,4 +1,8 @@
-await Bun.build({
+import { outro } from '@stacksjs/build'
+
+const startTime = Date.now()
+
+const result = await Bun.build({
   root: './src',
   outdir: './dist',
   format: 'esm',
@@ -18,7 +22,6 @@ await Bun.build({
     './src/generate/ide-helpers.ts',
     './src/generate/lib-entries.ts',
     './src/generate/vscode-custom-data.ts',
-    './src/helpers/index.ts',
     './src/helpers/component-meta.ts',
     './src/helpers/lib-entries.ts',
     './src/helpers/package-json.ts',
@@ -72,4 +75,10 @@ await Bun.build({
     '@stacksjs/database',
     'bun',
   ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

@@ -49,6 +49,7 @@
   },
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
+    "@stacksjs/build": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",
