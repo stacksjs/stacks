@@ -1,4 +1,5 @@
 import { SES } from '@aws-sdk/client-ses'
+import { log } from '@stacksjs/logging'
 import type { RenderOptions } from './template'
 import { template } from './template'
 import type { Message, SendEmailParams } from './types'

@@ -280,7 +280,7 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      log.info(path, name)
+      // log.info(path)
     })
 
   buddy
@@ -293,14 +293,14 @@ export function make(buddy: CLI) {
       const domain = await localUrl()
       log.info(`Creating SSL certificate...`)
 
-      await runCommand(`mkcert ${domain}`, {
+      await runCommand(`tlsx ${domain}`, {
         cwd: p.projectStoragePath('keys'),
       })
 
       log.success('Certificate created')
 
       log.info(`Installing SSL certificate...`)
-      await runCommand(`mkcert -install`, {
+      await runCommand(`tlsx -install`, {
         cwd: p.projectStoragePath('keys'),
       })
       log.success('Certificate installed')

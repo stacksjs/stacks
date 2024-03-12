@@ -45,7 +45,7 @@ const handler = {
 
 export function process() {
   return typeof Bun !== 'undefined'
-    ? Bun.env as Env
+    ? Bun.env as unknown as Env
     : p.env as unknown as Env
 }
 

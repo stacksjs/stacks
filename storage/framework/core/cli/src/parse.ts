@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { log } from '@stacksjs/logging'
 
 interface ParsedArgv {
   args: string[]

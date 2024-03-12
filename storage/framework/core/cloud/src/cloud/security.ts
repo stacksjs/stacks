@@ -81,7 +81,7 @@ export class SecurityStack {
         name: 'IpSet',
         description: 'IP Set',
         scope: 'CLOUDFRONT',
-        addresses: config.security.firewall.ipAddresses,
+        addresses: config.security.firewall.ipAddresses as string[],
         ipAddressVersion: 'IPV4',
       })
 

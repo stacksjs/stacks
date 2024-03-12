@@ -1,6 +1,7 @@
 import type { AddressInfo } from 'node:net'
 import { log, runCommand } from '@stacksjs/cli'
 import type { Result } from '@stacksjs/error-handling'
+import { runAction } from '@stacksjs/actions'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'

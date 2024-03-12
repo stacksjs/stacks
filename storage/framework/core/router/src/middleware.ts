@@ -1,4 +1,4 @@
-import { appPath } from '@stacksjs/path'
+import { userMiddlewarePath } from '@stacksjs/path'
 import type { MiddlewareOptions } from '@stacksjs/types'
 
 export class Middleware implements MiddlewareOptions {
@@ -30,4 +30,4 @@ async function importMiddlewares(directory: string) {
   return [directory] // fix this: return array of middlewares
 }
 
-export const middlewares = await importMiddlewares(appPath('middleware'))
+export const middlewares = await importMiddlewares(userMiddlewarePath())

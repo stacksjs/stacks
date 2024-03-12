@@ -1,5 +1,5 @@
-import { URL } from 'node:url'
 import process from 'node:process'
+import { extname } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
 import type { MiddlewareOptions, Route, StatusCode } from '@stacksjs/types'
 import { middlewares } from './middleware'
@@ -82,9 +82,10 @@ function executeMiddleware(route: Route): void {
   const { middleware = null } = route
 
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
+    let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
-      const middlewareItem: MiddlewareOptions = middlewares.find((middlewareItem: MiddlewareOptions) => {
-        return middlewareItem.name === middleware
+      middlewareItem = middlewares.find((m) => {
+        return m.name === middleware
       })
 
       if (middlewareItem)
@@ -92,7 +93,7 @@ function executeMiddleware(route: Route): void {
     }
     else {
       middleware.forEach((m) => {
-        const middlewareItem: MiddlewareOptions = middlewares.find((middlewareItem: MiddlewareOptions) => {
+        middlewareItem = middlewares.find((middlewareItem: MiddlewareOptions) => {
           return middlewareItem.name === m
         })
 

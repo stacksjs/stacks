@@ -43,8 +43,10 @@
     "skipLibCheck": true
   },
   "include": [
+    "./*.stx",
+    "./**/*.stx",
     "./*.ts",
-    "./**/*.ts",
+    "./**/*.ts"
   ],
   "exclude": [
     "./dist",

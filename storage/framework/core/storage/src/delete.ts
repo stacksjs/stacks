@@ -1,5 +1,6 @@
 import type { Result } from '@stacksjs/error-handling'
-import { err, ok } from '@stacksjs/error-handling'
+import { join } from '@stacksjs/path'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import { italic, log } from '@stacksjs/cli'
 import { isFile } from './files'
 import { isFolder } from './folders'

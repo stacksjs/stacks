@@ -1,7 +1,5 @@
 import User from '../../../../../../app/Models/User'
 
-const fields = User.fields // Assuming you have a specific type for fields
-
 export interface ModelElement {
   field: string
   default: string | number | boolean | Date | undefined | null
@@ -33,6 +31,8 @@ async function extractModelRule() {
 
 await extractModelRule()
 
+// TODO: we can improve this type
+const fields: Record<string, any> = User.fields
 const fieldKeys = Object.keys(fields)
 
 const input: ModelElement[] = fieldKeys.map((field, index) => {
@@ -41,15 +41,15 @@ const input: ModelElement[] = fieldKeys.map((field, index) => {
   let uniqueValue = false
 
   if (fieldExist) {
-    defaultValue = fieldExist?.default || null
-    uniqueValue = fieldExist?.unique || false
+    defaultValue = fieldExist.default || null
+    uniqueValue = fieldExist.unique || false
   }
 
   return {
     field,
     default: defaultValue,
     unique: uniqueValue,
-    fieldArray: parseRule(rules[index]),
+    fieldArray: parseRule(rules[index] ?? ''),
   }
 })
 

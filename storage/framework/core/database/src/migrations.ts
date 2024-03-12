@@ -1,5 +1,6 @@
 import { path as p } from '@stacksjs/path'
 import { log } from '@stacksjs/cli'
+import { fs } from '@stacksjs/storage'
 
 // import { storage } from '@stacksjs/storage'
 // import type { Model, SchemaOptions } from '@stacksjs/types'
@@ -44,11 +45,10 @@ import { log } from '@stacksjs/cli'
 export interface MigrationOptions {
   name: string
   up: string
-  down: string
 }
 
 export function generateMigrationFile(options: MigrationOptions) {
-  const { name, up, down } = options
+  const { name, up } = options
 
   const timestamp = new Date().getTime().toString()
   const fileName = `${timestamp}-${name}.ts`
@@ -60,9 +60,6 @@ export function generateMigrationFile(options: MigrationOptions) {
       name: '${name}',
       up: \`
         ${up}
-      \`,
-      down: \`
-        ${down}
       \`,
     })
   `

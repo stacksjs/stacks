@@ -11,5 +11,4 @@ await Bun.build({
     '@stacksjs/error-handling',
     '@stacksjs/types',
   ],
-
 })

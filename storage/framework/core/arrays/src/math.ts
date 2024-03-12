@@ -34,7 +34,21 @@ export function avg(arr: number[]): number {
  * ```
  */
 export function median(arr: number[]): number {
-  return arr[Math.floor(arr.length / 2)]
+  if (arr.length === 0)
+    throw new Error('Cannot compute median of an empty array')
+
+  const sorted = [...arr].sort((a, b) => a - b)
+
+  const mid = Math.floor(sorted.length / 2)
+
+  let medianValue: number
+
+  if (sorted.length % 2 !== 0)
+    medianValue = sorted[mid]! // TypeScript now understands that `sorted[mid]` is safely accessed
+  else
+    medianValue = (sorted[mid]! + sorted[mid - 1]!) / 2 // and that `sorted[mid]` and `sorted[mid - 1]` are safely accessed
+
+  return medianValue
 }
 
 /**
@@ -214,7 +228,11 @@ export function interquartileRange(array: number[]): number {
  * ```
  */
 export function covariance(array1: number[], array2: number[]): number {
+  if (array1.length !== array2.length)
+    throw new Error('Arrays must have the same length')
+
   const mean1 = average(array1)
   const mean2 = average(array2)
-  return average(array1.map((num1, i) => (num1 - mean1) * (array2[i] - mean2)))
+
+  return average(array1.map((num1, i) => (num1 - mean1) * (array2[i]! - mean2)))
 }

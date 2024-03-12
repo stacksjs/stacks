@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { isString } from '@stacksjs/validation'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import type { BuildOptions, CLI } from '@stacksjs/types'

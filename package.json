@@ -116,5 +116,8 @@
     "storage/framework/email",
     "storage/framework/libs/*",
     "storage/framework/views/*"
-  ]
+  ],
+  "devDependencies": {
+    "@types/pluralize": "^0.0.33"
+  }
 }
