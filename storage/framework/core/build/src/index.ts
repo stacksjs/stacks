@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { bold, dim, log } from '@stacksjs/cli'
+import { bold, dim, green, italic, log } from '@stacksjs/cli'
 
 export {
   vueComponentExample,
@@ -50,5 +50,16 @@ export async function outro(options: {
     console.log(`${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`)
   }
 
-  log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${pkgName}`)
+  log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
+}
+
+export async function intro(options: {
+  dir: string
+}) {
+  const pkgName = `@stacksjs/${p.basename(options.dir)}`
+
+  log.info(`Building ${italic(pkgName)}...`)
+  const startTime = Date.now()
+
+  return { startTime }
 }

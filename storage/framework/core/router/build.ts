@@ -1,17 +1,10 @@
-// import { log, runCommand } from '@stacksjs/cli'
+import { intro, outro } from '@stacksjs/build'
 
-// const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/logging --target bun', {
-//   cwd: import.meta.dir,
-// })
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
 
-// if (result.isErr())
-//   log.error(result.error)
-
-import { log } from '@stacksjs/logging'
-
-log.info(`Building @stacksjs/router...`)
-
-await Bun.build({
+const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
@@ -21,7 +14,10 @@ await Bun.build({
     '@stacksjs/config',
     '@stacksjs/logging',
   ],
-
 })
 
-log.success(`Built @stacksjs/router`)
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})
