@@ -1,4 +1,4 @@
-import { intro, outro } from '@stacksjs/build'
+import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -19,7 +19,7 @@ const result = await Bun.build({
     '@stacksjs/server',
     '@stacksjs/types',
     '@stacksjs/utils',
-    'bun',
+    '@stacksjs/vite',
     'export-size',
     'hookable',
     'js-yaml',
@@ -52,6 +52,7 @@ const result = await Bun.build({
     'markdown-it-link-attributes',
     'unocss/vite',
     '@unhead/vue',
+    'bun',
     // 'lightningcss',
   ],
 })

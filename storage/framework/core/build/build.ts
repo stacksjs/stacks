@@ -12,6 +12,9 @@ const result = await Bun.build({
 
   external: [
     'bun',
+    '@stacksjs/path',
+    '@stacksjs/storage',
+    '@stacksjs/cli',
     '@stacksjs/vite',
   ],
 })

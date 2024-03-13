@@ -3,18 +3,6 @@ import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { bold, dim, green, italic, log } from '@stacksjs/cli'
 
-export {
-  vueComponentExample,
-  webComponentExample,
-  functions,
-  views,
-  vueComponents,
-  webComponents,
-  stacks,
-} from '@stacksjs/vite'
-
-// export { build } from 'bun'
-
 export async function outro(options: {
   dir: string
   startTime: number
