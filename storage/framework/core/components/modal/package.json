@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/modal",
   "type": "module",
-  "version": "0.60.1",
+  "version": "0.60.2",
   "description": "A modern modal component.",
   "author": "Chris Breuer",
   "license": "MIT",
