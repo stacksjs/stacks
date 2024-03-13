@@ -4,6 +4,8 @@ import { cli, log } from '@stacksjs/cli'
 import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
+import { runAction } from '@stacksjs/actions'
+import { Action } from '@stacksjs/enums'
 import * as cmd from './commands'
 
 // setup global error handlers
@@ -32,9 +34,14 @@ async function main() {
     log.debug('Project is initialized')
   }
   else {
-    log.warn('Your `APP_KEY` is not yet')
-    // TODO: add prompt to set the key
-    process.exit(1)
+    log.info('Your `APP_KEY` is not yet set')
+    log.info('Generating application key...')
+    const result = await runAction(Action.KeyGenerate)
+
+    if (result.isErr()) {
+      log.error('Failed to set random application key.', result.error)
+      process.exit()
+    }
   }
 
   cmd.build(buddy)
