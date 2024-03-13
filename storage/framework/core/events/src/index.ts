@@ -99,18 +99,13 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       if (handlers) {
         (handlers as EventHandlerList<Events[keyof Events]>)
           .slice()
-          .map((handler) => {
-            handler(evt!)
-          })
+          .forEach(handler => handler(evt!))
       }
-
       handlers = all!.get('*')
       if (handlers) {
         (handlers as WildCardEventHandlerList<Events>)
           .slice()
-          .map((handler) => {
-            handler(type, evt!)
-          })
+          .forEach(handler => handler(type, evt!))
       }
     },
   }
