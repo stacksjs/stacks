@@ -1,4 +1,4 @@
-import { dirname, logsPath } from '@stacksjs/path'
+import * as path from '@stacksjs/path'
 import fs from 'fs-extra'
 
 interface ErrorOptions {
@@ -8,12 +8,12 @@ interface ErrorOptions {
 export const StacksError = Error
 
 export class ErrorHandler {
-  static logFile = logsPath('errors.log')
+  // static logFile = path.logsPath('errors.log')
 
-  static handle(err: ErrorDescription | Error, options?: ErrorOptions | Error) {
+  static handle(err: ErrorDescription | Error, options?: ErrorOptions): Error {
     // let's only write to the console if we are not in silent mode
-    if (!(options instanceof Error) && options?.silent !== false)
-      this.writeErrorToConsole(err, options)
+    if (options?.silent !== false)
+      this.writeErrorToConsole(err)
 
     if (typeof err === 'string')
       err = new StacksError(err)
@@ -23,18 +23,18 @@ export class ErrorHandler {
     return err
   }
 
-  static handleError(err: Error, options?: ErrorOptions) {
+  static handleError(err: Error, options?: ErrorOptions): Error {
     this.handle(err, options)
     return err
   }
 
   static async writeErrorToFile(err: Error) {
     const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
-    const errorsLogFilePath = logsPath('errors.log')
+    const errorsLogFilePath = path.logsPath('errors.log')
 
     try {
       // Ensure the directory exists
-      await fs.mkdir(dirname(errorsLogFilePath), { recursive: true })
+      await fs.mkdir(path.dirname(errorsLogFilePath), { recursive: true })
       // Append the message to the log file
       await fs.appendFile(errorsLogFilePath, formattedError)
     }
@@ -43,15 +43,12 @@ export class ErrorHandler {
     }
   }
 
-  static writeErrorToConsole(err: string | Error, options?: ErrorOptions) {
-    if (options)
-      console.error(err, options)
-    else
-      console.error(err)
+  static writeErrorToConsole(err: string | Error): void {
+    console.error(err)
   }
 }
 
 type ErrorDescription = string
-export function handleError(err: ErrorDescription | Error, options?: ErrorOptions | Error): Error {
+export function handleError(err: ErrorDescription | Error, options?: ErrorOptions): Error {
   return ErrorHandler.handle(err, options)
 }

@@ -1301,6 +1301,7 @@ export const path = {
   lintPath,
   listenersPath,
   loggingPath,
+  logsPath,
   jobsPath,
   modulesPath,
   ormPath,

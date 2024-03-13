@@ -1,15 +1,15 @@
 {
-  "name": "@stacksjs/tables",
+  "name": "@stacksjs/table",
   "version": "0.59.11",
-  "description": "The easy & modern way to work with tables. Facet filtering, searching, pagination, ...",
-  "author": "Open Web Labs",
+  "description": "The easy & modern way to work with tables. Facet filtering, searching, pagination, and more.",
+  "author": "Stacks.js",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stacksjs/tables.git"
+    "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/table#readme"
   },
   "bugs": {
-    "url": "https://github.com/stacksjs/tables/issues"
+    "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
     "tables",
@@ -19,7 +19,7 @@
     "search",
     "component",
     "library",
-    "vue",
+    "stacks",
     "typescript",
     "javascript"
   ],
@@ -30,7 +30,6 @@
     "dev": "vite",
     "build": "echo 'Coming soon'",
     "preview": "vite preview",
-    "dev:components": "vite -c vite.config.ts",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
@@ -46,13 +45,5 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": "eslint --fix"
-  },
-  "config": {
-    "commitizen": {
-      "path": "node_modules/cz-git"
-    }
   }
 }
