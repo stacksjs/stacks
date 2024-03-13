@@ -58,7 +58,6 @@
     "@vinejs/vine": "^1.7.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/vite": "workspace:*"
+    "@stacksjs/development": "workspace:*"
   }
 }

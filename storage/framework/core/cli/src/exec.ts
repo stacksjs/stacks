@@ -41,7 +41,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     stdout: (options?.silent || options?.quiet) ? 'ignore' : (options?.stdin ? options.stdin : (options?.stdout || 'inherit')),
     stderr: (options?.silent || options?.quiet) ? 'ignore' : (options?.stderr || 'inherit'),
     detached: options?.background || false,
-    cwd: options?.cwd || import.meta.dir,
+    cwd: options?.cwd || process.cwd(),
     // env: { ...e, ...options?.env },
     onExit(subprocess, exitCode, signalCode, error) {
       exitHandler('spawn', subprocess, exitCode, signalCode, error)
@@ -100,7 +100,7 @@ export async function execSync(command: string | string[], options?: CliOptions)
     stdin: options?.stdin ?? 'inherit',
     stdout: options?.stdout ?? 'pipe',
     stderr: options?.stderr ?? 'inherit',
-    cwd: options?.cwd ?? import.meta.dir,
+    cwd: options?.cwd ?? process.cwd(),
     // env: { ...Bun.env, ...options?.env },
     onExit(subprocess, exitCode, signalCode, error) {
       exitHandler('spawnSync', subprocess, exitCode, signalCode, error)

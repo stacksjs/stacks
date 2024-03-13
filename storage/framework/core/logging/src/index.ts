@@ -3,13 +3,14 @@ import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 import { logsPath } from '@stacksjs/path'
 
-export function logLevel() {
+export async function logLevel() {
+  const config = await import('@stacksjs/config')
+
   /**
    * This regex checks for:
    *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
@@ -30,7 +31,7 @@ export function logLevel() {
 }
 
 export const logger = createConsola({
-  level: logLevel(),
+  level: await logLevel(),
   // fancy: true,
   // formatOptions: {
   //     columns: 80,

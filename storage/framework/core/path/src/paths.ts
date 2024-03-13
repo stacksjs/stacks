@@ -1220,13 +1220,23 @@ export function validationPath(path?: string) {
 }
 
 /**
- * Returns the path to the `vite` directory within the core directory.
+ * Returns the path to the `vite-config` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the vite-config directory.
+ * @returns The absolute path to the specified file or directory within the vite-config directory.
+ */
+export function viteConfigPath(path?: string) {
+  return corePath(`vite-config/${path || ''}`)
+}
+
+/**
+ * Returns the path to the `vite-plugin` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the vite directory.
  * @returns The absolute path to the specified file or directory within the vite directory.
  */
-export function vitePath(path?: string) {
-  return corePath(`vite/${path || ''}`)
+export function vitePluginPath(path?: string) {
+  return corePath(`vite-plugin/${path || ''}`)
 }
 
 /**
@@ -1351,7 +1361,8 @@ export const path = {
   userNotificationsPath,
   utilsPath,
   validationPath,
-  vitePath,
+  viteConfigPath,
+  vitePluginPath,
   xRayPath,
   homeDir,
 

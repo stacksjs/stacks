@@ -1,4 +1,4 @@
-import { intro, outro } from '@stacksjs/build'
+import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -12,7 +12,6 @@ const result = await Bun.build({
 
   external: [
     '@vinejs/vine',
-    '@stacksjs/vite',
     '@stacksjs/strings',
     '@stacksjs/types',
     '@dinero.js/currencies',

@@ -19,7 +19,7 @@ const result = await Bun.build({
     '@stacksjs/server',
     '@stacksjs/types',
     '@stacksjs/utils',
-    '@stacksjs/vite',
+    '@stacksjs/vite-plugin',
     'export-size',
     'hookable',
     'js-yaml',

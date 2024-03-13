@@ -326,11 +326,6 @@
       "bun": "./validation/src/index.ts",
       "types": "./validation/dist/index.d.ts",
       "import": "./validation/dist/index.js"
-    },
-    "./vite": {
-      "bun": "./vite/src/index.ts",
-      "types": "./vite/dist/index.d.ts",
-      "import": "./vite/dist/index.js"
     }
   },
   "types": "./types/dist/index.d.ts",
@@ -400,7 +395,8 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@stacksjs/vite": "workspace:*"
+    "@stacksjs/vite-config": "workspace:*",
+    "@stacksjs/vite-plugin": "workspace:*"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",
@@ -448,6 +444,7 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@stacksjs/vite": "workspace:*"
+    "@stacksjs/vite-config": "workspace:*",
+    "@stacksjs/vite-plugin": "workspace:*"
   }
 }

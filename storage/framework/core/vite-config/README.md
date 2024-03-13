@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-bun install -d @stacksjs/vite
+bun install -d @stacksjs/vite-config
 ```
 
 Now, you can use it in your project:
 
 ```js
-import vite from '@stacksjs/vite'
+import vite from '@stacksjs/vite-config'
 
 // wip
 ```

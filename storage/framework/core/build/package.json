@@ -51,12 +51,13 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/vite": "workspace:*",
     "bun-plugin-dts-auto": "^0.10.0",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
-    "@stacksjs/vite": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
     "bun-plugin-dts-auto": "^0.10.0",
     "vue-docgen-web-types": "^0.1.8"
   },

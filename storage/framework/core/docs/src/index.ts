@@ -6,7 +6,7 @@ import { docs } from '@stacksjs/config'
 import { server } from '@stacksjs/server'
 import { kolorist as c } from '@stacksjs/cli'
 import { withPwa } from '@vite-pwa/vitepress'
-import { version } from '../../../../../package.json'
+import { version } from '../package.json'
 import { pwaDocs as pwa } from './scripts/pwa'
 
 export const frameworkDefaults = {

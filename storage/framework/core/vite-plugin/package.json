@@ -1,8 +1,8 @@
 {
-  "name": "@stacksjs/vite",
+  "name": "@stacksjs/vite-plugin",
   "type": "module",
   "version": "0.60.2",
-  "description": "The Stacks Vite plugin.",
+  "description": "The Stacks Vite plugins.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",

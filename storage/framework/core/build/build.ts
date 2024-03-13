@@ -1,4 +1,4 @@
-import { intro, outro } from '@stacksjs/build'
+import { intro, outro } from './src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -15,7 +15,6 @@ const result = await Bun.build({
     '@stacksjs/path',
     '@stacksjs/storage',
     '@stacksjs/cli',
-    '@stacksjs/vite',
   ],
 })
 

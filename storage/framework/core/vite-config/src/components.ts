@@ -4,7 +4,7 @@ import { config as c } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import type { ViteConfig } from '@stacksjs/types'
-import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from './plugins'
+import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
 import type { ViteBuildOptions } from '.'
 
 const config = {

@@ -11,6 +11,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
+//      "vite": ["../../../node_modules/vite/dist/node"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
