@@ -9,11 +9,11 @@ interface EnumObject {
   [key: string]: string[]
 }
 
-export const enums: EnumObject = {
+export const envEnum: EnumObject = {
   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
   DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'planetscale'],
   MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
-  SEARCH_ENGINE_DRIVER: ['meilisearch', 'algolia', 'typesense'],
+  SEARCH_ENGINE_DRIVER: ['meilisearch', 'typesense'],
   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
 }
 
