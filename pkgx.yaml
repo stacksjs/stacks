@@ -10,8 +10,6 @@
 
 dependencies:
   bun.sh: ^1.0.29
-  mkcert.dev: ^1.4.4
-  mozilla.org/nss: ^3.92.0 # if you test locally using Firefox
   aws.amazon.com/cli: ^2.13.7
   dns.lookup.dog: ^0.1.0
   info-zip.org/zip: ^3.0
