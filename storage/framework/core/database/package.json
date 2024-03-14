@@ -21,7 +21,6 @@
     "sqlite",
     "mysql",
     "postgres",
-    "planetscale",
     "bun",
     "stacks"
   ],

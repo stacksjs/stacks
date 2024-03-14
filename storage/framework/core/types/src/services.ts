@@ -24,11 +24,6 @@ export interface ServicesOptions {
     apiKey: string
   }
 
-  planetscale?: {
-    appId: string
-    apiKey: string
-  }
-
   supabase?: {
     appId: string
     apiKey: string

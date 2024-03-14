@@ -14,7 +14,7 @@ declare module 'bun' {
     const API_PREFIX: string
     const DOCS_PREFIX: string
     const DEBUG: boolean
-    const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'planetscale'
+    const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'dynamodb'
     const DB_HOST: string
     const DB_PORT: number
     const DB_DATABASE: string
