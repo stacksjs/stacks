@@ -24,7 +24,14 @@ export interface DatabaseOptions {
       prefix?: string
     }
 
-    planetscale?: object
+    dynamodb?: {
+      key?: string
+      secret?: string
+      region?: string
+      prefix?: string
+      endpoint?: string
+    }
+
     postgres?: object
   }
 

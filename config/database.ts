@@ -10,9 +10,18 @@ import type { DatabaseConfig } from '@stacksjs/types'
  */
 export default {
   default: env.DB_CONNECTION || 'sqlite',
+
   name: env.DB_DATABASE || 'stacks',
 
   connections: {
+    dynamodb: {
+      key: env.AWS_ACCESS_KEY_ID || '',
+      secret: env.AWS_SECRET_ACCESS_KEY || '',
+      region: env.AWS_DEFAULT_REGION || 'us-east-1',
+      prefix: env.DB_DATABASE || 'stacks',
+      endpoint: '',
+    },
+
     mysql: {
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',
@@ -26,8 +35,6 @@ export default {
       database: env.DB_DATABASE || 'stacks',
       prefix: '',
     },
-
-    postgres: {},
   },
 
   migrations: 'migrations',
