@@ -3,8 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bunx vite-ssg build -c ../../core/vite/src/views.ts",
-    "dev": "bunx vite serve -c ../../core/vite/src/views.ts",
+    "build": "bunx vite-ssg build -c ../../core/vite-config/src/views.ts",
+    "dev": "bunx vite serve -c ../../core/vite-config/src/views.ts",
     "lint": "bunx --bun eslint .",
     "preview": "bunx vite preview",
     "typecheck": "bunx --bun vue-tsc --noEmit",

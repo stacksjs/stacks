@@ -40,9 +40,9 @@
     "src"
   ],
   "scripts": {
-    "dev": "bunx vite -c ../../core/vite/src/desktop.ts",
+    "dev": "bunx vite -c ../../core/vite-config/src/desktop.ts",
     "dev:app": "tauri dev",
-    "build": "bunx vite build -c ../../core/vite/src/desktop.ts",
+    "build": "bunx vite build -c ../../core/vite-config/src/desktop.ts",
     "build:app": "tauri build",
     "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"

@@ -6,7 +6,7 @@ import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import VueMacros from 'unplugin-vue-macros/vite'
 import { config } from '@stacksjs/config'
-import { autoImports, components, cssEngine, i18n, layouts, router } from './plugins'
+import { autoImports, components, cssEngine, i18n, layouts, router } from '@stacksjs/vite-plugin'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
 

@@ -966,7 +966,9 @@ declare global {
   const version: typeof import('../core/utils/src/versions')['version']
   const views: typeof import('../core/build/src/index')['views']
   const viewsPath: typeof import('../core/path/src/paths')['viewsPath']
+  const viteConfigPath: typeof import('../core/path/src/paths')['viteConfigPath']
   const vitePath: typeof import('../core/path/src/paths')['vitePath']
+  const vitePluginPath: typeof import('../core/path/src/paths')['vitePluginPath']
   const vueComponentExample: typeof import('../core/build/src/index')['vueComponentExample']
   const vueComponents: typeof import('../core/build/src/index')['vueComponents']
   const wait: typeof import('../core/utils/src/sleep')['wait']
@@ -1901,7 +1903,8 @@ declare module 'vue' {
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/paths')['viewsPath']>
-    readonly vitePath: UnwrapRef<typeof import('../core/path/src/paths')['vitePath']>
+    readonly viteConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['viteConfigPath']>
+    readonly vitePluginPath: UnwrapRef<typeof import('../core/path/src/paths')['vitePluginPath']>
     readonly wait: UnwrapRef<typeof import('../core/utils/src/sleep')['wait']>
     readonly waitUntil: UnwrapRef<typeof import('../core/utils/src/sleep')['waitUntil']>
     readonly waitWhile: UnwrapRef<typeof import('../core/utils/src/sleep')['waitWhile']>
@@ -2825,7 +2828,8 @@ declare module '@vue/runtime-core' {
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/paths')['viewsPath']>
-    readonly vitePath: UnwrapRef<typeof import('../core/path/src/paths')['vitePath']>
+    readonly viteConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['viteConfigPath']>
+    readonly vitePluginPath: UnwrapRef<typeof import('../core/path/src/paths')['vitePluginPath']>
     readonly wait: UnwrapRef<typeof import('../core/utils/src/sleep')['wait']>
     readonly waitUntil: UnwrapRef<typeof import('../core/utils/src/sleep')['waitUntil']>
     readonly waitWhile: UnwrapRef<typeof import('../core/utils/src/sleep')['waitWhile']>

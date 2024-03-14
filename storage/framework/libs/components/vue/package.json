@@ -32,8 +32,8 @@
     "src"
   ],
   "scripts": {
-    "dev": "vite -c ../../../core/vite/src/components.ts",
-    "build": "vite build -c ../../../core/vite/src/components.ts",
+    "dev": "vite -c ../../../core/vite-config/src/components.ts",
+    "build": "vite build -c ../../../core/vite-config/src/components.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
