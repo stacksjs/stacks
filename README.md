@@ -273,7 +273,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
-- 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
+- 🗺️ **ORM** _automated schemas for scale & a pretty API_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
 - ⚙️ **Queues** _run any heavy workload in the background_
 - 🛠️ **Query Builder** _powerful, type-safe SQL query builder_

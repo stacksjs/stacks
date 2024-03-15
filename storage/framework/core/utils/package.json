@@ -68,7 +68,7 @@
     "@vueuse/math": "^10.9.0",
     "@vueuse/shared": "^10.9.0",
     "bun-plugin-env": "^0.4.1",
-    "bun-plugin-yml": "^0.3.0",
+    "bun-plugin-yml": "^0.3.1",
     "export-size": "^0.7.0",
     "yaml": "^2.4.1"
   },
@@ -88,7 +88,7 @@
     "@vueuse/math": "^10.9.0",
     "@vueuse/shared": "^10.9.0",
     "bun-plugin-env": "^0.4.1",
-    "bun-plugin-yml": "^0.3.0",
+    "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",

@@ -18,11 +18,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
       console.log()
     }
 
-    let msg = `Running  ${bgCyan(italic(bold(` ${command} `)))}`
-    if (command === 'buddy deploy')
-      msg = `Running  ${bgCyan(italic(bold(` ${command} `)))}  for ${bold(`${config.app.name}`)} ${italic(`via ${config.app.url}`)}`
-
-    log.info(msg)
+    log.info(`Running  ${bgCyan(italic(bold(` ${command} `)))}`)
 
     if (options?.showPerformance === false || options?.quiet)
       return resolve(0)
