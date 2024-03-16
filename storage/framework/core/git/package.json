@@ -53,7 +53,7 @@
     "commitizen": "^4.3.0",
     "cz-git": "^1.9.0",
     "giget": "^1.2.1",
-    "simple-git-hooks": "^2.10.0"
+    "simple-git-hooks": "^2.11.0"
   },
   "dependencies": {
     "bumpp": "^9.4.0",
@@ -61,7 +61,7 @@
     "commitizen": "^4.3.0",
     "cz-git": "^1.9.0",
     "giget": "^1.2.1",
-    "simple-git-hooks": "^2.10.0"
+    "simple-git-hooks": "^2.11.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
