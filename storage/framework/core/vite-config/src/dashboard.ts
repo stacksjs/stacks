@@ -2,7 +2,6 @@ import { path as p } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import generateSitemap from 'vite-ssg-sitemap'
-import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
 import VueMacros from 'unplugin-vue-macros/vite'
 import { config } from '@stacksjs/config'
@@ -36,9 +35,9 @@ export default defineConfig({
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
   },
 
-  server: server({
-    type: 'admin',
-  }),
+  // server: server({
+  //   type: 'admin',
+  // }),
 
   resolve: {
     alias,

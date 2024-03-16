@@ -9,8 +9,6 @@ import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 import { logsPath } from '@stacksjs/path'
 
 export async function logLevel() {
-  const config = await import('@stacksjs/config')
-
   /**
    * This regex checks for:
    *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
@@ -27,7 +25,8 @@ export async function logLevel() {
   if (verboseRegex.test(opts))
     return 4
 
-  return config.logger.level
+  const { logger } = await import('@stacksjs/config')
+  return logger.level
 }
 
 export const logger = createConsola({

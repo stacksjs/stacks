@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import { path as p } from '@stacksjs/path'
 import { bold, dim, green, italic, log } from '@stacksjs/cli'
 
 export async function outro(options: {
@@ -41,9 +41,7 @@ export async function outro(options: {
   log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
-export async function intro(options: {
-  dir: string
-}) {
+export async function intro(options: { dir: string }) {
   const pkgName = `@stacksjs/${p.basename(options.dir)}`
 
   log.info(`Building ${italic(pkgName)}...`)
