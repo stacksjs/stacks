@@ -122,8 +122,6 @@ export default {
   database: {
     default: 'sqlite',
 
-    name: 'stacks',
-
     connections: {
       sqlite: {
         database: projectStoragePath('framework/database/stacks.sqlite'),
@@ -383,7 +381,7 @@ export default {
   },
 
   searchEngine: {
-    driver: 'meilisearch',
+    driver: 'opensearch',
   },
 
   security: {

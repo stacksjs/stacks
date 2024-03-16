@@ -2,6 +2,7 @@ import type { ColumnType, Generated } from 'kysely'
 import { Kysely, MysqlDialect } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
+import { config } from '@stacksjs/config'
 
 // TODO: we need an action that auto-generates these table interfaces
 export interface UsersTable {
@@ -36,18 +37,18 @@ const driver = config.database.default ?? 'sqlite'
 export function getDialect() {
   if (driver === 'sqlite') {
     return new BunWorkerDialect({
-      url: 'stacks.sqlite',
+      url: config.database.connections?.sqlite.database ?? 'stacks.sqlite',
     })
   }
 
   if (driver === 'mysql') {
     return new MysqlDialect({
       pool: createPool({
-        database: 'stacks',
-        host: '127.0.0.1',
-        user: 'root',
-        password: '',
-        port: 3306,
+        database: config.database.connections?.mysql?.name ?? 'stacks',
+        host: config.database.connections?.mysql?.host ?? '127.0.0.1',
+        user: config.database.connections?.mysql?.username ?? 'root',
+        password: config.database.connections?.mysql?.password ?? '',
+        port: config.database.connections?.mysql?.port ?? 3306,
       }),
     })
   }

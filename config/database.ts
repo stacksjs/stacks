@@ -11,9 +11,12 @@ import type { DatabaseConfig } from '@stacksjs/types'
 export default {
   default: env.DB_CONNECTION || 'sqlite',
 
-  name: env.DB_DATABASE || 'stacks',
-
   connections: {
+    sqlite: {
+      database: env.DB_DATABASE || 'stacks.sqlite',
+      prefix: '',
+    },
+
     dynamodb: {
       key: env.AWS_ACCESS_KEY_ID || '',
       secret: env.AWS_SECRET_ACCESS_KEY || '',
@@ -28,11 +31,6 @@ export default {
       port: env.DB_PORT || 3306,
       username: env.DB_USERNAME || 'root',
       password: env.DB_PASSWORD || '',
-      prefix: '',
-    },
-
-    sqlite: {
-      database: env.DB_DATABASE || 'stacks',
       prefix: '',
     },
   },
