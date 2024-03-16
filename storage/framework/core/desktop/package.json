@@ -63,7 +63,7 @@
     "@tauri-apps/api": "^1.5.3",
     "@tauri-apps/cli": "^1.5.11",
     "unified-network": "^0.6.4",
-    "unstorage": "^1.10.1",
+    "unstorage": "^1.10.2",
     "vue": "^3.4.21"
   },
   "dependencies": {
@@ -72,7 +72,7 @@
     "@tauri-apps/api": "^1.5.3",
     "@tauri-apps/cli": "^1.5.11",
     "unified-network": "^0.6.4",
-    "unstorage": "^1.10.1",
+    "unstorage": "^1.10.2",
     "vue": "^3.4.21"
   },
   "devDependencies": {
