@@ -14,5 +14,5 @@ export const dynamodbClient = {
 
   async find(id: number): Promise<any> {
     return { id }
-  }
+  },
 }

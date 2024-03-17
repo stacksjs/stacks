@@ -25,6 +25,7 @@
     },
     "resolveJsonModule": true,
     "types": [
+      "bun",
       "vite/client",
       // "vue/ref-macros",
       "vite-plugin-pages/client",
