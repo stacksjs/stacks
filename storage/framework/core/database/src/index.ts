@@ -1,5 +1,4 @@
 export * from './schema'
-export * from './kysely'
 export * from './migrations'
 export * from './types'
 export * from './utils'
