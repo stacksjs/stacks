@@ -359,7 +359,7 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-Stacks OSS will always stay open-sourced, and we will always love to receive postcards from wherever Stacks is used!  _And we also publish them on our website. Thank you, Spatie, for pioneering this._
+Stacks OSS will always stay open-sourced, and we will always love to receive postcards from wherever Stacks is used!  _And we also publish them on our website. Thank you, Spatie._
 
 Our address: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA, USA 🌎
 
