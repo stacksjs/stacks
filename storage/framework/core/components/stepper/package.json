@@ -49,7 +49,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ui": "workspace:*"
+    "@stacksjs/ui": "workspace:*",
+    "@vue-stepper-component": "^1.0.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
