@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/server",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",
