@@ -24,9 +24,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "bunx --bun tsup --format esm,cjs --clean",
+    "build": "bunx tsup --format esm,cjs --clean",
     "stub": "bunx --bun tsup --format esm",
-    "dev": "bunx --bun tsup --format esm,cjs --watch & eslint-flat-config-viewer",
+    "dev": "bunx tsup --format esm,cjs --watch & eslint-flat-config-viewer",
     "lint": "bun run stub && eslint .",
     "prepack": "bun run build",
     "test": "bun test",
