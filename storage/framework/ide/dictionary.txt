@@ -279,6 +279,7 @@ templating
 termii
 terserrc
 textlint
+timestampable
 treeshaking
 triggerable
 tsdoc

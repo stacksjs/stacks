@@ -24,6 +24,19 @@ export default {
     driver: undefined,
   },
 
+  api: {
+    // version: 'v1',
+    prefix: 'api',
+    middleware: ['auth'],
+    routes: {
+      index: true,
+      show: true,
+      store: true,
+      update: true,
+      destroy: true,
+    },
+  },
+
   app: {
     name: 'Stacks',
     description: 'A Stacks application.',
@@ -104,16 +117,6 @@ export default {
         enabled: true,
         samplingRate: 2,
       },
-    },
-
-    api: {
-      deploy: false,
-      prefix: 'api',
-      description: 'Stacks API',
-      prewarm: true,
-      memorySize: 512,
-      timeout: 30,
-      // version: 'v1',
     },
 
     fileSystem: false,

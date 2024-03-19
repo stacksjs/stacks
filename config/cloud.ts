@@ -40,15 +40,6 @@ export default {
     },
   },
 
-  api: {
-    deploy: true,
-    prefix: env.API_PREFIX || 'api',
-    description: 'Stacks API',
-    memorySize: 512,
-    prewarm: 10,
-    timeout: 30,
-  },
-
   fileSystem: true, // enables file system
 
   // compute: {},

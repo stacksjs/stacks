@@ -12,11 +12,26 @@ export default {
   traits: {
     useAuth: true, // defaults to false, `authenticatable` used as an alias
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
+    useSearch: true, // defaults to true, `searchable` used as an alias
+    useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
+
     useSeeder: { // defaults to a count of 10, `seedable` used as an alias
       count: 10,
     },
-    useSearch: true, // defaults to false, `searchable` used as an alias
-    useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
+
+    useApi: {
+      uri: 'users', // defaults to the table name, 
+      middleware: ['auth'], // defaults to `[]`
+      routes: {
+        // defaults to all routes
+        index: true,
+        show: true,
+        store: true,
+        update: true,
+        destroy: true,
+      },
+    },
+
     // useUuid: true, // defaults to false
   },
 
