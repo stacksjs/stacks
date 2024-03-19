@@ -20,7 +20,7 @@ export default {
     },
 
     useApi: {
-      uri: 'users', // defaults to the table name, 
+      uri: 'users', // defaults to the table name,
       middleware: ['auth'], // defaults to `[]`
       routes: {
         // defaults to all routes
