@@ -15,35 +15,45 @@ for cmd in git mkfifo; do
   fi
 done
 
-if [ -n "$1" ]; then
-  # Check if the directory exists
-  if [ -d "storage/framework/core" ]; then # determines whether we are in a Stacks context
-    :
-  else
-    if [ -d "$1" ]; then
-      echo "Project $1 exists locally. Please use a different name & run again."
-      exit 1
-    else
-      git clone https://github.com/stacksjs/stacks.git "$1"
-      cd "$1" || exit 1
-
-      # Save current project directory path
-      projectDir=$(pwd)
-
-      # Run the pkgx-install script (in case it’s already installed, it will be updated to the latest version)
-      if ! command_exists "./storage/framework/scripts/pkgx-install"; then
-        echo "Error: pkgx-install script not found in './storage/framework/scripts/pkgx-install'. Please check your installation and try again."
-        exit 1
-      fi
-      "./storage/framework/scripts/pkgx-install"
-
-      echo "Installing project dependencies via bun..."
-      pkgx bun install
-
-      echo "Project $1 has been created in ${projectDir}. Run 'bun run dev' to start the server."
-
+# Check if the directory exists
+if [ -d "storage/framework/core" ]; then
+  :
+else
+  if [ -z "$1" ]; then
+    read -p "No project name provided. Use default project 'stacks'? (Y/N): " confirm
+    if [ "$confirm" != "Y" ]; then
+      echo "Please provide a project name and run again."
       exit 1
     fi
+    project="stacks"
+  else
+    project="$1"
+  fi
+
+  if [ "$project" = "stacks" ] && [ -d "storage/framework/core" ]; then
+    :
+  elif [ -d "$project" ]; then
+    echo "Project $project exists locally. Please use a different name & run again."
+    exit 1
+  else
+    git clone https://github.com/stacksjs/stacks.git "$project"
+    cd "$project" || exit 1
+
+    # Save current project directory path
+    projectDir=$(pwd)
+
+    if ! command_exists "./storage/framework/scripts/pkgx-install"; then
+      echo "Error: pkgx-install script not found in './storage/framework/scripts/pkgx-install'. Please check your installation and try again."
+      exit 1
+    fi
+    "./storage/framework/scripts/pkgx-install"
+
+    echo "Installing project dependencies via bun..."
+    pkgx bun install
+
+    echo "Project $project has been created in ${projectDir}. Run 'bun run dev' to start the server."
+
+    exit 1
   fi
 fi
 
