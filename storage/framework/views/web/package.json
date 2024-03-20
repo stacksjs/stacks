@@ -32,7 +32,7 @@
     "@types/nprogress": "^0.2.3",
     "@unocss/eslint-config": "^0.58.6",
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vue-macros/volar": "^0.18.11",
+    "@vue-macros/volar": "^0.18.12",
     "@vue/test-utils": "^2.4.5",
     "critters": "^0.0.22",
     "markdown-it-link-attributes": "^4.0.1",
@@ -43,18 +43,18 @@
     "unocss": "^0.58.6",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0",
-    "unplugin-vue-macros": "^2.7.10",
+    "unplugin-vue-macros": "^2.7.11",
     "unplugin-vue-markdown": "^0.26.0",
     "unplugin-vue-router": "^0.8.5",
-    "vite": "^5.1.6",
+    "vite": "^5.2.2",
     "vite-bundle-visualizer": "^1.1.0",
     "vite-plugin-inspect": "^0.8.3",
-    "vite-plugin-pwa": "^0.19.4",
-    "vite-plugin-vue-devtools": "^7.0.18",
+    "vite-plugin-pwa": "^0.19.5",
+    "vite-plugin-vue-devtools": "^7.0.20",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-plugin-webfont-dl": "^3.9.1",
     "vite-ssg": "^0.23.6",
     "vite-ssg-sitemap": "^0.6.1",
-    "vue-tsc": "^2.0.6"
+    "vue-tsc": "^2.0.7"
   }
 }
