@@ -60,6 +60,6 @@
     "consola": "^3.2.3"
   },
   "devDependencies": {
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.3"
   }
 }

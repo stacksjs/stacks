@@ -82,6 +82,6 @@
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.133.0",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.3"
   }
 }
