@@ -20,11 +20,6 @@ if [ -d "storage/framework/core" ]; then
   :
 else
   if [ -z "$1" ]; then
-    read -p "No project name provided. Use default project 'stacks'? (Y/N): " confirm
-    if [ "$confirm" != "Y" ]; then
-      echo "Please provide a project name and run again."
-      exit 1
-    fi
     project="stacks"
   else
     project="$1"
