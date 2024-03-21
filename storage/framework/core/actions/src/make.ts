@@ -81,7 +81,7 @@ export function makeDatabase(options: MakeOptions) {
 
 export function createDatabase(options: MakeOptions) {
   // eslint-disable-next-line no-console
-  console.log('options', options) // wip
+  console.log('createDatabase options', options) // wip
 }
 
 export function factory(options: MakeOptions) {

@@ -1,4 +1,5 @@
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { type Err, type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { db } from '@stacksjs/query-builder'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -26,19 +27,130 @@ export interface UsersTable {
   deleted_at: ColumnType<Date, string | undefined, never>
 }
 
-export type User = Selectable<UsersTable>
+export type UserType = Selectable<UsersTable>
 export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
 
+export class UserModel {
+  private userData: Partial<UserType>
+
+  // TODO: this hidden functionality needs to be implemented still
+  private hidden = ['password']
+
+  constructor(userData: Partial<UserType>) {
+    this.userData = userData
+  }
+
+  async where(criteria: Partial<UserType>) {
+    let query = db.selectFrom('users')
+    if (criteria.id)
+      query = query.where('id', '=', criteria.id) // Kysely is immutable, you must re-assign!
+    if (criteria.email)
+      query = query.where('email', '=', criteria.email)
+    if (criteria.name !== undefined) {
+      query = query.where(
+        'name',
+        criteria.name === null ? 'is' : '=',
+        criteria.name,
+      )
+    }
+    if (criteria.password)
+      query = query.where('password', '=', criteria.password)
+    if (criteria.created_at)
+      query = query.where('created_at', '=', criteria.created_at)
+    if (criteria.updated_at)
+      query = query.where('updated_at', '=', criteria.updated_at)
+    if (criteria.deleted_at)
+      query = query.where('deleted_at', '=', criteria.deleted_at)
+    return await query.selectAll().execute()
+  }
+
+  // Method to update the user instance
+  async update(userUpdate: UserUpdate): Promise<Result<UserType, Error>> {
+    if (this.userData.id === undefined)
+      return err(handleError('User ID is undefined'))
+
+    const updatedUser = await db.updateTable('users')
+      .set(userUpdate)
+      .where('id', '=', this.userData.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!updatedUser)
+      return err(handleError('User not found'))
+
+    this.userData = updatedUser
+
+    return ok(updatedUser)
+  }
+
+  // Method to save (insert or update) the user instance
+  async save(): Promise<void> {
+    if (this.userData.id === undefined) {
+      // Insert new user
+      const newUser = await db.insertInto('users')
+        .values(this.userData)
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      this.userData = newUser
+    }
+    else {
+      // Update existing user
+      await this.update(this.userData as UserUpdate)
+    }
+  }
+
+  // Method to delete the user instance
+  async delete(): Promise<void> {
+    if (this.userData.id === undefined)
+      throw new Error('User ID is undefined')
+
+    await db.deleteFrom('users')
+      .where('id', '=', this.userData.id)
+      .execute()
+    this.userData = {}
+  }
+
+  // Method to refresh the user instance data from the database
+  async refresh(): Promise<void> {
+    if (this.userData.id === undefined)
+      throw new Error('User ID is undefined')
+
+    const refreshedUser = await db.selectFrom('users')
+      .where('id', '=', this.userData.id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!refreshedUser)
+      throw new Error('User not found')
+
+    this.userData = refreshedUser
+  }
+
+  toJSON() {
+    const output: Partial<UserType> = { ...this.userData }
+    this.hidden.forEach((attr) => {
+      if (attr in output)
+        delete output[attr as keyof Partial<UserType>]
+    })
+    return output
+  }
+}
+
 // starting here, ORM functions
-export async function find(id: number) {
-  return await db.selectFrom('users')
+export async function find(id: number): Promise<UserModel | null> {
+  const userData = await db.selectFrom('users')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
+
+  if (!userData)
+    return null
+
+  return new UserModel(userData)
 }
 
-export async function get(criteria: Partial<User>) {
+export async function get(criteria: Partial<UserType>) {
   let query = db.selectFrom('users')
 
   if (criteria.id)
@@ -104,4 +216,12 @@ export async function findByEmail(email: string) {
     .executeTakeFirst()
 }
 
-// finish with all the remainder of Laravel Eloquent ORM functions
+export const User = {
+  find,
+  get,
+  all,
+  create,
+  update,
+  remove,
+  findByEmail,
+}

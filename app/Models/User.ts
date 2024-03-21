@@ -64,4 +64,13 @@ export default {
       factory: () => faker.internet.password(),
     },
   },
+
+  // accessors for fullname & mutoators for password
+  accessors: {
+    fullname: (user: Model) => user.name,
+  },
+
+  mutators: {
+    password: (password: string) => bcrypt.hash(password),
+  },
 } satisfies Model
