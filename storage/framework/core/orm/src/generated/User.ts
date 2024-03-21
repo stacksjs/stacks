@@ -79,8 +79,8 @@ export async function all() {
 export async function create(newUser: NewUser) {
   return await db.insertInto('users')
     .values(newUser)
-    .returning('id')
-    .executeTakeFirst()
+    .returningAll()
+    .executeTakeFirstOrThrow()
 }
 
 export async function update(id: number, userUpdate: UserUpdate) {
@@ -93,7 +93,8 @@ export async function update(id: number, userUpdate: UserUpdate) {
 export async function remove(id: number) {
   return await db.deleteFrom('users')
     .where('id', '=', id)
-    .execute()
+    .returningAll()
+    .executeTakeFirst()
 }
 
 export async function findByEmail(email: string) {
