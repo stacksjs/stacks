@@ -43,11 +43,15 @@ export class UserModel {
   }
 
   // Method to find a user by ID
-  static async find(id: number): Promise<UserModel | null> {
-    const userData = await db.selectFrom('users')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst()
+  static async find(id: number, fields?: (keyof UserType)[]) {
+    let query = db.selectFrom('users').where('id', '=', id)
+
+    if (fields)
+      query = query.select(fields)
+    else
+      query = query.selectAll()
+
+    const userData = await query.executeTakeFirst()
 
     if (!userData)
       return null
@@ -69,9 +73,12 @@ export class UserModel {
   }
 
   // Method to get all users
-  static async all(): Promise<UserModel[]> {
+  static async all(limit: number = 10, offset: number = 0): Promise<UserModel[]> {
     const users = await db.selectFrom('users')
       .selectAll()
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+      .offset(offset)
       .execute()
 
     return users.map(user => new UserModel(user))
@@ -243,11 +250,15 @@ export class UserModel {
 const Model = UserModel
 
 // starting here, ORM functions
-export async function find(id: number): Promise<UserModel | null> {
-  const userData = await db.selectFrom('users')
-    .where('id', '=', id)
-    .selectAll()
-    .executeTakeFirst()
+export async function find(id: number, fields?: (keyof UserType)[]) {
+  let query = db.selectFrom('users').where('id', '=', id)
+
+  if (fields)
+    query = query.select(fields)
+  else
+    query = query.selectAll()
+
+  const userData = await query.executeTakeFirst()
 
   if (!userData)
     return null
@@ -255,7 +266,7 @@ export async function find(id: number): Promise<UserModel | null> {
   return new UserModel(userData)
 }
 
-export async function get(criteria: Partial<UserType>) {
+export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
   let query = db.selectFrom('users')
 
   if (criteria.id)
@@ -284,12 +295,18 @@ export async function get(criteria: Partial<UserType>) {
   if (criteria.deleted_at)
     query = query.where('deleted_at', '=', criteria.deleted_at)
 
+  // Apply sorting based on the `sort` parameter
+  query = query.orderBy(sort.column, sort.order)
+
   return await query.selectAll().execute()
 }
 
-export async function all() {
+export async function all(limit: number = 10, offset: number = 0) {
   return await db.selectFrom('users')
     .selectAll()
+    .orderBy('created_at', 'desc')
+    .limit(limit)
+    .offset(offset)
     .execute()
 }
 
@@ -298,13 +315,6 @@ export async function create(newUser: NewUser) {
     .values(newUser)
     .returningAll()
     .executeTakeFirstOrThrow()
-}
-
-export async function getOne(criteria: Partial<UserType>) {
-  return await db.selectFrom('users')
-    .where('id', '=', criteria.id)
-    .selectAll()
-    .executeTakeFirst()
 }
 
 export async function first() {
@@ -341,7 +351,7 @@ export async function findByEmail(email: string) {
     .executeTakeFirst()
 }
 
-export async function where(criteria: Partial<UserType>) {
+export async function where(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
   let query = db.selectFrom('users')
 
   if (criteria.id)
@@ -369,6 +379,9 @@ export async function where(criteria: Partial<UserType>) {
 
   if (criteria.deleted_at)
     query = query.where('deleted_at', '=', criteria.deleted_at)
+
+  // Apply sorting
+  query = query.orderBy(sort.column, sort.order)
 
   return await query.selectAll().execute()
 }
