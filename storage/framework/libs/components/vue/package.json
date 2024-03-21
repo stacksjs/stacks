@@ -9,7 +9,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "components"
+    "directory": "resources/components"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
@@ -19,11 +19,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -32,8 +31,8 @@
     "src"
   ],
   "scripts": {
-    "dev": "vite -c ../../../core/vite-config/src/components.ts",
-    "build": "vite build -c ../../../core/vite-config/src/components.ts",
+    "dev": "bunx --bun vite -c ../../../core/vite-config/src/components.ts",
+    "build": "bunx --bun vite build -c ../../../core/vite-config/src/components.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {

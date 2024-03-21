@@ -198,12 +198,14 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
 
   fireOnTick() {
     try {
-      void callback.call(
-        this.context,
-        this.onComplete as WithOnComplete<OC> extends true
-          ? CronOnCompleteCallback
-          : never,
-      )
+      for (const callback of this._callbacks) {
+        void callback.call(
+          this.context,
+          this.onComplete as WithOnComplete<OC> extends true
+            ? CronOnCompleteCallback
+            : never,
+        )
+      }
     }
     catch (error) {
       if (this._errorHandler && error instanceof Error) {

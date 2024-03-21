@@ -48,7 +48,7 @@ it('package.json updated', async () => {
 
 it('esm eslint.config.js', async () => {
   const pkgContent = await fs.readFile('package.json', 'utf-8')
-  const options = JSON.parse(pkgContent)
+  const options = JSON.parse(pkgContent) || {} // Ensure options is an object
   await fs.writeFile(join(genPath, 'package.json'), JSON.stringify({ ...options, type: 'module' }, null, 2))
 
   const { stdout } = await run()

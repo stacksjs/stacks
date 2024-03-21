@@ -41,7 +41,7 @@
     "noUnusedLocals": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "outDir": "./dist/types",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

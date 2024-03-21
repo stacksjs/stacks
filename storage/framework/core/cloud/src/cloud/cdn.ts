@@ -230,7 +230,7 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
-    return config.cloud.api?.deploy
+    return config.api?.deploy
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {

@@ -1,7 +1,6 @@
 import process from 'node:process'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
-import { db } from '@stacksjs/database'
 import { ExitCode } from '@stacksjs/types'
 
 export async function up(db: Kysely<any>): Promise<void> {
@@ -14,7 +13,5 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('created_at', 'timestamp', col => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
     .execute()
 }
-
-await up(db)
 
 process.exit(ExitCode.Success)

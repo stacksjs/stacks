@@ -37,10 +37,10 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@vueform/multiselect": "^2.6.7",
     "meilisearch": "^0.38.0"
   },
   "dependencies": {
+    "@vueform/multiselect": "^2.6.7",
     "vite": "^5.2.2"
   },
   "devDependencies": {

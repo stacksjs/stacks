@@ -116,6 +116,7 @@
     "eslint-plugin-format": "^0.1.0",
     "lint-staged": "^15.2.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.3",
+    "vitest": "^1.4.0"
   }
 }

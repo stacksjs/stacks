@@ -20,10 +20,8 @@ export async function move(
         const to = path.resolve(dest, path.basename(file))
         const result = await rename(from, to, options)
 
-        if (result.isErr()) {
-          log.error(result.error)
-          return err(handleError(result.error.message, result.error))
-        }
+        if (result.isErr())
+          return log.error(result.error)
       })
 
       await Promise.all(operations)

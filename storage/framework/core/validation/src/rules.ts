@@ -1,6 +1,6 @@
 import { USD } from '@dinero.js/currencies'
 import { dinero as currency } from 'dinero.js'
-import { validator } from './validate'
+import vine from '@vinejs/vine'
 
 /**
  * Thanks to VineJS for the following types:
@@ -95,12 +95,17 @@ export interface ErrorReporterContract {
   report: (message: string, rule: string, field: FieldContext, args?: Record<string, any>) => any
 }
 
-export const isMoney = validator.createRule((value: unknown, _, field: FieldContext) => {
+export const isMoney = vine.createRule((value: unknown, _, field: FieldContext) => {
   /**
    * Convert string representation of a number to a JavaScript
    * Number data type.
    */
-  const numericValue = validator.helpers.asNumber(value)
+  const asNumber = (value: unknown): number => {
+    const result = Number(value)
+    return Number.isNaN(result) ? 0 : result
+  }
+
+  const numericValue = asNumber(value)
 
   /**
    * Report error, if the value is NaN post-conversion

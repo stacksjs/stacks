@@ -1,11 +1,25 @@
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
-import type { Nullable, SearchEngineSettings } from '.'
+import type { DeepPartial, Nullable, SearchEngineSettings } from '.'
 
 export interface AuthOptions {}
 
 export interface SeedOptions {
   count: number
 }
+
+export interface ApiSettings {
+  uri: string
+  middleware: string[]
+  routes: {
+    index: boolean
+    show: boolean
+    store: boolean
+    update: boolean
+    destroy: boolean
+  }
+}
+
+type ApiOptions = DeepPartial<ApiSettings>
 
 export interface TimestampOptions {
   createdAt?: string // defaults to 'created_at'
@@ -39,6 +53,7 @@ export interface ModelOptions extends Base {
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchEngineSettings // defaults to false
     searchable?: boolean | SearchEngineSettings // useSearch alias
+    useApi?: boolean | ApiOptions
   }
 
   fields: Fields

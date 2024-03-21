@@ -1,6 +1,6 @@
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
-import { env as e, enums } from '@stacksjs/env'
+import { env as e, envEnum } from '@stacksjs/env'
 import { logger } from '@stacksjs/logging'
 import { envKeys } from '../../../../env'
 
@@ -20,9 +20,9 @@ declare module 'bun' {
       let value: string | boolean | number | undefined = e[key]
 
       if (!value) {
-        if (enums[key]) {
-          type = enums[key]?.map(item => `'${item}'`).join(' | ')
-          value = enums[key]?.[0] // default to the first enum value
+        if (envEnum[key]) {
+          type = envEnum[key]?.map(item => `'${item}'`).join(' | ')
+          value = envEnum[key]?.[0] // default to the first enum value
         }
  else {
           switch (type) {
@@ -46,9 +46,9 @@ declare module 'bun' {
         else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
           type = 'number'
         }
-        else if (enums[key]) {
-          // @ts-expect-error enums[key] is defined
-          type = enums[key].map(item => `'${item}'`).join(' | ')
+        else if (envEnum[key]) {
+          // @ts-expect-error envEnum[key] is defined
+          type = envEnum[key].map(item => `'${item}'`).join(' | ')
         }
       }
 

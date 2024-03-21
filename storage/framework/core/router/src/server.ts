@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { extname } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
-import type { MiddlewareOptions, Route, StatusCode } from '@stacksjs/types'
+import type { Route, StatusCode } from '@stacksjs/types'
 import { middlewares } from './middleware'
 import { request } from './request'
 import { route } from '.'
@@ -82,23 +82,26 @@ function executeMiddleware(route: Route): void {
   const { middleware = null } = route
 
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
-    let middlewareItem: MiddlewareOptions
+    // let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
-      middlewareItem = middlewares.find((m) => {
-        return m.name === middleware
-      })
+      // TODO: fix and uncomment this
+      // middlewareItem = middlewares.find((m) => {
+      //   return m.name === middleware
+      // })
 
-      if (middlewareItem)
-        middlewareItem.handle() // Invoke only if it exists and is not undefined.
+      // if (middlewareItem)
+      //   middlewareItem.handle() // Invoke only if it exists and is not undefined.
     }
     else {
-      middleware.forEach((m) => {
-        middlewareItem = middlewares.find((middlewareItem: MiddlewareOptions) => {
-          return middlewareItem.name === m
-        })
+      // middleware.forEach((m) => {
+      middleware.forEach(() => {
+        // TODO: fix and uncomment this
+        // middlewareItem = middlewares.find((middlewareItem: MiddlewareOptions) => {
+        //   return middlewareItem.name === m
+        // })
 
-        if (middlewareItem)
-          middlewareItem.handle() // Again, invoke only if it exists.
+        // if (middlewareItem)
+        //   middlewareItem.handle() // Again, invoke only if it exists.
       })
     }
   }

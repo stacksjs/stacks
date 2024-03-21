@@ -1,4 +1,4 @@
-import { db, now } from '@stacksjs/database'
+import { now } from '@stacksjs/database'
 import type { Kysely } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
@@ -11,5 +11,3 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('created_at', 'timestamp', col => col.defaultTo(now).notNull())
     .execute()
 }
-
-await up(db)
