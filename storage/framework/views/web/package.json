@@ -32,7 +32,7 @@
     "@types/nprogress": "^0.2.3",
     "@unocss/eslint-config": "^0.58.6",
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vue-macros/volar": "^0.18.12",
+    "@vue-macros/volar": "^0.18.13",
     "@vue/test-utils": "^2.4.5",
     "critters": "^0.0.22",
     "markdown-it-link-attributes": "^4.0.1",
