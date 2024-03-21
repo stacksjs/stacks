@@ -33,13 +33,13 @@ export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
 
 export class UserModel {
-  private userData: Partial<UserType>
+  private user: Partial<UserType>
 
   // TODO: this hidden functionality needs to be implemented still
   private hidden = ['password']
 
-  constructor(userData: Partial<UserType>) {
-    this.userData = userData
+  constructor(user: Partial<UserType>) {
+    this.user = user
   }
 
   // Method to find a user by ID
@@ -51,12 +51,12 @@ export class UserModel {
     else
       query = query.selectAll()
 
-    const userData = await query.executeTakeFirst()
+    const user = await query.executeTakeFirst()
 
-    if (!userData)
+    if (!user)
       return null
 
-    return new UserModel(userData)
+    return new UserModel(user)
   }
 
   // Method to get a user by criteria
@@ -117,15 +117,15 @@ export class UserModel {
 
   // Method to find a user by email
   static async findByEmail(email: string): Promise<UserModel | null> {
-    const userData = await db.selectFrom('users')
+    const user = await db.selectFrom('users')
       .where('email', '=', email)
       .selectAll()
       .executeTakeFirst()
 
-    if (!userData)
+    if (!user)
       return null
 
-    return new UserModel(userData)
+    return new UserModel(user)
   }
 
   async where(criteria: Partial<UserType>) {
@@ -172,78 +172,86 @@ export class UserModel {
 
   // Method to get the user instance data
   get() {
-    return this.userData
+    return this.user
   }
 
   // Method to update the user instance
-  async update(userUpdate: UserUpdate): Promise<Result<UserType, Error>> {
-    if (this.userData.id === undefined)
+  async update(user: UserUpdate): Promise<Result<UserType, Error>> {
+    if (this.user.id === undefined)
       return err(handleError('User ID is undefined'))
 
     const updatedUser = await db.updateTable('users')
-      .set(userUpdate)
-      .where('id', '=', this.userData.id)
+      .set(user)
+      .where('id', '=', this.user.id)
       .returningAll()
       .executeTakeFirst()
 
     if (!updatedUser)
       return err(handleError('User not found'))
 
-    this.userData = updatedUser
+    this.user = updatedUser
 
     return ok(updatedUser)
   }
 
   // Method to save (insert or update) the user instance
   async save(): Promise<void> {
-    if (this.userData.id === undefined) {
+    if (!this.user)
+      throw new Error('User data is undefined')
+
+    if (this.user.id === undefined) {
       // Insert new user
       const newUser = await db.insertInto('users')
-        .values(this.userData)
+        .values(this.user)
         .returningAll()
         .executeTakeFirstOrThrow()
-      this.userData = newUser
+      this.user = newUser
     }
     else {
       // Update existing user
-      await this.update(this.userData as UserUpdate)
+      await this.update(this.user)
     }
   }
 
   // Method to delete the user instance
   async delete(): Promise<void> {
-    if (this.userData.id === undefined)
+    if (this.user.id === undefined)
       throw new Error('User ID is undefined')
 
     await db.deleteFrom('users')
-      .where('id', '=', this.userData.id)
+      .where('id', '=', this.user.id)
       .execute()
-    this.userData = {}
+
+    this.user = {}
   }
 
   // Method to refresh the user instance data from the database
   async refresh(): Promise<void> {
-    if (this.userData.id === undefined)
+    if (this.user.id === undefined)
       throw new Error('User ID is undefined')
 
     const refreshedUser = await db.selectFrom('users')
-      .where('id', '=', this.userData.id)
+      .where('id', '=', this.user.id)
       .selectAll()
       .executeTakeFirst()
 
     if (!refreshedUser)
       throw new Error('User not found')
 
-    this.userData = refreshedUser
+    this.user = refreshedUser
   }
 
   toJSON() {
-    const output: Partial<UserType> = { ...this.userData }
+    const output: Partial<UserType> = { ...this.user }
+
     this.hidden.forEach((attr) => {
       if (attr in output)
         delete output[attr as keyof Partial<UserType>]
     })
-    return output
+
+    type User = Omit<UserType, 'password'>
+
+    return output as User
   }
 }
 
@@ -258,12 +266,12 @@ export async function find(id: number, fields?: (keyof UserType)[]) {
   else
     query = query.selectAll()
 
-  const userData = await query.executeTakeFirst()
+  const user = await query.executeTakeFirst()
 
-  if (!userData)
+  if (!user)
     return null
 
-  return new UserModel(userData)
+  return new UserModel(user)
 }
 
 export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
