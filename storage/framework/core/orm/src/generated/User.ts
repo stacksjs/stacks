@@ -1,6 +1,5 @@
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-import { Kysely } from 'kysely'
-import { getDialect } from '@stacksjs/query-builder'
+import { db } from '@stacksjs/query-builder'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -11,21 +10,19 @@ export interface UsersTable {
   // using the `Generated` type. This way they are automatically
   // made optional in inserts and updates.
   id: Generated<number>
-
   name: string
   email: string
-
   // If the column is nullable in the database, make its type nullable.
   // Don't use optional properties. Optionality is always determined
   // automatically by Kysely.
   password: string
-
   // You can specify a different type for each operation (select, insert and
   // update) using the `ColumnType<SelectType, InsertType, UpdateType>`
   // wrapper. Here we define a column `created_at` that is selected as
   // a `Date`, can optionally be provided as a `string` in inserts and
   // can never be updated:
   created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
   deleted_at: ColumnType<Date, string | undefined, never>
 }
 
@@ -33,10 +30,77 @@ export type User = Selectable<UsersTable>
 export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
 
-export interface Database {
-  users: UsersTable
+// starting here, ORM functions
+export async function find(id: number) {
+  return await db.selectFrom('users')
+    .where('id', '=', id)
+    .selectAll()
+    .executeTakeFirst()
 }
 
-export const db = new Kysely<Database>({
-  dialect: getDialect(),
-})
+export async function get(criteria: Partial<User>) {
+  let query = db.selectFrom('users')
+
+  if (criteria.id)
+    query = query.where('id', '=', criteria.id) // Kysely is immutable, you must re-assign!
+
+  if (criteria.email)
+    query = query.where('email', '=', criteria.email)
+
+  if (criteria.name !== undefined) {
+    query = query.where(
+      'name',
+      criteria.name === null ? 'is' : '=',
+      criteria.name,
+    )
+  }
+
+  if (criteria.password)
+    query = query.where('password', '=', criteria.password)
+
+  if (criteria.created_at)
+    query = query.where('created_at', '=', criteria.created_at)
+
+  if (criteria.updated_at)
+    query = query.where('updated_at', '=', criteria.updated_at)
+
+  if (criteria.deleted_at)
+    query = query.where('deleted_at', '=', criteria.deleted_at)
+
+  return await query.selectAll().execute()
+}
+
+export async function all() {
+  return await db.selectFrom('users')
+    .selectAll()
+    .execute()
+}
+
+export async function create(newUser: NewUser) {
+  return await db.insertInto('users')
+    .values(newUser)
+    .returning('id')
+    .executeTakeFirst()
+}
+
+export async function update(id: number, userUpdate: UserUpdate) {
+  return await db.updateTable('users')
+    .set(userUpdate)
+    .where('id', '=', id)
+    .execute()
+}
+
+export async function remove(id: number) {
+  return await db.deleteFrom('users')
+    .where('id', '=', id)
+    .execute()
+}
+
+export async function findByEmail(email: string) {
+  return await db.selectFrom('users')
+    .where('email', '=', email)
+    .selectAll()
+    .executeTakeFirst()
+}
+
+// finish with all the remainder of Laravel Eloquent ORM functions

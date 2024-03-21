@@ -54,9 +54,11 @@
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.27.3",
     "kysely-bun-worker": "^0.5.7",
-    "mysql2": "^3.9.2"
+    "mysql2": "^3.9.2",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/pg": "^8.11.4"
   }
 }

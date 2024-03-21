@@ -11,3 +11,6 @@ if (config.database.default === 'dynamodb') {
   //   table.timestamps()
   // })
 }
+
+export * from './generated/User'
+export * from './generated/types'
