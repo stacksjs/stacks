@@ -137,6 +137,7 @@ iconify
 iife
 imds
 Imdsv
+Insertable
 intlify
 itemprop
 jetbrains
@@ -298,6 +299,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+Updateable
 upstash
 vclass
 vemit

@@ -52,7 +52,9 @@
   "dependencies": {
     "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.27.3"
+    "kysely": "^0.27.3",
+    "kysely-bun-worker": "^0.5.7",
+    "mysql2": "^3.9.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

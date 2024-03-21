@@ -26,7 +26,15 @@ export interface DatabaseOptions {
       endpoint?: string
     }
 
-    postgres?: object
+    postgres?: {
+      url?: string
+      host?: string
+      port?: number
+      name?: string
+      username?: string
+      password?: string
+      prefix?: string
+    }
   }
 
   migrations: string
