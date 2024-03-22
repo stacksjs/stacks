@@ -78,6 +78,14 @@ export interface ModelOptions extends Base {
       set: (value: any) => any
     }
   }
+
+  get: {
+    [key: string]: (value: any) => any
+  }
+
+  set: {
+    [key: string]: (value: any) => any
+  }
 }
 
 export interface Fields {

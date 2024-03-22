@@ -55,7 +55,6 @@
     "@rollup/pluginutils": "^5.1.0",
     "@stacksjs/validation": "workspace:*",
     "@types/aws4": "^1.11.6",
-    "@types/bcryptjs": "^2.4.6",
     "@types/bun": "^1.0.10",
     "@types/crypto-js": "^4.2.2",
     "@types/eslint": "^8.56.6",

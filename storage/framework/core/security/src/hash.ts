@@ -1,21 +1,31 @@
-import bcryptjs from 'bcryptjs'
 import { Base64 } from 'js-base64'
 import md5 from 'crypto-js/md5'
 import { hashing } from '@stacksjs/config'
 
-async function make(password: string, algorithm = 'bcrypt') {
-  if (algorithm === 'bcrypt')
+interface MakeOptions {
+  algorithm?: 'bcrypt' | 'base64' | 'argon2'
+  type?: 'argon2id' | 'argon2i' | 'argon2d'
+}
+
+async function make(password: string, options?: MakeOptions) {
+  if (options?.algorithm === 'argon2')
+    return argon2Encode(password, { type: 'argon2id' })
+
+  if (options?.algorithm === 'bcrypt')
     return bcryptEncode(password)
 
-  if (algorithm === 'base64')
+  if (options?.algorithm === 'base64')
     return base64Encode(password)
 
   throw new Error('Unsupported algorithm')
 }
 
-type Algorithm = 'bcrypt' | 'base64'
+type Algorithm = 'bcrypt' | 'base64' | 'argon2'
 
 async function verify(password: string, hash: string, algorithm?: Algorithm) {
+  if (algorithm === 'argon2')
+    return argon2Verify(password, hash)
+
   if (algorithm === 'bcrypt')
     return bcryptVerify(password, hash)
 
@@ -25,30 +35,49 @@ async function verify(password: string, hash: string, algorithm?: Algorithm) {
   throw new Error('Unsupported algorithm')
 }
 
-async function bcryptEncode(password: string) {
+export async function bcryptEncode(password: string) {
   if (!hashing.bcrypt)
     throw new Error('Bcrypt hashing is not configured')
 
-  const salt = bcryptjs.genSaltSync(hashing.bcrypt.rounds)
-  const hash = await bcryptjs.hash(password, salt)
+  const bcryptHash = await Bun.password.hash(password, {
+    algorithm: 'bcrypt',
+    cost: hashing.bcrypt.cost,
+  })
 
-  return hash
+  return bcryptHash
 }
 
-async function bcryptVerify(password: string, hash: string) {
-  return await bcryptjs.compare(password, hash)
+export async function argon2Encode(password: string, options?: { type: 'argon2id' | 'argon2i' | 'argon2d' }) {
+  if (!hashing.argon2)
+    throw new Error('Argon2 hashing is not configured')
+
+  const argon2Hash = await Bun.password.hash(password, {
+    algorithm: options?.type || 'argon2id',
+    memoryCost: hashing.argon2.memory,
+    timeCost: hashing.argon2.time,
+  })
+
+  return argon2Hash
 }
 
-function base64Encode(password: string) {
+export async function argon2Verify(password: string, hash: string) {
+  return await Bun.password.verify(password, hash)
+}
+
+export async function bcryptVerify(password: string, hash: string) {
+  return await Bun.password.verify(password, hash)
+}
+
+export function base64Encode(password: string) {
   return Base64.encode(password)
 }
 
-function base64Verify(password: string, hash: string) {
+export function base64Verify(password: string, hash: string) {
   return Base64.decode(hash) === password
 }
 
-function md5Encode(password: string) {
+export function md5Encode(password: string) {
   return md5(password)
 }
 
-export { make as makeHash, verify as verifyHash, base64Encode, base64Verify, bcryptEncode, bcryptVerify, md5Encode }
+export { make as makeHash, verify as verifyHash }

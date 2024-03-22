@@ -1,6 +1,8 @@
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
+import { capitalize } from '@stacksjs/strings'
 import { rule } from '@stacksjs/validation'
+import type { UserType as User } from '@stacksjs/orm'
 import type { Model } from '@stacksjs/types'
 
 export default {
@@ -65,12 +67,11 @@ export default {
     },
   },
 
-  // accessors for fullname & mutators for password
-  accessors: {
-    fullname: (user: Model) => user.name,
+  get: {
+    fullname: (user: User) => capitalize(user.name),
   },
 
-  mutators: {
-    password: (password: string) => bcrypt.hash(password),
+  set: {
+    password: (password: string) => Bun.password.hash(password),
   },
 } satisfies Model
