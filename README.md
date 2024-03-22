@@ -267,7 +267,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 - 🪄 **AI** _deep AI integrations & foundational model access_
 - 🤖 **APIs** _scalability & maintainability built-in_
-- 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
+- 🏎️ **Cache** _unified caching for DynamoDB, Redis and more_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac (dependency-free binaries)_
 - 📀 **Database** _DynamoDB, SQLite, MySQL, Postgres, and more_
 - 👾 **Errors** _native type-safe error handling_

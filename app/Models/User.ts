@@ -65,7 +65,7 @@ export default {
     },
   },
 
-  // accessors for fullname & mutoators for password
+  // accessors for fullname & mutators for password
   accessors: {
     fullname: (user: Model) => user.name,
   },
