@@ -122,6 +122,14 @@ export function userNotificationsPath(path?: string) {
   return appPath(`Notifications/${path || ''}`)
 }
 
+export function userDatabasePath(path?: string) {
+  return projectPath(`database/${path || ''}`)
+}
+
+export function userMigrationsPath(path?: string) {
+  return userDatabasePath(`migrations/${path || ''}`)
+}
+
 /**
  * Returns the path to the user-defined `Events.ts` file.
  *
@@ -1353,6 +1361,8 @@ export const path = {
   tinkerPath,
   typesPath,
   uiPath,
+  userDatabasePath,
+  userMigrationsPath,
   userEventsPath,
   userJobsPath,
   userListenersPath,

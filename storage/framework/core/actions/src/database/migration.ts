@@ -2,9 +2,21 @@
 // import { config } from '@stacksjs/config'
 
 // const driver = config.database.default
-const driver = 'sqlite'
+// const driver = 'sqlite'
 
-if (driver === 'sqlite')
-  await import('./migration-sqlite.js')
-else
-  await import('./migration-mysql.js')
+// if (driver === 'sqlite')
+//   await import('./migration-sqlite')
+// else
+//   await import('./migration-mysql')
+
+export function generateSqliteMigrationFile() {
+  // ...
+}
+
+export function generateMysqlMigrationFile() {
+  // ...
+}
+
+export function generatePostgresMigrationFile() {
+  // ...
+}

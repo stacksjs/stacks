@@ -7,7 +7,7 @@ import type { Model } from '@stacksjs/types'
 
 export default {
   name: 'User', // defaults to the sanitized file name
-  table: 'users', // defaults to the lowercase, plural name of the model
+  table: 'users', // defaults to the lowercase, plural name of the model name
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
@@ -68,7 +68,7 @@ export default {
   },
 
   get: {
-    fullname: (user: User) => capitalize(user.name),
+    fullName: (user: User) => capitalize(user.name),
   },
 
   set: {

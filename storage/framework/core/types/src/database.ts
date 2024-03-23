@@ -38,6 +38,7 @@ export interface DatabaseOptions {
   }
 
   migrations: string
+  migrationLocks: string
 }
 
 export type DatabaseConfig = Partial<DatabaseOptions>

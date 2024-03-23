@@ -13,7 +13,7 @@ export default {
 
   connections: {
     sqlite: {
-      database: env.DB_DATABASE || 'stacks.sqlite',
+      database: env.DB_DATABASE || 'database/stacks.sqlite',
       prefix: '',
     },
 
@@ -36,4 +36,5 @@ export default {
   },
 
   migrations: 'migrations',
+  migrationLocks: 'migration_locks',
 } satisfies DatabaseConfig

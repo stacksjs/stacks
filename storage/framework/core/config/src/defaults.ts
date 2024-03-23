@@ -1,4 +1,4 @@
-import { commandsPath, projectStoragePath } from '@stacksjs/path'
+import { commandsPath, userDatabasePath } from '@stacksjs/path'
 import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
@@ -127,10 +127,13 @@ export default {
 
     connections: {
       sqlite: {
-        database: projectStoragePath('framework/database/stacks.sqlite'),
+        database: userDatabasePath('stacks.sqlite'),
         prefix: '',
       },
     },
+
+    migrations: 'migrations',
+    migrationLocks: 'migration_locks',
   },
 
   dns: {
@@ -267,7 +270,7 @@ export default {
 
     argon2: {
       memory: 65536, // memory usage in kibibytes
-      threads: 1,
+      // threads: 1,
       time: 1, // the number of iterations
     },
   },

@@ -64,7 +64,7 @@ export async function writeToLogFile(message: string) {
 export interface Log {
   info: (...args: any[]) => void
   success: (msg: string) => void
-  error: (err: string | Error, options?: any | Error) => void
+  error: (err: string | Error | unknown, options?: any | Error) => void
   warn: (arg: string) => void
   debug: (...args: any[]) => void
   // start: logger.Start

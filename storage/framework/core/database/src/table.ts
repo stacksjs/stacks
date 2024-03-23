@@ -1,3 +1,4 @@
+import { log } from '@stacksjs/logging'
 import { Column } from './column'
 
 export class Table {
@@ -22,8 +23,7 @@ export class Table {
 
   // Method to simulate the execution of the schema definition
   execute(): void {
-    // eslint-disable-next-line no-console
-    console.log(`Creating table with columns: ${this.columns.map(col => col.name).join(', ')}`)
-    // Here you would normally execute the SQL commands to create the table and columns in the database
+    log.info(`Creating table with columns: ${this.columns.map(col => col.name).join(', ')}`)
+    // run kysely mirgration
   }
 }

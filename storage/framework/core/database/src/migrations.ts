@@ -1,47 +1,58 @@
-import { path as p } from '@stacksjs/path'
-import { log } from '@stacksjs/cli'
+import { path } from '@stacksjs/path'
+import { log } from '@stacksjs/logging'
+import { err, ok } from '@stacksjs/error-handling'
 import { fs } from '@stacksjs/storage'
+import { FileMigrationProvider, Migrator } from 'kysely'
+import { database } from '@stacksjs/config'
+import { db } from './utils'
 
-// import { storage } from '@stacksjs/storage'
-// import type { Model, SchemaOptions } from '@stacksjs/types'
-// import { titleCase } from '@stacksjs/strings'
+export const migrator = new Migrator({
+  db,
 
-// const { fs } = storage
+  provider: new FileMigrationProvider({
+    fs,
+    path,
+    // This needs to be an absolute path.
+    migrationFolder: path.userMigrationsPath(),
+  }),
 
-// function readModelsFromFolder(folderPath: string): Promise<Model[]> {
-//   return new Promise((resolve, reject) => {
-//     const models: Model[] = []
+  migrationTableName: database.migrations,
+  migrationLockTableName: database.migrationLocks,
+})
 
-//     fs.readdir(folderPath, (err, files) => {
-//       if (err)
-//         reject(err)
+export async function runDatabaseMigration() {
+  try {
+    log.info('Migrating database...')
 
-//       const promises = files
-//         .filter(file => file.endsWith('.ts'))
-//         .map((file) => {
-//           const filePath = `${folderPath}/${file}`
+    const migration = await migrator.migrateToLatest()
 
-//           return import(filePath).then((data) => {
-//             models.push({
-//               name: data.default.name,
-//               fields: data.default.fields,
-//             })
-//           })
-//         })
+    if (migration.error) {
+      log.error(migration.error)
+      return err(migration.error)
+    }
 
-//       Promise.all(promises)
-//         .then(() => resolve(models))
-//         .catch(err => reject(err))
-//     })
-//   })
-// }
+    if (migration.results?.length === 0) {
+      log.success('No new migrations were executed')
+      return ok('No new migrations were executed')
+    }
 
-// async function migrate(path: string, options: SchemaOptions): Promise<void> {
-//   const models = await readModelsFromFolder(projectPath('app/Models'))
+    if (migration.results) {
+      migration.results.forEach(({ migrationName }) => {
+        log.info(`Migration Name: ${migrationName}`)
+      })
 
-//   generatePrismaSchema(models, path, options)
-// }
+      log.success('Database migrated successfully.')
+      return ok(migration)
+    }
 
+    log.success('Database migration completed with no new migrations.')
+    return ok('Database migration completed with no new migrations.')
+  }
+  catch (error) {
+    console.error('Migration failed:', error)
+    return err(error)
+  }
+}
 export interface MigrationOptions {
   name: string
   up: string
@@ -52,9 +63,8 @@ export function generateMigrationFile(options: MigrationOptions) {
 
   const timestamp = new Date().getTime().toString()
   const fileName = `${timestamp}-${name}.ts`
-  const filePath = p.frameworkPath(`database/migrations/${fileName}`)
-  const fileContent = `
-    import { Migration } from '@stacksjs/database'
+  const filePath = path.userMigrationsPath(fileName)
+  const fileContent = `import { Migration } from '@stacksjs/database'
 
     export default new Migration({
       name: '${name}',
