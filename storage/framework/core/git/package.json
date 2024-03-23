@@ -52,7 +52,7 @@
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
     "cz-git": "^1.9.0",
-    "giget": "^1.2.1",
+    "giget": "^1.2.3",
     "simple-git-hooks": "^2.11.0"
   },
   "dependencies": {
@@ -60,7 +60,7 @@
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
     "cz-git": "^1.9.0",
-    "giget": "^1.2.1",
+    "giget": "^1.2.3",
     "simple-git-hooks": "^2.11.0"
   },
   "devDependencies": {
