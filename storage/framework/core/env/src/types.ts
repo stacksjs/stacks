@@ -1,4 +1,4 @@
-import { vine } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation'
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import type { EnvKey } from '../../../env'
 import env from '~/config/env'
@@ -18,17 +18,17 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
   let validatorType: ValidatorType
   switch (typeof value) {
     case 'string':
-      validatorType = vine.string()
+      validatorType = schema.string()
       break
     case 'number':
-      validatorType = vine.number()
+      validatorType = schema.number()
       break
     case 'boolean':
-      validatorType = vine.boolean()
+      validatorType = schema.boolean()
       break
     default:
       if (Array.isArray(value)) {
-        validatorType = vine.enum(value as string[])
+        validatorType = schema.enum(value as string[])
         break
       }
       throw new Error(`Invalid env value for ${key}`)
@@ -39,7 +39,7 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
   return acc
 }, {} as EnvMap)
 
-export const envSchema = vine.object(envStructure)
+export const envSchema = schema.object(envStructure)
 export type Env = Infer<typeof envSchema>
 
 export type EnvOptions = Env

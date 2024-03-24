@@ -1,5 +1,5 @@
 import { faker } from '@stacksjs/faker'
-import { rule } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
@@ -21,7 +21,7 @@ export default {
   fields: {
     subscribed: {
       validator: {
-        rule: rule.boolean(),
+        rule: schema.boolean(),
         message: '`subscribed` must be a boolean',
       },
 

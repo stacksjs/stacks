@@ -1,7 +1,7 @@
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
 import { capitalize } from '@stacksjs/strings'
-import { rule } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation'
 import type { UserType as User } from '@stacksjs/orm'
 import type { Model } from '@stacksjs/types'
 
@@ -40,7 +40,7 @@ export default {
   fields: {
     name: {
       validator: {
-        rule: rule.string().minLength(3).maxLength(255),
+        rule: schema.string().minLength(3).maxLength(255),
         message: 'Name must be between 3 and 255 characters',
       },
 
@@ -50,7 +50,7 @@ export default {
     email: {
       unique: true,
       validator: {
-        rule: rule.string().email(),
+        rule: schema.string().email(),
         message: 'Email must be a valid email address',
       },
 
@@ -59,7 +59,7 @@ export default {
 
     password: {
       validator: {
-        rule: rule.string().minLength(6).maxLength(255),
+        rule: schema.string().minLength(6).maxLength(255),
         message: 'Password must be between 6 and 255 characters',
       },
 
