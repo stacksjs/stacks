@@ -7,10 +7,9 @@ const writer = file.writer()
 
 const driver = 'sqlite'
 
-writer.write('import { Kysely, sql } from \'kysely\'\n')
-writer.write('import { db } from \'@stacksjs/database\'\n')
+writer.write('import { db, sql, Database } from \'@stacksjs/database\'\n')
 writer.write('\n')
-writer.write('export async function up(db: Kysely<any>): Promise<void> {\n')
+writer.write('export async function up(db: Database<any>) {\n')
 
 writer.write('  await db.schema\n')
 writer.write(`    .createTable('${User.table}')\n`)

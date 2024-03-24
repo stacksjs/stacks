@@ -1,7 +1,7 @@
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import type { Result } from '@stacksjs/error-handling'
 import { err, handleError, ok } from '@stacksjs/error-handling'
-import { db } from '@stacksjs/query-builder'
+import { db } from '@stacksjs/database'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'

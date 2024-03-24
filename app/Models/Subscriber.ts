@@ -1,5 +1,5 @@
 import { faker } from '@stacksjs/faker'
-import { rule } from '@stacksjs/validation'
+import { rule } from '@stacksjs/orm'
 import type { Model } from '@stacksjs/types'
 
 export default {

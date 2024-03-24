@@ -8,7 +8,10 @@ const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
-  external: ['@stacksjs/config'],
+  external: [
+    '@stacksjs/config',
+    '@stacksjs/database',
+  ],
   target: 'bun',
 })
 

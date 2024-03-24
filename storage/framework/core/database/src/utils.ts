@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { Pool } from 'pg'
@@ -51,3 +50,5 @@ export const now = sql`now()`
 export const db = new Kysely<Database>({
   dialect: getDialect(),
 })
+
+export { sql }

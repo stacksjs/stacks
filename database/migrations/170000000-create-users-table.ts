@@ -1,7 +1,7 @@
-import type { Kysely } from 'kysely'
-import { sql } from 'kysely'
+import type { Database } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Database<any>) {
   await db.schema
     .createTable('person')
     .addColumn('id', 'integer', col => col.primaryKey())
