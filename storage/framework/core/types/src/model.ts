@@ -88,18 +88,20 @@ export interface ModelOptions extends Base {
   }
 }
 
-export interface Fields {
-  [key: string]: {
-    default?: string | number | boolean | Date
-    unique?: boolean
-    required?: boolean
-    factory?: () => any
-    validator?: {
-      rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
-      message: string
-    }
-    // validation?: String | Number | Boolean | Date
+export interface FieldOptions {
+  default?: string | number | boolean | Date
+  unique?: boolean
+  required?: boolean
+  factory?: () => any
+  validator?: {
+    rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
+    message: string
   }
+  // validation?: String | Number | Boolean | Date
+}
+
+export interface Fields {
+  [key: string]: FieldOptions
 }
 
 export type Model = Partial<ModelOptions>

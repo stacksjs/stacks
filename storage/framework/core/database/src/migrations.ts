@@ -2,6 +2,7 @@ import { path } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
 import { err, ok } from '@stacksjs/error-handling'
 import { fs, glob } from '@stacksjs/storage'
+import type { FieldOptions } from '@stacksjs/types'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { database } from '@stacksjs/config'
 import { db } from './utils'
@@ -84,30 +85,24 @@ export async function generateMigrations() {
   // Assuming path.modelsPath('*') returns a glob pattern for all model files
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
-  console.log('modelFiles', modelFiles)
-
   for (const file of modelFiles) {
-    console.log('file', file)
     const model = await import(file)
-    console.log('model', model)
     const tableName = model.default.table
     const fields = model.default.fields
-    console.log('fields', fields)
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${tableName}')\n`
-    console.log('migrationContent', migrationContent)
 
-    for (const [fieldName, fieldOptions] of Object.entries(fields)) {
-      const columnType = mapFieldTypeToColumnType(fieldOptions.validator.rule) // You need to implement this function based on your validation rules
+    for (const [fieldName, options] of Object.entries(fields)) {
+      const fieldOptions = options as FieldOptions
+      const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule) // You need to implement this function based on your validation rules
       migrationContent += `    .addColumn('${fieldName}', '${columnType}', col => col`
       if (fieldOptions.unique)
         migrationContent += `.unique()`
 
-      console.log('fieldOptions.validator', fieldOptions.validator)
       if (fieldOptions.validator?.rule?.required)
         migrationContent += `.notNull()`
 
