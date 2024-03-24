@@ -4,18 +4,16 @@ import { BunWorkerDialect } from 'kysely-bun-worker'
 import { Pool } from 'pg'
 import { createPool } from 'mysql2'
 import type { Database } from '@stacksjs/orm'
+import { log } from '@stacksjs/logging'
 import { database } from '@stacksjs/config'
 
 export function getDialect() {
   const driver = database.default ?? 'sqlite'
 
-  // eslint-disable-next-line no-console
-  console.log('driver', driver)
+  log.debug(`Using database driver: ${driver}`)
 
   if (driver === 'sqlite') {
     const path = database.connections?.sqlite.database ?? 'database/stacks.sqlite'
-    // eslint-disable-next-line no-console
-    console.log('path', path, process.cwd())
     return new BunWorkerDialect({
       url: path,
     })
