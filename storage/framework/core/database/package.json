@@ -60,6 +60,7 @@
     "kysely-bun-worker": "^0.5.7"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",

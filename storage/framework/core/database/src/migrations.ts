@@ -1,5 +1,5 @@
 import { path } from '@stacksjs/path'
-import { log } from '@stacksjs/logging'
+import { italic, log } from '@stacksjs/cli'
 import { err, ok } from '@stacksjs/error-handling'
 import { fs, glob } from '@stacksjs/storage'
 import type { FieldOptions } from '@stacksjs/types'
@@ -39,7 +39,7 @@ export async function runDatabaseMigration() {
 
     if (migration.results) {
       migration.results.forEach(({ migrationName }) => {
-        log.info(`Migration Name: ${migrationName}`)
+        log.info(italic(`Migration Name: ${migrationName}`))
       })
 
       log.success('Database migrated successfully.')
@@ -102,12 +102,17 @@ export async function generateMigration(modelPath: string) {
     const fieldOptions = options as FieldOptions
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
     console.log('columnType', columnType)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}', col => col`
-    if (fieldOptions.unique)
-      migrationContent += `.unique()`
+    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
-    if (fieldOptions.validator?.rule?.required)
-      migrationContent += `.notNull()`
+    // Check if there are configurations that require the lambda function
+    if (fieldOptions.unique || (fieldOptions.validator?.rule?.required)) {
+      migrationContent += `, col => col`
+      if (fieldOptions.unique)
+        migrationContent += `.unique()`
+      if (fieldOptions.validator?.rule?.required)
+        migrationContent += `.notNull()`
+      migrationContent += ``
+    }
 
     migrationContent += `)\n`
   }
@@ -130,6 +135,15 @@ function mapFieldTypeToColumnType(rule: any): string {
   if (rule[Symbol.for('schema_name')].includes('string'))
     // Default column type for strings
     return prepareTextColumnType(rule)
+
+  if (rule[Symbol.for('schema_name')].includes('number'))
+    return 'int'
+
+  if (rule[Symbol.for('schema_name')].includes('boolean'))
+    return 'boolean'
+
+  if (rule[Symbol.for('schema_name')].includes('date'))
+    return 'date'
 
   // need to now handle all other types
 
