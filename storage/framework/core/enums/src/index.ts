@@ -78,7 +78,7 @@ export enum Action {
   Inspire = 'inspire',
   KeyGenerate = 'key-generate',
   MakeNotification = 'make-notification',
-  Migrate = 'migrate',
+  Migrate = 'migrate/database',
   MigrateDns = 'migrate/dns',
   Seed = 'seed',
   Lint = 'lint/index',

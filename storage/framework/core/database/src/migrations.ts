@@ -101,7 +101,6 @@ export async function generateMigration(modelPath: string) {
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as FieldOptions
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
-    console.log('columnType', columnType)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
