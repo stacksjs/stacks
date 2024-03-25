@@ -1,79 +1,32 @@
-// import { MysqlDialect, QueryBuilder, createPool } from '@stacksjs/query-builder'
-// import { filesystem } from '@stacksjs/storage'
-// import type { Model } from '@stacksjs/types'
-// import { projectPath } from '@stacksjs/path'
-// import { database as config } from '@stacksjs/config'
+import { path } from '@stacksjs/path'
+import { db } from '@stacksjs/database'
+import { fs } from '@stacksjs/storage'
 
-// const { fs } = filesystem
+async function seedModel(model: any) {
+  const tableName = model.table
+  const seedCount = model.traits.useSeeder?.count || 10 // Default to 10 if not specified
+  const records = []
 
-// function readModels(folderPath: string): Promise<Model[]> {
-//   return new Promise((resolve, reject) => {
-//     const models: Model[] = []
+  for (let i = 0; i < seedCount; i++) {
+    const record: any = {}
+    for (const fieldName in model.fields) {
+      const field = model.fields[fieldName]
+      // Use the factory function if available, otherwise leave the field undefined
+      record[fieldName] = field.factory ? field.factory() : undefined
+    }
+    records.push(record)
+  }
 
-//     fs.readdir(folderPath, (err, files) => {
-//       if (err)
-//         reject(err)
-
-//       const promises = files
-//         .filter(file => file.endsWith('.ts'))
-//         .map((file) => {
-//           const filePath = `${folderPath}/${file}`
-
-//           return import(filePath).then((data) => {
-//             models.push({
-//               name: data.default.name,
-//               fields: data.default.fields,
-//               useSeed: data.default.useSeed,
-//             })
-//           })
-//         })
-
-//       Promise.all(promises)
-//         .then(() => resolve(models))
-//         .catch(err => reject(err))
-//     })
-//   })
-// }
-
-async function seed() {
-  // const db = new QueryBuilder({
-  //   dialect: new MysqlDialect({
-  //     pool: createPool({
-  //       database: config.database,
-  //       host: config.host,
-  //       password: config.password,
-  //       user: config.username,
-  //     }),
-  //   }),
-  // })
-
-  // const models = await readModels(projectPath('app/Models'))
-
-  // const queries = models.flatMap((model) => {
-  //   const { seedable, fields } = model
-
-  //   if (!seedable)
-  //     return []
-
-  //   const count = typeof seedable === 'boolean' ? 10 : seedable.count
-
-  //   const records: Record<string, any>[] = []
-  //   for (let i = 0; i < count; i++) {
-  //     const record: Record<string, any> = {}
-  //     Object.entries(fields).forEach(([name, field]) => {
-  //       if (field.factory)
-  //         record[name] = field.factory()
-  //     })
-  //     records.push(record)
-  //   }
-
-  //     return model
-  //   // return db.insertInto('users').values(records).build(sql`RETURNING *`)
-  // })
-
-  // const { rows } = await db.transaction().execute()
-
-  // return rows
+  await db.insertInto(tableName).values(records).execute()
 }
 
-export { seed }
+export async function seed() {
+  const modelsDir = path.userModelsPath()
+  const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
+
+  for (const file of modelFiles) {
+    const modelPath = path.join(modelsDir, file)
+    const model = await import(modelPath)
+    await seedModel(model.default)
+  }
+}
