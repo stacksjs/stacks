@@ -9,7 +9,7 @@ export default {
   autoIncrement: true, // defaults to true
 
   traits: {
-    useSoftDeletes: true, // defaults to false
+    useTimestamps: true, // defaults to true
     useSeeder: { // defaults to a count of 10
       count: 10,
     },

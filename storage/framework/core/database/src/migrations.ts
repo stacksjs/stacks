@@ -121,12 +121,12 @@ export async function generateMigration(modelPath: string) {
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
     migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-    migrationContent += `    .addColumn('updated_at', 'timestamp', col => col.nullable())\n`
+    migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   }
 
   // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'timestamp', col => col.nullable())\n`
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
