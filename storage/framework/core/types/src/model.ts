@@ -45,7 +45,9 @@ export interface ModelOptions extends Base {
   traits: {
     useUuid?: boolean // defaults to false
     useTimestamps?: boolean | TimestampOptions // defaults to true
+    timestampable?: boolean | TimestampOptions // useTimestamps alias
     useSoftDeletes?: boolean | SoftDeleteOptions // defaults to false
+    softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
 
     useAuth?: boolean | AuthOptions // defaults to false
     authenticatable?: boolean | AuthOptions // useAuth alias

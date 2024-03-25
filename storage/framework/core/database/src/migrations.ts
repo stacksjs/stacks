@@ -91,7 +91,8 @@ export async function generateMigration(modelPath: string) {
   const model = await import(modelPath)
   const tableName = model.default.table
   const fields = model.default.fields
-  const useTimestamps = model.default?.traits?.useTimestamps
+  const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
+  const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -120,8 +121,12 @@ export async function generateMigration(modelPath: string) {
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
     migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-    migrationContent += `    .addColumn('updated_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    migrationContent += `    .addColumn('updated_at', 'timestamp', col => col.nullable())\n`
   }
+
+  // Append deleted_at column if useSoftDeletes is true
+  if (useSoftDeletes)
+    migrationContent += `    .addColumn('deleted_at', 'timestamp', col => col.nullable())\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
