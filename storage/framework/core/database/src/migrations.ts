@@ -197,3 +197,14 @@ function prepareTextColumnType(rule) {
 
   return columnType
 }
+
+export async function getExecutedMigrations() {
+  // @ts-expect-error the migrations table is not typed yet
+  return await db.selectFrom('migrations').select('name').execute()
+}
+
+export async function hasModelBeenMigrated(modelName: string) {
+  const results = await getExecutedMigrations()
+
+  return results.some(migration => migration.name.includes(`-create-${modelName}-table`))
+}
