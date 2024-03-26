@@ -175,6 +175,3 @@ eval "$(pkgx integrate)"
 
 # install the project deps
 eval "$(dev)"
-
-# install the project node_modules
-eval "$(bun install)"

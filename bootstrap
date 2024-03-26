@@ -2,25 +2,53 @@
 
 ## To learn more, visit https://stacksjs.org/docs/guide/bootstrap
 
-if [ -n "$1" ]; then
-  # Check if the directory exists
-  if [ -d "storage/framework/core" ]; then # determines whether we are in a Stacks context
-    :
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# Check for required commands
+for cmd in git mkfifo; do
+  if ! command_exists "$cmd"; then
+    echo "Error: '$cmd' is required but not installed. Please install $cmd and try again."
+    exit 1
+  fi
+done
+
+# Check if the directory exists
+if [ -d "storage/framework/core" ]; then
+  :
+else
+  if [ -z "$1" ]; then
+    project="stacks"
   else
-    if [ -d "$1" ]; then
-      echo "Project $1 exists locally. Please use a different name & run again."
-      exit 1
-    else
-      git clone https://github.com/stacksjs/stacks.git $1
-      cd "$1" || exit 1
+    project="$1"
+  fi
 
-      # Run the pkgx-install script (in case it’s already installed, it will be updated to the latest version)
-      "./storage/framework/scripts/pkgx-install"
+  if [ "$project" = "stacks" ] && [ -d "storage/framework/core" ]; then
+    :
+  elif [ -d "$project" ]; then
+    echo "Project $project exists locally. Please use a different name & run again."
+    exit 1
+  else
+    git clone https://github.com/stacksjs/stacks.git "$project"
+    cd "$project" || exit 1
 
-      echo "Project $1 has been created. Please open a new terminal, run 'bun run dev' to start the server."
+    # Save current project directory path
+    projectDir=$(pwd)
 
+    if ! command_exists "./storage/framework/scripts/pkgx-install"; then
+      echo "Error: pkgx-install script not found in './storage/framework/scripts/pkgx-install'. Please check your installation and try again."
       exit 1
     fi
+    "./storage/framework/scripts/pkgx-install"
+
+    echo "Installing project dependencies via bun..."
+    pkgx bun install
+
+    echo "Project $project has been created in ${projectDir}. Run 'bun run dev' to start the server."
+
+    exit 1
   fi
 fi
 
@@ -44,20 +72,34 @@ cd "$PROJECT_ROOT" || exit 1
 # Run the pkgx-install script
 case "$*" in
   *--verbose*)
+    if [ ! -f "$SCRIPT_PATH" ]; then
+      echo "Error: Script path $SCRIPT_PATH does not exist."
+      exit 1
+    fi
     "$SCRIPT_PATH"
-    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
     ;;
   *)
+    if [ ! -f "$SCRIPT_PATH" ]; then
+      echo "Error: Script path $SCRIPT_PATH does not exist."
+      exit 1
+    fi
     "$SCRIPT_PATH" > /dev/null 2>&1
-    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup
     ;;
 esac
 
 # Create a named pipe
 mkfifo /tmp/pipe
 
+# Bun is assumed to be installed after it's initial set up
 # Run the command, send output to both the console and the pipe
-bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
+if ! command_exists bun; then
+  # We'll use pgkx with bun to get
+  pkgx bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
+  exit 1
+else
+  bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
+fi
+
 
 # Read from the pipe, add timestamps, and append to the file
 while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/pipe >> "$LOG_PATH"
