@@ -34,7 +34,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@unocss/eslint-plugin": ">=0.58.6",
+    "@unocss/eslint-plugin": ">=0.58.7",
     "eslint": "^8.57.0",
     "eslint-plugin-format": "^0.1.0",
     "eslint-plugin-react": "^7.34.1",
@@ -110,7 +110,7 @@
     "@stylistic/eslint-plugin-migrate": "^1.7.0",
     "@types/eslint": "^8.56.6",
     "@types/node": "^20.11.30",
-    "@unocss/eslint-plugin": "^0.58.6",
+    "@unocss/eslint-plugin": "^0.58.7",
     "eslint": "^8.57.0",
     "eslint-flat-config-viewer": "^0.1.14",
     "eslint-plugin-format": "^0.1.0",
