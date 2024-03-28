@@ -57,7 +57,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@antfu/install-pkg": "^0.3.1",
+    "@antfu/install-pkg": "^0.3.2",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
@@ -71,7 +71,7 @@
     "prompts": "^2.4.2"
   },
   "dependencies": {
-    "@antfu/install-pkg": "^0.3.1",
+    "@antfu/install-pkg": "^0.3.2",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

@@ -63,7 +63,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "pinia": "^2.1.7",
-    "unocss": "^0.58.7",
+    "unocss": "^0.58.8",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.21",
     "vue-tsc": "^2.0.7"
@@ -81,7 +81,7 @@
     "@unhead/vue": "^1.9.2",
     "pinia": "^2.1.7",
     "unhead": "^1.9.2",
-    "unocss": "^0.58.7",
+    "unocss": "^0.58.8",
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.21",
