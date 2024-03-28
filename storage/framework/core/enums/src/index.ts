@@ -91,7 +91,6 @@ export enum Action {
   TestUnit = 'test-unit',
   TestFeature = 'test-feature',
   TestCoverage = 'test-coverage',
-  Tinker = 'tinker',
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
   UpgradeBinary = 'upgrade/binary', // the `stacks` binary

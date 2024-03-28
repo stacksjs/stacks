@@ -33,19 +33,22 @@ export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
 export type Users = UserType[]
 
+export type UserColumn = Users
+export type UserColumns = Array<keyof Users>
+
+type SortDirection = 'asc' | 'desc'
+interface SortOptions { column: UserType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
-  sort?: { column: keyof UserType, order: 'asc' | 'desc' }
+  sort?: SortOptions
   limit?: number
   offset?: number
-  page?: number // New
+  page?: number
 }
 
 export class UserModel {
   private user: Partial<UserType>
-
-  // TODO: this hidden functionality needs to be implemented still
-  private hidden = ['password']
+  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
   constructor(user: Partial<UserType>) {
     this.user = user
@@ -68,17 +71,36 @@ export class UserModel {
     return new UserModel(user)
   }
 
-  // Method to get a user by criteria
-  static async get(criteria: Partial<UserType>): Promise<UserModel[]> {
-    if (criteria.id !== undefined) {
-      const users = await db.selectFrom('users')
-        .where('id', '=', criteria.id)
-        .selectAll()
-        .execute()
-      return users.map(user => new UserModel(user))
-    }
+  static async findMany(ids: number[], fields?: (keyof UserType)[]) {
+    let query = db.selectFrom('users').where('id', 'in', ids)
 
-    return []
+    if (fields)
+      query = query.select(fields)
+    else
+      query = query.selectAll()
+
+    const users = await query.execute()
+
+    return users.map(user => new UserModel(user))
+  }
+
+  // Method to get a user by criteria
+  static async get(criteria: Partial<UserType>, options: QueryOptions = {}): Promise<UserModel[]> {
+    let query = db.selectFrom('users')
+
+    // Apply sorting from options
+    if (options.sort)
+      query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply limit and offset from options
+    if (options.limit !== undefined)
+      query = query.limit(options.limit)
+
+    if (options.offset !== undefined)
+      query = query.offset(options.offset)
+
+    const users = await query.selectAll().execute()
+    return users.map(user => new UserModel(user))
   }
 
   // Method to get all users
@@ -200,6 +222,25 @@ export class UserModel {
     return await query.selectAll().execute()
   }
 
+  async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}) {
+    let query = db.selectFrom('users')
+
+    query = query.where(column, 'in', values)
+
+    // Apply sorting from options
+    if (options.sort)
+      query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply pagination from options
+    if (options.limit !== undefined)
+      query = query.limit(options.limit)
+
+    if (options.offset !== undefined)
+      query = query.offset(options.offset)
+
+    return await query.selectAll().execute()
+  }
+
   async first() {
     return await db.selectFrom('users')
       .selectAll()
@@ -211,6 +252,27 @@ export class UserModel {
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
+  }
+
+  async orderBy(column: keyof UserType, order: 'asc' | 'desc') {
+    return await db.selectFrom('users')
+      .selectAll()
+      .orderBy(column, order)
+      .execute()
+  }
+
+  async orderByDesc(column: keyof UserType) {
+    return await db.selectFrom('users')
+      .selectAll()
+      .orderBy(column, 'desc')
+      .execute()
+  }
+
+  async orderByAsc(column: keyof UserType) {
+    return await db.selectFrom('users')
+      .selectAll()
+      .orderBy(column, 'asc')
+      .execute()
   }
 
   // Method to get the user instance itself
@@ -320,6 +382,19 @@ export async function find(id: number, fields?: (keyof UserType)[]) {
     return null
 
   return new UserModel(user)
+}
+
+export async function findMany(ids: number[], fields?: (keyof UserType)[]) {
+  let query = db.selectFrom('users').where('id', 'in', ids)
+
+  if (fields)
+    query = query.select(fields)
+  else
+    query = query.selectAll()
+
+  const users = await query.execute()
+
+  return users.map(user => new UserModel(user))
 }
 
 export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
@@ -439,6 +514,29 @@ export async function where(
 
   if (criteria.deleted_at)
     query = query.where('deleted_at', '=', criteria.deleted_at)
+
+  // Apply sorting from options
+  if (options.sort)
+    query = query.orderBy(options.sort.column, options.sort.order)
+
+  // Apply pagination from options
+  if (options.limit !== undefined)
+    query = query.limit(options.limit)
+
+  if (options.offset !== undefined)
+    query = query.offset(options.offset)
+
+  return await query.selectAll().execute()
+}
+
+export async function whereIn(
+  column: keyof UserType,
+  values: any[],
+  options: QueryOptions = {},
+) {
+  let query = db.selectFrom('users')
+
+  query = query.where(column, 'in', values)
 
   // Apply sorting from options
   if (options.sort)

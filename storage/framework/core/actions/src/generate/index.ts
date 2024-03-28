@@ -114,16 +114,6 @@ export async function generateTypes(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export function generateMigrations() {
-  // const path = frameworkPath('database/schema.prisma')
-
-  // await migrate(path, { database: database.driver })
-
-  // await runCommand(`bunx prisma migrate dev --schema=${path}`)
-
-  log.success('Successfully updated migrations')
-}
-
 export function generatePkgxConfig() {
   // write the yaml string to a file in your project root
   // files.put(projectPath('./pkgx.yaml'), yamlStr)

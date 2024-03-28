@@ -1,17 +1,21 @@
 import process from 'node:process'
+import { log } from '@stacksjs/logging'
 import { generateMigrations, runDatabaseMigration } from '@stacksjs/database'
-import { path } from '@stacksjs/path'
-import { glob } from '@stacksjs/storage'
 
-// if no migrations, generate them
-const migrations = glob.sync(path.userMigrationsPath('*.ts'))
-if (migrations.length === 0)
-  await generateMigrations()
+// this is run and checks whether new created or update migrations need to be generated
+const result = await generateMigrations()
 
-const result = await runDatabaseMigration()
+if (result?.isErr()) {
+  log.error('generateMigrations failed')
+  log.error(result.error)
+  process.exit(1)
+}
 
-if (result.isErr()) {
-  console.error('Migration failed:', result.error)
+const result2 = await runDatabaseMigration()
+
+if (result2.isErr()) {
+  log.error('runDatabaseMigration failed')
+  log.error(result2.error)
   process.exit(1)
 }
 

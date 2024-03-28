@@ -9,6 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   external: [
+    '@stacksjs/build',
     '@stacksjs/config',
     '@stacksjs/database',
   ],

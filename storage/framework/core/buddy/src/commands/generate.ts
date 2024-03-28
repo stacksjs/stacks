@@ -4,7 +4,6 @@ import {
   generateCoreSymlink,
   generateIdeHelpers,
   generateLibEntries,
-  generateMigrations,
   generatePkgxConfig,
   generateTypes,
   generateVsCodeCustomData,
@@ -139,7 +138,7 @@ export function generate(buddy: CLI) {
     .command('generate:migrations', 'Generate Migrations')
     .action((options: GeneratorOptions) => {
       log.debug('Running `buddy generate:migrations` ...', options)
-      generateMigrations()
+      // generateMigrations()
     })
 
   buddy

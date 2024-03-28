@@ -68,6 +68,7 @@ async function main() {
   cmd.seed(buddy)
   cmd.setup(buddy)
   cmd.test(buddy)
+  cmd.tinker(buddy)
   cmd.version(buddy)
   cmd.prepublish(buddy)
   cmd.upgrade(buddy)

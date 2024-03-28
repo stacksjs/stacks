@@ -15,13 +15,14 @@ export function migrate(buddy: CLI) {
 
   buddy
     .command('migrate', descriptions.migrate)
+    .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
-      const result = await runAction(Action.Migrate, { ...options })
+      const result = await runAction(Action.Migrate, options)
 
       if (result.isErr()) {
         await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
