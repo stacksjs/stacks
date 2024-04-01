@@ -144,7 +144,7 @@ export async function optimizePkgxDeps(): Promise<void> {
       else {
         log.info(`[INFO] No config files for '${packageName}' exist. Removing from dependencies in pkgx.yaml...`)
 
-        const pkgxPath = './pkgx.yaml'
+        const pkgxPath = './pkgx.yaml' // TODO: Might need to properly reference this in a config so when the path changes, this will be properly located
         const pkgxContent = fs.readFileSync(pkgxPath, 'utf8')
         const lines = pkgxContent.split('\n')
         const newLines = lines.filter(line => !line.includes(`${packageName}.`))
