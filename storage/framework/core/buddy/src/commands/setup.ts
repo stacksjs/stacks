@@ -120,7 +120,41 @@ async function initializeProject(options: CliOptions): Promise<void> {
 }
 
 export async function optimizePkgxDeps(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 300))
+  return new Promise((resolve) => {
+    // Mapping of config files to their respective packages
+    // Now supports multiple files per package
+    const configToPackageMap: Readonly<{ [packageName: string]: string[] }> = {
+      redis: ['cache.ts', 'session.ts'], // Example: both cache.ts and session.ts need redis
+
+      // sqlite: ['sample.ts'], // Example: sqlite will be removed when this is uncommented since sample.ts does not exist
+
+      // You can add other mappings here
+    }
+
+    // Function to check if at least one file exists
+    const atLeastOneFileExists = (fileNames: string[]) => fileNames.some(fileName => fs.existsSync(`./config/${fileName}`))
+
+    log.info('[INFO] Checking config files...')
+
+    // Check each package and install if any associated config file exists
+    Object.entries(configToPackageMap).forEach(([packageName, configFiles]) => {
+      if (atLeastOneFileExists(configFiles)) {
+        log.info(`[INFO] Required '${packageName}' for '${configFiles.join(', ')}' config files...`)
+      }
+      else {
+        log.info(`[INFO] No config files for '${packageName}' exist. Removing from dependencies in pkgx.yaml...`)
+
+        const pkgxPath = './pkgx.yaml'
+        const pkgxContent = fs.readFileSync(pkgxPath, 'utf8')
+        const lines = pkgxContent.split('\n')
+        const newLines = lines.filter(line => !line.includes(`${packageName}.`))
+        fs.writeFileSync(pkgxPath, newLines.join('\n'))
+        log.success(`[SUCCESS] Removed '${packageName}'...`)
+      }
+    })
+
+    resolve()
+  })
 }
 
 export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
