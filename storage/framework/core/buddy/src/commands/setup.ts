@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { path as p } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
 import { storage } from '@stacksjs/storage'
