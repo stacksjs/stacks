@@ -1,10 +1,10 @@
-import type { FlatConfigItem, OptionsFiles, OptionsOverrides, OptionsStylistic } from '../types'
+import type { OptionsFiles, OptionsOverrides, OptionsStylistic, TypedFlatConfigItem } from '../types'
 import { GLOB_YAML } from '../globs'
 import { interopDefault } from '../utils'
 
 export async function yaml(
   options: OptionsOverrides & OptionsStylistic & OptionsFiles = {},
-): Promise<FlatConfigItem[]> {
+): Promise<TypedFlatConfigItem[]> {
   const {
     files = [GLOB_YAML],
     overrides = {},
@@ -26,7 +26,7 @@ export async function yaml(
 
   return [
     {
-      name: 'antfu:yaml:setup',
+      name: 'antfu/yaml/setup',
       plugins: {
         yaml: pluginYaml,
       },
@@ -36,7 +36,7 @@ export async function yaml(
       languageOptions: {
         parser: parserYaml,
       },
-      name: 'antfu:yaml:rules',
+      name: 'antfu/yaml/rules',
       rules: {
         'style/spaced-comment': 'off',
 

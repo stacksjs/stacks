@@ -1,14 +1,14 @@
 import { interopDefault } from '../utils'
-import type { FlatConfigItem, OptionsStylistic } from '../types'
+import type { OptionsStylistic, TypedFlatConfigItem } from '../types'
 
-export async function jsdoc(options: OptionsStylistic = {}): Promise<FlatConfigItem[]> {
+export async function jsdoc(options: OptionsStylistic = {}): Promise<TypedFlatConfigItem[]> {
   const {
     stylistic = true,
   } = options
 
   return [
     {
-      name: 'antfu:jsdoc',
+      name: 'antfu/jsdoc/rules',
       plugins: {
         jsdoc: await interopDefault(import('eslint-plugin-jsdoc')),
       },

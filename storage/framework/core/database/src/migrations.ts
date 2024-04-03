@@ -105,7 +105,7 @@ export async function generateMigration(modelPath: string) {
   if (files.length === 0) {
     log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
-    // delete the *.json files in the database folder
+    // delete the *.ts files in the database/models folder
     const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
     for (const file of modelFiles) {
       if (file.endsWith('.ts'))
@@ -348,8 +348,7 @@ export async function getCurrentMigrationFields(modelPath: string): Promise<Fiel
 }
 
 export async function createTableMigration(modelPath: string) {
-  // eslint-disable-next-line no-console
-  console.log('createTableMigration')
+  log.debug('createTableMigration modelPath:', modelPath)
 
   const model = await import(modelPath)
   const tableName = model.default.table
