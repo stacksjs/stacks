@@ -87,8 +87,10 @@ export async function generateMigrations() {
 
     const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
-    for (const file of modelFiles)
+    for (const file of modelFiles) {
+      log.info('Generating migration for:', file)
       await generateMigration(file)
+    }
 
     log.success('Migrations generated successfully.')
     return ok('Migrations generated successfully.')
@@ -99,8 +101,6 @@ export async function generateMigrations() {
 }
 
 export async function generateMigration(modelPath: string) {
-  log.debug('generateMigration modelPath:', modelPath)
-
   // check if any files are in the database folder
   const files = await fs.readdir(path.userMigrationsPath())
   if (files.length === 0) {
@@ -126,7 +126,7 @@ export async function generateMigration(modelPath: string) {
 
   // if the file exists, we need to check if the fields have changed
   if (fs.existsSync(copiedModelPath)) {
-    log.debug(`Fields have already been generated for ${tableName}`)
+    log.info(`Fields have already been generated for ${tableName}`)
 
     const previousFields = await getLastMigrationFields(fileName)
     const previousFieldsString = JSON.stringify(previousFields, null, 2) // Convert to string for comparison
