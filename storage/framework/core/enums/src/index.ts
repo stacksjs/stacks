@@ -80,7 +80,7 @@ export enum Action {
   MakeNotification = 'make-notification',
   Migrate = 'migrate/database',
   MigrateDns = 'migrate/dns',
-  Seed = 'seed',
+  Seed = 'database/seed',
   Lint = 'lint/index',
   LintFix = 'lint/fix',
   Prepublish = 'prepublish',

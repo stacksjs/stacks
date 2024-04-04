@@ -89,11 +89,13 @@ export const log: Log = {
     await writeToLogFile(`SUCCESS: ${msg}`)
   },
 
-  async error(err: string | Error, options?: any | Error) {
+  async error(err: unknown, options?: any | Error) {
     if (err instanceof Error)
       handleError(err, options)
+
     else if (options instanceof Error)
       handleError(options)
+
     else
       handleError(err, options)
 

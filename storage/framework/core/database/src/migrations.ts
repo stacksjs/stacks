@@ -82,10 +82,11 @@ export async function up(db: Database<any>) {
 }
 
 export async function generateMigrations() {
-  log.info('Generating migrations based on your models...')
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
   try {
+    log.info('Generating migrations...')
+
+    const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
     for (const file of modelFiles)
       await generateMigration(file)
 
