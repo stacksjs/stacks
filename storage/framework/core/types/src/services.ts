@@ -24,10 +24,10 @@ export interface ServicesOptions {
     apiKey: string
   }
 
-  supabase?: {
-    appId: string
-    apiKey: string
-  }
+  // supabase?: {
+  //   appId: string
+  //   apiKey: string
+  // }
 
   aws?: {
     accountId: string

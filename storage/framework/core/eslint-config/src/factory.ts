@@ -5,7 +5,6 @@ import { FlatConfigComposer } from 'eslint-flat-config-utils'
 import type { Linter } from 'eslint'
 import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from './types'
 import {
-  astro,
   comments,
   ignores,
   imports,
@@ -15,11 +14,9 @@ import {
   markdown,
   node,
   perfectionist,
-  react,
   sortPackageJson,
   sortTsconfig,
   stylistic,
-  svelte,
   test,
   toml,
   typescript,
@@ -74,13 +71,10 @@ export function antfu(
   ...userConfigs: Awaitable<TypedFlatConfigItem | TypedFlatConfigItem[] | FlatConfigComposer<any> | Linter.FlatConfig[]>[]
 ): FlatConfigComposer<TypedFlatConfigItem> {
   const {
-    astro: enableAstro = false,
     autoRenamePlugins = true,
     componentExts = [],
     gitignore: enableGitignore = true,
     isInEditor = !!((process.env.VSCODE_PID || process.env.VSCODE_CWD || process.env.JETBRAINS_IDE || process.env.VIM) && !process.env.CI),
-    react: enableReact = false,
-    svelte: enableSvelte = false,
     typescript: enableTypeScript = isPackageExists('typescript'),
     unocss: enableUnoCSS = false,
     vue: enableVue = VuePackages.some(i => isPackageExists(i)),
@@ -162,20 +156,20 @@ export function antfu(
     }))
   }
 
-  if (enableReact) {
-    configs.push(react({
-      overrides: getOverrides(options, 'react'),
-      typescript: !!enableTypeScript,
-    }))
-  }
+  // if (enableReact) {
+  //   configs.push(react({
+  //     overrides: getOverrides(options, 'react'),
+  //     typescript: !!enableTypeScript,
+  //   }))
+  // }
 
-  if (enableSvelte) {
-    configs.push(svelte({
-      overrides: getOverrides(options, 'svelte'),
-      stylistic: stylisticOptions,
-      typescript: !!enableTypeScript,
-    }))
-  }
+  // if (enableSvelte) {
+  //   configs.push(svelte({
+  //     overrides: getOverrides(options, 'svelte'),
+  //     stylistic: stylisticOptions,
+  //     typescript: !!enableTypeScript,
+  //   }))
+  // }
 
   if (enableUnoCSS) {
     configs.push(unocss({
@@ -184,12 +178,12 @@ export function antfu(
     }))
   }
 
-  if (enableAstro) {
-    configs.push(astro({
-      overrides: getOverrides(options, 'astro'),
-      stylistic: stylisticOptions,
-    }))
-  }
+  // if (enableAstro) {
+  //   configs.push(astro({
+  //     overrides: getOverrides(options, 'astro'),
+  //     stylistic: stylisticOptions,
+  //   }))
+  // }
 
   if (options.jsonc ?? true) {
     configs.push(

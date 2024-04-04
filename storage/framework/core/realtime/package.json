@@ -19,7 +19,6 @@
     "realtime",
     "broadcasting",
     "pusher",
-    "supabase",
     "stacks"
   ],
   "exports": {

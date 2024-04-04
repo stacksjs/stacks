@@ -3,7 +3,7 @@ import type { ParserOptions } from '@typescript-eslint/parser'
 import type { Options as VueBlocksOptions } from 'eslint-processor-vue-blocks'
 import type { Linter } from 'eslint'
 import type { StylisticCustomizeOptions } from '@stylistic/eslint-plugin'
-import type { RuleOptions } from 'eslint-plugin-antfu'
+import type { RuleOptions } from './typegen'
 import type { VendoredPrettierOptions } from './vendor/prettier-types'
 
 export type Awaitable<T> = T | Promise<T>

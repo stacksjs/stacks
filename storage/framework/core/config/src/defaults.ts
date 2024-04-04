@@ -426,11 +426,6 @@ export default {
       appId: '',
       apiKey: '',
     },
-
-    supabase: {
-      appId: '',
-      apiKey: '',
-    },
   },
 
   storage: {

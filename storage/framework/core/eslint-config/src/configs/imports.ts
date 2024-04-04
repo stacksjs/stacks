@@ -2,7 +2,7 @@ import type { OptionsStylistic, TypedFlatConfigItem } from '../types'
 import { pluginAntfu, pluginImport } from '../plugins'
 import { GLOB_SRC_EXT } from '../globs'
 
-export async function imports(options: OptionsStylistic = {}): Promise<TypedlatConfigItem[]> {
+export async function imports(options: OptionsStylistic = {}): Promise<TypedFlatConfigItem[]> {
   const {
     stylistic = true,
   } = options

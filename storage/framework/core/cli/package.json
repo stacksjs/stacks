@@ -58,6 +58,7 @@
   },
   "peerDependencies": {
     "@antfu/install-pkg": "^0.3.2",
+    "@clack/prompts": "^0.7.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
@@ -72,6 +73,7 @@
   },
   "dependencies": {
     "@antfu/install-pkg": "^0.3.2",
+    "@clack/prompts": "^0.7.0",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
