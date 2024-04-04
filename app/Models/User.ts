@@ -18,7 +18,7 @@ export default {
     useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
 
     useSeeder: { // defaults to a count of 10, `seedable` used as an alias
-      count: 10,
+      count: 40,
     },
 
     useApi: {
