@@ -1,8 +1,8 @@
+import process from 'node:process'
 import { log } from '@stacksjs/cli'
-
-// import { database } from '@stacksjs/config'
-// import { seed } from '@stacksjs/database'
-//
-// await seed()
+import { seed } from '@stacksjs/database'
 
 log.info('Seeding database...')
+await seed()
+
+process.exit(0)
