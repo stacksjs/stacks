@@ -10,18 +10,16 @@ The database directory is where you would store your custom migrations and seeds
 The following command will bootstrap a new migration file in the `database/migrations` directory:
 
 ```bash
-buddy make:migration create_users_table
-# apply updates to the migrations, as needed
+# automated migrations
 buddy migrate
 ```
 
-And this command will bootstrap a new seed file in the `database/seeds` directory:
-
 ```bash
-buddy make:seed users
-# apply updates to the seeds, as needed
+# automated seeds
 buddy seed
 ```
+
+In case you need more seeding customization, you can create a `./database/seeder.ts` which, if found, is triggered instead.
 
 Click here to learn more.
 

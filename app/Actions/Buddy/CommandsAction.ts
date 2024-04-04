@@ -419,21 +419,6 @@ export default new Action({
           options: [],
         },
         {
-          signature: 'buddy make:seed',
-          description: 'Creates a new seeder file',
-          notes: '',
-          synopsis: 'buddy make:seed <name>',
-          aliases: [],
-          arguments: [
-            {
-              name: 'name',
-              description: 'The seeder to be created.',
-              value_required: true,
-            },
-          ],
-          options: [],
-        },
-        {
           signature: 'buddy make:table',
           description: 'Bootstraps a new data table',
           notes: '',
