@@ -24,7 +24,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun run typegen && bunx tsup --format esm,cjs --clean",
+    "build": "bun run typegen && bunx tsup --format esm,cjs --clean --dts",
     "build:inspector": "bun run build && bunx @eslint/config-inspector build",
     "typegen": "bun scripts/typegen.ts",
     "stub": "bunx --bun tsup --format esm",

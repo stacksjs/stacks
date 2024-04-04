@@ -53,7 +53,6 @@ const result = await Bun.build({
     './src/prepublish.ts',
     './src/release.ts',
     './src/test.ts',
-    './src/tinker.ts',
     './src/typecheck.ts',
     './src/types.ts',
     './src/upgrade.ts',
