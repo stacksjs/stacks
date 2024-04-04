@@ -29,6 +29,15 @@ async function seedModel(name: string, model?: Model) {
 }
 
 export async function seed() {
+  // if a custom seeder exists, use it instead
+  const customSeederPath = path.userDatabasePath('seeder.ts')
+  if (fs.existsSync(customSeederPath)) {
+    log.info('Custom seeder found')
+    await import(customSeederPath)
+    return
+  }
+
+  // otherwise, seed all models
   const modelsDir = path.userModelsPath()
   const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
 
