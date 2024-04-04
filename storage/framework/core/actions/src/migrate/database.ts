@@ -6,7 +6,7 @@ import { generateMigrations, runDatabaseMigration } from '@stacksjs/database'
 const result = await generateMigrations()
 
 if (result?.isErr()) {
-  log.error('generateMigrations failed', result.error)
+  log.error('[stacks] generateMigrations failed', result.error)
   process.exit(1)
 }
 
