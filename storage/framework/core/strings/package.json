@@ -65,7 +65,7 @@
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "change-case": "^5.4.3",
+    "change-case": "^5.4.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
     "macroable": "^7.0.2",
