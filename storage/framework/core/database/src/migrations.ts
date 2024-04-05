@@ -240,16 +240,11 @@ export async function haveModelFieldsChangedSinceLastMigration(modelPath: string
 
   const model = await import(modelPath)
   const tableName = model.default.table
-
   const lastMigration = await lastMigrationDate()
-
-  console.log('lastMigration:', lastMigration)
 
   // now that we know the date, we need to check the git history for changes to the model file since that date
   const cmd = ``
-  console.log('cmd:', cmd)
   const gitHistory = await $`${cmd}`.text()
-  console.log('gitHistory:', gitHistory)
 
   // if there are updates, then we need to check whether
   // the updates include the any updates to the model
@@ -294,15 +289,9 @@ export async function createAlterTableMigration(modelPath: string) {
   const lastFields = lastMigrationFields ?? {}
   const currentFields = model.default.fields as Fields
 
-  console.log('lastFields:', lastFields)
-  console.log('currentFields:', currentFields)
-
   // Determine fields to add and remove
   const fieldsToAdd = Object.keys(currentFields)
   const fieldsToRemove = Object.keys(lastFields)
-
-  console.log('fieldsToAdd:', fieldsToAdd)
-  console.log('fieldsToRemove:', fieldsToRemove)
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
