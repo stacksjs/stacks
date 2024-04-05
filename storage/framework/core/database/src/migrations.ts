@@ -238,9 +238,9 @@ export async function hasTableBeenMigrated(tableName: string) {
 export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {
   log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
 
-  const model = await import(modelPath)
-  const tableName = model.default.table
-  const lastMigration = await lastMigrationDate()
+  // const model = await import(modelPath)
+  // const tableName = model.default.table
+  // const lastMigration = await lastMigrationDate()
 
   // now that we know the date, we need to check the git history for changes to the model file since that date
   const cmd = ``
