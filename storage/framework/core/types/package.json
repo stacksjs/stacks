@@ -59,9 +59,9 @@
     "@types/crypto-js": "^4.2.2",
     "@types/eslint": "^8.56.7",
     "@types/fs-extra": "^11.0.4",
-    "@types/markdown-it-link-attributes": "^3.0.4",
+    "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^20.12.4",
+    "@types/node": "^20.12.5",
     "@types/nprogress": "^0.2.3",
     "@vinejs/vine": "^2.0.0",
     "cac": "^6.7.14",
@@ -69,18 +69,18 @@
     "meilisearch": "^0.38.0",
     "neverthrow": "^6.1.0",
     "ora": "^8.0.1",
-    "unocss": "^0.58.9",
+    "unocss": "^0.59.0",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0",
     "vite": "^5.2.8",
     "vite-plugin-inspect": "^0.8.3",
-    "vite-plugin-pwa": "^0.19.7",
+    "vite-plugin-pwa": "^0.19.8",
     "vite-ssg": "^0.23.6",
     "vitepress": "1.0.2",
     "vue": "^3.4.21"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.135.0",
+    "aws-cdk-lib": "^2.136.0",
     "typescript": "^5.4.4"
   }
 }
