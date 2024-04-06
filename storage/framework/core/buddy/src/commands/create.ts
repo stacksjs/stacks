@@ -42,11 +42,10 @@ export function create(buddy: CLI) {
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-    .action(async (options: CreateOptions) => {
+    .action(async (name: string, options: CreateOptions) => {
       log.debug('Running `buddy new <name>` ...', options)
 
       const startTime = await intro('stacks new')
-      const name = options.name
       const path = resolve(process.cwd(), name)
 
       isFolderCheck(path)

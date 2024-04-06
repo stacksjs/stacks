@@ -64,6 +64,7 @@ async function main() {
   cmd.version(buddy)
   cmd.prepublish(buddy)
   cmd.upgrade(buddy)
+  cmd.create(buddy)
 
   // dynamic imports
   await dynamicImports(buddy)
