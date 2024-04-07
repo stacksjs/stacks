@@ -32,12 +32,12 @@
     "@types/nprogress": "^0.2.3",
     "@unocss/eslint-config": "^0.59.0",
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vue-macros/volar": "^0.18.17",
+    "@vue-macros/volar": "^0.18.18",
     "@vue/test-utils": "^2.4.5",
     "critters": "^0.0.22",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shikiji": "^0.10.2",
-    "rollup": "^4.14.0",
+    "rollup": "^4.14.1",
     "shikiji": "^0.10.2",
     "taze": "^0.13.3",
     "unocss": "^0.59.0",
@@ -55,6 +55,6 @@
     "vite-plugin-webfont-dl": "^3.9.2",
     "vite-ssg": "^0.23.6",
     "vite-ssg-sitemap": "^0.6.1",
-    "vue-tsc": "^2.0.10"
+    "vue-tsc": "^2.0.11"
   }
 }
