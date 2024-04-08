@@ -18,7 +18,7 @@ export default {
   // relationships
   belongsTo: 'User',
 
-  fields: {
+  attributes: {
     subscribed: {
       validator: {
         rule: schema.boolean(),

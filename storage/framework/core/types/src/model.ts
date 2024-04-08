@@ -58,7 +58,7 @@ export interface ModelOptions extends Base {
     useApi?: boolean | ApiOptions
   }
 
-  fields: Fields
+  attributes: Attributes
 
   // relationships
   hasOne: string // hasOne: 'Post'
@@ -74,13 +74,6 @@ export interface ModelOptions extends Base {
     using: string
   }
 
-  attributes: {
-    [key: string]: {
-      get: (value: any) => any
-      set: (value: any) => any
-    }
-  }
-
   get: {
     [key: string]: (value: any) => any
   }
@@ -90,7 +83,7 @@ export interface ModelOptions extends Base {
   }
 }
 
-export interface FieldOptions {
+export interface Attribute {
   default?: string | number | boolean | Date
   unique?: boolean
   required?: boolean
@@ -102,8 +95,8 @@ export interface FieldOptions {
   // validation?: String | Number | Boolean | Date
 }
 
-export interface Fields {
-  [key: string]: FieldOptions
+export interface Attributes {
+  [key: string]: Attribute
 }
 
 export type Model = Partial<ModelOptions>

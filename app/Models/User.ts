@@ -37,7 +37,7 @@ export default {
     // useUuid: true, // defaults to false
   },
 
-  fields: {
+  attributes: {
     name: {
       validator: {
         rule: schema.string().minLength(3).maxLength(255),

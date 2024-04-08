@@ -22,7 +22,8 @@ export default {
       secret: env.AWS_SECRET_ACCESS_KEY || '',
       region: env.AWS_DEFAULT_REGION || 'us-east-1',
       prefix: env.DB_DATABASE || 'stacks',
-      endpoint: '',
+      endpoint: 'http://localhost',
+      port: env.DB_PORT || 8000,
     },
 
     mysql: {
