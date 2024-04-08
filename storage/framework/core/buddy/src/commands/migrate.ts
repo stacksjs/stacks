@@ -36,6 +36,26 @@ export function migrate(buddy: CLI) {
     })
 
   buddy
+    .command('migrate:fresh', descriptions.migrate)
+    .option('-d, --diff', 'Show the SQL that would be run', { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: MigrateOptions) => {
+      log.debug('Running `buddy migrate:fresh` ...', options)
+
+      const perf = await intro('buddy migrate:fresh')
+      const result = await runAction(Action.MigrateFresh, options)
+
+      if (result.isErr()) {
+        await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit()
+      }
+
+      await outro(`All tables dropped successfully`, { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
     .command('migrate:dns', descriptions.migrate)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })

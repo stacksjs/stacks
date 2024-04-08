@@ -79,6 +79,7 @@ export enum Action {
   KeyGenerate = 'key-generate',
   MakeNotification = 'make-notification',
   Migrate = 'migrate/database',
+  MigrateFresh = 'migrate/database-fresh',
   MigrateDns = 'migrate/dns',
   Seed = 'database/seed',
   Lint = 'lint/index',

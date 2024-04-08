@@ -3,7 +3,7 @@ import { extractFieldsFromModel } from '@stacksjs/orm'
 import { dim, italic, log } from '@stacksjs/cli'
 import { err, ok } from '@stacksjs/error-handling'
 import { fs, glob } from '@stacksjs/storage'
-import type { FieldOptions, Fields } from '@stacksjs/types'
+import type { Attribute, Attributes } from '@stacksjs/types'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { database } from '@stacksjs/config'
 import { $ } from 'bun'
@@ -63,6 +63,40 @@ export interface MigrationOptions {
   up: string
 }
 
+export async function resetDatabase() {
+  const dbPath = path.userDatabasePath('stacks.sqlite')
+
+  if (fs.existsSync(dbPath))
+    await Bun.$`rm ${dbPath}`
+
+  const files = await fs.readdir(path.userMigrationsPath())
+  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+
+  if (modelFiles.length) {
+    for (const modelFile of modelFiles) {
+      if (modelFile.endsWith('.ts')) {
+        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
+
+        if (fs.existsSync(modelPath))
+          await Bun.$`rm ${modelPath}`
+      }
+    }
+  }
+
+  if (files.length) {
+    for (const file of files) {
+      if (file.endsWith('.ts')) {
+        const migrationPath = path.userMigrationsPath(`${file}`)
+
+        if (fs.existsSync(migrationPath))
+          await Bun.$`rm ${migrationPath}`
+      }
+    }
+  }
+
+  return ok('All tables dropped successfully!')
+}
+
 export function generateMigrationFile(options: MigrationOptions) {
   const { name, up } = options
 
@@ -103,23 +137,28 @@ export async function generateMigrations() {
 export async function generateMigration(modelPath: string) {
   // check if any files are in the database folder
   const files = await fs.readdir(path.userMigrationsPath())
+
   if (files.length === 0) {
     log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
     // delete the *.ts files in the database/models folder
     const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-    for (const file of modelFiles) {
-      if (file.endsWith('.ts'))
-        await fs.unlink(path.frameworkPath(`database/models/${file}`))
+
+    if (modelFiles.length) {
+      log.debug('No existing model files in framework path...')
+
+      for (const file of modelFiles) {
+        if (file.endsWith('.ts'))
+          await fs.unlink(path.frameworkPath(`database/models/${file}`))
+      }
     }
   }
 
   const model = await import(modelPath)
   const fileName = path.basename(modelPath)
   const tableName = model.default.table
-  // console.log('model.default.fields:', model.default.fields)
 
-  const fieldsString = JSON.stringify(model.default.fields, null, 2) // Pretty print the JSON
+  const fieldsString = JSON.stringify(model.default.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
 
   let haveFieldsChanged = false
@@ -129,6 +168,7 @@ export async function generateMigration(modelPath: string) {
     log.info(`Fields have already been generated for ${tableName}`)
 
     const previousFields = await getLastMigrationFields(fileName)
+
     const previousFieldsString = JSON.stringify(previousFields, null, 2) // Convert to string for comparison
 
     if (previousFieldsString === fieldsString) {
@@ -287,7 +327,7 @@ export async function createAlterTableMigration(modelPath: string) {
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.default.fields as Fields
+  const currentFields = model.default.attributes as Attributes
 
   // Determine fields to add and remove
   const fieldsToAdd = Object.keys(currentFields)
@@ -300,7 +340,7 @@ export async function createAlterTableMigration(modelPath: string) {
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
-    const options = currentFields[fieldName] as FieldOptions
+    const options = currentFields[fieldName] as Attributes
     const columnType = mapFieldTypeToColumnType(options.validator?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
   }
@@ -324,16 +364,20 @@ export async function createAlterTableMigration(modelPath: string) {
 
 // This is a placeholder function. You need to implement the logic to
 // read the last migration file and extract the fields that were modified.
-export async function getLastMigrationFields(modelName: string): Promise<Fields> {
+export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = await import(oldModelPath)
+  let fields = {} as Attributes
 
-  const fields = JSON.parse(model.default.fields) as Fields
+  if (typeof model.default.attributes === 'object')
+    fields = model.default.attributes
+  else
+    fields = JSON.parse(model.default.attributes) as Attributes
 
   return fields
 }
 
-export async function getCurrentMigrationFields(modelPath: string): Promise<Fields | undefined> {
+export async function getCurrentMigrationFields(modelPath: string): Promise<Attribute | undefined> {
   return extractFieldsFromModel(modelPath)
 }
 
@@ -343,7 +387,7 @@ export async function createTableMigration(modelPath: string) {
   const model = await import(modelPath)
   const tableName = model.default.table
 
-  const fields = model.default.fields
+  const fields = model.default.attributes
   const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
   const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
 
@@ -354,7 +398,7 @@ export async function createTableMigration(modelPath: string) {
   migrationContent += `    .createTable('${tableName}')\n`
 
   for (const [fieldName, options] of Object.entries(fields)) {
-    const fieldOptions = options as FieldOptions
+    const fieldOptions = options as Attributes
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
