@@ -26,7 +26,7 @@
   "scripts": {
     "build": "bun run typegen && bunx tsup --format esm,cjs --clean --dts",
     "build:inspector": "bun run build && bunx @eslint/config-inspector build",
-    "typegen": "bun scripts/typegen.ts",
+    "typegen": "bun scripts/typegen.ts > /dev/null 2>&1",
     "stub": "bunx --bun tsup --format esm",
     "dev": "bunx tsup --format esm,cjs --watch & eslint-flat-config-viewer",
     "lint": "bun run stub && eslint .",

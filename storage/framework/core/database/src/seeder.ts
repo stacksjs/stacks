@@ -6,6 +6,11 @@ import { snakeCase } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 
 async function seedModel(name: string, model?: Model) {
+  if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {
+    log.info(`Skipping seeding for ${italic(name)}`)
+    return
+  }
+
   if (!model)
     model = await import(path.userModelsPath(name))
 
@@ -34,7 +39,6 @@ export async function seed() {
   if (fs.existsSync(customSeederPath)) {
     log.info('Custom seeder found')
     await import(customSeederPath)
-    return
   }
 
   // otherwise, seed all models
