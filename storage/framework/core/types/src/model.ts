@@ -1,5 +1,5 @@
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
-import type { DeepPartial, Nullable, SearchEngineSettings } from '.'
+import type { DeepPartial, Nullable, SearchOptions } from '.'
 
 export interface AuthOptions {}
 
@@ -53,8 +53,8 @@ export interface ModelOptions extends Base {
     authenticatable?: boolean | AuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
     seedable?: boolean | SeedOptions // useSeeder alias
-    useSearch?: boolean | SearchEngineSettings // defaults to false
-    searchable?: boolean | SearchEngineSettings // useSearch alias
+    useSearch?: boolean | SearchOptions // defaults to false
+    searchable?: boolean | SearchOptions // useSearch alias
     useApi?: boolean | ApiOptions
   }
 

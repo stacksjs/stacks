@@ -71,7 +71,6 @@ export async function generateSqliteMigration(modelPath: string) {
     log.info(`Fields have already been generated for ${tableName}`)
 
     const previousFields = await getLastMigrationFields(fileName)
-
     const previousFieldsString = JSON.stringify(previousFields, null, 2) // Convert to string for comparison
 
     if (previousFieldsString === fieldsString) {

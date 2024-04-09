@@ -14,11 +14,17 @@ export default {
   traits: {
     useAuth: true, // defaults to false, `authenticatable` used as an alias
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
-    useSearch: true, // defaults to true, `searchable` used as an alias
     useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
 
+    useSearch: { // defaults to true, `searchable` used as an alias
+      searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)
+      sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)
+      filterable: ['job_title'], // the fields to become filterable (defaults to all fields)
+      // options: {}, // you may pass options to the search engine
+    },
+
     useSeeder: { // defaults to a count of 10, `seedable` used as an alias
-      count: 40,
+      count: 1000,
     },
 
     useApi: {
@@ -55,6 +61,15 @@ export default {
       },
 
       factory: () => faker.internet.email(),
+    },
+
+    jobTitle: {
+      validator: {
+        rule: schema.string().minLength(3).maxLength(255),
+        message: 'Job title must be between 3 and 255 characters',
+      },
+
+      factory: () => faker.person.jobTitle(),
     },
 
     password: {
