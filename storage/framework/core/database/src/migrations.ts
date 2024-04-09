@@ -321,7 +321,7 @@ export async function createTableMigration(modelPath: string) {
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
-  migrationContent += `    .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attributes

@@ -433,10 +433,10 @@ export default antfu({
 })
 ```
 
-Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+Running `bunx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
 
 ```bash
-npm i -D eslint-plugin-svelte
+bun i -D eslint-plugin-svelte
 ```
 
 #### UnoCSS
@@ -452,7 +452,7 @@ export default antfu({
 })
 ```
 
-Running `npx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
+Running `bunx eslint` should prompt you to install the required dependencies, otherwise, you can install them manually:
 
 ```bash
 npm i -D @unocss/eslint-plugin
@@ -460,11 +460,11 @@ npm i -D @unocss/eslint-plugin
 
 ### Optional Rules
 
-This config also provides some optional plugins/rules for extended usages.
+This config also provides some optional plugins/rules for extended usage.
 
 #### `perfectionist` (sorting)
 
-This plugin [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) allows you to sorted object keys, imports, etc, with auto-fix.
+This plugin [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) allows you to sort object keys, imports, etc, with auto-fix.
 
 The plugin is installed but no rules are enabled by default.
 
@@ -482,7 +482,7 @@ const objectWantedToSort = {
 
 ### Type Aware Rules
 
-You can optionally enable the [type aware rules](https://typescript-eslint.io/linting/typed-linting/) by passing the options object to the `typescript` config:
+You can optionally enable the [type-aware rules](https://typescript-eslint.io/linting/typed-linting/) by passing the options object to the `typescript` config:
 
 ```js
 // eslint.config.js

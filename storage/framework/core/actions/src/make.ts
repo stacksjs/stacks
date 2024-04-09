@@ -274,7 +274,7 @@ export async function createMigration(options: MakeOptions) {
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('${table}')
-    .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
+    .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
     .execute()
 }`,
     })

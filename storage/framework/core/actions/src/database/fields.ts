@@ -1,4 +1,3 @@
-
 const fieldAssociation: { [key: string]: { [key: string]: string } } = {
   mysql: {
     string: 'varchar',
@@ -16,4 +15,4 @@ const fieldAssociation: { [key: string]: { [key: string]: string } } = {
   },
 }
 
-export { fieldAssociation}
+export { fieldAssociation }

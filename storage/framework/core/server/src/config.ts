@@ -62,7 +62,7 @@ export function config(options: ServerOptions) {
     'database': {
       host: 'localhost',
       port: ports.database,
-    }
+    },
   }
 
   if (options.type && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(options.type)) {
