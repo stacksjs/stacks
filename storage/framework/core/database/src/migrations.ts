@@ -7,6 +7,8 @@ import type { Attribute, Attributes } from '@stacksjs/types'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { database } from '@stacksjs/config'
 import { $ } from 'bun'
+import { resetSqliteDatabase } from 'actions/src/database/sqlite'
+import { resetMysqlDatabase } from 'actions/src/database/mysql'
 import { db } from './utils'
 
 export const migrator = new Migrator({
@@ -64,37 +66,15 @@ export interface MigrationOptions {
 }
 
 export async function resetDatabase() {
-  const dbPath = path.userDatabasePath('stacks.sqlite')
+  const driver = database.default || ''
 
-  if (fs.existsSync(dbPath))
-    await Bun.$`rm ${dbPath}`
+  if (driver === 'sqlite')
+    return resetSqliteDatabase()
 
-  const files = await fs.readdir(path.userMigrationsPath())
-  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  if (['mysql', 'postgres'].includes(driver))
+    return resetMysqlDatabase()
 
-  if (modelFiles.length) {
-    for (const modelFile of modelFiles) {
-      if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
-
-        if (fs.existsSync(modelPath))
-          await Bun.$`rm ${modelPath}`
-      }
-    }
-  }
-
-  if (files.length) {
-    for (const file of files) {
-      if (file.endsWith('.ts')) {
-        const migrationPath = path.userMigrationsPath(`${file}`)
-
-        if (fs.existsSync(migrationPath))
-          await Bun.$`rm ${migrationPath}`
-      }
-    }
-  }
-
-  return ok('All tables dropped successfully!')
+  return resetSqliteDatabase()
 }
 
 export function generateMigrationFile(options: MigrationOptions) {

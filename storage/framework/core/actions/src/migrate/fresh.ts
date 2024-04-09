@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { resetDatabase, runDatabaseMigration } from '@stacksjs/database'
+import { resetDatabase } from '@stacksjs/database'
 
 // this is run and checks whether new created or update migrations need to be generated
 const result = await resetDatabase()

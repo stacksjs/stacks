@@ -35,7 +35,7 @@ export function getDialect() {
       pool: new Pool({
         database: database.connections?.postgres?.name ?? 'stacks',
         host: database.connections?.postgres?.host ?? '127.0.0.1',
-        user: database.connections?.postgres?.username ?? 'root',
+        user: database.connections?.postgres?.username ?? '',
         password: database.connections?.postgres?.password ?? '',
         port: database.connections?.postgres?.port ?? 5432,
       }),
