@@ -3,12 +3,10 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('users')
-    .addColumn('name', 'varchar(255)')
-    .addColumn('email', 'varchar(255)', col => col.unique())
-    .addColumn('password', 'varchar(255)')
+    .createTable('subscribers')
+    .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())
+    .addColumn('subscribed', 'boolean')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
-    .addColumn('deleted_at', 'timestamp')
     .execute()
 }

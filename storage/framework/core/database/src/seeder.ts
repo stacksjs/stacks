@@ -21,8 +21,8 @@ async function seedModel(name: string, model?: Model) {
 
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
-    for (const fieldName in model!.fields) {
-      const field = model!.fields[fieldName]
+    for (const fieldName in model!.attributes) {
+      const field = model!.attributes[fieldName]
       // Use the factory function if available, otherwise leave the field undefined
       record[fieldName] = field?.factory ? field.factory() : undefined
     }

@@ -7,9 +7,11 @@ import type { Attribute, Attributes } from '@stacksjs/types'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { database } from '@stacksjs/config'
 import { $ } from 'bun'
-import { resetSqliteDatabase } from 'actions/src/database/sqlite'
-import { resetMysqlDatabase } from 'actions/src/database/mysql'
+import { generateSqliteMigration, resetSqliteDatabase } from 'actions/src/database/sqlite'
+import { generateMysqlMigration, resetMysqlDatabase } from 'actions/src/database/mysql'
 import { db } from './utils'
+
+const driver = database.default || ''
 
 export const migrator = new Migrator({
   db,
@@ -66,8 +68,6 @@ export interface MigrationOptions {
 }
 
 export async function resetDatabase() {
-  const driver = database.default || ''
-
   if (driver === 'sqlite')
     return resetSqliteDatabase()
 
@@ -115,69 +115,14 @@ export async function generateMigrations() {
 }
 
 export async function generateMigration(modelPath: string) {
-  // check if any files are in the database folder
-  const files = await fs.readdir(path.userMigrationsPath())
+  if (driver === 'sqlite')
+    generateSqliteMigration(modelPath)
 
-  if (files.length === 0) {
-    log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
+  if (driver === 'mysql')
+    generateMysqlMigration(modelPath)
 
-    // delete the *.ts files in the database/models folder
-    const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-
-    if (modelFiles.length) {
-      log.debug('No existing model files in framework path...')
-
-      for (const file of modelFiles) {
-        if (file.endsWith('.ts'))
-          await fs.unlink(path.frameworkPath(`database/models/${file}`))
-      }
-    }
-  }
-
-  const model = await import(modelPath)
-  const fileName = path.basename(modelPath)
-  const tableName = model.default.table
-
-  const fieldsString = JSON.stringify(model.default.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
-
-  let haveFieldsChanged = false
-
-  // if the file exists, we need to check if the fields have changed
-  if (fs.existsSync(copiedModelPath)) {
-    log.info(`Fields have already been generated for ${tableName}`)
-
-    const previousFields = await getLastMigrationFields(fileName)
-
-    const previousFieldsString = JSON.stringify(previousFields, null, 2) // Convert to string for comparison
-
-    if (previousFieldsString === fieldsString) {
-      log.debug(`Fields have not changed for ${tableName}`)
-      return
-    }
-
-    haveFieldsChanged = true
-    log.debug(`Fields have changed for ${tableName}`)
-  }
-  else {
-    log.debug(`Fields have not been generated for ${tableName}`)
-  }
-
-  // store the fields of the model to a file
-  await Bun.$`cp ${modelPath} ${copiedModelPath}`
-
-  // if the fields have changed, we need to create a new update migration
-  // if the fields have not changed, we need to migrate the table
-
-  // we need to check if this tableName has already been migrated
-  const hasBeenMigrated = await hasTableBeenMigrated(tableName)
-
-  log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
-
-  if (haveFieldsChanged)
-    await createAlterTableMigration(modelPath)
-  else
-    await createTableMigration(modelPath)
+  if (driver === 'postgres')
+    generateMysqlMigration(modelPath)
 }
 
 function mapFieldTypeToColumnType(rule: any): string {
@@ -376,6 +321,7 @@ export async function createTableMigration(modelPath: string) {
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
+  migrationContent += `    .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())\n`
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attributes
