@@ -109,7 +109,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '~@/sass/colors';
 
 .v-step {
   flex: 1;
