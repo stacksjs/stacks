@@ -35,6 +35,44 @@ for (const modelFile of modelFiles) {
   await writer.end()
 }
 
+await setKyselyTypes()
+
+async function setKyselyTypes() {
+  let text = ``
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  for (const modelFile of modelFiles) {
+    const model = await import(modelFile)
+
+    const tableName = model.default.table
+    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+    const modelName = model.default.name
+
+    text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}Model'\n`
+  }
+
+  text += `\nexport interface Database {\n`
+
+  for (const modelFile of modelFiles) {
+    const model = await import(modelFile)
+
+    const tableName = model.default.table
+    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+
+    text += `  ${tableName}: ${formattedTableName}Table\n`
+  }
+
+  text += `}`
+
+  const file = Bun.file(path.projectStoragePath(`framework/core/orm/src/generated/types.ts`))
+
+  const writer = file.writer()
+
+  writer.write(text)
+
+  await writer.end()
+}
+
 async function extractFields(model: any, modelFile: string): Promise<ModelElement[]> {
 // TODO: we can improve this type
   const fields: Record<string, any> = model.default.attributes
@@ -112,7 +150,7 @@ function generateModelString(tableName: string, modelName: string, attributes: M
   let fieldString = ''
 
   for (const attribute of attributes)
-    fieldString += `      ${attribute.field}: ${attribute.fieldArray?.entity}\n`
+    fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import type { Result } from '@stacksjs/error-handling'

@@ -9,8 +9,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     // TODO: we need an action that auto-generates these table interfaces
     export interface SubscribersTable {
       id: Generated<number>
-           subscribed: boolean
-
+      subscribed: boolean
+     
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
