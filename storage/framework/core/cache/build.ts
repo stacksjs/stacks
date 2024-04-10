@@ -12,7 +12,6 @@ const result = await Bun.build({
   target: 'bun',
 
   external: [
-    'ioredis',
     '@stacksjs/config',
   ],
 })
