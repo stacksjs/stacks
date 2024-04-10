@@ -349,6 +349,7 @@ export default {
     inspect: 3007,
     api: 3008,
     systemTray: 3009,
+    database: 3010,
     // mobile: 3010,
   },
 

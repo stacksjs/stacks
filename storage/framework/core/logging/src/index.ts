@@ -19,14 +19,15 @@ export async function logLevel() {
    */
   const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
   const opts = buddyOptions()
-  // console.log('opts:', opts)
-  // console.log('config:::', config)
 
   if (verboseRegex.test(opts))
     return 4
 
-  const { logger } = await import('@stacksjs/config')
-  return logger.level
+  // const config = await import('@stacksjs/config')
+  // console.log('config', config)
+
+  return 3
+  // return config.logger.level
 }
 
 export const logger = createConsola({
