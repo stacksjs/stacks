@@ -7,8 +7,8 @@ const fieldAssociation: { [key: string]: { [key: string]: string } } = {
     text: 'text',
   },
   sqlite: {
-    string: 'text',
-    enum: 'text',
+    string: 'varchar',
+    enum: 'varchar',
     number: 'integer',
     boolean: 'boolean',
     text: 'text',

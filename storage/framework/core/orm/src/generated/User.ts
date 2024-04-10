@@ -554,6 +554,7 @@ export async function whereIn(
 
 export const User = {
   find,
+  findMany,
   get,
   all,
   create,

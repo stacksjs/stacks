@@ -655,6 +655,7 @@ declare global {
   const renderHeadToString: typeof import('../core/utils/src/vendors')['renderHeadToString']
   const replPath: typeof import('../core/path/src/paths')['replPath']
   const request: typeof import('../core/router/src/request')['request']
+  const resetDatabase: typeof import('../core/database/src/migrations')['resetDatabase']
   const resolve: typeof import('../core/path/src/paths')['resolve']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('../core/utils/src/vendors')['resolveRef']
@@ -1188,7 +1189,6 @@ declare module 'vue' {
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
-    readonly createAlterTableMigration: UnwrapRef<typeof import('../core/database/src/migrations')['createAlterTableMigration']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -1219,7 +1219,6 @@ declare module 'vue' {
     readonly createReusableTemplate: UnwrapRef<typeof import('../core/utils/src/vendors')['createReusableTemplate']>
     readonly createSharedComposable: UnwrapRef<typeof import('../core/utils/src/vendors')['createSharedComposable']>
     readonly createSingletonPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createSingletonPromise']>
-    readonly createTableMigration: UnwrapRef<typeof import('../core/database/src/migrations')['createTableMigration']>
     readonly createTemplatePromise: UnwrapRef<typeof import('../core/utils/src/vendors')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('../core/utils/src/vendors')['createUnrefFn']>
     readonly currency: UnwrapRef<typeof import('../core/utils/src/currency')['currency']>
@@ -1640,6 +1639,7 @@ declare module 'vue' {
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
+    readonly resetDatabase: UnwrapRef<typeof import('../core/database/src/migrations')['resetDatabase']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/paths')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('../core/utils/src/vendors')['resolveRef']>
@@ -2141,7 +2141,6 @@ declare module '@vue/runtime-core' {
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
-    readonly createAlterTableMigration: UnwrapRef<typeof import('../core/database/src/migrations')['createAlterTableMigration']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -2172,7 +2171,6 @@ declare module '@vue/runtime-core' {
     readonly createReusableTemplate: UnwrapRef<typeof import('../core/utils/src/vendors')['createReusableTemplate']>
     readonly createSharedComposable: UnwrapRef<typeof import('../core/utils/src/vendors')['createSharedComposable']>
     readonly createSingletonPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createSingletonPromise']>
-    readonly createTableMigration: UnwrapRef<typeof import('../core/database/src/migrations')['createTableMigration']>
     readonly createTemplatePromise: UnwrapRef<typeof import('../core/utils/src/vendors')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('../core/utils/src/vendors')['createUnrefFn']>
     readonly currency: UnwrapRef<typeof import('../core/utils/src/currency')['currency']>
@@ -2593,6 +2591,7 @@ declare module '@vue/runtime-core' {
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
+    readonly resetDatabase: UnwrapRef<typeof import('../core/database/src/migrations')['resetDatabase']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/paths')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('../core/utils/src/vendors')['resolveRef']>
