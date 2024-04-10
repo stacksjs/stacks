@@ -9,6 +9,7 @@ import { database } from '@stacksjs/config'
 import { $ } from 'bun'
 import { generateSqliteMigration, resetSqliteDatabase } from 'actions/src/database/sqlite'
 import { generateMysqlMigration, resetMysqlDatabase } from 'actions/src/database/mysql'
+import { generatePostgresMigration, resetPostgresDatabase } from 'actions/src/database/postgres'
 import { db } from './utils'
 
 const driver = database.default || ''
@@ -71,8 +72,11 @@ export async function resetDatabase() {
   if (driver === 'sqlite')
     return resetSqliteDatabase()
 
-  if (['mysql', 'postgres'].includes(driver))
+  if (driver === 'mysql')
     return resetMysqlDatabase()
+
+  if (driver === 'postgres')
+    return resetPostgresDatabase()
 
   return resetSqliteDatabase()
 }
@@ -122,64 +126,7 @@ export async function generateMigration(modelPath: string) {
     generateMysqlMigration(modelPath)
 
   if (driver === 'postgres')
-    generateMysqlMigration(modelPath)
-}
-
-function mapFieldTypeToColumnType(rule: any): string {
-  // Check if the rule is for a string and has specific validations
-  if (rule[Symbol.for('schema_name')].includes('string'))
-    // Default column type for strings
-    return prepareTextColumnType(rule)
-
-  if (rule[Symbol.for('schema_name')].includes('number'))
-    return 'int'
-
-  if (rule[Symbol.for('schema_name')].includes('boolean'))
-    return 'boolean'
-
-  if (rule[Symbol.for('schema_name')].includes('date'))
-    return 'date'
-
-  // need to now handle all other types
-
-  // Add cases for other types as needed, similar to the original function
-  switch (rule) {
-    case 'integer':
-      return 'int'
-    case 'boolean':
-      return 'boolean'
-    case 'date':
-      return 'date'
-    case 'datetime':
-      return 'timestamp'
-    case 'float':
-      return 'float'
-    case 'decimal':
-      return 'decimal'
-    default:
-      return 'text' // Fallback for unknown types
-  }
-}
-
-function prepareTextColumnType(rule) {
-  let columnType = 'varchar(255)'
-
-  // Find min and max length validations
-  const minLengthValidation = rule.validations.find(v => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find(v => v.options?.max !== undefined)
-
-  // If there's a max length validation, adjust the column type accordingly
-  if (maxLengthValidation) {
-    const maxLength = maxLengthValidation.options.max
-    columnType = `varchar(${maxLength})`
-  }
-
-  // If there's only a min length validation and no max, consider using text
-  // This is a simplistic approach; adjust based on your actual requirements
-  if (minLengthValidation && !maxLengthValidation)
-    columnType = 'text'
-
-  return columnType
+    generatePostgresMigration(modelPath)
 }
 
 export async function getExecutedMigrations() {
@@ -240,53 +187,6 @@ export async function lastMigrationDate(): Promise<string | undefined> {
   }
 }
 
-export async function createAlterTableMigration(modelPath: string) {
-  // eslint-disable-next-line no-console
-  console.log('createAlterTableMigration')
-
-  const model = await import(modelPath)
-  const modelName = path.basename(modelPath)
-  const tableName = model.default.table
-
-  // Assuming you have a function to get the fields from the last migration
-  // For simplicity, this is not implemented here
-  const lastMigrationFields = await getLastMigrationFields(modelName)
-  const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.default.attributes as Attributes
-
-  // Determine fields to add and remove
-  const fieldsToAdd = Object.keys(currentFields)
-  const fieldsToRemove = Object.keys(lastFields)
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
-  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema.alterTable('${tableName}')\n`
-
-  // Add new fields
-  for (const fieldName of fieldsToAdd) {
-    const options = currentFields[fieldName] as Attributes
-    const columnType = mapFieldTypeToColumnType(options.validator?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
-  }
-
-  // Remove fields that no longer exist
-  for (const fieldName of fieldsToRemove)
-    migrationContent += `    .dropColumn('${fieldName}')\n`
-
-  migrationContent += `    .execute();\n`
-  migrationContent += `}\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-update-${tableName}-table.ts`
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
-
-  // Assuming fs.writeFileSync is available or use an equivalent method
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success(`Created migration: ${migrationFileName}`)
-}
-
 // This is a placeholder function. You need to implement the logic to
 // read the last migration file and extract the fields that were modified.
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
@@ -304,62 +204,4 @@ export async function getLastMigrationFields(modelName: string): Promise<Attribu
 
 export async function getCurrentMigrationFields(modelPath: string): Promise<Attribute | undefined> {
   return extractFieldsFromModel(modelPath)
-}
-
-export async function createTableMigration(modelPath: string) {
-  log.debug('createTableMigration modelPath:', modelPath)
-
-  const model = await import(modelPath)
-  const tableName = model.default.table
-
-  const fields = model.default.attributes
-  const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
-  const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
-  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('${tableName}')\n`
-  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
-
-  for (const [fieldName, options] of Object.entries(fields)) {
-    const fieldOptions = options as Attributes
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
-
-    // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || (fieldOptions.validator?.rule?.required)) {
-      migrationContent += `, col => col`
-      if (fieldOptions.unique)
-        migrationContent += `.unique()`
-      if (fieldOptions.validator?.rule?.required)
-        migrationContent += `.notNull()`
-      migrationContent += ``
-    }
-
-    migrationContent += `)\n`
-  }
-
-  // Append created_at and updated_at columns if useTimestamps is true
-  if (useTimestamps) {
-    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-    migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
-  }
-
-  // Append deleted_at column if useSoftDeletes is true
-  if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
-
-  migrationContent += `    .execute()\n`
-  migrationContent += `}\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
-
-  // Assuming fs.writeFileSync is available or use an equivalent method
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success(`Created migration: ${migrationFileName}`)
 }
