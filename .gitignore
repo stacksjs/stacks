@@ -11,6 +11,7 @@ tests/unit/coverage
 dist*
 !.gitkeep
 database/stacks.sqlite
+storage/framework/orm
 custom-cli
 *bun-build
 
