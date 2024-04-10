@@ -566,4 +566,4 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       whereIn,
     }
     
-    export default Subscriberriber
+    export default Subscriber
