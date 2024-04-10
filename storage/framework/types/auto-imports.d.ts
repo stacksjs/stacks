@@ -628,6 +628,7 @@ declare global {
   const renderHeadToString: typeof import('../core/utils/src/vendors')['renderHeadToString']
   const replPath: typeof import('../core/path/src/paths')['replPath']
   const request: typeof import('../core/router/src/request')['request']
+  const resetDatabase: typeof import('../core/database/src/migrations')['resetDatabase']
   const resolve: typeof import('../core/path/src/paths')['resolve']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('../core/utils/src/vendors')['resolveRef']
@@ -1152,6 +1153,7 @@ declare module 'vue' {
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
+    readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -1584,6 +1586,7 @@ declare module 'vue' {
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
+    readonly resetDatabase: UnwrapRef<typeof import('../core/database/src/migrations')['resetDatabase']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/paths')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('../core/utils/src/vendors')['resolveRef']>
@@ -2078,6 +2081,7 @@ declare module '@vue/runtime-core' {
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
+    readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -2510,6 +2514,7 @@ declare module '@vue/runtime-core' {
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
+    readonly resetDatabase: UnwrapRef<typeof import('../core/database/src/migrations')['resetDatabase']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/paths')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('../core/utils/src/vendors')['resolveRef']>
