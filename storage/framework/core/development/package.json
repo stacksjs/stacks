@@ -56,7 +56,7 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "bun-plugin-dts-auto": "^0.10.0",
+    "bun-plugin-dts-auto": "^0.11.1",
     "eslint": "^9.0.0",
     "typescript": "^5.4.4"
   },
@@ -74,7 +74,7 @@
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@total-typescript/ts-reset": "^0.5.1",
-    "bun-plugin-dts-auto": "^0.10.0",
+    "bun-plugin-dts-auto": "^0.11.1",
     "eslint": "^9.0.0"
   }
 }

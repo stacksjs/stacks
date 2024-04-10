@@ -51,14 +51,14 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "bun-plugin-dts-auto": "^0.10.0",
+    "bun-plugin-dts-auto": "^0.11.1",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "bun-plugin-dts-auto": "^0.10.0",
+    "bun-plugin-dts-auto": "^0.11.1",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {
