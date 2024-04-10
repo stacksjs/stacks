@@ -1,12 +1,12 @@
 <template>
 	<div class="v-stepper-root">
-    <slot>s</slot>
+    <slot></slot>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Stepper'
+  name: 'VStepperRoot'
 }
 </script>
 

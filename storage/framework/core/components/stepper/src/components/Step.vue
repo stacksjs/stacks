@@ -134,7 +134,7 @@ export default {
     }
 
     .index {
-      color: $app-color-dusty-gray;
+      color: #999999;
     }
   }
 
@@ -142,20 +142,20 @@ export default {
     opacity: 1;
 
     .title {
-      color: lighten($app-color-eden, 30%);
+      color: lighten(#12525e, 30%);
     }
 
     .label {
       .index {
-        border-color: rgba($app-color-wild-sand, 0.2);
-        background-color: lighten($app-color-eden, 0%);
+        border-color: rgba(#f4f4f4, 0.2);
+        background-color: lighten(#12525e, 0%);
       }
     }
   }
 
   &.is-visited {
     .index {
-      background-color: $app-color-white;
+      background-color: #ffffff;
     }
   }
 
@@ -181,21 +181,21 @@ export default {
   font-size: 1.5rem;
   border-radius: 50%;
   margin-right: 0.5rem;
-  color: $app-color-white;
+  color: #ffffff;
   align-items: center;
   justify-content: center;
   background-color: transparent;
-  border: 1px solid $app-color-wild-sand;
+  border: 1px solid #f4f4f4;
 }
 
 .title {
-  color: $app-color-white;
+  color: #ffffff;
 }
 
 .divider {
   width: 100%;
   margin-left: 0.5rem;
-  border-bottom: 1px solid $app-color-white;
+  border-bottom: 1px solid #ffffff;
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
 </style>
