@@ -16,15 +16,16 @@ async function main() {
 			path: () =>
 				p.text({
 					message: 'Where should we create your project?',
+					initialValue: defaultFolderPath,
 					placeholder: defaultFolderPath,
-					validate: (value = defaultFolderPath) => {
-						// if (!value) return 'Please enter aq path.';
+					validate: (value) => {
+						if (!value) return 'Please enter a path.';
 						if (value[0] !== '.') return 'Please enter a relative path.';
 					},
 				}),
 			type: ({ results }) =>
 				p.select({
-					message: `Pick a project type within "${results.path}"`,
+					message: `Pick your flavor ("${results.path}")`,
 					initialValue: 'default',
 					maxItems: 3,
 					options: [
@@ -33,21 +34,16 @@ async function main() {
 						{ value: 'api', label: 'API' },
 					],
 				}),
-			tools: () =>
+			modules: () =>
 				p.multiselect({
-					message: 'Select additional tools.',
+					message: 'Select additional modules.',
 					initialValues: ['prettier', 'eslint'],
 					options: [
-						{ value: 'prettier', label: 'Prettier', hint: 'recommended' },
-						{ value: 'eslint', label: 'ESLint', hint: 'recommended' },
-						{ value: 'stylelint', label: 'Stylelint' },
-						{ value: 'gh-action', label: 'GitHub Action' },
+						{ value: 'database', label: 'Database', hint: 'recommended' },
+						{ value: 'search', label: 'Search', hint: 'recommended' },
+						{ value: 'notifications', label: 'Notifications (email, sms, chat)' },
+						{ value: 'cache', label: 'Cache' },
 					],
-				}),
-			install: () =>
-				p.confirm({
-					message: 'Install dependencies?',
-					initialValue: false,
 				}),
 		},
 		{
@@ -58,18 +54,27 @@ async function main() {
 		}
 	);
 
-	if (project.install) {
-		const s = p.spinner();
-		s.start('Installing via pnpm');
-		await setTimeout(2500);
-		s.stop('Installed via pnpm');
-	}
+	const s = p.spinner();
 
-	let nextSteps = `cd ${project.path}        \n${project.install ? '' : 'pnpm install\n'}pnpm dev`;
+	s.start('Initializing project');
+	await setTimeout(2500);
+	s.stop('Initialized project');
+
+	// Install dependencies
+	s.start('Installing via bun');
+	await setTimeout(2500);
+	s.stop('Installed via bun');
+
+	// Running initial build
+	s.start('Building core packages');
+	await setTimeout(2500);
+	s.stop('Built core packages');
+
+	let nextSteps = `cd ${project.path}        \nbun run dev`;
 
 	p.note(nextSteps, 'Next steps.');
 
-	p.outro(`Problems? ${color.underline(color.cyan('https://example.com/issues'))}`);
+	p.outro(`Problems? ${color.underline(color.cyan('https://github.com/stacksjs/stacks/issues'))}`);
 }
 
 main().catch(console.error);
