@@ -40,7 +40,7 @@ export function mapFieldTypeToColumnType(rule: any): string {
     return prepareTextColumnType(rule)
 
   if (rule[Symbol.for('schema_name')].includes('number'))
-    return 'int'
+    return 'integer'
 
   if (rule[Symbol.for('schema_name')].includes('boolean'))
     return 'boolean'

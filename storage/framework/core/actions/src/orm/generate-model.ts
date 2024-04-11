@@ -1,5 +1,6 @@
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import type { Model } from '@stacksjs/types'
 
 export interface FieldArrayElement {
   entity: string
@@ -14,28 +15,72 @@ export interface ModelElement {
   fieldArray: FieldArrayElement | null
 }
 
-const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+await initiateModelGeneration()
+await setKyselyTypes()
 
-for (const modelFile of modelFiles) {
-  const model = await import(modelFile)
+async function initiateModelGeneration(): Promise<void> {
+  await deleteExistingModels()
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
-  const tableName = model.default.table
-  const modelName = model.default.name
+  for (const modelFile of modelFiles) {
+    const model = await import(modelFile)
 
-  const file = Bun.file(path.projectStoragePath(`framework/orm/${modelName}Model.ts`))
+    const tableName = model.default.table
+    const modelName = model.default.name
 
-  const fields = await extractFields(model, modelFile)
+    const file = Bun.file(path.projectStoragePath(`framework/orm/${modelName}.ts`))
 
-  const classString = generateModelString(tableName, modelName, fields)
+    const fields = await extractFields(model, modelFile)
 
-  const writer = file.writer()
+    const classString = generateModelString(tableName, model, fields)
 
-  writer.write(classString)
+    const writer = file.writer()
 
-  await writer.end()
+    writer.write(classString)
+
+    await writer.end()
+  }
 }
 
-await setKyselyTypes()
+function getRelations(model: any) {
+  const relationsArray = ['hasOne', 'belongsTo', 'hasMany']
+
+  const relationships = []
+  // const
+  // const regex = /belongs/
+
+  // if (regex.test(str1))
+  //   console.log(`"${str1}" contains "belongs"`)
+  // else
+  //   console.log(`"${str1}" does not contain "belongs"`)
+
+  for (const relation of relationsArray) {
+    if (hasRelations(model.default, relation)) {
+      // const formattedRelations = model.default[relation].toLowerCase()
+      relationships.push({ relationship: relation, model: model.default[relation] })
+    }
+  }
+
+  return relationships
+}
+
+function hasRelations(obj: any, key: string): boolean {
+  return key in obj
+}
+
+async function deleteExistingModels() {
+  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/*.ts`))
+
+  for (const modelPath of modelPaths) {
+    if (fs.existsSync(modelPath))
+      await Bun.$`rm ${modelPath}`
+  }
+
+  const typePath = path.projectStoragePath(`framework/core/orm/src/generated/types.ts`)
+
+  if (fs.existsSync(typePath))
+    await Bun.$`rm ${typePath}`
+}
 
 async function setKyselyTypes() {
   let text = ``
@@ -48,7 +93,7 @@ async function setKyselyTypes() {
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const modelName = model.default.name
 
-    text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}Model'\n`
+    text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
   }
 
   text += `\nexport interface Database {\n`
@@ -140,7 +185,22 @@ function parseRule(rule: string): FieldArrayElement | null {
   })[0] || null
 }
 
-function generateModelString(tableName: string, modelName: string, attributes: ModelElement[]) {
+function getRelationType(relation: string): string {
+  const belongToType = /belongs/
+  const hasType = /has/
+
+  if (belongToType.test(relation))
+    return 'belongsType'
+
+  if (hasType.test(relation))
+    return 'hasType'
+
+  return ''
+}
+
+function generateModelString(tableName: string, model: any, attributes: ModelElement[]) {
+  const modelName = model.default.name
+
   // users -> Users
   const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
 
@@ -149,6 +209,40 @@ function generateModelString(tableName: string, modelName: string, attributes: M
 
   let fieldString = ''
 
+  let relationMethods = ``
+  let relationImports = ``
+
+  const relations = getRelations(model)
+
+  for (const relation of relations) {
+    const modelRelation = relation.model
+    const formattedModelRelation = modelRelation.toLowerCase()
+
+    relationImports += `import ${modelRelation} from './${modelRelation}.ts'`
+
+    const relationType = getRelationType(relation.relationship)
+
+    if (relationType === 'hasType') {
+      relationMethods += `
+      async ${formattedModelRelation}() {
+        if (this.${formattedModelName}.id === undefined)
+          throw new Error('Relation Error!')
+
+        return ${modelRelation}.where('${formattedModelName}_id', '=', this.${formattedModelName}.id)
+      }\n\n`
+    }
+
+    if (relationType === 'belongsType') {
+      relationMethods += `
+      async ${formattedModelRelation}() {
+        if (this.${formattedModelName}.${formattedModelRelation}_id === undefined)
+          throw new Error('Relation Error!')
+
+        return ${modelRelation}.find(this.${formattedModelName}.${formattedModelRelation}_id)
+      }\n\n`
+    }
+  }
+
   for (const attribute of attributes)
     fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
 
@@ -156,7 +250,7 @@ function generateModelString(tableName: string, modelName: string, attributes: M
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
-    
+    ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
     
@@ -315,21 +409,16 @@ function generateModelString(tableName: string, modelName: string, attributes: M
     
         return new ${modelName}Model(model)
       }
+      
+      async where(column: string, operator = '=', value: any) {
+        let query = db.selectFrom('${tableName}')
+
+        query = query.where(column, operator, value)
     
-      // Method to find a ${formattedModelName} by email
-      static async findByEmail(email: string): Promise<${modelName}Model | null> {
-        const model = await db.selectFrom('${tableName}')
-          .where('email', '=', email)
-          .selectAll()
-          .executeTakeFirst()
-    
-        if (!model)
-          return null
-    
-        return new ${modelName}Model(model)
+        return await query.selectAll().execute()
       }
-    
-      async where(criteria: Partial<${modelName}Type>, options: QueryOptions = {}) {
+
+      async whereIs(criteria: Partial<${modelName}Type>, options: QueryOptions = {}) {
         let query = db.selectFrom('${tableName}')
     
         // Existing criteria checks
@@ -501,6 +590,8 @@ function generateModelString(tableName: string, modelName: string, attributes: M
     
         this.${formattedModelName} = refreshedModel
       }
+
+      ${relationMethods}
     
       toJSON() {
         const output: Partial<${modelName}Type> = { ...this.${formattedModelName} }
@@ -625,15 +716,16 @@ function generateModelString(tableName: string, modelName: string, attributes: M
         .returningAll()
         .executeTakeFirst()
     }
-    
-    export async function findByEmail(email: string) {
-      return await db.selectFrom('${tableName}')
-        .where('email', '=', email)
-        .selectAll()
-        .executeTakeFirst()
+
+    export async function where(column: string, operator = '=', value: any) {
+      let query = db.selectFrom('${tableName}')
+
+      query = query.where(column, operator, value)
+  
+      return await query.selectAll().execute()
     }
     
-    export async function where(
+    export async function whereIs(
       criteria: Partial<${modelName}Type>,
       options: QueryOptions = {},
     ) {
@@ -711,7 +803,6 @@ function generateModelString(tableName: string, modelName: string, attributes: M
       create,
       update,
       remove,
-      findByEmail,
       Model,
       first,
       last,

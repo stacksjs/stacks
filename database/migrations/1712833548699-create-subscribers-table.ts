@@ -4,8 +4,9 @@ import { sql } from '@stacksjs/database'
 export async function up(db: Database<any>) {
   await db.schema
     .createTable('subscribers')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('subscribed', 'boolean')
+    .addColumn('user_id', 'integer')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

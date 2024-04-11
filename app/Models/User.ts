@@ -42,6 +42,7 @@ export default {
 
     // useUuid: true, // defaults to false
   },
+  hasOne: 'Subscriber',
 
   attributes: {
     name: {
