@@ -49,7 +49,7 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-bedrock": "^3.554.0",
-    "@aws-sdk/client-cloudformation": "^3.554.0",
+    "@aws-sdk/client-cloudformation": "^3.555.0",
     "@aws-sdk/client-cloudfront": "^3.554.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.554.0",
     "@aws-sdk/client-ec2": "^3.554.0",
@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.554.0",
-    "@aws-sdk/client-cloudformation": "^3.554.0",
+    "@aws-sdk/client-cloudformation": "^3.555.0",
     "@aws-sdk/client-cloudfront": "^3.554.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.554.0",
     "@aws-sdk/client-dynamodb": "3.554.0",
