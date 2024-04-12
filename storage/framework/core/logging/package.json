@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/logging",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -24,12 +24,10 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
@@ -60,6 +58,6 @@
     "consola": "^3.2.3"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.5"
   }
 }

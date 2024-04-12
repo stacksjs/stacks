@@ -311,7 +311,9 @@ export interface FreshOptions extends CliOptions {
   dryRun?: boolean
   quiet?: boolean
 }
-export interface MigrateOptions extends CliOptions { }
+export interface MigrateOptions extends CliOptions {
+  diff?: boolean
+}
 export interface InspireOptions extends CliOptions { }
 export interface InstallOptions extends CliOptions { }
 export interface ReleaseOptions extends CliOptions {

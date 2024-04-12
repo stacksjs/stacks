@@ -94,15 +94,15 @@ export interface ArgonOptions {
    */
   memory?: number
 
-  /**
-   * **Argon Parallelism**
-   *
-   * Degree of parallelism (i.e. number of threads).
-   *
-   * @default number 1
-   * @see https://stacksjs.org/docs/hashing
-   */
-  threads?: number
+  // /**
+  //  * **Argon Parallelism**
+  //  *
+  //  * Degree of parallelism (i.e. number of threads).
+  //  *
+  //  * @default number 1
+  //  * @see https://stacksjs.org/docs/hashing
+  //  */
+  // threads?: number
 
   /**
    * **Argon time**

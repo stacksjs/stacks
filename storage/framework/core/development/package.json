@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/development",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -49,15 +49,16 @@
   },
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
+    "@stacksjs/build": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/testing": "workspace:*",
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "bun-plugin-dts-auto": "^0.10.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.3.3"
+    "bun-plugin-dts-auto": "^0.11.1",
+    "eslint": "^9.0.0",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -67,13 +68,13 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "eslint": "^8.57.0",
-    "typescript": "^5.3.3"
+    "eslint": "^9.0.0",
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@total-typescript/ts-reset": "^0.5.1",
-    "bun-plugin-dts-auto": "^0.10.0",
-    "eslint": "^8.57.0"
+    "bun-plugin-dts-auto": "^0.11.1",
+    "eslint": "^9.0.0"
   }
 }

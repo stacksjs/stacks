@@ -1,4 +1,3 @@
-import type { ApiOptions } from './api'
 import type { FirewallConfig } from './security'
 
 export type CountryCode =
@@ -95,8 +94,6 @@ export interface CloudOptions {
       samplingRate: number
     }
   }
-
-  api: ApiOptions
 
   ai: boolean
   cli: boolean

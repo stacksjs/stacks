@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/lint",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -49,18 +49,18 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@commitlint/cli": "^19.0.3",
+    "@commitlint/cli": "^19.2.1",
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.56.5",
-    "eslint": "^8.57.0",
+    "@types/eslint": "^8.56.8",
+    "eslint": "^9.0.0",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },
   "dependencies": {
-    "@commitlint/cli": "^19.0.3",
+    "@commitlint/cli": "^19.2.1",
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.56.5",
-    "eslint": "^8.57.0",
+    "@types/eslint": "^8.56.8",
+    "eslint": "^9.0.0",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },

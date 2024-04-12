@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/strings",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -65,18 +65,19 @@
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "change-case": "^5.4.3",
+    "change-case": "^5.4.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
     "macroable": "^7.0.2",
     "pluralize": "^8.0.0",
     "slugify": "^1.6.6",
-    "string-ts": "^2.0.0",
+    "string-ts": "^2.1.0",
     "title-case": "^4.3.1",
     "validator": "^13.11.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
+    "@types/pluralize": "^0.0.33",
     "@types/validator": "^13.11.9"
   }
 }

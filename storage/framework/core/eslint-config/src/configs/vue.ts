@@ -1,13 +1,13 @@
 import { mergeProcessors } from 'eslint-merge-processors'
 import { interopDefault } from '../utils'
-import type { FlatConfigItem, OptionsFiles, OptionsHasTypeScript, OptionsOverrides, OptionsStylistic, OptionsVue } from '../types'
-import { GLOB_STACKS, GLOB_VUE } from '../globs'
+import type { OptionsFiles, OptionsHasTypeScript, OptionsOverrides, OptionsStylistic, OptionsVue, TypedFlatConfigItem } from '../types'
+import { GLOB_VUE } from '../globs'
 
 export async function vue(
   options: OptionsVue & OptionsHasTypeScript & OptionsOverrides & OptionsStylistic & OptionsFiles = {},
-): Promise<FlatConfigItem[]> {
+): Promise<TypedFlatConfigItem[]> {
   const {
-    files = [GLOB_VUE, GLOB_STACKS],
+    files = [GLOB_VUE],
     overrides = {},
     stylistic = true,
     vueVersion = 3,
@@ -34,7 +34,27 @@ export async function vue(
 
   return [
     {
-      name: 'antfu:vue:setup',
+      // This allows Vue plugin to work with auto imports
+      // https://github.com/vuejs/eslint-plugin-vue/pull/2422
+      languageOptions: {
+        globals: {
+          computed: 'readonly',
+          defineEmits: 'readonly',
+          defineExpose: 'readonly',
+          defineProps: 'readonly',
+          onMounted: 'readonly',
+          onUnmounted: 'readonly',
+          reactive: 'readonly',
+          ref: 'readonly',
+          shallowReactive: 'readonly',
+          shallowRef: 'readonly',
+          toRef: 'readonly',
+          toRefs: 'readonly',
+          watch: 'readonly',
+          watchEffect: 'readonly',
+        },
+      },
+      name: 'antfu/vue/setup',
       plugins: {
         vue: pluginVue,
       },
@@ -47,14 +67,14 @@ export async function vue(
           ecmaFeatures: {
             jsx: true,
           },
-          extraFileExtensions: ['.vue', '.stx'],
+          extraFileExtensions: ['.vue'],
           parser: options.typescript
             ? await interopDefault(import('@typescript-eslint/parser')) as any
             : null,
           sourceType: 'module',
         },
       },
-      name: 'antfu:vue:rules',
+      name: 'antfu/vue/rules',
       processor: sfcBlocks === false
         ? pluginVue.processors['.vue']
         : mergeProcessors([
@@ -83,12 +103,14 @@ export async function vue(
             },
 
         'node/prefer-global/process': 'off',
-
         'vue/block-order': ['error', {
           order: ['script', 'template', 'style'],
         }],
+
         'vue/component-name-in-template-casing': ['error', 'PascalCase'],
         'vue/component-options-name-casing': ['error', 'PascalCase'],
+        // this is deprecated
+        'vue/component-tags-order': 'off',
         'vue/custom-event-name-casing': ['error', 'camelCase'],
         'vue/define-macros-order': ['error', {
           order: ['defineOptions', 'defineProps', 'defineEmits', 'defineSlots'],

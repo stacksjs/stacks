@@ -1,13 +1,13 @@
-import { GLOB_CSS, GLOB_LESS, GLOB_MARKDOWN, GLOB_POSTCSS, GLOB_SCSS } from '../globs'
+import { GLOB_CSS, GLOB_GRAPHQL, GLOB_LESS, GLOB_MARKDOWN, GLOB_POSTCSS, GLOB_SCSS } from '../globs'
 import type { VendoredPrettierOptions } from '../vendor/prettier-types'
 import { ensurePackages, interopDefault, parserPlain } from '../utils'
-import type { FlatConfigItem, OptionsFormatters, StylisticConfig } from '../types'
+import type { OptionsFormatters, StylisticConfig, TypedFlatConfigItem } from '../types'
 import { StylisticConfigDefaults } from './stylistic'
 
 export async function formatters(
   options: OptionsFormatters | true = {},
   stylistic: StylisticConfig = {},
-): Promise<FlatConfigItem[]> {
+): Promise<TypedFlatConfigItem[]> {
   await ensurePackages([
     'eslint-plugin-format',
   ])
@@ -53,9 +53,9 @@ export async function formatters(
 
   const pluginFormat = await interopDefault(import('eslint-plugin-format'))
 
-  const configs: FlatConfigItem[] = [
+  const configs: TypedFlatConfigItem[] = [
     {
-      name: 'antfu:formatters:setup',
+      name: 'antfu/formatter/setup',
       plugins: {
         format: pluginFormat,
       },
@@ -69,7 +69,7 @@ export async function formatters(
         languageOptions: {
           parser: parserPlain,
         },
-        name: 'antfu:formatter:css',
+        name: 'antfu/formatter/css',
         rules: {
           'format/prettier': [
             'error',
@@ -85,7 +85,7 @@ export async function formatters(
         languageOptions: {
           parser: parserPlain,
         },
-        name: 'antfu:formatter:scss',
+        name: 'antfu/formatter/scss',
         rules: {
           'format/prettier': [
             'error',
@@ -101,7 +101,7 @@ export async function formatters(
         languageOptions: {
           parser: parserPlain,
         },
-        name: 'antfu:formatter:less',
+        name: 'antfu/formatter/less',
         rules: {
           'format/prettier': [
             'error',
@@ -121,7 +121,7 @@ export async function formatters(
       languageOptions: {
         parser: parserPlain,
       },
-      name: 'antfu:formatter:html',
+      name: 'antfu/formatter/html',
       rules: {
         'format/prettier': [
           'error',
@@ -144,7 +144,7 @@ export async function formatters(
       languageOptions: {
         parser: parserPlain,
       },
-      name: 'antfu:formatter:markdown',
+      name: 'antfu/formatter/markdown',
       rules: {
         [`format/${formater}`]: [
           'error',
@@ -166,11 +166,11 @@ export async function formatters(
 
   if (options.graphql) {
     configs.push({
-      files: ['**/*.graphql'],
+      files: [GLOB_GRAPHQL],
       languageOptions: {
         parser: parserPlain,
       },
-      name: 'antfu:formatter:graphql',
+      name: 'antfu/formatter/graphql',
       rules: {
         'format/prettier': [
           'error',

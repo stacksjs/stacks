@@ -64,7 +64,6 @@ async function configureAws(options?: ConfigureOptions) {
   const input = `${awsAccessKeyId}\n${awsSecretAccessKey}\n${defaultRegion}\n${defaultOutputFormat}\n`
 
   const result = await runCommand(command, {
-    ...options,
     cwd: p.projectPath(),
     stdin: 'pipe', // set stdin mode to 'pipe' to write to it
     input, // the actual input to write

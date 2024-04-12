@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -67,8 +67,8 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "markdown-it": "^14.0.0",
-    "vue-component-meta": "^2.0.5"
+    "markdown-it": "^14.1.0",
+    "vue-component-meta": "^2.0.12"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -85,8 +85,8 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "markdown-it": "^14.0.0",
-    "vue-component-meta": "^2.0.5"
+    "markdown-it": "^14.1.0",
+    "vue-component-meta": "^2.0.12"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

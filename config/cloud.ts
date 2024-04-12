@@ -1,5 +1,4 @@
 import type { CloudConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
 import security from './security'
 
 /**
@@ -38,15 +37,6 @@ export default {
       enabled: true,
       samplingRate: 1,
     },
-  },
-
-  api: {
-    deploy: true,
-    prefix: env.API_PREFIX || 'api',
-    description: 'Stacks API',
-    memorySize: 512,
-    prewarm: 10,
-    timeout: 30,
   },
 
   fileSystem: true, // enables file system

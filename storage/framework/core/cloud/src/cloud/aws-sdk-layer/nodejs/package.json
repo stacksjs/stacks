@@ -1,6 +1,6 @@
 {
   "name": "aws-sdk-layer",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "",
   "author": "",
   "license": "ISC",
@@ -10,6 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "aws-sdk": "^2.1571.0"
+    "aws-sdk": "^2.1597.0"
   }
 }

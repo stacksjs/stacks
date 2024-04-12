@@ -137,6 +137,7 @@ iconify
 iife
 imds
 Imdsv
+Insertable
 intlify
 itemprop
 jetbrains
@@ -215,7 +216,6 @@ phpunit
 pinia
 pkgjson
 pkgx
-planetscale
 plivo
 pluginutils
 pnpm
@@ -280,12 +280,14 @@ templating
 termii
 terserrc
 textlint
+timestampable
 treeshaking
 triggerable
 tsdoc
 tsup
 twoslash
 typecheck
+typegen
 typesense
 unconfig
 undeploys
@@ -298,6 +300,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+Updateable
 upstash
 vclass
 vemit

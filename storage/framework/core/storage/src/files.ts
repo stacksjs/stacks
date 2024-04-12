@@ -1,5 +1,6 @@
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
+import { createFolder, isFolder } from '@stacksjs/storage'
 import { dirname, join, path as p } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
 import { existsSync, fs } from './fs'

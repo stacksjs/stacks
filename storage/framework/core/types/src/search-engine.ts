@@ -1,4 +1,4 @@
-import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, DocumentOptions as RecordOptions, Settings as SearchEngineSettings, SearchParams, SearchResponse } from 'meilisearch'
+import type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, Settings as MeilisearchOptions, DocumentOptions as RecordOptions, SearchParams, SearchResponse } from 'meilisearch'
 import type { MaybePromise } from '.'
 
 type Search = any
@@ -19,17 +19,18 @@ export interface SearchEngineOptions {
    *
    * The search engine to utilize.
    *
-   * @default string 'meilisearch'
+   * @default string 'opensearch'
    * @see https://stacksjs.org/docs/search-engine
    */
-  driver: 'meilisearch' | 'algolia' | 'opensearch'
+  driver: 'opensearch'
+  // driver: 'meilisearch' | 'algolia' | 'typesense' | 'opensearch' wip
 
-  meilisearch?: {
-    host: string
-    apiKey: string
-  }
+  // meilisearch?: {
+  //   host: string
+  //   apiKey: string
+  // }
 
-  openSearch?: {
+  opensearch?: {
     host: string
     protocol: number
     port: number
@@ -58,7 +59,7 @@ export interface SearchEngineDriver {
   getIndex: (name: string) => MaybePromise<Index>
   updateIndex: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
   deleteIndex: (name: string) => MaybePromise<EnqueuedTask>
-  updateIndexSettings: (name: string, settings: SearchEngineSettings) => MaybePromise<EnqueuedTask>
+  updateIndexSettings: (name: string, settings: SearchEngineOptions) => MaybePromise<EnqueuedTask>
   listAllIndexes: () => MaybePromise<IndexesResults<Index[]>>
   listAllIndices: () => MaybePromise<IndexesResults<Index[]>> // alternatives plural spelling
 
@@ -128,9 +129,11 @@ export interface SearchEngineStorage {
   currentPage: number
 }
 
-export interface MeiliSearchOptions {
-  apiKey: string
-  host: string
+export interface SearchOptions {
+  searchable: string[]
+  sortable: string[]
+  filterable: string[]
+  options?: SearchEngineOptions
 }
 
-export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, RecordOptions, SearchEngineSettings, SearchParams, SearchResponse }
+export type { EnqueuedTask, Hits, Index, IndexOptions, IndexesResults, MeiliSearch, RecordOptions, MeilisearchOptions, SearchParams, SearchResponse }

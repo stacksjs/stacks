@@ -5,7 +5,7 @@ interface Options {
   autoIncrement?: boolean
 }
 
-type ColumnType = 'integer' | 'varchar' | 'timestamp'
+type ColumnType = 'integer' | 'varchar' | 'timestamp' | `varchar(${number})`
 
 export class Column {
   constructor(public name: string, public type: ColumnType, public options: Options = {}) {}

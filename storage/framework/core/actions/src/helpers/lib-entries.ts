@@ -125,7 +125,7 @@ export function generateEntryPointData(type: LibraryType): string {
     if (Array.isArray(component)) {
       imports.push(`import ${component[1]} from '${componentsPath(component[0])}.stx'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
-      definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
+      definitions.push(`customElements.define('${kebabCase(component[1]!)}', ${component[1]}CustomElement)`)
     }
     else {
       imports.push(`import ${component} from '${componentsPath(component)}.stx'`)

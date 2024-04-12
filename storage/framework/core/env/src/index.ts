@@ -9,11 +9,11 @@ interface EnumObject {
   [key: string]: string[]
 }
 
-export const enums: EnumObject = {
+export const envEnum: EnumObject = {
   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
-  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'planetscale'],
+  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'dynamodb'],
   MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
-  SEARCH_ENGINE_DRIVER: ['meilisearch', 'algolia', 'typesense'],
+  SEARCH_ENGINE_DRIVER: ['opensearch'],
   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
 }
 
@@ -45,7 +45,7 @@ const handler = {
 
 export function process() {
   return typeof Bun !== 'undefined'
-    ? Bun.env as Env
+    ? Bun.env as unknown as Env
     : p.env as unknown as Env
 }
 

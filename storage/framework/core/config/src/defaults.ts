@@ -1,4 +1,4 @@
-import { commandsPath, projectStoragePath } from '@stacksjs/path'
+import { commandsPath, userDatabasePath } from '@stacksjs/path'
 import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
@@ -22,6 +22,19 @@ export default {
 
   analytics: {
     driver: undefined,
+  },
+
+  api: {
+    // version: 'v1',
+    prefix: 'api',
+    middleware: ['auth'],
+    routes: {
+      index: true,
+      show: true,
+      store: true,
+      update: true,
+      destroy: true,
+    },
   },
 
   app: {
@@ -106,30 +119,21 @@ export default {
       },
     },
 
-    api: {
-      deploy: false,
-      prefix: 'api',
-      description: 'Stacks API',
-      prewarm: true,
-      memorySize: 512,
-      timeout: 30,
-      // version: 'v1',
-    },
-
     fileSystem: false,
   },
 
   database: {
     default: 'sqlite',
 
-    name: 'stacks',
-
     connections: {
       sqlite: {
-        database: projectStoragePath('framework/database/stacks.sqlite'),
+        database: userDatabasePath('stacks.sqlite'),
         prefix: '',
       },
     },
+
+    migrations: 'migrations',
+    migrationLocks: 'migration_locks',
   },
 
   dns: {
@@ -266,7 +270,7 @@ export default {
 
     argon2: {
       memory: 65536, // memory usage in kibibytes
-      threads: 1,
+      // threads: 1,
       time: 1, // the number of iterations
     },
   },
@@ -345,6 +349,7 @@ export default {
     inspect: 3007,
     api: 3008,
     systemTray: 3009,
+    database: 3010,
     // mobile: 3010,
   },
 
@@ -383,7 +388,7 @@ export default {
   },
 
   searchEngine: {
-    driver: 'meilisearch',
+    driver: 'opensearch',
   },
 
   security: {
@@ -419,11 +424,6 @@ export default {
     },
 
     stripe: {
-      appId: '',
-      apiKey: '',
-    },
-
-    supabase: {
       appId: '',
       apiKey: '',
     },

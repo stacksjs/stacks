@@ -1,16 +1,16 @@
 import type { HashAlgorithm } from '@stacksjs/types'
-import v from 'validator'
+import validator from 'validator'
 
 export function isEmail(email: string) {
-  return v.isEmail(email)
+  return validator.isEmail(email)
 }
 
 export function isStrongPassword(password: string) {
-  return v.isStrongPassword(password)
+  return validator.isStrongPassword(password)
 }
 
 export function isAlphanumeric(username: string) {
-  return v.isAlphanumeric(username)
+  return validator.isAlphanumeric(username)
 }
 
 export function validateUsername(username: string) {
@@ -18,153 +18,153 @@ export function validateUsername(username: string) {
 }
 
 export function isURL(url: string) {
-  return v.isURL(url)
+  return validator.isURL(url)
 }
 
 export function isMobilePhone(phoneNumber: string) {
-  return v.isMobilePhone(phoneNumber)
+  return validator.isMobilePhone(phoneNumber)
 }
 
 export function isAlpha(name: string) {
-  return v.isAlpha(name)
+  return validator.isAlpha(name)
 }
 
 export function isPostalCode(zipCode: string) {
-  return v.isPostalCode(zipCode, 'any')
+  return validator.isPostalCode(zipCode, 'any')
 }
 
 export function isNumeric(number: string) {
-  return v.isNumeric(number)
+  return validator.isNumeric(number)
 }
 
 export function isHexColor(color: string) {
-  return v.isHexColor(color)
+  return validator.isHexColor(color)
 }
 
 export function isHexadecimal(hex: string) {
-  return v.isHexadecimal(hex)
+  return validator.isHexadecimal(hex)
 }
 
 export function isBase64(base64: string) {
-  return v.isBase64(base64)
+  return validator.isBase64(base64)
 }
 
 export function isUUID(uuid: string) {
-  return v.isUUID(uuid)
+  return validator.isUUID(uuid)
 }
 
 export function isJSON(json: string) {
-  return v.isJSON(json)
+  return validator.isJSON(json)
 }
 
 export function isCreditCard(creditCard: string) {
-  return v.isCreditCard(creditCard)
+  return validator.isCreditCard(creditCard)
 }
 
 export function isISBN(isbn: string) {
-  return v.isISBN(isbn)
+  return validator.isISBN(isbn)
 }
 
 export function isIP(ip: string) {
-  return v.isIP(ip)
+  return validator.isIP(ip)
 }
 
 export function isIPRange(ip: string) {
-  return v.isIPRange(ip)
+  return validator.isIPRange(ip)
 }
 
 export function isMACAddress(macAddress: string) {
-  return v.isMACAddress(macAddress)
+  return validator.isMACAddress(macAddress)
 }
 
 export function isLatLong(latitude: string) {
-  return v.isLatLong(latitude)
+  return validator.isLatLong(latitude)
 }
 
 export function isLatitude(longitude: string) {
-  return v.isLatLong(longitude)
+  return validator.isLatLong(longitude)
 }
 
 export function isLongitude(longitude: string) {
-  return v.isLatLong(longitude)
+  return validator.isLatLong(longitude)
 }
 
 export function isCurrency(currency: string) {
-  return v.isCurrency(currency)
+  return validator.isCurrency(currency)
 }
 
 export function isDataURI(dataURI: string) {
-  return v.isDataURI(dataURI)
+  return validator.isDataURI(dataURI)
 }
 
 export function isMimeType(mimeType: string) {
-  return v.isMimeType(mimeType)
+  return validator.isMimeType(mimeType)
 }
 
 export function isJWT(jwt: string) {
-  return v.isJWT(jwt)
+  return validator.isJWT(jwt)
 }
 
 export function isAscii(ascii: string) {
-  return v.isAscii(ascii)
+  return validator.isAscii(ascii)
 }
 
 export function isBase32(base32: string) {
-  return v.isBase32(base32)
+  return validator.isBase32(base32)
 }
 
 export function isByteLength(byteLength: string) {
-  return v.isByteLength(byteLength)
+  return validator.isByteLength(byteLength)
 }
 
 export function isFQDN(fqdn: string) {
-  return v.isFQDN(fqdn)
+  return validator.isFQDN(fqdn)
 }
 
 export function isFullWidth(fullWidth: string) {
-  return v.isFullWidth(fullWidth)
+  return validator.isFullWidth(fullWidth)
 }
 
 export function isHalfWidth(halfWidth: string) {
-  return v.isHalfWidth(halfWidth)
+  return validator.isHalfWidth(halfWidth)
 }
 
 export function isHash(hash: string, algorithm: HashAlgorithm) {
-  return v.isHash(hash, algorithm)
+  return validator.isHash(hash, algorithm)
 }
 
 export function isHSL(hsl: string) {
-  return v.isHSL(hsl)
+  return validator.isHSL(hsl)
 }
 
 export function isIBAN(iban: string) {
-  return v.isIBAN(iban)
+  return validator.isIBAN(iban)
 }
 
 export function isIdentityCard(identityCard: string) {
-  return v.isIdentityCard(identityCard)
+  return validator.isIdentityCard(identityCard)
 }
 
 export function isISIN(isin: string) {
-  return v.isISIN(isin)
+  return validator.isISIN(isin)
 }
 
 export function isISO8601(iso8601: string) {
-  return v.isISO8601(iso8601)
+  return validator.isISO8601(iso8601)
 }
 
 export function isISRC(isrc: string) {
-  return v.isISRC(isrc)
+  return validator.isISRC(isrc)
 }
 
 export function isISSN(issn: string) {
-  return v.isISSN(issn)
+  return validator.isISSN(issn)
 }
 
 export function isISO31661Alpha2(iso31661Alpha2: string) {
-  return v.isISO31661Alpha2(iso31661Alpha2)
+  return validator.isISO31661Alpha2(iso31661Alpha2)
 }
 
 export function isISO31661Alpha3(iso31661Alpha3: string) {
-  return v.isISO31661Alpha3(iso31661Alpha3)
+  return validator.isISO31661Alpha3(iso31661Alpha3)
 }

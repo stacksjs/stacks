@@ -49,14 +49,18 @@ export const Arr = {
    * Returns a random item/s from the array
    */
   random<T>(arr: T[], count = 1): T[] {
-    return sample(arr, count)
+    return sample(arr, count).filter((item): item is T => item != null)
   },
 
   /**
    * Returns random item/s from the array
    */
   sample<T>(arr: T[], count = 1): T[] {
-    return sample(arr, count)
+    // Get the sample array (may contain undefined values)
+    const sampleArr = sample(arr, count)
+
+    // Filter out any undefined values
+    return sampleArr.filter((item): item is T => item !== undefined)
   },
 
   unique<T>(arr: T[]): T[] {

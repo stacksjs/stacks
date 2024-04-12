@@ -1,10 +1,10 @@
-import type { FlatConfigItem, OptionsFiles, OptionsOverrides, OptionsStylistic } from '../types'
+import type { OptionsFiles, OptionsOverrides, OptionsStylistic, TypedFlatConfigItem } from '../types'
 import { GLOB_TOML } from '../globs'
 import { interopDefault } from '../utils'
 
 export async function toml(
   options: OptionsOverrides & OptionsStylistic & OptionsFiles = {},
-): Promise<FlatConfigItem[]> {
+): Promise<TypedFlatConfigItem[]> {
   const {
     files = [GLOB_TOML],
     overrides = {},
@@ -25,7 +25,7 @@ export async function toml(
 
   return [
     {
-      name: 'antfu:toml:setup',
+      name: 'antfu/toml/setup',
       plugins: {
         toml: pluginToml,
       },
@@ -35,7 +35,7 @@ export async function toml(
       languageOptions: {
         parser: parserToml,
       },
-      name: 'antfu:toml:rules',
+      name: 'antfu/toml/rules',
       rules: {
         'style/spaced-comment': 'off',
 

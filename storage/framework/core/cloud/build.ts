@@ -1,6 +1,10 @@
-import dts from 'bun-plugin-dts-auto'
+import { intro, outro } from '../build/src'
 
-await Bun.build({
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   target: 'bun',
@@ -70,21 +74,20 @@ await Bun.build({
     '@aws-sdk/client-lambda',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
 })
 
 // Building the edge/origin-request separately
-await Bun.build({
+const res = await Bun.build({
   entrypoints: ['./src/edge/origin-request.ts'],
   outdir: './dist',
   // Specify any additional options if needed
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+})
+
+if (!res.success)
+  throw new Error('Failed to build edge/origin-request')
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

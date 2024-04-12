@@ -9,7 +9,7 @@ import type { CacheConfig } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  driver: 'redis',
+  driver: 'dynamodb',
   prefix: 'stacks',
   ttl: 3600,
 

@@ -1,6 +1,10 @@
-import dts from 'bun-plugin-dts-auto'
+import { intro, outro } from '../build/src'
 
-await Bun.build({
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
@@ -11,17 +15,16 @@ await Bun.build({
     '@stacksjs/config',
     '@stacksjs/alias',
     '@stacksjs/path',
-    '@stacksjs/vite',
     '@stacksjs/server',
     '@stacksjs/env',
     '@stacksjs/cli',
     '@vite-pwa/vitepress',
     'vitepress-plugin-twoslash',
   ],
+})
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

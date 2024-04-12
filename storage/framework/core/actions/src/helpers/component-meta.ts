@@ -1,4 +1,4 @@
-import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
+import { frameworkPath, join, path, projectPath } from '@stacksjs/path'
 import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
 import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
@@ -62,7 +62,7 @@ export function generateComponentMeta() {
 
   components.forEach((componentPath) => {
     // Thanks: https://futurestud.io/tutorials/node-js-get-a-file-name-with-or-without-extension
-    const componentExportName = parse(componentPath).name
+    const componentExportName = path.parse(componentPath).name
     const meta = filterMeta(tsconfigChecker.getComponentMeta(componentPath, componentExportName))
 
     const metaDirPath = frameworkPath('component-meta')

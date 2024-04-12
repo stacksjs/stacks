@@ -1,79 +1,53 @@
-// import { MysqlDialect, QueryBuilder, createPool } from '@stacksjs/query-builder'
-// import { filesystem } from '@stacksjs/storage'
-// import type { Model } from '@stacksjs/types'
-// import { projectPath } from '@stacksjs/path'
-// import { database as config } from '@stacksjs/config'
+import { path } from '@stacksjs/path'
+import { db } from '@stacksjs/database'
+import { italic, log } from '@stacksjs/cli'
+import { fs } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
+import type { Model } from '@stacksjs/types'
 
-// const { fs } = filesystem
+async function seedModel(name: string, model?: Model) {
+  if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {
+    log.info(`Skipping seeding for ${italic(name)}`)
+    return
+  }
 
-// function readModels(folderPath: string): Promise<Model[]> {
-//   return new Promise((resolve, reject) => {
-//     const models: Model[] = []
+  if (!model)
+    model = await import(path.userModelsPath(name))
 
-//     fs.readdir(folderPath, (err, files) => {
-//       if (err)
-//         reject(err)
+  const tableName = model!.table ?? snakeCase(model!.name ?? name.replace('.ts', ''))
+  const seedCount = typeof model!.traits?.useSeeder === 'object' && model!.traits?.useSeeder?.count ? model!.traits.useSeeder.count : 10
+  log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
+  const records = []
 
-//       const promises = files
-//         .filter(file => file.endsWith('.ts'))
-//         .map((file) => {
-//           const filePath = `${folderPath}/${file}`
+  for (let i = 0; i < seedCount; i++) {
+    const record: any = {}
+    for (const fieldName in model!.attributes) {
+      const field = model!.attributes[fieldName]
+      // Use the factory function if available, otherwise leave the field undefined
+      record[fieldName] = field?.factory ? field.factory() : undefined
+    }
+    records.push(record)
+  }
 
-//           return import(filePath).then((data) => {
-//             models.push({
-//               name: data.default.name,
-//               fields: data.default.fields,
-//               useSeed: data.default.useSeed,
-//             })
-//           })
-//         })
-
-//       Promise.all(promises)
-//         .then(() => resolve(models))
-//         .catch(err => reject(err))
-//     })
-//   })
-// }
-
-async function seed() {
-  // const db = new QueryBuilder({
-  //   dialect: new MysqlDialect({
-  //     pool: createPool({
-  //       database: config.database,
-  //       host: config.host,
-  //       password: config.password,
-  //       user: config.username,
-  //     }),
-  //   }),
-  // })
-
-  // const models = await readModels(projectPath('app/Models'))
-
-  // const queries = models.flatMap((model) => {
-  //   const { seedable, fields } = model
-
-  //   if (!seedable)
-  //     return []
-
-  //   const count = typeof seedable === 'boolean' ? 10 : seedable.count
-
-  //   const records: Record<string, any>[] = []
-  //   for (let i = 0; i < count; i++) {
-  //     const record: Record<string, any> = {}
-  //     Object.entries(fields).forEach(([name, field]) => {
-  //       if (field.factory)
-  //         record[name] = field.factory()
-  //     })
-  //     records.push(record)
-  //   }
-
-  //     return model
-  //   // return db.insertInto('users').values(records).build(sql`RETURNING *`)
-  // })
-
-  // const { rows } = await db.transaction().execute()
-
-  // return rows
+  // @ts-expect-error todo: we can improve this in the future
+  await db.insertInto(tableName).values(records).execute()
 }
 
-export { seed }
+export async function seed() {
+  // if a custom seeder exists, use it instead
+  const customSeederPath = path.userDatabasePath('seeder.ts')
+  if (fs.existsSync(customSeederPath)) {
+    log.info('Custom seeder found')
+    await import(customSeederPath)
+  }
+
+  // otherwise, seed all models
+  const modelsDir = path.userModelsPath()
+  const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
+
+  for (const file of modelFiles) {
+    const modelPath = path.join(modelsDir, file)
+    const model = await import(modelPath)
+    await seedModel(file, model.default)
+  }
+}

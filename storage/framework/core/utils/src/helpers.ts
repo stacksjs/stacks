@@ -1,25 +1,24 @@
 import type { AddressInfo } from 'node:net'
-
-// import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import type { Result } from '@stacksjs/error-handling'
+import { runAction } from '@stacksjs/actions'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
-import type { CliOptions, Manifest, SyncSubprocess } from '@stacksjs/types'
+import type { CliOptions, Manifest, Subprocess } from '@stacksjs/types'
 import type { NpmScript } from '@stacksjs/enums'
 import { Action } from '@stacksjs/enums'
 import { parse } from 'yaml'
+import { app, ui } from '@stacksjs/config'
 
 // import { semver } from './versions'
-import { app, ui } from '@stacksjs/config'
 
 export async function packageManager() {
   const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))
   return packageManager
 }
 
-export async function initProject(): Promise<Result<SyncSubprocess, Error>> {
+export async function initProject(): Promise<Result<Subprocess, Error>> {
   if (app.env !== 'production')
     log.info('Project not yet initialized, generating application key...')
   else
@@ -131,10 +130,11 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<SyncSubprocess, Error>> {
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<Subprocess, Error>> {
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
-  if (isManifest(manifest) && hasScript(manifest, script)) // simple, yet effective check to see if the script exists
+  // simple, yet effective check to see if the script exists
+  if (isManifest(manifest) && hasScript(manifest, script))
     return await runCommand(`bun --bun run ${script}`, options)
 
   return err(handleError(`The ${script} script does not exist in the package.json file.`))

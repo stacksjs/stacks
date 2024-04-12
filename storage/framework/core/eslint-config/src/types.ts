@@ -2,61 +2,15 @@ import type { FlatGitignoreOptions } from 'eslint-config-flat-gitignore'
 import type { ParserOptions } from '@typescript-eslint/parser'
 import type { Options as VueBlocksOptions } from 'eslint-processor-vue-blocks'
 import type { Linter } from 'eslint'
-import type {
-  EslintCommentsRules,
-  EslintRules,
-  FlatESLintConfigItem,
-  ImportRules,
-  JsoncRules,
-  MergeIntersection,
-  NRules,
-  Prefix,
-  ReactHooksRules,
-  ReactRules,
-  RenamePrefix,
-  RuleConfig,
-  VitestRules,
-  VueRules,
-  YmlRules,
-} from '@antfu/eslint-define-config'
-import type { RuleOptions as JSDocRules } from '@eslint-types/jsdoc/types'
-import type { RuleOptions as TypeScriptRules } from '@eslint-types/typescript-eslint/types'
-import type { RuleOptions as UnicornRules } from '@eslint-types/unicorn/types'
-import type { Rules as AntfuRules } from 'eslint-plugin-antfu'
-import type { StylisticCustomizeOptions, UnprefixedRuleOptions as StylisticRules } from '@stylistic/eslint-plugin'
+import type { StylisticCustomizeOptions } from '@stylistic/eslint-plugin'
+import type { RuleOptions } from './typegen'
 import type { VendoredPrettierOptions } from './vendor/prettier-types'
-
-export type WrapRuleConfig<T extends { [key: string]: any }> = {
-  [K in keyof T]: T[K] extends RuleConfig ? T[K] : RuleConfig<T[K]>
-}
 
 export type Awaitable<T> = T | Promise<T>
 
-export type Rules = WrapRuleConfig<
-  MergeIntersection<
-    RenamePrefix<TypeScriptRules, '@typescript-eslint/', 'ts/'> &
-    RenamePrefix<VitestRules, 'vitest/', 'test/'> &
-    RenamePrefix<YmlRules, 'yml/', 'yaml/'> &
-    RenamePrefix<NRules, 'n/', 'node/'> &
-    Prefix<StylisticRules, 'style/'> &
-    Prefix<AntfuRules, 'antfu/'> &
-    ReactHooksRules &
-    ReactRules &
-    JSDocRules &
-    ImportRules &
-    EslintRules &
-    JsoncRules &
-    VueRules &
-    UnicornRules &
-    EslintCommentsRules &
-    // TODO: TOML rules
-    {
-      'test/no-only-tests': RuleConfig<[]>
-    }
-  >
->
+export type Rules = RuleOptions
 
-export type FlatConfigItem = Omit<FlatESLintConfigItem<Rules, false>, 'plugins'> & {
+export type TypedFlatConfigItem = Omit<Linter.FlatConfig, 'plugins'> & {
   /**
    * Custom name of each config item
    */
@@ -69,9 +23,12 @@ export type FlatConfigItem = Omit<FlatESLintConfigItem<Rules, false>, 'plugins'>
    * @see [Using plugins in your configuration](https://eslint.org/docs/latest/user-guide/configuring/configuration-files-new#using-plugins-in-your-configuration)
    */
   plugins?: Record<string, any>
-}
 
-export type UserConfigItem = FlatConfigItem | Linter.FlatConfig
+  /**
+   * An object containing a name-value mapping of rules to use.
+   */
+  rules?: Linter.RulesRecord & Rules
+}
 
 export interface OptionsFiles {
   /**
@@ -133,16 +90,32 @@ export interface OptionsFormatters {
   /**
    * Custom options for Prettier.
    *
-   * By default it’s controlled by our own config.
+   * By default it's controlled by our own config.
    */
   prettierOptions?: VendoredPrettierOptions
 
   /**
    * Custom options for dprint.
    *
-   * By default it’s controlled by our own config.
+   * By default it's controlled by our own config.
    */
   dprintOptions?: boolean
+
+  /**
+   * Install the prettier plugin for handle Slidev markdown
+   *
+   * Only works when `markdown` is enabled with `prettier`.
+   */
+  slidev?: boolean | {
+    files?: string[]
+  }
+
+  /**
+   * Enable formatting support for Astro.
+   *
+   * Currently only support Prettier.
+   */
+  // astro?: 'prettier' | boolean
 }
 
 export interface OptionsComponentExts {
@@ -188,7 +161,7 @@ export interface StylisticConfig extends Pick<StylisticCustomizeOptions, 'indent
 }
 
 export interface OptionsOverrides {
-  overrides?: FlatConfigItem['rules']
+  overrides?: TypedFlatConfigItem['rules']
 }
 
 export interface OptionsIsInEditor {
@@ -256,8 +229,6 @@ export interface OptionsConfig extends OptionsComponentExts {
    */
   vue?: boolean | OptionsVue
 
-  stacks?: boolean | OptionsVue
-
   /**
    * Enable JSONC support.
    *
@@ -280,6 +251,19 @@ export interface OptionsConfig extends OptionsComponentExts {
   toml?: boolean | OptionsOverrides
 
   /**
+   * Enable ASTRO support.
+   *
+   * Requires installing:
+   * - `eslint-plugin-astro`
+   *
+   * Requires installing for formatting .astro:
+   * - `prettier-plugin-astro`
+   *
+   * @default false
+   */
+  // astro?: boolean | OptionsOverrides
+
+  /**
    * Enable linting for **code snippets** in Markdown.
    *
    * For formatting Markdown content, enable also `formatters.markdown`.
@@ -293,7 +277,7 @@ export interface OptionsConfig extends OptionsComponentExts {
    *
    * @default true
    */
-  stylistic?: boolean | StylisticConfig
+  stylistic?: boolean | (StylisticConfig & OptionsOverrides)
 
   /**
    * Enable react rules.
@@ -305,17 +289,17 @@ export interface OptionsConfig extends OptionsComponentExts {
    *
    * @default false
    */
-  react?: boolean | OptionsOverrides
+  // react?: boolean | OptionsOverrides
 
-  /**
-   * Enable svelte rules.
-   *
-   * Requires installing:
-   * - `eslint-plugin-svelte`
-   *
-   * @default false
-   */
-  svelte?: boolean
+  // /**
+  //  * Enable svelte rules.
+  //  *
+  //  * Requires installing:
+  //  * - `eslint-plugin-svelte`
+  //  *
+  //  * @default false
+  //  */
+  // svelte?: boolean
 
   /**
    * Enable unocss rules.
@@ -346,21 +330,26 @@ export interface OptionsConfig extends OptionsComponentExts {
   isInEditor?: boolean
 
   /**
+   * Automatically rename plugins in the config.
+   *
+   * @default true
+   */
+  autoRenamePlugins?: boolean
+
+  /**
    * Provide overrides for rules for each integration.
    *
    * @deprecated use `overrides` option in each integration key instead
    */
   overrides?: {
-    stylistic?: FlatConfigItem['rules']
-    javascript?: FlatConfigItem['rules']
-    typescript?: FlatConfigItem['rules']
-    test?: FlatConfigItem['rules']
-    vue?: FlatConfigItem['rules']
-    jsonc?: FlatConfigItem['rules']
-    markdown?: FlatConfigItem['rules']
-    yaml?: FlatConfigItem['rules']
-    toml?: FlatConfigItem['rules']
-    react?: FlatConfigItem['rules']
-    svelte?: FlatConfigItem['rules']
+    stylistic?: TypedFlatConfigItem['rules']
+    javascript?: TypedFlatConfigItem['rules']
+    typescript?: TypedFlatConfigItem['rules']
+    test?: TypedFlatConfigItem['rules']
+    vue?: TypedFlatConfigItem['rules']
+    jsonc?: TypedFlatConfigItem['rules']
+    markdown?: TypedFlatConfigItem['rules']
+    yaml?: TypedFlatConfigItem['rules']
+    toml?: TypedFlatConfigItem['rules']
   }
 }

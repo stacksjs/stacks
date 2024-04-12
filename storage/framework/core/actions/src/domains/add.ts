@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { createHostedZone, getNameservers, updateNameservers } from '@stacksjs/dns'
+import { handleError } from '@stacksjs/error-handling'
 import { app } from '@stacksjs/config'
 import { italic, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { whois } from '@stacksjs/whois'

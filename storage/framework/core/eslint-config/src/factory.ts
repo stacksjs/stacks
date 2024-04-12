@@ -1,7 +1,9 @@
 import process from 'node:process'
 import fs from 'node:fs'
 import { isPackageExists } from 'local-pkg'
-import type { Awaitable, FlatConfigItem, OptionsConfig, UserConfigItem } from './types'
+import { FlatConfigComposer } from 'eslint-flat-config-utils'
+import type { Linter } from 'eslint'
+import type { Awaitable, OptionsConfig, TypedFlatConfigItem } from './types'
 import {
   comments,
   ignores,
@@ -12,11 +14,9 @@ import {
   markdown,
   node,
   perfectionist,
-  react,
   sortPackageJson,
   sortTsconfig,
   stylistic,
-  svelte,
   test,
   toml,
   typescript,
@@ -25,10 +25,10 @@ import {
   vue,
   yaml,
 } from './configs'
-import { combine, interopDefault } from './utils'
+import { interopDefault } from './utils'
 import { formatters } from './configs/formatters'
 
-const flatConfigProps: (keyof FlatConfigItem)[] = [
+const flatConfigProps: (keyof TypedFlatConfigItem)[] = [
   'name',
   'files',
   'ignores',
@@ -47,23 +47,37 @@ const VuePackages = [
   '@slidev/cli',
 ]
 
+export const defaultPluginRenaming = {
+  '@stylistic': 'style',
+  '@typescript-eslint': 'ts',
+  'import-x': 'import',
+  'n': 'node',
+  'vitest': 'test',
+  'yml': 'yaml',
+}
+
 /**
  * Construct an array of ESLint flat config items.
+ *
+ * @param {OptionsConfig & TypedFlatConfigItem} options
+ *  The options for generating the ESLint configurations.
+ * @param {Awaitable<TypedFlatConfigItem | TypedFlatConfigItem[]>[]} userConfigs
+ *  The user configurations to be merged with the generated configurations.
+ * @returns {Promise<TypedFlatConfigItem[]>}
+ *  The merged ESLint configurations.
  */
-export async function antfu(
-  options: OptionsConfig & FlatConfigItem = {},
-  ...userConfigs: Awaitable<UserConfigItem | UserConfigItem[]>[]
-): Promise<UserConfigItem[]> {
+export function antfu(
+  options: OptionsConfig & TypedFlatConfigItem = {},
+  ...userConfigs: Awaitable<TypedFlatConfigItem | TypedFlatConfigItem[] | FlatConfigComposer<any> | Linter.FlatConfig[]>[]
+): FlatConfigComposer<TypedFlatConfigItem> {
   const {
+    autoRenamePlugins = true,
     componentExts = [],
     gitignore: enableGitignore = true,
     isInEditor = !!((process.env.VSCODE_PID || process.env.VSCODE_CWD || process.env.JETBRAINS_IDE || process.env.VIM) && !process.env.CI),
-    react: enableReact = false,
-    svelte: enableSvelte = false,
     typescript: enableTypeScript = isPackageExists('typescript'),
     unocss: enableUnoCSS = false,
     vue: enableVue = VuePackages.some(i => isPackageExists(i)),
-    stacks: enableStacks = true,
   } = options
 
   const stylisticOptions = options.stylistic === false
@@ -75,7 +89,7 @@ export async function antfu(
   if (stylisticOptions && !('jsx' in stylisticOptions))
     stylisticOptions.jsx = options.jsx ?? true
 
-  const configs: Awaitable<FlatConfigItem[]>[] = []
+  const configs: Awaitable<TypedFlatConfigItem[]>[] = []
 
   if (enableGitignore) {
     if (typeof enableGitignore !== 'boolean') {
@@ -111,9 +125,6 @@ export async function antfu(
   if (enableVue)
     componentExts.push('vue')
 
-  if (enableStacks)
-    componentExts.push('stx')
-
   if (enableTypeScript) {
     configs.push(typescript({
       ...resolveSubOptions(options, 'typescript'),
@@ -145,20 +156,20 @@ export async function antfu(
     }))
   }
 
-  if (enableReact) {
-    configs.push(react({
-      overrides: getOverrides(options, 'react'),
-      typescript: !!enableTypeScript,
-    }))
-  }
+  // if (enableReact) {
+  //   configs.push(react({
+  //     overrides: getOverrides(options, 'react'),
+  //     typescript: !!enableTypeScript,
+  //   }))
+  // }
 
-  if (enableSvelte) {
-    configs.push(svelte({
-      overrides: getOverrides(options, 'svelte'),
-      stylistic: stylisticOptions,
-      typescript: !!enableTypeScript,
-    }))
-  }
+  // if (enableSvelte) {
+  //   configs.push(svelte({
+  //     overrides: getOverrides(options, 'svelte'),
+  //     stylistic: stylisticOptions,
+  //     typescript: !!enableTypeScript,
+  //   }))
+  // }
 
   if (enableUnoCSS) {
     configs.push(unocss({
@@ -166,6 +177,13 @@ export async function antfu(
       overrides: getOverrides(options, 'unocss'),
     }))
   }
+
+  // if (enableAstro) {
+  //   configs.push(astro({
+  //     overrides: getOverrides(options, 'astro'),
+  //     stylistic: stylisticOptions,
+  //   }))
+  // }
 
   if (options.jsonc ?? true) {
     configs.push(
@@ -216,16 +234,24 @@ export async function antfu(
     if (key in options)
       acc[key] = options[key] as any
     return acc
-  }, {} as FlatConfigItem)
+  }, {} as TypedFlatConfigItem)
   if (Object.keys(fusedConfig).length)
     configs.push([fusedConfig])
 
-  const merged = combine(
-    ...configs,
-    ...userConfigs,
-  )
+  let pipeline = new FlatConfigComposer<TypedFlatConfigItem>()
 
-  return merged
+  pipeline = pipeline
+    .append(
+      ...configs,
+      ...userConfigs as any,
+    )
+
+  if (autoRenamePlugins) {
+    pipeline = pipeline
+      .renamePlugins(defaultPluginRenaming)
+  }
+
+  return pipeline
 }
 
 export type ResolvedOptions<T> = T extends boolean

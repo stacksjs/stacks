@@ -110,14 +110,22 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:database', descriptions.database)
+    .command('make:database [name]', descriptions.database)
     .option('-n, --name', 'The name of the database')
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
       log.debug('Running `buddy make:database` ...', options)
 
-      const name = buddy.args[0] || options.name
+      if (!options?.name) {
+        log.error('You need to specify a database name via the --name option, or the first argument.')
+        log.info('Example: `buddy make:database my-cool-database`')
+        log.info('Or: `buddy make:database --name=my-cool-database`')
+        log.info('Read more about the documentation here: https://stacksjs.org/docs/make/database')
+        process.exit()
+      }
+
+      const name = options.name ?? options // if the name is not in options, it's in the first argument (ie `options`)
       options.name = name
 
       if (!name) {
@@ -280,7 +288,7 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      log.info(path, name)
+      // log.info(path)
     })
 
   buddy
@@ -293,14 +301,14 @@ export function make(buddy: CLI) {
       const domain = await localUrl()
       log.info(`Creating SSL certificate...`)
 
-      await runCommand(`mkcert ${domain}`, {
+      await runCommand(`tlsx ${domain}`, {
         cwd: p.projectStoragePath('keys'),
       })
 
       log.success('Certificate created')
 
       log.info(`Installing SSL certificate...`)
-      await runCommand(`mkcert -install`, {
+      await runCommand(`tlsx -install`, {
         cwd: p.projectStoragePath('keys'),
       })
       log.success('Certificate installed')

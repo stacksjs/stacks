@@ -1,6 +1,6 @@
 {
   "name": "stacks-router-layer",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "",
   "author": "",
   "license": "MIT",
@@ -10,6 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@stacksjs/router": "^0.59.6"
+    "@stacksjs/router": "^0.59.11"
   }
 }

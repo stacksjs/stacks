@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/email",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -60,8 +60,8 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "aws-sdk": "^2.1571.0",
-    "vue-email": "^0.8.10"
+    "aws-sdk": "^2.1597.0",
+    "vue-email": "^0.8.11"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

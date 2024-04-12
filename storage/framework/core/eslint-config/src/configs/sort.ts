@@ -1,15 +1,15 @@
-import type { FlatConfigItem } from '../types'
+import type { TypedFlatConfigItem } from '../types'
 
 /**
  * Sort package.json
  *
  * Requires `jsonc` config
  */
-export async function sortPackageJson(): Promise<FlatConfigItem[]> {
+export async function sortPackageJson(): Promise<TypedFlatConfigItem[]> {
   return [
     {
       files: ['**/package.json'],
-      name: 'antfu:sort-package-json',
+      name: 'antfu/sort/sort-package-json',
       rules: {
         'jsonc/sort-array-values': [
           'error',
@@ -85,6 +85,22 @@ export async function sortPackageJson(): Promise<FlatConfigItem[]> {
             ],
             pathPattern: '^exports.*$',
           },
+          {
+            order: [
+              // client hooks only
+              'pre-commit',
+              'prepare-commit-msg',
+              'commit-msg',
+              'post-commit',
+              'pre-rebase',
+              'post-rewrite',
+              'post-checkout',
+              'post-merge',
+              'pre-push',
+              'pre-auto-gc',
+            ],
+            pathPattern: '^(?:gitHooks|husky|simple-git-hooks)$',
+          },
         ],
       },
     },
@@ -96,11 +112,11 @@ export async function sortPackageJson(): Promise<FlatConfigItem[]> {
  * Requires `jsonc` config
  */
 
-export function sortTsconfig(): FlatConfigItem[] {
+export function sortTsconfig(): TypedFlatConfigItem[] {
   return [
     {
       files: ['**/tsconfig.json', '**/tsconfig.*.json'],
-      name: 'antfu:sort-tsconfig',
+      name: 'antfu/sort/tsconfig-json',
       rules: {
         'jsonc/sort-keys': [
           'error',

@@ -229,8 +229,8 @@ export async function deleteIamUsers() {
   })
 
   await Promise.all(promises).catch((error: Error) => {
-    console.error(`Error deleting user: ${error}`)
-    return err(handleError('Error deleting Stacks IAM users', error))
+    console.error(error)
+    return err(handleError('Error deleting Stacks IAM users'))
   })
 
   return ok(`Stacks IAM users deleted for team ${teamName}`)
@@ -310,13 +310,15 @@ export async function deleteStacksBuckets() {
     })
 
     await Promise.all(promises).catch((error: Error) => {
-      return err(handleError('Error deleting stacks buckets', error))
+      console.error(error)
+      return err(handleError('Error deleting stacks buckets'))
     })
 
     return ok('Stacks buckets deleted')
   }
   catch (error) {
-    return err(handleError('Error deleting stacks buckets', error as Error))
+    console.error(error)
+    return err(handleError('Error deleting stacks buckets'))
   }
 }
 
@@ -337,7 +339,8 @@ export async function deleteStacksFunctions() {
       return ok('CloudFront is still deleting the some functions. Try again later.')
     }
 
-    return err(handleError('Error deleting stacks functions', error))
+    console.error(error)
+    return err(handleError('Error deleting stacks functions'))
   })
 
   return ok('Stacks functions deleted')
@@ -360,7 +363,8 @@ export async function deleteLogGroups() {
     return ok('Log groups deleted')
   }
   catch (error) {
-    return err(handleError('Error deleting log groups', error as Error))
+    console.error(error)
+    return err(handleError('Error deleting log groups'))
   }
 }
 
@@ -379,7 +383,8 @@ export async function deleteParameterStore() {
   const promises = stacksParameters.map(param => ssm.deleteParameter({ Name: param.Name || '' }))
 
   await Promise.all(promises).catch((error: Error) => {
-    return err(handleError('Error deleting parameter store', error))
+    console.error(error)
+    return err(handleError('Error deleting parameter store'))
   })
 
   return ok('Parameter store deleted')
@@ -395,7 +400,8 @@ export async function deleteCdkRemnants() {
     )
   }
   catch (error) {
-    return err(handleError('Error deleting CDK remnants', error as Error))
+    console.error(error)
+    return err(handleError('Error deleting CDK remnants'))
   }
 }
 
@@ -408,7 +414,8 @@ export async function hasBeenDeployed() {
     return ok(response.Buckets?.some(bucket => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks')) || false)
   }
   catch (error) {
-    return err(handleError('Error checking if the app has been deployed', error as Error))
+    console.error(error)
+    return err(handleError('Error checking if the app has been deployed'))
   }
 }
 

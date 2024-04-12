@@ -1,6 +1,10 @@
-import dts from 'bun-plugin-dts-auto'
+import { intro, outro } from '../build/src'
 
-await Bun.build({
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
@@ -22,10 +26,10 @@ await Bun.build({
     'fs-extra',
     'bun',
   ],
+})
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

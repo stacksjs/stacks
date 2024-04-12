@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -68,7 +68,7 @@
     "@vueuse/math": "^10.9.0",
     "@vueuse/shared": "^10.9.0",
     "bun-plugin-env": "^0.4.1",
-    "bun-plugin-yml": "^0.3.0",
+    "bun-plugin-yml": "^0.3.1",
     "export-size": "^0.7.0",
     "yaml": "^2.4.1"
   },
@@ -88,7 +88,7 @@
     "@vueuse/math": "^10.9.0",
     "@vueuse/shared": "^10.9.0",
     "bun-plugin-env": "^0.4.1",
-    "bun-plugin-yml": "^0.3.0",
+    "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
@@ -97,7 +97,7 @@
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
-    "magic-regexp": "^0.7.0",
+    "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
     "yaml": "^2.4.1"

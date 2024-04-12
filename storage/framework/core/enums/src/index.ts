@@ -3,7 +3,7 @@
  */
 export enum NpmScript {
   Build = 'build',
-  BuildComponents = 'vite build --config ./src/vite/src/components.ts',
+  BuildComponents = 'vite build --config ./src/vite-config/src/components.ts',
   BuildWebComponents = 'build:web-components',
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',
@@ -78,9 +78,10 @@ export enum Action {
   Inspire = 'inspire',
   KeyGenerate = 'key-generate',
   MakeNotification = 'make-notification',
-  Migrate = 'migrate',
+  Migrate = 'migrate/database',
+  MigrateFresh = 'migrate/fresh',
   MigrateDns = 'migrate/dns',
-  Seed = 'seed',
+  Seed = 'database/seed',
   Lint = 'lint/index',
   LintFix = 'lint/fix',
   Prepublish = 'prepublish',
@@ -91,7 +92,6 @@ export enum Action {
   TestUnit = 'test-unit',
   TestFeature = 'test-feature',
   TestCoverage = 'test-coverage',
-  Tinker = 'tinker',
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
   UpgradeBinary = 'upgrade/binary', // the `stacks` binary

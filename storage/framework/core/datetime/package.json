@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/datetime",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks datetime helpers.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -49,7 +49,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@formkit/tempo": "^0.0.14",
+    "@formkit/tempo": "^0.0.19",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {

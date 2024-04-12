@@ -1,5 +1,5 @@
 import { faker } from '@stacksjs/faker'
-import { validator } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
@@ -9,7 +9,7 @@ export default {
   autoIncrement: true, // defaults to true
 
   traits: {
-    useSoftDeletes: true, // defaults to false
+    useTimestamps: true, // defaults to true
     useSeeder: { // defaults to a count of 10
       count: 10,
     },
@@ -18,14 +18,21 @@ export default {
   // relationships
   belongsTo: 'User',
 
-  fields: {
+  attributes: {
     subscribed: {
       validator: {
-        rule: validator.boolean(),
+        rule: schema.boolean(),
         message: '`subscribed` must be a boolean',
       },
 
       factory: () => faker.datatype.boolean(),
+    },
+
+    user_id: {
+      validator: {
+        rule: schema.number(),
+        message: '',
+      },
     },
   },
 } satisfies Model

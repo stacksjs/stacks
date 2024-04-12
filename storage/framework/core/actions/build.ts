@@ -1,6 +1,10 @@
-import dts from 'bun-plugin-dts-auto'
+import { intro, outro } from '../build/src'
 
-await Bun.build({
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
   root: './src',
   outdir: './dist',
   format: 'esm',
@@ -20,7 +24,6 @@ await Bun.build({
     './src/generate/ide-helpers.ts',
     './src/generate/lib-entries.ts',
     './src/generate/vscode-custom-data.ts',
-    './src/helpers/index.ts',
     './src/helpers/component-meta.ts',
     './src/helpers/lib-entries.ts',
     './src/helpers/package-json.ts',
@@ -50,7 +53,6 @@ await Bun.build({
     './src/prepublish.ts',
     './src/release.ts',
     './src/test.ts',
-    './src/tinker.ts',
     './src/typecheck.ts',
     './src/types.ts',
     './src/upgrade.ts',
@@ -74,10 +76,10 @@ await Bun.build({
     '@stacksjs/database',
     'bun',
   ],
+})
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

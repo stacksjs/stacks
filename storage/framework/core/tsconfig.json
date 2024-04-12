@@ -25,6 +25,7 @@
     },
     "resolveJsonModule": true,
     "types": [
+      "bun",
       "vite/client",
       // "vue/ref-macros",
       "vite-plugin-pages/client",
@@ -40,7 +41,7 @@
     "noUnusedLocals": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "outDir": "./dist/types",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

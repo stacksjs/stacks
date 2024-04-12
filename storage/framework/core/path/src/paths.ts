@@ -122,6 +122,14 @@ export function userNotificationsPath(path?: string) {
   return appPath(`Notifications/${path || ''}`)
 }
 
+export function userDatabasePath(path?: string) {
+  return projectPath(`database/${path || ''}`)
+}
+
+export function userMigrationsPath(path?: string) {
+  return userDatabasePath(`migrations/${path || ''}`)
+}
+
 /**
  * Returns the path to the user-defined `Events.ts` file.
  *
@@ -1220,13 +1228,23 @@ export function validationPath(path?: string) {
 }
 
 /**
- * Returns the path to the `vite` directory within the core directory.
+ * Returns the path to the `vite-config` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the vite-config directory.
+ * @returns The absolute path to the specified file or directory within the vite-config directory.
+ */
+export function viteConfigPath(path?: string) {
+  return corePath(`vite-config/${path || ''}`)
+}
+
+/**
+ * Returns the path to the `vite-plugin` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the vite directory.
  * @returns The absolute path to the specified file or directory within the vite directory.
  */
-export function vitePath(path?: string) {
-  return corePath(`vite/${path || ''}`)
+export function vitePluginPath(path?: string) {
+  return corePath(`vite-plugin/${path || ''}`)
 }
 
 /**
@@ -1301,6 +1319,7 @@ export const path = {
   lintPath,
   listenersPath,
   loggingPath,
+  logsPath,
   jobsPath,
   modulesPath,
   ormPath,
@@ -1342,6 +1361,8 @@ export const path = {
   tinkerPath,
   typesPath,
   uiPath,
+  userDatabasePath,
+  userMigrationsPath,
   userEventsPath,
   userJobsPath,
   userListenersPath,
@@ -1350,7 +1371,8 @@ export const path = {
   userNotificationsPath,
   utilsPath,
   validationPath,
-  vitePath,
+  viteConfigPath,
+  vitePluginPath,
   xRayPath,
   homeDir,
 

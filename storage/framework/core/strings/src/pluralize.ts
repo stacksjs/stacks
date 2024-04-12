@@ -16,11 +16,17 @@ export interface Pluralize {
   addUncountableRule: (word: Word | RegExp) => void
 }
 
-export const plural: Pluralize['plural'] = (...args) => pluralize.plural(...args)
-export const singular: Pluralize['singular'] = (...args) => pluralize.singular(...args)
-export const isPlural: Pluralize['isPlural'] = (...args) => pluralize.isPlural(...args)
-export const isSingular: Pluralize['isSingular'] = (...args) => pluralize.isSingular(...args)
-export const addPluralRule: Pluralize['addPluralRule'] = (...args) => pluralize.addPluralRule(...args)
-export const addSingularRule: Pluralize['addSingularRule'] = (...args) => pluralize.addSingularRule(...args)
-export const addIrregularRule: Pluralize['addIrregularRule'] = (...args) => pluralize.addIrregularRule(...args)
-export const addUncountableRule: Pluralize['addUncountableRule'] = (...args) => pluralize.addUncountableRule(...args)
+export const plural: Pluralize['plural'] = (word, count, inclusive) => {
+  if (count !== undefined && inclusive)
+    return `${count} ${pluralize.plural(word)}`
+
+  return pluralize.plural(word)
+}
+
+export const singular: Pluralize['singular'] = word => pluralize.singular(word)
+export const isPlural: Pluralize['isPlural'] = word => pluralize.isPlural(word)
+export const isSingular: Pluralize['isSingular'] = word => pluralize.isSingular(word)
+export const addPluralRule: Pluralize['addPluralRule'] = (rule, replacement) => pluralize.addPluralRule(rule, replacement)
+export const addSingularRule: Pluralize['addSingularRule'] = (rule, replacement) => pluralize.addSingularRule(rule, replacement)
+export const addIrregularRule: Pluralize['addIrregularRule'] = (single, plural) => pluralize.addIrregularRule(single, plural)
+export const addUncountableRule: Pluralize['addUncountableRule'] = word => pluralize.addUncountableRule(word)

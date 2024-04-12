@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/query-builder",
   "type": "module",
-  "version": "0.59.9",
+  "version": "0.60.3",
   "description": "The Stacks Query Builder integration",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -47,14 +47,18 @@
   "peerDependencies": {
     "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.27.2"
+    "kysely": "^0.27.3"
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "kysely": "^0.27.2"
+    "kysely": "^0.27.3",
+    "kysely-bun-worker": "^0.6.0",
+    "mysql2": "^3.9.4",
+    "pg": "^8.11.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/pg": "^8.11.5"
   }
 }

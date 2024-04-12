@@ -1,0 +1,63 @@
+import { intro, outro } from '../build/src'
+
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/config',
+    '@stacksjs/env',
+    '@stacksjs/error-handling',
+    '@stacksjs/path',
+    '@stacksjs/server',
+    '@stacksjs/types',
+    '@stacksjs/utils',
+    'export-size',
+    'hookable',
+    'js-yaml',
+    'macroable',
+    'neverthrow',
+    'perfect-debounce',
+    'vue',
+    'vueuse',
+    'yaml',
+    'vite',
+    'vite-plugin-inspect',
+    'vite-plugin-vue-layouts',
+    'vite-ssg-sitemap',
+    'vitepress',
+    'vite-plugin-pwa',
+    'vite-plugin-pages',
+    'vite-plugin-webfont-dl',
+    'vite-plugin-vue-devtools',
+    'unocss',
+    '@vitejs/plugin-vue',
+    'unplugin-auto-import/vite',
+    'unplugin-vue-components/vite',
+    'unplugin-vue-macros/vite',
+    'unplugin-vue-markdown/vite',
+    'unplugin-vue-router',
+    'unplugin-vue-router/vite',
+    '@intlify/unplugin-vue-i18n/vite',
+    'defu',
+    'markdown-it-shikiji',
+    'markdown-it-link-attributes',
+    'unocss/vite',
+    '@unhead/vue',
+    'bun',
+    // 'lightningcss',
+  ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

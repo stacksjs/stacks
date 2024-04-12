@@ -1,9 +1,9 @@
 import { ensurePackages, interopDefault } from '../utils'
-import type { FlatConfigItem, OptionsUnoCSS } from '../types'
+import type { OptionsUnoCSS, TypedFlatConfigItem } from '../types'
 
 export async function unocss(
   options: OptionsUnoCSS = {},
-): Promise<FlatConfigItem[]> {
+): Promise<TypedFlatConfigItem[]> {
   const {
     attributify = true,
     strict = false,
@@ -21,7 +21,7 @@ export async function unocss(
 
   return [
     {
-      name: 'antfu:unocss',
+      name: 'antfu/unocss',
       plugins: {
         unocss: pluginUnoCSS,
       },

@@ -144,8 +144,8 @@ export async function findHostedZone(domain: string) {
     return ok(null)
   }
   catch (error) {
-    console.error(`Failed to find hosted zone for domain ${domain}:`, error)
-    return handleError(`Failed to find hosted zone for domain ${domain}:`, error as Error)
+    console.error(error)
+    return handleError(`Failed to find hosted zone for domain ${domain}`)
   }
 }
 
@@ -160,7 +160,8 @@ export async function getNameservers(domainName?: string) {
     return domainDetail?.Nameservers?.map(ns => ns.Name as string) || []
   }
   catch (error) {
-    handleError('Error getting domain detail:', error as Error)
+    console.error(error)
+    handleError('Error getting domain detail')
   }
 }
 

@@ -4,8 +4,6 @@ import { NpmScript } from '@stacksjs/enums'
 import { log, runCommands } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
-// import { $ } from 'bun'
-
 log.info('Ensuring Code Style...')
 
 // TODO: somehow, we currently cannot trigger bunx using $`` syntax

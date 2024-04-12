@@ -1,12 +1,12 @@
 import process from 'node:process'
 import { GLOB_SRC, GLOB_TS, GLOB_TSX } from '../globs'
-import type { FlatConfigItem, OptionsComponentExts, OptionsFiles, OptionsOverrides, OptionsTypeScriptParserOptions, OptionsTypeScriptWithTypes } from '../types'
+import type { OptionsComponentExts, OptionsFiles, OptionsOverrides, OptionsTypeScriptParserOptions, OptionsTypeScriptWithTypes, TypedFlatConfigItem } from '../types'
 import { pluginAntfu } from '../plugins'
 import { interopDefault, renameRules, toArray } from '../utils'
 
 export async function typescript(
   options: OptionsFiles & OptionsComponentExts & OptionsOverrides & OptionsTypeScriptWithTypes & OptionsTypeScriptParserOptions = {},
-): Promise<FlatConfigItem[]> {
+): Promise<TypedFlatConfigItem[]> {
   const {
     componentExts = [],
     overrides = {},
@@ -19,8 +19,12 @@ export async function typescript(
   ]
 
   const filesTypeAware = options.filesTypeAware ?? [GLOB_TS, GLOB_TSX]
+  const tsconfigPath = options?.tsconfigPath
+    ? toArray(options.tsconfigPath)
+    : undefined
+  const isTypeAware = !!tsconfigPath
 
-  const typeAwareRules: FlatConfigItem['rules'] = {
+  const typeAwareRules: TypedFlatConfigItem['rules'] = {
     'dot-notation': 'off',
     'no-implied-eval': 'off',
     'no-throw-literal': 'off',
@@ -42,10 +46,6 @@ export async function typescript(
     'ts/unbound-method': 'error',
   }
 
-  const tsconfigPath = options?.tsconfigPath
-    ? toArray(options.tsconfigPath)
-    : undefined
-
   const [
     pluginTs,
     parserTs,
@@ -54,23 +54,16 @@ export async function typescript(
     interopDefault(import('@typescript-eslint/parser')),
   ] as const)
 
-  return [
-    {
-      // Install the plugins without globs, so they can be configured separately.
-      name: 'antfu:typescript:setup',
-      plugins: {
-        antfu: pluginAntfu,
-        ts: pluginTs as any,
-      },
-    },
-    {
+  function makeParser(typeAware: boolean, files: string[], ignores?: string[]): TypedFlatConfigItem {
+    return {
       files,
+      ...ignores ? { ignores } : {},
       languageOptions: {
         parser: parserTs,
         parserOptions: {
           extraFileExtensions: componentExts.map(ext => `.${ext}`),
           sourceType: 'module',
-          ...tsconfigPath
+          ...typeAware
             ? {
                 project: tsconfigPath,
                 tsconfigRootDir: process.cwd(),
@@ -79,17 +72,37 @@ export async function typescript(
           ...parserOptions as any,
         },
       },
-      name: 'antfu:typescript:rules',
+      name: `antfu/typescript/${typeAware ? 'type-aware-parser' : 'parser'}`,
+    }
+  }
+
+  return [
+    {
+      // Install the plugins without globs, so they can be configured separately.
+      name: 'antfu/typescript/setup',
+      plugins: {
+        antfu: pluginAntfu,
+        ts: pluginTs as any,
+      },
+    },
+    // assign type-aware parser for type-aware files and type-unaware parser for the rest
+    ...isTypeAware
+      ? [
+          makeParser(true, filesTypeAware),
+          makeParser(false, files, filesTypeAware),
+        ]
+      : [makeParser(false, files)],
+    {
+      files,
+      name: 'antfu/typescript/rules',
       rules: {
         ...renameRules(
           pluginTs.configs['eslint-recommended'].overrides![0].rules!,
-          '@typescript-eslint/',
-          'ts/',
+          { '@typescript-eslint': 'ts' },
         ),
         ...renameRules(
           pluginTs.configs.strict.rules!,
-          '@typescript-eslint/',
-          'ts/',
+          { '@typescript-eslint': 'ts' },
         ),
         'no-dupe-class-members': 'off',
         'no-loss-of-precision': 'off',
@@ -120,17 +133,19 @@ export async function typescript(
         ...overrides,
       },
     },
-    {
-      files: filesTypeAware,
-      name: 'antfu:typescript:rules-type-aware',
-      rules: {
-        ...tsconfigPath ? typeAwareRules : {},
-        ...overrides,
-      },
-    },
+    ...isTypeAware
+      ? [{
+          files: filesTypeAware,
+          name: 'antfu/typescript/rules-type-aware',
+          rules: {
+            ...tsconfigPath ? typeAwareRules : {},
+            ...overrides,
+          },
+        }]
+      : [],
     {
       files: ['**/*.d.ts'],
-      name: 'antfu:typescript:dts-overrides',
+      name: 'antfu/typescript/disables/dts',
       rules: {
         'eslint-comments/no-unlimited-disable': 'off',
         'import/no-duplicates': 'off',
@@ -140,14 +155,14 @@ export async function typescript(
     },
     {
       files: ['**/*.{test,spec}.ts?(x)'],
-      name: 'antfu:typescript:tests-overrides',
+      name: 'antfu/typescript/disables/test',
       rules: {
         'no-unused-expressions': 'off',
       },
     },
     {
       files: ['**/*.js', '**/*.cjs'],
-      name: 'antfu:typescript:javascript-overrides',
+      name: 'antfu/typescript/disables/cjs',
       rules: {
         'ts/no-require-imports': 'off',
         'ts/no-var-requires': 'off',

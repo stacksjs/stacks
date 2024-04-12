@@ -198,12 +198,14 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
 
   fireOnTick() {
     try {
-      void callback.call(
-        this.context,
-        this.onComplete as WithOnComplete<OC> extends true
-          ? CronOnCompleteCallback
-          : never,
-      )
+      for (const callback of this._callbacks) {
+        void callback.call(
+          this.context,
+          this.onComplete as WithOnComplete<OC> extends true
+            ? CronOnCompleteCallback
+            : never,
+        )
+      }
     }
     catch (error) {
       if (this._errorHandler && error instanceof Error) {
@@ -230,11 +232,10 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
     let startTime: number
 
     const setCronTimeout = (t: number) => {
-      startTime = Date.now()
       // eslint-disable-next-line ts/no-use-before-define
-      this._timeout = setTimeout(callbackWrapper, t)
-      if (this.unrefTimeout && typeof this._timeout!.unref === 'function')
-        this._timeout!.unref()
+      this._timeout = setTimeout(callbackWrapper, t) as NodeJS.Timeout
+      if (this.unrefTimeout && typeof this._timeout.unref === 'function')
+        this._timeout.unref()
     }
 
     // The callback wrapper checks if it needs to sleep another period or not

@@ -33,7 +33,7 @@ It’s incredibly easy to get started with this framework. Simply run the follow
 ```bash
 curl -Ssf stacksjs.org/install | sh # wip
 
-# alternatively, if Bun >= v1.0.30 is installed already,
+# alternatively, if Bun >= v1.1.0 is installed already,
 # you may also get started via:
 bunx stacks new my-project
 ```
@@ -153,7 +153,6 @@ buddy make:model Car # bootstraps a Car model
 buddy make:database cars # creates a cars database
 buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
-buddy make:seed cars # creates a Car seed file
 buddy make:table cars # bootstraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
@@ -267,13 +266,13 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 
 - 🪄 **AI** _deep AI integrations & foundational model access_
 - 🤖 **APIs** _scalability & maintainability built-in_
-- 🏎️ **Cache** _Redis, DynamoDB, and more—serverless_
+- 🏎️ **Cache** _unified caching for DynamoDB, Redis and more_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac (dependency-free binaries)_
-- 📀 **Database** _SQLite, MySQL, Postgres, and more_
+- 📀 **Database** _DynamoDB, SQLite, MySQL, Postgres, and more_
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_
 - 📢 **Notifications** _emails, SMSs, direct, and push notifications & webhooks_
-- 🗺️ **ORM** _supercharged, fully-typed models & relations (including automated migrations)_
+- 🗺️ **ORM** _automated schemas for scale & a pretty API_
 - 💳 **Payments** _unified API for one-off & subscription billing methods for Stripe_
 - ⚙️ **Queues** _run any heavy workload in the background_
 - 🛠️ **Query Builder** _powerful, type-safe SQL query builder_
@@ -359,9 +358,9 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-Two things are true: Stacks OSS will always stay open-source, and we do/would love to receive postcards from wherever Stacks is used! 🌍 _And we also publish them on our website. -Thank you, Spatie_
+Stacks OSS will always stay open-sourced, and we will always love to receive postcards from wherever Stacks is used!  _And we also publish them on our website. Thank you, Spatie._
 
-Our address: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA, USA
+Our address: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA, USA 🌎
 
 ## Sponsors
 

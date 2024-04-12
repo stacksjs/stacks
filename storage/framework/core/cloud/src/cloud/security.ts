@@ -28,7 +28,7 @@ export class SecurityStack {
         cloudWatchMetricsEnabled: true,
         metricName: 'firewallMetric',
       },
-      rules: this.getFirewallRules(),
+      rules: this.getFirewallRules(scope),
     }
 
     this.firewall = new wafv2.CfnWebACL(scope, 'StacksWebFirewall', options)
@@ -51,7 +51,7 @@ export class SecurityStack {
     })
   }
 
-  getFirewallRules() {
+  getFirewallRules(scope: Construct): wafv2.CfnWebACL.RuleProperty[] {
     const rules: wafv2.CfnWebACL.RuleProperty[] = []
     const priorities = []
 
@@ -61,9 +61,9 @@ export class SecurityStack {
         name: 'CountryRule',
         priority: priorities.length,
         statement: {
-          geoMatchStatement: {
-            countryCodes: config.security.firewall.countryCodes,
-          },
+          // geoMatchStatement: {
+          //   countryCodes: config.security.firewall.countryCodes,
+          // },
         },
         action: {
           block: {},
@@ -77,11 +77,11 @@ export class SecurityStack {
     }
 
     if (config.security.firewall?.ipAddresses?.length) {
-      const ipSet = new wafv2.CfnIPSet(this, 'IpSet', {
+      const ipSet = new wafv2.CfnIPSet(scope, 'IpSet', {
         name: 'IpSet',
         description: 'IP Set',
         scope: 'CLOUDFRONT',
-        addresses: config.security.firewall.ipAddresses,
+        addresses: config.security.firewall.ipAddresses as string[],
         ipAddressVersion: 'IPV4',
       })
 

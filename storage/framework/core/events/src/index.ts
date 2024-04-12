@@ -12,7 +12,9 @@ export type WildcardHandler<T = Record<string, unknown>> = (
 
 // An array of all currently registered event handlers for a type
 export type EventHandlerList<T = unknown> = Array<Handler<T>>
-export type WildCardEventHandlerList<T = Record<string, unknown>> = Array<WildcardHandler<T>>
+export type WildCardEventHandlerList<T = Record<string, unknown>> = Array<
+  WildcardHandler<T>
+>
 
 // A map of event types and their corresponding event handlers.
 export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
@@ -25,24 +27,22 @@ export interface Emitter<Events extends Record<EventType, unknown>> {
 
   on: (<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) => void) & ((type: '*', handler: WildcardHandler<Events>) => void)
 
-  off: (<Key extends keyof Events>(type: Key, handler?: Handler<Events[Key]>) => void) & ((type: '*', handler: WildcardHandler<Events>) => void)
+  off: (<Key extends keyof Events>(type: Key, handler?: Handler<Events[Key]>) => void) & ((type: '*', handler?: WildcardHandler<Events>) => void)
 
-  emit: (<Key extends keyof Events>(type: Key, event: Events[Key]) => void) & (<Key extends keyof Events>(type: undefined extends Events[Key] ? Key : never) => void)
+  emit: (<Key extends keyof Events>(type: Key, event: Events[Key]) => void) & (<Key extends keyof Events>(
+    type: undefined extends Events[Key] ? Key : never
+  ) => void)
 }
 
 /**
- * A tiny (~200b) functional event emitter / pubsub.
+ * Tiny (~200b) functional event emitter / pubsub.
  */
 export default function mitt<Events extends Record<EventType, unknown>>(
   all?: EventHandlerMap<Events>,
 ): Emitter<Events> {
-  type GenericEventHandler =
-    | Handler<Events[keyof Events]>
-    | WildcardHandler<Events>
   all = all || new Map()
 
   return {
-
     /**
      * A Map of event names to registered handler functions.
      */
@@ -54,13 +54,13 @@ export default function mitt<Events extends Record<EventType, unknown>>(
      * @param {Function} handler Function to call in response to given event
      * @memberOf mitt
      */
-    on<Key extends keyof Events>(type: Key, handler: GenericEventHandler) {
-      const handlers: Array<GenericEventHandler> | undefined = all!.get(type)
+    on<Key extends keyof Events>(type: Key | '*', handler: Handler<Events[Key]> | WildcardHandler<Events>) {
+      const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = all!.get(type)
       if (handlers)
-        handlers.push(handler)
-
+        handlers.push(handler as Handler<Events[Key]> | WildcardHandler<Events>)
       else
-        all!.set(type, [handler] as EventHandlerList<Events[keyof Events]>)
+        // Explicitly assert the type of the handler array being set in the map. Unsure if there is a better way to do this
+        all!.set(type, [handler] as EventHandlerList<Events[keyof Events]> | WildCardEventHandlerList<Events>)
     },
 
     /**
@@ -70,14 +70,17 @@ export default function mitt<Events extends Record<EventType, unknown>>(
      * @param {Function} [handler] Handler function to remove
      * @memberOf mitt
      */
-    off<Key extends keyof Events>(type: Key, handler?: GenericEventHandler) {
-      const handlers: Array<GenericEventHandler> | undefined = all!.get(type)
+    off<Key extends keyof Events>(type: Key | '*', handler?: Handler<Events[Key]> | WildcardHandler<Events>) {
+      const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = all!.get(type)
       if (handlers) {
-        if (handler)
-          handlers.splice(handlers.indexOf(handler) >>> 0, 1)
-
-        else
+        if (handler) {
+          const index = handlers.indexOf(handler as Handler<Events[Key]> | WildcardHandler<Events>)
+          if (index > -1)
+            handlers.splice(index, 1)
+        }
+        else {
           all!.set(type, [])
+        }
       }
     },
 
@@ -96,27 +99,13 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       if (handlers) {
         (handlers as EventHandlerList<Events[keyof Events]>)
           .slice()
-          .map((handler) => {
-            if (evt)
-              return handler(evt)
-
-            console.error('No event provided')
-            return 'No event provided'
-          })
+          .forEach(handler => handler(evt!))
       }
-
       handlers = all!.get('*')
       if (handlers) {
         (handlers as WildCardEventHandlerList<Events>)
           .slice()
-        //
-          .map((handler: any) => {
-            if (evt)
-              return handler(type, evt)
-
-            console.error('No event provided')
-            return 'No event provided'
-          })
+          .forEach(handler => handler(type, evt!))
       }
     },
   }
@@ -144,8 +133,9 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  * ```
  */
 
-// TODO: need to create an action that auto generates this Events type from the ./app/events
-interface Events {
+// TODO: need to create an action that auto generates this Events type from the ./app/Events
+// eslint-disable-next-line ts/consistent-type-definitions
+type StacksEvents = {
   'user:registered': { name: string }
   'user:logged-in': { name: string }
   'user:logged-out': { name: string }
@@ -155,7 +145,7 @@ interface Events {
   'user:password-changed': { name: string }
 }
 
-const events = mitt<Events>
+const events = mitt<StacksEvents>
 const emitter = events()
 const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
 const useEvents = events()

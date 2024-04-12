@@ -3,13 +3,12 @@ import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { consola, createConsola } from 'consola'
 import { ExitCode } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 import { logsPath } from '@stacksjs/path'
 
-export function logLevel() {
+export async function logLevel() {
   /**
    * This regex checks for:
    *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
@@ -20,17 +19,19 @@ export function logLevel() {
    */
   const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
   const opts = buddyOptions()
-  // console.log('opts:', opts)
-  // console.log('config:::', config)
 
   if (verboseRegex.test(opts))
     return 4
 
-  return config.logger.level
+  // const config = await import('@stacksjs/config')
+  // console.log('config', config)
+
+  return 3
+  // return config.logger.level
 }
 
 export const logger = createConsola({
-  level: logLevel(),
+  level: await logLevel(),
   // fancy: true,
   // formatOptions: {
   //     columns: 80,
@@ -42,7 +43,7 @@ export const logger = createConsola({
 
 export { consola }
 
-async function writeToLogFile(message: string) {
+export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
   try {
     try {
@@ -64,7 +65,7 @@ async function writeToLogFile(message: string) {
 export interface Log {
   info: (...args: any[]) => void
   success: (msg: string) => void
-  error: (err: string | Error, options?: any | Error) => void
+  error: (err: string | Error | unknown, options?: any | Error) => void
   warn: (arg: string) => void
   debug: (...args: any[]) => void
   // start: logger.Start
@@ -89,11 +90,13 @@ export const log: Log = {
     await writeToLogFile(`SUCCESS: ${msg}`)
   },
 
-  async error(err: string | Error, options?: any | Error) {
+  async error(err: unknown, options?: any | Error) {
     if (err instanceof Error)
       handleError(err, options)
+
     else if (options instanceof Error)
       handleError(options)
+
     else
       handleError(err, options)
 

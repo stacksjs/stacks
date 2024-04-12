@@ -15,16 +15,47 @@ export function migrate(buddy: CLI) {
 
   buddy
     .command('migrate', descriptions.migrate)
+    .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
-      const result = await runAction(Action.Migrate, { ...options })
+      const result = await runAction(Action.Migrate, options)
 
       if (result.isErr()) {
         await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit()
+      }
+
+      const APP_ENV = process.env.APP_ENV || 'local'
+
+      await outro(`Migrated your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('migrate:fresh', descriptions.migrate)
+    .option('-d, --diff', 'Show the SQL that would be run', { default: false })
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: MigrateOptions) => {
+      log.debug('Running `buddy migrate:fresh` ...', options)
+
+      const perf = await intro('buddy migrate:fresh')
+      const result = await runAction(Action.MigrateFresh, options)
+      const result2 = await runAction(Action.Migrate, options)
+
+      if (result.isErr()) {
+        await outro('While running the migrate:fresh command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit()
+      }
+
+      await outro(`All tables dropped successfully`, { startTime: perf, useSeconds: true })
+
+      if (result2.isErr()) {
+        await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true }, result2.error)
         process.exit()
       }
 

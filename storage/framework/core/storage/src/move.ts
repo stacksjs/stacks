@@ -1,4 +1,4 @@
-import { type Result, err, ok } from '@stacksjs/error-handling'
+import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from './fs'
@@ -20,10 +20,8 @@ export async function move(
         const to = path.resolve(dest, path.basename(file))
         const result = await rename(from, to, options)
 
-        if (result.isErr()) {
-          log.error(result.error)
-          return err(handleError(result.error.message, result.error))
-        }
+        if (result.isErr())
+          return log.error(result.error)
       })
 
       await Promise.all(operations)

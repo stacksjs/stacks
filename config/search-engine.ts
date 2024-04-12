@@ -8,5 +8,5 @@ import type { SearchEngineConfig } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  driver: 'meilisearch',
+  driver: 'opensearch',
 } satisfies SearchEngineConfig

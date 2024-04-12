@@ -16,4 +16,5 @@ export interface Ports {
   inspect: number
   api: number // the bun server
   systemTray: number
+  database: number // i.e. DynamoDB local
 }

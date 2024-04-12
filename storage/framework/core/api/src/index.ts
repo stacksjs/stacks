@@ -1,3 +1,4 @@
+import { ref } from 'vue'
 import { ofetch } from 'ofetch'
 import type { FetchOptions } from 'ofetch'
 

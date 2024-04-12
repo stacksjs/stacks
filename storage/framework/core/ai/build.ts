@@ -1,6 +1,10 @@
-import dts from 'bun-plugin-dts-auto'
+import { intro, outro } from '../build/src'
 
-await Bun.build({
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
   root: './src',
 
   entrypoints: [
@@ -14,10 +18,10 @@ await Bun.build({
     '@aws-sdk/client-bedrock-runtime',
     '@aws-sdk/client-bedrock',
   ],
+})
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

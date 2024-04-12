@@ -1,14 +1,5 @@
-import dts from 'bun-plugin-dts-auto'
+import { runCommand } from '@stacksjs/cli'
 
-await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  format: 'esm',
-  target: 'node',
-
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+await runCommand('bun run build', {
+  cwd: import.meta.dir,
 })

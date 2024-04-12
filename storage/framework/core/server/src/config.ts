@@ -1,7 +1,7 @@
 import { ports } from '@stacksjs/config'
 
 interface ServerOptions {
-  type?: 'frontend' | 'backend' | 'api' | 'library' | 'desktop' | 'docs' | 'email' | 'admin' | 'system-tray'
+  type?: 'frontend' | 'backend' | 'api' | 'library' | 'desktop' | 'docs' | 'email' | 'admin' | 'system-tray' | 'database'
   host?: string
   port?: number
   open?: boolean
@@ -58,9 +58,14 @@ export function config(options: ServerOptions) {
       host: 'localhost',
       port: ports.systemTray,
     },
+
+    'database': {
+      host: 'localhost',
+      port: ports.database,
+    },
   }
 
-  if (options.type && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray'].includes(options.type)) {
+  if (options.type && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(options.type)) {
     return {
       host: serversMap[options.type].host,
       port: serversMap[options.type].port,
