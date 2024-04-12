@@ -63,29 +63,29 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "pinia": "^2.1.7",
-    "unocss": "^0.59.1",
+    "unocss": "^0.59.2",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.21",
-    "vue-tsc": "^2.0.12"
+    "vue-tsc": "^2.0.13"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.19",
     "@iconify-json/heroicons": "^1.1.20",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.199",
+    "@iconify/json": "^2.2.200",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@unhead/vue": "^1.9.4",
+    "@unhead/vue": "^1.9.5",
     "pinia": "^2.1.7",
-    "unhead": "^1.9.4",
-    "unocss": "^0.59.1",
+    "unhead": "^1.9.5",
+    "unocss": "^0.59.2",
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.21",
-    "vue-tsc": "^2.0.12"
+    "vue-tsc": "^2.0.13"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

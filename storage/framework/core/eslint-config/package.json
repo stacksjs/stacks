@@ -36,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@unocss/eslint-plugin": ">=0.59.1",
+    "@unocss/eslint-plugin": ">=0.59.2",
     "eslint": "^9.0.0",
     "eslint-plugin-format": "^0.1.0"
   },
@@ -62,7 +62,7 @@
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import-x": "^0.5.0",
     "eslint-plugin-jsdoc": "^48.2.3",
-    "eslint-plugin-jsonc": "^2.15.0",
+    "eslint-plugin-jsonc": "^2.15.1",
     "eslint-plugin-markdown": "^4.0.1",
     "eslint-plugin-n": "^17.2.0",
     "eslint-plugin-no-only-tests": "^3.1.0",
@@ -88,8 +88,8 @@
     "@stacksjs/eslint-config": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stylistic/eslint-plugin-migrate": "^1.7.0",
-    "@types/eslint": "^8.56.8",
-    "@unocss/eslint-plugin": "^0.59.1",
+    "@types/eslint": "^8.56.9",
+    "@unocss/eslint-plugin": "^0.59.2",
     "eslint": "^9.0.0",
     "eslint-flat-config-viewer": "^0.1.20",
     "eslint-plugin-format": "^0.1.0",
