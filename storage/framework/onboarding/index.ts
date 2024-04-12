@@ -65,10 +65,10 @@ async function main() {
 	await setTimeout(2500);
 	s.stop('Installed via bun');
 
-	// Running initial build
-	s.start('Building core packages');
+	// Running initial core build
+	s.start('Building framework core');
 	await setTimeout(2500);
-	s.stop('Built core packages');
+	s.stop('Built framework core');
 
 	let nextSteps = `cd ${project.path}        \nbun run dev`;
 
