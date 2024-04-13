@@ -2,6 +2,7 @@ import { setTimeout } from 'node:timers/promises'
 import * as p from '@clack/prompts'
 import color from 'picocolors'
 import { runCommand } from '@stacksjs/cli'
+import { path } from '@stacksjs/path'
 
 async function main() {
   console.clear()
@@ -62,22 +63,9 @@ async function main() {
 
   const s = p.spinner()
 
-  s.start('Initializing project')
-  // TODO: Improve src path for buddy
-  await runCommand(
-    `cd ../../../ && pwd && ./buddy new ${project.path} --verbose && cd -`,
-  )
-  s.stop('Initialized project')
-
-  // Install dependencies
-  s.start('Installing via bun')
-  await setTimeout(2500)
-  s.stop('Installed via bun')
-
-  // Running initial core build
-  s.start('Building framework core')
-  await setTimeout(2500)
-  s.stop('Built framework core')
+  s.start('Creating new project')
+  await runCommand(`${path.projectPath('buddy')} new ${project.path}`)
+  s.stop('Created new project')
 
   const nextSteps = `cd ${project.path}        \nbun run dev`
 
