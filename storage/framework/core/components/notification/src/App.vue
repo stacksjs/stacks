@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-// import { toggleDarkMode, isDark } from './composables/useDarkMode'
-import { Toaster } from '../packages'
+import { Notification } from '../packages'
 import type { Position, Theme } from '../packages/types'
 import { useSEOHeader } from './composables/useSEOHeader'
+// import { toggleDarkMode, isDark } from './composables/useDarkMode'
 
 useSEOHeader()
 
@@ -39,7 +39,8 @@ const theme = ref<Theme>('light')
 
       <Footer />
     </div>
-    <Toaster
+
+    <Notification
       :position="position"
       :expand="expand"
       :rich-colors="richColors"

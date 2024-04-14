@@ -1,10 +1,43 @@
+<script lang="ts" setup>
+import { ref } from 'vue'
+import { notification } from '../../packages'
+import { useCopyCode } from '../composables/useCopyCode'
+import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
+
+const code = `<!-- App.vue -->
+<script lang="ts" setup>
+import { Notification, notification } from '@stacksjs/notification'
+<\/script>
+
+<template>
+  <!-- ... -->
+  <Notification />
+  <button @click="() => notification('My first notification')">
+    Give me a notification
+  </button>
+</template>
+`
+
+const showCheckIcon = ref(false)
+
+async function handleCopyCode() {
+  await useCopyCode({ code, checkIconRef: showCheckIcon })
+  notification('Copied to your clipboard!')
+}
+</script>
+
 <template>
   <div class="usage">
-    <h1 class="text-lg font-semibold my-2">Usage</h1>
-    <p class="text-base my-3">Render the toaster in the root of your app.</p>
+    <h1 class="text-lg font-semibold my-2">
+      Usage
+    </h1>
+    <p class="text-base my-3">
+      Render the toaster in the root of your app.
+    </p>
     <div class="code-block relative group">
       <Highlight
-        className="rounded-md text-xs"
+        class-name="rounded-md text-xs"
         language="xml"
         :autodetect="false"
         :code="code"
@@ -21,33 +54,3 @@
     </div>
   </div>
 </template>
-
-<script lang="ts" setup>
-import { ref } from 'vue'
-
-import CheckIcon from '~/components/icons/CheckIcon.vue'
-import CopyIcon from '~/components/icons/CopyIcon.vue'
-import { useCopyCode } from '~/composables/useCopyCode'
-import { toast } from '../../packages'
-
-const code = `<!-- App.vue -->
-<template>
-  <!-- ... -->
-  <Toaster />
-  <button @click="() => toast('My first toast')">
-    Give me a toast
-  </button>
-</template>
-
-<script lang="ts" setup>
-import { Toaster, toast } from 'vue-sonner'
-<\/script>
-`
-
-const showCheckIcon = ref(false)
-
-const handleCopyCode = async () => {
-  await useCopyCode({ code, checkIconRef: showCheckIcon })
-  toast('Copied to your clipboard!!!')
-}
-</script>

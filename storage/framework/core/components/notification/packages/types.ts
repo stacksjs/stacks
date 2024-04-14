@@ -1,6 +1,6 @@
-import type { Component, CSSProperties } from 'vue'
+import type { CSSProperties, Component } from 'vue'
 
-export type ToastTypes =
+export type NotificationTypes =
   | 'normal'
   | 'action'
   | 'success'
@@ -48,10 +48,10 @@ export interface ToastIcons {
   loading?: Component
 }
 
-export type ToastT<T extends Component = Component> = {
+export interface ToastT<T extends Component = Component> {
   id: number | string
   title?: string | Component
-  type?: ToastTypes
+  type?: NotificationTypes
   icon?: Component
   component?: T
   componentProps?: any
@@ -164,7 +164,7 @@ export interface ToastProps {
 export enum SwipeStateTypes {
   SwipedOut = 'SwipedOut',
   SwipedBack = 'SwipedBack',
-  NotSwiped = 'NotSwiped'
+  NotSwiped = 'NotSwiped',
 }
 
 export type Theme = 'light' | 'dark' | 'system'

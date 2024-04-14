@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { toast } from '../../packages'
+import { notification } from '../../packages'
 </script>
 
 <template>
@@ -20,7 +20,7 @@ import { toast } from '../../packages'
         class="button btn-primary"
         @click="
           () => {
-            toast('stacks/notification', {
+            notification('stacks/notification', {
               description: 'An opinionated toast component for Stacks.',
             })
           }

@@ -1,10 +1,29 @@
+<script lang="ts" setup>
+import { ref } from 'vue'
+import { notification } from '../../packages'
+import { useCopyCode } from '../composables/useCopyCode'
+import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
+
+const code = `bun install @stacksjs/notification`
+
+const showCheckIcon = ref(false)
+
+async function handleCopyCode() {
+  await useCopyCode({ code, checkIconRef: showCheckIcon })
+  notification('Copied to your clipboard!')
+}
+</script>
+
 <template>
   <div class="installation">
-    <h1 class="text-lg font-semibold my-3">Installation</h1>
+    <h1 class="text-lg font-semibold my-3">
+      Installation
+    </h1>
     <div class="code-block relative">
       <Highlight
         language="javascript"
-        className="rounded-md text-xs"
+        class-name="rounded-md text-xs"
         :autodetect="false"
         :code="code"
       />
@@ -20,20 +39,3 @@
     </div>
   </div>
 </template>
-
-<script lang="ts" setup>
-import { ref } from 'vue'
-import CheckIcon from '~/components/icons/CheckIcon.vue'
-import CopyIcon from '~/components/icons/CopyIcon.vue'
-import { useCopyCode } from '~/composables/useCopyCode'
-import { toast } from '../../packages'
-
-const code = `pnpm install vue-sonner`
-
-const showCheckIcon = ref(false)
-
-const handleCopyCode = async () => {
-  await useCopyCode({ code, checkIconRef: showCheckIcon })
-  toast('Copied to your clipboard!!!')
-}
-</script>

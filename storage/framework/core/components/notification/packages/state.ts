@@ -1,12 +1,12 @@
 import type { Component } from 'vue'
 import type {
   ExternalToast,
-  ToastT,
   HeightT,
+  NotificationTypes,
   PromiseData,
   PromiseT,
+  ToastT,
   ToastToDismiss,
-  ToastTypes
 } from './types'
 
 let toastsCounter = 0
@@ -31,7 +31,7 @@ class Observer {
   }
 
   publish = (data: ToastT) => {
-    this.subscribers.forEach((subscriber) => subscriber(data))
+    this.subscribers.forEach(subscriber => subscriber(data))
   }
 
   addToast = (data: ToastT) => {
@@ -42,13 +42,13 @@ class Observer {
   create = (
     data: ExternalToast & {
       message?: string | Component
-      type?: ToastTypes
+      type?: NotificationTypes
       promise?: PromiseT
-    }
+    },
   ) => {
     const { message, ...rest } = data
-    const id =
-      typeof data.id === 'number' || (data.id && data.id?.length > 0)
+    const id
+      = typeof data.id === 'number' || (data.id && data.id?.length > 0)
         ? data.id
         : toastsCounter++
     const alreadyExists = this.toasts.find((toast) => {
@@ -65,13 +65,14 @@ class Observer {
             ...data,
             id,
             dismissible,
-            title: message
+            title: message,
           }
         }
 
         return toast
       })
-    } else {
+    }
+    else {
       this.addToast({ title: message, ...rest, dismissible, id })
     }
 
@@ -81,13 +82,13 @@ class Observer {
   dismiss = (id?: number | string) => {
     if (!id) {
       this.toasts.forEach((toast) => {
-        this.subscribers.forEach((subscriber) =>
-          subscriber({ id: toast.id, dismiss: true })
+        this.subscribers.forEach(subscriber =>
+          subscriber({ id: toast.id, dismiss: true }),
         )
       })
     }
 
-    this.subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }))
+    this.subscribers.forEach(subscriber => subscriber({ id, dismiss: true }))
     return id
   }
 
@@ -117,14 +118,14 @@ class Observer {
 
   promise = <ToastData>(
     promise: PromiseT<ToastData>,
-    data?: PromiseData<ToastData>
+    data?: PromiseData<ToastData>,
   ) => {
     if (!data) {
       // Nothing to show
       return
     }
 
-    let id: string | number | undefined = undefined
+    let id: string | number | undefined
     if (data.loading !== undefined) {
       id = this.create({
         ...data,
@@ -132,7 +133,7 @@ class Observer {
         type: 'loading',
         message: data.loading,
         description:
-          typeof data.description !== 'function' ? data.description : undefined
+          typeof data.description !== 'function' ? data.description : undefined,
       })
     }
 
@@ -142,34 +143,35 @@ class Observer {
 
     p.then((promiseData) => {
       if (
-        promiseData &&
-        // @ts-expect-error
-        typeof promiseData.ok === 'boolean' &&
-        // @ts-expect-error
-        !promiseData.ok
+        promiseData
+        // @ts-expect-error - we need to check if the promise is a boolean
+        && typeof promiseData.ok === 'boolean'
+        // @ts-expect-error - we need to check if the promise is a boolean
+        && !promiseData.ok
       ) {
         shouldDismiss = false
-        const message =
-          typeof data.error === 'function'
-            ? // @ts-expect-error
-              data.error(`HTTP error! status: ${response.status}`)
+        const message
+          = typeof data.error === 'function'
+            ? // @ts-expect-error - we need to check if the promise is a boolean
+            data.error(`HTTP error! status: ${response.status}`)
             : data.error
-        const description =
-          typeof data.description === 'function'
-            ? // @ts-expect-error
-              data.description(`HTTP error! status: ${response.status}`)
+        const description
+          = typeof data.description === 'function'
+            ? // @ts-expect-error - we need to check if the promise is a boolean
+            data.description(`HTTP error! status: ${response.status}`)
             : data.description
         this.create({ id, type: 'error', message, description })
-      } else if (data.success !== undefined) {
+      }
+      else if (data.success !== undefined) {
         shouldDismiss = false
-        const message =
-          typeof data.success === 'function'
+        const message
+          = typeof data.success === 'function'
             ? data.success(promiseData)
             : data.success
-        const description =
-          typeof data.description === 'function'
-            ? // @ts-expect-error
-              data.description(promiseData)
+        const description
+          = typeof data.description === 'function'
+            ? // @ts-expect-error - we need to check if the promise is a boolean
+            data.description(promiseData)
             : data.description
         this.create({ id, type: 'success', message, description })
       }
@@ -177,13 +179,11 @@ class Observer {
       .catch((error) => {
         if (data.error !== undefined) {
           shouldDismiss = false
-          const message =
-            typeof data.error === 'function' ? data.error(error) : data.error
-          const description =
-            typeof data.description === 'function'
-              ? // @ts-expect-error
-                data.description(error)
-              : data.description
+          const message = typeof data.error === 'function' ? data.error(error) : data.error
+          const description = typeof data.description === 'function'
+            ? // @ts-expect-error - we need to check if the promise is a boolean
+            data.description(error)
+            : data.description
           this.create({ id, type: 'error', message, description })
         }
       })
@@ -211,14 +211,14 @@ class Observer {
 export const ToastState = new Observer()
 
 // bind this to the toast function
-const toastFunction = (message: string | Component, data?: ExternalToast) => {
+function toastFunction(message: string | Component, data?: ExternalToast) {
   const id = data?.id || toastsCounter++
 
   ToastState.create({
     message,
     id,
     type: 'default',
-    ...data
+    ...data,
   })
 
   return id
@@ -227,7 +227,7 @@ const toastFunction = (message: string | Component, data?: ExternalToast) => {
 const basicToast = toastFunction
 
 // We use `Object.assign` to maintain the correct types as we would lose them otherwise
-export const toast = Object.assign(basicToast, {
+export const notification = Object.assign(basicToast, {
   success: ToastState.success,
   info: ToastState.info,
   warning: ToastState.warning,
@@ -236,5 +236,5 @@ export const toast = Object.assign(basicToast, {
   message: ToastState.message,
   promise: ToastState.promise,
   dismiss: ToastState.dismiss,
-  loading: ToastState.loading
+  loading: ToastState.loading,
 })
