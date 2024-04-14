@@ -2,10 +2,22 @@
 import { ref } from 'vue'
 import { notification } from '../../packages'
 import { useCopyCode } from '../composables/useCopyCode'
-import CheckIcon from './icons/CheckIcon.vue'
-import CopyIcon from './icons/CopyIcon.vue'
+import CheckIcon from './icons/CheckIcon.stx'
+import CopyIcon from './icons/CopyIcon.stx'
 
-const code = `bun install @stacksjs/notification`
+const code = `<!-- App.vue -->
+<script lang="ts" setup>
+import { Notification, notification } from '@stacksjs/notification'
+<\/script>
+
+<template>
+  <!-- ... -->
+  <Notification />
+  <button @click="() => notification('My first notification')">
+    Give me a notification
+  </button>
+</template>
+`
 
 const showCheckIcon = ref(false)
 
@@ -16,21 +28,24 @@ async function handleCopyCode() {
 </script>
 
 <template>
-  <div class="installation">
-    <h1 class="text-lg font-semibold my-3">
-      Installation
+  <div class="usage">
+    <h1 class="text-lg font-semibold my-2">
+      Usage
     </h1>
-    <div class="code-block relative">
+    <p class="text-base my-3">
+      Render the toaster in the root of your app.
+    </p>
+    <div class="code-block relative group">
       <Highlight
-        language="javascript"
         class-name="rounded-md text-xs"
+        language="xml"
         :autodetect="false"
         :code="code"
       />
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute right-2 top-2 btn-border p-1"
+        class="absolute right-2 top-2 btn-border p-1 hidden group-hover:block"
         @click="handleCopyCode"
       >
         <CheckIcon v-if="showCheckIcon" />

@@ -10,8 +10,8 @@
           @xiaoluoboding
         </a>
         &
-        <a class="text-neon" href="https://github.com/chrisbbreuer">
-          @chrisbbreuer
+        <a class="text-neon" href="https://github.com/stacksjs/stacks">
+          @stacksjs
         </a>
         <span> © {{ new Date().getFullYear() }}</span>
       </p>

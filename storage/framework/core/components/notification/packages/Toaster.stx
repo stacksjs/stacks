@@ -5,22 +5,22 @@ import type {
   Position,
   ToastT,
   ToastToDismiss,
-  ToasterProps,
+  NotificationProps,
 } from './types'
 import { ToastState } from './state'
-import Toast from './Toast.vue'
-import LoaderIcon from './assets/Loader.vue'
-import SuccessIcon from './assets/SuccessIcon.vue'
-import InfoIcon from './assets/InfoIcon.vue'
-import WarningIcon from './assets/WarningIcon.vue'
-import ErrorIcon from './assets/ErrorIcon.vue'
+import Toast from './Toast.stx'
+import LoaderIcon from './assets/Loader.stx'
+import SuccessIcon from './assets/SuccessIcon.stx'
+import InfoIcon from './assets/InfoIcon.stx'
+import WarningIcon from './assets/WarningIcon.stx'
+import ErrorIcon from './assets/ErrorIcon.stx'
 
 defineOptions({
   name: 'Toaster',
   inheritAttrs: false,
 })
 
-const props = withDefaults(defineProps<ToasterProps>(), {
+const props = withDefaults(defineProps<NotificationProps>(), {
   invert: false,
   position: 'bottom-right',
   hotkey: () => ['altKey', 'KeyT'],
@@ -60,7 +60,7 @@ function _cn(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-function getDocumentDirection(): ToasterProps['dir'] {
+function getDocumentDirection(): NotificationProps['dir'] {
   if (typeof window === 'undefined')
     return 'ltr'
   if (typeof document === 'undefined')
@@ -70,10 +70,10 @@ function getDocumentDirection(): ToasterProps['dir'] {
 
   if (dirAttribute === 'auto' || !dirAttribute) {
     return window.getComputedStyle(document.documentElement)
-      .direction as ToasterProps['dir']
+      .direction as NotificationProps['dir']
   }
 
-  return dirAttribute as ToasterProps['dir']
+  return dirAttribute as NotificationProps['dir']
 }
 
 const attrs = useAttrs()

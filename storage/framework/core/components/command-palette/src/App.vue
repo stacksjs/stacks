@@ -7,8 +7,8 @@ import HelloWorld from './components/HelloWorld.vue'
     <a href="https://vitejs.dev" target="_blank">
       <img src="/stacks.svg" class="logo" alt="Stacks logo">
     </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo">
+    <a href="https://stacksjs.org/" target="_blank">
+      <img src="./assets/stacks.svg" class="logo stacks" alt="Stacks logo">
     </a>
   </div>
   <HelloWorld msg="Stacks" />

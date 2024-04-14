@@ -3,7 +3,18 @@ import { ref } from 'vue'
 import { Notification } from '../packages'
 import type { Position, Theme } from '../packages/types'
 import { useSEOHeader } from './composables/useSEOHeader'
+import Hero from './components/Hero.stx'
+import Installation from './components/Installation.stx'
+import Usage from './components/Usage.stx'
+import Types from './components/Types.stx'
+import Pos from './components/Position.stx'
+import Expand from './components/Expand.stx'
+import Theming from './components/Theming.stx'
+import Styling from './components/Styling.stx'
+import Others from './components/Others.stx'
+import Footer from './components/Footer.stx'
 // import { toggleDarkMode, isDark } from './composables/useDarkMode'
+
 
 useSEOHeader()
 
@@ -27,7 +38,7 @@ const theme = ref<Theme>('light')
         <Installation />
         <Usage />
         <Types />
-        <Position v-model:position="position" />
+        <Pos v-model:position="position" />
         <Expand v-model:expand="expand" />
         <Theming @set-theme="(newTheme: Theme) => (theme = newTheme)" />
         <Styling />

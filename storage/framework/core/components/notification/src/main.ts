@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createHead } from '@vueuse/head'
-import App from './App.vue'
+import App from './App.stx'
 
 import 'uno.css'
 import '@unocss/reset/tailwind.css'

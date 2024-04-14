@@ -1,5 +1,5 @@
-import { URL, fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
+import { alias } from '@stacksjs/alias'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -20,9 +20,13 @@ export default defineConfig(({ command, mode }) => {
   const userConfig: UserConfig = {}
 
   const commonPlugins = [
-    vue(),
+    vue({
+      include: /\.(stx|vue|md)($|\?)/,
+    }),
     UnoCSS(),
     Components({
+      extensions: ['stx', 'vue', 'md'],
+      include: /\.(stx|vue|md)($|\?)/,
       resolvers: [
         IconsResolver({
           prefix: '',
@@ -99,10 +103,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./packages', import.meta.url)),
-        '~': fileURLToPath(new URL('./src', import.meta.url)),
-      },
+      alias,
     },
     plugins: [...commonPlugins],
     ...userConfig,

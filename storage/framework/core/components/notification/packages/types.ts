@@ -111,7 +111,7 @@ export interface ToastOptions {
 
 export type CnFunction = (...classes: Array<string | undefined>) => string
 
-export interface ToasterProps {
+export interface NotificationProps {
   invert?: boolean
   theme?: Theme
   position?: Position
