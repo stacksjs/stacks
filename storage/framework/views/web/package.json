@@ -22,7 +22,7 @@
     "nprogress": "^0.2.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
-    "vue-i18n": "^9.12.0",
+    "vue-i18n": "^9.12.1",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
@@ -39,12 +39,12 @@
     "markdown-it-shikiji": "^0.10.2",
     "rollup": "^4.14.2",
     "shikiji": "^0.10.2",
-    "taze": "^0.13.3",
+    "taze": "^0.13.4",
     "unocss": "^0.59.2",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0",
     "unplugin-vue-macros": "^2.9.1",
-    "unplugin-vue-markdown": "^0.26.0",
+    "unplugin-vue-markdown": "^0.26.1",
     "unplugin-vue-router": "^0.8.6",
     "vite": "^5.2.8",
     "vite-bundle-visualizer": "^1.1.0",
