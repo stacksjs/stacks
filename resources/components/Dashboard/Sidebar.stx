@@ -17,9 +17,13 @@
             class="flex flex-1 flex-col gap-y-8"
           >
             <li>
+              <div class="text-xs font-semibold leading-6 text-gray-400 pt-4">
+                Navigation
+              </div>
+
               <ul
                 role="list"
-                class="-mx-2 space-y-1"
+                class="-mx-2 mt-2 space-y-1"
               >
                 <li>
                   <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
@@ -76,6 +80,7 @@
               <div class="text-xs font-semibold leading-6 text-gray-400">
                 Management
               </div>
+
               <ul
                 role="list"
                 class="-mx-2 mt-2 space-y-1"
@@ -138,7 +143,7 @@
 
             <li>
               <div class="text-xs font-semibold leading-6 text-gray-400">
-                Your Models
+                Your App
               </div>
               <ul
                 role="list"

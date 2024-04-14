@@ -40,16 +40,18 @@ useHead({
 </script>
 
 <template>
-  <Header />
+  <!-- <Header /> -->
 
   <main>
-    <Hero />
+    <Hero2 />
+    <!-- <Hero /> -->
+    <!-- <PrimaryFeatures />
     <PrimaryFeatures2 />
     <SecondaryFeatures />
     <CallToAction />
     <Testimonials />
-    <Pricing />
-    <Faqs />
+    <Pricing /> -->
+    <!-- <Faqs /> -->
   </main>
 
   <Footer />

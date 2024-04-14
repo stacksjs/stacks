@@ -21,7 +21,7 @@ import Button from '../Button.stx'
             </NavLink>
 
             <NavLink href="#pricing">
-              Pricing
+              Dashboard
             </NavLink>
 
             <NavLink href="/blog">

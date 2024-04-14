@@ -23,6 +23,7 @@ declare module 'vue' {
     Header: typeof import('./../../../resources/components/Marketing/Header.stx')['default']
     HelloWorld: typeof import('./../../../resources/components/HelloWorld.stx')['default']
     Hero: typeof import('./../../../resources/components/Marketing/Hero.stx')['default']
+    Hero2: typeof import('./../../../resources/components/Marketing/Hero2.vue')['default']
     Layout: typeof import('./../../../resources/components/Marketing/Layout.stx')['default']
     Logo: typeof import('./../../../resources/components/Logo.stx')['default']
     MobileSidebar: typeof import('./../../../resources/components/Dashboard/MobileSidebar.stx')['default']

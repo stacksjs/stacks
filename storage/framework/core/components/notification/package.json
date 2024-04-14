@@ -1,8 +1,8 @@
 {
   "name": "@stacksjs/notification",
   "type": "module",
-  "version": "0.60.3",
-  "description": "A modern notification component.",
+  "version": "0.0.0",
+  "description": "An opinionated notification component for Stacks.",
   "author": "Chris Breuer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -12,23 +12,12 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/notification"
   },
-  "bugs": {
-    "url": "https://github.com/stacksjs/stacks/issues"
-  },
-  "keywords": [
-    "notifications",
-    "components",
-    "library",
-    "stacks"
-  ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
@@ -43,15 +32,17 @@
     "src"
   ],
   "scripts": {
-    "dev": "bun build.ts",
-    "build": "bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@stacksjs/ui": "workspace:*"
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.9.0",
+    "vue-sonner": "^1.1.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "clean-css": "^5.3.3",
+    "unplugin-icons": "^0.18.5"
   }
 }

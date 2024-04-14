@@ -3,27 +3,31 @@ const currentYear = computed(() => new Date().getFullYear())
 </script>
 
 <template>
-  <footer class="bg-slate-50">
+  <footer class="bg-white">
+  <!-- <footer class="bg-slate-50"> -->
     <Container>
       <div class="py-16">
-        <Logo class="mx-auto h-10 w-auto" />
+        <!-- <Logo class="mx-auto h-10 w-auto" /> -->
         <nav class="mt-10 text-sm" aria-label="quick links">
           <div class="-my-1 flex justify-center gap-x-6">
-            <NavLink href="#features">
-Features
-</NavLink>
+            <NavLink href="/" class="italic text-xl">
+              Stay tuned.
+            </NavLink>
+            <!-- <NavLink href="#features">
+              Features
+            </NavLink>
             <NavLink href="#testimonials">
-Testimonials
-</NavLink>
+              Testimonials
+            </NavLink>
             <NavLink href="#pricing">
-Pricing
-</NavLink>
-            <NavLink href="#pricing">
-News
-</NavLink>
-            <NavLink href="#pricing">
-Changelog
-</NavLink>
+              Dashboard
+            </NavLink>
+            <NavLink href="/blog">
+              News
+            </NavLink>
+            <NavLink href="/changelog">
+              Changelog
+            </NavLink> -->
           </div>
         </nav>
       </div>

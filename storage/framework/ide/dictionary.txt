@@ -260,6 +260,7 @@ singleline
 singlestore
 sizecheck
 solana
+sonner
 Spatie
 Squeezy
 stackblitz
