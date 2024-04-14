@@ -40,8 +40,8 @@ export default defineConfig(({ command, mode }) => {
     userConfig.build = {
       lib: {
         entry: resolve(__dirname, 'packages/index.ts'),
-        name: 'VueSonner',
-        fileName: 'vue-sonner',
+        name: 'StacksNotification',
+        fileName: 'stacks-notification',
       },
       outDir: 'lib',
       emptyOutDir: true,
@@ -52,11 +52,11 @@ export default defineConfig(({ command, mode }) => {
         output: [
           {
             format: 'cjs',
-            entryFileNames: `vue-sonner.cjs`,
+            entryFileNames: `stacks-notification.cjs`,
           },
           {
             format: 'es',
-            entryFileNames: `vue-sonner.js`,
+            entryFileNames: `stacks-notification.js`,
             preserveModules: false,
           },
         ],
@@ -84,7 +84,7 @@ export default defineConfig(({ command, mode }) => {
 
           return {
             code: `\
-            function __insertCSSVueSonner(code) {
+            function __insertCSSStacksNotification(code) {
               if (!code || typeof document == 'undefined') return
               let head = document.head || document.getElementsByTagName('head')[0]
               let style = document.createElement('style')
@@ -92,7 +92,7 @@ export default defineConfig(({ command, mode }) => {
               head.appendChild(style)
               ;style.styleSheet ? (style.styleSheet.cssText = code) : style.appendChild(document.createTextNode(code))
             }\n
-            __insertCSSVueSonner(${JSON.stringify(cssCodeStr)})
+            __insertCSSStacksNotification(${JSON.stringify(cssCodeStr)})
             \n ${code}`,
             map: { mappings: '' },
           }
