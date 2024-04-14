@@ -49,7 +49,7 @@
     "neverthrow": "^6.1.0"
   },
   "dependencies": {
-    "@mdit-vue/plugin-component": "^2.1.0",
+    "@mdit-vue/plugin-component": "^2.1.1",
     "@mdit-vue/plugin-frontmatter": "^2.1.0",
     "@mdit-vue/types": "^2.1.0",
     "@rollup/pluginutils": "^5.1.0",
