@@ -18,6 +18,17 @@ export async function resetPostgresDatabase() {
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
+  const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  for (const userModel of userModelFiles) {
+    const userModelPath = await import(userModel)
+
+    const pivotTable = await getPivotTable(userModelPath)
+
+    if (pivotTable)
+      await db.schema.dropTable(pivotTable).ifExists().execute()
+  }
+
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
       if (modelFile.endsWith('.ts')) {
@@ -114,6 +125,8 @@ async function createTableMigration(modelPath: string) {
   const model = await import(modelPath)
   const tableName = model.default.table
 
+  await createPivotTableMigration(model)
+
   const fields = model.default.attributes
   const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
   const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
@@ -164,6 +177,49 @@ async function createTableMigration(modelPath: string) {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${migrationFileName}`)
+}
+
+async function createPivotTableMigration(model: any) {
+  const pivotTable = await getPivotTable(model)
+
+  if (!pivotTable)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('${pivotTable}')\n`
+  migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
+  migrationContent += `    .addColumn('user_id', 'integer')\n`
+  migrationContent += `    .addColumn('subscriber_id', 'integer')\n`
+  migrationContent += `    .execute()\n`
+  migrationContent += `    }\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-${pivotTable}-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  // Assuming fs.writeFileSync is available or use an equivalent method
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${migrationFileName}`)
+}
+
+async function getPivotTable(model: any): Promise<string> {
+  if ('belongsToMany' in model.default) {
+    const modelRelationPath = path.userModelsPath(`${model.default.belongsToMany.model}.ts`)
+
+    const modelRelation = await import(modelRelationPath)
+
+    const formattedModelName = model.default.name.toLowerCase()
+
+    const pivotTable = model.default.belongsToMany?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`
+
+    return pivotTable
+  }
+
+  return ''
 }
 
 export async function createAlterTableMigration(modelPath: string) {
