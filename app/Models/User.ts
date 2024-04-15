@@ -42,7 +42,12 @@ export default {
 
     // useUuid: true, // defaults to false
   },
-  hasOne: 'Subscriber',
+  hasOne: {
+    model: 'Subscriber',
+  },
+  hasMany: {
+    model: 'Subscriber',
+  },
 
   attributes: {
     name: {

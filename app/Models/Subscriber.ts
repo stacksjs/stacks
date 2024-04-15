@@ -16,7 +16,9 @@ export default {
   },
 
   // relationships
-  belongsTo: 'User',
+  belongsTo: {
+    model: 'User',
+  },
 
   attributes: {
     subscribed: {

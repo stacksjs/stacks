@@ -61,12 +61,18 @@ export interface ModelOptions extends Base {
   attributes: Attributes
 
   // relationships
-  hasOne: string // hasOne: 'Post'
+  hasOne: {
+    model: string
+    foreignKey?: string
+  }
   hasMany: {
     model: string // should be typed as ModelName
     foreignKey?: string
   }
-  belongsTo: string // belongsTo: 'User'
+  belongsTo: {
+    model: string // should be typed as ModelName
+    foreignKey?: string
+  } // belongsTo: 'User'
   belongsToMany: object
   hasThrough: {
     model: string // should be typed as ModelName

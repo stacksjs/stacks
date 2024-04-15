@@ -32,7 +32,7 @@ async function initiateModelGeneration(): Promise<void> {
 
     const fields = await extractFields(model, modelFile)
 
-    const classString = generateModelString(tableName, model, fields)
+    const classString = await generateModelString(tableName, model, fields)
 
     const writer = file.writer()
 
@@ -42,22 +42,19 @@ async function initiateModelGeneration(): Promise<void> {
   }
 }
 
-function getRelations(model: any) {
+async function getRelations(model: any) {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany']
 
   const relationships = []
-  // const
-  // const regex = /belongs/
-
-  // if (regex.test(str1))
-  //   console.log(`"${str1}" contains "belongs"`)
-  // else
-  //   console.log(`"${str1}" does not contain "belongs"`)
 
   for (const relation of relationsArray) {
     if (hasRelations(model.default, relation)) {
+      const modelRelationPath = path.userModelsPath(`${model.default[relation].model}.ts`)
+
+      const modelRelation = await import(modelRelationPath)
+
       // const formattedRelations = model.default[relation].toLowerCase()
-      relationships.push({ relationship: relation, model: model.default[relation] })
+      relationships.push({ relationship: relation, model: model.default[relation].model, table: modelRelation.default.table })
     }
   }
 
@@ -198,7 +195,20 @@ function getRelationType(relation: string): string {
   return ''
 }
 
-function generateModelString(tableName: string, model: any, attributes: ModelElement[]) {
+function getRelationCount(relation: string): string {
+  const singular = /One/
+  const plural = /Many/
+
+  if (plural.test(relation))
+    return 'many'
+
+  if (singular.test(relation))
+    return 'one'
+
+  return ''
+}
+
+async function generateModelString(tableName: string, model: any, attributes: ModelElement[]) {
   const modelName = model.default.name
 
   // users -> Users
@@ -212,23 +222,49 @@ function generateModelString(tableName: string, model: any, attributes: ModelEle
   let relationMethods = ``
   let relationImports = ``
 
-  const relations = getRelations(model)
+  const relations = await getRelations(model)
+
+  if (relations[0])
+    relationImports += `import ${relations[0].model} from './${relations[0].model}'`
 
   for (const relation of relations) {
     const modelRelation = relation.model
+    const tableRelation = relation.table
     const formattedModelRelation = modelRelation.toLowerCase()
 
-    relationImports += `import ${modelRelation} from './${modelRelation}.ts'`
-
     const relationType = getRelationType(relation.relationship)
+    const relationCount = getRelationCount(relation.relationship)
 
-    if (relationType === 'hasType') {
+    if (relationType === 'hasType' && relationCount === 'many') {
+      relationMethods += `
+      async ${tableRelation}() {
+        if (this.${formattedModelName}.id === undefined)
+          throw new Error('Relation Error!')
+
+        const results = await db.selectFrom('${tableRelation}')
+          .where('${formattedModelName}_id', '=', this.${formattedModelName}.id)
+          .selectAll()
+          .execute()
+
+          return results
+      }\n\n`
+    }
+
+    if (relationType === 'hasType' && relationCount === 'one') {
       relationMethods += `
       async ${formattedModelRelation}() {
         if (this.${formattedModelName}.id === undefined)
           throw new Error('Relation Error!')
 
-        return ${modelRelation}.where('${formattedModelName}_id', '=', this.${formattedModelName}.id)
+        const model = await db.selectFrom('${tableRelation}')
+        .where('${formattedModelName}_id', '=', this.${formattedModelName}.id)
+        .selectAll()
+        .executeTakeFirst()
+
+        if (! model) 
+          throw new Error('Model Relation Not Found!')
+
+        return new ${modelRelation}.modelInstance(model)
       }\n\n`
     }
 
@@ -238,7 +274,15 @@ function generateModelString(tableName: string, model: any, attributes: ModelEle
         if (this.${formattedModelName}.${formattedModelRelation}_id === undefined)
           throw new Error('Relation Error!')
 
-        return ${modelRelation}.find(this.${formattedModelName}.${formattedModelRelation}_id)
+        const model = await db.selectFrom('${tableRelation}')
+        .where('id', '=', this.${formattedModelName}.${formattedModelRelation}_id)
+        .selectAll()
+        .executeTakeFirst()
+
+        if (! model) 
+          throw new Error('Model Relation Not Found!')
+
+        return new ${modelRelation}.modelInstance(model)
       }\n\n`
     }
   }
@@ -808,6 +852,7 @@ function generateModelString(tableName: string, model: any, attributes: ModelEle
       last,
       where,
       whereIn,
+      modelInstance: ${modelName}Model
     }
     
     export default ${modelName}`
