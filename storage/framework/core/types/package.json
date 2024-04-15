@@ -49,8 +49,8 @@
     "neverthrow": "^6.1.0"
   },
   "dependencies": {
-    "@mdit-vue/plugin-component": "^2.1.1",
-    "@mdit-vue/plugin-frontmatter": "^2.1.0",
+    "@mdit-vue/plugin-component": "^2.1.2",
+    "@mdit-vue/plugin-frontmatter": "^2.1.2",
     "@mdit-vue/types": "^2.1.0",
     "@rollup/pluginutils": "^5.1.0",
     "@stacksjs/validation": "workspace:*",
@@ -76,7 +76,7 @@
     "vite-plugin-pwa": "^0.19.8",
     "vite-ssg": "^0.23.6",
     "vitepress": "1.1.0",
-    "vue": "^3.4.21"
+    "vue": "^3.4.22"
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.137.0",
