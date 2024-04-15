@@ -15,7 +15,6 @@ declare module 'vue' {
     Footer: typeof import('./src/components/Footer.stx')['default']
     HeadlessToast: typeof import('./src/components/HeadlessToast.stx')['default']
     HeadlessToastWithProps: typeof import('./src/components/HeadlessToastWithProps.stx')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.stx')['default']
     Hero: typeof import('./src/components/Hero.stx')['default']
     Installation: typeof import('./src/components/Installation.stx')['default']
     'Mdi:heart': typeof import('~icons/mdi/heart')['default']

@@ -3,6 +3,7 @@ node_modules
 .DS_Store
 .DS_STORE
 .cache
+temp
 .temp
 .env
 *.local

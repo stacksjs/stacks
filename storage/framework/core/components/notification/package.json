@@ -12,28 +12,34 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/notification"
   },
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./lib/stacks-notification.d.ts",
+      "import": "./lib/stacks-notification.js"
     },
     "./*": {
-      "import": "./dist/*"
+      "import": "./lib/*"
     }
   },
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "module": "dist/stacks-notification.js",
+  "types": "dist/stacks-notification.d.ts",
   "contributors": [
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "lib",
+    "src",
+    "volar.d.ts"
   ],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",
+    "build:lib": "vite build --mode lib && bun run build:types",
+    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {
@@ -42,6 +48,8 @@
     "vue-sonner": "^1.1.2"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.42.1",
+    "@vue/tsconfig": "^0.5.1",
     "clean-css": "^5.3.3",
     "unplugin-icons": "^0.18.5"
   }
