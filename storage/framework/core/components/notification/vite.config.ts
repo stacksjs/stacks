@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import Vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -20,7 +20,7 @@ export default defineConfig(({ command, mode }) => {
   const userConfig: UserConfig = {}
 
   const commonPlugins = [
-    vue({
+    Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
     UnoCSS(),

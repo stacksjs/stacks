@@ -32,9 +32,9 @@
     "src"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build",
+    "preview": "bunx --bun vite preview"
   },
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
