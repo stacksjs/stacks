@@ -43,7 +43,7 @@ async function initiateModelGeneration(): Promise<void> {
 }
 
 async function getRelations(model: any) {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany']
+  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany']
 
   const relationships = []
 
@@ -53,8 +53,15 @@ async function getRelations(model: any) {
 
       const modelRelation = await import(modelRelationPath)
 
-      // const formattedRelations = model.default[relation].toLowerCase()
-      relationships.push({ relationship: relation, model: model.default[relation].model, table: modelRelation.default.table })
+      const formattedModelName = model.default.name.toLowerCase()
+
+      relationships.push({
+        relationship: relation,
+        model: model.default[relation].model,
+        table: modelRelation.default.table,
+        foreignKey: model.default[relation].foreignKey || `${formattedModelName}_id`,
+        pivotTable: model.default[relation]?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+      })
     }
   }
 
@@ -229,8 +236,11 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
 
   for (const relation of relations) {
     const modelRelation = relation.model
+    const foreignKeyRelation = relation.foreignKey
     const tableRelation = relation.table
+    const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
+    const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
 
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
@@ -242,7 +252,7 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
           throw new Error('Relation Error!')
 
         const results = await db.selectFrom('${tableRelation}')
-          .where('${formattedModelName}_id', '=', this.${formattedModelName}.id)
+          .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
           .selectAll()
           .execute()
 
@@ -257,7 +267,7 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
           throw new Error('Relation Error!')
 
         const model = await db.selectFrom('${tableRelation}')
-        .where('${formattedModelName}_id', '=', this.${formattedModelName}.id)
+        .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
         .selectAll()
         .executeTakeFirst()
 
@@ -268,14 +278,14 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
       }\n\n`
     }
 
-    if (relationType === 'belongsType') {
+    if (relationType === 'belongsType' && !relationCount) {
       relationMethods += `
       async ${formattedModelRelation}() {
-        if (this.${formattedModelName}.${formattedModelRelation}_id === undefined)
+        if (this.${foreignKeyRelation} === undefined)
           throw new Error('Relation Error!')
 
         const model = await db.selectFrom('${tableRelation}')
-        .where('id', '=', this.${formattedModelName}.${formattedModelRelation}_id)
+        .where('id', '=', ${foreignKeyRelation})
         .selectAll()
         .executeTakeFirst()
 
@@ -283,6 +293,23 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
           throw new Error('Model Relation Not Found!')
 
         return new ${modelRelation}.modelInstance(model)
+      }\n\n`
+    }
+
+    if (relationType === 'belongsType' && relationCount === 'many') {
+      const pivotTable = pivotTableRelation || tableRelation
+
+      relationMethods += `
+      async ${formattedModelName}${capitalizeTableRelation}() {
+        if (this.${formattedModelName}.id === undefined)
+          throw new Error('Relation Error!')
+        
+        const results = await db.selectFrom('${pivotTable}')
+          .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
+          .selectAll()
+          .execute()
+
+          return results
       }\n\n`
     }
   }

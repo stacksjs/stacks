@@ -16,7 +16,13 @@ export default {
   },
 
   // relationships
-  belongsTo: 'User',
+  belongsTo: {
+    model: 'User',
+  },
+  belongsToMany: {
+    model: 'User',
+    pivotTable: 'user_subscribers',
+  },
 
   attributes: {
     subscribed: {
@@ -27,13 +33,12 @@ export default {
 
       factory: () => faker.datatype.boolean(),
     },
+
     user_id: {
       validator: {
         rule: schema.number(),
         message: '',
       },
-
-      factory: () => faker.datatype.boolean(),
     },
   },
 } satisfies Model

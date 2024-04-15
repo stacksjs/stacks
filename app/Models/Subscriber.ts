@@ -19,6 +19,10 @@ export default {
   belongsTo: {
     model: 'User',
   },
+  belongsToMany: {
+    model: 'User',
+    pivotTable: 'user_subscribers',
+  },
 
   attributes: {
     subscribed: {

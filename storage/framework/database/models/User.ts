@@ -42,6 +42,10 @@ export default {
 
     // useUuid: true, // defaults to false
   },
+  belongsToMany: {
+    model: 'Subscriber',
+    pivotTable: 'user_subscribers',
+  },
 
   attributes: {
     name: {

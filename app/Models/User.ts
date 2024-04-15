@@ -42,11 +42,9 @@ export default {
 
     // useUuid: true, // defaults to false
   },
-  hasOne: {
+  belongsToMany: {
     model: 'Subscriber',
-  },
-  hasMany: {
-    model: 'Subscriber',
+    pivotTable: 'user_subscribers',
   },
 
   attributes: {
