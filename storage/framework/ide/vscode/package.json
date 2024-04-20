@@ -56,6 +56,6 @@
     "Orta.vscode-twoslash-queries"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.25.0"
+    "@vscode/vsce": "^2.26.0"
   }
 }
