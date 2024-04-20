@@ -51,16 +51,16 @@
   "peerDependencies": {
     "@commitlint/cli": "^19.2.2",
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.56.9",
-    "eslint": "^9.0.0",
+    "@types/eslint": "^8.56.10",
+    "eslint": "^9.1.0",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },
   "dependencies": {
     "@commitlint/cli": "^19.2.2",
     "@stacksjs/eslint-config": "workspace:*",
-    "@types/eslint": "^8.56.9",
-    "eslint": "^9.0.0",
+    "@types/eslint": "^8.56.10",
+    "eslint": "^9.1.0",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },
