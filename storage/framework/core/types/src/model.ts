@@ -68,22 +68,22 @@ export interface ModelOptions extends Base {
   hasMany: {
     model: string // should be typed as ModelName
     foreignKey?: string
-  }
+  }[]
   belongsTo: {
     model: string // should be typed as ModelName
     foreignKey?: string
-  } // belongsTo: 'User'
+  }[] // belongsTo: 'User'
   belongsToMany: {
     model: string
     firstForeignKey?: string
     secondForeignKey?: string
     pivotTable?: string
-  }
+  }[]
   hasThrough: {
     model: string // should be typed as ModelName
     through: string
     using: string
-  }
+  }[]
 
   get: {
     [key: string]: (value: any) => any
