@@ -81,24 +81,6 @@ export async function resetDatabase() {
   return resetSqliteDatabase()
 }
 
-export function generateMigrationFile(options: MigrationOptions) {
-  const { name, up } = options
-
-  const timestamp = new Date().getTime().toString()
-  const fileName = `${timestamp}-${name}.ts`
-  const filePath = path.userMigrationsPath(fileName)
-  const fileContent = `import type { Database } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-
-export async function up(db: Database<any>) {
-  ${up}
-})`
-
-  Bun.write(filePath, fileContent)
-
-  log.success(`Created migration: ${fileName}`)
-}
-
 export async function generateMigrations() {
   try {
     log.info('Generating migrations...')
@@ -137,14 +119,6 @@ export async function getExecutedMigrations() {
   catch (error) {
     return []
   }
-}
-
-export async function hasTableBeenMigrated(tableName: string) {
-  log.debug(`hasTableBeenMigrated for table: ${tableName}`)
-
-  const results = await getExecutedMigrations()
-
-  return results.some(migration => migration.name.includes(tableName))
 }
 
 export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {

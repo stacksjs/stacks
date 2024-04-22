@@ -1,9 +1,10 @@
-import { fs } from '@stacksjs/storage'
+import { fs, glob } from '@stacksjs/storage'
 import { path } from '@stacksjs/path'
 import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/cli'
 import type { Attributes } from '@stacksjs/types'
-import { getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import { db } from '@stacksjs/database'
+import { checkPivotMigration, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetSqliteDatabase() {
   const dbPath = path.userDatabasePath('stacks.sqlite')
@@ -197,8 +198,12 @@ async function createPivotTableMigration(model: any) {
   if (!pivotTable)
     return
 
+  const hasBeenMigrated = await checkPivotMigration(pivotTable)
+
+  if (hasBeenMigrated)
+    return
+
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
-  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${pivotTable}')\n`
@@ -215,7 +220,7 @@ async function createPivotTableMigration(model: any) {
   // Assuming fs.writeFileSync is available or use an equivalent method
   Bun.write(migrationFilePath, migrationContent)
 
-  log.success(`Created migration: ${migrationFileName}`)
+  log.success(`Created pivot migration: ${migrationFileName}`)
 }
 
 export async function createAlterTableMigration(modelPath: string) {

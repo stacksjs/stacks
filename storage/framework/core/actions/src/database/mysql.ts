@@ -4,7 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import type { Attributes } from '@stacksjs/types'
-import { getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import { checkPivotMigration, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()
@@ -199,6 +199,11 @@ async function createPivotTableMigration(model: any) {
   const pivotTable = await getPivotTable(model)
 
   if (!pivotTable)
+    return
+
+  const hasBeenMigrated = await checkPivotMigration(pivotTable)
+
+  if (hasBeenMigrated)
     return
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`

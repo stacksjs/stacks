@@ -1,6 +1,7 @@
-import type { Attribute, Attributes } from '@stacksjs/types'
+// import type { Attribute, Attributes } from '@stacksjs/types'
 import { path } from '@stacksjs/path'
 import { log } from '@stacksjs/cli'
+import { db } from '@stacksjs/database'
 
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
@@ -88,4 +89,19 @@ export function prepareTextColumnType(rule) {
     columnType = 'text'
 
   return columnType
+}
+
+export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
+  const files = await fs.readdir(path.userMigrationsPath())
+
+  return files.some((migrationFile) => {
+    // Escape special characters in the dynamic part to ensure it's treated as a literal string
+    const escapedDynamicPart = dynamicPart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+    // Construct the regular expression pattern dynamically
+    const pattern = new RegExp(`(-${escapedDynamicPart}-)`)
+
+    // Test if the input string matches the pattern
+    return pattern.test(migrationFile)
+  })
 }
