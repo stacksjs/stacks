@@ -42,10 +42,21 @@ export default {
 
     // useUuid: true, // defaults to false
   },
-  belongsToMany: {
-    model: 'Subscriber',
-    pivotTable: 'user_subscribers',
-  },
+
+  hasMany: [
+    {
+      model: 'Post',
+    },
+  ],
+
+  belongsToMany: [
+    {
+      model: 'Subscriber',
+      firstForeignKey: 'user_id',
+      secondForeignKey: 'subscriber_id',
+      pivotTable: 'user_subscribers',
+    },
+  ],
 
   attributes: {
     name: {

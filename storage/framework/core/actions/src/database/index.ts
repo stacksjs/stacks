@@ -2,6 +2,7 @@
 import { path } from '@stacksjs/path'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { fs } from '@stacksjs/storage'
 
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)

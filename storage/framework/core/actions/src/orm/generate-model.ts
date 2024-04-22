@@ -49,19 +49,21 @@ async function getRelations(model: any) {
 
   for (const relation of relationsArray) {
     if (hasRelations(model.default, relation)) {
-      const modelRelationPath = path.userModelsPath(`${model.default[relation].model}.ts`)
+      for (const relationInstance of model.default[relation]) {
+        const modelRelationPath = path.userModelsPath(`${relationInstance.model}.ts`)
 
-      const modelRelation = await import(modelRelationPath)
+        const modelRelation = await import(modelRelationPath)
 
-      const formattedModelName = model.default.name.toLowerCase()
+        const formattedModelName = model.default.name.toLowerCase()
 
-      relationships.push({
-        relationship: relation,
-        model: model.default[relation].model,
-        table: modelRelation.default.table,
-        foreignKey: model.default[relation].foreignKey || `${formattedModelName}_id`,
-        pivotTable: model.default[relation]?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
-      })
+        relationships.push({
+          relationship: relation,
+          model: relationInstance.model,
+          table: modelRelation.default.table,
+          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+        })
+      }
     }
   }
 
@@ -100,6 +102,27 @@ async function setKyselyTypes() {
     text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
   }
 
+  text += `import type { Generated } from 'kysely'\n\n`
+
+  let pivotFormatted = ''
+  for (const modelFile of modelFiles) {
+    const model = await import(modelFile)
+
+    const pivotTables = await getPivotTables(model)
+
+    for (const pivotTable of pivotTables) {
+      const words = pivotTable.table.split('_')
+
+      pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+
+      text += `export interface ${pivotFormatted} {
+        id: Generated<number>
+        ${pivotTable.firstForeignKey}: number
+        ${pivotTable.secondForeignKey}: number
+      }`
+    }
+  }
+
   text += `\nexport interface Database {\n`
 
   for (const modelFile of modelFiles) {
@@ -107,6 +130,11 @@ async function setKyselyTypes() {
 
     const tableName = model.default.table
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+
+    const pivotTables = await getPivotTables(model)
+
+    for (const pivotTable of pivotTables)
+      text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
     text += `  ${tableName}: ${formattedTableName}Table\n`
   }
@@ -215,6 +243,29 @@ function getRelationCount(relation: string): string {
   return ''
 }
 
+async function getPivotTables(model: any): Promise<{ table: string, firstForeignKey: string, secondForeignKey: string }[]> {
+  const pivotTable = []
+
+  if ('belongsToMany' in model.default) {
+    for (const belongsToManyRelation of model.default.belongsToMany) {
+      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
+      const modelRelation = await import(modelRelationPath)
+
+      const formattedModelName = model.default.name.toLowerCase()
+
+      pivotTable.push({
+        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+        firstForeignKey: belongsToManyRelation.firstForeignKey,
+        secondForeignKey: belongsToManyRelation.secondForeignKey,
+      })
+    }
+
+    return pivotTable
+  }
+
+  return []
+}
+
 async function generateModelString(tableName: string, model: any, attributes: ModelElement[]) {
   const modelName = model.default.name
 
@@ -231,8 +282,8 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
 
   const relations = await getRelations(model)
 
-  if (relations[0])
-    relationImports += `import ${relations[0].model} from './${relations[0].model}'`
+  for (const relationInstance of relations)
+    relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
 
   for (const relation of relations) {
     const modelRelation = relation.model

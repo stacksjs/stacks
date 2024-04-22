@@ -3,8 +3,8 @@ import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
-  name: 'Subscriber', // defaults to the sanitized file name
-  table: 'subscribers', // defaults to the lowercase, plural name of the model
+  name: 'Post', // defaults to the sanitized file name
+  table: 'posts', // defaults to the lowercase, plural name of the model
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
@@ -16,13 +16,21 @@ export default {
   },
 
   attributes: {
-    subscribed: {
+    title: {
       validator: {
-        rule: schema.boolean(),
-        message: '`subscribed` must be a boolean',
+        rule: schema.string(),
+        message: '`title` must be a string',
       },
 
-      factory: () => faker.datatype.boolean(),
+      factory: () => faker.datatype.string(),
+    },
+    body: {
+      validator: {
+        rule: schema.string(),
+        message: '`body` must be a string',
+      },
+
+      factory: () => faker.datatype.string(),
     },
 
     user_id: {

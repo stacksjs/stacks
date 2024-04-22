@@ -64,7 +64,7 @@ export interface ModelOptions extends Base {
   hasOne: {
     model: string
     foreignKey?: string
-  }
+  }[]
   hasMany: {
     model: string // should be typed as ModelName
     foreignKey?: string
