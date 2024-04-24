@@ -49,18 +49,18 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@commitlint/cli": "^19.2.2",
+    "@commitlint/cli": "^19.3.0",
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.56.10",
-    "eslint": "^9.1.0",
+    "eslint": "^9.1.1",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },
   "dependencies": {
-    "@commitlint/cli": "^19.2.2",
+    "@commitlint/cli": "^19.3.0",
     "@stacksjs/eslint-config": "workspace:*",
     "@types/eslint": "^8.56.10",
-    "eslint": "^9.1.0",
+    "eslint": "^9.1.1",
     "lint-staged": "^15.2.2",
     "publint": "^0.2.7"
   },

@@ -48,11 +48,11 @@
     "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never"
   },
   "peerDependencies": {
-    "@aws-sdk/client-bedrock": "^3.556.0",
+    "@aws-sdk/client-bedrock": "^3.561.0",
     "@aws-sdk/client-cloudformation": "^3.556.0",
     "@aws-sdk/client-cloudfront": "^3.556.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.556.0",
-    "@aws-sdk/client-ec2": "^3.557.0",
+    "@aws-sdk/client-ec2": "^3.561.0",
     "@aws-sdk/client-efs": "^3.556.0",
     "@aws-sdk/client-iam": "^3.556.0",
     "@aws-sdk/client-lambda": "^3.556.0",
@@ -72,12 +72,12 @@
     "@stacksjs/validation": "workspace:*"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "^3.556.0",
+    "@aws-sdk/client-bedrock": "^3.561.0",
     "@aws-sdk/client-cloudformation": "^3.556.0",
     "@aws-sdk/client-cloudfront": "^3.556.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.556.0",
     "@aws-sdk/client-dynamodb": "3.556.0",
-    "@aws-sdk/client-ec2": "^3.557.0",
+    "@aws-sdk/client-ec2": "^3.561.0",
     "@aws-sdk/client-efs": "^3.556.0",
     "@aws-sdk/client-iam": "^3.556.0",
     "@aws-sdk/client-lambda": "^3.556.0",
