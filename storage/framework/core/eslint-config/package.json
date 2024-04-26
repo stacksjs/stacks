@@ -49,13 +49,13 @@
     }
   },
   "dependencies": {
-    "@antfu/install-pkg": "^0.3.2",
+    "@antfu/install-pkg": "^0.3.3",
     "@stacksjs/cli": "workspace:*",
     "@stylistic/eslint-plugin": "^1.7.2",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
     "eslint-config-flat-gitignore": "^0.1.5",
-    "eslint-flat-config-utils": "^0.2.3",
+    "eslint-flat-config-utils": "^0.2.4",
     "eslint-merge-processors": "^0.1.0",
     "eslint-parser-plain": "^0.1.0",
     "eslint-plugin-antfu": "^2.1.2",
@@ -64,9 +64,9 @@
     "eslint-plugin-jsdoc": "^48.2.3",
     "eslint-plugin-jsonc": "^2.15.1",
     "eslint-plugin-markdown": "^4.0.1",
-    "eslint-plugin-n": "^17.3.0",
+    "eslint-plugin-n": "^17.3.1",
     "eslint-plugin-no-only-tests": "^3.1.0",
-    "eslint-plugin-perfectionist": "^2.9.0",
+    "eslint-plugin-perfectionist": "^2.10.0",
     "eslint-plugin-toml": "^0.11.0",
     "eslint-plugin-unicorn": "^52.0.0",
     "eslint-plugin-unused-imports": "^3.1.0",
@@ -97,6 +97,6 @@
     "lint-staged": "^15.2.2",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
-    "vitest": "^1.5.1"
+    "vitest": "^1.5.2"
   }
 }
