@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@headlessui/vue": "^1.7.20",
+    "@headlessui/vue": "^1.7.21",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
@@ -69,11 +69,11 @@
     "vue-tsc": "^2.0.14"
   },
   "dependencies": {
-    "@headlessui/vue": "^1.7.20",
+    "@headlessui/vue": "^1.7.21",
     "@iconify-json/heroicons": "^1.1.20",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.203",
+    "@iconify/json": "^2.2.204",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
