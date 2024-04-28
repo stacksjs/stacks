@@ -41,6 +41,7 @@
   },
   "extensionPack": [
     "vue.volar",
+    "biomejs.biome",
     "streetsidesoftware.code-spell-checker",
     "antfu.unocss",
     "davidanson.vscode-markdownlint",
