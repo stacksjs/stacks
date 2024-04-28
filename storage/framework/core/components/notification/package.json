@@ -45,10 +45,14 @@
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
     "highlight.js": "^11.9.0",
+    "vue": "^3.4.22",
     "vue-sonner": "^1.1.2"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.43.1",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.5.1",
     "clean-css": "^5.3.3",
     "unplugin-icons": "^0.18.5"

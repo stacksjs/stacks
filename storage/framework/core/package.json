@@ -344,9 +344,7 @@
     "buddy": "bun --bun run ./buddy/src/cli.ts",
     "build": "cd config && bun run build && cd ../env && bun run build && cd ../storage && bun run build && cd .. && bun ./build.ts",
     "types": "bunx tsc --project ./tsconfig-core-types.json",
-    "up": "bunx taze major -I",
-    "publish:framework": "./scripts/publish",
-    "publish:dummy-libs": "bun --bun run generate:entries && bunx pnpm --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks"
+    "up": "bunx taze major -I"
   },
   "web-types": "./web-types.json",
   "peerDependencies": {

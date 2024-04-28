@@ -1,0 +1,22 @@
+{
+  "name": "stacks-framework",
+  "type": "module",
+  "version": "0.60.3",
+  "private": true,
+  "description": "The Stacks framework.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework"
+  },
+  "scripts": {
+    "dev": "wip: needs to start each dev server (views, api, components, docs, desktop)",
+    "build": "bun --filter='./core/*' run build",
+    "publish:framework": "./scripts/publish",
+    "publish:dummy-libs": "bun --bun ./core/buddy/src/cli.ts generate:entries && bun --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks"
+  }
+}

@@ -43,7 +43,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish Dummy Libraries
-        run: bunx pnpm --filter='./storage/framework' publish:dummy-libs
+        run: bun --filter='./storage/framework/core' run publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
