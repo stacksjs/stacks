@@ -21,6 +21,7 @@ bazel
 bazelignore
 bazelproject
 bazelrc
+biomejs
 boject
 booleanish
 Bootcamp
