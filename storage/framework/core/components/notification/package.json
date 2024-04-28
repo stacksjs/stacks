@@ -45,7 +45,7 @@
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
     "highlight.js": "^11.9.0",
-    "vue": "^3.4.22",
+    "vue": "^3.4.25",
     "vue-sonner": "^1.1.2"
   },
   "devDependencies": {
