@@ -1,5 +1,6 @@
 {
   "extends": [
-    "@ow3"
+    "@ow3",
+    "regexManagers:biomeVersions"
   ]
 }

@@ -43,9 +43,6 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Build ESLint Config
-        run: cd storage/framework/core && bun run build
-
       - name: Lint
         run: bun buddy lint
 

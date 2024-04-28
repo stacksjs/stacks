@@ -122,7 +122,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "eslint --fix"
+    "*": "bunx biome check --no-errors-on-unmatched --files-ignore-unknown=true"
   },
   "config": {
     "commitizen": {
