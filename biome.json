@@ -3,16 +3,6 @@
   "organizeImports": {
     "enabled": true
   },
-  "files": {
-    "include": ["*.{js,ts,stx,vue,html,css,json,yml,yaml,md}"],
-    "ignore": [
-      "**/node_modules",
-      "**/cdk.out",
-      "**/dist",
-      "**/*out*",
-      "CHANGELOG.md"
-    ]
-  },
   "overrides": [
     {
       "include": [".vscode/**"],
@@ -24,25 +14,53 @@
       }
     }
   ],
-  "formatter": {
-    "enabled": true,
-    "formatWithErrors": false,
-    "ignore": [],
-    "attributePosition": "auto",
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineEnding": "lf",
-    "lineWidth": 80
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingComma": "all",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "auto",
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineEnding": "lf"
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineEnding": "lf"
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "style": {
+        "noParameterAssign": "off",
+        "noUnusedTemplateLiteral": "off"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noStaticOnlyClass": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off"
+      }
     }
+  },
+  "files": {
+    "ignore": ["storage/framework/types/*", "storage/framework/cache/*"]
   },
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": true
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
   }
 }
