@@ -21,12 +21,12 @@
     "@vueuse/head": "^2.0.0",
     "nprogress": "^0.2.0",
     "pinia": "^2.1.7",
-    "vue": "^3.4.25",
+    "vue": "^3.4.26",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.1.31",
+    "@iconify-json/carbon": "^1.1.32",
     "@intlify/unplugin-vue-i18n": "^4.0.0",
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/nprogress": "^0.2.3",
@@ -37,7 +37,7 @@
     "critters": "^0.0.22",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shikiji": "^0.10.2",
-    "rollup": "^4.17.0",
+    "rollup": "^4.17.1",
     "shikiji": "^0.10.2",
     "taze": "^0.13.7",
     "unocss": "^0.59.4",
