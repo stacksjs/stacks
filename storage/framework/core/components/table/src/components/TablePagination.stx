@@ -4,13 +4,8 @@
 // const { goToNextPage, goToPrevPage, goToPage, table, lastPageNumber, views } = await useTable()
 
 // watch(totalPages, (newValue, oldValue) => {
-//   // eslint-disable-next-line no-console
 //   console.log('totalPages', totalPages.value)
-
-//   // eslint-disable-next-line no-console
 //   console.log('oldValue', oldValue)
-
-//   // eslint-disable-next-line no-console
 //   console.log('newValue', newValue)
 // })
 

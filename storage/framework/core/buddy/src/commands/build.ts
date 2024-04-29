@@ -98,7 +98,10 @@ export function build(buddy: CLI) {
         if (isString(answers)) answers = [answers]
 
         // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+        options = answers.reduce((a: any, v: any) => {
+          a[v] = true
+          return a
+        }, {})
       }
 
       await runAction(Action.BuildStacks, options)
@@ -246,7 +249,6 @@ export function build(buddy: CLI) {
         process.exit()
       }
 
-      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

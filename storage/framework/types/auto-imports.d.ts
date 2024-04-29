@@ -318,8 +318,6 @@ declare global {
   const err: typeof import('../core/error-handling/src/index')['err']
   const errAsync: typeof import('../core/error-handling/src/index')['errAsync']
   const errorHandlingPath: typeof import('../core/path/src/paths')['errorHandlingPath']
-  const eslint: typeof import('../core/lint/src/index')['eslint']
-  const eslintPath: typeof import('../core/path/src/paths')['eslintPath']
   const events: typeof import('../core/events/src/index')['events']
   const eventsPath: typeof import('../core/path/src/paths')['eventsPath']
   const exactly: typeof import('../core/utils/src/regex')['exactly']
@@ -1313,8 +1311,6 @@ declare module 'vue' {
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('../core/path/src/paths')['errorHandlingPath']>
-    readonly eslint: UnwrapRef<typeof import('../core/lint/src/index')['eslint']>
-    readonly eslintPath: UnwrapRef<typeof import('../core/path/src/paths')['eslintPath']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/paths')['eventsPath']>
     readonly exactly: UnwrapRef<typeof import('../core/utils/src/regex')['exactly']>
@@ -1358,7 +1354,6 @@ declare module 'vue' {
     readonly generateIdeHelpers: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateIdeHelpers']>
     readonly generateLibEntries: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateLibEntries']>
     readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
-    readonly generateMigrationFile: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrationFile']>
     readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
@@ -1402,7 +1397,6 @@ declare module 'vue' {
     readonly hasOwnProperty: UnwrapRef<typeof import('../core/objects/src/index')['hasOwnProperty']>
     readonly hasScript: UnwrapRef<typeof import('../core/utils/src/helpers')['hasScript']>
     readonly hasSubUnits: UnwrapRef<typeof import('../core/utils/src/currency')['hasSubUnits']>
-    readonly hasTableBeenMigrated: UnwrapRef<typeof import('../core/database/src/migrations')['hasTableBeenMigrated']>
     readonly hasUserDomainBeenAddedToCloud: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['hasUserDomainBeenAddedToCloud']>
     readonly hashDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashDirectory']>
     readonly hashFileOrDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashFileOrDirectory']>
@@ -2265,8 +2259,6 @@ declare module '@vue/runtime-core' {
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('../core/path/src/paths')['errorHandlingPath']>
-    readonly eslint: UnwrapRef<typeof import('../core/lint/src/index')['eslint']>
-    readonly eslintPath: UnwrapRef<typeof import('../core/path/src/paths')['eslintPath']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/paths')['eventsPath']>
     readonly exactly: UnwrapRef<typeof import('../core/utils/src/regex')['exactly']>
@@ -2310,7 +2302,6 @@ declare module '@vue/runtime-core' {
     readonly generateIdeHelpers: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateIdeHelpers']>
     readonly generateLibEntries: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateLibEntries']>
     readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
-    readonly generateMigrationFile: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrationFile']>
     readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
@@ -2354,7 +2345,6 @@ declare module '@vue/runtime-core' {
     readonly hasOwnProperty: UnwrapRef<typeof import('../core/objects/src/index')['hasOwnProperty']>
     readonly hasScript: UnwrapRef<typeof import('../core/utils/src/helpers')['hasScript']>
     readonly hasSubUnits: UnwrapRef<typeof import('../core/utils/src/currency')['hasSubUnits']>
-    readonly hasTableBeenMigrated: UnwrapRef<typeof import('../core/database/src/migrations')['hasTableBeenMigrated']>
     readonly hasUserDomainBeenAddedToCloud: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['hasUserDomainBeenAddedToCloud']>
     readonly hashDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashDirectory']>
     readonly hashFileOrDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashFileOrDirectory']>

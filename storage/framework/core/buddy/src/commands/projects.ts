@@ -22,7 +22,6 @@ export function projects(buddy: CLI) {
 
       const projects = await findStacksProjects(undefined, options)
 
-      // eslint-disable-next-line no-console
       for (const project of projects) console.log('   - ', project)
 
       process.exit(ExitCode.Success)
@@ -41,7 +40,6 @@ export function projects(buddy: CLI) {
       // uses os.homedir() as the default path
       const projects = await findStacksProjects(undefined, options)
 
-      // eslint-disable-next-line no-console
       for (const project of projects) console.log('   - ', project)
 
       process.exit(ExitCode.Success)

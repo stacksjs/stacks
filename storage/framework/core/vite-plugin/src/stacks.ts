@@ -1,6 +1,5 @@
 import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
-/* eslint-disable no-console */
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { version } from '../../package.json'
 
@@ -60,12 +59,12 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         const stacksVersion = `alpha-${version}`
-        const withLocalhost = options && options.withLocalhost
+        const withLocalhost = options?.withLocalhost
 
         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
 
         for (const [option, url] of Object.entries(urls)) {
-          if (options && options[option as keyof StacksPluginOptions])
+          if (options?.[option as keyof StacksPluginOptions])
             console.log(
               `  ${c.green('➜')}  ${c.bold(
                 option.charAt(0).toUpperCase() + option.slice(1),
@@ -75,7 +74,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
 
         // there is a chance the above loop is not triggered, in a case we are serving a single dev server
         // that's why the below is needed
-        if (options && options.config?.includes('frontend')) {
+        if (options?.config?.includes('frontend')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
@@ -95,7 +94,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('components')) {
+        if (options?.config?.includes('components')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
@@ -113,7 +112,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('email')) {
+        if (options?.config?.includes('email')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(
@@ -131,7 +130,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('docs')) {
+        if (options?.config?.includes('docs')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(
@@ -149,7 +148,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('inspect')) {
+        if (options?.config?.includes('inspect')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
@@ -167,7 +166,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('admin')) {
+        if (options?.config?.includes('admin')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:   ${c.cyan(
@@ -185,7 +184,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('backend')) {
+        if (options?.config?.includes('backend')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:   ${c.cyan(
@@ -203,7 +202,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('backend')) {
+        if (options?.config?.includes('backend')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
@@ -221,7 +220,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           )
         }
 
-        if (options && options.config?.includes('desktop')) {
+        if (options?.config?.includes('desktop')) {
           if (withLocalhost)
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(

@@ -4,7 +4,7 @@
   any of the components developed.
 -->
 <script setup lang="ts">
-// import { Demo } from './dist/index.mjs' before we reenable this, we need to ensure it works with eslint's antfu/no-import-dist rule
+// import { Demo } from './dist/index.mjs'
 </script>
 
 <template>

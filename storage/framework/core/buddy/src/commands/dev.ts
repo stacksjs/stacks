@@ -157,7 +157,6 @@ export function dev(buddy: CLI) {
         process.exit()
       }
 
-      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
@@ -182,7 +181,6 @@ export function dev(buddy: CLI) {
         process.exit()
       }
 
-      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
@@ -207,7 +205,6 @@ export function dev(buddy: CLI) {
         process.exit()
       }
 
-      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

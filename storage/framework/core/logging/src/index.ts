@@ -136,6 +136,5 @@ export function dd(...args: any[]) {
 }
 
 export function echo(...args: any[]) {
-  // eslint-disable-next-line no-console
   console.log(...args)
 }

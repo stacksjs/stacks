@@ -33,19 +33,15 @@ export async function findStacksProjects(
   if (!options?.quiet) {
     log.info(`Searching for Stacks projects in: ${italic(dir)}`)
     log.info(`This may take a few moments...`)
-    // eslint-disable-next-line no-console
     console.log('')
-    // eslint-disable-next-line no-console
     console.log(
       italic(
         '  Please note, while Stacks is searching for projects on your machine,',
       ),
     )
-    // eslint-disable-next-line no-console
     console.log(
       italic('  you may be asked for permissions to scan certain directories.'),
     )
-    // eslint-disable-next-line no-console
     console.log('')
     log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
   }

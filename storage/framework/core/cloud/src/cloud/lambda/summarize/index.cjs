@@ -5,7 +5,6 @@ async function handler(event) {
 
   // Extract the 'question' property from the request body
   const text = requestBody.text
-  // eslint-disable-next-line no-console
   console.log(`Text received: ${text}`)
 
   const bedrockRuntime = new AWS.BedrockRuntime({ apiVersion: '2023-09-30' })

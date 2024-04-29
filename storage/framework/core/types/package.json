@@ -46,7 +46,6 @@
     "@types/aws4": "^1.11.6",
     "@types/bun": "^1.1.0",
     "@types/crypto-js": "^4.2.2",
-    "@types/eslint": "^8.56.10",
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/minimatch": "^5.1.2",
@@ -65,7 +64,7 @@
     "vite-plugin-pwa": "^0.19.8",
     "vite-ssg": "^0.23.7",
     "vitepress": "1.1.4",
-    "vue": "^3.4.25"
+    "vue": "^3.4.26"
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.139.0",

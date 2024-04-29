@@ -56,7 +56,7 @@ const component = defineComponent({
 
     const className = computed((): string => {
       if (cannotDetectLanguage.value) return ''
-      else return `hljs ${language.value} ${props.className}`
+      return `hljs ${language.value} ${props.className}`
     })
 
     const highlightedCode = computed((): string => {
@@ -72,13 +72,14 @@ const component = defineComponent({
         const result = hljs.highlightAuto(props.code)
         language.value = result.language ?? ''
         return result.value
-      } else {
-        const result = hljs.highlight(props.code, {
-          language: language.value,
-          ignoreIllegals: props.ignoreIllegals,
-        })
-        return result.value
       }
+
+      const result = hljs.highlight(props.code, {
+        language: language.value,
+        ignoreIllegals: props.ignoreIllegals,
+      })
+
+      return result.value
     })
 
     return {

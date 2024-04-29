@@ -38,7 +38,7 @@ function parseLongOption(
   const [key, value] = arg.slice(2).split('=')
   if (value !== undefined) {
     options[key as string] = parseValue(value)
-  } else if (index + 1 < argv.length && !argv[index + 1]!.startsWith('-')) {
+  } else if (index + 1 < argv.length && !argv[index + 1]?.startsWith('-')) {
     options[key as string] = argv[index + 1] as string
     index++
   } else {
@@ -66,9 +66,9 @@ function parseShortOption(
       if (
         index + 1 < argv.length &&
         j === key.length - 1 &&
-        !argv[index + 1]!.startsWith('-')
+        !argv[index + 1]?.startsWith('-')
       ) {
-        options[key[j] as string] = parseValue(argv[index + 1]!)
+        options[key[j] as string] = parseValue(argv[index + 1] as string)
         index++
       } else {
         options[key[j] as string] = true

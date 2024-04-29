@@ -1,4 +1,3 @@
-// /* eslint-disable no-new */
 // // TODO: finish this cloudwatch dashboard
 // // import type { aws_lambda as lambda } from 'aws-cdk-lib'
 // import { Aws, CfnOutput as Output, aws_cloudwatch as cloudwatch } from 'aws-cdk-lib'

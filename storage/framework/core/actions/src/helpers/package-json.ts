@@ -6,7 +6,12 @@ import library from '~/config/library'
 type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
 
 export async function generatePackageJson(type: PackageJsonType) {
-  let name, description, directory, keywords, config, prettyName
+  let name
+  let description
+  let directory
+  let keywords
+  let config
+  let prettyName
 
   if (type === 'vue-components') {
     name = library.vueComponents?.name

@@ -18,7 +18,6 @@ for (const project of projects) {
   $.cwd(project)
   const ports = await $`./buddy ports --project ${project} --quiet`.text()
 
-  // eslint-disable-next-line no-console
   console.log('ports', ports)
 }
 

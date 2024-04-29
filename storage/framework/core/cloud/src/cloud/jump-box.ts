@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import type { aws_efs as efs } from 'aws-cdk-lib'
 import {
   CfnOutput as Output,

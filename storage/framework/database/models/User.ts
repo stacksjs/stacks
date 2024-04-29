@@ -4,6 +4,8 @@ import type { UserType as User } from '@stacksjs/orm'
 import { capitalize } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
+import Post from './Post'
+import Subscriber from './Subscriber'
 
 export default {
   name: 'User', // defaults to the sanitized file name
@@ -45,18 +47,10 @@ export default {
     // useUuid: true, // defaults to false
   },
 
-  hasMany: [
+  hasOneThrough: [
     {
-      model: 'Post',
-    },
-  ],
-
-  belongsToMany: [
-    {
-      model: 'Subscriber',
-      firstForeignKey: 'user_id',
-      secondForeignKey: 'subscriber_id',
-      pivotTable: 'user_subscribers',
+      model: Post,
+      through: Subscriber,
     },
   ],
 

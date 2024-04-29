@@ -141,8 +141,7 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
     file = join(dir, file)
     const stat = fs.statSync(file)
 
-    if (stat && stat.isDirectory())
-      results = results.concat(getFiles(file, exclude))
+    if (stat.isDirectory()) results = results.concat(getFiles(file, exclude))
     else if (!contains(file, exclude)) results.push(file)
   })
 

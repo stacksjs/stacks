@@ -16,7 +16,7 @@ export enum NpmScript {
   DevFunctions = 'dev:functions',
   Fresh = 'fresh',
   Lint = 'bunx biome ci .',
-  LintFix = 'bunx eslint . --fix',
+  LintFix = 'bunx biome check . ',
   LintPackageJson = 'publint',
   MakeStack = 'make:stack',
   Test = 'bun test',

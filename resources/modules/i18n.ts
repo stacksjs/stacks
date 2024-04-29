@@ -35,7 +35,8 @@ export async function loadLanguageAsync(lang: string): Promise<Locale> {
   if (loadedLanguages.includes(lang)) return setI18nLanguage(lang)
 
   // If the language hasn't been loaded yet
-  const messages = await localesMap[lang]!()
+  const messages = await localesMap[lang]?.()
+  if (!messages) return setI18nLanguage(lang)
   i18n.global.setLocaleMessage(lang, messages.default)
   loadedLanguages.push(lang)
   return setI18nLanguage(lang)

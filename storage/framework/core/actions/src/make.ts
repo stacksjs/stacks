@@ -45,7 +45,6 @@ export async function createComponent(options: MakeOptions) {
   await writeTextFile({
     path: `./components/${name}.stx`,
     data: `<script setup lang="ts">
-// eslint-disable-next-line no-console
 console.log('Hello World component created')
 </script>
 
@@ -71,7 +70,6 @@ export function makeDatabase(options: MakeOptions) {
 }
 
 export function createDatabase(options: MakeOptions) {
-  // eslint-disable-next-line no-console
   console.log('createDatabase options', options) // wip
 }
 
@@ -88,7 +86,6 @@ export function factory(options: MakeOptions) {
 }
 
 export function createFactory(options: MakeOptions) {
-  // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
@@ -121,7 +118,6 @@ export async function createPage(options: MakeOptions) {
   await writeTextFile({
     path: `./pages/${name}.stx`,
     data: `<script setup lang="ts">
-// eslint-disable-next-line no-console
 console.log('Hello World page created')
 </script>
 

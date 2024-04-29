@@ -60,7 +60,10 @@ export function upgrade(buddy: CLI) {
         if (isString(answers)) answers = [answers]
 
         // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+        options = answers.reduce((a: any, v: any) => {
+          a[v] = true
+          return a
+        }, {})
       }
 
       const result = await runAction(Action.Upgrade, options)

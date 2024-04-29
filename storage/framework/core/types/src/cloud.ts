@@ -258,7 +258,6 @@ export interface CloudOptions {
 
   driver: 'aws'
 
-  // eslint-disable-next-line ts/ban-types
   storage: {}
 
   /**

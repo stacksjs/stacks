@@ -98,7 +98,9 @@ export function createPromiseLock() {
  * ```
  */
 export function createControlledPromise<T>(): ControlledPromise<T> {
-  let resolve: any, reject: any
+  let resolve: any
+  let reject: any
+
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve
     reject = _reject

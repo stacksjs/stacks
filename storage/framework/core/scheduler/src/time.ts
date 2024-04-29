@@ -160,16 +160,16 @@ export class CronTime {
     if (i === undefined || Number.isNaN(i) || i < 0) {
       // just get the next scheduled time
       return this.getNextDateFrom(date)
-    } else {
-      // return the next schedule times
-      const dates: DateTime[] = []
-      for (; i > 0; i--) {
-        date = this.getNextDateFrom(date)
-        dates.push(date)
-      }
-
-      return dates
     }
+
+    // return the next schedule times
+    const dates: DateTime[] = []
+    for (; i > 0; i--) {
+      date = this.getNextDateFrom(date)
+      dates.push(date)
+    }
+
+    return dates
   }
 
   /**
@@ -406,8 +406,11 @@ export class CronTime {
    * @return [boolean, DateTime]
    */
   private _findPreviousDSTJump(date: DateTime): [boolean, DateTime] {
-    /** @type number */
-    let expectedMinute, expectedHour, actualMinute, actualHour
+    let expectedMinute: number
+    let expectedHour: number
+    let actualMinute: number
+    let actualHour: number
+
     /** @type DateTime */
     let maybeJumpingPoint = date
 
@@ -499,7 +502,9 @@ export class CronTime {
       // Exact 1 hour jump, most common real-world case.
       // There is no need to check minutes and seconds, as any value would suffice.
       return startingHour in this.hour
-    } else if (hourRangeSize === 1) {
+    }
+
+    if (hourRangeSize === 1) {
       // less than 1 hour jump, rare but does exist.
       return (
         startingHour in this.hour &&
@@ -508,15 +513,15 @@ export class CronTime {
           afterJumpingPoint.minute,
         )
       )
-    } else {
-      // non-round or multi-hour jump. (does not exist in the real world at the time of writing)
-      return this._checkTimeInSkippedRangeMultiHour(
-        startingHour,
-        startingMinute,
-        afterJumpingPoint.hour,
-        afterJumpingPoint.minute,
-      )
     }
+
+    // non-round or multi-hour jump. (does not exist in the real world at the time of writing)
+    return this._checkTimeInSkippedRangeMultiHour(
+      startingHour,
+      startingMinute,
+      afterJumpingPoint.hour,
+      afterJumpingPoint.minute,
+    )
   }
 
   /**
@@ -584,8 +589,8 @@ export class CronTime {
     /** @type (number) => number[] */
     const selectRange = (forHour: number) => {
       if (forHour === startHour) return firstHourMinuteRange
-      else if (forHour === endHour) return lastHourMinuteRange
-      else return middleHourMinuteRange
+      if (forHour === endHour) return lastHourMinuteRange
+      return middleHourMinuteRange
     }
 
     // Include the endHour: Selecting the right range still ensures no values outside the skip are checked.
@@ -783,7 +788,8 @@ export class CronTime {
         // since we work with day-of-week 0-6 under the hood
         if (unit === 'dayOfWeek') {
           if (!typeObj[0] && !!typeObj[7]) typeObj[0] = typeObj[7]
-          delete typeObj[7]
+          // delete typeObj[7]
+          typeObj[7] = undefined
         }
       } else {
         throw new CronError(`Field (${unit}) cannot be parsed`)

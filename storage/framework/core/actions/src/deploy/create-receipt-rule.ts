@@ -17,15 +17,13 @@ let bucketName: string | undefined
 const data = await s3.listBuckets({})
 
 if (data.Buckets)
-  bucketName = data.Buckets.find(
-    (bucket) => bucket.Name && bucket.Name.includes('-email-'),
+  bucketName = data.Buckets.find((bucket) =>
+    bucket.Name?.includes('-email-'),
   )?.Name
 
-// eslint-disable-next-line no-console
 console.log('Bucket Name:', bucketName)
 
 if (!bucketName) {
-  // eslint-disable-next-line no-console
   console.log('Stacks Email Bucket not found')
   process.exit(ExitCode.FatalError)
 }

@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import { log } from '@stacksjs/cli'
 import type { DateTime } from 'luxon'
 import { CronJob } from './job'

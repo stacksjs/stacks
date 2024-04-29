@@ -55,7 +55,6 @@ export async function runDatabaseMigration() {
 
     if (migration.results) {
       migration.results.forEach(({ migrationName }) => {
-        // eslint-disable-next-line no-console
         console.log(italic(`${dim(`   - Migration Name:`)} ${migrationName}`))
       })
 

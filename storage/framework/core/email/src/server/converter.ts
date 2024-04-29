@@ -1,6 +1,3 @@
-// /* eslint-disable eslint-comments/no-unlimited-disable */
-// /* eslint-disable */
-//
 // const AWS = require('aws-sdk')
 // const mime = require('mime')
 // const parser = require('mailparser').simpleParser

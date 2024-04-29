@@ -182,14 +182,9 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
 }
 
 function outputPorts(ports: Ports, options: PortsOptions) {
-  if (!options.quiet)
-    // eslint-disable-next-line no-console
-    console.log('')
+  if (!options.quiet) console.log('')
 
-  // eslint-disable-next-line no-console
   console.log(ports)
 
-  if (!options.quiet)
-    // eslint-disable-next-line no-console
-    console.log('')
+  if (!options.quiet) console.log('')
 }

@@ -9,7 +9,6 @@ try {
 
   if (projects.length > 0) {
     log.info('Found Projects:')
-    // eslint-disable-next-line no-console
     projects.forEach((project) => console.log(`   - ${project}`))
     process.exit()
   }

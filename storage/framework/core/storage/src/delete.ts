@@ -29,7 +29,7 @@ export async function isDirectoryEmpty(
     try {
       if (fs.statSync(path).isDirectory()) {
         if (fs.readdirSync(path).length === 0) return resolve(ok(true))
-        else return resolve(ok(false))
+        return resolve(ok(false))
       }
 
       return resolve(ok(false))
@@ -48,9 +48,9 @@ export async function deleteEmptyFolder(
         if (fs.readdirSync(path).length === 0) {
           fs.rmSync(path, { recursive: true, force: true })
           return resolve(ok(`Deleted ${path}`))
-        } else {
-          return resolve(ok(`Path ${path} was not empty`))
         }
+
+        return resolve(ok(`Path ${path} was not empty`))
       }
 
       return resolve(ok(`Path ${path} was not a directory`))

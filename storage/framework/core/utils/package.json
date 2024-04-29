@@ -64,7 +64,7 @@
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
     "export-size": "^0.7.0",
-    "yaml": "^2.4.1"
+    "yaml": "^2.4.2"
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -94,7 +94,7 @@
     "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
-    "yaml": "^2.4.1"
+    "yaml": "^2.4.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

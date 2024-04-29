@@ -1,5 +1,4 @@
 import { config } from '@stacksjs/config'
-/* eslint-disable no-new */
 import {
   Duration,
   CfnOutput as Output,

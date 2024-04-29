@@ -10,7 +10,6 @@ import {
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime'
 
-// eslint-disable-next-line node/prefer-global/process
 const client = new BedrockRuntimeClient({
   region: process.env.REGION || 'us-east-1',
 })

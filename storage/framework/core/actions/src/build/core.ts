@@ -21,7 +21,6 @@ for (const folder of dirs) {
   await $`bun run build`
   log.success(`${italic(dim(folder))} built`)
 
-  // eslint-disable-next-line no-console
   console.log(``)
 }
 

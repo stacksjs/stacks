@@ -1,10 +1,10 @@
 {
   // JavaScript
-  "prettier.enable": false, // Disable the default formatter, use eslint instead
+  "prettier.enable": false,
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit",
+    "quickfix.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
 
@@ -50,7 +50,6 @@
   // Stacks
   "vue.inlayHints.missingProps": true,
   "typescript.preferGoToSourceDefinition": true,
-  "eslint.experimental.useFlatConfig": true,
   "[stx]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
@@ -81,8 +80,13 @@
   },
   "explorer.confirmDragAndDrop": false,
   "todo-tree.highlights.enabled": true,
-  "cSpell.ignorePaths": ["node_modules", "lang/de.yml"],
-  "cSpell.dictionaries": ["stacks-dictionary"],
+  "cSpell.ignorePaths": [
+    "node_modules",
+    "lang/de.yml"
+  ],
+  "cSpell.dictionaries": [
+    "stacks-dictionary"
+  ],
   "cSpell.diagnosticLevel": "Hint",
   "cSpell.customDictionaries": {
     "stacks": {
@@ -94,6 +98,12 @@
     "custom": true // enable the `custom` dictionary
   },
   "terminal.integrated.scrollback": 10000,
-  "grammarly.files.include": ["**/README.md", "**/readme.md", "**/*.txt"],
-  "grammarly.files.exclude": ["**/dictionary.txt"]
+  "grammarly.files.include": [
+    "**/README.md",
+    "**/readme.md",
+    "**/*.txt"
+  ],
+  "grammarly.files.exclude": [
+    "**/dictionary.txt"
+  ],
 }

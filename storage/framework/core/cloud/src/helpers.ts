@@ -166,12 +166,7 @@ export async function getJumpBoxInstanceId(name?: string) {
     ],
   })
 
-  if (
-    data.Reservations &&
-    data.Reservations[0] &&
-    data.Reservations[0].Instances &&
-    data.Reservations[0].Instances[0]
-  )
+  if (data.Reservations?.[0].Instances?.[0])
     return data.Reservations[0].Instances[0].InstanceId
 
   return undefined
@@ -510,10 +505,8 @@ export async function addJumpBox(stackName?: string) {
   if (!r.value) return err('Security group not found when adding jump-box')
 
   const result = await getSecurityGroupId(r.value)
-  let sgId: string | undefined
-
   if (result.isErr()) return err(result.error)
-  else sgId = result.value
+  const sgId = result.value
 
   if (!sgId) return err('Security group not found when adding jump-box')
 
@@ -573,7 +566,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
     },
   })
 
-  return instance.Instances && instance.Instances[0]
+  return instance.Instances?.[0]
     ? ok(`Jump-box created with id ${instance.Instances[0].InstanceId}`)
     : err('Jump-box creation failed')
 }
@@ -586,17 +579,11 @@ export async function getJumpBoxSecurityGroupName() {
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({ InstanceIds: [jumpBoxId] })
 
-  if (
-    data.Reservations &&
-    data.Reservations[0] &&
-    data.Reservations[0].Instances &&
-    data.Reservations[0].Instances[0]
-  ) {
+  if (data.Reservations?.[0].Instances?.[0]) {
     const instance = data.Reservations[0].Instances[0]
     const securityGroups = instance.SecurityGroups
 
-    if (securityGroups && securityGroups[0])
-      return ok(securityGroups[0].GroupName)
+    if (securityGroups?.[0]) return ok(securityGroups[0].GroupName)
   }
 
   return err('Security group not found')
@@ -606,16 +593,11 @@ export async function getSecurityGroupFromInstanceId(instanceId: string) {
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({ InstanceIds: [instanceId] })
 
-  if (
-    data.Reservations &&
-    data.Reservations[0] &&
-    data.Reservations[0].Instances &&
-    data.Reservations[0].Instances[0]
-  ) {
+  if (data.Reservations?.[0].Instances?.[0]) {
     const instance = data.Reservations[0].Instances[0]
     const securityGroups = instance.SecurityGroups
 
-    if (securityGroups && securityGroups[0]) return securityGroups[0].GroupId // Returns the ID of the first security group
+    if (securityGroups?.[0]) return securityGroups[0].GroupId // Returns the ID of the first security group
   }
 
   return undefined

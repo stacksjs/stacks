@@ -64,7 +64,6 @@ const allTypes = [
       notification.message('Event has been created', {
         action: {
           label: 'Undo',
-          // eslint-disable-next-line no-console
           onClick: () => console.log('Undo'),
         },
         duration: 10000000,

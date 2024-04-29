@@ -21,7 +21,7 @@ async function findWhoIsServer(tld: string): Promise<string> {
     if (res.ok) {
       const body = await res.text()
       const server = body.match(/whois:\s+(.*)\s+/)
-      if (server) return server[1]!
+      if (server?.[1]) return server[1]
     }
   } catch (err) {
     console.error('Error in getting WhoIs server data from IANA', err)
@@ -35,20 +35,21 @@ async function findWhoIsServer(tld: string): Promise<string> {
  * @param obj Object which needs to be copied
  * @returns A copy of the object
  */
-// eslint-disable-next-line ts/no-unnecessary-type-constraint
 function shallowCopy<T>(obj: T): T {
   if (Array.isArray(obj)) {
     return obj.slice() as T // Clone the array
-  } else if (typeof obj === 'object' && obj !== null) {
+  }
+
+  if (typeof obj === 'object' && obj !== null) {
     const copy: any = {}
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key))
         copy[key] = shallowCopy(obj[key])
     }
     return copy as T
-  } else {
-    return obj // For primitive values, return as is
   }
+
+  return obj // For primitive values, return as is
 }
 
 /**
@@ -88,7 +89,6 @@ function getTLD(domain: string): keyof typeof SERVERS {
 
   if (tld) return tld
 
-  // eslint-disable-next-line no-console
   console.debug(
     'TLD is not found in server list. Returning last element after split as TLD!',
   )
@@ -312,49 +312,49 @@ export async function tcpWhois(
         reject(e)
       }
     })
-  } else {
-    const options: SocksClientOptions = {
-      proxy: {
-        host: proxy.ip,
-        port: proxy.port,
-        type: proxy.type === ProxyType.SOCKS5 ? 5 : 4,
-      },
-
-      command: 'connect',
-
-      destination: {
-        host: server,
-        port,
-      },
-    }
-
-    if (proxy.username && proxy.password) {
-      options.proxy.userId = proxy.username
-      options.proxy.password = proxy.password
-    }
-
-    return new Promise((resolve, reject) => {
-      SocksClient.createConnection(options, (err, info) => {
-        if (err) {
-          reject(err)
-        } else {
-          if (!info) reject(new Error('No socket info received!'))
-
-          if (queryOptions !== '') {
-            info?.socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
-          } else {
-            info?.socket.write(encoder.encode(`${domain}\r\n`))
-          }
-
-          info?.socket.on('data', (data) => {
-            resolve(decoder.decode(data))
-          })
-
-          info?.socket.resume()
-        }
-      })
-    })
   }
+
+  const options: SocksClientOptions = {
+    proxy: {
+      host: proxy.ip,
+      port: proxy.port,
+      type: proxy.type === ProxyType.SOCKS5 ? 5 : 4,
+    },
+
+    command: 'connect',
+
+    destination: {
+      host: server,
+      port,
+    },
+  }
+
+  if (proxy.username && proxy.password) {
+    options.proxy.userId = proxy.username
+    options.proxy.password = proxy.password
+  }
+
+  return new Promise((resolve, reject) => {
+    SocksClient.createConnection(options, (err, info) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (!info) reject(new Error('No socket info received!'))
+
+        if (queryOptions !== '') {
+          info?.socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
+        } else {
+          info?.socket.write(encoder.encode(`${domain}\r\n`))
+        }
+
+        info?.socket.on('data', (data) => {
+          resolve(decoder.decode(data))
+        })
+
+        info?.socket.resume()
+      }
+    })
+  })
 }
 
 /**
@@ -390,20 +390,17 @@ export async function whois(
   if (server === '') {
     let serverData = getWhoIsServer(tld as keyof typeof SERVERS)
     if (!serverData) {
-      // eslint-disable-next-line no-console
       console.debug(
         `No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`,
       )
       serverData = await findWhoIsServer(tld)
       if (!serverData) {
-        // eslint-disable-next-line no-console
         console.debug('WhoIs server could not be found!')
         return {
           _raw: '',
           parsedData: null,
         }
       }
-      // eslint-disable-next-line no-console
       console.debug(`WhoIs sever found for ${tld}: ${server}`)
     }
 
@@ -428,23 +425,22 @@ export async function whois(
         _raw: rawData,
         parsedData,
       }
-    } else {
-      let outputData: any | null = null
-      if (options && options.parseData)
-        outputData = shallowCopy(options.parseData)
+    }
 
-      try {
-        const parsedData = WhoIsParser.parseData(rawData, outputData)
-        return {
-          _raw: rawData,
-          parsedData,
-        }
-      } catch (err) {
-        console.error('Error in parsing WhoIs data!', err)
-        return {
-          _raw: rawData,
-          parsedData: null,
-        }
+    let outputData: any | null = null
+    if (options?.parseData) outputData = shallowCopy(options.parseData)
+
+    try {
+      const parsedData = WhoIsParser.parseData(rawData, outputData)
+      return {
+        _raw: rawData,
+        parsedData,
+      }
+    } catch (err) {
+      console.error('Error in parsing WhoIs data!', err)
+      return {
+        _raw: rawData,
+        parsedData: null,
       }
     }
   } catch (err) {
@@ -496,7 +492,7 @@ export async function batchWhois(
     }
   } else {
     for (let i = 0; i < domains.length; i++) {
-      const res = await whois(domains[i]!, parse, options)
+      const res = await whois(domains[i] as string, parse, options)
       response.push(res)
     }
   }

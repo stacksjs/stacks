@@ -39,17 +39,14 @@ export const frameworkDefaults = {
           // const base = server.config.base || '/'
           // const _print = server.printUrls
           server.printUrls = () => {
-            // eslint-disable-next-line no-console
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
             // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.localhost:3000/docs')}`)
-            // eslint-disable-next-line no-console
             console.log(
               `  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(
                 'https://stacks.localhost/docs',
               )}`,
             )
-            // eslint-disable-next-line no-console
             console.log(
               `  ${c.green('➜')}  ${c.bold('Temp URL')}: ${c.green(
                 'http://stacksjs.test:3000',

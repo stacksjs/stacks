@@ -117,7 +117,9 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
         params.utcOffset,
         params.unrefTimeout,
       )
-    } else if (params.utcOffset != null) {
+    }
+
+    if (params.utcOffset != null) {
       return new CronJob<OC, C>(
         params.cronTime,
         params.onTick,
@@ -129,19 +131,19 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
         params.utcOffset,
         params.unrefTimeout,
       )
-    } else {
-      return new CronJob<OC, C>(
-        params.cronTime,
-        params.onTick,
-        params.onComplete,
-        params.start,
-        params.timeZone,
-        params.context,
-        params.runOnInit,
-        params.utcOffset,
-        params.unrefTimeout,
-      )
     }
+
+    return new CronJob<OC, C>(
+      params.cronTime,
+      params.onTick,
+      params.onComplete,
+      params.start,
+      params.timeZone,
+      params.context,
+      params.runOnInit,
+      params.utcOffset,
+      params.unrefTimeout,
+    )
   }
 
   private _fnWrap(cmd: CronCommand<C, boolean>): CronCallback<C, boolean> {
@@ -221,7 +223,6 @@ export class CronJob<OC extends CronOnCompleteCommand | null = null, C = null> {
     let startTime: number
 
     const setCronTimeout = (t: number) => {
-      // eslint-disable-next-line ts/no-use-before-define
       this._timeout = setTimeout(callbackWrapper, t) as NodeJS.Timeout
       if (this.unrefTimeout && typeof this._timeout.unref === 'function')
         this._timeout.unref()

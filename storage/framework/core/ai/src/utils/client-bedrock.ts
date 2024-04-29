@@ -13,7 +13,6 @@ import {
   ListFoundationModelsCommand,
 } from '@aws-sdk/client-bedrock'
 
-// eslint-disable-next-line node/prefer-global/process
 const client = new BedrockClient({ region: process.env.REGION || 'us-east-1' })
 const logger = console // import your own logger
 

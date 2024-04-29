@@ -49,7 +49,6 @@ cli
 
       while (queue.length) {
         const currentPath = queue.shift()
-        // eslint-disable-next-line no-console
         console.log(`Checking ${currentPath}...`)
         const directoryContents = readdirSync(currentPath)
 
@@ -74,9 +73,7 @@ cli
     )
 
     if (projectPath) {
-      // eslint-disable-next-line no-console
       console.log(`Project found at ${projectPath}.`)
-      // eslint-disable-next-line no-console
       console.log(
         `Run 'cd ${projectPath}' to navigate to the project directory.`,
       )
@@ -87,7 +84,6 @@ cli
   })
 
 cli.command('version', 'Show the version of the Stacks CLI').action(() => {
-  // eslint-disable-next-line no-console
   console.log(version)
 })
 

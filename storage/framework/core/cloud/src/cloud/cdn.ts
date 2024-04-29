@@ -2,7 +2,6 @@ import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-/* eslint-disable no-new */
 import type {
   aws_certificatemanager as acm,
   aws_lambda as lambda,

@@ -30,7 +30,6 @@ export function list(buddy: CLI) {
           .replace('Commands:', '') // Remove "Commands:"
           .replace(/^\s+/gm, '') // Trim leading whitespace from the start of each line
 
-        // eslint-disable-next-line no-console
         console.log(cleanedCommands)
         return
       }

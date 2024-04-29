@@ -1,6 +1,5 @@
 import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
-/* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
 import {
   Duration,
@@ -253,7 +252,7 @@ export class ComputeStack {
       },
     })
 
-    secrets.grantRead(service.taskDefinition.executionRole!)
+    secrets.grantRead(service.taskDefinition.executionRole)
     container.addEnvironment('SECRETS_ARN', secrets.secretArn)
 
     const apiPrefix = 'api'

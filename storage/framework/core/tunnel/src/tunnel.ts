@@ -3,7 +3,6 @@ export async function localTunnel(options?: { port: number }) {
 
   if (!options?.port) options = { port }
 
-  // eslint-disable-next-line no-console
   console.log('Creating local tunnel', options.port)
 
   return 'localTunnel'

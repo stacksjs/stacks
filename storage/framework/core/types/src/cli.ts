@@ -315,7 +315,7 @@ export type ExamplesBoolean =
   | 'elements'
   | 'all'
   | 'force'
-export type ExamplesOption = (ExamplesString & ExamplesBoolean) | void
+export type ExamplesOption = ExamplesString & ExamplesBoolean
 export type ExamplesOptions = {
   [key in ExamplesString]: string
 } & {

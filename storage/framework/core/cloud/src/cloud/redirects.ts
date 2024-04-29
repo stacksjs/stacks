@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import { config } from '@stacksjs/config'
 import {
   RemovalPolicy,

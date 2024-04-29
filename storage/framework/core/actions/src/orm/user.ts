@@ -70,7 +70,7 @@ export class UserModel {
   public async update(
     obj: Partial<User>,
   ): Promise<User | undefined | Collection<User>> {
-    if (this._data && this._data?.id) {
+    if (this._data?.id) {
       await this.queryBuilderUpdate
         .set(obj)
         .where(this.keyName, '=', this._data?.id)
@@ -292,7 +292,7 @@ export class UserModel {
   }
 
   public async delete(): Promise<any> {
-    if (this._data && this._data?.id) {
+    if (this._data?.id) {
       if (this.useSoftDeletes)
         return await this.update({ deleted_at: new Date() })
 
@@ -301,7 +301,7 @@ export class UserModel {
   }
 
   public forceDelete(): any {
-    if (this._data && this._data?.id) {
+    if (this._data?.id) {
       return this.queryBuilderDelete
         .where(this.keyName, '=', this._data?.id)
         .executeTakeFirst()

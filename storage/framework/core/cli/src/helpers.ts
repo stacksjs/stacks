@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'

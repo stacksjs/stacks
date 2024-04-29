@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import {
   RemovalPolicy,
   aws_route53 as route53,

@@ -41,10 +41,9 @@ export default withPwa(
       //     configureServer(server) {
       //       // const base = server.config.base || '/'
       //       // const _print = server.printUrls
-      //       server.printUrls = () => { // eslint-disable-next-line no-console
+      //       server.printUrls = () => {
       //         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
       //         // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('http://stacks.localhost:3000/docs')}`)
-      //         // eslint-disable-next-line no-console
       //         console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('https://stacks.localhost/docs')}`)
       //       }
       //     },

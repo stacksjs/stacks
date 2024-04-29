@@ -2,7 +2,6 @@ import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { originRequestFunctionHash } from '@stacksjs/utils'
-/* eslint-disable no-new */
 import type { CfnResource } from 'aws-cdk-lib'
 import {
   AssetHashType,

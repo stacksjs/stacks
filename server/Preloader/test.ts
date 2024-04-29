@@ -11,7 +11,6 @@ import { type BunPlugin as Plugin, plugin } from 'bun'
 const customPlugin: Plugin = {
   name: 'Custom loader',
   setup() {
-    // eslint-disable-next-line no-console
     console.log('Custom loader, triggered before tests run')
   },
 }

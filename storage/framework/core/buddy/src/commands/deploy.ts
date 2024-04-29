@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'

@@ -1,4 +1,3 @@
-// /* eslint-disable no-new */
 // import { DateTime } from 'luxon'
 //
 // // @ts-expect-error - somehow types are missing even though they are installed

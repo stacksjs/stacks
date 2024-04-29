@@ -43,12 +43,8 @@ export function median(arr: number[]): number {
 
   let medianValue: number
 
-  if (sorted.length % 2 !== 0)
-    medianValue =
-      sorted[
-        mid
-      ]! // TypeScript now understands that `sorted[mid]` is safely accessed
-  else medianValue = (sorted[mid]! + sorted[mid - 1]!) / 2 // and that `sorted[mid]` and `sorted[mid - 1]` are safely accessed
+  if (sorted.length % 2 !== 0) medianValue = sorted[mid] as number
+  else medianValue = ((sorted[mid] as number) + (sorted[mid - 1] as number)) / 2 // or (sorted[mid - 1] + sorted[mid]) / 2
 
   return medianValue
 }
@@ -72,7 +68,7 @@ export function mode(arr: number[]): number {
       (a, b) =>
         arr.filter((v) => v === a).length - arr.filter((v) => v === b).length,
     )
-    .pop()!
+    .pop() as number
 }
 
 /**
@@ -241,5 +237,7 @@ export function covariance(array1: number[], array2: number[]): number {
   const mean1 = average(array1)
   const mean2 = average(array2)
 
-  return average(array1.map((num1, i) => (num1 - mean1) * (array2[i]! - mean2)))
+  return average(
+    array1.map((num1, i) => (num1 - mean1) * ((array2[i] as number) - mean2)),
+  )
 }

@@ -114,12 +114,12 @@ export function partition<T>(
     let i = 0
     for (const filter of filters) {
       if (filter(e, idx, arr)) {
-        result[i]!.push(e)
+        ;(result[i] as T[]).push(e)
         return
       }
       i += 1
     }
-    result[i]!.push(e)
+    ;(result[i] as T[]).push(e)
   })
   return result
 }
@@ -256,7 +256,7 @@ export function move<T>(array: T[], from: number, to: number): T[] {
   if (to < 0) to += len
 
   const item = array.splice(from, 1)[0]
-  array.splice(to, 0, item!)
+  array.splice(to, 0, item as T)
   return array
 }
 
@@ -305,7 +305,7 @@ export function sample<T>(arr: T[], count: number) {
 export function shuffle<T>(array: T[]): T[] {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[array[i]!, array[j]!] = [array[j]!, array[i]!]
+    ;[array[i] as T, array[j] as T] = [array[j] as T, array[i] as T]
   }
   return array
 }

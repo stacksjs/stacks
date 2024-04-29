@@ -181,19 +181,16 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      // eslint-disable-next-line no-console
       console.log(
         `   ${italic(
           'ℹ️   Removing your cloud resources takes a while to complete.',
         )}`,
       )
-      // eslint-disable-next-line no-console
       console.log(
         `   ${italic(
           'Please note, your backups will not yet be deleted. Though,',
         )}`,
       )
-      // eslint-disable-next-line no-console
       console.log(
         `   ${italic(
           'Backups are scheduled to delete themselves in 30 days.',

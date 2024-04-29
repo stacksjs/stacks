@@ -405,7 +405,6 @@ const sidebar = {
         { text: 'Docs', link: '/packages/docs' },
         { text: 'Env', link: '/packages/env' },
         { text: 'Error Handling', link: '/packages/error-handling' },
-        { text: 'ESLint Config', link: '/packages/eslint-config' },
         { text: 'Events', link: '/packages/events' },
         { text: 'Faker', link: '/packages/faker' },
         { text: 'Git', link: '/packages/git' },

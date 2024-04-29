@@ -137,7 +137,6 @@ export function objectPick<O extends object, T extends keyof O>(
  * @category Object
  */
 export function clearUndefined<T extends object>(obj: T): T {
-  // @ts-expect-error some description
   Object.keys(obj).forEach((key: string) =>
     obj[key] === undefined ? delete obj[key] : {},
   )
@@ -147,7 +146,6 @@ export function clearUndefined<T extends object>(obj: T): T {
 /**
  * Determines whether an object has a property with the specified name
  *
- * @see https://eslint.org/docs/rules/no-prototype-builtins
  * @category Object
  */
 export function hasOwnProperty<T>(obj: T, v: PropertyKey) {

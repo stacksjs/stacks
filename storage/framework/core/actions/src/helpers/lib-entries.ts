@@ -93,7 +93,7 @@ export function generateEntryPointData(type: LibraryType): string {
       process.exit()
     }
 
-    for (const fx of library.functions?.functions) {
+    for (const fx of library.functions.functions) {
       if (Array.isArray(fx))
         arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
       else arr.push(`export * from '${functionsPath(fx)}'`)
@@ -115,9 +115,7 @@ export function generateEntryPointData(type: LibraryType): string {
 
     arr = determineResetPreset()
 
-    for (const component of library.vueComponents?.tags.map(
-      (tag) => tag.name,
-    )) {
+    for (const component of library.vueComponents.tags.map((tag) => tag.name)) {
       if (Array.isArray(component))
         arr.push(
           `export { default as ${component[1]} } from '${componentsPath(
@@ -151,7 +149,7 @@ export function generateEntryPointData(type: LibraryType): string {
     process.exit()
   }
 
-  for (const component of library.webComponents?.tags.map((tag) => tag.name)) {
+  for (const component of library.webComponents.tags.map((tag) => tag.name)) {
     if (Array.isArray(component)) {
       imports.push(
         `import ${component[1]} from '${componentsPath(component[0])}.stx'`,
@@ -160,7 +158,7 @@ export function generateEntryPointData(type: LibraryType): string {
         `const ${component[1]}CustomElement = defineCustomElement(${component[1]})`,
       )
       definitions.push(
-        `customElements.define('${kebabCase(component[1]!)}', ${
+        `customElements.define('${kebabCase(component[1] as string)}', ${
           component[1]
         }CustomElement)`,
       )

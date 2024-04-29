@@ -697,16 +697,6 @@ export function listenersPath(path?: string): string {
 }
 
 /**
- * Returns the path to the `eslint` directory within the lint directory.
- *
- * @param path - The relative path to the file or directory within the eslint directory.
- * @returns The absolute path to the specified file or directory within the eslint directory.
- */
-export function eslintPath(path?: string): string {
-  return lintPath(`eslint/${path || ''}`)
-}
-
-/**
  * Returns the path to the `jobs` directory within the app directory.
  *
  * @param path - The relative path to the file or directory within the `jobs` directory.

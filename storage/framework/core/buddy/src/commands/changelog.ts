@@ -45,9 +45,7 @@ export function changelog(buddy: CLI) {
     })
 
   buddy.on('changelog:*', () => {
-    // eslint-disable-next-line no-console
     console.log('Invalid command: %s', buddy.args.join(' '))
-    // eslint-disable-next-line no-console
     console.log('See --help for a list of available commands.')
     process.exit(1)
   })

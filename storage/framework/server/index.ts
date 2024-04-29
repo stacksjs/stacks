@@ -5,7 +5,6 @@ import { retry } from '@stacksjs/utils'
 import type { Server, ServerWebSocket } from 'bun'
 
 process.on('SIGINT', () => {
-  // eslint-disable-next-line no-console
   console.log('Exited using Ctrl-C')
   process.exit()
 })
@@ -48,7 +47,6 @@ const server = Bun.serve({
     // })
 
     if (server.upgrade(request)) {
-      // eslint-disable-next-line no-console
       console.log('WebSocket upgraded')
       return
     }
@@ -57,14 +55,11 @@ const server = Bun.serve({
   },
 
   websocket: {
-    // eslint-disable-next-line unused-imports/no-unused-vars
     async open(ws: ServerWebSocket): Promise<void> {
-      // eslint-disable-next-line no-console
       console.log('WebSocket opened')
     },
 
     async message(ws: ServerWebSocket, message: string): Promise<void> {
-      // eslint-disable-next-line no-console
       console.log('WebSocket message', message)
     },
 
@@ -73,11 +68,9 @@ const server = Bun.serve({
       code: number,
       reason?: string,
     ): Promise<void> {
-      // eslint-disable-next-line no-console
       console.log('WebSocket closed', { code, reason })
     },
   },
 })
 
-// eslint-disable-next-line no-console
 console.log(`Listening on http://localhost:${server.port} ...`)

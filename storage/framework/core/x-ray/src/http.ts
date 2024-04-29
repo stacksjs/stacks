@@ -18,7 +18,7 @@ async function request(url = '', method = 'GET', data = {}): Promise<any> {
     Object.keys(data).length === 0 &&
     Object.getPrototypeOf(data) === Object.prototype
   )
-    delete fetchBody.body
+    fetchBody.body = undefined
 
   const response = await fetch(url, fetchBody)
 

@@ -246,7 +246,6 @@ async function getPivotTables(
 }
 
 export async function createAlterTableMigration(modelPath: string) {
-  // eslint-disable-next-line no-console
   console.log('createAlterTableMigration')
 
   const model = await import(modelPath)

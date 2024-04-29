@@ -1,7 +1,3 @@
-/* eslint-disable eslint-comments/no-unlimited-disable */
-/* eslint-disable */
-'use strict'
-
 const {
   CopyObjectCommand,
   GetObjectCommand,
@@ -69,9 +65,9 @@ exports.parseEvent = (data) => {
   // Validate characteristics of a SES event record.
   if (
     !data.event ||
-    !data.event.hasOwnProperty('Records') ||
+    !data.event.hasOwn('Records') ||
     data.event.Records.length !== 1 ||
-    !data.event.Records[0].hasOwnProperty('eventSource') ||
+    !data.event.Records[0].hasOwn('eventSource') ||
     data.event.Records[0].eventSource !== 'aws:ses' ||
     data.event.Records[0].eventVersion !== '1.0'
   ) {
@@ -103,7 +99,7 @@ exports.transformRecipients = (data) => {
     if (data.config.allowPlusSign)
       origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
 
-    if (data.config.forwardMapping.hasOwnProperty(origEmailKey)) {
+    if (data.config.forwardMapping.hasOwn(origEmailKey)) {
       newRecipients = newRecipients.concat(
         data.config.forwardMapping[origEmailKey],
       )
@@ -120,7 +116,7 @@ exports.transformRecipients = (data) => {
       }
       if (
         origEmailDomain &&
-        data.config.forwardMapping.hasOwnProperty(origEmailDomain)
+        data.config.forwardMapping.hasOwn(origEmailDomain)
       ) {
         newRecipients = newRecipients.concat(
           data.config.forwardMapping[origEmailDomain],
@@ -128,13 +124,13 @@ exports.transformRecipients = (data) => {
         data.originalRecipient = origEmail
       } else if (
         origEmailUser &&
-        data.config.forwardMapping.hasOwnProperty(origEmailUser)
+        data.config.forwardMapping.hasOwn(origEmailUser)
       ) {
         newRecipients = newRecipients.concat(
           data.config.forwardMapping[origEmailUser],
         )
         data.originalRecipient = origEmail
-      } else if (data.config.forwardMapping.hasOwnProperty('@')) {
+      } else if (data.config.forwardMapping.hasOwn('@')) {
         newRecipients = newRecipients.concat(data.config.forwardMapping['@'])
         data.originalRecipient = origEmail
       }
@@ -143,9 +139,9 @@ exports.transformRecipients = (data) => {
 
   if (!newRecipients.length) {
     data.log({
-      message:
-        'Finishing process. No new recipients found for ' +
-        `original destinations: ${data.originalRecipients.join(', ')}`,
+      message: `Finishing process. No new recipients found for original destinations: ${data.originalRecipients.join(
+        ', ',
+      )}`,
       level: 'info',
     })
     return data.callback()
@@ -230,13 +226,13 @@ exports.fetchMessage = (data) => {
  */
 exports.processMessage = (data) => {
   let match = data.emailData.match(/^((?:.+\r?\n)*)(\r?\n(?:.*\s+)*)/m)
-  let header = match && match[1] ? match[1] : data.emailData
-  const body = match && match[2] ? match[2] : ''
+  let header = match?.[1] ?? data.emailData
+  const body = match?.[2] ?? ''
 
   // Add "Reply-To:" with the "From" address if it doesn't already exists
   if (!/^reply-to:[\t ]?/im.test(header)) {
     match = header.match(/^from:[\t ]?(.*(?:\r?\n\s+.*)*\r?\n)/im)
-    const from = match && match[1] ? match[1] : ''
+    const from = match?.[1] ? match[1] : ''
     if (from) {
       header = `${header}Reply-To: ${from}`
       data.log({
@@ -363,27 +359,23 @@ exports.sendMessage = (data) => {
 exports.handler = (event, context, callback, overrides) => {
   console.log('AWS Lambda SES Forwarder')
 
-  const steps =
-    overrides && overrides.steps
-      ? overrides.steps
-      : [
-          exports.parseEvent,
-          exports.transformRecipients,
-          exports.fetchMessage,
-          exports.processMessage,
-          exports.sendMessage,
-        ]
+  const steps = overrides?.steps
+    ? overrides.steps
+    : [
+        exports.parseEvent,
+        exports.transformRecipients,
+        exports.fetchMessage,
+        exports.processMessage,
+        exports.sendMessage,
+      ]
   const data = {
     event,
     callback,
     context,
-    config: overrides && overrides.config ? overrides.config : defaultConfig,
-    log: overrides && overrides.log ? overrides.log : console.log,
-    ses: overrides && overrides.ses ? overrides.ses : new SESv2Client(),
-    s3:
-      overrides && overrides.s3
-        ? overrides.s3
-        : new S3Client({ signatureVersion: 'v4' }),
+    config: overrides.config ? overrides.config : defaultConfig,
+    log: overrides.log ? overrides.log : console.log,
+    ses: overrides.ses ? overrides.ses : new SESv2Client(),
+    s3: overrides.s3 ? overrides.s3 : new S3Client({ signatureVersion: 'v4' }),
   }
   Promise.series(steps, data)
     .then((data) => {

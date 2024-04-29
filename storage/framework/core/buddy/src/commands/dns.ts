@@ -65,8 +65,8 @@ export function dns(buddy: CLI) {
       // if (options.json && options.pretty)
       //   prettyOutput = true
 
-      delete options.pretty
-      delete options.p
+      options.pretty = undefined
+      options.p = undefined
 
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)
