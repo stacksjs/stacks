@@ -15,7 +15,6 @@ export default {
       count: 10,
     },
   },
-
   attributes: {
     title: {
       validator: {
@@ -33,8 +32,7 @@ export default {
 
       factory: () => faker.datatype.string(),
     },
-
-    user_id: {
+    subscriber_id: {
       validator: {
         rule: schema.number(),
         message: '',

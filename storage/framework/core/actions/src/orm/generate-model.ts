@@ -1,6 +1,6 @@
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Model } from '@stacksjs/types'
+import type {  ModelOptions } from '@stacksjs/types'
 
 export interface FieldArrayElement {
   entity: string
@@ -13,6 +13,10 @@ export interface ModelElement {
   default: string | number | boolean | Date | undefined | null
   unique: boolean
   fieldArray: FieldArrayElement | null
+}
+
+interface ModelDefault {
+  default: ModelOptions
 }
 
 await initiateModelGeneration()
@@ -44,16 +48,17 @@ async function initiateModelGeneration(): Promise<void> {
   }
 }
 
-async function getRelations(model: any) {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany']
+async function getRelations(model: ModelDefault): Promise<any[]> {
+  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
 
   for (const relation of relationsArray) {
     if (hasRelations(model.default, relation)) {
       for (const relationInstance of model.default[relation]) {
+
         const modelRelationPath = path.userModelsPath(
-          `${relationInstance.model}.ts`,
+          `${relationInstance.model.name}.ts`,
         )
 
         const modelRelation = await import(modelRelationPath)
@@ -62,9 +67,12 @@ async function getRelations(model: any) {
 
         relationships.push({
           relationship: relation,
-          model: relationInstance.model,
+          model: relationInstance.model.name,
           table: modelRelation.default.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
+          relationName: relationInstance.relationName || '',
+          throughModel: relationInstance.through || '',
+          throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable:
             relationInstance?.pivotTable ||
             `${formattedModelName}_${modelRelation.default.table}`,
@@ -163,7 +171,7 @@ async function setKyselyTypes() {
 }
 
 async function extractFields(
-  model: any,
+  model: ModelDefault,
   modelFile: string,
 ): Promise<ModelElement[]> {
   // TODO: we can improve this type
@@ -234,6 +242,9 @@ function parseRule(rule: string): FieldArrayElement | null {
 function getRelationType(relation: string): string {
   const belongToType = /belongs/
   const hasType = /has/
+  const throughType = /Through/
+
+  if (throughType.test(relation)) return 'throughType'
 
   if (belongToType.test(relation)) return 'belongsType'
 
@@ -254,16 +265,16 @@ function getRelationCount(relation: string): string {
 }
 
 async function getPivotTables(
-  model: any,
+  model: ModelDefault,
 ): Promise<
-  { table: string; firstForeignKey: string; secondForeignKey: string }[]
+  { table: string; firstForeignKey?: string; secondForeignKey?: string }[]
 > {
   const pivotTable = []
 
   if ('belongsToMany' in model.default) {
-    for (const belongsToManyRelation of model.default.belongsToMany) {
+    for (const belongsToManyRelation of  model.default.belongsToMany) {
       const modelRelationPath = path.userModelsPath(
-        `${belongsToManyRelation.model}.ts`,
+        `${belongsToManyRelation.model.name}.ts`,
       )
       const modelRelation = await import(modelRelationPath)
 
@@ -271,7 +282,7 @@ async function getPivotTables(
 
       pivotTable.push({
         table:
-          belongsToManyRelation?.pivotTable ||
+        belongsToManyRelation?.pivotTable ||
           `${formattedModelName}_${modelRelation.default.table}`,
         firstForeignKey: belongsToManyRelation.firstForeignKey,
         secondForeignKey: belongsToManyRelation.secondForeignKey,
@@ -286,9 +297,9 @@ async function getPivotTables(
 
 async function generateModelString(
   tableName: string,
-  model: any,
+  model: ModelDefault,
   attributes: ModelElement[],
-) {
+): Promise<string> {
   const modelName = model.default.name
 
   // users -> Users
@@ -305,8 +316,10 @@ async function generateModelString(
 
   const relations = await getRelations(model)
 
-  for (const relationInstance of relations)
+  for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
+  }
+    
 
   for (const relation of relations) {
     const modelRelation = relation.model
@@ -320,9 +333,40 @@ async function generateModelString(
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
-    if (relationType === 'hasType' && relationCount === 'many') {
+    if (relationType === 'throughType') {
+      const relationName = relation.relationName || formattedModelName + modelRelation
+      const throughRelation = relation.throughModel
+      const formattedThroughRelation = relation.throughModel.name.toLowerCase()
+      const throughTableRelation = throughRelation.table
+      const foreignKeyThroughRelation = relation.throughForeignKey || formattedThroughRelation + '_id'
+      
       relationMethods += `
-      async ${tableRelation}() {
+      async ${relationName}() {
+        if (this.${formattedModelName}.id === undefined)
+          throw new Error('Relation Error!')
+
+        const firstModel = await db.selectFrom('${throughTableRelation}')
+        .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
+        .selectAll()
+        .executeTakeFirst()
+
+        if (! firstModel) 
+          throw new Error('Model Relation Not Found!')
+
+        const finalModel = await db.selectFrom('${tableRelation}')
+        .where('${foreignKeyThroughRelation}', '=', firstModel.id)
+        .selectAll()
+        .executeTakeFirst()
+
+        return new ${modelRelation}.modelInstance(finalModel)
+      }\n\n`
+    }
+
+    if (relationType === 'hasType' && relationCount === 'many') {
+      const relationName = relation.relationName || tableRelation
+
+      relationMethods += `
+      async ${relationName}() {
         if (this.${formattedModelName}.id === undefined)
           throw new Error('Relation Error!')
 
@@ -336,8 +380,9 @@ async function generateModelString(
     }
 
     if (relationType === 'hasType' && relationCount === 'one') {
+      const relationName = relation.relationName || formattedModelRelation
       relationMethods += `
-      async ${formattedModelRelation}() {
+      async ${relationName}() {
         if (this.${formattedModelName}.id === undefined)
           throw new Error('Relation Error!')
 
@@ -354,8 +399,10 @@ async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
+      const relationName = relation.relationName || formattedModelRelation
+
       relationMethods += `
-      async ${formattedModelRelation}() {
+      async ${relationName}() {
         if (this.${foreignKeyRelation} === undefined)
           throw new Error('Relation Error!')
 
@@ -373,9 +420,10 @@ async function generateModelString(
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const pivotTable = pivotTableRelation || tableRelation
-
+      const relationName = relation.relationName || formattedModelName + capitalizeTableRelation
+      
       relationMethods += `
-      async ${formattedModelName}${capitalizeTableRelation}() {
+      async ${relationName}() {
         if (this.${formattedModelName}.id === undefined)
           throw new Error('Relation Error!')
         
@@ -459,7 +507,7 @@ async function generateModelString(
         if (!model)
           return null
     
-        return new ${modelName}Model(${formattedModelName})
+        return new ${modelName}Model(model)
       }
     
       static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]) {

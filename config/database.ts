@@ -9,7 +9,7 @@ import type { DatabaseConfig } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  default: env.DB_CONNECTION || 'sqlite',
+  default: env.DB_CONNECTION || 'mysql',
 
   connections: {
     sqlite: {
