@@ -1,4 +1,3 @@
-import process from 'node:process'
 import os from 'node:os'
 import {
   basename,
@@ -14,6 +13,7 @@ import {
   sep,
   toNamespacedPath,
 } from 'node:path'
+import process from 'node:process'
 import { runCommandSync } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 
@@ -213,8 +213,7 @@ export function aliasPath() {
 export function buddyPath(path?: string, options?: { relative?: boolean }) {
   const absolutePath = corePath(`buddy/${path || ''}`)
 
-  if (options?.relative)
-    return relative(process.cwd(), absolutePath)
+  if (options?.relative) return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -597,7 +596,7 @@ export function fakerPath(path?: string): string {
  */
 export function frameworkPath(
   path?: string,
-  options?: { relative?: boolean, cwd?: string },
+  options?: { relative?: boolean; cwd?: string },
 ): string {
   const absolutePath = projectStoragePath(`framework/${path || ''}`)
 
@@ -661,8 +660,7 @@ export function layoutsPath(
 ): string {
   const absolutePath = resourcesPath(`layouts/${path || ''}`)
 
-  if (options?.relative)
-    return relative(process.cwd(), absolutePath)
+  if (options?.relative) return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -852,7 +850,10 @@ export function paymentsPath(path?: string): string {
  * @param filePath - The relative path to append to the project path. Defaults to an empty string.
  * @returns The absolute path to the specified file or directory within the project directory.
  */
-export function projectPath(filePath = '', options?: { relative: boolean }): string {
+export function projectPath(
+  filePath = '',
+  options?: { relative: boolean },
+): string {
   let path = process.cwd()
 
   while (path.includes('storage')) path = resolve(path, '..')
@@ -860,8 +861,7 @@ export function projectPath(filePath = '', options?: { relative: boolean }): str
   const finalPath = resolve(path, filePath)
 
   // If the `relative` option is true, return the path relative to the current working directory
-  if (options?.relative)
-    return relative(process.cwd(), finalPath)
+  if (options?.relative) return relative(process.cwd(), finalPath)
 
   return finalPath
 }
@@ -974,8 +974,7 @@ export function realtimePath(path?: string) {
 export function resourcesPath(path?: string, options?: { relative?: boolean }) {
   const absolutePath = projectStoragePath(`resources/${path || ''}`)
 
-  if (options?.relative)
-    return relative(process.cwd(), absolutePath)
+  if (options?.relative) return relative(process.cwd(), absolutePath)
 
   return projectPath(`resources/${path || ''}`)
 }
@@ -1011,8 +1010,7 @@ export function routerPath(path?: string) {
 export function routesPath(path?: string, options?: { relative?: boolean }) {
   const absolutePath = resourcesPath(`routes/${path || ''}`)
 
-  if (options?.relative)
-    return relative(process.cwd(), absolutePath)
+  if (options?.relative) return relative(process.cwd(), absolutePath)
 
   return projectPath(`routes/${path || ''}`)
 }

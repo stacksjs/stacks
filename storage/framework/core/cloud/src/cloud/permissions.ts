@@ -1,8 +1,8 @@
+import { config } from '@stacksjs/config'
+import { env } from '@stacksjs/env'
+import { string } from '@stacksjs/strings'
 import { SecretValue, aws_iam as iam } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from '@stacksjs/config'
-import { string } from '@stacksjs/strings'
-import { env } from '@stacksjs/env'
 import type { NestedCloudProps } from '../types'
 
 export interface PermissionsStackProps extends NestedCloudProps {
@@ -25,7 +25,9 @@ export class PermissionsStack {
         passwordResetRequired: true,
       })
 
-      user.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'))
+      user.addManagedPolicy(
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
+      )
 
       // TODO: email the userEmail their credentials
     }

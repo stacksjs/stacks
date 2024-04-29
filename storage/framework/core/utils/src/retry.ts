@@ -1,18 +1,26 @@
 export function retry(fn: Function, options: any): Promise<any> {
-  const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
+  const {
+    retries = 3,
+    initialDelay = 1000,
+    backoffFactor = 2,
+    jitter = true,
+  } = options
 
   return new Promise((resolve, reject) => {
     let attemptCount = 0
     const attempt = async () => {
       try {
         resolve(await fn())
-      }
-      catch (err) {
+      } catch (err) {
         if (attemptCount >= retries) {
           reject(err)
-        }
-        else {
-          const delay = calculateDelay(attemptCount, initialDelay, backoffFactor, jitter)
+        } else {
+          const delay = calculateDelay(
+            attemptCount,
+            initialDelay,
+            backoffFactor,
+            jitter,
+          )
           setTimeout(() => attempt(), delay)
           attemptCount++
         }
@@ -22,7 +30,12 @@ export function retry(fn: Function, options: any): Promise<any> {
   })
 }
 
-export function calculateDelay(attemptCount: number, initialDelay: number, backoffFactor: number, jitter?: boolean): number {
+export function calculateDelay(
+  attemptCount: number,
+  initialDelay: number,
+  backoffFactor: number,
+  jitter?: boolean,
+): number {
   let delay = initialDelay * backoffFactor ** attemptCount
   if (jitter) {
     const random = Math.random() // Generates a number between 0 and 1

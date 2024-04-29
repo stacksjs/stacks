@@ -7,7 +7,7 @@ export type EventType = string | symbol
 export type Handler<T = unknown> = (event: T) => void
 export type WildcardHandler<T = Record<string, unknown>> = (
   type: keyof T,
-  event: T[keyof T]
+  event: T[keyof T],
 ) => void
 
 // An array of all currently registered event handlers for a type
@@ -25,13 +25,22 @@ export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
 export interface Emitter<Events extends Record<EventType, unknown>> {
   all: EventHandlerMap<Events>
 
-  on: (<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) => void) & ((type: '*', handler: WildcardHandler<Events>) => void)
+  on: (<Key extends keyof Events>(
+    type: Key,
+    handler: Handler<Events[Key]>,
+  ) => void) &
+    ((type: '*', handler: WildcardHandler<Events>) => void)
 
-  off: (<Key extends keyof Events>(type: Key, handler?: Handler<Events[Key]>) => void) & ((type: '*', handler?: WildcardHandler<Events>) => void)
+  off: (<Key extends keyof Events>(
+    type: Key,
+    handler?: Handler<Events[Key]>,
+  ) => void) &
+    ((type: '*', handler?: WildcardHandler<Events>) => void)
 
-  emit: (<Key extends keyof Events>(type: Key, event: Events[Key]) => void) & (<Key extends keyof Events>(
-    type: undefined extends Events[Key] ? Key : never
-  ) => void)
+  emit: (<Key extends keyof Events>(type: Key, event: Events[Key]) => void) &
+    (<Key extends keyof Events>(
+      type: undefined extends Events[Key] ? Key : never,
+    ) => void)
 }
 
 /**
@@ -54,13 +63,20 @@ export default function mitt<Events extends Record<EventType, unknown>>(
      * @param {Function} handler Function to call in response to given event
      * @memberOf mitt
      */
-    on<Key extends keyof Events>(type: Key | '*', handler: Handler<Events[Key]> | WildcardHandler<Events>) {
-      const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = all!.get(type)
+    on<Key extends keyof Events>(
+      type: Key | '*',
+      handler: Handler<Events[Key]> | WildcardHandler<Events>,
+    ) {
+      const handlers:
+        | Array<Handler<Events[Key]> | WildcardHandler<Events>>
+        | undefined = all!.get(type)
       if (handlers)
         handlers.push(handler as Handler<Events[Key]> | WildcardHandler<Events>)
+      // Explicitly assert the type of the handler array being set in the map. Unsure if there is a better way to do this
       else
-        // Explicitly assert the type of the handler array being set in the map. Unsure if there is a better way to do this
-        all!.set(type, [handler] as EventHandlerList<Events[keyof Events]> | WildCardEventHandlerList<Events>)
+        all!.set(type, [handler] as
+          | EventHandlerList<Events[keyof Events]>
+          | WildCardEventHandlerList<Events>)
     },
 
     /**
@@ -70,15 +86,20 @@ export default function mitt<Events extends Record<EventType, unknown>>(
      * @param {Function} [handler] Handler function to remove
      * @memberOf mitt
      */
-    off<Key extends keyof Events>(type: Key | '*', handler?: Handler<Events[Key]> | WildcardHandler<Events>) {
-      const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = all!.get(type)
+    off<Key extends keyof Events>(
+      type: Key | '*',
+      handler?: Handler<Events[Key]> | WildcardHandler<Events>,
+    ) {
+      const handlers:
+        | Array<Handler<Events[Key]> | WildcardHandler<Events>>
+        | undefined = all!.get(type)
       if (handlers) {
         if (handler) {
-          const index = handlers.indexOf(handler as Handler<Events[Key]> | WildcardHandler<Events>)
-          if (index > -1)
-            handlers.splice(index, 1)
-        }
-        else {
+          const index = handlers.indexOf(
+            handler as Handler<Events[Key]> | WildcardHandler<Events>,
+          )
+          if (index > -1) handlers.splice(index, 1)
+        } else {
           all!.set(type, [])
         }
       }
@@ -97,15 +118,15 @@ export default function mitt<Events extends Record<EventType, unknown>>(
     emit<Key extends keyof Events>(type: Key, evt?: Events[Key]) {
       let handlers = all!.get(type)
       if (handlers) {
-        (handlers as EventHandlerList<Events[keyof Events]>)
+        ;(handlers as EventHandlerList<Events[keyof Events]>)
           .slice()
-          .forEach(handler => handler(evt!))
+          .forEach((handler) => handler(evt!))
       }
       handlers = all!.get('*')
       if (handlers) {
-        (handlers as WildCardEventHandlerList<Events>)
+        ;(handlers as WildCardEventHandlerList<Events>)
           .slice()
-          .forEach(handler => handler(type, evt!))
+          .forEach((handler) => handler(type, evt!))
       }
     },
   }

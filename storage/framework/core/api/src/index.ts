@@ -1,6 +1,6 @@
-import { ref } from 'vue'
 import { ofetch } from 'ofetch'
 import type { FetchOptions } from 'ofetch'
+import { ref } from 'vue'
 
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
@@ -14,14 +14,12 @@ const token = ref('')
 export async function useHttpFetch(endpoint = '') {
   let baseURL = '/'
 
-  if (endpoint)
-    baseURL = endpoint
+  if (endpoint) baseURL = endpoint
 
   async function post(url: string, params?: Params): Promise<any> {
     const headers: any = { Accept: 'application/json' }
 
-    if (token.value)
-      headers.Authorization = `Bearer ${token.value}`
+    if (token.value) headers.Authorization = `Bearer ${token.value}`
 
     const parameters: FetchOptions = {
       ...params,
@@ -36,12 +34,16 @@ export async function useHttpFetch(endpoint = '') {
     loading.value = true
 
     try {
-      const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(url, parameters)
+      const result:
+        | string
+        | FetchResponse
+        | Blob
+        | ArrayBuffer
+        | ReadableStream<Uint8Array> = await ofetch(url, parameters)
 
       loading.value = false
       return result
-    }
-    catch (err: any) {
+    } catch (err: any) {
       loading.value = false
 
       throw err
@@ -51,8 +53,7 @@ export async function useHttpFetch(endpoint = '') {
   async function get(url: string, params?: Params): Promise<any> {
     const headers: any = { Accept: 'application/json' }
 
-    if (token.value)
-      headers.Authorization = `Bearer ${token.value}`
+    if (token.value) headers.Authorization = `Bearer ${token.value}`
 
     const parameters: FetchOptions = {
       ...params,
@@ -64,14 +65,13 @@ export async function useHttpFetch(endpoint = '') {
       },
     }
 
-    return await ofetch(url, parameters) as FetchResponse
+    return (await ofetch(url, parameters)) as FetchResponse
   }
 
   async function patch(url: string, params?: Params): Promise<any> {
     const headers: any = { Accept: 'application/json' }
 
-    if (token.value)
-      headers.Authorization = `Bearer ${token.value}`
+    if (token.value) headers.Authorization = `Bearer ${token.value}`
 
     const parameters: FetchOptions = {
       ...params,
@@ -85,14 +85,13 @@ export async function useHttpFetch(endpoint = '') {
 
     loading.value = true
 
-    return await ofetch(url, parameters) as FetchResponse
+    return (await ofetch(url, parameters)) as FetchResponse
   }
 
   async function destroy(url: string, params?: Params): Promise<any> {
     const headers: any = { Accept: 'application/json' }
 
-    if (token.value)
-      headers.Authorization = `Bearer ${token.value}`
+    if (token.value) headers.Authorization = `Bearer ${token.value}`
 
     const parameters: FetchOptions = {
       ...params,
@@ -105,7 +104,7 @@ export async function useHttpFetch(endpoint = '') {
 
     loading.value = true
 
-    return await ofetch(url, parameters) as FetchResponse
+    return (await ofetch(url, parameters)) as FetchResponse
   }
 
   function setToken(authToken: string) {

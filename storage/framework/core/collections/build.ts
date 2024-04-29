@@ -9,9 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
 
-  external: [
-    'collect.js',
-  ],
+  external: ['collect.js'],
 })
 
 await outro({

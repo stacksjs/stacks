@@ -21,11 +21,9 @@ async function findWhoIsServer(tld: string): Promise<string> {
     if (res.ok) {
       const body = await res.text()
       const server = body.match(/whois:\s+(.*)\s+/)
-      if (server)
-        return server[1]!
+      if (server) return server[1]!
     }
-  }
-  catch (err) {
+  } catch (err) {
     console.error('Error in getting WhoIs server data from IANA', err)
   }
 
@@ -38,19 +36,17 @@ async function findWhoIsServer(tld: string): Promise<string> {
  * @returns A copy of the object
  */
 // eslint-disable-next-line ts/no-unnecessary-type-constraint
-function shallowCopy<T extends any>(obj: T): T {
+function shallowCopy<T>(obj: T): T {
   if (Array.isArray(obj)) {
     return obj.slice() as T // Clone the array
-  }
-  else if (typeof obj === 'object' && obj !== null) {
+  } else if (typeof obj === 'object' && obj !== null) {
     const copy: any = {}
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key))
         copy[key] = shallowCopy(obj[key])
     }
     return copy as T
-  }
-  else {
+  } else {
     return obj // For primitive values, return as is
   }
 }
@@ -79,8 +75,7 @@ function getTLD(domain: string): keyof typeof SERVERS {
 
   while (true) {
     const domainData = domainStr.split('.')
-    if (domainData.length < 2)
-      break
+    if (domainData.length < 2) break
 
     const tldCheck = domainData.slice(1).join('.') as keyof typeof SERVERS
     const server = SERVERS[tldCheck]
@@ -91,11 +86,12 @@ function getTLD(domain: string): keyof typeof SERVERS {
     domainStr = tldCheck
   }
 
-  if (tld)
-    return tld
+  if (tld) return tld
 
   // eslint-disable-next-line no-console
-  console.debug('TLD is not found in server list. Returning last element after split as TLD!')
+  console.debug(
+    'TLD is not found in server list. Returning last element after split as TLD!',
+  )
 
   const domainData = domain.split('.')
   return domainData[domainData.length - 1] as keyof typeof SERVERS
@@ -227,27 +223,22 @@ export class WhoIsParser {
       if (letter === '\n' || (lastLetter === ':' && letter === ' ')) {
         if (lastStr.trim() in outputData) {
           lastField = lastStr.trim()
-        }
-        else if (lastField !== null) {
+        } else if (lastField !== null) {
           const x = lastStr.trim()
           if (x !== '') {
             const obj = outputData[lastField]
-            if (Array.isArray(obj))
-              obj.push(x)
-            else
-              outputData[lastField] = x
+            if (Array.isArray(obj)) obj.push(x)
+            else outputData[lastField] = x
 
             lastField = null
           }
         }
         lastStr = ''
-      }
-      else if (letter !== ':') {
+      } else if (letter !== ':') {
         lastStr = lastStr + letter
       }
       lastLetter = letter as string
-      if (lastStr === 'Record maintained by' || lastStr === '>>>')
-        break
+      if (lastStr === 'Record maintained by' || lastStr === '>>>') break
     }
 
     return outputData
@@ -268,7 +259,7 @@ export class WhoIsParser {
         'Updated Date': '',
         'Registry Expiry Date': '',
         'Domain Status': [],
-        'Registrar': '',
+        Registrar: '',
       }
     }
 
@@ -289,7 +280,14 @@ export class WhoIsParser {
  * @param proxy {@link ProxyData}
  * @returns The {string} WhoIs response for the query. Empty string is returned for errors
  */
-export async function tcpWhois(domain: string, queryOptions: string, server: string, port: number, encoding: string, proxy: ProxyData | null): Promise<string> {
+export async function tcpWhois(
+  domain: string,
+  queryOptions: string,
+  server: string,
+  port: number,
+  encoding: string,
+  proxy: ProxyData | null,
+): Promise<string> {
   const decoder = new TextDecoder(encoding)
   const encoder = new TextEncoder()
 
@@ -300,8 +298,7 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
         socket.connect({ port, host: server }, () => {
           if (queryOptions !== '')
             socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
-          else
-            socket.write(encoder.encode(`${domain}\r\n`))
+          else socket.write(encoder.encode(`${domain}\r\n`))
         })
 
         socket.on('data', (data) => {
@@ -311,13 +308,11 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
         socket.on('error', (error) => {
           reject(error)
         })
-      }
-      catch (e) {
+      } catch (e) {
         reject(e)
       }
     })
-  }
-  else {
+  } else {
     const options: SocksClientOptions = {
       proxy: {
         host: proxy.ip,
@@ -342,20 +337,13 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
       SocksClient.createConnection(options, (err, info) => {
         if (err) {
           reject(err)
-        }
-        else {
-          if (!info)
-            reject(new Error('No socket info received!'))
+        } else {
+          if (!info) reject(new Error('No socket info received!'))
 
           if (queryOptions !== '') {
-            info?.socket.write(
-              encoder.encode(`${queryOptions} ${domain}\r\n`),
-            )
-          }
-          else {
-            info?.socket.write(
-              encoder.encode(`${domain}\r\n`),
-            )
+            info?.socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
+          } else {
+            info?.socket.write(encoder.encode(`${domain}\r\n`))
           }
 
           info?.socket.on('data', (data) => {
@@ -377,7 +365,11 @@ export async function tcpWhois(domain: string, queryOptions: string, server: str
  * @param options {@link WhoIsOptions}
  * @returns {@link WhoIsResponse} Returns a {@link WhoIsResponse} object which contains the raw text and parsed data (if parse is true)
  */
-export async function whois(domain: string, parse: boolean = false, options: WhoIsOptions | null = null): Promise<WhoIsResponse> {
+export async function whois(
+  domain: string,
+  parse = false,
+  options: WhoIsOptions | null = null,
+): Promise<WhoIsResponse> {
   let tld: string
   let port = 43
   let server = ''
@@ -387,8 +379,7 @@ export async function whois(domain: string, parse: boolean = false, options: Who
   if (!options) {
     tld = getTLD(domain)
     proxy = null
-  }
-  else {
+  } else {
     tld = options.tld ? options.tld : getTLD(domain)
     encoding = options.encoding ? options.encoding : 'utf-8'
     proxy = options.proxy ? options.proxy : null
@@ -400,7 +391,9 @@ export async function whois(domain: string, parse: boolean = false, options: Who
     let serverData = getWhoIsServer(tld as keyof typeof SERVERS)
     if (!serverData) {
       // eslint-disable-next-line no-console
-      console.debug(`No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`)
+      console.debug(
+        `No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`,
+      )
       serverData = await findWhoIsServer(tld)
       if (!serverData) {
         // eslint-disable-next-line no-console
@@ -421,15 +414,21 @@ export async function whois(domain: string, parse: boolean = false, options: Who
   const queryOptions = qOptions || ''
 
   try {
-    const rawData = await tcpWhois(domain, queryOptions, server, port, encoding, proxy)
+    const rawData = await tcpWhois(
+      domain,
+      queryOptions,
+      server,
+      port,
+      encoding,
+      proxy,
+    )
     if (!parse) {
       const parsedData = WhoIsParser.parseData(rawData, null)
       return {
         _raw: rawData,
         parsedData,
       }
-    }
-    else {
+    } else {
       let outputData: any | null = null
       if (options && options.parseData)
         outputData = shallowCopy(options.parseData)
@@ -440,8 +439,7 @@ export async function whois(domain: string, parse: boolean = false, options: Who
           _raw: rawData,
           parsedData,
         }
-      }
-      catch (err) {
+      } catch (err) {
         console.error('Error in parsing WhoIs data!', err)
         return {
           _raw: rawData,
@@ -449,8 +447,7 @@ export async function whois(domain: string, parse: boolean = false, options: Who
         }
       }
     }
-  }
-  catch (err) {
+  } catch (err) {
     return {
       _raw: '',
       parsedData: null,
@@ -458,7 +455,10 @@ export async function whois(domain: string, parse: boolean = false, options: Who
   }
 }
 
-export function lookup(domain: string, options: WhoIsOptions | null = null): Promise<WhoIsResponse> {
+export function lookup(
+  domain: string,
+  options: WhoIsOptions | null = null,
+): Promise<WhoIsResponse> {
   return whois(domain, true, options)
 }
 
@@ -474,21 +474,27 @@ export function lookup(domain: string, options: WhoIsOptions | null = null): Pro
  * @param options {@link WhoIsOptions}
  * @returns Array of {@link WhoIsResponse} for all the domains. Order is not guaranteed
  */
-export async function batchWhois(domains: string[], parallel: boolean = false, threads: number = 1, parse: boolean = false, options: WhoIsOptions | null = null): Promise<WhoIsResponse[]> {
+export async function batchWhois(
+  domains: string[],
+  parallel = false,
+  threads = 1,
+  parse = false,
+  options: WhoIsOptions | null = null,
+): Promise<WhoIsResponse[]> {
   let response: WhoIsResponse[] = []
 
   if (parallel) {
-    if (threads > domains.length)
-      threads = domains.length
+    if (threads > domains.length) threads = domains.length
 
     for (let i = 0; i < domains.length; i += threads) {
       const batch = domains.slice(i, i + threads)
-      response = await Promise.all(batch.map(async (domain) => {
-        return await whois(domain, parse, options)
-      }))
+      response = await Promise.all(
+        batch.map(async (domain) => {
+          return await whois(domain, parse, options)
+        }),
+      )
     }
-  }
-  else {
+  } else {
     for (let i = 0; i < domains.length; i++) {
       const res = await whois(domains[i]!, parse, options)
       response.push(res)

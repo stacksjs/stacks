@@ -14,11 +14,7 @@ export default {
     address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
   },
 
-  mailboxes: [
-    'chris@stacksjs.org',
-    'blake@stacksjs.org',
-    'glenn@stacksjs.org',
-  ],
+  mailboxes: ['chris@stacksjs.org', 'blake@stacksjs.org', 'glenn@stacksjs.org'],
 
   url: env.APP_URL || 'http://localhost:3000',
   charset: 'UTF-8',

@@ -1,35 +1,22 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
-import { Action, NpmScript } from '@stacksjs/enums'
-import type { GeneratorOptions } from '@stacksjs/types'
 import { runCommand } from '@stacksjs/cli'
-import { runNpmScript } from '@stacksjs/utils'
+import { Action, NpmScript } from '@stacksjs/enums'
+import { log } from '@stacksjs/logging'
 import { frameworkPath, projectPath } from '@stacksjs/path'
+import type { GeneratorOptions } from '@stacksjs/types'
+import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers/utils'
 
 // import { files } from '@stacksjs/storage'
 
 export async function invoke(options?: GeneratorOptions) {
-  if (options?.types)
-    await generateTypes(options)
-
-  else if (options?.entries)
-    await generateLibEntries(options)
-
-  else if (options?.webTypes)
-    await generateWebTypes(options)
-
-  else if (options?.customData)
-    await generateVsCodeCustomData(options)
-
-  else if (options?.ideHelpers)
-    await generateIdeHelpers(options)
-
-  else if (options?.componentMeta)
-    await generateComponentMeta(options)
-
-  else if (options?.coreSymlink)
-    await generateCoreSymlink()
+  if (options?.types) await generateTypes(options)
+  else if (options?.entries) await generateLibEntries(options)
+  else if (options?.webTypes) await generateWebTypes(options)
+  else if (options?.customData) await generateVsCodeCustomData(options)
+  else if (options?.ideHelpers) await generateIdeHelpers(options)
+  else if (options?.componentMeta) await generateComponentMeta(options)
+  else if (options?.coreSymlink) await generateCoreSymlink()
 }
 
 export function generate(options: GeneratorOptions) {
@@ -43,7 +30,10 @@ export async function generateLibEntries(options: GeneratorOptions) {
   })
 
   if (result.isErr()) {
-    log.error('There was an error generating your library entry points', result.error)
+    log.error(
+      'There was an error generating your library entry points',
+      result.error,
+    )
     process.exit()
   }
 
@@ -54,7 +44,10 @@ export async function generateWebTypes(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating the web-types.json file.', result.error)
+    log.error(
+      'There was an error generating the web-types.json file.',
+      result.error,
+    )
     process.exit()
   }
 
@@ -68,7 +61,10 @@ export async function generateVsCodeCustomData(options?: GeneratorOptions) {
   })
 
   if (result.isErr()) {
-    log.error('There was an error generating the custom-elements.json file.', result.error)
+    log.error(
+      'There was an error generating the custom-elements.json file.',
+      result.error,
+    )
     process.exit()
   }
 
@@ -92,7 +88,10 @@ export async function generateComponentMeta(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
 
   if (result.isErr()) {
-    log.error('There was an error generating your component meta information.', result.error)
+    log.error(
+      'There was an error generating your component meta information.',
+      result.error,
+    )
     process.exit()
   }
 

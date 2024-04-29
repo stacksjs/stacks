@@ -12,8 +12,8 @@ import {
 } from '@stacksjs/actions'
 import { intro, italic, outro, runCommand } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
-import { path as p } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
+import { path as p } from '@stacksjs/path'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
@@ -54,7 +54,9 @@ export function make(buddy: CLI) {
       const name = buddy.args[0]
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -102,7 +104,9 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -118,10 +122,14 @@ export function make(buddy: CLI) {
       log.debug('Running `buddy make:database` ...', options)
 
       if (!options?.name) {
-        log.error('You need to specify a database name via the --name option, or the first argument.')
+        log.error(
+          'You need to specify a database name via the --name option, or the first argument.',
+        )
         log.info('Example: `buddy make:database my-cool-database`')
         log.info('Or: `buddy make:database --name=my-cool-database`')
-        log.info('Read more about the documentation here: https://stacksjs.org/docs/make/database')
+        log.info(
+          'Read more about the documentation here: https://stacksjs.org/docs/make/database',
+        )
         process.exit()
       }
 
@@ -129,7 +137,9 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -148,7 +158,9 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -168,7 +180,9 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -198,7 +212,9 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -222,18 +238,26 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
       const result = await createNotification(options)
 
       if (!result) {
-        await outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true })
+        await outro(
+          'While running the make:notification command, there was an issue',
+          { startTime: perf, useSeconds: true },
+        )
         process.exit()
       }
 
-      await outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
+      await outro(`Created your ${italic(name)} notification.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
       process.exit(ExitCode.Success)
     })
 
@@ -249,7 +273,9 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        log.error(
+          'You need to specify a name. Read more about the documentation here.',
+        )
         process.exit()
       }
 
@@ -276,7 +302,9 @@ export function make(buddy: CLI) {
   buddy
     .command('make:migration', descriptions.migration)
     .option('-n, --name', 'The name of the migration')
-    .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
+    .option('-e, --env', 'The environment to run the migration in', {
+      default: 'dev',
+    })
     .action((options: MakeOptions) => {
       log.debug('Running `buddy make:migration` ...', options)
 
@@ -315,7 +343,10 @@ export function make(buddy: CLI) {
     })
 
   buddy.on('make:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

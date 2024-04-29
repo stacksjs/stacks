@@ -34,7 +34,9 @@ export const useGitStore = defineStore('git', {
 
       fetch.setToken(token)
 
-      const response = await fetch.get(`/actions/runs?per_page=${numberOfCommits}`)
+      const response = await fetch.get(
+        `/actions/runs?per_page=${numberOfCommits}`,
+      )
 
       this.workflowRuns = response.workflow_runs
     },

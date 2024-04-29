@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI, MigrateOptions } from '@stacksjs/types'
 
 export function migrate(buddy: CLI) {
   const descriptions = {
@@ -25,13 +25,20 @@ export function migrate(buddy: CLI) {
       const result = await runAction(Action.Migrate, options)
 
       if (result.isErr()) {
-        await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the migrate command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
-      await outro(`Migrated your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
+      await outro(`Migrated your ${APP_ENV} database.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
       process.exit(ExitCode.Success)
     })
 
@@ -48,20 +55,34 @@ export function migrate(buddy: CLI) {
       const result2 = await runAction(Action.Migrate, options)
 
       if (result.isErr()) {
-        await outro('While running the migrate:fresh command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the migrate:fresh command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
-      await outro(`All tables dropped successfully`, { startTime: perf, useSeconds: true })
+      await outro(`All tables dropped successfully`, {
+        startTime: perf,
+        useSeconds: true,
+      })
 
       if (result2.isErr()) {
-        await outro('While running the migrate command, there was an issue', { startTime: perf, useSeconds: true }, result2.error)
+        await outro(
+          'While running the migrate command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result2.error,
+        )
         process.exit()
       }
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
-      await outro(`Migrated your ${APP_ENV} database.`, { startTime: perf, useSeconds: true })
+      await outro(`Migrated your ${APP_ENV} database.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
       process.exit(ExitCode.Success)
     })
 
@@ -76,18 +97,28 @@ export function migrate(buddy: CLI) {
       const result = await runAction(Action.MigrateDns, { ...options })
 
       if (result.isErr()) {
-        await outro('While running the migrate:dns command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the migrate:dns command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
       const APP_URL = process.env.APP_URL || 'undefined'
 
-      await outro(`Migrated your ${APP_URL} DNS.`, { startTime: perf, useSeconds: true })
+      await outro(`Migrated your ${APP_URL} DNS.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
       process.exit(ExitCode.Success)
     })
 
   buddy.on('migrate:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

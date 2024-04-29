@@ -1,7 +1,17 @@
 import { ports } from '@stacksjs/config'
 
 interface ServerOptions {
-  type?: 'frontend' | 'backend' | 'api' | 'library' | 'desktop' | 'docs' | 'email' | 'admin' | 'system-tray' | 'database'
+  type?:
+    | 'frontend'
+    | 'backend'
+    | 'api'
+    | 'library'
+    | 'desktop'
+    | 'docs'
+    | 'email'
+    | 'admin'
+    | 'system-tray'
+    | 'database'
   host?: string
   port?: number
   open?: boolean
@@ -9,47 +19,48 @@ interface ServerOptions {
 
 export function config(options: ServerOptions) {
   const serversMap = {
-    'frontend': {
+    frontend: {
       host: 'localhost',
       port: ports.frontend,
     },
 
-    'backend': {
+    backend: {
       host: 'localhost',
       port: ports.backend,
     },
 
-    'api': {
+    api: {
       host: 'localhost',
       port: ports.api,
     },
 
-    'admin': {
+    admin: {
       host: 'localhost',
       port: ports.admin,
     },
 
-    'library': { // component library
+    library: {
+      // component library
       host: 'localhost',
       port: ports.library,
     },
 
-    'desktop': {
+    desktop: {
       host: 'localhost',
       port: ports.desktop,
     },
 
-    'docs': {
+    docs: {
       host: 'localhost',
       port: ports.docs,
     },
 
-    'email': {
+    email: {
       host: 'localhost',
       port: ports.email,
     },
 
-    'inspect': {
+    inspect: {
       host: 'localhost',
       port: ports.inspect,
     },
@@ -59,13 +70,26 @@ export function config(options: ServerOptions) {
       port: ports.systemTray,
     },
 
-    'database': {
+    database: {
       host: 'localhost',
       port: ports.database,
     },
   }
 
-  if (options.type && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(options.type)) {
+  if (
+    options.type &&
+    [
+      'frontend',
+      'api',
+      'library',
+      'desktop',
+      'docs',
+      'example',
+      'dashboard',
+      'system-tray',
+      'database',
+    ].includes(options.type)
+  ) {
     return {
       host: serversMap[options.type].host,
       port: serversMap[options.type].port,

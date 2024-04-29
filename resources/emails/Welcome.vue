@@ -1,5 +1,17 @@
 <script setup>
-import { EBody, EColumn, EContainer, EHead, EHeading, EHtml, EImg, EPreview, ERow, ESection, EText } from 'vue-email'
+import {
+  EBody,
+  EColumn,
+  EContainer,
+  EHead,
+  EHeading,
+  EHtml,
+  EImg,
+  EPreview,
+  ERow,
+  ESection,
+  EText,
+} from 'vue-email'
 
 const props = defineProps({
   userFirstName: {
@@ -35,7 +47,8 @@ const formattedDate = new Intl.DateTimeFormat('en', {
 
 const main = {
   backgroundColor: '#fff',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
 }
 
 const paragraph = {

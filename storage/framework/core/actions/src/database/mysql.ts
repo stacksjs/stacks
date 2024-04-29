@@ -1,10 +1,15 @@
-import { fs, glob } from '@stacksjs/storage'
-import { path } from '@stacksjs/path'
-import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { ok } from '@stacksjs/error-handling'
+import { path } from '@stacksjs/path'
+import { fs, glob } from '@stacksjs/storage'
 import type { Attributes } from '@stacksjs/types'
-import { checkPivotMigration, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import {
+  checkPivotMigration,
+  getLastMigrationFields,
+  hasTableBeenMigrated,
+  mapFieldTypeToColumnType,
+} from '.'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()
@@ -34,8 +39,7 @@ export async function resetMysqlDatabase() {
       if (modelFile.endsWith('.ts')) {
         const modelPath = path.frameworkPath(`database/models/${modelFile}`)
 
-        if (fs.existsSync(modelPath))
-          await Bun.$`rm ${modelPath}`
+        if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
       }
     }
   }
@@ -45,8 +49,7 @@ export async function resetMysqlDatabase() {
       if (file.endsWith('.ts')) {
         const migrationPath = path.userMigrationsPath(`${file}`)
 
-        if (fs.existsSync(migrationPath))
-          await Bun.$`rm ${migrationPath}`
+        if (fs.existsSync(migrationPath)) await Bun.$`rm ${migrationPath}`
       }
     }
   }
@@ -59,7 +62,9 @@ export async function generateMysqlMigration(modelPath: string) {
   const files = await fs.readdir(path.userMigrationsPath())
 
   if (files.length === 0) {
-    log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
+    log.debug(
+      'No migrations found in the database folder, deleting all framework/database/*.json files...',
+    )
 
     // delete the *.ts files in the database/models folder
     const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
@@ -97,8 +102,7 @@ export async function generateMysqlMigration(modelPath: string) {
 
     haveFieldsChanged = true
     log.debug(`Fields have changed for ${tableName}`)
-  }
-  else {
+  } else {
     log.debug(`Fields have not been generated for ${tableName}`)
   }
 
@@ -113,24 +117,30 @@ export async function generateMysqlMigration(modelPath: string) {
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
-  if (haveFieldsChanged)
-    await createAlterTableMigration(modelPath)
-  else
-    await createTableMigration(modelPath)
+  if (haveFieldsChanged) await createAlterTableMigration(modelPath)
+  else await createTableMigration(modelPath)
 }
 
-async function getPivotTables(model: any): Promise<{ table: string, firstForeignKey: string, secondForeignKey: string }[]> {
+async function getPivotTables(
+  model: any,
+): Promise<
+  { table: string; firstForeignKey: string; secondForeignKey: string }[]
+> {
   const pivotTable = []
 
   if ('belongsToMany' in model.default) {
     for (const belongsToManyRelation of model.default.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
+      const modelRelationPath = path.userModelsPath(
+        `${belongsToManyRelation.model}.ts`,
+      )
       const modelRelation = await import(modelRelationPath)
 
       const formattedModelName = model.default.name.toLowerCase()
 
       pivotTable.push({
-        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+        table:
+          belongsToManyRelation?.pivotTable ||
+          `${formattedModelName}_${modelRelation.default.table}`,
         firstForeignKey: belongsToManyRelation.firstForeignKey,
         secondForeignKey: belongsToManyRelation.secondForeignKey,
       })
@@ -151,8 +161,11 @@ async function createTableMigration(modelPath: string) {
   await createPivotTableMigration(model)
 
   const fields = model.default.attributes
-  const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
-  const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
+  const useTimestamps =
+    model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
+  const useSoftDeletes =
+    model.default?.traits?.useSoftDeletes ??
+    model.default?.traits?.softDeletable
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -167,10 +180,9 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || (fieldOptions.validator?.rule?.required)) {
+    if (fieldOptions.unique || fieldOptions.validator?.rule?.required) {
       migrationContent += `, col => col`
-      if (fieldOptions.unique)
-        migrationContent += `.unique()`
+      if (fieldOptions.unique) migrationContent += `.unique()`
       if (fieldOptions.validator?.rule?.required)
         migrationContent += `.notNull()`
       migrationContent += ``
@@ -205,14 +217,12 @@ async function createTableMigration(modelPath: string) {
 async function createPivotTableMigration(model: any) {
   const pivotTables = await getPivotTables(model)
 
-  if (!pivotTables.length)
-    return
+  if (!pivotTables.length) return
 
   for (const pivotTable of pivotTables) {
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
 
-    if (hasBeenMigrated)
-      return
+    if (hasBeenMigrated) return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `export async function up(db: Database<any>) {\n`

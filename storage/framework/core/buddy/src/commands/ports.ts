@@ -1,16 +1,17 @@
 import process from 'node:process'
-import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
+import { intro, italic, outro } from '@stacksjs/cli'
 import { ports as projectPorts } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { findProjectPath, path as p, projectPath } from '@stacksjs/path'
-import { $ } from 'bun'
-import { intro, italic, outro } from '@stacksjs/cli'
+import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
+import { $ } from 'bun'
 
 export function ports(buddy: CLI) {
   const descriptions = {
-    command: 'Let buddy check your project for potential issues and misconfigurations',
+    command:
+      'Let buddy check your project for potential issues and misconfigurations',
     ports: 'Check if the ports are available',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -19,16 +20,19 @@ export function ports(buddy: CLI) {
   buddy
     .command('ports', descriptions.command)
     .option('-l, --list', 'List the used ports', { default: true })
-    .option('-c, --check', 'Check if the ports are available', { default: false })
-    .option('-p, --project [name]', descriptions.project, { default: undefined })
+    .option('-c, --check', 'Check if the ports are available', {
+      default: false,
+    })
+    .option('-p, --project [name]', descriptions.project, {
+      default: undefined,
+    })
     .option('-q, --quiet', 'Use minimal output', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PortsOptions) => {
       log.debug('Running `buddy ports` ...', options)
 
       let perf
-      if (!options.quiet)
-        perf = await intro('buddy ports')
+      if (!options.quiet) perf = await intro('buddy ports')
 
       if (options.project) {
         const path = await findProjectPath(options.project)
@@ -53,15 +57,16 @@ export function ports(buddy: CLI) {
 
   buddy
     .command('ports:list', descriptions.ports)
-    .option('-p, --project [name]', descriptions.project, { default: undefined })
+    .option('-p, --project [name]', descriptions.project, {
+      default: undefined,
+    })
     .option('-q, --quiet', 'Use minimal output', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PortsOptions) => {
       log.debug('Running `buddy ports:list` ...', options)
 
       let perf
-      if (!options.quiet)
-        perf = await intro('buddy ports:list')
+      if (!options.quiet) perf = await intro('buddy ports:list')
 
       // return the ports for the project
       if (options.project) {
@@ -89,15 +94,16 @@ export function ports(buddy: CLI) {
 
   buddy
     .command('ports:check', descriptions.ports)
-    .option('-p, --project [name]', descriptions.project, { default: projectPath() })
+    .option('-p, --project [name]', descriptions.project, {
+      default: projectPath(),
+    })
     .option('-q, --quiet', 'Use minimal output', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PortsOptions) => {
       log.debug('Running `buddy ports:check` ...', options)
 
       let perf
-      if (!options.quiet)
-        perf = await intro('buddy ports:check')
+      if (!options.quiet) perf = await intro('buddy ports:check')
 
       const projects = await findStacksProjects(undefined, { quiet: true })
 
@@ -119,14 +125,16 @@ export function ports(buddy: CLI) {
     })
 
   buddy.on('ports:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }
 
 async function getPortsForProjectPath(path: string, options: PortsOptions) {
-  if (!options.quiet)
-    log.info(`Checking ports for project: ${italic(path)}`)
+  if (!options.quiet) log.info(`Checking ports for project: ${italic(path)}`)
 
   $.cwd(path)
   // load the .env file for the project
@@ -136,21 +144,28 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
   log.debug('ProjectListResponse', projectList)
 
   // get the list of all Stacks project paths (on the system)
-  const projects = projectList.split('\n').filter(line => line.startsWith('   - ')).map(line => line.trim().substring(4))
+  const projects = projectList
+    .split('\n')
+    .filter((line) => line.startsWith('   - '))
+    .map((line) => line.trim().substring(4))
   log.debug('Projects:', projects)
 
   // since we are targeting a specific project, find its path
   const ppath = options.project ?? p.projectPath()
-  let projectPath = projects.find(project => project.includes(ppath))
+  let projectPath = projects.find((project) => project.includes(ppath))
 
   log.debug(`Checking ports for project: ${projectPath}`)
-  if (projectPath === '' || !projectPath) // default to the current project
+  if (projectPath === '' || !projectPath)
+    // default to the current project
     projectPath = p.projectPath()
 
   log.debug(`$ Running: ./buddy ports:list --quiet via ${projectPath}`)
-  const response = (await $`./buddy ports:list --quiet`.json())
+  const response = await $`./buddy ports:list --quiet`.json()
 
-  log.debug(`Response for ./buddy ports:list --quiet via ${projectPath}`, response)
+  log.debug(
+    `Response for ./buddy ports:list --quiet via ${projectPath}`,
+    response,
+  )
 
   // Step 1: Add double quotes around keys
   let validJsonString = response.replace(/(\w+)(?=\s*:)/g, '"$1"')
@@ -168,13 +183,13 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
 
 function outputPorts(ports: Ports, options: PortsOptions) {
   if (!options.quiet)
-  // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
     console.log('')
 
   // eslint-disable-next-line no-console
   console.log(ports)
 
   if (!options.quiet)
-  // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
     console.log('')
 }

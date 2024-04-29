@@ -40,12 +40,12 @@ export class CronTime {
   constructor(
     source: CronJobParams['cronTime'],
     timeZone?: CronJobParams['timeZone'],
-    utcOffset?: null
+    utcOffset?: null,
   )
   constructor(
     source: CronJobParams['cronTime'],
     timeZone?: null,
-    utcOffset?: CronJobParams['utcOffset']
+    utcOffset?: CronJobParams['utcOffset'],
   )
   constructor(
     source: CronJobParams['cronTime'],
@@ -58,21 +58,18 @@ export class CronTime {
 
     if (timeZone) {
       const dt = DateTime.fromObject({}, { zone: timeZone })
-      if (!dt.isValid)
-        throw new CronError('Invalid timezone.')
+      if (!dt.isValid) throw new CronError('Invalid timezone.')
 
       this.timeZone = timeZone
     }
 
-    if (utcOffset != null)
-      this.utcOffset = utcOffset
+    if (utcOffset != null) this.utcOffset = utcOffset
 
     if (source instanceof Date || source instanceof DateTime) {
-      this.source
-        = source instanceof Date ? DateTime.fromJSDate(source) : source
+      this.source =
+        source instanceof Date ? DateTime.fromJSDate(source) : source
       this.realDate = true
-    }
-    else {
+    } else {
       this.source = source
       this._parse(this.source)
       this._verifyParse()
@@ -101,8 +98,7 @@ export class CronTime {
       const con = MONTH_CONSTRAINTS[m]
 
       for (const day of daysOfMonth) {
-        if (day <= con)
-          isOk = true
+        if (day <= con) isOk = true
       }
 
       if (!isOk) {
@@ -131,12 +127,11 @@ export class CronTime {
   sendAt(): DateTime
   sendAt(i: number): DateTime[]
   sendAt(i?: number): DateTime | DateTime[] {
-    let date
-      = this.realDate && this.source instanceof DateTime
+    let date =
+      this.realDate && this.source instanceof DateTime
         ? this.source
         : DateTime.local()
-    if (this.timeZone)
-      date = date.setZone(this.timeZone)
+    if (this.timeZone) date = date.setZone(this.timeZone)
 
     if (this.utcOffset !== undefined) {
       const sign = this.utcOffset < 0 ? '-' : '+'
@@ -165,8 +160,7 @@ export class CronTime {
     if (i === undefined || Number.isNaN(i) || i < 0) {
       // just get the next scheduled time
       return this.getNextDateFrom(date)
-    }
-    else {
+    } else {
       // return the next schedule times
       const dates: DateTime[] = []
       for (; i > 0; i--) {
@@ -219,13 +213,11 @@ export class CronTime {
    * - Return the selected date object.
    */
   getNextDateFrom(start: Date | DateTime, timeZone?: string | Zone) {
-    if (start instanceof Date)
-      start = DateTime.fromJSDate(start)
+    if (start instanceof Date) start = DateTime.fromJSDate(start)
 
     let date = start
     const firstDate = start.toMillis()
-    if (timeZone)
-      date = date.setZone(timeZone)
+    if (timeZone) date = date.setZone(timeZone)
 
     if (!this.realDate) {
       if (date.millisecond > 0)
@@ -261,8 +253,8 @@ export class CronTime {
       }
 
       if (
-        !(date.month in this.month)
-        && Object.keys(this.month).length !== 12
+        !(date.month in this.month) &&
+        Object.keys(this.month).length !== 12
       ) {
         date = date.plus({ months: 1 })
         date = date.set({ day: 1, hour: 0, minute: 0, second: 0 })
@@ -270,18 +262,17 @@ export class CronTime {
         if (this._forwardDSTJump(0, 0, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
         continue
       }
 
       if (
-        !(date.day in this.dayOfMonth)
-        && Object.keys(this.dayOfMonth).length !== 31
-        && !(
-          this._getWeekDay(date) in this.dayOfWeek
-          && Object.keys(this.dayOfWeek).length !== 7
+        !(date.day in this.dayOfMonth) &&
+        Object.keys(this.dayOfMonth).length !== 31 &&
+        !(
+          this._getWeekDay(date) in this.dayOfWeek &&
+          Object.keys(this.dayOfWeek).length !== 7
         )
       ) {
         date = date.plus({ days: 1 })
@@ -290,18 +281,17 @@ export class CronTime {
         if (this._forwardDSTJump(0, 0, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
         continue
       }
 
       if (
-        !(this._getWeekDay(date) in this.dayOfWeek)
-        && Object.keys(this.dayOfWeek).length !== 7
-        && !(
-          date.day in this.dayOfMonth
-          && Object.keys(this.dayOfMonth).length !== 31
+        !(this._getWeekDay(date) in this.dayOfWeek) &&
+        Object.keys(this.dayOfWeek).length !== 7 &&
+        !(
+          date.day in this.dayOfMonth &&
+          Object.keys(this.dayOfMonth).length !== 31
         )
       ) {
         date = date.plus({ days: 1 })
@@ -309,15 +299,14 @@ export class CronTime {
         if (this._forwardDSTJump(0, 0, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
         continue
       }
 
       if (!(date.hour in this.hour) && Object.keys(this.hour).length !== 24) {
-        const expectedHour
-          = date.hour === 23 && diff > 86400000 ? 0 : date.hour + 1
+        const expectedHour =
+          date.hour === 23 && diff > 86400000 ? 0 : date.hour + 1
         const expectedMinute = date.minute // expect no change.
 
         date = date.set({ hour: expectedHour })
@@ -330,8 +319,7 @@ export class CronTime {
         if (this._forwardDSTJump(expectedHour, expectedMinute, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
         // backwards jumps do not seem to have any problems (i.e. double activations),
         // so they need not be handled in a similar way.
@@ -340,11 +328,11 @@ export class CronTime {
       }
 
       if (
-        !(date.minute in this.minute)
-        && Object.keys(this.minute).length !== 60
+        !(date.minute in this.minute) &&
+        Object.keys(this.minute).length !== 60
       ) {
-        const expectedMinute
-          = date.minute === 59 && diff > 3600000 ? 0 : date.minute + 1
+        const expectedMinute =
+          date.minute === 59 && diff > 3600000 ? 0 : date.minute + 1
         const expectedHour = date.hour + (expectedMinute === 60 ? 1 : 0)
 
         date = date.set({ minute: expectedMinute })
@@ -355,19 +343,18 @@ export class CronTime {
         if (this._forwardDSTJump(expectedHour, expectedMinute, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
 
         continue
       }
 
       if (
-        !(date.second in this.second)
-        && Object.keys(this.second).length !== 60
+        !(date.second in this.second) &&
+        Object.keys(this.second).length !== 60
       ) {
-        const expectedSecond
-          = date.second === 59 && diff > 60000 ? 0 : date.second + 1
+        const expectedSecond =
+          date.second === 59 && diff > 60000 ? 0 : date.second + 1
         const expectedMinute = date.minute + (expectedSecond === 60 ? 1 : 0)
         const expectedHour = date.hour + (expectedMinute === 60 ? 1 : 0)
 
@@ -377,8 +364,7 @@ export class CronTime {
         if (this._forwardDSTJump(expectedHour, expectedMinute, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
 
         continue
@@ -395,8 +381,7 @@ export class CronTime {
         if (this._forwardDSTJump(expectedHour, expectedMinute, date)) {
           const [isDone, newDate] = this._findPreviousDSTJump(date)
           date = newDate
-          if (isDone)
-            break
+          if (isDone) break
         }
 
         continue
@@ -463,9 +448,9 @@ export class CronTime {
     const beforeJumpingPoint = afterJumpingPoint.minus({ second: 1 })
 
     if (
-      date.month + 1 in this.month
-      && date.day in this.dayOfMonth
-      && this._getWeekDay(date) in this.dayOfWeek
+      date.month + 1 in this.month &&
+      date.day in this.dayOfMonth &&
+      this._getWeekDay(date) in this.dayOfWeek
     ) {
       return [
         this._checkTimeInSkippedRange(beforeJumpingPoint, afterJumpingPoint),
@@ -501,8 +486,8 @@ export class CronTime {
   ) {
     // start by getting the first minute & hour inside the skipped range.
     const startingMinute = (beforeJumpingPoint.minute + 1) % 60
-    const startingHour
-      = (beforeJumpingPoint.hour + (startingMinute === 0 ? 1 : 0)) % 24
+    const startingHour =
+      (beforeJumpingPoint.hour + (startingMinute === 0 ? 1 : 0)) % 24
 
     const hourRangeSize = afterJumpingPoint.hour - startingHour + 1
     const isHourJump = startingMinute === 0 && afterJumpingPoint.minute === 0
@@ -514,18 +499,16 @@ export class CronTime {
       // Exact 1 hour jump, most common real-world case.
       // There is no need to check minutes and seconds, as any value would suffice.
       return startingHour in this.hour
-    }
-    else if (hourRangeSize === 1) {
+    } else if (hourRangeSize === 1) {
       // less than 1 hour jump, rare but does exist.
       return (
-        startingHour in this.hour
-        && this._checkTimeInSkippedRangeSingleHour(
+        startingHour in this.hour &&
+        this._checkTimeInSkippedRangeSingleHour(
           startingMinute,
           afterJumpingPoint.minute,
         )
       )
-    }
-    else {
+    } else {
       // non-round or multi-hour jump. (does not exist in the real world at the time of writing)
       return this._checkTimeInSkippedRangeMultiHour(
         startingHour,
@@ -552,8 +535,7 @@ export class CronTime {
     endMinute: number,
   ) {
     for (let minute = startMinute; minute < endMinute; ++minute) {
-      if (minute in this.minute)
-        return true
+      if (minute in this.minute) return true
     }
 
     // Unless the very last second of the jump matched, there is no match.
@@ -601,18 +583,14 @@ export class CronTime {
 
     /** @type (number) => number[] */
     const selectRange = (forHour: number) => {
-      if (forHour === startHour)
-        return firstHourMinuteRange
-      else if (forHour === endHour)
-        return lastHourMinuteRange
-      else
-        return middleHourMinuteRange
+      if (forHour === startHour) return firstHourMinuteRange
+      else if (forHour === endHour) return lastHourMinuteRange
+      else return middleHourMinuteRange
     }
 
     // Include the endHour: Selecting the right range still ensures no values outside the skip are checked.
     for (let hour = startHour; hour <= endHour; ++hour) {
-      if (!(hour in this.hour))
-        continue
+      if (!(hour in this.hour)) continue
 
       // The hour matches, so if the minute is in the range, we have a match!
       const usingRange = selectRange(hour)
@@ -620,8 +598,7 @@ export class CronTime {
       for (const minute of usingRange) {
         // All minutes in any of the selected ranges represent minutes which are fully contained in the jump,
         // So we need not check the seconds. If the minute is in there, it is a match.
-        if (minute in this.minute)
-          return true
+        if (minute in this.minute) return true
       }
     }
 
@@ -659,12 +636,10 @@ export class CronTime {
    * wildcard, or all params in array (for to string)
    */
   private _wcOrAll(unit: TimeUnit) {
-    if (this._hasAll(unit))
-      return '*'
+    if (this._hasAll(unit)) return '*'
 
     const all = []
-    for (const time in this[unit])
-      all.push(time)
+    for (const time in this[unit]) all.push(time)
 
     return all.join(',')
   }
@@ -672,12 +647,11 @@ export class CronTime {
   private _hasAll(unit: TimeUnit) {
     const constraints = CONSTRAINTS[unit]
     const low = constraints[0]
-    const high
-      = unit === TIME_UNITS_MAP.DAY_OF_WEEK ? constraints[1] - 1 : constraints[1]
+    const high =
+      unit === TIME_UNITS_MAP.DAY_OF_WEEK ? constraints[1] - 1 : constraints[1]
 
     for (let i = low, n = high; i < n; i++) {
-      if (!(i in this[unit]))
-        return false
+      if (!(i in this[unit])) return false
     }
 
     return true
@@ -710,11 +684,9 @@ export class CronTime {
     const units = source.trim().split(/\s+/)
 
     // seconds are optional
-    if (units.length < TIME_UNITS_LEN - 1)
-      throw new CronError('Too few fields')
+    if (units.length < TIME_UNITS_LEN - 1) throw new CronError('Too few fields')
 
-    if (units.length > TIME_UNITS_LEN)
-      throw new CronError('Too many fields')
+    if (units.length > TIME_UNITS_LEN) throw new CronError('Too many fields')
 
     const unitsLen = units.length
     for (const unit of TIME_UNITS) {
@@ -767,7 +739,8 @@ export class CronTime {
       if (match?.[1] !== undefined) {
         const [, mLower, mUpper, mStep] = match
         let lower = Number.parseInt(mLower, 10)
-        let upper = mUpper !== undefined ? Number.parseInt(mUpper, 10) : undefined
+        let upper =
+          mUpper !== undefined ? Number.parseInt(mUpper, 10) : undefined
 
         const wasStepDefined = mStep !== undefined
         const step = Number.parseInt(mStep ?? '1', 10)
@@ -777,10 +750,10 @@ export class CronTime {
         if (upper !== undefined && lower > upper)
           throw new CronError(`Field (${unit}) has an invalid range`)
 
-        const isOutOfRange
-          = lower < low
-          || (upper !== undefined && upper > high)
-          || (upper === undefined && lower > high)
+        const isOutOfRange =
+          lower < low ||
+          (upper !== undefined && upper > high) ||
+          (upper === undefined && lower > high)
 
         if (isOutOfRange)
           throw new CronError(`Field value (${value}) is out of range`)
@@ -791,8 +764,7 @@ export class CronTime {
         // Positive integer lower than constraints[1]
         if (upper !== undefined) {
           upper = Math.min(high, ~~Math.abs(upper))
-        }
-        else {
+        } else {
           // If step is provided, the default upper range is the highest value
           upper = wasStepDefined ? high : lower
         }
@@ -810,12 +782,10 @@ export class CronTime {
         // merge day 7 into day 0 (both Sunday), and remove day 7
         // since we work with day-of-week 0-6 under the hood
         if (unit === 'dayOfWeek') {
-          if (!typeObj[0] && !!typeObj[7])
-            typeObj[0] = typeObj[7]
+          if (!typeObj[0] && !!typeObj[7]) typeObj[0] = typeObj[7]
           delete typeObj[7]
         }
-      }
-      else {
+      } else {
         throw new CronError(`Field (${unit}) cannot be parsed`)
       }
     }

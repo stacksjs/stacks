@@ -1,16 +1,29 @@
 import { schema } from '@stacksjs/validation'
-import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
-import type { EnvKey } from '../../../env'
+import type {
+  Infer,
+  VineBoolean,
+  VineEnum,
+  VineNumber,
+  VineString,
+} from '@stacksjs/validation'
 import env from '~/config/env'
+import type { EnvKey } from '../../../env'
 
 // we need to get this just into right format so we can infer the type
 type EnvValue = string | boolean | number | readonly string[]
 type EnvType = typeof env
 type EnvKeys = keyof EnvType
-type EnvMap = { [K in EnvKeys]: EnvType[K] extends string ? VineString :
-  EnvType[K] extends number ? VineNumber :
-    EnvType[K] extends boolean ? VineBoolean :
-      EnvType[K] extends readonly string[] ? VineEnum<string[]> : unknown }
+type EnvMap = {
+  [K in EnvKeys]: EnvType[K] extends string
+    ? VineString
+    : EnvType[K] extends number
+      ? VineNumber
+      : EnvType[K] extends boolean
+        ? VineBoolean
+        : EnvType[K] extends readonly string[]
+          ? VineEnum<string[]>
+          : unknown
+}
 
 type ValidatorType = VineString | VineNumber | VineBoolean | VineEnum<string[]>
 

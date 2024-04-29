@@ -21,22 +21,22 @@ export type CronJobParams<
   OC extends CronOnCompleteCommand | null = null,
   C = null,
 > = BaseCronJobParams<OC, C> &
-(
-  | {
-    timeZone?: string | null
-    utcOffset?: never
-  }
-  | {
-    timeZone?: never
-    utcOffset?: number | null
-  }
+  (
+    | {
+        timeZone?: string | null
+        utcOffset?: never
+      }
+    | {
+        timeZone?: never
+        utcOffset?: number | null
+      }
   )
 
 export type CronContext<C> = C extends null ? CronJob : NonNullable<C>
 
 export type CronCallback<C, WithOnCompleteBool extends boolean = false> = (
   this: CronContext<C>,
-  onComplete: WithOnCompleteBool extends true ? CronOnCompleteCallback : never
+  onComplete: WithOnCompleteBool extends true ? CronOnCompleteCallback : never,
 ) => void | Promise<void>
 
 export type CronOnCompleteCallback = () => void | Promise<void>
@@ -44,10 +44,10 @@ export type CronOnCompleteCallback = () => void | Promise<void>
 export type CronSystemCommand =
   | string
   | {
-    command: string
-    args?: readonly string[] | null
-    options?: SpawnOptions | null
-  }
+      command: string
+      args?: readonly string[] | null
+      options?: SpawnOptions | null
+    }
 
 export type CronCommand<C, WithOnCompleteBool extends boolean = false> =
   | CronCallback<C, WithOnCompleteBool>

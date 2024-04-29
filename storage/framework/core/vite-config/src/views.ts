@@ -1,11 +1,21 @@
-import { path as p } from '@stacksjs/path'
-import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
-import generateSitemap from 'vite-ssg-sitemap'
-import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
+import { path as p } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
+import {
+  autoImports,
+  components,
+  cssEngine,
+  devtools,
+  i18n,
+  layouts,
+  markdown,
+  pwa,
+  router,
+} from '@stacksjs/vite-plugin'
+import Vue from '@vitejs/plugin-vue'
 import VueMacros from 'unplugin-vue-macros/vite'
-import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from '@stacksjs/vite-plugin'
+import { defineConfig } from 'vite'
+import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
 
@@ -15,7 +25,17 @@ import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, 
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['path', 'fs', 'net', 'tls', 'stream', 'node:process', 'constants', 'node:dns/promises', 'node:util'],
+      external: [
+        'path',
+        'fs',
+        'net',
+        'tls',
+        'stream',
+        'node:process',
+        'constants',
+        'node:dns/promises',
+        'node:util',
+      ],
     },
   },
 
@@ -24,13 +44,17 @@ export default defineConfig({
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [
-    p.resourcesPath('assets/*'),
-    p.resourcesPath('assets/**/*'),
-  ],
+  assetsInclude: [p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
+    exclude: [
+      'bun:test',
+      'webpack',
+      'chokidar',
+      'fsevents',
+      '@intlify/unplugin-vue-i18n',
+      '@stacksjs/ui',
+    ],
   },
 
   server: server({

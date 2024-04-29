@@ -19,7 +19,8 @@ export default new Action({
         {
           signature: 'buddy --help',
           description: 'View help menu',
-          notes: 'Please note: you may suffix any command with the e.g `command --help` flag to review the help menu',
+          notes:
+            'Please note: you may suffix any command with the e.g `command --help` flag to review the help menu',
           synopsis: 'buddy --help',
           aliases: [],
           arguments: [],
@@ -135,7 +136,8 @@ export default new Action({
         },
         {
           signature: 'buddy dev -i',
-          description: 'Prompts any of the dev servers (components, functions, views, or docs)',
+          description:
+            'Prompts any of the dev servers (components, functions, views, or docs)',
           notes: '',
           synopsis: 'buddy dev -i',
           aliases: [],
@@ -207,7 +209,8 @@ export default new Action({
         },
         {
           signature: 'buddy dev docs',
-          description: 'Also starts the local docs dev server (colon is optional)',
+          description:
+            'Also starts the local docs dev server (colon is optional)',
           notes: '',
           synopsis: 'buddy dev docs',
           aliases: [],
@@ -279,7 +282,8 @@ export default new Action({
         },
         {
           signature: 'buddy build:web-components',
-          description: 'Builds framework-agnostic Web Component library (i.e. Custom Elements)',
+          description:
+            'Builds framework-agnostic Web Component library (i.e. Custom Elements)',
           notes: '',
           synopsis: 'buddy build:web-components',
           aliases: [],
@@ -337,7 +341,8 @@ export default new Action({
           arguments: [
             {
               name: 'name',
-              description: 'The function name to be created. Must be in <snake-case>',
+              description:
+                'The function name to be created. Must be in <snake-case>',
               value_required: true,
             },
           ],
@@ -352,7 +357,8 @@ export default new Action({
           arguments: [
             {
               name: 'name',
-              description: 'The component to be created. Must be in <snake-case>',
+              description:
+                'The component to be created. Must be in <snake-case>',
               value_required: true,
             },
           ],
@@ -450,7 +456,8 @@ export default new Action({
         },
         {
           signature: 'buddy make:lang',
-          description: 'Bootstraps a new yml language file under `lang/<name>.yml`',
+          description:
+            'Bootstraps a new yml language file under `lang/<name>.yml`',
           notes: '',
           synopsis: 'buddy make:lang <name>',
           aliases: [],
@@ -505,7 +512,8 @@ export default new Action({
           arguments: [
             {
               name: 'site',
-              description: 'The name of the site to list all of its DNS records',
+              description:
+                'The name of the site to list all of its DNS records',
               value_required: true,
             },
           ],
@@ -546,7 +554,8 @@ export default new Action({
         },
         {
           signature: 'buddy release',
-          description: 'Creates the releases for the stack & triggers the Release Action (workflow)',
+          description:
+            'Creates the releases for the stack & triggers the Release Action (workflow)',
           notes: '',
           synopsis: 'buddy release',
           aliases: [],
@@ -573,7 +582,8 @@ export default new Action({
         },
         {
           signature: 'buddy undeploy',
-          description: 'Be careful: "undeploys" removes/deletes your deployed resources',
+          description:
+            'Be careful: "undeploys" removes/deletes your deployed resources',
           notes: '',
           synopsis: 'buddy undeploy',
           aliases: [],
@@ -591,7 +601,8 @@ export default new Action({
         },
         {
           signature: 'buddy cloud:cleanup',
-          description: 'Removes cloud setup & cleans up all potentially leftover resources',
+          description:
+            'Removes cloud setup & cleans up all potentially leftover resources',
           notes: '',
           synopsis: 'buddy cloud:cleanup',
           aliases: [],
@@ -645,7 +656,8 @@ export default new Action({
         },
         {
           signature: 'buddy generate:types',
-          description: 'Generates types for your components, functions, & views',
+          description:
+            'Generates types for your components, functions, & views',
           notes: '',
           synopsis: 'buddy generate:types',
           aliases: [],
@@ -654,7 +666,8 @@ export default new Action({
         },
         {
           signature: 'buddy generate:entries',
-          description: 'Generates entry files for components, functions, & views',
+          description:
+            'Generates entry files for components, functions, & views',
           notes: '',
           synopsis: 'buddy generate:entries',
           aliases: [],
@@ -708,7 +721,8 @@ export default new Action({
         },
         {
           signature: 'buddy types:generate',
-          description: 'Generates types for your components, functions, & views',
+          description:
+            'Generates types for your components, functions, & views',
           notes: '',
           synopsis: 'buddy types:generate',
           aliases: [],
@@ -717,7 +731,8 @@ export default new Action({
         },
         {
           signature: 'buddy types:fix',
-          description: 'Auto-fixes types for your components, functions, & views',
+          description:
+            'Auto-fixes types for your components, functions, & views',
           notes: '',
           synopsis: 'buddy types:fix',
           aliases: [],

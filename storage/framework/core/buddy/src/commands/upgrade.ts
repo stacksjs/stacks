@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { isString } from '@stacksjs/validation'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
+import { isString } from '@stacksjs/validation'
 
 export function upgrade(buddy: CLI) {
   const descriptions = {
@@ -12,8 +12,10 @@ export function upgrade(buddy: CLI) {
     framework: 'Upgrade the Stacks framework',
     dependencies: 'Upgrade your dependencies (pkgx.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',
-    shell: 'Upgrade the to the latest shell integration (currently only supports Oh My Zsh)',
-    binary: 'Upgrade the `stacks` binary to the latest version. Please note, the binary is moved to the `~/.stacks/bin` directory',
+    shell:
+      'Upgrade the to the latest shell integration (currently only supports Oh My Zsh)',
+    binary:
+      'Upgrade the `stacks` binary to the latest version. Please note, the binary is moved to the `~/.stacks/bin` directory',
     all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
     select: 'What are you trying to upgrade?',
@@ -41,7 +43,8 @@ export function upgrade(buddy: CLI) {
       const perf = await intro('buddy upgrade')
 
       if (hasNoOptions(options)) {
-        let answers = await log.prompt.require()
+        let answers = await log.prompt
+          .require()
           .multiselect(descriptions.select, {
             options: [
               { value: 'dependencies', label: 'Dependencies' },
@@ -52,11 +55,9 @@ export function upgrade(buddy: CLI) {
             ],
           })
 
-        if (answers !== null)
-          process.exit(ExitCode.InvalidArgument)
+        if (answers !== null) process.exit(ExitCode.InvalidArgument)
 
-        if (isString(answers))
-          answers = [answers]
+        if (isString(answers)) answers = [answers]
 
         // creates an object out of array and sets answers to true
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
@@ -65,7 +66,11 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.Upgrade, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy:upgrade command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the buddy:upgrade command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
@@ -106,7 +111,11 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.UpgradeBun, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy upgrade:bun command, there was an issue', { startTime: perf, useSeconds: true }, result.error) // FIXME: should not have to cast
+        await outro(
+          'While running the buddy upgrade:bun command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        ) // FIXME: should not have to cast
         process.exit()
       }
 
@@ -133,7 +142,11 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.UpgradeShell, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy upgrade:shell command, there was an issue', { startTime: perf, useSeconds: true }, result.error) // FIXME: should not have to cast
+        await outro(
+          'While running the buddy upgrade:shell command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        ) // FIXME: should not have to cast
         process.exit()
       }
 
@@ -146,7 +159,9 @@ export function upgrade(buddy: CLI) {
     .example('buddy upgrade:binary')
     .action(async (options: UpgradeOptions) => {
       if (process.getuid && process.getuid() !== 0) {
-        log.warn('To upgrade the binary, you need to run this command with sudo, or as root.')
+        log.warn(
+          'To upgrade the binary, you need to run this command with sudo, or as root.',
+        )
         process.exit(0) // Exit with an error code
       }
 
@@ -156,7 +171,11 @@ export function upgrade(buddy: CLI) {
       const result = await runAction(Action.UpgradeBinary, options)
 
       if (result.isErr()) {
-        await outro('While running the buddy upgrade:binary command, there was an issue', { startTime: perf, useSeconds: true }, result.error) // FIXME: should not have to cast
+        await outro(
+          'While running the buddy upgrade:binary command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        ) // FIXME: should not have to cast
         process.exit()
       }
 
@@ -164,11 +183,21 @@ export function upgrade(buddy: CLI) {
     })
 
   buddy.on('upgrade:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }
 
 function hasNoOptions(options: UpgradeOptions) {
-  return !options.framework && !options.dependencies && !options.bun && !options.shell && !options.binary && !options.all
+  return (
+    !options.framework &&
+    !options.dependencies &&
+    !options.bun &&
+    !options.shell &&
+    !options.binary &&
+    !options.all
+  )
 }

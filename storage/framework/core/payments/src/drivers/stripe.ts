@@ -7,7 +7,7 @@ const stripe = new Stripe(apiKey, {
 })
 
 // TODO: learn about subscriptions
-export const paymentIntent = (function () {
+export const paymentIntent = (() => {
   async function create(params: Stripe.PaymentIntentCreateParams) {
     return await stripe.paymentIntents.create(params)
   }
@@ -16,7 +16,10 @@ export const paymentIntent = (function () {
     return await stripe.paymentIntents.retrieve(stripeId)
   }
 
-  async function update(stripeId: string, params: Stripe.PaymentIntentCreateParams) {
+  async function update(
+    stripeId: string,
+    params: Stripe.PaymentIntentCreateParams,
+  ) {
     return await stripe.paymentIntents.update(stripeId, params)
   }
 
@@ -25,33 +28,33 @@ export const paymentIntent = (function () {
   }
 
   return { create, retrieve, update, cancel }
-}())
+})()
 
-export const balance = (function () {
+export const balance = (() => {
   async function retrieve() {
     return await stripe.balance.retrieve()
   }
 
   return { retrieve }
-}())
+})()
 
-export const customer = (function () {
+export const customer = (() => {
   async function create(params: Stripe.CustomerCreateParams) {
     return await stripe.customers.create(params)
-  };
+  }
 
   async function update(stripeId: string, params: Stripe.CustomerCreateParams) {
     return await stripe.customers.update(stripeId, params)
-  };
+  }
 
   async function retrieve(stripeId: string) {
     return await stripe.customers.retrieve(stripeId)
-  };
+  }
 
   return { create, update, retrieve }
-}())
+})()
 
-export const charge = (function () {
+export const charge = (() => {
   async function create(params: Stripe.ChargeCreateParams) {
     return await stripe.charges.create(params)
   }
@@ -69,9 +72,9 @@ export const charge = (function () {
   }
 
   return { create, update, retrieve, capture }
-}())
+})()
 
-export const balanceTransactions = (function () {
+export const balanceTransactions = (() => {
   async function retrieve(stripeId: string) {
     await stripe.balanceTransactions.retrieve(stripeId)
   }
@@ -81,9 +84,9 @@ export const balanceTransactions = (function () {
   }
 
   return { retrieve, list }
-}())
+})()
 
-export const dispute = (function () {
+export const dispute = (() => {
   async function retrieve(stripeId: string) {
     return await stripe.disputes.retrieve(stripeId)
   }
@@ -101,9 +104,9 @@ export const dispute = (function () {
   }
 
   return { retrieve, update, close, list }
-}())
+})()
 
-export const events = (function () {
+export const events = (() => {
   async function retrieve(stripeId: string) {
     await stripe.events.retrieve(stripeId)
   }
@@ -113,4 +116,4 @@ export const events = (function () {
   }
 
   return { retrieve, list }
-}())
+})()

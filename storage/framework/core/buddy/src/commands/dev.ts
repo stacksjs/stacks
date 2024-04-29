@@ -1,5 +1,4 @@
 import process from 'node:process'
-import { Action } from '@stacksjs/enums'
 import {
   runAction,
   runApiDevServer,
@@ -10,10 +9,11 @@ import {
   runFrontendDevServer,
   runSystemTrayDevServer,
 } from '@stacksjs/actions'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
+import { libsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOptions } from '@stacksjs/types'
-import { intro, log, outro, runCommand } from '@stacksjs/cli'
-import { libsPath } from '@stacksjs/path'
 
 export function dev(buddy: CLI) {
   const descriptions = {
@@ -44,7 +44,9 @@ export function dev(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-t, --system-tray', descriptions.systemTray)
     .option('-i, --interactive', descriptions.interactive, { default: false })
-    .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
+    .option('-l, --with-localhost', descriptions.withLocalhost, {
+      default: false,
+    })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
@@ -79,9 +81,9 @@ export function dev(buddy: CLI) {
         case 'system-tray':
           await runSystemTrayDevServer(options)
           break
-          // case 'email':
-          //   await runEmailDevServer(options)
-          //   break
+        // case 'email':
+        //   await runEmailDevServer(options)
+        //   break
         case 'docs':
           await runDocsDevServer(options)
           break
@@ -89,48 +91,38 @@ export function dev(buddy: CLI) {
       }
 
       if (wantsInteractive(options)) {
-        const answer = await log.prompt.require()
-          .select(descriptions.select, {
-            options: [
-              { value: 'all', label: 'All' },
-              { value: 'frontend', label: 'Frontend' },
-              { value: 'api', label: 'Backend' },
-              { value: 'dashboard', label: 'Dashboard' },
-              { value: 'desktop', label: 'Desktop' },
-              { value: 'email', label: 'Email' },
-              { value: 'components', label: 'Components' },
-              { value: 'docs', label: 'Documentation' },
-            ],
-          })
+        const answer = await log.prompt.require().select(descriptions.select, {
+          options: [
+            { value: 'all', label: 'All' },
+            { value: 'frontend', label: 'Frontend' },
+            { value: 'api', label: 'Backend' },
+            { value: 'dashboard', label: 'Dashboard' },
+            { value: 'desktop', label: 'Desktop' },
+            { value: 'email', label: 'Email' },
+            { value: 'components', label: 'Components' },
+            { value: 'docs', label: 'Documentation' },
+          ],
+        })
 
         if (answer === 'components') {
           await runComponentsDevServer(options)
-        }
-        else if (answer === 'api') {
+        } else if (answer === 'api') {
           await runApiDevServer(options)
-        }
-        else if (answer === 'dashboard') {
+        } else if (answer === 'dashboard') {
           await runDashboardDevServer(options)
         }
         // else if (answer === 'email')
         //   await runEmailDevServer(options)
         else if (answer === 'docs') {
           await runDocsDevServer(options)
-        }
-
-        else {
+        } else {
           log.error('Invalid option during interactive mode')
           process.exit(ExitCode.InvalidArgument)
         }
-      }
-
-      else {
-        if (options.components)
-          await runComponentsDevServer(options)
-        if (options.docs)
-          await runDocsDevServer(options)
-        else if (options.api)
-          await runApiDevServer(options)
+      } else {
+        if (options.components) await runComponentsDevServer(options)
+        if (options.docs) await runDocsDevServer(options)
+        else if (options.api) await runApiDevServer(options)
         // else if (options.email)
         //   await runEmailDevServer(options)
       }
@@ -154,11 +146,14 @@ export function dev(buddy: CLI) {
         // silent: !options.verbose,
       })
 
-      if (options.verbose)
-        log.info('buddy dev:components result', result)
+      if (options.verbose) log.info('buddy dev:components result', result)
 
       if (result.isErr()) {
-        await outro('While running the dev:components command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the dev:components command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
@@ -179,7 +174,11 @@ export function dev(buddy: CLI) {
       const result = await runAction(Action.DevDocs, options)
 
       if (result.isErr()) {
-        await outro('While running the dev:docs command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the dev:docs command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
@@ -200,7 +199,11 @@ export function dev(buddy: CLI) {
       const result = await runAction(Action.DevDesktop, options)
 
       if (result.isErr()) {
-        await outro('While running the dev:desktop command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the dev:desktop command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
@@ -260,7 +263,10 @@ export function dev(buddy: CLI) {
     })
 
   buddy.on('dev:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

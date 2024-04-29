@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { italic, log } from '@stacksjs/cli'
+import { corePath } from '@stacksjs/path'
 import { glob, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { corePath } from '@stacksjs/path'
 
 log.info('Getting started to move d.ts & d.ts.map files...')
 

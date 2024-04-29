@@ -12,8 +12,10 @@ await route.get('/', () => 'hello world') // $APP_URL/api
 await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 await route.get('/buddy/versions', 'Actions/Buddy/VersionsAction') // stacksjs.org/api/buddy/versions
 await route.get('/buddy/commands', 'Actions/Buddy/CommandsAction') // stacksjs.org/api/buddy/commands
-await route.get('/hello-world', () => { // $APP_URL/api/welcome
-  return { // you may return an object as well
+await route.get('/hello-world', () => {
+  // $APP_URL/api/welcome
+  return {
+    // you may return an object as well
     data: 'hello world, friend',
   }
 })

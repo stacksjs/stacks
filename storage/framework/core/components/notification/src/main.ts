@@ -1,9 +1,9 @@
-import { createApp } from 'vue'
 import { createHead } from '@vueuse/head'
+import { createApp } from 'vue'
 import App from './App.stx'
 
-import 'uno.css'
 import '@unocss/reset/tailwind.css'
+import 'uno.css'
 import highlight from './plugins/highlight'
 
 const app = createApp(App)

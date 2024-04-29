@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
 import { runAdd } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
+import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 
 export function add(buddy: CLI) {
   const descriptions = {
@@ -33,7 +33,6 @@ export function add(buddy: CLI) {
         //     { label: 'Table', value: 'table' },
         //   ],
         // })
-
         // // creates an object out of array and sets answers to true
         // options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
       }
@@ -62,7 +61,10 @@ export function add(buddy: CLI) {
     })
 
   buddy.on('add:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

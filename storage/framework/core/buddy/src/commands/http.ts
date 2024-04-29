@@ -1,7 +1,7 @@
 import process from 'node:process'
+import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
 
 // import { path } from '@stacksjs/path'
 import { log, runCommandSync } from '@stacksjs/cli'
@@ -43,7 +43,9 @@ export function http(buddy: CLI) {
 
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)
-        .filter(([key, value]) => key !== '--' && key.length > 1 && value !== false) // filter out '--' key and short options
+        .filter(
+          ([key, value]) => key !== '--' && key.length > 1 && value !== false,
+        ) // filter out '--' key and short options
         .map(([key, value]) => `--${key} ${value}`)
         .join(' ')
 

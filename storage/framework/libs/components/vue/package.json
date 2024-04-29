@@ -14,7 +14,14 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["component", "library", "vue", "vite", "typescript", "javascript"],
+  "keywords": [
+    "component",
+    "library",
+    "vue",
+    "vite",
+    "typescript",
+    "javascript"
+  ],
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "exports": {
     ".": {
@@ -25,11 +32,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite -c ../../../core/vite-config/src/components.ts",
     "build": "bunx --bun vite build -c ../../../core/vite-config/src/components.ts",

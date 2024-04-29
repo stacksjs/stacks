@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, DeployOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
+import { Action } from '@stacksjs/enums'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI, DeployOptions } from '@stacksjs/types'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
@@ -42,7 +42,11 @@ export function deploy(buddy: CLI) {
       const result = await runAction(Action.Deploy, options)
 
       if (result.isErr()) {
-        await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
+        await outro(
+          'While running the `buddy deploy`, there was an issue',
+          { startTime, useSeconds: true },
+          result.error,
+        )
         process.exit(ExitCode.FatalError)
       }
 
@@ -50,16 +54,25 @@ export function deploy(buddy: CLI) {
     })
 
   buddy.on('deploy:*', () => {
-    log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    log.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }
 
-async function configureDomain(domain: string, options: DeployOptions, startTime: number) {
+async function configureDomain(
+  domain: string,
+  options: DeployOptions,
+  startTime: number,
+) {
   if (!domain) {
     log.info('We could not identify a domain to deploy to.')
     log.warn('Please set your .env or ./config/app.ts properly.')
-    log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
+    log.info(
+      'Alternatively, specify a domain to deploy via the `--domain` flag.',
+    )
     console.log('')
     log.info('   ➡️  Example: `buddy deploy --domain example.com`')
     console.log('')
@@ -70,8 +83,12 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
   // TODO: add check for whether the local APP_ENV is getting deployed, if so, ask if the user meant to deploy `dev`
   if (domain.includes('localhost')) {
     log.info('You are deploying to a local environment.')
-    log.warn('Please set your .env or ./config/app.ts properly. The domain we are deploying cannot be a `localhost` domain.')
-    log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
+    log.warn(
+      'Please set your .env or ./config/app.ts properly. The domain we are deploying cannot be a `localhost` domain.',
+    )
+    log.info(
+      'Alternatively, specify a domain to deploy via the `--domain` flag.',
+    )
     console.log('')
     log.info('   ➡️  Example: `buddy deploy --domain example.com`')
     console.log('')
@@ -103,7 +120,11 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
   })
 
   if (result.isErr()) {
-    await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
+    await outro(
+      'While running the `buddy deploy`, there was an issue',
+      { startTime, useSeconds: true },
+      result.error,
+    )
     process.exit(ExitCode.FatalError)
   }
 
@@ -119,7 +140,9 @@ async function checkIfAwsIsConfigured() {
 
   if (result.isErr()) {
     log.error('AWS is not configured properly.')
-    log.error('Please run `buddy configure:aws` to set up your AWS credentials.')
+    log.error(
+      'Please run `buddy configure:aws` to set up your AWS credentials.',
+    )
     process.exit(ExitCode.FatalError)
   }
 

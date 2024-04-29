@@ -15,13 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "logging",
-    "stacks",
-    "framework",
-    "typescript",
-    "javascript"
-  ],
+  "keywords": ["logging", "stacks", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,14 +27,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

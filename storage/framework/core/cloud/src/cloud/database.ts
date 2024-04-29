@@ -13,11 +13,13 @@ export class DatabaseStack {
   constructor(scope: Construct, props: DatabaseStackProps) {
     this.database = new dynamodb.Table(scope, 'Database', {
       tableName: `${props.slug}-${props.appEnv}-database`,
-      partitionKey: { // wip
+      partitionKey: {
+        // wip
         name: 'id',
         type: dynamodb.AttributeType.STRING,
       },
-      sortKey: { // wip
+      sortKey: {
+        // wip
         name: 'sort',
         type: dynamodb.AttributeType.STRING,
       },

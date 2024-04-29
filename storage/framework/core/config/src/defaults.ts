@@ -238,25 +238,67 @@ export default {
       customScope: 'Select the SCOPE of this change:',
       subject: 'Write a SHORT, IMPERATIVE tense description of the change:\n',
       body: 'Provide a LONGER description of the change (optional). Use "|" to break new line:\n',
-      breaking: 'List any BREAKING CHANGES (optional). Use "|" to break new line:\n',
-      footerPrefixesSelect: 'Select the ISSUES type of the change list by this change (optional):',
+      breaking:
+        'List any BREAKING CHANGES (optional). Use "|" to break new line:\n',
+      footerPrefixesSelect:
+        'Select the ISSUES type of the change list by this change (optional):',
       customFooterPrefixes: 'Input ISSUES prefix:',
       footer: 'List any ISSUES by this change. E.g.: #31, #34:\n',
       confirmCommit: 'Are you sure you want to proceed with the commit above?',
     },
 
     types: [
-      { value: 'feat', name: 'feat:     ✨  A new feature', emoji: ':sparkles:' },
+      {
+        value: 'feat',
+        name: 'feat:     ✨  A new feature',
+        emoji: ':sparkles:',
+      },
       { value: 'fix', name: 'fix:      🐛  A bug fix', emoji: ':bug:' },
-      { value: 'docs', name: 'docs:     📝  Documentation only changes', emoji: ':memo:' },
-      { value: 'style', name: 'style:    💄  Changes that do not affect the meaning of the code', emoji: ':lipstick:' },
-      { value: 'refactor', name: 'refactor: ♻️   A code change that neither fixes a bug nor adds a feature', emoji: ':recycle:' },
-      { value: 'perf', name: 'perf:     ⚡️  A code change that improves performance', emoji: ':zap:' },
-      { value: 'test', name: 'test:     ✅  Adding missing tests or adjusting existing tests', emoji: ':white_check_mark:' },
-      { value: 'build', name: 'build:    📦️  Changes that affect the build system or external dependencies', emoji: ':package:' },
-      { value: 'ci', name: 'ci:       🎡  Changes to our CI configuration files and scripts', emoji: ':ferris_wheel:' },
-      { value: 'chore', name: 'chore:    🔨  Other changes that don’t modify src or test files', emoji: ':hammer:' },
-      { value: 'revert', name: 'revert:   ⏪️  Reverts a previous commit', emoji: ':rewind:' },
+      {
+        value: 'docs',
+        name: 'docs:     📝  Documentation only changes',
+        emoji: ':memo:',
+      },
+      {
+        value: 'style',
+        name: 'style:    💄  Changes that do not affect the meaning of the code',
+        emoji: ':lipstick:',
+      },
+      {
+        value: 'refactor',
+        name: 'refactor: ♻️   A code change that neither fixes a bug nor adds a feature',
+        emoji: ':recycle:',
+      },
+      {
+        value: 'perf',
+        name: 'perf:     ⚡️  A code change that improves performance',
+        emoji: ':zap:',
+      },
+      {
+        value: 'test',
+        name: 'test:     ✅  Adding missing tests or adjusting existing tests',
+        emoji: ':white_check_mark:',
+      },
+      {
+        value: 'build',
+        name: 'build:    📦️  Changes that affect the build system or external dependencies',
+        emoji: ':package:',
+      },
+      {
+        value: 'ci',
+        name: 'ci:       🎡  Changes to our CI configuration files and scripts',
+        emoji: ':ferris_wheel:',
+      },
+      {
+        value: 'chore',
+        name: 'chore:    🔨  Other changes that don’t modify src or test files',
+        emoji: ':hammer:',
+      },
+      {
+        value: 'revert',
+        name: 'revert:   ⏪️  Reverts a previous commit',
+        emoji: ':rewind:',
+      },
     ],
   },
 
@@ -287,40 +329,67 @@ export default {
     vueComponents: {
       name: 'hello-world-vue',
       description: 'Your Vue component library description',
-      keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
-      tags: [{
-        name: ['HelloWorld', 'AppHelloWorld'],
-        description: 'The Hello World custom element, built via this framework.',
-        attributes: [{
-          name: 'greeting',
-          description: 'The greeting.',
-        }],
-      }],
+      keywords: [
+        'component',
+        'library',
+        'vue',
+        'vite',
+        'typescript',
+        'javascript',
+      ],
+      tags: [
+        {
+          name: ['HelloWorld', 'AppHelloWorld'],
+          description:
+            'The Hello World custom element, built via this framework.',
+          attributes: [
+            {
+              name: 'greeting',
+              description: 'The greeting.',
+            },
+          ],
+        },
+      ],
     },
 
     webComponents: {
       name: 'hello-world-elements',
       description: 'Your framework agnostic web component library description.',
-      keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-      tags: [{
-        name: ['HelloWorld', 'AppHelloWorld'],
-        description: 'The Hello World custom element, built via this framework.',
-        attributes: [{
-          name: 'greeting',
-          description: 'The greeting.',
-        }],
-      }],
+      keywords: [
+        'custom-elements',
+        'web-components',
+        'library',
+        'framework-agnostic',
+        'typescript',
+        'javascript',
+      ],
+      tags: [
+        {
+          name: ['HelloWorld', 'AppHelloWorld'],
+          description:
+            'The Hello World custom element, built via this framework.',
+          attributes: [
+            {
+              name: 'greeting',
+              description: 'The greeting.',
+            },
+          ],
+        },
+      ],
     },
 
     functions: {
       name: 'hello-world-fx',
       description: 'Your function library description.',
-      keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
-      shouldGenerateSourcemap: false,
-      functions: [
-        'counter',
-        'dark',
+      keywords: [
+        'functions',
+        'composables',
+        'library',
+        'typescript',
+        'javascript',
       ],
+      shouldGenerateSourcemap: false,
+      functions: ['counter', 'dark'],
     },
   },
 
@@ -442,7 +511,10 @@ export default {
 
   ui: {
     shortcuts: [
-      ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
+      [
+        'btn',
+        'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer',
+      ],
     ],
 
     safelist: 'prose prose-sm m-auto text-left',

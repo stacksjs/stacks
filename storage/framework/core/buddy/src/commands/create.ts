@@ -1,25 +1,27 @@
 import process from 'node:process'
+import { runAction } from '@stacksjs/actions'
+import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
+import { resolve } from '@stacksjs/path'
+import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
-import { isFolder } from '@stacksjs/storage'
-import { resolve } from '@stacksjs/path'
-import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
 
 export function create(buddy: CLI) {
   const descriptions = {
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
     components: 'Are you building UI components?',
-    webComponents: 'Automagically built optimized custom elements/web components?',
+    webComponents:
+      'Automagically built optimized custom elements/web components?',
     vue: 'Automagically built a Vue component library?',
     views: 'How about views?',
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
-    notifications: 'Do you need notifications? e.g. email, SMS, push or chat notifications',
+    notifications:
+      'Do you need notifications? e.g. email, SMS, push or chat notifications',
     cache: 'Do you need caching?',
     email: 'Do you need email?',
     project: 'Target a specific project',
@@ -31,7 +33,9 @@ export function create(buddy: CLI) {
     .alias('create <name>')
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
-    .option('-w, --web-components', descriptions.webComponents, { default: true })
+    .option('-w, --web-components', descriptions.webComponents, {
+      default: true,
+    })
     .option('-v, --vue', descriptions.vue, { default: true })
     .option('-p, --views', descriptions.views, { default: true }) // i.e. `buddy dev`
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
@@ -73,7 +77,10 @@ export function create(buddy: CLI) {
     })
 
   buddy.on('new:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

@@ -23,10 +23,21 @@ export const plural: Pluralize['plural'] = (word, count, inclusive) => {
   return pluralize.plural(word)
 }
 
-export const singular: Pluralize['singular'] = word => pluralize.singular(word)
-export const isPlural: Pluralize['isPlural'] = word => pluralize.isPlural(word)
-export const isSingular: Pluralize['isSingular'] = word => pluralize.isSingular(word)
-export const addPluralRule: Pluralize['addPluralRule'] = (rule, replacement) => pluralize.addPluralRule(rule, replacement)
-export const addSingularRule: Pluralize['addSingularRule'] = (rule, replacement) => pluralize.addSingularRule(rule, replacement)
-export const addIrregularRule: Pluralize['addIrregularRule'] = (single, plural) => pluralize.addIrregularRule(single, plural)
-export const addUncountableRule: Pluralize['addUncountableRule'] = word => pluralize.addUncountableRule(word)
+export const singular: Pluralize['singular'] = (word) =>
+  pluralize.singular(word)
+export const isPlural: Pluralize['isPlural'] = (word) =>
+  pluralize.isPlural(word)
+export const isSingular: Pluralize['isSingular'] = (word) =>
+  pluralize.isSingular(word)
+export const addPluralRule: Pluralize['addPluralRule'] = (rule, replacement) =>
+  pluralize.addPluralRule(rule, replacement)
+export const addSingularRule: Pluralize['addSingularRule'] = (
+  rule,
+  replacement,
+) => pluralize.addSingularRule(rule, replacement)
+export const addIrregularRule: Pluralize['addIrregularRule'] = (
+  single,
+  plural,
+) => pluralize.addIrregularRule(single, plural)
+export const addUncountableRule: Pluralize['addUncountableRule'] = (word) =>
+  pluralize.addUncountableRule(word)

@@ -1,6 +1,10 @@
 /* eslint-disable no-new */
 import type { aws_efs as efs } from 'aws-cdk-lib'
-import { CfnOutput as Output, aws_ec2 as ec2, aws_iam as iam } from 'aws-cdk-lib'
+import {
+  CfnOutput as Output,
+  aws_ec2 as ec2,
+  aws_iam as iam,
+} from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -17,15 +21,22 @@ export class JumpBoxStack {
     const role = new iam.Role(scope, 'JumpBoxInstanceRole', {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
-        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'AmazonSSMManagedInstanceCore',
+        ),
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'CloudWatchAgentServerPolicy',
+        ),
       ],
     })
 
     // this instance needs to be created once to mount the EFS & clone the Stacks repo
     this.jumpBox = new ec2.Instance(scope, 'JumpBox', {
       vpc: props.vpc,
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      instanceType: ec2.InstanceType.of(
+        ec2.InstanceClass.T2,
+        ec2.InstanceSize.MICRO,
+      ),
       machineImage: new ec2.AmazonLinuxImage(),
       role,
       userData: ec2.UserData.custom(`
@@ -42,7 +53,8 @@ export class JumpBoxStack {
 
     new Output(scope, 'JumpBoxInstanceId', {
       value: this.jumpBox.instanceId,
-      description: 'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
+      description:
+        'The ID of the EC2 instance that can be used to SSH into the Stacks Cloud.',
     })
   }
 }

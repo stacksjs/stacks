@@ -1,9 +1,9 @@
 import process from 'node:process'
+import { runAction } from '@stacksjs/actions'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
-import { runAction } from '@stacksjs/actions'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
@@ -35,11 +35,17 @@ export function release(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Triggered CI/CD Release Workflow', { startTime, useSeconds: true })
+      await outro('Triggered CI/CD Release Workflow', {
+        startTime,
+        useSeconds: true,
+      })
     })
 
   buddy.on('release:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

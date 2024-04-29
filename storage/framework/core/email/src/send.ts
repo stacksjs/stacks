@@ -4,7 +4,11 @@ import type { EmailOptions } from '@stacksjs/types'
 
 // import { stringify } from 'json5'
 
-export async function send(options: EmailOptions, provider: any, providerName: string): Promise<ResultAsync<any, Error>> {
+export async function send(
+  options: EmailOptions,
+  provider: any,
+  providerName: string,
+): Promise<ResultAsync<any, Error>> {
   // const template = `
   // <extends src="./src/notifications/src/utils/template.html">
   //   <block name="template">
@@ -29,6 +33,9 @@ export async function send(options: EmailOptions, provider: any, providerName: s
 
   return ResultAsync.fromPromise(
     provider.sendMessage(options),
-    () => new Error(`Failed to send message using provider: ${italic(providerName)}`),
+    () =>
+      new Error(
+        `Failed to send message using provider: ${italic(providerName)}`,
+      ),
   )
 }

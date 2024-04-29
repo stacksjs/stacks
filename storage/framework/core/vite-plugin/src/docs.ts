@@ -7,7 +7,8 @@ export const docsEngine = {
   configureServer(server: ViteDevServer) {
     // const base = server.config.base || '/'
     // const _print = server.printUrls
-    server.printUrls = () => { // eslint-disable-next-line no-console
+    server.printUrls = () => {
+      // eslint-disable-next-line no-console
       console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
       // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(docsUrl())}`)

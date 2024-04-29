@@ -1,9 +1,9 @@
-import { computed, defineComponent, h, ref, watch } from 'vue'
-import type { Plugin } from 'vue'
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import xml from 'highlight.js/lib/languages/xml'
 import 'highlight.js/styles/github.css'
+import { computed, defineComponent, h, ref, watch } from 'vue'
+import type { Plugin } from 'vue'
 
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('xml', xml)
@@ -55,10 +55,8 @@ const component = defineComponent({
     )
 
     const className = computed((): string => {
-      if (cannotDetectLanguage.value)
-        return ''
-      else
-        return `hljs ${language.value} ${props.className}`
+      if (cannotDetectLanguage.value) return ''
+      else return `hljs ${language.value} ${props.className}`
     })
 
     const highlightedCode = computed((): string => {
@@ -74,8 +72,7 @@ const component = defineComponent({
         const result = hljs.highlightAuto(props.code)
         language.value = result.language ?? ''
         return result.value
-      }
-      else {
+      } else {
         const result = hljs.highlight(props.code, {
           language: language.value,
           ignoreIllegals: props.ignoreIllegals,

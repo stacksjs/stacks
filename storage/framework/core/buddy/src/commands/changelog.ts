@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import type { CLI, FreshOptions } from '@stacksjs/types'
 
 export function changelog(buddy: CLI) {
   const descriptions = {
@@ -28,11 +28,20 @@ export function changelog(buddy: CLI) {
       const result = await runAction(Action.Changelog, options)
 
       if (result.isErr()) {
-        await outro('While running the changelog command, there was an issue', { ...options, startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the changelog command, there was an issue',
+          { ...options, startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
-      await outro('Generated CHANGELOG.md', { ...options, startTime: perf, useSeconds: true, type: 'success' })
+      await outro('Generated CHANGELOG.md', {
+        ...options,
+        startTime: perf,
+        useSeconds: true,
+        type: 'success',
+      })
     })
 
   buddy.on('changelog:*', () => {

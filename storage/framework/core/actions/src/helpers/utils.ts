@@ -1,8 +1,8 @@
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
-import { storage } from '@stacksjs/storage'
-import { log } from '@stacksjs/logging'
 import { err } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
 import type { ActionOptions } from '@stacksjs/types'
 
 /**
@@ -38,8 +38,7 @@ export async function runActions(actions: string[], options?: ActionOptions) {
   log.debug('runActions:', actions)
   log.debug('actions options:', options)
 
-  if (!actions.length)
-    return err('No actions were specified')
+  if (!actions.length) return err('No actions were specified')
 
   for (const action of actions) {
     log.debug(`running action "${action}"`)
@@ -54,7 +53,10 @@ export async function runActions(actions: string[], options?: ActionOptions) {
     ...options,
   }
 
-  const commands = actions.map(action => `bun --bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
+  const commands = actions.map(
+    (action) =>
+      `bun --bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`,
+  )
 
   log.debug('commands:', commands)
 

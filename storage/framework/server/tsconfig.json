@@ -3,9 +3,7 @@
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "moduleDetection": "force",
     "baseUrl": ".",
     "module": "esnext",
@@ -45,8 +43,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": [
-    "./*.ts",
-    "./*.d.ts"
-  ]
+  "include": ["./*.ts", "./*.d.ts"]
 }

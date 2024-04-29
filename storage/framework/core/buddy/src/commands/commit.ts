@@ -1,7 +1,7 @@
 import process from 'node:process'
-import type { CLI, FreshOptions } from '@stacksjs/types'
 import { runCommit } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
+import type { CLI, FreshOptions } from '@stacksjs/types'
 
 export function commit(buddy: CLI) {
   const descriptions = {
@@ -20,7 +20,10 @@ export function commit(buddy: CLI) {
     })
 
   buddy.on('commit:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

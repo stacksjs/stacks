@@ -29,15 +29,19 @@ export class Request {
   }
 
   public extractParamsFromRoute(routePattern: string, pathname: string): void {
-    const pattern = new RegExp(`^${routePattern.replace(/:(\w+)/g, (match, paramName) => `(?<${paramName}>\\w+)`)}$`)
+    const pattern = new RegExp(
+      `^${routePattern.replace(
+        /:(\w+)/g,
+        (match, paramName) => `(?<${paramName}>\\w+)`,
+      )}$`,
+    )
     const match = pattern.exec(pathname)
 
-    if (match?.groups)
-      this.params = match?.groups
+    if (match?.groups) this.params = match?.groups
   }
 
   public getParams(key: string): number | string | null {
-    return this.params ? (this.params[key] || null) : null
+    return this.params ? this.params[key] || null : null
   }
 }
 

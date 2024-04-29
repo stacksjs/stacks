@@ -10,9 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    '@playwright/test',
-  ],
+  external: ['@playwright/test'],
 })
 
 await outro({

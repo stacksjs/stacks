@@ -1,7 +1,11 @@
+import { docs } from '@stacksjs/config'
 import { frameworkPath } from '@stacksjs/path'
 import type { PwaOptions } from '@vite-pwa/vitepress'
-import { docs } from '@stacksjs/config'
-import { githubusercontentRegex, pwaFontStylesRegex, pwaFontsRegex } from '../meta'
+import {
+  githubusercontentRegex,
+  pwaFontStylesRegex,
+  pwaFontsRegex,
+} from '../meta'
 
 export const pwaDocs: PwaOptions = {
   outDir: frameworkPath('docs/dist'),
@@ -44,12 +48,14 @@ export const pwaDocs: PwaOptions = {
         purpose: 'maskable',
       },
     ],
-    screenshots: [{
-      src: 'og.png',
-      sizes: '2258x1185',
-      type: 'image/png',
-      label: `Screenshot of ${docs.title}`,
-    }],
+    screenshots: [
+      {
+        src: 'og.png',
+        sizes: '2258x1185',
+        type: 'image/png',
+        label: `Screenshot of ${docs.title}`,
+      },
+    ],
     handle_links: 'preferred',
     launch_handler: {
       client_mode: ['navigate-existing', 'auto'],

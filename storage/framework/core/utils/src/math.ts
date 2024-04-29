@@ -1,4 +1,5 @@
-export const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
+export const clamp = (n: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, n))
 
 export function rand(min: number, max: number) {
   min = Math.ceil(min)

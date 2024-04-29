@@ -10,10 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    'mysql2',
-    'kysely',
-  ],
+  external: ['mysql2', 'kysely'],
 })
 
 await outro({

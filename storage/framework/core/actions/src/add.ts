@@ -2,11 +2,9 @@ import { installPackage } from '@stacksjs/cli'
 import type { AddOptions } from '@stacksjs/types'
 
 export async function invoke(options: AddOptions) {
-  if (options?.table)
-    await addTable()
+  if (options?.table) await addTable()
 
-  if (options?.calendar)
-    await addCalendar()
+  if (options?.calendar) await addCalendar()
 }
 
 export async function add(options: AddOptions) {
@@ -22,6 +20,5 @@ export async function addCalendar() {
 }
 
 export async function installPackages(names: string[]) {
-  for (const name of names)
-    await installPackage(name)
+  for (const name of names) await installPackage(name)
 }

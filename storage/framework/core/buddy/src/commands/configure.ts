@@ -1,7 +1,7 @@
 import process from 'node:process'
-import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export function configure(buddy: CLI) {
@@ -26,14 +26,18 @@ export function configure(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      log.info('Not implemented yet. Please use the --aws flag to configure AWS.')
+      log.info(
+        'Not implemented yet. Please use the --aws flag to configure AWS.',
+      )
       process.exit(ExitCode.Success)
     })
 
   buddy
     .command('configure:aws', descriptions.aws)
     .option('-p, --project', descriptions.project, { default: false })
-    .option('--profile', descriptions.profile, { default: process.env.AWS_PROFILE })
+    .option('--profile', descriptions.profile, {
+      default: process.env.AWS_PROFILE,
+    })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--access-key-id', 'The AWS access key')
     .option('--secret-access-key', 'The AWS secret access key')
@@ -47,7 +51,10 @@ export function configure(buddy: CLI) {
     })
 
   buddy.on('configure:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(ExitCode.FatalError)
   })
 }
@@ -56,11 +63,14 @@ async function configureAws(options?: ConfigureOptions) {
   const startTime = performance.now()
 
   const awsAccessKeyId = options?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID
-  const awsSecretAccessKey = options?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY
+  const awsSecretAccessKey =
+    options?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY
   const defaultRegion = 'us-east-1' // we only support `us-east-1` for now
   const defaultOutputFormat = options?.output ?? 'json'
 
-  const command = `aws configure --profile ${options?.profile ?? process.env.AWS_PROFILE}`
+  const command = `aws configure --profile ${
+    options?.profile ?? process.env.AWS_PROFILE
+  }`
   const input = `${awsAccessKeyId}\n${awsSecretAccessKey}\n${defaultRegion}\n${defaultOutputFormat}\n`
 
   const result = await runCommand(command, {
@@ -70,12 +80,15 @@ async function configureAws(options?: ConfigureOptions) {
   })
 
   if (result.isErr()) {
-    await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
+    await outro(
+      'While running the cloud command, there was an issue',
+      { startTime, useSeconds: true },
+      result.error,
+    )
     process.exit(ExitCode.FatalError)
   }
 
-  if (options?.quiet)
-    return
+  if (options?.quiet) return
 
   await outro('Exited', { startTime, useSeconds: true })
 }

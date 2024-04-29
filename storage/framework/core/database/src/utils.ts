@@ -1,10 +1,10 @@
+import { database } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
+import type { Database } from '@stacksjs/orm'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
-import { Pool } from 'pg'
 import { createPool } from 'mysql2'
-import type { Database } from '@stacksjs/orm'
-import { log } from '@stacksjs/logging'
-import { database } from '@stacksjs/config'
+import { Pool } from 'pg'
 
 export function getDialect() {
   const driver = database.default ?? 'sqlite'
@@ -12,7 +12,8 @@ export function getDialect() {
   log.debug(`Using database driver: ${driver}`)
 
   if (driver === 'sqlite') {
-    const path = database.connections?.sqlite.database ?? 'database/stacks.sqlite'
+    const path =
+      database.connections?.sqlite.database ?? 'database/stacks.sqlite'
     return new BunWorkerDialect({
       url: path,
     })

@@ -1,11 +1,11 @@
 import process from 'node:process'
+import { runAction } from '@stacksjs/actions'
 import type { CAC } from '@stacksjs/cli'
 import { cli, log } from '@stacksjs/cli'
-import { ensureProjectIsInitialized } from '@stacksjs/utils'
+import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { runAction } from '@stacksjs/actions'
-import { Action } from '@stacksjs/enums'
+import { ensureProjectIsInitialized } from '@stacksjs/utils'
 import * as cmd from './commands'
 
 // setup global error handlers
@@ -32,8 +32,7 @@ async function main() {
   const isAppKeySet = await ensureProjectIsInitialized()
   if (isAppKeySet) {
     log.debug('Project is initialized')
-  }
-  else {
+  } else {
     log.info('Your `APP_KEY` is not yet set')
     log.info('Generating application key...')
     const result = await runAction(Action.KeyGenerate)
@@ -85,7 +84,9 @@ await main()
 async function dynamicImports(buddy: CAC) {
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
-  const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.ts'))
+  const commandFiles = fs
+    .readdirSync(commandsDir)
+    .filter((file) => file.endsWith('.ts'))
 
   for (const file of commandFiles) {
     const commandPath = `${commandsDir}/${file}`
@@ -95,7 +96,10 @@ async function dynamicImports(buddy: CAC) {
     if (typeof dynamicImport.default === 'function')
       dynamicImport.default(buddy)
     else
-      console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
+      console.error(
+        `Expected a default export function in ${file}, but got:`,
+        dynamicImport.default,
+      )
   }
 
   const listenerImport = await import(p.listenersPath('Console.ts'))

@@ -2,9 +2,9 @@
 // but ultimately, it should be generated to here storage/framework/orm/UserModel.ts
 
 import process from 'node:process'
-import { db } from '@stacksjs/database'
 import type { Collection } from '@stacksjs/collections'
 import { collect } from '@stacksjs/collections'
+import { db } from '@stacksjs/database'
 
 export interface User {
   id: number
@@ -27,30 +27,28 @@ export class UserModel {
   private useSoftDeletes = true
   private keyName: keyof User = 'id'
 
-  queryBuilder = db.selectFrom('users')// Initialize queryBuilder
-  queryBuilderStore = db.insertInto('users')// Initialize queryBuilder
-  queryBuilderUpdate = db.updateTable('users')// Initialize queryBuilder
-  queryBuilderDelete = db.deleteFrom('users')// Initialize queryBuilder
+  queryBuilder = db.selectFrom('users') // Initialize queryBuilder
+  queryBuilderStore = db.insertInto('users') // Initialize queryBuilder
+  queryBuilderUpdate = db.updateTable('users') // Initialize queryBuilder
+  queryBuilderDelete = db.deleteFrom('users') // Initialize queryBuilder
 
   public async find(id: number | number[]): Promise<User | Collection<User>> {
-    if (Array.isArray(id))
-      return await this.findMany(id)
+    if (Array.isArray(id)) return await this.findMany(id)
 
-    let query = this.queryBuilder.selectAll()
-      .where(this.keyName, '=', id)
+    let query = this.queryBuilder.selectAll().where(this.keyName, '=', id)
 
-    if (this.useSoftDeletes)
-      query = query.where('deleted_at', 'is', null)
+    if (this.useSoftDeletes) query = query.where('deleted_at', 'is', null)
 
     this._data = await query.executeTakeFirst()
 
-    if (!this._data)
-      throw new Error('User not found!')
+    if (!this._data) throw new Error('User not found!')
 
     return this._createProxy()
   }
 
-  public async findMany(id: number[] | string[]): Promise<User | Collection<User>> {
+  public async findMany(
+    id: number[] | string[],
+  ): Promise<User | Collection<User>> {
     return await this.whereIn(this.keyName, id).get()
   }
 
@@ -58,22 +56,23 @@ export class UserModel {
     return new Proxy(this._data || {}, {
       get: (target: User, prop: UserColumn) => {
         // Property lookup in the User data
-        if (prop in target)
-          return target[prop]
+        if (prop in target) return target[prop]
 
         // If it’s a method on the UserModel, bind it
         const method = this[prop as keyof this]
-        if (typeof method === 'function')
-          return method.bind(this)
+        if (typeof method === 'function') return method.bind(this)
 
         return undefined
       },
     })
   }
 
-  public async update(obj: Partial<User>): Promise<User | undefined | Collection<User>> {
+  public async update(
+    obj: Partial<User>,
+  ): Promise<User | undefined | Collection<User>> {
     if (this._data && this._data?.id) {
-      await this.queryBuilderUpdate.set(obj)
+      await this.queryBuilderUpdate
+        .set(obj)
         .where(this.keyName, '=', this._data?.id)
         .executeTakeFirst()
 
@@ -84,13 +83,11 @@ export class UserModel {
   }
 
   public async all() {
-    return await this.queryBuilder.selectAll()
-      .execute()
+    return await this.queryBuilder.selectAll().execute()
   }
 
   public async get(): Promise<Collection<User>> {
-    if (this.useSoftDeletes)
-      return collect(await this.getSoftDeletes())
+    if (this.useSoftDeletes) return collect(await this.getSoftDeletes())
 
     if (this._isSelectInvoked)
       return collect(await this.queryBuilder.select(this.cols).execute())
@@ -100,32 +97,47 @@ export class UserModel {
 
   public async trashed() {
     if (this._isSelectInvoked)
-      return await this.queryBuilder.where('deleted_at', 'is not', null).select(this.cols).execute()
+      return await this.queryBuilder
+        .where('deleted_at', 'is not', null)
+        .select(this.cols)
+        .execute()
 
-    return await this.queryBuilder.where('deleted_at', 'is not', null).selectAll().execute()
+    return await this.queryBuilder
+      .where('deleted_at', 'is not', null)
+      .selectAll()
+      .execute()
   }
 
   private async getSoftDeletes() {
     if (this._isSelectInvoked)
-      return await this.queryBuilder.where('deleted_at', 'is', null).select(this.cols).execute()
+      return await this.queryBuilder
+        .where('deleted_at', 'is', null)
+        .select(this.cols)
+        .execute()
 
-    return await this.queryBuilder.where('deleted_at', 'is', null).selectAll().execute()
+    return await this.queryBuilder
+      .where('deleted_at', 'is', null)
+      .selectAll()
+      .execute()
   }
 
   public where(...args: (string | number | boolean)[]): this {
     if (args.length === 2) {
       const [column, value] = args
-      this.queryBuilder = this.queryBuilder.where(column as UserColumn, '=', value)
+      this.queryBuilder = this.queryBuilder.where(
+        column as UserColumn,
+        '=',
+        value,
+      )
+    } else {
+      this.queryBuilder = this.queryBuilder.where(...args)
     }
-    else { this.queryBuilder = this.queryBuilder.where(...args) }
 
     return this
   }
 
   public orWhere(...args: (string | number | boolean)[]): this {
-    this.queryBuilder = this.queryBuilder.where(eb => eb.or([
-      eb(...args),
-    ]))
+    this.queryBuilder = this.queryBuilder.where((eb) => eb.or([eb(...args)]))
 
     return this
   }
@@ -134,8 +146,9 @@ export class UserModel {
     if (args.length === 2) {
       const [column, value] = args
       this.queryBuilder = this.queryBuilder.where(column, 'in', value)
+    } else {
+      this.queryBuilder = this.queryBuilder.where(...args)
     }
-    else { this.queryBuilder = this.queryBuilder.where(...args) }
 
     return this
   }
@@ -147,8 +160,7 @@ export class UserModel {
   }
 
   public when(condition: boolean, callback: (instance: this) => any): this {
-    if (condition)
-      callback(this)
+    if (condition) callback(this)
 
     return this
   }
@@ -264,22 +276,19 @@ export class UserModel {
     // Execute the query using queryBuilder
     if (this._isSelectInvoked)
       this._data = await this.queryBuilder.select(this.cols).executeTakeFirst()
-    else
-      this._data = await this.queryBuilder.selectAll().executeTakeFirst()
+    else this._data = await this.queryBuilder.selectAll().executeTakeFirst()
 
     return this._createProxy()
   }
 
   public store(obj: any[]): User {
     // Execute the query using queryBuilder
-    return this.queryBuilderStore.values(obj)
-      .executeTakeFirst()
+    return this.queryBuilderStore.values(obj).executeTakeFirst()
   }
 
   public createMany(obj: any[]): User[] {
     // Execute the query using queryBuilder
-    return this.queryBuilderStore.values(obj)
-      .executeTakeFirst()
+    return this.queryBuilderStore.values(obj).executeTakeFirst()
   }
 
   public async delete(): Promise<any> {
@@ -293,7 +302,8 @@ export class UserModel {
 
   public forceDelete(): any {
     if (this._data && this._data?.id) {
-      return this.queryBuilderDelete.where(this.keyName, '=', this._data?.id)
+      return this.queryBuilderDelete
+        .where(this.keyName, '=', this._data?.id)
         .executeTakeFirst()
     }
   }

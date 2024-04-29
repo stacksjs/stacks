@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
 import { generateMigrations, runDatabaseMigration } from '@stacksjs/database'
+import { log } from '@stacksjs/logging'
 
 // this is run and checks whether new created or update migrations need to be generated
 const result = await generateMigrations()

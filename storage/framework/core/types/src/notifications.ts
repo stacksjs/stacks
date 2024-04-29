@@ -2,7 +2,17 @@ export interface NotificationOptions {
   default: 'email' | 'sms' | 'chat' | string
 
   email: {
-    default: 'emailjs' | 'mailgun' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'sendgrid' | 'ses' | string
+    default:
+      | 'emailjs'
+      | 'mailgun'
+      | 'mailjet'
+      | 'mandrill'
+      | 'netcore'
+      | 'nodemailer'
+      | 'postmark'
+      | 'sendgrid'
+      | 'ses'
+      | string
 
     from: {
       name: string
@@ -73,7 +83,16 @@ export interface NotificationOptions {
   }
 
   sms: {
-    default: 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns' | 'telnyx' | 'termii' | string
+    default:
+      | 'twilio'
+      | 'nexmo'
+      | 'gupshup'
+      | 'plivo'
+      | 'sms77'
+      | 'sns'
+      | 'telnyx'
+      | 'termii'
+      | string
     from: string
 
     drivers: {

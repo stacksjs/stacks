@@ -24,19 +24,19 @@ export interface ControlledPromise<T = void> extends Promise<T> {
  *
  * @category Promise
  */
-export function createSingletonPromise<T>(fn: () => Promise<T>): SingletonPromiseReturn<T> {
+export function createSingletonPromise<T>(
+  fn: () => Promise<T>,
+): SingletonPromiseReturn<T> {
   let _promise: Promise<T> | undefined
 
   function wrapper() {
-    if (!_promise)
-      _promise = fn()
+    if (!_promise) _promise = fn()
     return _promise
   }
   wrapper.reset = async () => {
     const _prev = _promise
     _promise = undefined
-    if (_prev)
-      await _prev
+    if (_prev) await _prev
   }
 
   return wrapper
@@ -67,8 +67,7 @@ export function createPromiseLock() {
       locks.push(p)
       try {
         return await p
-      }
-      finally {
+      } finally {
         remove(locks, p)
       }
     },

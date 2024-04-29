@@ -9,7 +9,10 @@ import { version } from '../package.json'
 /**
  * Prints the intro message.
  */
-export async function intro(command: string, options?: IntroOptions): Promise<number> {
+export async function intro(
+  command: string,
+  options?: IntroOptions,
+): Promise<number> {
   return new Promise((resolve) => {
     if (options?.quiet === false) {
       console.log()
@@ -19,8 +22,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
 
     log.info(`Running  ${bgCyan(italic(bold(` ${command} `)))}`)
 
-    if (options?.showPerformance === false || options?.quiet)
-      return resolve(0)
+    if (options?.showPerformance === false || options?.quiet) return resolve(0)
 
     return resolve(performance.now())
   })
@@ -29,7 +31,11 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
 /**
  * Prints the outro message.
  */
-export function outro(text: string, options?: OutroOptions, error?: Error | string) {
+export function outro(
+  text: string,
+  options?: OutroOptions,
+  error?: Error | string,
+) {
   const opts = {
     type: 'success',
     useSeconds: true,
@@ -39,8 +45,7 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
   opts.message = options?.message || text
 
   return new Promise((resolve) => {
-    if (error)
-      return handleError(error)
+    if (error) return handleError(error)
 
     if (opts?.startTime) {
       let time = performance.now() - opts.startTime
@@ -50,21 +55,24 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
         time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
       }
 
-      if (opts.quiet === true)
-        return resolve(ExitCode.Success)
+      if (opts.quiet === true) return resolve(ExitCode.Success)
 
       if (error)
         log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
       else if (opts.type === 'info')
-        log.info(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
+        log.info(
+          `${dim(
+            gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`),
+          )} ${opts.message ?? 'Complete'}`,
+        )
       else
-        log.success(`${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(opts.message ?? 'Complete'))}`)
-    }
-
-    else {
-      if (opts?.type === 'info')
-        log.info(text)
-
+        log.success(
+          `${dim(
+            gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)),
+          )} ${bold(green(opts.message ?? 'Complete'))}`,
+        )
+    } else {
+      if (opts?.type === 'info') log.info(text)
       // the following condition triggers in the case of "Cleaned up" messages
       else if (opts?.type === 'success' && opts?.quiet !== true)
         log.success(text)

@@ -11,10 +11,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    '@stacksjs/cli',
-    '@stacksjs/error-handling',
-  ],
+  external: ['@stacksjs/cli', '@stacksjs/error-handling'],
 })
 
 await outro({

@@ -1,7 +1,13 @@
-import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
-import { path as p, routesPath } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
+import { path as p, routesPath } from '@stacksjs/path'
 import { pascalCase } from '@stacksjs/strings'
+import type {
+  RedirectCode,
+  Route,
+  RouteGroupOptions,
+  RouterInterface,
+  StatusCode,
+} from '@stacksjs/types'
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
@@ -9,19 +15,25 @@ export class Router implements RouterInterface {
   private groupPrefix = ''
   private path = ''
 
-  private addRoute(method: Route['method'], uri: string, callback: Route['callback'] | string | object, statusCode: StatusCode): this {
+  private addRoute(
+    method: Route['method'],
+    uri: string,
+    callback: Route['callback'] | string | object,
+    statusCode: StatusCode,
+  ): this {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
-    const pattern = new RegExp(`^${uri.replace(/:[a-zA-Z]+/g, (_match) => {
-      return '([a-zA-Z0-9-]+)'
-    })}$`)
+    const pattern = new RegExp(
+      `^${uri.replace(/:[a-zA-Z]+/g, (_match) => {
+        return '([a-zA-Z0-9-]+)'
+      })}$`,
+    )
 
     let routeCallback: Route['callback']
 
     if (typeof callback === 'string' || typeof callback === 'object') {
       // Convert string or object to RouteCallback
       routeCallback = () => callback
-    }
-    else {
+    } else {
       routeCallback = callback
     }
 
@@ -41,7 +53,10 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
+  public async get(
+    path: Route['url'],
+    callback: Route['callback'],
+  ): Promise<this> {
     this.path = this.normalizePath(path)
     log.debug(`Normalized Path: ${this.path}`)
 
@@ -80,7 +95,9 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
+    const jobModule = await import(
+      p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job'))
+    )
     const callback = jobModule.default.handle
 
     path = this.prepareUri(path)
@@ -93,7 +110,9 @@ export class Router implements RouterInterface {
     path = pascalCase(path) // actions are PascalCase
 
     // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-    const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
+    const actionModule = await import(
+      p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action'))
+    )
     const callback = actionModule.default.handle
 
     path = this.prepareUri(path)
@@ -115,7 +134,11 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
+  public redirect(
+    path: Route['url'],
+    callback: Route['callback'],
+    _status?: RedirectCode,
+  ): this {
     this.addRoute('GET', path, callback, 302)
 
     return this
@@ -136,7 +159,10 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public group(options: string | RouteGroupOptions, callback?: () => void): this {
+  public group(
+    options: string | RouteGroupOptions,
+    callback?: () => void,
+  ): this {
     if (typeof options === 'string')
       options = options.startsWith('/') ? options.slice(1) : options
 
@@ -169,8 +195,7 @@ export class Router implements RouterInterface {
     this.routes.forEach((r) => {
       r.uri = `${prefix}${r.uri}`
 
-      if (middleware.length)
-        r.middleware = middleware
+      if (middleware.length) r.middleware = middleware
 
       originalRoutes.push(r)
       return this
@@ -226,13 +251,14 @@ export class Router implements RouterInterface {
     if (this.groupPrefix !== '' && typeof options !== 'string')
       return this.setGroupPrefix(this.groupPrefix, options)
 
-    if (typeof options === 'string')
-      return this.setGroupPrefix(options)
+    if (typeof options === 'string') return this.setGroupPrefix(options)
 
     return this.setGroupPrefix('', options)
   }
 
-  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
+  private async resolveCallback(
+    callback: Route['callback'],
+  ): Promise<Route['callback']> {
     if (callback instanceof Promise) {
       const actionModule = await callback
       return actionModule.default
@@ -245,15 +271,19 @@ export class Router implements RouterInterface {
     return callback
   }
 
-  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
+  private async importCallbackFromPath(
+    callbackPath: string,
+    originalPath: string,
+  ): Promise<Route['callback']> {
     let modulePath = callbackPath
     let importPathFunction = p.appPath // Default import path function
 
-    if (callbackPath.startsWith('../'))
-      importPathFunction = p.routesPath
+    if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
 
     // Remove trailing .ts if present
-    modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
+    modulePath = modulePath.endsWith('.ts')
+      ? modulePath.slice(0, -3)
+      : modulePath
     const actionModule = await import(importPathFunction(`${modulePath}.ts`))
 
     // Use custom path from action module if available
@@ -269,8 +299,7 @@ export class Router implements RouterInterface {
 
   public prepareUri(path: string) {
     // if string starts with / then remove it because we are adding it back in the next line
-    if (path.startsWith('/'))
-      path = path.slice(1)
+    if (path.startsWith('/')) path = path.slice(1)
 
     path = `${this.apiPrefix}${this.groupPrefix}/${path}`
 
@@ -281,7 +310,7 @@ export class Router implements RouterInterface {
 
   private updatePathIfNeeded(newPath: string, originalPath: string): void {
     if (newPath !== originalPath) {
-    // Logic to update the path if needed, based on the action module's custom path
+      // Logic to update the path if needed, based on the action module's custom path
       this.path = newPath
     }
   }

@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { isString } from '@stacksjs/validation'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
+import { isString } from '@stacksjs/validation'
 
 export function build(buddy: CLI) {
   const descriptions = {
@@ -80,7 +80,8 @@ export function build(buddy: CLI) {
 
       // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
-        let answers = await log.prompt.require()
+        let answers = await log.prompt
+          .require()
           .multiselect(descriptions.select, {
             options: [
               { label: 'Components', value: 'components' },
@@ -92,11 +93,9 @@ export function build(buddy: CLI) {
             ],
           })
 
-        if (answers !== null)
-          process.exit(ExitCode.InvalidArgument)
+        if (answers !== null) process.exit(ExitCode.InvalidArgument)
 
-        if (isString(answers))
-          answers = [answers]
+        if (isString(answers)) answers = [answers]
 
         // creates an object out of array and sets answers to true
         options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
@@ -108,7 +107,10 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
+    .command(
+      'build:components',
+      'Automagically build component libraries for production use & npm/CDN distribution',
+    )
     .alias('prod:components')
     .option('-c, --components', descriptions.components, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
@@ -141,7 +143,10 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command('build:functions', 'Automagically build function library for npm/CDN distribution')
+    .command(
+      'build:functions',
+      'Automagically build function library for npm/CDN distribution',
+    )
     .option('-f, --functions', descriptions.functions, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -151,11 +156,16 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
+    .command(
+      'build:vue-components',
+      'Automagically build Vue component library for npm/CDN distribution',
+    )
     .alias('build:vue')
     .alias('prod:vue-components')
     .alias('prod:vue')
-    .option('-v, --vue-components', descriptions.vueComponents, { default: true })
+    .option('-v, --vue-components', descriptions.vueComponents, {
+      default: true,
+    })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('build:vue')
@@ -165,11 +175,16 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
+    .command(
+      'build:web-components',
+      'Automagically build Web Component library for npm/CDN distribution',
+    )
     .alias('build:wc')
     .alias('prod:web-components')
     .alias('prod:wc')
-    .option('-w, --web-components', descriptions.webComponents, { default: true })
+    .option('-w, --web-components', descriptions.webComponents, {
+      default: true,
+    })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
@@ -205,7 +220,10 @@ export function build(buddy: CLI) {
         process.exit()
       }
 
-      await outro('Core packages built successfully', { startTime, useSeconds: true })
+      await outro('Core packages built successfully', {
+        startTime,
+        useSeconds: true,
+      })
     })
 
   buddy
@@ -220,7 +238,11 @@ export function build(buddy: CLI) {
       const result = await runAction(Action.BuildDesktop, options)
 
       if (result.isErr()) {
-        await outro('While running the build:desktop command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the build:desktop command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
@@ -250,11 +272,24 @@ export function build(buddy: CLI) {
     })
 
   buddy.on('build:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }
 
 function hasNoOptions(options: BuildOptions) {
-  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.views && !options.docs && !options.stacks && !options.buddy
+  return (
+    !options.components &&
+    !options.vueComponents &&
+    !options.webComponents &&
+    !options.elements &&
+    !options.functions &&
+    !options.views &&
+    !options.docs &&
+    !options.stacks &&
+    !options.buddy
+  )
 }

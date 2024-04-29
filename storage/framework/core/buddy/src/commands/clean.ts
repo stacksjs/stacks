@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
-import type { CLI, CleanOptions } from '@stacksjs/types'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import { ExitCode } from '@stacksjs/types'
+import type { CLI, CleanOptions } from '@stacksjs/types'
 
 export function clean(buddy: CLI) {
   const descriptions = {
@@ -23,16 +23,27 @@ export function clean(buddy: CLI) {
       const result = await runAction(Action.Clean, options)
 
       if (result.isErr()) {
-        await outro('While running the clean command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the clean command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Cleaned up', { startTime: perf, useSeconds: true, message: 'Cleaned up' })
+      await outro('Cleaned up', {
+        startTime: perf,
+        useSeconds: true,
+        message: 'Cleaned up',
+      })
       process.exit(ExitCode.Success)
     })
 
   buddy.on('clean:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

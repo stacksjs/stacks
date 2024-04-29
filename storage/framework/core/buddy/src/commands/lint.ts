@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { CLI, LintOptions } from '@stacksjs/types'
+import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
+import type { CLI, LintOptions } from '@stacksjs/types'
 
 export function lint(buddy: CLI) {
   const descriptions = {
@@ -25,7 +25,11 @@ export function lint(buddy: CLI) {
 
       // console.log('res', result)
       if (result.isErr()) {
-        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)
+        await outro(
+          'While running `buddy lint`, there was an issue',
+          { startTime, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
@@ -51,7 +55,10 @@ export function lint(buddy: CLI) {
     })
 
   buddy.on('lint:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

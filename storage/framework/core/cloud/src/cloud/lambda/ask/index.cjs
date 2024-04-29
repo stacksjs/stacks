@@ -9,20 +9,22 @@ async function handler(event) {
   console.log(`Question received: ${question}`)
 
   const bedrockRuntime = new AWS.BedrockRuntime({ apiVersion: '2023-09-30' })
-  const res = await bedrockRuntime.invokeModel({
-    modelId: 'amazon.titan-text-express-v1',
-    contentType: 'application/json',
-    accept: '*/*',
-    body: JSON.stringify({
-      inputText: question,
-      textGenerationConfig: {
-        maxTokenCount: 300,
-        stopSequences: [],
-        temperature: 0.1,
-        topP: 0.9,
-      },
-    }),
-  }).promise()
+  const res = await bedrockRuntime
+    .invokeModel({
+      modelId: 'amazon.titan-text-express-v1',
+      contentType: 'application/json',
+      accept: '*/*',
+      body: JSON.stringify({
+        inputText: question,
+        textGenerationConfig: {
+          maxTokenCount: 300,
+          stopSequences: [],
+          temperature: 0.1,
+          topP: 0.9,
+        },
+      }),
+    })
+    .promise()
 
   return {
     statusCode: 200,

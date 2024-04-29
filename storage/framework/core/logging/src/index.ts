@@ -1,12 +1,12 @@
-import process from 'node:process'
 import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { consola, createConsola } from 'consola'
-import { ExitCode } from '@stacksjs/types'
-import { handleError } from '@stacksjs/error-handling'
+import process from 'node:process'
 import type { Prompt } from '@stacksjs/cli'
 import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
+import { handleError } from '@stacksjs/error-handling'
 import { logsPath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
+import { consola, createConsola } from 'consola'
 
 export async function logLevel() {
   /**
@@ -20,8 +20,7 @@ export async function logLevel() {
   const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
   const opts = buddyOptions()
 
-  if (verboseRegex.test(opts))
-    return 4
+  if (verboseRegex.test(opts)) return 4
 
   // const config = await import('@stacksjs/config')
   // console.log('config', config)
@@ -52,12 +51,10 @@ export async function writeToLogFile(message: string) {
       await mkdir(dirname(logFilePath), { recursive: true })
       // Append the message to the log file
       await appendFile(logFilePath, formattedMessage)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to write to log file:', error)
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Failed to write to log file:', error)
   }
 }
@@ -91,14 +88,9 @@ export const log: Log = {
   },
 
   async error(err: unknown, options?: any | Error) {
-    if (err instanceof Error)
-      handleError(err, options)
-
-    else if (options instanceof Error)
-      handleError(options)
-
-    else
-      handleError(err, options)
+    if (err instanceof Error) handleError(err, options)
+    else if (options instanceof Error) handleError(options)
+    else handleError(err, options)
 
     await writeToLogFile(`ERROR: ${err}`)
   },
@@ -133,11 +125,11 @@ export const log: Log = {
 }
 
 export function dump(...args: any[]) {
-  args.forEach(arg => log.debug(arg))
+  args.forEach((arg) => log.debug(arg))
 }
 
 export function dd(...args: any[]) {
-  args.forEach(arg => log.debug(arg))
+  args.forEach((arg) => log.debug(arg))
   // we need to return a non-zero exit code to indicate an error
   // e.g. if used in a CDK script, we want it to fail the deployment
   process.exit(ExitCode.FatalError)

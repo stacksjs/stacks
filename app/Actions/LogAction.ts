@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { rule } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
+import { rule } from '@stacksjs/validation'
 
 interface Request {
   message: string
@@ -9,7 +9,8 @@ interface Request {
 
 export default new Action({
   name: 'Dummy Logger',
-  description: 'This action is used to demo how to POST to a server and upon success, log a message.',
+  description:
+    'This action is used to demo how to POST to a server and upon success, log a message.',
 
   // the request object is optional, but if it is provided, it will be used for validation
   fields: {
@@ -26,8 +27,7 @@ export default new Action({
 
   // handle(request: { message: string, level: 'info' | 'warn' | 'error' }) {
   handle(request?: Request) {
-    if (!request)
-      return 'No request was provided.'
+    if (!request) return 'No request was provided.'
 
     // TODO: need to vine validate
     log[request.level](request.message)

@@ -113,7 +113,7 @@ export const alias: Record<string, string> = {
   '@stacksjs/x-ray/*': p.xRayPath('src/*'),
 
   'framework/*': p.frameworkPath('*'),
-  'stacks': p.frameworkPath('src/index.ts'),
+  stacks: p.frameworkPath('src/index.ts'),
   'stacks/ai': p.aiPath('src/index.ts'),
   'stacks/ai/*': p.aiPath('src/*'),
   'stacks/actions': p.actionsPath('src/index.ts'),

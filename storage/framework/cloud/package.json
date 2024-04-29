@@ -35,14 +35,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "bootstrap": "bunx cdk bootstrap",
     "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never"

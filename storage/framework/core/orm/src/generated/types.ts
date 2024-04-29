@@ -1,7 +1,7 @@
 import type { Generated } from 'kysely'
+import type { PostsTable } from '../../../../orm/Post'
 import type { SubscribersTable } from '../../../../orm/Subscriber'
 import type { UsersTable } from '../../../../orm/User'
-import type { PostsTable } from '../../../../orm/Post'
 
 export interface UserSubscribersTable {
   id: Generated<number>

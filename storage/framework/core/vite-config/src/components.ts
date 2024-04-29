@@ -1,10 +1,17 @@
 import { alias } from '@stacksjs/alias'
-import { server } from '@stacksjs/server'
 import { config as c } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import { defineConfig } from 'vite'
+import { server } from '@stacksjs/server'
 import type { ViteConfig } from '@stacksjs/types'
-import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
+import {
+  autoImports,
+  components,
+  cssEngine,
+  devtools,
+  inspect,
+  uiEngine,
+} from '@stacksjs/vite-plugin'
+import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
 const config = {
@@ -49,11 +56,9 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
       name: c.library.vueComponents?.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
-        if (format === 'es')
-          return 'index.mjs'
+        if (format === 'es') return 'index.mjs'
 
-        if (format === 'cjs')
-          return 'index.cjs'
+        if (format === 'cjs') return 'index.cjs'
 
         return 'index.?.js'
       },
@@ -72,8 +77,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command }) => {
-  if (command === 'serve')
-    return config
+  if (command === 'serve') return config
 
   return config
 })

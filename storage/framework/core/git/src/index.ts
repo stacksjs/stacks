@@ -21,18 +21,15 @@ export function useGitHub() {
     if (secondsDifference < 60) {
       // If less than 60 seconds, return seconds only
       return `${secondsDifference}s`
-    }
-    else if (minutesDifference < 60) {
+    } else if (minutesDifference < 60) {
       // If less than 60 minutes, return minutes and remaining seconds
       const remainingSeconds = secondsDifference % 60
       return `${minutesDifference}m ${remainingSeconds}s`
-    }
-    else if (hoursDifference < 24) {
+    } else if (hoursDifference < 24) {
       // If less than 24 hours, return hours and remaining minutes
       const remainingMinutes = minutesDifference % 60
       return `${hoursDifference}h ${remainingMinutes}m`
-    }
-    else if (weeksDifference < 7) {
+    } else if (weeksDifference < 7) {
       const remainingHours: number = hoursDifference % 24
 
       return `${daysDifference}d ${remainingHours}h`
@@ -45,8 +42,7 @@ export function useGitHub() {
     const minutes = Math.floor(durationInSeconds / 60)
     const seconds = durationInSeconds % 60
 
-    if (minutes > 1)
-      return `${minutes}m ${seconds}s`
+    if (minutes > 1) return `${minutes}m ${seconds}s`
 
     return `${seconds}s`
   }
@@ -54,7 +50,9 @@ export function useGitHub() {
   function getActionRunDuration(startTime: Date, endTime: Date): string {
     const start = new Date(startTime)
     const end = new Date(endTime)
-    const durationInSeconds = Math.floor((end.getTime() - start.getTime()) / 1000)
+    const durationInSeconds = Math.floor(
+      (end.getTime() - start.getTime()) / 1000,
+    )
 
     return formatDuration(durationInSeconds)
   }

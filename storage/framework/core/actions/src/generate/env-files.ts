@@ -1,7 +1,7 @@
-import { path as p } from '@stacksjs/path'
-import { storage } from '@stacksjs/storage'
 import { env as e, envEnum } from '@stacksjs/env'
 import { logger } from '@stacksjs/logging'
+import { path as p } from '@stacksjs/path'
+import { storage } from '@stacksjs/storage'
 import { envKeys } from '../../../../env'
 
 logger.log('Generating type env files...')
@@ -15,53 +15,54 @@ const envTypes = `
 
 declare module 'bun' {
   namespace env {
-    ${envKeys.map((key) => {
-      let type: string | undefined = typeof e[key]
-      let value: string | boolean | number | undefined = e[key]
+    ${envKeys
+      .map((key) => {
+        let type: string | undefined = typeof e[key]
+        let value: string | boolean | number | undefined = e[key]
 
-      if (!value) {
-        if (envEnum[key]) {
-          type = envEnum[key]?.map(item => `'${item}'`).join(' | ')
-          value = envEnum[key]?.[0] // default to the first enum value
-        }
- else {
-          switch (type) {
-            case 'number':
-              value = '0'
-              break
-            case 'boolean':
-              value = false
-              break
-            default:
-              value = ''
+        if (!value) {
+          if (envEnum[key]) {
+            type = envEnum[key]?.map((item) => `'${item}'`).join(' | ')
+            value = envEnum[key]?.[0] // default to the first enum value
+          } else {
+            switch (type) {
+              case 'number':
+                value = '0'
+                break
+              case 'boolean':
+                value = false
+                break
+              default:
+                value = ''
+            }
           }
         }
-      }
 
-      type = 'string'
-      if (typeof value === 'string') {
-        if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
+        type = 'string'
+        if (typeof value === 'string') {
+          if (
+            value.toLowerCase() === 'true' ||
+            value.toLowerCase() === 'false'
+          ) {
+            type = 'boolean'
+          } else if (
+            !Number.isNaN(Number.parseFloat(value)) &&
+            Number.isFinite(Number(value))
+          ) {
+            type = 'number'
+          } else if (envEnum[key]) {
+            // @ts-expect-error envEnum[key] is defined
+            type = envEnum[key].map((item) => `'${item}'`).join(' | ')
+          }
+        } else if (typeof value === 'number') {
+          type = 'number'
+        } else if (typeof value === 'boolean') {
           type = 'boolean'
         }
-        else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
-          type = 'number'
-        }
-        else if (envEnum[key]) {
-          // @ts-expect-error envEnum[key] is defined
-          type = envEnum[key].map(item => `'${item}'`).join(' | ')
-        }
-      }
 
-      else if (typeof value === 'number') {
-        type = 'number'
-      }
-
-      else if (typeof value === 'boolean') {
-        type = 'boolean'
-      }
-
-      return `const ${key}: ${type}`
-    }).join('\n    ')}
+        return `const ${key}: ${type}`
+      })
+      .join('\n    ')}
   }
 }
 `
@@ -78,7 +79,7 @@ const env = `
 // For more information, please visit: https://stacksjs.org/docs
 
 export const envKeys = [
-  ${envKeys.map(key => `'${key}'`).join(',\n  ')}
+  ${envKeys.map((key) => `'${key}'`).join(',\n  ')}
 ] as const
 
 export type EnvKey = typeof envKeys[number]

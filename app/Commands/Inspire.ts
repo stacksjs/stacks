@@ -13,14 +13,17 @@ interface InspireOptions {
 export default function (cli: CLI) {
   cli
     .command('inspire', 'Inspire yourself with a random quote')
-    .option('--two, -t', 'Inspire yourself with two random quotes', { default: false })
+    .option('--two, -t', 'Inspire yourself with two random quotes', {
+      default: false,
+    })
     .alias('insp')
     .action((options: InspireOptions) => {
       if (options.two)
         // @ts-expect-error - this is safe because we hard-coded the quotes
-        quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
-      else
-        log.info(quotes.random())
+        quotes
+          .random(2)
+          .map((quote, index) => log.info(`${index + 1}. ${quote}`))
+      else log.info(quotes.random())
 
       log.success('Have a great day!')
       process.exit(ExitCode.Success)
@@ -37,7 +40,10 @@ export default function (cli: CLI) {
     })
 
   cli.on('inspire:*', () => {
-    log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
+    log.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      cli.args.join(' '),
+    )
     process.exit(1)
   })
 

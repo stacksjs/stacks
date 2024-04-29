@@ -21,4 +21,4 @@
 
 // export { send as Send, send }
 
-export {}
+export type {}

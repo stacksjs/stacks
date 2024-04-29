@@ -1,13 +1,22 @@
+import { env } from '@stacksjs/env'
+import { path as p } from '@stacksjs/path'
 /* eslint-disable no-new */
 import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
-import { Duration, CfnOutput as Output, RemovalPolicy, aws_ec2 as ec2, aws_ecs as ecs, aws_route53 as route53, aws_route53_targets as route53Targets, aws_secretsmanager as secretsmanager } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
-import { path as p } from '@stacksjs/path'
-import { env } from '@stacksjs/env'
-import { LogGroup } from 'aws-cdk-lib/aws-logs'
+import {
+  Duration,
+  CfnOutput as Output,
+  RemovalPolicy,
+  aws_ec2 as ec2,
+  aws_ecs as ecs,
+  aws_route53 as route53,
+  aws_route53_targets as route53Targets,
+  aws_secretsmanager as secretsmanager,
+} from 'aws-cdk-lib'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
-import type { NestedCloudProps } from '../types'
+import { LogGroup } from 'aws-cdk-lib/aws-logs'
+import type { Construct } from 'constructs'
 import type { EnvKey } from '../../../../env'
+import type { NestedCloudProps } from '../types'
 
 export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc
@@ -26,21 +35,27 @@ export class ComputeStack {
     const fileSystem = props.fileSystem
 
     if (!fileSystem)
-      throw new Error('The file system is missing. Please make sure it was created properly.')
+      throw new Error(
+        'The file system is missing. Please make sure it was created properly.',
+      )
 
     this.cluster = new ecs.Cluster(scope, 'StacksCluster', {
       clusterName: `${props.slug}-${props.appEnv}-web-server-cluster`,
       vpc,
     })
 
-    this.taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDefinition', {
-      family: `${props.appName}-${props.appEnv}-api`,
-      memoryLimitMiB: 512, // Match your Lambda memory size
-      cpu: 256, // Choose an appropriate value
-      runtimePlatform: {
-        cpuArchitecture: ecs.CpuArchitecture.ARM64,
+    this.taskDefinition = new ecs.FargateTaskDefinition(
+      scope,
+      'TaskDefinition',
+      {
+        family: `${props.appName}-${props.appEnv}-api`,
+        memoryLimitMiB: 512, // Match your Lambda memory size
+        cpu: 256, // Choose an appropriate value
+        runtimePlatform: {
+          cpuArchitecture: ecs.CpuArchitecture.ARM64,
+        },
       },
-    })
+    )
 
     const container = this.taskDefinition.addContainer('WebServerContainer', {
       containerName: `${props.appName}-${props.appEnv}-api`,
@@ -53,7 +68,10 @@ export class ComputeStack {
         }),
       }),
       healthCheck: {
-        command: ['CMD-SHELL', 'curl -f http://localhost:3000/api/health || exit 1'], // requires curl inside the container which isn't available in the base image. I wonder if there is a better way
+        command: [
+          'CMD-SHELL',
+          'curl -f http://localhost:3000/api/health || exit 1',
+        ], // requires curl inside the container which isn't available in the base image. I wonder if there is a better way
         interval: Duration.seconds(10),
         timeout: Duration.seconds(5),
         retries: 3,
@@ -66,17 +84,25 @@ export class ComputeStack {
       hostPort: 3000,
     })
 
-    const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
-      securityGroupName: `${props.appName}-${props.appEnv}-api-service-sg`,
-      vpc,
-      description: 'Stacks Security Group for API Service',
-    })
+    const serviceSecurityGroup = new ec2.SecurityGroup(
+      scope,
+      'ServiceSecurityGroup',
+      {
+        securityGroupName: `${props.appName}-${props.appEnv}-api-service-sg`,
+        vpc,
+        description: 'Stacks Security Group for API Service',
+      },
+    )
 
-    const publicLoadBalancerSG = new ec2.SecurityGroup(scope, 'PublicLoadBalancerSG', {
-      securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
-      vpc,
-      description: 'Access to the public facing load balancer',
-    })
+    const publicLoadBalancerSG = new ec2.SecurityGroup(
+      scope,
+      'PublicLoadBalancerSG',
+      {
+        securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
+        vpc,
+        description: 'Access to the public facing load balancer',
+      },
+    )
 
     // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
     serviceSecurityGroup.addIngressRule(
@@ -85,42 +111,52 @@ export class ComputeStack {
       'Ingress from the public ALB',
     )
 
-    this.lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
-      http2Enabled: true,
-      loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
-      vpc,
-      vpcSubnets: {
-        subnets: vpc.selectSubnets({
-          subnetType: ec2.SubnetType.PUBLIC,
-          onePerAz: true,
-        }).subnets,
+    this.lb = new elbv2.ApplicationLoadBalancer(
+      scope,
+      'ApplicationLoadBalancer',
+      {
+        http2Enabled: true,
+        loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
+        vpc,
+        vpcSubnets: {
+          subnets: vpc.selectSubnets({
+            subnetType: ec2.SubnetType.PUBLIC,
+            onePerAz: true,
+          }).subnets,
+        },
+        internetFacing: true,
+        idleTimeout: Duration.seconds(30),
+        securityGroup: publicLoadBalancerSG,
       },
-      internetFacing: true,
-      idleTimeout: Duration.seconds(30),
-      securityGroup: publicLoadBalancerSG,
-    })
+    )
 
     new route53.ARecord(scope, 'ApiDomainAliasRecord', {
       zone: props.zone,
       recordName: 'api',
-      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(this.lb)),
+      target: route53.RecordTarget.fromAlias(
+        new route53Targets.LoadBalancerTarget(this.lb),
+      ),
     })
 
-    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
-      targetGroupName: `${props.appName}-${props.appEnv}-api-tg`,
-      vpc,
-      targetType: elbv2.TargetType.IP,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      port: 3000,
-      healthCheck: {
-        interval: Duration.seconds(6),
-        path: '/api/health',
-        protocol: elbv2.Protocol.HTTP,
-        timeout: Duration.seconds(5),
-        healthyThresholdCount: 2,
-        unhealthyThresholdCount: 10,
+    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(
+      scope,
+      'ServiceTargetGroup',
+      {
+        targetGroupName: `${props.appName}-${props.appEnv}-api-tg`,
+        vpc,
+        targetType: elbv2.TargetType.IP,
+        protocol: elbv2.ApplicationProtocol.HTTP,
+        port: 3000,
+        healthCheck: {
+          interval: Duration.seconds(6),
+          path: '/api/health',
+          protocol: elbv2.Protocol.HTTP,
+          timeout: Duration.seconds(5),
+          healthyThresholdCount: 2,
+          unhealthyThresholdCount: 10,
+        },
       },
-    })
+    )
 
     const service = new ecs.FargateService(scope, 'StacksApiService', {
       serviceName: `${props.appName}-${props.appEnv}-api-service`,
@@ -138,7 +174,10 @@ export class ComputeStack {
     })
 
     service.attachToApplicationTargetGroup(serviceTargetGroup)
-    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
+    publicLoadBalancerSG.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.allTraffic(),
+    )
 
     this.lb.addListener('HttpsListener', {
       port: 443,
@@ -183,8 +222,27 @@ export class ComputeStack {
       scaleOutCooldown: Duration.seconds(60),
     })
 
-    const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
-    keysToRemove.forEach(key => delete env[key as EnvKey])
+    const keysToRemove = [
+      '_HANDLER',
+      '_X_AMZN_TRACE_ID',
+      'AWS_REGION',
+      'AWS_EXECUTION_ENV',
+      'AWS_LAMBDA_FUNCTION_NAME',
+      'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
+      'AWS_LAMBDA_FUNCTION_VERSION',
+      'AWS_LAMBDA_INITIALIZATION_TYPE',
+      'AWS_LAMBDA_LOG_GROUP_NAME',
+      'AWS_LAMBDA_LOG_STREAM_NAME',
+      'AWS_ACCESS_KEY',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+      'AWS_SESSION_TOKEN',
+      'AWS_LAMBDA_RUNTIME_API',
+      'LAMBDA_TASK_ROOT',
+      'LAMBDA_RUNTIME_DIR',
+      '_',
+    ]
+    keysToRemove.forEach((key) => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
       secretName: `${props.slug}-${props.appEnv}-secrets`,

@@ -1,6 +1,6 @@
-import Markdown from 'unplugin-vue-markdown/vite'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shikiji'
+import Markdown from 'unplugin-vue-markdown/vite'
 
 export function markdown() {
   return Markdown({
@@ -14,13 +14,15 @@ export function markdown() {
           rel: 'noopener',
         },
       })
-      md.use(await Shiki({
-        defaultColor: false,
-        themes: {
-          light: 'vitesse-light',
-          dark: 'vitesse-dark',
-        },
-      }))
+      md.use(
+        await Shiki({
+          defaultColor: false,
+          themes: {
+            light: 'vitesse-light',
+            dark: 'vitesse-dark',
+          },
+        }),
+      )
     },
   })
 }

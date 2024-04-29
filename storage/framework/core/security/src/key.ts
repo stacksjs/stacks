@@ -1,6 +1,6 @@
 import { getRandomValues } from 'node:crypto'
-import utf8 from 'crypto-js/enc-utf8'
 import base64 from 'crypto-js/enc-base64'
+import utf8 from 'crypto-js/enc-utf8'
 
 export function generateAppKey() {
   const random = getRandomValues(new Uint8Array(32))

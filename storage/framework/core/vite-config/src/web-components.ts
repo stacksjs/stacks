@@ -1,6 +1,6 @@
+import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
-import { alias } from '@stacksjs/alias'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
@@ -45,11 +45,9 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
       name: 'web-components',
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
-        if (format === 'es')
-          return 'index.mjs'
+        if (format === 'es') return 'index.mjs'
 
-        if (format === 'cjs')
-          return 'index.cjs'
+        if (format === 'cjs') return 'index.cjs'
 
         return 'index.?.js'
       },
@@ -58,8 +56,7 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command }) => {
-  if (command === 'serve')
-    return webComponentsConfig
+  if (command === 'serve') return webComponentsConfig
 
   // command === 'build'
   return webComponentsConfig

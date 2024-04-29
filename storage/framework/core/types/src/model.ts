@@ -1,7 +1,7 @@
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable, SearchOptions } from '.'
 
-export interface AuthOptions {}
+export type AuthOptions = {}
 
 export interface SeedOptions {
   count: number
@@ -31,7 +31,7 @@ export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
 
-interface Base {}
+type Base = {}
 
 /**
  * Model.

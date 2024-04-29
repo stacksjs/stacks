@@ -1,14 +1,17 @@
-import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
-import { detectIndent, detectNewline } from '@stacksjs/strings'
-import { createFolder, isFolder } from '@stacksjs/storage'
-import { dirname, join, path as p } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
-import { existsSync, fs } from './fs'
+import { dirname, join, path as p } from '@stacksjs/path'
+import { createFolder, isFolder } from '@stacksjs/storage'
+import { detectIndent, detectNewline } from '@stacksjs/strings'
+import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
+import { fs, existsSync } from './fs'
 
 /**
  * Reads a JSON file and returns the parsed data.
  */
-export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile> {
+export async function readJsonFile(
+  name: string,
+  cwd?: string,
+): Promise<JsonFile> {
   const file = await readTextFile(name, cwd)
   const data = JSON.parse(file.data)
   const indent = detectIndent(file.data).indent
@@ -29,11 +32,10 @@ export async function readPackageJson(name: string, cwd?: string) {
  * Writes the given text to the specified file.
  */
 export async function writeFile(path: string, data: any): Promise<number> {
-// export async function writeFile(path: Path, data: Data): Promise<number> {
+  // export async function writeFile(path: Path, data: Data): Promise<number> {
   if (typeof path === 'string') {
     const dirPath = dirname(path)
-    if (!await existsSync(dirPath))
-      await createFolder(dirPath)
+    if (!(await existsSync(dirPath))) await createFolder(dirPath)
 
     return await Bun.write(Bun.file(path), data)
   }
@@ -47,8 +49,7 @@ export async function writeFile(path: string, data: any): Promise<number> {
 export async function writeJsonFile(file: JsonFile): Promise<number> {
   let json = JSON.stringify(file.data, undefined, file.indent)
 
-  if (file.newline)
-    json += file.newline
+  if (file.newline) json += file.newline
 
   return writeTextFile({ ...file, data: json })
 }
@@ -60,16 +61,13 @@ export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
   return new Promise((resolve, reject) => {
     let filePath: string
 
-    if (cwd)
-      filePath = join(cwd, name)
-    else
-      filePath = name
+    if (cwd) filePath = join(cwd, name)
+    else filePath = name
 
     fs.readFile(filePath, 'utf8', (err, text) => {
       if (err) {
         reject(err)
-      }
-      else {
+      } else {
         resolve({
           path: filePath,
           data: text,
@@ -107,8 +105,7 @@ export function doesNotExist(path: string): boolean {
 export function hasFiles(folder: string): boolean {
   try {
     return fs.readdirSync(folder).length > 0
-  }
-  catch (err) {
+  } catch (err) {
     return false
   }
 }
@@ -128,12 +125,8 @@ export function deleteFiles(dir: string, exclude: string[] = []) {
       if (fs.statSync(p).isDirectory()) {
         if (fs.readdirSync(p).length === 0)
           fs.rmSync(p, { recursive: true, force: true })
-
-        else
-          deleteFiles(p, exclude)
-      }
-
-      else if (!contains(p, exclude)) {
+        else deleteFiles(p, exclude)
+      } else if (!contains(p, exclude)) {
         fs.rmSync(p)
       }
     })
@@ -150,9 +143,7 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
 
     if (stat && stat.isDirectory())
       results = results.concat(getFiles(file, exclude))
-
-    else if (!contains(file, exclude))
-      results.push(file)
+    else if (!contains(file, exclude)) results.push(file)
   })
 
   return results
@@ -161,8 +152,7 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
 export function put(path: string, contents: string) {
   const dirPath = dirname(path)
 
-  if (!fs.existsSync(dirPath))
-    fs.mkdirSync(dirPath, { recursive: true })
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true })
 
   fs.writeFileSync(path, contents, 'utf-8')
 }

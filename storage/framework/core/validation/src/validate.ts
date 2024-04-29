@@ -14,12 +14,16 @@ type SchemaNumber = number
 type SchemaBoolean = boolean
 type SchemaEnum = string[]
 
-export type SchemaType = SchemaString | SchemaNumber | SchemaBoolean | SchemaEnum
+export type SchemaType =
+  | SchemaString
+  | SchemaNumber
+  | SchemaBoolean
+  | SchemaEnum
 
 export const validate = {
-  string: (defaultValue: string = ''): SchemaString => defaultValue,
-  number: (defaultValue: number = 1): SchemaNumber => defaultValue,
-  boolean: (defaultValue: boolean = true): SchemaBoolean => defaultValue,
+  string: (defaultValue = ''): SchemaString => defaultValue,
+  number: (defaultValue = 1): SchemaNumber => defaultValue,
+  boolean: (defaultValue = true): SchemaBoolean => defaultValue,
   enum: (values: string[]): SchemaEnum => values,
 }
 

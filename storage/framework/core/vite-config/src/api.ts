@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
 import { ports } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   base: '/api/',

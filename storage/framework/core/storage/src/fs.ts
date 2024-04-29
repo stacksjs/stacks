@@ -1,5 +1,10 @@
 import * as fs from 'fs-extra'
-import { pathExists as existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs-extra'
+import {
+  pathExists as existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs-extra'
 
 export async function exists(path: string): Promise<boolean> {
   return await existsSync(path)

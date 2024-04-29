@@ -23,9 +23,7 @@
     "typescript",
     "javascript"
   ],
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "scripts": {
     "dev": "vite",
     "build": "echo 'Coming soon'",

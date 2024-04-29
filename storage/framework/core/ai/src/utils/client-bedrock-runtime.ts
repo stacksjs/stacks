@@ -1,17 +1,30 @@
-import type { InvokeModelCommandInput, InvokeModelCommandOutput, InvokeModelWithResponseStreamCommandInput, InvokeModelWithResponseStreamCommandOutput } from '@aws-sdk/client-bedrock-runtime'
-import { BedrockRuntimeClient, InvokeModelCommand, InvokeModelWithResponseStreamCommand } from '@aws-sdk/client-bedrock-runtime'
+import type {
+  InvokeModelCommandInput,
+  InvokeModelCommandOutput,
+  InvokeModelWithResponseStreamCommandInput,
+  InvokeModelWithResponseStreamCommandOutput,
+} from '@aws-sdk/client-bedrock-runtime'
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+  InvokeModelWithResponseStreamCommand,
+} from '@aws-sdk/client-bedrock-runtime'
 
 // eslint-disable-next-line node/prefer-global/process
-const client = new BedrockRuntimeClient({ region: process.env.REGION || 'us-east-1' })
+const client = new BedrockRuntimeClient({
+  region: process.env.REGION || 'us-east-1',
+})
 const logger = console // import your own logger
 
 /*
-* Invoke Model
-* @param {InvokeModelCommandInput} params
-* @returns {Promise<InvokeModelCommandOutput>}
-* @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/BedrockRuntime.html#invokeModel-property
-*/
-export async function invokeModel(params: InvokeModelCommandInput): Promise<InvokeModelCommandOutput> {
+ * Invoke Model
+ * @param {InvokeModelCommandInput} params
+ * @returns {Promise<InvokeModelCommandOutput>}
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/BedrockRuntime.html#invokeModel-property
+ */
+export async function invokeModel(
+  params: InvokeModelCommandInput,
+): Promise<InvokeModelCommandOutput> {
   logger.debug(params)
   const command = new InvokeModelCommand(params)
   const res = await client.send(command)
@@ -21,12 +34,14 @@ export async function invokeModel(params: InvokeModelCommandInput): Promise<Invo
 }
 
 /*
-* Invoke Model With Response Stream
-* @param {InvokeModelWithResponseStreamCommandInput} params
-* @returns {Promise<InvokeModelWithResponseStreamCommandOutput>}
-* @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/BedrockRuntime.html#invokeModelWithResponseStream-property
-*/
-export async function invokeModelWithResponseStream(params: InvokeModelWithResponseStreamCommandInput): Promise<InvokeModelWithResponseStreamCommandOutput> {
+ * Invoke Model With Response Stream
+ * @param {InvokeModelWithResponseStreamCommandInput} params
+ * @returns {Promise<InvokeModelWithResponseStreamCommandOutput>}
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/BedrockRuntime.html#invokeModelWithResponseStream-property
+ */
+export async function invokeModelWithResponseStream(
+  params: InvokeModelWithResponseStreamCommandInput,
+): Promise<InvokeModelWithResponseStreamCommandOutput> {
   logger.debug(params)
   const command = new InvokeModelWithResponseStreamCommand(params)
   const res = await client.send(command)
@@ -35,4 +50,7 @@ export async function invokeModelWithResponseStream(params: InvokeModelWithRespo
   return res
 }
 
-export type { InvokeModelCommandInput, InvokeModelWithResponseStreamCommandInput }
+export type {
+  InvokeModelCommandInput,
+  InvokeModelWithResponseStreamCommandInput,
+}

@@ -1,11 +1,11 @@
-import type { Cluster, TaskDefinition } from 'aws-cdk-lib/aws-ecs'
-import { aws_ec2 as ec2 } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
-import { pascalCase, slug } from '@stacksjs/strings'
-import { fs } from '@stacksjs/storage'
 import { path } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
+import { pascalCase, slug } from '@stacksjs/strings'
+import { aws_ec2 as ec2 } from 'aws-cdk-lib'
+import type { Cluster, TaskDefinition } from 'aws-cdk-lib/aws-ecs'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { EcsTask } from 'aws-cdk-lib/aws-events-targets'
+import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
 export interface QueueStackProps extends NestedCloudProps {
@@ -32,8 +32,7 @@ export class QueueStack {
 
     // then, need to loop through all app/Jobs/*.ts and create a rule for each, potentially overwriting the Schedule.ts jobs
     for (const file of jobFiles) {
-      if (!file.endsWith('.ts'))
-        continue
+      if (!file.endsWith('.ts')) continue
 
       const jobPath = path.jobsPath(file)
 
@@ -44,8 +43,7 @@ export class QueueStack {
     }
 
     for (const file of actionFiles) {
-      if (!file.endsWith('.ts'))
-        continue
+      if (!file.endsWith('.ts')) continue
 
       const actionPath = path.appPath(`Actions/${file}`)
 
@@ -57,7 +55,13 @@ export class QueueStack {
   }
 
   // Helper function to convert a rate string to a cron object for AWS Schedule
-  cronScheduleFromRate(rate: string): { minute?: string, hour?: string, month?: string, weekDay?: string, year?: string } {
+  cronScheduleFromRate(rate: string): {
+    minute?: string
+    hour?: string
+    month?: string
+    weekDay?: string
+    year?: string
+  } {
     // Assuming the rate is in standard cron format, split it to map to the AWS Schedule.cron() parameters
     const parts = rate.split(' ')
     return {
@@ -81,8 +85,7 @@ export class QueueStack {
     const rate = module.default?.rate
 
     // if no rate or job is disabled, no need to schedule, skip
-    if (!rate || module.default?.enabled === false)
-      return
+    if (!rate || module.default?.enabled === false) return
 
     // Convert the rate to a Schedule object
     const schedule = Schedule.cron(this.cronScheduleFromRate(rate))
@@ -92,51 +95,55 @@ export class QueueStack {
     // Perform operations with the jobModule.default as needed
     const rule = new Rule(this.scope, id, {
       // schedule to run every second
-      ruleName: `${this.props.appName}-${this.props.appEnv}-queue-rule-${slug(file.replace('.ts', ''))}`,
+      ruleName: `${this.props.appName}-${this.props.appEnv}-queue-rule-${slug(
+        file.replace('.ts', ''),
+      )}`,
       schedule,
     })
 
-    rule.addTarget(new EcsTask({
-      cluster: this.props.cluster,
-      taskDefinition: this.props.taskDefinition,
-      containerOverrides: [
-        {
-          containerName: `${this.props.appName}-${this.props.appEnv}-api`,
-          environment: [
-            {
-              name: 'QUEUE_WORKER',
-              value: 'true',
-            },
-            {
-              name: 'JOB',
-              value: file,
-            },
-            {
-              name: 'JOB_BACKOFF_FACTOR',
-              value: module.default?.backoffFactor,
-            },
-            {
-              name: 'JOB_RETRIES',
-              value: module.default?.tries,
-            },
-            {
-              name: 'JOB_INITIAL_DELAY',
-              value: module.default?.initialDelay,
-            },
-            {
-              name: 'JOB_JITTER',
-              value: module.default?.jitter,
-            },
-          ],
+    rule.addTarget(
+      new EcsTask({
+        cluster: this.props.cluster,
+        taskDefinition: this.props.taskDefinition,
+        containerOverrides: [
+          {
+            containerName: `${this.props.appName}-${this.props.appEnv}-api`,
+            environment: [
+              {
+                name: 'QUEUE_WORKER',
+                value: 'true',
+              },
+              {
+                name: 'JOB',
+                value: file,
+              },
+              {
+                name: 'JOB_BACKOFF_FACTOR',
+                value: module.default?.backoffFactor,
+              },
+              {
+                name: 'JOB_RETRIES',
+                value: module.default?.tries,
+              },
+              {
+                name: 'JOB_INITIAL_DELAY',
+                value: module.default?.initialDelay,
+              },
+              {
+                name: 'JOB_JITTER',
+                value: module.default?.jitter,
+              },
+            ],
+          },
+        ],
+
+        retryAttempts: 1, // we utilize a custom retry mechanism in the job itself
+        // retryAttempts: module.default.tries || 3,
+
+        subnetSelection: {
+          subnetType: ec2.SubnetType.PUBLIC, // SubnetType.PRIVATE_WITH_EGRESS
         },
-      ],
-
-      retryAttempts: 1, // we utilize a custom retry mechanism in the job itself
-      // retryAttempts: module.default.tries || 3,
-
-      subnetSelection: {
-        subnetType: ec2.SubnetType.PUBLIC, // SubnetType.PRIVATE_WITH_EGRESS
-      },
-    }))
+      }),
+    )
   }
 }

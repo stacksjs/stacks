@@ -1,6 +1,6 @@
 import { faker } from '@stacksjs/faker'
-import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
+import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'Post', // defaults to the sanitized file name
@@ -10,7 +10,8 @@ export default {
 
   traits: {
     useTimestamps: true, // defaults to true
-    useSeeder: { // defaults to a count of 10
+    useSeeder: {
+      // defaults to a count of 10
       count: 10,
     },
   },

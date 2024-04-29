@@ -1,7 +1,7 @@
 import process from 'node:process'
-import type { CLI, InstallOptions } from '@stacksjs/types'
 import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import type { CLI, InstallOptions } from '@stacksjs/types'
 
 export function install(buddy: CLI) {
   const descriptions = {
@@ -24,7 +24,10 @@ export function install(buddy: CLI) {
     })
 
   buddy.on('install:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

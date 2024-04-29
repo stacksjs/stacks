@@ -1,6 +1,6 @@
-import type { Fields } from '@stacksjs/types'
-import { fs } from '@stacksjs/storage'
 import { generator, parser, traverse } from '@stacksjs/build'
+import { fs } from '@stacksjs/storage'
+import type { Fields } from '@stacksjs/types'
 
 export async function extractFieldsFromModel(filePath: string) {
   // Read the TypeScript file
@@ -19,7 +19,7 @@ export async function extractFieldsFromModel(filePath: string) {
     ObjectExpression(path) {
       // Look for the `fields` key in the object
       const fieldsProperty = path.node.properties.find(
-        property => property.key && property.key.name === 'fields',
+        (property) => property.key && property.key.name === 'fields',
       )
 
       if (fieldsProperty && fieldsProperty.value) {

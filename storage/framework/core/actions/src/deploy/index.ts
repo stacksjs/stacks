@@ -14,7 +14,8 @@ if (storage.hasFiles(p.projectPath('docs'))) {
   })
 }
 
-if (config.app.docMode !== true) { // when in docMode, we can disregard building views
+if (config.app.docMode !== true) {
+  // when in docMode, we can disregard building views
   await runCommand('bun run build', {
     cwd: p.frameworkPath('views'),
   })
@@ -37,6 +38,9 @@ log.info('Preparing Deployment...')
 const profile = process.env.AWS_PROFILE || 'stacks'
 
 // TODO: ensure we check whether cdk bootstrap needs to be run
-await runCommand(`bunx cdk deploy --require-approval never --profile="${profile}"`, {
-  cwd: p.frameworkCloudPath(),
-})
+await runCommand(
+  `bunx cdk deploy --require-approval never --profile="${profile}"`,
+  {
+    cwd: p.frameworkCloudPath(),
+  },
+)

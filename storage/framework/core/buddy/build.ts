@@ -1,8 +1,5 @@
 await Bun.build({
-  entrypoints: [
-    './src/index.ts',
-    './src/cli.ts',
-  ],
+  entrypoints: ['./src/index.ts', './src/cli.ts'],
 
   outdir: './dist',
   format: 'esm',
@@ -27,5 +24,4 @@ await Bun.build({
     '@aws-sdk/client-route-53',
     'bun',
   ],
-
 })

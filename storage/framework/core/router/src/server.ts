@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { extname } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
+import { extname } from '@stacksjs/path'
 import type { Route, StatusCode } from '@stacksjs/types'
+import { route } from '.'
 import { middlewares } from './middleware'
 import { request } from './request'
-import { route } from '.'
 
 interface ServeOptions {
   host?: string
@@ -16,10 +16,11 @@ interface ServeOptions {
 export async function serve(options: ServeOptions = {}) {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
-  const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
+  const development = options.debug
+    ? true
+    : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
 
-  if (options.timezone)
-    process.env.TZ = options.timezone
+  if (options.timezone) process.env.TZ = options.timezone
 
   Bun.serve({
     hostname,
@@ -43,7 +44,8 @@ export async function serverResponse(req: Request) {
   // Trim trailing slash from the URL if it's not the root '/'
   // This automatically allows for route definitions, like
   // '/about' and '/about/' to be treated as the same
-  const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
+  const trimmedUrl =
+    req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
 
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
@@ -72,8 +74,7 @@ export async function serverResponse(req: Request) {
 }
 
 function addRouteParamsAndQuery(url: URL, route: Route): void {
-  if (!isObjectNotEmpty(url.searchParams))
-    request.addQuery(url)
+  if (!isObjectNotEmpty(url.searchParams)) request.addQuery(url)
 
   request.extractParamsFromRoute(route.uri, url.pathname)
 }
@@ -88,18 +89,15 @@ function executeMiddleware(route: Route): void {
       // middlewareItem = middlewares.find((m) => {
       //   return m.name === middleware
       // })
-
       // if (middlewareItem)
       //   middlewareItem.handle() // Invoke only if it exists and is not undefined.
-    }
-    else {
+    } else {
       // middleware.forEach((m) => {
       middleware.forEach(() => {
         // TODO: fix and uncomment this
         // middlewareItem = middlewares.find((middlewareItem: MiddlewareOptions) => {
         //   return middlewareItem.name === m
         // })
-
         // if (middlewareItem)
         //   middlewareItem.handle() // Again, invoke only if it exists.
       })
@@ -112,8 +110,7 @@ interface Options {
 }
 
 function execute(route: Route, request: Request, { statusCode }: Options) {
-  if (!statusCode)
-    statusCode = 200
+  if (!statusCode) statusCode = 200
 
   if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
     const callback = String(route.callback)
@@ -130,18 +127,18 @@ function execute(route: Route, request: Request, { statusCode }: Options) {
     try {
       const fileContent = Bun.file(route.callback)
 
-      return new Response(fileContent, { headers: { 'Content-Type': 'text/html' } })
-    }
-    catch (error) {
+      return new Response(fileContent, {
+        headers: { 'Content-Type': 'text/html' },
+      })
+    } catch (error) {
       return new Response('Error reading the HTML file', { status: 500 })
     }
   }
 
-  if (isString(route.callback))
-    return new Response(route.callback)
+  if (isString(route.callback)) return new Response(route.callback)
 
   if (isFunction(route.callback)) {
-    const result = (route.callback)()
+    const result = route.callback()
     return new Response(JSON.stringify(result))
   }
 
@@ -153,7 +150,10 @@ function execute(route: Route, request: Request, { statusCode }: Options) {
 }
 
 function noCache(response: Response) {
-  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  response.headers.set(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
   response.headers.set('Pragma', 'no-cache')
   response.headers.set('Expires', '0')
 

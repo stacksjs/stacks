@@ -17,7 +17,8 @@ export const ogImage = `${ogUrl}og.png`
 /* GitHub and social links */
 export const github = 'https://github.com/stacksjs/stacks'
 export const releases = 'https://github.com/stacksjs/stacks/releases'
-export const contributing = 'https://github.com/stacksjs/stacks/blob/main/CONTRIBUTING.md'
+export const contributing =
+  'https://github.com/stacksjs/stacks/blob/main/CONTRIBUTING.md'
 export const discord = 'https://chat.stacksjs.org'
 export const twitter = 'https://twitter.com/stacksjs'
 
@@ -29,4 +30,5 @@ export const preconnectHomeLinks = [googleapis, gstatic]
 export const pwaFontsRegex = new RegExp(`^${googleapis}/.*`, 'i')
 export const pwaFontStylesRegex = new RegExp(`^${gstatic}/.*`, 'i')
 // eslint-disable-next-line prefer-regex-literals
-export const githubusercontentRegex = new RegExp('^https://((i.ibb.co)|((raw|user-images).githubusercontent.com))/.*', 'i')
+export const githubusercontentRegex =
+  /^https:\/\/((i.ibb.co)|((raw|user-images).githubusercontent.com))\/.*/i

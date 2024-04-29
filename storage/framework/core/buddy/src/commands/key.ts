@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { CLI, KeyOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
 import { runAction } from '@stacksjs/actions'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import type { CLI, KeyOptions } from '@stacksjs/types'
 
 export function key(buddy: CLI) {
   const descriptions = {
@@ -30,7 +30,10 @@ export function key(buddy: CLI) {
     })
 
   buddy.on('key:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

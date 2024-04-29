@@ -28,7 +28,9 @@ async function initiateModelGeneration(): Promise<void> {
     const tableName = model.default.table
     const modelName = model.default.name
 
-    const file = Bun.file(path.projectStoragePath(`framework/orm/${modelName}.ts`))
+    const file = Bun.file(
+      path.projectStoragePath(`framework/orm/${modelName}.ts`),
+    )
 
     const fields = await extractFields(model, modelFile)
 
@@ -50,7 +52,9 @@ async function getRelations(model: any) {
   for (const relation of relationsArray) {
     if (hasRelations(model.default, relation)) {
       for (const relationInstance of model.default[relation]) {
-        const modelRelationPath = path.userModelsPath(`${relationInstance.model}.ts`)
+        const modelRelationPath = path.userModelsPath(
+          `${relationInstance.model}.ts`,
+        )
 
         const modelRelation = await import(modelRelationPath)
 
@@ -61,7 +65,9 @@ async function getRelations(model: any) {
           model: relationInstance.model,
           table: modelRelation.default.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+          pivotTable:
+            relationInstance?.pivotTable ||
+            `${formattedModelName}_${modelRelation.default.table}`,
         })
       }
     }
@@ -78,14 +84,14 @@ async function deleteExistingModels() {
   const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/*.ts`))
 
   for (const modelPath of modelPaths) {
-    if (fs.existsSync(modelPath))
-      await Bun.$`rm ${modelPath}`
+    if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
   }
 
-  const typePath = path.projectStoragePath(`framework/core/orm/src/generated/types.ts`)
+  const typePath = path.projectStoragePath(
+    `framework/core/orm/src/generated/types.ts`,
+  )
 
-  if (fs.existsSync(typePath))
-    await Bun.$`rm ${typePath}`
+  if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
 }
 
 async function setKyselyTypes() {
@@ -96,7 +102,8 @@ async function setKyselyTypes() {
     const model = await import(modelFile)
 
     const tableName = model.default.table
-    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+    const formattedTableName =
+      tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const modelName = model.default.name
 
     text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
@@ -113,7 +120,9 @@ async function setKyselyTypes() {
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
 
-      pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+      pivotFormatted = `${words
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('')}Table`
 
       text += `export interface ${pivotFormatted} {
         id: Generated<number>
@@ -129,7 +138,8 @@ async function setKyselyTypes() {
     const model = await import(modelFile)
 
     const tableName = model.default.table
-    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+    const formattedTableName =
+      tableName.charAt(0).toUpperCase() + tableName.slice(1)
 
     const pivotTables = await getPivotTables(model)
 
@@ -141,7 +151,9 @@ async function setKyselyTypes() {
 
   text += `}`
 
-  const file = Bun.file(path.projectStoragePath(`framework/core/orm/src/generated/types.ts`))
+  const file = Bun.file(
+    path.projectStoragePath(`framework/core/orm/src/generated/types.ts`),
+  )
 
   const writer = file.writer()
 
@@ -150,8 +162,11 @@ async function setKyselyTypes() {
   await writer.end()
 }
 
-async function extractFields(model: any, modelFile: string): Promise<ModelElement[]> {
-// TODO: we can improve this type
+async function extractFields(
+  model: any,
+  modelFile: string,
+): Promise<ModelElement[]> {
+  // TODO: we can improve this type
   const fields: Record<string, any> = model.default.attributes
   const fieldKeys = Object.keys(fields)
 
@@ -195,37 +210,34 @@ async function extractFields(model: any, modelFile: string): Promise<ModelElemen
 function parseRule(rule: string): FieldArrayElement | null {
   const parts = rule.split('rule: schema.')
 
-  if (parts.length !== 2)
-    return null
+  if (parts.length !== 2) return null
 
-  if (!parts[1])
-    parts[1] = ''
+  if (!parts[1]) parts[1] = ''
 
   const extractedString = parts[1].replace(/,/g, '')
 
-  if (!extractedString)
-    return null
+  if (!extractedString) return null
 
   const extractedParts = extractedString.split('.')
   const regex = /\(([^)]+)\)/
 
-  return extractedParts.map((input) => {
-    const match = regex.exec(input)
-    const value = match ? match[1] : null
-    const field = input.replace(regex, '').replace(/\(|\)/g, '')
-    return { entity: field, charValue: value }
-  })[0] || null
+  return (
+    extractedParts.map((input) => {
+      const match = regex.exec(input)
+      const value = match ? match[1] : null
+      const field = input.replace(regex, '').replace(/\(|\)/g, '')
+      return { entity: field, charValue: value }
+    })[0] || null
+  )
 }
 
 function getRelationType(relation: string): string {
   const belongToType = /belongs/
   const hasType = /has/
 
-  if (belongToType.test(relation))
-    return 'belongsType'
+  if (belongToType.test(relation)) return 'belongsType'
 
-  if (hasType.test(relation))
-    return 'hasType'
+  if (hasType.test(relation)) return 'hasType'
 
   return ''
 }
@@ -234,27 +246,33 @@ function getRelationCount(relation: string): string {
   const singular = /One/
   const plural = /Many/
 
-  if (plural.test(relation))
-    return 'many'
+  if (plural.test(relation)) return 'many'
 
-  if (singular.test(relation))
-    return 'one'
+  if (singular.test(relation)) return 'one'
 
   return ''
 }
 
-async function getPivotTables(model: any): Promise<{ table: string, firstForeignKey: string, secondForeignKey: string }[]> {
+async function getPivotTables(
+  model: any,
+): Promise<
+  { table: string; firstForeignKey: string; secondForeignKey: string }[]
+> {
   const pivotTable = []
 
   if ('belongsToMany' in model.default) {
     for (const belongsToManyRelation of model.default.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
+      const modelRelationPath = path.userModelsPath(
+        `${belongsToManyRelation.model}.ts`,
+      )
       const modelRelation = await import(modelRelationPath)
 
       const formattedModelName = model.default.name.toLowerCase()
 
       pivotTable.push({
-        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+        table:
+          belongsToManyRelation?.pivotTable ||
+          `${formattedModelName}_${modelRelation.default.table}`,
         firstForeignKey: belongsToManyRelation.firstForeignKey,
         secondForeignKey: belongsToManyRelation.secondForeignKey,
       })
@@ -266,11 +284,16 @@ async function getPivotTables(model: any): Promise<{ table: string, firstForeign
   return []
 }
 
-async function generateModelString(tableName: string, model: any, attributes: ModelElement[]) {
+async function generateModelString(
+  tableName: string,
+  model: any,
+  attributes: ModelElement[],
+) {
   const modelName = model.default.name
 
   // users -> Users
-  const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+  const formattedTableName =
+    tableName.charAt(0).toUpperCase() + tableName.slice(1)
 
   // User -> user
   const formattedModelName = modelName.toLowerCase()
@@ -291,7 +314,8 @@ async function generateModelString(tableName: string, model: any, attributes: Mo
     const tableRelation = relation.table
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
-    const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
+    const capitalizeTableRelation =
+      tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
 
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)

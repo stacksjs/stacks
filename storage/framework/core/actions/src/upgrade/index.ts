@@ -13,8 +13,7 @@ const options: any = parseArgs()
 if (options?.dependencies || options?.all)
   await runAction(Action.UpgradeDeps, options)
 
-if (options?.bun || options?.all)
-  await runAction(Action.UpgradeBun, options)
+if (options?.bun || options?.all) await runAction(Action.UpgradeBun, options)
 
 if (options?.shell || options?.all)
   await runAction(Action.UpgradeShell, options)

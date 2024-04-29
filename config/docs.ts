@@ -82,8 +82,14 @@ const sidebar = {
               collapsible: true,
               collapsed: true,
               items: [
-                { text: 'Component Library', link: '/bootcamp/library/components' },
-                { text: 'Function Library', link: '/bootcamp/library/functions' },
+                {
+                  text: 'Component Library',
+                  link: '/bootcamp/library/components',
+                },
+                {
+                  text: 'Function Library',
+                  link: '/bootcamp/library/functions',
+                },
               ],
             },
             { text: 'Build a CLI', link: '/bootcamp/cli' },
@@ -92,13 +98,25 @@ const sidebar = {
               collapsible: true,
               collapsed: true,
               items: [
-                { text: 'Team Management', link: '/bootcamp/saas/team-management' },
+                {
+                  text: 'Team Management',
+                  link: '/bootcamp/saas/team-management',
+                },
                 { text: 'Payments', link: '/bootcamp/saas/payments' },
                 { text: 'Subscriptions', link: '/bootcamp/saas/subscriptions' },
-                { text: 'License Key Management', link: '/bootcamp/saas/license-key-management' },
-                { text: 'Digital Downloads', link: '/bootcamp/saas/digital-downloads' },
+                {
+                  text: 'License Key Management',
+                  link: '/bootcamp/saas/license-key-management',
+                },
+                {
+                  text: 'Digital Downloads',
+                  link: '/bootcamp/saas/digital-downloads',
+                },
                 { text: 'Checkout Form', link: '/bootcamp/saas/checkout-form' },
-                { text: 'Affiliates Program', link: '/bootcamp/saas/affiliates-program' },
+                {
+                  text: 'Affiliates Program',
+                  link: '/bootcamp/saas/affiliates-program',
+                },
               ],
             },
             { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
@@ -111,17 +129,32 @@ const sidebar = {
           collapsed: true,
           items: [
             { text: 'Authentication', link: '/bootcamp/how-to/authentication' },
-            { text: 'Create a Mailbox', link: '/bootcamp/how-to/create-mailbox' },
-            { text: 'Define env & config values', link: '/bootcamp/how-to/env-config' },
+            {
+              text: 'Create a Mailbox',
+              link: '/bootcamp/how-to/create-mailbox',
+            },
+            {
+              text: 'Define env & config values',
+              link: '/bootcamp/how-to/env-config',
+            },
             { text: 'Error Handling', link: '/bootcamp/how-to/error-handling' },
             { text: 'Extend the Cloud', link: '/bootcamp/how-to/extend-cloud' },
-            { text: 'Extend the Dashboard', link: '/bootcamp/how-to/extend-dashboard' },
+            {
+              text: 'Extend the Dashboard',
+              link: '/bootcamp/how-to/extend-dashboard',
+            },
             { text: 'How to deploy?', link: '/bootcamp/how-to/deploy' },
             { text: 'IDE Setup', link: '/bootcamp/how-to/ide-setup' },
             { text: 'Manage a Team', link: '/bootcamp/how-to/manage-team' },
-            { text: 'Publish Components & Functions', link: '/bootcamp/how-to/publish' },
+            {
+              text: 'Publish Components & Functions',
+              link: '/bootcamp/how-to/publish',
+            },
             { text: 'Unit & Feature Tests', link: '/bootcamp/how-to/testing' },
-            { text: 'Review bun.lockb Diff', link: '/bootcamp/how-to/bun-lockb' },
+            {
+              text: 'Review bun.lockb Diff',
+              link: '/bootcamp/how-to/bun-lockb',
+            },
           ],
         },
         {
@@ -129,13 +162,25 @@ const sidebar = {
           collapsible: true,
           collapsed: true,
           items: [
-            { text: 'Cost Optimization', link: '/bootcamp/tips/cost-optimization' },
-            { text: 'Email, SMS, Social & Push Notifications', link: '/bootcamp/tips/notifications' },
+            {
+              text: 'Cost Optimization',
+              link: '/bootcamp/tips/cost-optimization',
+            },
+            {
+              text: 'Email, SMS, Social & Push Notifications',
+              link: '/bootcamp/tips/notifications',
+            },
             { text: 'Jump Box', link: '/bootcamp/tips/jump-box' },
             { text: 'Limitations', link: '/bootcamp/tips/limitations' },
-            { text: 'Payment sending, receiving & management', link: '/bootcamp/tips/payments' },
+            {
+              text: 'Payment sending, receiving & management',
+              link: '/bootcamp/tips/payments',
+            },
             { text: 'Remove your Cloud', link: '/bootcamp/tips/undeploy' },
-            { text: 'Semantic Commits', link: '/bootcamp/tips/semantic-commits' },
+            {
+              text: 'Semantic Commits',
+              link: '/bootcamp/tips/semantic-commits',
+            },
             { text: 'Ship your ORM', link: '/bootcamp/tips/orm-usage' },
             { text: 'System Tray App', link: '/bootcamp/tips/system-tray' },
             { text: 'Oh My Zsh', link: '/bootcamp/tips/oh-my-zsh' },
@@ -167,7 +212,10 @@ const sidebar = {
                 { text: 'Table', link: '/guide/components/table' },
                 { text: 'Teleport', link: '/guide/components/teleport' },
                 { text: 'Transition', link: '/guide/components/transition' },
-                { text: 'TransitionGroup', link: '/guide/components/transition-group' },
+                {
+                  text: 'TransitionGroup',
+                  link: '/guide/components/transition-group',
+                },
                 // { text: 'Audio', link: '/guide/components/audio' },
                 // { text: 'Calendar', link: '/guide/components/calendar' },
                 // { text: 'CommandPalette', link: '/guide/components/command-palette' },
@@ -298,16 +346,31 @@ const sidebar = {
           collapsible: true,
           collapsed: true,
           items: [
-            { text: '`buddy install`', link: '/guide/package-manager/buddy-install' },
+            {
+              text: '`buddy install`',
+              link: '/guide/package-manager/buddy-install',
+            },
             { text: '`buddy add`', link: '/guide/package-manager/buddy-add' },
             { text: '`buddy remove`', link: '/guide/package-manager/remove' },
-            { text: '`buddy upgrade -pm`', link: '/guide/package-manager/upgrade' },
+            {
+              text: '`buddy upgrade -pm`',
+              link: '/guide/package-manager/upgrade',
+            },
             { text: '`buddy link`', link: '/guide/package-manager/link' },
-            { text: 'Global Cache', link: '/guide/package-manager/global-cache' },
+            {
+              text: 'Global Cache',
+              link: '/guide/package-manager/global-cache',
+            },
             { text: 'Workspaces', link: '/guide/package-manager/workspaces' },
-            { text: 'Lifecycle Scripts', link: '/guide/package-manager/lifecycle-scripts' },
+            {
+              text: 'Lifecycle Scripts',
+              link: '/guide/package-manager/lifecycle-scripts',
+            },
             { text: 'Lockfile', link: '/guide/package-manager/lockfile' },
-            { text: 'Overrides & Resolutions', link: '/guide/package-manager/overrides-resolutions' },
+            {
+              text: 'Overrides & Resolutions',
+              link: '/guide/package-manager/overrides-resolutions',
+            },
           ],
         },
 
@@ -471,7 +534,10 @@ export default {
 
     socialLinks: [
       { icon: SocialLinkIcon.Twitter, link: 'https://twitter.com/stacksjs' },
-      { icon: SocialLinkIcon.GitHub, link: 'https://github.com/stacksjs/stacks' },
+      {
+        icon: SocialLinkIcon.GitHub,
+        link: 'https://github.com/stacksjs/stacks',
+      },
       { icon: SocialLinkIcon.Discord, link: 'https://discord.gg/stacksjs' },
     ],
 

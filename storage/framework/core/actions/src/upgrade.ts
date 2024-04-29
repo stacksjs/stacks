@@ -1,9 +1,9 @@
 import process from 'node:process'
 import { intro, outro, runCommand } from '@stacksjs/cli'
+import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
-import { NpmScript } from '@stacksjs/enums'
 import type { UpgradeOptions } from '@stacksjs/types'
 import { version } from '../package.json'
 
@@ -13,12 +13,10 @@ import { version } from '../package.json'
 export function checkForUncommittedChanges(options: UpgradeOptions) {
   try {
     // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
-
     // check if the stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/
     // await spawn(`git diff --quiet HEAD -- ${path}`, { stdio, cwd: projectPath() })
-  }
-  catch (error: any) {
+  } catch (error: any) {
     if (error.status === 1) {
       // even though the ./stacks folder should not be edited, instead config values should be adjusted,
       // there is a chance that users may apply local core edits, as it’s totally acceptable, as long as
@@ -28,7 +26,6 @@ export function checkForUncommittedChanges(options: UpgradeOptions) {
         // const confirmed = await log.prompt('We detected there are uncommitted in the ./stacks folder. Do you want to overwrite those?', {
         //   type: 'confirm',
         // })
-
         // if (!confirmed) {
         //   log.info('Aborted. Stacks did not update itself.')
         //   log.info('Note: if you commit your changes and replay the update, you can see what changed.')
@@ -59,10 +56,17 @@ export async function updateDependencies() {
   })
 
   if (result.isErr()) {
-    await outro('While running the upgrade:dependencies command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+    await outro(
+      'While running the upgrade:dependencies command, there was an issue',
+      { startTime: perf, useSeconds: true },
+      result.error,
+    )
     process.exit()
   }
 
-  await outro('Freshly updated your dependencies.', { startTime: perf, useSeconds: true })
+  await outro('Freshly updated your dependencies.', {
+    startTime: perf,
+    useSeconds: true,
+  })
   process.exit()
 }

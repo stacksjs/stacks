@@ -29,7 +29,10 @@ import { isObject } from '@stacksjs/validation'
  * // { b: 2 }
  * ```
  */
-export function objectMap<K extends string, V, NK = K, NV = V>(obj: Record<K, V>, fn: (key: K, value: V) => [NK, NV] | undefined): Record<K, V> {
+export function objectMap<K extends string, V, NK = K, NV = V>(
+  obj: Record<K, V>,
+  fn: (key: K, value: V) => [NK, NV] | undefined,
+): Record<K, V> {
   return Object.fromEntries(
     Object.entries(obj)
       .map(([k, v]) => fn(k as K, v as V))
@@ -55,7 +58,8 @@ export function isKeyOf<T extends object>(obj: T, k: keyof any): k is keyof T {
  * @category Object
  */
 export function objectKeys<T extends object>(obj: T) {
-  return Object.keys(obj) as Array<`${keyof T & (string | number | boolean | null | undefined)}`>
+  return Object.keys(obj) as Array<`${keyof T &
+    (string | number | boolean | null | undefined)}`>
 }
 
 /**
@@ -72,13 +76,14 @@ export function objectEntries<T extends object>(obj: T) {
  *
  * @category Object
  */
-export function deepMerge<T extends object = object, S extends object = T>(target: T, ...sources: S[]): DeepMerge<T, S> {
-  if (!sources.length)
-    return target as any
+export function deepMerge<T extends object = object, S extends object = T>(
+  target: T,
+  ...sources: S[]
+): DeepMerge<T, S> {
+  if (!sources.length) return target as any
 
   const source = sources.shift()
-  if (source === undefined)
-    return target as any
+  if (source === undefined) return target as any
 
   if (isMergeableObject(target) && isMergeableObject(source)) {
     objectKeys(source).forEach((key) => {
@@ -86,13 +91,12 @@ export function deepMerge<T extends object = object, S extends object = T>(targe
       if (isMergeableObject(source[key])) {
         // @ts-expect-error some description
         if (!target[key])
-        // @ts-expect-error some description
+          // @ts-expect-error some description
           target[key] = {}
 
         // @ts-expect-error some description
         deepMerge(target[key], source[key])
-      }
-      else {
+      } else {
         // @ts-expect-error some description
         target[key] = source[key]
       }
@@ -111,14 +115,20 @@ function isMergeableObject(item: any): item is object {
  *
  * @category Object
  */
-export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false) {
-  return keys.reduce((n, k) => {
-    if (k in obj) {
-      if (!omitUndefined || obj[k] !== undefined)
-        n[k] = obj[k]
-    }
-    return n
-  }, {} as Pick<O, T>)
+export function objectPick<O extends object, T extends keyof O>(
+  obj: O,
+  keys: T[],
+  omitUndefined = false,
+) {
+  return keys.reduce(
+    (n, k) => {
+      if (k in obj) {
+        if (!omitUndefined || obj[k] !== undefined) n[k] = obj[k]
+      }
+      return n
+    },
+    {} as Pick<O, T>,
+  )
 }
 
 /**
@@ -128,7 +138,9 @@ export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[
  */
 export function clearUndefined<T extends object>(obj: T): T {
   // @ts-expect-error some description
-  Object.keys(obj).forEach((key: string) => (obj[key] === undefined ? delete obj[key] : {}))
+  Object.keys(obj).forEach((key: string) =>
+    obj[key] === undefined ? delete obj[key] : {},
+  )
   return obj
 }
 
@@ -139,7 +151,5 @@ export function clearUndefined<T extends object>(obj: T): T {
  * @category Object
  */
 export function hasOwnProperty<T>(obj: T, v: PropertyKey) {
-  return obj == null
-    ? false
-    : Object.prototype.hasOwnProperty.call(obj, v)
+  return obj == null ? false : Object.prototype.hasOwnProperty.call(obj, v)
 }

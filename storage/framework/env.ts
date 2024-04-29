@@ -48,4 +48,4 @@ export const envKeys = [
   'FRONTEND_APP_URL',
 ] as const
 
-export type EnvKey = typeof envKeys[number]
+export type EnvKey = (typeof envKeys)[number]

@@ -6,10 +6,7 @@ export function layouts(options?: LayoutOptions) {
   const opts = {
     extensions: ['stx', 'vue'],
     layoutsDirs: p.layoutsPath(),
-    exclude: [
-      p.layoutsPath('dashboard'),
-      p.layoutsPath('mails'),
-    ],
+    exclude: [p.layoutsPath('dashboard'), p.layoutsPath('mails')],
     ...options,
   }
 

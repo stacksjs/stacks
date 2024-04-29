@@ -1,7 +1,7 @@
 import process from 'node:process'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, TinkerOptions } from '@stacksjs/types'
-import { intro, log, outro, runCommand } from '@stacksjs/cli'
 
 export function tinker(buddy: CLI) {
   const descriptions = {
@@ -23,7 +23,11 @@ export function tinker(buddy: CLI) {
       })
 
       if (result.isErr()) {
-        await outro('While running the tinker command, there was an issue', { startTime: perf, useSeconds: true }, result.error || undefined)
+        await outro(
+          'While running the tinker command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error || undefined,
+        )
         process.exit()
       }
 
@@ -32,7 +36,10 @@ export function tinker(buddy: CLI) {
     })
 
   buddy.on('tinker:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

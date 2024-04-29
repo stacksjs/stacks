@@ -3,9 +3,7 @@
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "moduleDetection": "force",
     "baseUrl": ".",
     "module": "esnext",

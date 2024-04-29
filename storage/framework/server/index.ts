@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { Server, ServerWebSocket } from 'bun'
-import { serverResponse } from '@stacksjs/router'
 import { log } from '@stacksjs/logging'
+import { serverResponse } from '@stacksjs/router'
 import { retry } from '@stacksjs/utils'
+import type { Server, ServerWebSocket } from 'bun'
 
 process.on('SIGINT', () => {
   // eslint-disable-next-line no-console
@@ -11,8 +11,7 @@ process.on('SIGINT', () => {
 })
 
 if (process.env.QUEUE_WORKER) {
-  if (!process.env.JOB)
-    throw new Error('Missing JOB environment variable')
+  if (!process.env.JOB) throw new Error('Missing JOB environment variable')
 
   const jobModule = await import(`./app/Jobs/${process.env.JOB}`)
 
@@ -25,13 +24,16 @@ if (process.env.QUEUE_WORKER) {
       initialDelay: process.env.JOB_INITIAL_DELAY,
       jitter: process.env.JOB_JITTER,
     })
+  } else {
+    throw new TypeError('`handle()` function is undefined')
   }
-  else { throw new TypeError('`handle()` function is undefined') }
 
   process.exit(0)
 }
 
-const development = process.env.APP_ENV?.toLowerCase() !== 'production' && process.env.APP_ENV?.toLowerCase() !== 'prod'
+const development =
+  process.env.APP_ENV?.toLowerCase() !== 'production' &&
+  process.env.APP_ENV?.toLowerCase() !== 'prod'
 
 const server = Bun.serve({
   port: 3000,
@@ -66,7 +68,11 @@ const server = Bun.serve({
       console.log('WebSocket message', message)
     },
 
-    async close(ws: ServerWebSocket, code: number, reason?: string): Promise<void> {
+    async close(
+      ws: ServerWebSocket,
+      code: number,
+      reason?: string,
+    ): Promise<void> {
       // eslint-disable-next-line no-console
       console.log('WebSocket closed', { code, reason })
     },

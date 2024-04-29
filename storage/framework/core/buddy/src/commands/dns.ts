@@ -1,8 +1,8 @@
 import process from 'node:process'
+import { log, runCommand } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
-import { log, runCommand } from '@stacksjs/cli'
 
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'
@@ -70,7 +70,9 @@ export function dns(buddy: CLI) {
 
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)
-        .filter(([key, value]) => key !== '--' && key.length > 1 && value !== false) // filter out '--' key and short options
+        .filter(
+          ([key, value]) => key !== '--' && key.length > 1 && value !== false,
+        ) // filter out '--' key and short options
         .map(([key, value]) => `--${key} ${value}`)
         .join(' ')
 
@@ -80,7 +82,10 @@ export function dns(buddy: CLI) {
     })
 
   buddy.on('dns:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

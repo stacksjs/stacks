@@ -33,7 +33,7 @@ function testCronJob(
   try {
     const job = new CronJob(
       cronTime,
-      () => { },
+      () => {},
       null,
       start,
       (tzOrOffset ? timeZone : null) as typeof tzOrOffset extends true
@@ -52,8 +52,7 @@ function testCronJob(
     expect(job.running).toBe(false)
 
     expect(job.cronTime.source).toBe(cronTime)
-  }
-  catch (error) {
+  } catch (error) {
     const isOk = checkError(error)
     if (!isOk) {
       console.error(error)
@@ -80,7 +79,7 @@ test.prop(
   { numRuns: 100_000 },
 )(
   'CronJob should behave as expected and not error unexpectedly (with matching inputs)',
-  params => testCronJob(params, err => err instanceof CronError),
+  (params) => testCronJob(params, (err) => err instanceof CronError),
 )
 
 test.prop(
@@ -96,7 +95,7 @@ test.prop(
   { numRuns: 100_000 },
 )(
   'CronJob should behave as expected and not error unexpectedly (with random inputs)',
-  params => testCronJob(params, err => err instanceof CronError),
+  (params) => testCronJob(params, (err) => err instanceof CronError),
 )
 
 test.prop(
@@ -112,9 +111,9 @@ test.prop(
   { numRuns: 100_000 },
 )(
   'CronJob should behave as expected and not error unexpectedly (with anything inputs)',
-  params =>
+  (params) =>
     testCronJob(
       params as any,
-      err => err instanceof CronError || err instanceof TypeError,
+      (err) => err instanceof CronError || err instanceof TypeError,
     ),
 )

@@ -111,7 +111,7 @@ interface Hooks {
   'post-merge'?: string
   'pre-push'?: string
   'pre-receive'?: string
-  'update'?: string
+  update?: string
   'proc-receive'?: string
   'post-receive'?: string
   'post-update'?: string

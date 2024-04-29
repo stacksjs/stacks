@@ -1,5 +1,5 @@
-import type { AppConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
+import type { AppConfig } from '@stacksjs/types'
 
 /**
  * **Application Configuration**
@@ -10,7 +10,8 @@ import { env } from '@stacksjs/env'
  */
 export default {
   name: env.APP_NAME || 'Stacks',
-  description: 'Stacks is a full-stack framework for building modern web applications.',
+  description:
+    'Stacks is a full-stack framework for building modern web applications.',
   env: env.APP_ENV || 'local',
   url: env.APP_URL || 'stacks.localhost',
   redirectUrls: ['stacksjs.com'],

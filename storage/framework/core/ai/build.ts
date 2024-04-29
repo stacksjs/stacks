@@ -7,17 +7,12 @@ const { startTime } = await intro({
 const result = await Bun.build({
   root: './src',
 
-  entrypoints: [
-    './src/index.ts',
-  ],
+  entrypoints: ['./src/index.ts'],
 
   outdir: './dist',
   format: 'esm',
 
-  external: [
-    '@aws-sdk/client-bedrock-runtime',
-    '@aws-sdk/client-bedrock',
-  ],
+  external: ['@aws-sdk/client-bedrock-runtime', '@aws-sdk/client-bedrock'],
 })
 
 await outro({

@@ -1,8 +1,8 @@
 import process from 'node:process'
+import { log } from '@stacksjs/logging'
+import { projectPath } from '@stacksjs/path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import { $ } from 'bun'
-import { projectPath } from '@stacksjs/path'
-import { log } from '@stacksjs/logging'
 
 export function list(buddy: CLI) {
   const descriptions = {
@@ -21,7 +21,9 @@ export function list(buddy: CLI) {
       $.cwd(projectPath())
 
       const test = await $`buddy --help`.text()
-      const commandsSection = test.match(/Commands:.*?(?=For more info, run any command with the)/s)?.[0]
+      const commandsSection = test.match(
+        /Commands:.*?(?=For more info, run any command with the)/s,
+      )?.[0]
 
       if (commandsSection) {
         const cleanedCommands = commandsSection
@@ -33,11 +35,16 @@ export function list(buddy: CLI) {
         return
       }
 
-      console.error('#1 - Please reach out to our Discord for helper: https://discord.gg/stacksjs')
+      console.error(
+        '#1 - Please reach out to our Discord for helper: https://discord.gg/stacksjs',
+      )
     })
 
   buddy.on('list:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    console.error(
+      'Invalid command: %s\nSee --help for a list of available commands.',
+      buddy.args.join(' '),
+    )
     process.exit(1)
   })
 }

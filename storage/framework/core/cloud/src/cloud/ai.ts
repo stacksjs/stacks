@@ -1,11 +1,15 @@
-/* eslint-disable no-new */
-import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
+/* eslint-disable no-new */
+import {
+  Duration,
+  CfnOutput as Output,
+  aws_iam as iam,
+  aws_lambda as lambda,
+} from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
-export interface AiStackProps extends NestedCloudProps {
-}
+export interface AiStackProps extends NestedCloudProps {}
 
 export class AiStack {
   askAiUrl: lambda.FunctionUrl
@@ -21,17 +25,18 @@ export class AiStack {
 
     const bedrockAccessPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: [
-        'bedrock:InvokeModel',
-        'bedrock:InvokeModelWithResponseStream',
-      ],
-      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
+      actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
+      resources: config.ai.models?.map(
+        (model) => `arn:aws:bedrock:us-east-1::foundation-model/${model}`,
+      ),
     })
 
     const bedrockAccessRole = new iam.Role(scope, 'BedrockAccessRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'service-role/AWSLambdaBasicExecutionRole',
+        ),
       ],
     })
 
@@ -67,13 +72,17 @@ export class AiStack {
       timeout: Duration.seconds(30),
     })
 
-    this.summarizeAiUrl = new lambda.FunctionUrl(scope, 'SummarizeAiFunctionUrl', {
-      function: summarizeAi,
-      authType: lambda.FunctionUrlAuthType.NONE,
-      cors: {
-        allowedOrigins: ['*'],
+    this.summarizeAiUrl = new lambda.FunctionUrl(
+      scope,
+      'SummarizeAiFunctionUrl',
+      {
+        function: summarizeAi,
+        authType: lambda.FunctionUrlAuthType.NONE,
+        cors: {
+          allowedOrigins: ['*'],
+        },
       },
-    })
+    )
 
     new Output(scope, 'AiVanityAskApiUrl', {
       value: this.askAiUrl.url,

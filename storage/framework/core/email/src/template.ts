@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { config } from '@vue-email/compiler'
 import { path } from '@stacksjs/path'
+import { config } from '@vue-email/compiler'
 import type { I18n } from 'vue-email'
 
 export interface RenderOptions {
@@ -15,4 +15,5 @@ const email = config(path.resourcesPath('emails'), {
   // },
 })
 
-export const template = async (path: string, options?: RenderOptions) => await email.render(path, options)
+export const template = async (path: string, options?: RenderOptions) =>
+  await email.render(path, options)

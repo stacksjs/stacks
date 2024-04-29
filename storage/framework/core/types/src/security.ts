@@ -1,5 +1,5 @@
-import type { DeepPartial } from './utils'
 import type { CountryCode } from './cloud'
+import type { DeepPartial } from './utils'
 
 export interface FirewallOptions {
   enabled: boolean // default: true

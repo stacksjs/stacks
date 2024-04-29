@@ -1,5 +1,5 @@
-import type { ApiConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
+import type { ApiConfig } from '@stacksjs/types'
 
 /**
  * **API**

@@ -44,9 +44,11 @@ export function median(arr: number[]): number {
   let medianValue: number
 
   if (sorted.length % 2 !== 0)
-    medianValue = sorted[mid]! // TypeScript now understands that `sorted[mid]` is safely accessed
-  else
-    medianValue = (sorted[mid]! + sorted[mid - 1]!) / 2 // and that `sorted[mid]` and `sorted[mid - 1]` are safely accessed
+    medianValue =
+      sorted[
+        mid
+      ]! // TypeScript now understands that `sorted[mid]` is safely accessed
+  else medianValue = (sorted[mid]! + sorted[mid - 1]!) / 2 // and that `sorted[mid]` and `sorted[mid - 1]` are safely accessed
 
   return medianValue
 }
@@ -65,7 +67,12 @@ export function median(arr: number[]): number {
  * ```
  */
 export function mode(arr: number[]): number {
-  return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop()!
+  return arr
+    .sort(
+      (a, b) =>
+        arr.filter((v) => v === a).length - arr.filter((v) => v === b).length,
+    )
+    .pop()!
 }
 
 /**
@@ -149,7 +156,7 @@ export function range(array: readonly number[]): number {
  */
 export function variance(array: number[]): number {
   const mean = average(array)
-  return average(array.map(num => (num - mean) ** 2))
+  return average(array.map((num) => (num - mean) ** 2))
 }
 
 /**
@@ -196,7 +203,7 @@ export function zScore(array: number[], num: number): number {
  * @see https://en.wikipedia.org/wiki/Percentile
  */
 export function percentile(array: number[], num: number): number {
-  return array.filter(n => n < num).length / array.length
+  return array.filter((n) => n < num).length / array.length
 }
 
 /**

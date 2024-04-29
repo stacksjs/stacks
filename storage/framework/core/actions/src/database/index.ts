@@ -1,18 +1,19 @@
-// import type { Attribute, Attributes } from '@stacksjs/types'
-import { path } from '@stacksjs/path'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+// import type { Attribute, Attributes } from '@stacksjs/types'
+import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 
-export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
+export async function getLastMigrationFields(
+  modelName: string,
+): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = await import(oldModelPath)
   let fields = {} as Attributes
 
   if (typeof model.default.attributes === 'object')
     fields = model.default.attributes
-  else
-    fields = JSON.parse(model.default.attributes) as Attributes
+  else fields = JSON.parse(model.default.attributes) as Attributes
 
   return fields
 }
@@ -22,15 +23,14 @@ export async function hasTableBeenMigrated(tableName: string) {
 
   const results = await getExecutedMigrations()
 
-  return results.some(migration => migration.name.includes(tableName))
+  return results.some((migration) => migration.name.includes(tableName))
 }
 
 export async function getExecutedMigrations() {
   try {
     // @ts-expect-error the migrations table is not typed yet
     return await db.selectFrom('migrations').select('name').execute()
-  }
-  catch (error) {
+  } catch (error) {
     return []
   }
 }
@@ -38,17 +38,14 @@ export async function getExecutedMigrations() {
 export function mapFieldTypeToColumnType(rule: any): string {
   // Check if the rule is for a string and has specific validations
   if (rule[Symbol.for('schema_name')].includes('string'))
-  // Default column type for strings
+    // Default column type for strings
     return prepareTextColumnType(rule)
 
-  if (rule[Symbol.for('schema_name')].includes('number'))
-    return 'integer'
+  if (rule[Symbol.for('schema_name')].includes('number')) return 'integer'
 
-  if (rule[Symbol.for('schema_name')].includes('boolean'))
-    return 'boolean'
+  if (rule[Symbol.for('schema_name')].includes('boolean')) return 'boolean'
 
-  if (rule[Symbol.for('schema_name')].includes('date'))
-    return 'date'
+  if (rule[Symbol.for('schema_name')].includes('date')) return 'date'
 
   // need to now handle all other types
 
@@ -75,8 +72,12 @@ export function prepareTextColumnType(rule) {
   let columnType = 'varchar(255)'
 
   // Find min and max length validations
-  const minLengthValidation = rule.validations.find(v => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find(v => v.options?.max !== undefined)
+  const minLengthValidation = rule.validations.find(
+    (v) => v.options?.min !== undefined,
+  )
+  const maxLengthValidation = rule.validations.find(
+    (v) => v.options?.max !== undefined,
+  )
 
   // If there's a max length validation, adjust the column type accordingly
   if (maxLengthValidation) {
@@ -86,18 +87,22 @@ export function prepareTextColumnType(rule) {
 
   // If there's only a min length validation and no max, consider using text
   // This is a simplistic approach; adjust based on your actual requirements
-  if (minLengthValidation && !maxLengthValidation)
-    columnType = 'text'
+  if (minLengthValidation && !maxLengthValidation) columnType = 'text'
 
   return columnType
 }
 
-export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
+export async function checkPivotMigration(
+  dynamicPart: string,
+): Promise<boolean> {
   const files = await fs.readdir(path.userMigrationsPath())
 
   return files.some((migrationFile) => {
     // Escape special characters in the dynamic part to ensure it's treated as a literal string
-    const escapedDynamicPart = dynamicPart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escapedDynamicPart = dynamicPart.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&',
+    )
 
     // Construct the regular expression pattern dynamically
     const pattern = new RegExp(`(-${escapedDynamicPart}-)`)
