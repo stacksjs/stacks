@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <div class="w-full h-full bg-[#1D1F21] text-[#C5C8C6] font-mono flex flex-col rounded-lg">
+    <div class="w-full h-full bg-[#1D1F21] text-[#C5C8C6] font-mono flex flex-col rounded-lg shadow">
       <header class="flex items-center justify-between p-4 bg-[#373b41] border-b border-[#282a2e] rounded-t-lg">
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full bg-[#CC6666]" />
