@@ -52,7 +52,7 @@
     "unocss": "^0.59.4",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.26",
-    "vue-tsc": "^2.0.14"
+    "vue-tsc": "^2.0.15"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.21",
@@ -71,7 +71,7 @@
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.26",
-    "vue-tsc": "^2.0.14"
+    "vue-tsc": "^2.0.15"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
