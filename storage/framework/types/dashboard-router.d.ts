@@ -31,6 +31,7 @@ declare module 'vue-router/auto-routes' {
     '/models/': RouteRecordInfo<'/models/', '/models', Record<never, never>, Record<never, never>>,
     '/models/subscribers': RouteRecordInfo<'/models/subscribers', '/models/subscribers', Record<never, never>, Record<never, never>>,
     '/models/users': RouteRecordInfo<'/models/users', '/models/users', Record<never, never>, Record<never, never>>,
+    '/notifications/': RouteRecordInfo<'/notifications/', '/notifications', Record<never, never>, Record<never, never>>,
     '/queue/': RouteRecordInfo<'/queue/', '/queue', Record<never, never>, Record<never, never>>,
     '/settings/billing': RouteRecordInfo<'/settings/billing', '/settings/billing', Record<never, never>, Record<never, never>>,
     '/settings/cache': RouteRecordInfo<'/settings/cache', '/settings/cache', Record<never, never>, Record<never, never>>,

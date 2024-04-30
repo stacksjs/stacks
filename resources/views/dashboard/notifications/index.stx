@@ -1,7 +1,4 @@
-<script setup lang="ts">
-useHead({
-  title: 'Dashboard - Commands',
-})
+<script lang="ts" setup>
 </script>
 
 <template>
@@ -21,7 +18,7 @@ useHead({
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Commands Triggered
+                Total Notitifcations
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
@@ -52,13 +49,13 @@ useHead({
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-              Avg. Run Time
+                Avg. Notification Time
               </p>
             </dt>
 
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
               <p class="text-2xl font-semibold text-gray-900">
-                3.65 mins
+                365 ms
               </p>
 
               <p class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
@@ -85,7 +82,7 @@ useHead({
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Success Rate
+                Delivery Rate
               </p>
             </dt>
 
@@ -113,18 +110,17 @@ useHead({
       </div>
     </div>
 
-    <TerminalContainer class="px-4 sm:px-6 lg:px-8 pt-12" />
-
     <div class="px-4 sm:px-6 lg:px-8 pt-12">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">
-            Command History
+            Notification History
           </h1>
           <p class="mt-2 text-sm text-gray-700">
-            A list of all the command executions relating your project/s.
+            A list of all the notifications.
           </p>
         </div>
+
         <!-- <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
             Deploy
@@ -140,19 +136,19 @@ useHead({
                 <thead class="bg-gray-50">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                      User
+                      When
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Command
+                      Initiated By
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Duration
+                      Commit
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Time
+                      Branch
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -168,6 +164,9 @@ useHead({
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      Moments ago
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <div class="flex items-center">
                         <div class="flex-shrink-0 w-10 h-10">
                           <img
@@ -187,24 +186,20 @@ useHead({
                       </div>
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <span class="font-mono">buddy build:components</span>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      30s
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      3 hours ago
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Finished
+                      Deployed
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Deployment</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Notification</span></a>
                     </td>
                   </tr>
                 </tbody>
