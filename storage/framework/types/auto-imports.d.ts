@@ -103,7 +103,7 @@ declare global {
   const aiPath: typeof import('../core/path/src/paths')['aiPath']
   const alias: typeof import('../core/alias/src/index')['alias']
   const aliasPath: typeof import('../core/path/src/paths')['aliasPath']
-  const all: typeof import('../core/orm/src/generated/User')['all']
+  const all: typeof import('../core/events/src/index')['all']
   const allocate: typeof import('../core/utils/src/currency')['allocate']
   const analyticsPath: typeof import('../core/path/src/paths')['analyticsPath']
   const and: typeof import('../core/utils/src/math')['and']
@@ -1109,7 +1109,7 @@ declare module 'vue' {
     readonly aiPath: UnwrapRef<typeof import('../core/path/src/paths')['aiPath']>
     readonly alias: UnwrapRef<typeof import('../core/alias/src/index')['alias']>
     readonly aliasPath: UnwrapRef<typeof import('../core/path/src/paths')['aliasPath']>
-    readonly all: UnwrapRef<typeof import('../core/orm/src/generated/User')['all']>
+    readonly all: UnwrapRef<typeof import('../core/events/src/index')['all']>
     readonly allocate: UnwrapRef<typeof import('../core/utils/src/currency')['allocate']>
     readonly analyticsPath: UnwrapRef<typeof import('../core/path/src/paths')['analyticsPath']>
     readonly and: UnwrapRef<typeof import('../core/utils/src/math')['and']>
@@ -1186,7 +1186,6 @@ declare module 'vue' {
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
-    readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -1330,13 +1329,9 @@ declare module 'vue' {
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
-    readonly find: UnwrapRef<typeof import('../core/orm/src/generated/User')['find']>
-    readonly findByEmail: UnwrapRef<typeof import('../core/orm/src/generated/User')['findByEmail']>
     readonly findHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['findHostedZone']>
-    readonly findMany: UnwrapRef<typeof import('../core/orm/src/generated/User')['findMany']>
     readonly findProjectPath: UnwrapRef<typeof import('../core/path/src/paths')['findProjectPath']>
     readonly findStacksProjects: UnwrapRef<typeof import('../core/utils/src/find')['findStacksProjects']>
-    readonly first: UnwrapRef<typeof import('../core/orm/src/generated/User')['first']>
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/utils/src/vendors')['formatTimeAgo']>
     readonly frameworkCloudPath: UnwrapRef<typeof import('../core/path/src/paths')['frameworkCloudPath']>
@@ -1476,7 +1471,6 @@ declare module 'vue' {
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/paths')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/paths')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/paths')['langPath']>
-    readonly last: UnwrapRef<typeof import('../core/orm/src/generated/User')['last']>
     readonly lastMigration: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigration']>
     readonly lastMigrationDate: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigrationDate']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
@@ -1629,7 +1623,6 @@ declare module 'vue' {
     readonly refWithControl: UnwrapRef<typeof import('../core/utils/src/vendors')['refWithControl']>
     readonly relative: UnwrapRef<typeof import('../core/path/src/paths')['relative']>
     readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['relativeActionsPath']>
-    readonly remove: UnwrapRef<typeof import('../core/orm/src/generated/User')['remove']>
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
@@ -1754,7 +1747,6 @@ declare module 'vue' {
     readonly unrefElement: UnwrapRef<typeof import('../core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../core/utils/src/vendors')['until']>
     readonly unzip: UnwrapRef<typeof import('../core/storage/src/zip')['unzip']>
-    readonly update: UnwrapRef<typeof import('../core/orm/src/generated/User')['update']>
     readonly updateConfigFile: UnwrapRef<typeof import('../core/storage/src/helpers')['updateConfigFile']>
     readonly updateNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['updateNameservers']>
     readonly useAbs: UnwrapRef<typeof import('../core/utils/src/math')['useAbs']>
@@ -1984,8 +1976,6 @@ declare module 'vue' {
     readonly watchWithFilter: UnwrapRef<typeof import('../core/utils/src/vendors')['watchWithFilter']>
     readonly websiteSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['websiteSourceHash']>
     readonly whenever: UnwrapRef<typeof import('../core/utils/src/vendors')['whenever']>
-    readonly where: UnwrapRef<typeof import('../core/orm/src/generated/User')['where']>
-    readonly whereIn: UnwrapRef<typeof import('../core/orm/src/generated/User')['whereIn']>
     readonly whitespace: UnwrapRef<typeof import('../core/utils/src/regex')['whitespace']>
     readonly wipSlug: UnwrapRef<typeof import('../core/slug/src/index')['wipSlug']>
     readonly withIndices: UnwrapRef<typeof import('../core/utils/src/regex')['withIndices']>
@@ -2057,7 +2047,7 @@ declare module '@vue/runtime-core' {
     readonly aiPath: UnwrapRef<typeof import('../core/path/src/paths')['aiPath']>
     readonly alias: UnwrapRef<typeof import('../core/alias/src/index')['alias']>
     readonly aliasPath: UnwrapRef<typeof import('../core/path/src/paths')['aliasPath']>
-    readonly all: UnwrapRef<typeof import('../core/orm/src/generated/User')['all']>
+    readonly all: UnwrapRef<typeof import('../core/events/src/index')['all']>
     readonly allocate: UnwrapRef<typeof import('../core/utils/src/currency')['allocate']>
     readonly analyticsPath: UnwrapRef<typeof import('../core/path/src/paths')['analyticsPath']>
     readonly and: UnwrapRef<typeof import('../core/utils/src/math')['and']>
@@ -2134,7 +2124,6 @@ declare module '@vue/runtime-core' {
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
-    readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -2278,13 +2267,9 @@ declare module '@vue/runtime-core' {
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
-    readonly find: UnwrapRef<typeof import('../core/orm/src/generated/User')['find']>
-    readonly findByEmail: UnwrapRef<typeof import('../core/orm/src/generated/User')['findByEmail']>
     readonly findHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['findHostedZone']>
-    readonly findMany: UnwrapRef<typeof import('../core/orm/src/generated/User')['findMany']>
     readonly findProjectPath: UnwrapRef<typeof import('../core/path/src/paths')['findProjectPath']>
     readonly findStacksProjects: UnwrapRef<typeof import('../core/utils/src/find')['findStacksProjects']>
-    readonly first: UnwrapRef<typeof import('../core/orm/src/generated/User')['first']>
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/utils/src/vendors')['formatTimeAgo']>
     readonly frameworkCloudPath: UnwrapRef<typeof import('../core/path/src/paths')['frameworkCloudPath']>
@@ -2424,7 +2409,6 @@ declare module '@vue/runtime-core' {
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/paths')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/paths')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/paths')['langPath']>
-    readonly last: UnwrapRef<typeof import('../core/orm/src/generated/User')['last']>
     readonly lastMigration: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigration']>
     readonly lastMigrationDate: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigrationDate']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
@@ -2577,7 +2561,6 @@ declare module '@vue/runtime-core' {
     readonly refWithControl: UnwrapRef<typeof import('../core/utils/src/vendors')['refWithControl']>
     readonly relative: UnwrapRef<typeof import('../core/path/src/paths')['relative']>
     readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['relativeActionsPath']>
-    readonly remove: UnwrapRef<typeof import('../core/orm/src/generated/User')['remove']>
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
@@ -2702,7 +2685,6 @@ declare module '@vue/runtime-core' {
     readonly unrefElement: UnwrapRef<typeof import('../core/utils/src/vendors')['unrefElement']>
     readonly until: UnwrapRef<typeof import('../core/utils/src/vendors')['until']>
     readonly unzip: UnwrapRef<typeof import('../core/storage/src/zip')['unzip']>
-    readonly update: UnwrapRef<typeof import('../core/orm/src/generated/User')['update']>
     readonly updateConfigFile: UnwrapRef<typeof import('../core/storage/src/helpers')['updateConfigFile']>
     readonly updateNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['updateNameservers']>
     readonly useAbs: UnwrapRef<typeof import('../core/utils/src/math')['useAbs']>
@@ -2932,8 +2914,6 @@ declare module '@vue/runtime-core' {
     readonly watchWithFilter: UnwrapRef<typeof import('../core/utils/src/vendors')['watchWithFilter']>
     readonly websiteSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['websiteSourceHash']>
     readonly whenever: UnwrapRef<typeof import('../core/utils/src/vendors')['whenever']>
-    readonly where: UnwrapRef<typeof import('../core/orm/src/generated/User')['where']>
-    readonly whereIn: UnwrapRef<typeof import('../core/orm/src/generated/User')['whereIn']>
     readonly whitespace: UnwrapRef<typeof import('../core/utils/src/regex')['whitespace']>
     readonly wipSlug: UnwrapRef<typeof import('../core/slug/src/index')['wipSlug']>
     readonly withIndices: UnwrapRef<typeof import('../core/utils/src/regex')['withIndices']>

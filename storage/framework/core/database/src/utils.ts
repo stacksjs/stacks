@@ -51,5 +51,3 @@ export const now = sql`now()`
 export const db = new Kysely<Database>({
   dialect: getDialect(),
 })
-
-export { sql }

@@ -374,7 +374,7 @@ export class UserModel {
 const Model = UserModel
 
 // starting here, ORM functions
-export async function find(id: number, fields?: (keyof UserType)[]) {
+async function find(id: number, fields?: (keyof UserType)[]) {
   let query = db.selectFrom('users').where('id', '=', id)
 
   if (fields) query = query.select(fields)
@@ -387,7 +387,7 @@ export async function find(id: number, fields?: (keyof UserType)[]) {
   return new UserModel(user)
 }
 
-export async function findMany(ids: number[], fields?: (keyof UserType)[]) {
+async function findMany(ids: number[], fields?: (keyof UserType)[]) {
   let query = db.selectFrom('users').where('id', 'in', ids)
 
   if (fields) query = query.select(fields)
@@ -398,7 +398,7 @@ export async function findMany(ids: number[], fields?: (keyof UserType)[]) {
   return users.map((user) => new UserModel(user))
 }
 
-export async function get(
+async function get(
   criteria: Partial<UserType>,
   sort: { column: keyof UserType; order: 'asc' | 'desc' } = {
     column: 'created_at',
@@ -436,7 +436,7 @@ export async function get(
   return await query.selectAll().execute()
 }
 
-export async function all(limit = 10, offset = 0) {
+async function all(limit = 10, offset = 0) {
   return await db
     .selectFrom('users')
     .selectAll()
@@ -446,7 +446,7 @@ export async function all(limit = 10, offset = 0) {
     .execute()
 }
 
-export async function create(newUser: NewUser) {
+async function create(newUser: NewUser) {
   return await db
     .insertInto('users')
     .values(newUser)
@@ -454,11 +454,11 @@ export async function create(newUser: NewUser) {
     .executeTakeFirstOrThrow()
 }
 
-export async function first() {
+async function first() {
   return await db.selectFrom('users').selectAll().executeTakeFirst()
 }
 
-export async function last() {
+async function last() {
   return await db
     .selectFrom('users')
     .selectAll()
@@ -466,7 +466,7 @@ export async function last() {
     .executeTakeFirst()
 }
 
-export async function update(id: number, userUpdate: UserUpdate) {
+async function update(id: number, userUpdate: UserUpdate) {
   return await db
     .updateTable('users')
     .set(userUpdate)
@@ -474,7 +474,7 @@ export async function update(id: number, userUpdate: UserUpdate) {
     .execute()
 }
 
-export async function remove(id: number) {
+async function remove(id: number) {
   return await db
     .deleteFrom('users')
     .where('id', '=', id)
@@ -482,7 +482,7 @@ export async function remove(id: number) {
     .executeTakeFirst()
 }
 
-export async function findByEmail(email: string) {
+async function findByEmail(email: string) {
   return await db
     .selectFrom('users')
     .where('email', '=', email)
@@ -490,7 +490,7 @@ export async function findByEmail(email: string) {
     .executeTakeFirst()
 }
 
-export async function where(
+async function where(
   criteria: Partial<UserType>,
   options: QueryOptions = {},
 ) {
@@ -532,7 +532,7 @@ export async function where(
   return await query.selectAll().execute()
 }
 
-export async function whereIn(
+async function whereIn(
   column: keyof UserType,
   values: any[],
   options: QueryOptions = {},
@@ -566,6 +566,7 @@ export const User = {
   first,
   last,
   where,
+  whereIn,
 }
 
 export default User
