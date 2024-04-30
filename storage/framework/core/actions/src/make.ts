@@ -281,22 +281,28 @@ import type { Model } from '@stacksjs/types'
 export default {
   name: '${name}',
 
-  searchable: true, // boolean | IndexSettings,
-  authenticatable: true, // boolean | AuthSettings,
+  traits: {
+    useAuth: false, 
+    useTimestamps: false, 
+    useSoftDeletes: true,
 
-  seeder: {
-    count: 10,
-  },
-
-  fields: {
-    name: {
-      validation: validate.string().min(3).max(255),
-      factory: () => faker.person,
+    useSeeder: {
+      // defaults to a count of 10,
+      count: 100,
     },
 
-    // more fields here
+    // useUuid: true, // defaults to false
   },
-}`,
+
+  attributes: {
+    
+  },
+  get: {
+  },
+
+  set: {
+  },
+} satisfies Model`,
     })
 
     log.success(`Successfully created your model at app/Models/${name}.ts`)
