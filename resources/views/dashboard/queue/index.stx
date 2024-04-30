@@ -187,11 +187,11 @@
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      342afe5a
+                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      main
+                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
