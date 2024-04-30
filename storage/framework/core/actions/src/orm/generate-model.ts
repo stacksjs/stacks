@@ -62,6 +62,7 @@ async function getRelations(model: ModelDefault): Promise<any[]> {
   for (const relation of relationsArray) {
     if (hasRelations(model.default, relation)) {
       for (const relationInstance of model.default[relation]) {
+
         const modelRelationPath = path.userModelsPath(
           `${relationInstance.model.name}.ts`,
         )
@@ -277,7 +278,7 @@ async function getPivotTables(
   const pivotTable = []
 
   if ('belongsToMany' in model.default) {
-    for (const belongsToManyRelation of model.default.belongsToMany) {
+    for (const belongsToManyRelation of  model.default.belongsToMany) {
       const modelRelationPath = path.userModelsPath(
         `${belongsToManyRelation.model.name}.ts`,
       )
@@ -287,7 +288,7 @@ async function getPivotTables(
 
       pivotTable.push({
         table:
-          belongsToManyRelation?.pivotTable ||
+        belongsToManyRelation?.pivotTable ||
           `${formattedModelName}_${modelRelation.default.table}`,
         firstForeignKey: belongsToManyRelation.firstForeignKey,
         secondForeignKey: belongsToManyRelation.secondForeignKey,
@@ -324,6 +325,7 @@ async function generateModelString(
   for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
   }
+    
 
   for (const relation of relations) {
     const modelRelation = relation.model
@@ -338,14 +340,12 @@ async function generateModelString(
     const relationCount = getRelationCount(relation.relationship)
 
     if (relationType === 'throughType') {
-      const relationName =
-        relation.relationName || formattedModelName + modelRelation
+      const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
       const formattedThroughRelation = relation.throughModel.name.toLowerCase()
       const throughTableRelation = throughRelation.table
-      const foreignKeyThroughRelation =
-        relation.throughForeignKey || `${formattedThroughRelation}_id`
-
+      const foreignKeyThroughRelation = relation.throughForeignKey || formattedThroughRelation + '_id'
+      
       relationMethods += `
       async ${relationName}() {
         if (this.${formattedModelName}.id === undefined)
@@ -356,7 +356,7 @@ async function generateModelString(
         .selectAll()
         .executeTakeFirst()
 
-        if (! firstModel)
+        if (! firstModel) 
           throw new Error('Model Relation Not Found!')
 
         const finalModel = await db.selectFrom('${tableRelation}')
@@ -513,7 +513,7 @@ async function generateModelString(
 
         if (!model)
           return null
-
+    
         return new ${modelName}Model(model)
       }
 

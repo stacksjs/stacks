@@ -47,11 +47,11 @@ export default {
     // useUuid: true, // defaults to false
   },
 
-  hasOneThrough: [
+  hasOneThrough:[
     {
       model: Post,
-      through: Subscriber,
-    },
+      through: Subscriber
+    }
   ],
 
   attributes: {

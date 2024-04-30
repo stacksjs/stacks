@@ -278,7 +278,7 @@ export async function createModel(options: MakeOptions) {
 import { validate } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
-export default <Model> {
+export default {
   name: '${name}',
 
   searchable: true, // boolean | IndexSettings,
