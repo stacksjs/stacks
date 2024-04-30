@@ -45,7 +45,7 @@ export default defineConfig({
       fonts: {
         sans: 'Inter',
         serif: 'Inter',
-        mono: 'Inter',
+        // mono: 'Inter',
       },
     }),
   ],

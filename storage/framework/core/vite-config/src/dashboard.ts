@@ -84,6 +84,7 @@ export default defineConfig({
       extensions: ['stx'],
       layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
     }),
+
     autoImports(),
     components(),
     cssEngine(),
