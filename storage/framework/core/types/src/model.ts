@@ -1,6 +1,6 @@
 import type { Model as ModelType } from '@stacksjs/types'
-import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { Model as ModelType } from '@stacksjs/types'
+import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable, SearchOptions } from '.'
 
 export type AuthOptions = {}
@@ -86,8 +86,8 @@ export interface ModelOptions extends Base {
     relationName?: string
   }[]
   hasOneThrough: {
-    model: ModelType,
-    through: ModelType,
+    model: ModelType
+    through: ModelType
     foreignKey?: string
     throughForeignKey?: string
     relationName?: string
