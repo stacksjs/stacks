@@ -112,7 +112,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx biome check --staged . --no-errors-on-unmatched --files-ignore-unknown=true"
+    "*": "bunx biome check --apply ."
   },
   "config": {
     "commitizen": {

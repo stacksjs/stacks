@@ -1,5 +1,4 @@
 import type { Model as ModelType } from '@stacksjs/types'
-import type { Model as ModelType } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable, SearchOptions } from '.'
 
