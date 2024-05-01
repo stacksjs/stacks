@@ -195,7 +195,7 @@
                       class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
                       active-class="active"
                   >
-                      <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                      <div class="i-heroicons-key text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
                   </RouterLink>
 
                   <RouterLink
@@ -203,7 +203,7 @@
                       class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
                       active-class="active"
                     >
-                      <div class="i-heroicons-cog-6-tooth text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                      <div class="i-heroicons-cog-8-tooth text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
                   </RouterLink>
               </div>
               <!-- <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Production</span> -->
