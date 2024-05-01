@@ -27,6 +27,7 @@ interface Request {
 interface ActionOptions {
   name?: string
   description?: string
+  apiResponse?: boolean
   fields?: Record<FieldKey, FieldValue>
   path?: string
   rate?: JobOptions['rate']

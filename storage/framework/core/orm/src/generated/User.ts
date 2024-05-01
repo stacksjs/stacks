@@ -251,6 +251,21 @@ export class UserModel {
     return await query.selectAll().execute()
   }
 
+  async count(options: QueryOptions = {}) {
+    let query = db.selectFrom('users').select(db.fn.count('*').as('total_count'));
+
+    // Apply sorting from options
+    if (options.sort)
+      query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply pagination from options
+    if (options.limit !== undefined) query = query.limit(options.limit)
+
+    if (options.offset !== undefined) query = query.offset(options.offset)
+
+    return await query.execute()
+  }
+
   async first() {
     return await db.selectFrom('users').selectAll().executeTakeFirst()
   }
@@ -553,6 +568,21 @@ async function whereIn(
   return await query.selectAll().execute()
 }
 
+async function count(options: QueryOptions = {}) {
+  let query = db.selectFrom('users').select(db.fn.count('*').as('total_count'));
+
+  // Apply sorting from options
+  if (options.sort)
+    query = query.orderBy(options.sort.column, options.sort.order)
+
+  // Apply pagination from options
+  if (options.limit !== undefined) query = query.limit(options.limit)
+
+  if (options.offset !== undefined) query = query.offset(options.offset)
+
+  return await query.execute()
+}
+
 export const User = {
   find,
   findMany,
@@ -567,6 +597,7 @@ export const User = {
   last,
   where,
   whereIn,
+  count,
 }
 
 export default User
