@@ -75,7 +75,6 @@
     "**/node_modules": true,
     "**/cdk.out": true,
     "**/dist": true,
-    "**/*out*": true,
     "CHANGELOG.md": true
   },
   "explorer.confirmDragAndDrop": false,
