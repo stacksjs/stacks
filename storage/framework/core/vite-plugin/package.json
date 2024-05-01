@@ -94,7 +94,7 @@
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.9.0",
     "unplugin-auto-import": "^0.17.5",
-    "unplugin-vue-components": "^0.26.0",
+    "unplugin-vue-components": "^0.27.0",
     "vite": "^5.2.10",
     "vite-plugin-full-reload": "^1.1.0",
     "vite-plugin-inspect": "^0.8.4",
