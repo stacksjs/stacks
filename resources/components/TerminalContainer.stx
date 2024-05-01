@@ -1,3 +1,11 @@
+<script setup>
+import { defineProps } from 'vue'
+
+const props = defineProps({
+  live: Boolean
+})
+</script>
+
 <template>
   <div class="">
     <div class="w-full h-full bg-[#1D1F21] text-[#C5C8C6] font-mono flex flex-col rounded-lg shadow">
@@ -7,7 +15,11 @@
           <div class="w-3 h-3 rounded-full bg-[#68B5BD]" />
           <div class="w-3 h-3 rounded-full bg-[#74C6F0]" />
         </div>
-        <div class="text-sm">
+
+        <div v-if="live" class="text-sm">
+          Live Terminal Output
+        </div>
+        <div v-else class="text-sm">
           root@localhost:~
         </div>
       </header>
@@ -27,7 +39,7 @@
           <p>root</p>
         </div>
       </div>
-      <div class="flex items-center gap-2 p-4 border-t border-[#282a2e]">
+      <div v-if="!live" class="flex items-center gap-2 p-4 border-t border-[#282a2e]">
         <span class="text-[#68B5BD]">root@localhost:~$</span>
         <input
           class="bg-[#1D1F21] text-[#C5C8C6] w-full focus:outline-none"
