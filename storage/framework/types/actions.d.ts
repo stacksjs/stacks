@@ -3,4 +3,4 @@
 //
 // For more information, please visit: https://stacksjs.org/docs
 
-export type ActionPath = 'Actions/LogAction' | 'Actions/HealthAction' | 'Actions/ExampleAction' | 'Actions/Buddy/VersionsAction' | 'Actions/Buddy/CommandsAction'
+export type ActionPath = 'Actions/LogAction' | 'Actions/HealthAction' | 'Actions/ExampleAction' | 'Actions/Buddy/VersionsAction' | 'Actions/Buddy/CommandsAction' | string

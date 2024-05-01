@@ -25,9 +25,11 @@ export class QueueStack {
   async init() {
     const jobsDir = path.jobsPath()
     const actionsDir = path.appPath('Actions')
+    const ormActionDir = path.projectStoragePath('framework/orm/Actions')
 
     const jobFiles = await fs.readdir(jobsDir)
     const actionFiles = await fs.readdir(actionsDir)
+    const ormActionFiles = await fs.readdir(ormActionDir)
     const jobs = []
 
     // then, need to loop through all app/Jobs/*.ts and create a rule for each, potentially overwriting the Schedule.ts jobs
@@ -42,16 +44,30 @@ export class QueueStack {
       jobs.push(job)
     }
 
+    for (const ormFile of ormActionFiles) {
+      if (!ormFile.endsWith('.ts')) continue
+
+      const ormActionPath = path.projectStoragePath(`framework/orm/Actions/${ormFile}`)
+
+      // Await the loading of the job module
+      const ormAction = await this.loadModule(ormActionPath)
+      this.createQueueRule(ormAction, ormFile)
+      jobs.push(ormAction)
+    }
+
     for (const file of actionFiles) {
       if (!file.endsWith('.ts')) continue
 
       const actionPath = path.appPath(`Actions/${file}`)
+
+      console.log(actionPath)
 
       // Await the loading of the job module
       const action = await this.loadModule(actionPath)
       this.createQueueRule(action, file)
       jobs.push(action)
     }
+
   }
 
   // Helper function to convert a rate string to a cron object for AWS Schedule

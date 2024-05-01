@@ -4,6 +4,8 @@ import type { DeepPartial, Nullable, SearchOptions } from '.'
 
 export type AuthOptions = {}
 
+export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
+
 export interface SeedOptions {
   count: number
 }
@@ -11,13 +13,7 @@ export interface SeedOptions {
 export interface ApiSettings {
   uri: string
   middleware: string[]
-  routes: {
-    index: boolean
-    show: boolean
-    store: boolean
-    update: boolean
-    destroy: boolean
-  }
+  routes: ApiRoutes[]
 }
 
 type ApiOptions = DeepPartial<ApiSettings>

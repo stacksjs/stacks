@@ -22,6 +22,49 @@ interface ModelDefault {
 await initiateModelGeneration()
 await setKyselyTypes()
 
+async function generateApiRoutes(model: ModelDefault) {
+  let routeString = `import { route } from '@stacksjs/router'\n\n\n`
+  if (model.default.traits?.useApi) {
+    const apiRoutes = model.default.traits?.useApi?.routes
+    if (apiRoutes.length) {
+      for (const apiRoute of apiRoutes) {
+        routeString += await writeApiRoutes(apiRoute, model)
+      }
+    }
+    const file = Bun.file(
+      path.projectStoragePath(`framework/orm/routes.ts`),
+    )
+
+    const writer = file.writer()
+
+    writer.write(routeString)
+
+    await writer.end()
+  }
+}
+
+async function writeOrmActions(): Promise<void> {
+
+}
+
+async function writeApiRoutes(apiRoute: string, model: ModelDefault): Promise<string> {
+  let routeString = ``
+  const modelNameFormatted = model.default.name.toLowerCase()
+  const modelName = model.default.name
+  
+  if (apiRoute === 'index') routeString+= `await route.get('${modelNameFormatted}', () => 'Actions/${modelName}IndexOrmAction')\n\n`
+
+  if (apiRoute === 'store') routeString+= `await route.post('${modelNameFormatted}', () => 'Actions/${modelName}StoreOrmAction')\n\n`
+
+  if (apiRoute === 'update') routeString+= `await route.patch('${modelNameFormatted}/{id}', () => 'Actions/${modelName}UpdateOrmAction')\n\n`
+
+  if (apiRoute === 'show') routeString+= `await route.get('${modelNameFormatted}/{id}', () => 'Actions/${modelName}ShowOrmAction')\n\n`
+
+  if (apiRoute === 'destroy') routeString+= `await route.delete('${modelNameFormatted}/{id}', () => 'Actions/${modelName}DestroyOrmAction')\n\n`
+
+  return routeString
+}
+
 async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
@@ -31,6 +74,8 @@ async function initiateModelGeneration(): Promise<void> {
 
     const tableName = model.default.table
     const modelName = model.default.name
+
+    generateApiRoutes(model)
 
     const file = Bun.file(
       path.projectStoragePath(`framework/orm/${modelName}.ts`),

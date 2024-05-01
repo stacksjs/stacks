@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/logging'
-import { path as p, routesPath } from '@stacksjs/path'
+import { path as p, routesPath, projectStoragePath } from '@stacksjs/path'
 import { pascalCase } from '@stacksjs/strings'
 import type {
   RedirectCode,
@@ -230,6 +230,7 @@ export class Router implements RouterInterface {
 
   public async getRoutes(): Promise<Route[]> {
     await import(routesPath('api.ts'))
+    await import(projectStoragePath('framework/orm/routes.ts'))
 
     return this.routes
   }
@@ -286,11 +287,20 @@ export class Router implements RouterInterface {
 
     if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
 
+    if (modulePath.includes('OrmAction')) importPathFunction = p.projectStoragePath
+
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts')
       ? modulePath.slice(0, -3)
       : modulePath
-    const actionModule = await import(importPathFunction(`${modulePath}.ts`))
+    
+    let actionModule = null
+
+    if (modulePath.includes('OrmAction')) {
+       actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
+    } else {
+      actionModule = await import(importPathFunction(`${modulePath}.ts`))
+    }
 
     // Use custom path from action module if available
     const newPath = actionModule.default.path ?? originalPath
@@ -308,6 +318,8 @@ export class Router implements RouterInterface {
     if (path.startsWith('/')) path = path.slice(1)
 
     path = `${this.apiPrefix}${this.groupPrefix}/${path}`
+
+    console.log(path)
 
     // if path ends in "/", then remove it
     // e.g. triggered when route is "/"
