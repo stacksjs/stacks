@@ -4,7 +4,7 @@
     <MobileSidebar />
     <Sidebar />
 
-    <div class="lg:pl-72">
+    <div class="lg:pl-64">
       <Navbar />
 
       <main class="bg-blue-gray-50 dark:bg-blue-gray-900">
