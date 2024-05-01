@@ -55,9 +55,6 @@
         "noExplicitAny": "off",
         "noShadowRestrictedNames": "off",
         "noImplicitAnyLet": "off"
-      },
-      "correctness": {
-        "noVoidTypeReturn": "off"
       }
     }
   },
