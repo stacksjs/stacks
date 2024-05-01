@@ -22,12 +22,10 @@ async function watchFolders() {
     withFileTypes: true,
   })
   coreDirectories.forEach((dir) => {
-    // Skip the directory named 'bun-create' -> no need to build
-    if (
-      dir.name === 'bun-create' ||
-      dir.name === 'lint' ||
-      dir.name === 'components'
-    )
+    const ignore = ['dist', 'bun-create', 'lint', 'components']
+
+    // no need to build these directories
+    if (ignore.includes(dir.name))
       return
 
     if (dir.isDirectory()) {
