@@ -248,12 +248,18 @@ export class Router implements RouterInterface {
   }
 
   private prepareGroupPrefix(options: string | RouteGroupOptions): void {
-    if (this.groupPrefix !== '' && typeof options !== 'string')
-      return this.setGroupPrefix(this.groupPrefix, options)
+    if (this.groupPrefix !== '' && typeof options !== 'string') {
+      this.setGroupPrefix(this.groupPrefix, options)
+      return
+    }
 
-    if (typeof options === 'string') return this.setGroupPrefix(options)
+    if (typeof options === 'string') {
+      this.setGroupPrefix(options)
+      return
+    }
 
-    return this.setGroupPrefix('', options)
+    this.setGroupPrefix('', options)
+    return
   }
 
   private async resolveCallback(
