@@ -34,7 +34,7 @@ export default {
     useApi: {
       uri: 'users', // defaults to the table name,
       middleware: ['auth'], // defaults to `[]`
-      routes: ['index', 'update', 'store', 'destroy', 'show']
+      routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
 
     // useUuid: true, // defaults to false

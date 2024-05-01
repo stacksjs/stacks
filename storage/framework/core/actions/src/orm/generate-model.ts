@@ -31,9 +31,7 @@ async function generateApiRoutes(model: ModelDefault) {
         routeString += await writeApiRoutes(apiRoute, model)
       }
     }
-    const file = Bun.file(
-      path.projectStoragePath(`framework/orm/routes.ts`),
-    )
+    const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
 
     const writer = file.writer()
 
@@ -43,24 +41,30 @@ async function generateApiRoutes(model: ModelDefault) {
   }
 }
 
-async function writeOrmActions(): Promise<void> {
+async function writeOrmActions(): Promise<void> {}
 
-}
-
-async function writeApiRoutes(apiRoute: string, model: ModelDefault): Promise<string> {
+async function writeApiRoutes(
+  apiRoute: string,
+  model: ModelDefault,
+): Promise<string> {
   let routeString = ``
   const modelNameFormatted = model.default.name.toLowerCase()
   const modelName = model.default.name
-  
-  if (apiRoute === 'index') routeString+= `await route.get('${modelNameFormatted}', () => 'Actions/${modelName}IndexOrmAction')\n\n`
 
-  if (apiRoute === 'store') routeString+= `await route.post('${modelNameFormatted}', () => 'Actions/${modelName}StoreOrmAction')\n\n`
+  if (apiRoute === 'index')
+    routeString += `await route.get('${modelNameFormatted}', () => 'Actions/${modelName}IndexOrmAction')\n\n`
 
-  if (apiRoute === 'update') routeString+= `await route.patch('${modelNameFormatted}/{id}', () => 'Actions/${modelName}UpdateOrmAction')\n\n`
+  if (apiRoute === 'store')
+    routeString += `await route.post('${modelNameFormatted}', () => 'Actions/${modelName}StoreOrmAction')\n\n`
 
-  if (apiRoute === 'show') routeString+= `await route.get('${modelNameFormatted}/{id}', () => 'Actions/${modelName}ShowOrmAction')\n\n`
+  if (apiRoute === 'update')
+    routeString += `await route.patch('${modelNameFormatted}/{id}', () => 'Actions/${modelName}UpdateOrmAction')\n\n`
 
-  if (apiRoute === 'destroy') routeString+= `await route.delete('${modelNameFormatted}/{id}', () => 'Actions/${modelName}DestroyOrmAction')\n\n`
+  if (apiRoute === 'show')
+    routeString += `await route.get('${modelNameFormatted}/{id}', () => 'Actions/${modelName}ShowOrmAction')\n\n`
+
+  if (apiRoute === 'destroy')
+    routeString += `await route.delete('${modelNameFormatted}/{id}', () => 'Actions/${modelName}DestroyOrmAction')\n\n`
 
   return routeString
 }

@@ -54,7 +54,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noShadowRestrictedNames": "off",
-        "noImplicitAnyLet": "off"
+        "noImplicitAnyLet": "off",
+        "noRedeclare": "off"
       }
     }
   },

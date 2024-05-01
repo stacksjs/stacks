@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/logging'
-import { path as p, routesPath, projectStoragePath } from '@stacksjs/path'
+import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
 import { pascalCase } from '@stacksjs/strings'
 import type {
   RedirectCode,
@@ -287,17 +287,20 @@ export class Router implements RouterInterface {
 
     if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
 
-    if (modulePath.includes('OrmAction')) importPathFunction = p.projectStoragePath
+    if (modulePath.includes('OrmAction'))
+      importPathFunction = p.projectStoragePath
 
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts')
       ? modulePath.slice(0, -3)
       : modulePath
-    
+
     let actionModule = null
 
     if (modulePath.includes('OrmAction')) {
-       actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
+      actionModule = await import(
+        importPathFunction(`/framework/orm/${modulePath}.ts`)
+      )
     } else {
       actionModule = await import(importPathFunction(`${modulePath}.ts`))
     }

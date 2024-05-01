@@ -47,7 +47,9 @@ export class QueueStack {
     for (const ormFile of ormActionFiles) {
       if (!ormFile.endsWith('.ts')) continue
 
-      const ormActionPath = path.projectStoragePath(`framework/orm/Actions/${ormFile}`)
+      const ormActionPath = path.projectStoragePath(
+        `framework/orm/Actions/${ormFile}`,
+      )
 
       // Await the loading of the job module
       const ormAction = await this.loadModule(ormActionPath)
@@ -67,7 +69,6 @@ export class QueueStack {
       this.createQueueRule(action, file)
       jobs.push(action)
     }
-
   }
 
   // Helper function to convert a rate string to a cron object for AWS Schedule
