@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@vueform/multiselect": "^2.6.7",
-    "vite": "^5.2.10"
+    "vite": "^5.2.11"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
