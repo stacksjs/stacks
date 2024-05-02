@@ -267,15 +267,16 @@ export class Router implements RouterInterface {
     callback: Route['callback'],
   ): Promise<Route['callback']> {
     if (callback instanceof Promise) {
+
       const actionModule = await callback
       return actionModule.default
     }
 
     if (typeof callback === 'string')
-      return this.importCallbackFromPath(callback, this.path)
+      return await this.importCallbackFromPath(callback, this.path)
 
     // in this case, the callback ends up being a function
-    return callback
+    return await callback
   }
 
   private async importCallbackFromPath(
@@ -309,7 +310,7 @@ export class Router implements RouterInterface {
     const newPath = actionModule.default.path ?? originalPath
     this.updatePathIfNeeded(newPath, originalPath)
 
-    return actionModule.default.handle
+    return await actionModule.default.handle()
   }
 
   private normalizePath(path: string): string {

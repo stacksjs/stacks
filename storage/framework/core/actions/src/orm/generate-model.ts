@@ -23,11 +23,13 @@ await initiateModelGeneration()
 await setKyselyTypes()
 
 async function generateApiRoutes(model: ModelDefault) {
+
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
   if (model.default.traits?.useApi) {
     const apiRoutes = model.default.traits?.useApi?.routes
     if (apiRoutes.length) {
       for (const apiRoute of apiRoutes) {
+        await writeOrmActions(apiRoute, model)
         routeString += await writeApiRoutes(apiRoute, model)
       }
     }
@@ -41,36 +43,61 @@ async function generateApiRoutes(model: ModelDefault) {
   }
 }
 
-async function writeOrmActions(): Promise<void> {}
+async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<void> {
+  const modelName = model.default.name
+  const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
+
+  let actionString = `import { Action } from '@stacksjs/actions'\n`
+   actionString += `import ${modelName} from '../${modelName}'\n\n`
+
+    actionString += `export default new Action({
+      name: '${modelName} ${formattedApiRoute}',
+      description: '${modelName} ${formattedApiRoute} Orm Action',
+    
+      handle() {
+        return ${modelName}.find(1)
+      },
+    })
+  `
+
+  const file = Bun.file(path.projectStoragePath(`framework/orm/Actions/${modelName}${formattedApiRoute}OrmAction.ts`))
+
+  const writer = file.writer()
+
+  writer.write(actionString)
+}
 
 async function writeApiRoutes(
   apiRoute: string,
   model: ModelDefault,
 ): Promise<string> {
   let routeString = ``
-  const modelNameFormatted = model.default.name.toLowerCase()
+  const tableName = model.default.table
   const modelName = model.default.name
 
   if (apiRoute === 'index')
-    routeString += `await route.get('${modelNameFormatted}', () => 'Actions/${modelName}IndexOrmAction')\n\n`
+    routeString += `await route.get('${tableName}', () => 'Actions/${modelName}IndexOrmAction')\n\n`
 
   if (apiRoute === 'store')
-    routeString += `await route.post('${modelNameFormatted}', () => 'Actions/${modelName}StoreOrmAction')\n\n`
+    routeString += `await route.post('${tableName}', () => 'Actions/${modelName}StoreOrmAction')\n\n`
 
   if (apiRoute === 'update')
-    routeString += `await route.patch('${modelNameFormatted}/{id}', () => 'Actions/${modelName}UpdateOrmAction')\n\n`
+    routeString += `await route.patch('${tableName}/{id}', () => 'Actions/${modelName}UpdateOrmAction')\n\n`
 
   if (apiRoute === 'show')
-    routeString += `await route.get('${modelNameFormatted}/{id}', () => 'Actions/${modelName}ShowOrmAction')\n\n`
+    routeString += `await route.get('${tableName}/{id}', () => 'Actions/${modelName}ShowOrmAction')\n\n`
 
   if (apiRoute === 'destroy')
-    routeString += `await route.delete('${modelNameFormatted}/{id}', () => 'Actions/${modelName}DestroyOrmAction')\n\n`
+    routeString += `await route.delete('${tableName}/{id}', () => 'Actions/${modelName}DestroyOrmAction')\n\n`
 
   return routeString
 }
 
 async function initiateModelGeneration(): Promise<void> {
+  
   await deleteExistingModels()
+  await deleteExistingOrmActions()
+
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
@@ -79,7 +106,8 @@ async function initiateModelGeneration(): Promise<void> {
     const tableName = model.default.table
     const modelName = model.default.name
 
-    generateApiRoutes(model)
+    await generateApiRoutes(model)
+   
 
     const file = Bun.file(
       path.projectStoragePath(`framework/orm/${modelName}.ts`),
@@ -154,6 +182,14 @@ async function deleteExistingModels() {
   )
 
   if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
+}
+
+async function deleteExistingOrmActions() {
+  const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
+
+  for (const ormPath of ormPaths) {
+    if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
+  }
 }
 
 async function setKyselyTypes() {

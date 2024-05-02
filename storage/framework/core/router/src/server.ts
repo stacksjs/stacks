@@ -27,8 +27,8 @@ export async function serve(options: ServeOptions = {}) {
     port,
     development,
 
-    fetch(req: Request) {
-      return serverResponse(req)
+    async fetch(req: Request) {
+      return await serverResponse(req)
     },
   })
 }
@@ -70,7 +70,7 @@ export async function serverResponse(req: Request) {
   addRouteParamsAndQuery(url, foundRoute)
   executeMiddleware(foundRoute)
 
-  return execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
+  return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
 
 function addRouteParamsAndQuery(url: URL, route: Route): void {
@@ -109,14 +109,14 @@ interface Options {
   statusCode?: StatusCode
 }
 
-function execute(route: Route, request: Request, { statusCode }: Options) {
+async function execute(route: Route, request: Request, { statusCode }: Options) {
   if (!statusCode) statusCode = 200
 
   if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
     const callback = String(route.callback)
     const response = Response.redirect(callback, statusCode)
 
-    return noCache(response)
+    return await noCache(response)
   }
 
   if (route?.method !== request.method)
@@ -127,26 +127,26 @@ function execute(route: Route, request: Request, { statusCode }: Options) {
     try {
       const fileContent = Bun.file(route.callback)
 
-      return new Response(fileContent, {
+      return await new Response(fileContent, {
         headers: { 'Content-Type': 'text/html' },
       })
     } catch (error) {
-      return new Response('Error reading the HTML file', { status: 500 })
+      return await new Response('Error reading the HTML file', { status: 500 })
     }
   }
 
-  if (isString(route.callback)) return new Response(route.callback)
+  if (isString(route.callback)) return await new Response(route.callback)
 
   if (isFunction(route.callback)) {
     const result = route.callback()
-    return new Response(JSON.stringify(result))
+    return await new Response(JSON.stringify(result))
   }
 
   if (isObject(route.callback))
-    return new Response(JSON.stringify(route.callback))
+    return await new Response(JSON.stringify(route.callback))
 
   // If no known type matched, return a generic error.
-  return new Response('Unknown callback type.', { status: 500 })
+  return await new Response('Unknown callback type.', { status: 500 })
 }
 
 function noCache(response: Response) {
