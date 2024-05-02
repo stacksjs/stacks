@@ -583,6 +583,21 @@ async function count(options: QueryOptions = {}) {
   return await query.execute()
 }
 
+async function recent(number: number, options: QueryOptions = {}) {
+  let query = db.selectFrom('users').orderBy('created_at', 'desc').limit(number);
+
+  // Apply sorting from options
+  if (options.sort)
+    query = query.orderBy(options.sort.column, options.sort.order)
+
+  // Apply pagination from options
+  if (options.limit !== undefined) query = query.limit(options.limit)
+
+  if (options.offset !== undefined) query = query.offset(options.offset)
+
+  return await query.execute()
+}
+
 export const User = {
   find,
   findMany,
@@ -598,6 +613,7 @@ export const User = {
   where,
   whereIn,
   count,
+  recent,
 }
 
 export default User

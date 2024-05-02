@@ -4,7 +4,7 @@ import 'uno.css'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import '../../../../../resources/assets/styles/main.css'
-import App from './App.stx'
+import App from './App.vue'
 import type { UserModule } from './types'
 
 // import Previewer from 'virtual:vue-component-preview'
