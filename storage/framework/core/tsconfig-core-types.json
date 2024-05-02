@@ -39,7 +39,14 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./*.stx", "./**/*.stx", "./*.ts", "./**/*.ts"],
+  "include": [
+    "./*.stx",
+    "./**/*.stx",
+    "./*.vue",
+    "./**/*.vue",
+    "./*.ts",
+    "./**/*.ts"
+  ],
   "exclude": [
     "./dist",
     "./**/dist",

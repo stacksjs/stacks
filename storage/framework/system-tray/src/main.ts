@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import 'uno.css'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
-import App from './App.stx'
+import App from './App.vue'
 import './styles/main.css'
 
 const pinia = createPinia()

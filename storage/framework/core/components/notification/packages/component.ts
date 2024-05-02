@@ -1,1 +1,1 @@
-export { default as Toaster } from './Toaster.stx'
+export { default as Toaster } from './Toaster.vue'

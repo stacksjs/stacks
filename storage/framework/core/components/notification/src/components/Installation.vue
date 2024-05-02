@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { notification } from '../../packages'
 import { useCopyCode } from '../composables/useCopyCode'
-import CheckIcon from './icons/CheckIcon.stx'
-import CopyIcon from './icons/CopyIcon.stx'
+import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
 
 const code = `bun install @stacksjs/notification`
 

@@ -2,8 +2,8 @@
 import { defineComponent, h, markRaw, ref } from 'vue'
 import { notification } from '../../packages'
 import { useCopyCode } from '../composables/useCopyCode'
-import CopyIcon from './icons/CopyIcon.stx'
-import CheckIcon from './icons/CheckIcon.stx'
+import CopyIcon from './icons/CopyIcon.vue'
+import CheckIcon from './icons/CheckIcon.vue'
 
 const promiseCode = '`${data.name} notification has been added`'
 

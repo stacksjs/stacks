@@ -7,7 +7,7 @@ const ignore = ['readme-md']
 
 const components = fs
   .readdirSync(resolve(__dirname, './resources/components'))
-  .map(item => kebabCase(item.replace(/.stx/g, '')))
+  .map(item => kebabCase(item.replace(/\.(stx|vue)/g, '')))
   .filter(item => !ignore.includes(item))
 
 const functions = fs

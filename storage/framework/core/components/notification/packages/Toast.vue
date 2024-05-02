@@ -2,7 +2,7 @@
 import './styles.css'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import type { HeightT, ToastProps, ToastT } from './types'
-import CloseIcon from './assets/CloseIcon.stx'
+import CloseIcon from './assets/CloseIcon.vue'
 import { useIsDocumentHidden } from './hooks'
 
 const props = defineProps<ToastProps>()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import BaseModal from '../BaseModal.stx'
-import AppButton from '../../Buttons/AppButton.stx'
+import AppButton from '../../Buttons/AppButton.vue'
+import BaseModal from '../BaseModal.vue'
 
 const {
   title,

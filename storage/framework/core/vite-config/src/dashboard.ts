@@ -74,7 +74,7 @@ export default defineConfig({
     }),
 
     router({
-      extensions: ['.stx', '.md'],
+      extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
       routesFolder: [p.resourcesPath('views/dashboard')],
       logs: config.app.debug || false,

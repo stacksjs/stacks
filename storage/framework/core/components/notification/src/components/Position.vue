@@ -4,8 +4,8 @@ import { computed, ref } from 'vue'
 import { notification } from '../../packages'
 import type { Position } from '../../packages/types'
 import { useCopyCode } from '../composables/useCopyCode'
-import CopyIcon from './icons/CopyIcon.stx'
-import CheckIcon from './icons/CheckIcon.stx'
+import CopyIcon from './icons/CopyIcon.vue'
+import CheckIcon from './icons/CheckIcon.vue'
 
 const props = defineProps({
   position: String as PropType<Position>,

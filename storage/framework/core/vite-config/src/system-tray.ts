@@ -68,7 +68,7 @@ export default defineConfig({
     }),
 
     router({
-      extensions: ['.stx', '.md'],
+      extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/system-tray-router.d.ts'),
       routesFolder: [p.resourcesPath('views/system-tray')],
       logs: config.app.debug || false,

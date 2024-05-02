@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue'
 import { notification } from '../../packages'
 import { useCopyCode } from '../composables/useCopyCode'
-import CopyIcon from './icons/CopyIcon.stx'
-import CheckIcon from './icons/CheckIcon.stx'
+import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
 
 const props = defineProps({
   expand: {
@@ -12,9 +12,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits<{
-  (e: 'update:expand', expand: boolean): void
-}>()
+const emit = defineEmits<(e: 'update:expand', expand: boolean) => void>()
 
 const renderedCode = computed(() => {
   return `<Notification :expand="${props.expand}" />`

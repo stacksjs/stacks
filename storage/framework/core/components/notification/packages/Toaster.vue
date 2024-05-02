@@ -8,12 +8,12 @@ import type {
   NotificationProps,
 } from './types'
 import { ToastState } from './state'
-import Toast from './Toast.stx'
-import LoaderIcon from './assets/Loader.stx'
-import SuccessIcon from './assets/SuccessIcon.stx'
-import InfoIcon from './assets/InfoIcon.stx'
-import WarningIcon from './assets/WarningIcon.stx'
-import ErrorIcon from './assets/ErrorIcon.stx'
+import Toast from './Toast.vue'
+import LoaderIcon from './assets/Loader.vue'
+import SuccessIcon from './assets/SuccessIcon.vue'
+import InfoIcon from './assets/InfoIcon.vue'
+import WarningIcon from './assets/WarningIcon.vue'
+import ErrorIcon from './assets/ErrorIcon.vue'
 
 defineOptions({
   name: 'Toaster',

@@ -1,5 +1,5 @@
 <!-- <script setup lang="ts">
-// console.log('TableBody.stx')
+// console.log('TableBody.vue')
 
 const { table, columnName } = await useTable(),
 
