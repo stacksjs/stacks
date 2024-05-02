@@ -505,6 +505,14 @@ async function findByEmail(email: string) {
     .executeTakeFirst()
 }
 
+async function findByName(name: string) {
+  return await db
+    .selectFrom('users')
+    .where('name', '=', name)
+    .selectAll()
+    .executeTakeFirst()
+}
+
 async function where(
   criteria: Partial<UserType>,
   options: QueryOptions = {},
@@ -545,6 +553,26 @@ async function where(
   if (options.offset !== undefined) query = query.offset(options.offset)
 
   return await query.selectAll().execute()
+}
+
+async function whereEmail(email: string) {
+  return db.selectFrom('users')
+    .where('email', '=', email)
+    .selectAll()
+    .execute()
+
+    // .executeTakeFirst()
+
+    // if (!user) return null
+
+    // return new UserModel(user)
+}
+
+async function whereName(name: string) {
+  return db.selectFrom('users')
+    .where('name', '=', name)
+    .selectAll()
+    .execute()
 }
 
 async function whereIn(
@@ -598,6 +626,8 @@ async function recent(number: number, options: QueryOptions = {}) {
   return await query.execute()
 }
 
+const model = Model
+
 export const User = {
   find,
   findMany,
@@ -607,10 +637,13 @@ export const User = {
   update,
   remove,
   findByEmail,
-  Model,
+  findByName,
+  model,
   first,
   last,
   where,
+  whereEmail,
+  whereName,
   whereIn,
   count,
   recent,
