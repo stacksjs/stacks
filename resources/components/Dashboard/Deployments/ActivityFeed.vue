@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const githubStore = useGitStore()
-const github = useGithub()
+const github = useGitHub()
 
 onMounted(async () => {
   await githubStore.fetchCommits()

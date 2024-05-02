@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const gitStore = useGitStore()
-const github = useGithub()
+const github = useGitHub()
 const route = useRoute()
 
 onMounted(async () => {

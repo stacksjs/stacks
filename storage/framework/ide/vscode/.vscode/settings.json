@@ -1,10 +1,33 @@
 {
+  // TODO: temp until biome can handle SFCs
+  "eslint.experimental.useFlatConfig": true,
+    // Silent the stylistic rules in you IDE, but still auto fix them
+  "eslint.rules.customizations": [
+    { "rule": "style/*", "severity": "off" },
+    { "rule": "format/*", "severity": "off" },
+    { "rule": "*-indent", "severity": "off" },
+    { "rule": "*-spacing", "severity": "off" },
+    { "rule": "*-spaces", "severity": "off" },
+    { "rule": "*-order", "severity": "off" },
+    { "rule": "*-dangle", "severity": "off" },
+    { "rule": "*-newline", "severity": "off" },
+    { "rule": "*quotes", "severity": "off" },
+    { "rule": "*semi", "severity": "off" },
+    { "rule": "no-undef", "severity": "off" }
+  ],
+
+  // Enable eslint for all supported languages
+  "eslint.validate": [
+    "vue"
+  ],
+
   // JavaScript
-  "prettier.enable": false,
+  "prettier.enable": false,   // Disable the default formatter, use eslint instead
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
     "quickfix.biome": "explicit",
+    "source.fixAll.eslint": "explicit",
     "source.organizeImports.biome": "explicit"
   },
 
