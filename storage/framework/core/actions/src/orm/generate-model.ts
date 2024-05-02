@@ -50,13 +50,41 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
   let actionString = `import { Action } from '@stacksjs/actions'\n`
    actionString += `import ${modelName} from '../${modelName}'\n\n`
 
+    let handleString = ``
+
+    if (apiRoute === 'index') {
+      handleString += `handle() {
+        return ${modelName}.all()
+      },`
+    }
+
+    if (apiRoute === 'show') {
+      handleString += `handle() {
+        return ${modelName}.find(1)
+      },`
+    }
+
+    if (apiRoute === 'delete') {
+      handleString += `handle() {
+        const model = ${modelName}.find(1)
+
+        model.delete()
+      },`
+    }
+
+    if (apiRoute === 'store') {
+      handleString += `handle(req) {
+        const model = ${modelName}.create(req)
+
+        return model
+      },`
+    }
+
     actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
       description: '${modelName} ${formattedApiRoute} Orm Action',
-    
-      handle() {
-        return ${modelName}.find(1)
-      },
+      
+      ${handleString}
     })
   `
 
@@ -76,19 +104,19 @@ async function writeApiRoutes(
   const modelName = model.default.name
 
   if (apiRoute === 'index')
-    routeString += `await route.get('${tableName}', () => 'Actions/${modelName}IndexOrmAction')\n\n`
+    routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
 
   if (apiRoute === 'store')
-    routeString += `await route.post('${tableName}', () => 'Actions/${modelName}StoreOrmAction')\n\n`
+    routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')\n\n`
 
   if (apiRoute === 'update')
-    routeString += `await route.patch('${tableName}/{id}', () => 'Actions/${modelName}UpdateOrmAction')\n\n`
+    routeString += `await route.patch('${tableName}/{id}', 'Actions/${modelName}UpdateOrmAction')\n\n`
 
   if (apiRoute === 'show')
-    routeString += `await route.get('${tableName}/{id}', () => 'Actions/${modelName}ShowOrmAction')\n\n`
+    routeString += `await route.get('${tableName}/{id}', 'Actions/${modelName}ShowOrmAction')\n\n`
 
   if (apiRoute === 'destroy')
-    routeString += `await route.delete('${tableName}/{id}', () => 'Actions/${modelName}DestroyOrmAction')\n\n`
+    routeString += `await route.delete('${tableName}/{id}', 'Actions/${modelName}DestroyOrmAction')\n\n`
 
   return routeString
 }
