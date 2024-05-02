@@ -22,6 +22,11 @@ export default antfu({
   // `.eslintignore` is no longer supported in Flat config, use `ignores` instead
   ignores: [
     '**/fixtures',
+    '**/test',
+    '**/tests',
+    '**/framework',
+    // '**/core/env/src/index.js',
+    '**/README.md',
     // ...globs
   ],
 })

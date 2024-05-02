@@ -7,13 +7,13 @@ const ignore = ['readme-md']
 
 const components = fs
   .readdirSync(resolve(__dirname, './resources/components'))
-  .map((item) => kebabCase(item.replace(/.stx/g, '')))
-  .filter((item) => !ignore.includes(item))
+  .map(item => kebabCase(item.replace(/.stx/g, '')))
+  .filter(item => !ignore.includes(item))
 
 const functions = fs
   .readdirSync(resolve(__dirname, './resources/functions'))
-  .map((item) => kebabCase(item.replace(/.ts/g, '')))
-  .filter((item) => !ignore.includes(item))
+  .map(item => kebabCase(item.replace(/.ts/g, '')))
+  .filter(item => !ignore.includes(item))
 
 const scopes = [...git.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]

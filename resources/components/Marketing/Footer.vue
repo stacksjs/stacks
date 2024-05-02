@@ -4,7 +4,7 @@ const currentYear = computed(() => new Date().getFullYear())
 
 <template>
   <footer class="bg-white">
-  <!-- <footer class="bg-slate-50"> -->
+    <!-- <footer class="bg-slate-50"> -->
     <Container>
       <div class="py-16">
         <!-- <Logo class="mx-auto h-10 w-auto" /> -->

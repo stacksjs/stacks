@@ -49,7 +49,7 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-              Avg. Queue Time
+                Avg. Queue Time
               </p>
             </dt>
 

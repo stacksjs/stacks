@@ -64,12 +64,12 @@ const defaultConfig = {
 exports.parseEvent = (data) => {
   // Validate characteristics of a SES event record.
   if (
-    !data.event ||
-    !data.event.hasOwn('Records') ||
-    data.event.Records.length !== 1 ||
-    !data.event.Records[0].hasOwn('eventSource') ||
-    data.event.Records[0].eventSource !== 'aws:ses' ||
-    data.event.Records[0].eventVersion !== '1.0'
+    !data.event
+    || !data.event.hasOwn('Records')
+    || data.event.Records.length !== 1
+    || !data.event.Records[0].hasOwn('eventSource')
+    || data.event.Records[0].eventSource !== 'aws:ses'
+    || data.event.Records[0].eventVersion !== '1.0'
   ) {
     data.log({
       message: 'parseEvent() received invalid SES message:',
@@ -104,33 +104,37 @@ exports.transformRecipients = (data) => {
         data.config.forwardMapping[origEmailKey],
       )
       data.originalRecipient = origEmail
-    } else {
+    }
+    else {
       let origEmailDomain
       let origEmailUser
       const pos = origEmailKey.lastIndexOf('@')
       if (pos === -1) {
         origEmailUser = origEmailKey
-      } else {
+      }
+      else {
         origEmailDomain = origEmailKey.slice(pos)
         origEmailUser = origEmailKey.slice(0, pos)
       }
       if (
-        origEmailDomain &&
-        data.config.forwardMapping.hasOwn(origEmailDomain)
+        origEmailDomain
+        && data.config.forwardMapping.hasOwn(origEmailDomain)
       ) {
         newRecipients = newRecipients.concat(
           data.config.forwardMapping[origEmailDomain],
         )
         data.originalRecipient = origEmail
-      } else if (
-        origEmailUser &&
-        data.config.forwardMapping.hasOwn(origEmailUser)
+      }
+      else if (
+        origEmailUser
+        && data.config.forwardMapping.hasOwn(origEmailUser)
       ) {
         newRecipients = newRecipients.concat(
           data.config.forwardMapping[origEmailUser],
         )
         data.originalRecipient = origEmail
-      } else if (data.config.forwardMapping.hasOwn('@')) {
+      }
+      else if (data.config.forwardMapping.hasOwn('@')) {
         newRecipients = newRecipients.concat(data.config.forwardMapping['@'])
         data.originalRecipient = origEmail
       }
@@ -239,12 +243,13 @@ exports.processMessage = (data) => {
         level: 'info',
         message: `Added Reply-To address of: ${from}`,
       })
-    } else {
+    }
+    else {
       data.log({
         level: 'info',
         message:
-          'Reply-To address not added because From address was not ' +
-          'properly extracted.',
+          'Reply-To address not added because From address was not '
+          + 'properly extracted.',
       })
     }
   }
@@ -260,7 +265,8 @@ exports.processMessage = (data) => {
         fromText = `From: ${from.replace(/<(.*)>/, '').trim()} <${
           data.config.fromEmail
         }>`
-      } else {
+      }
+      else {
         fromText = `From: ${from.replace('<', 'at ').replace('>', '')} <${
           data.originalRecipient
         }>`
@@ -277,11 +283,12 @@ exports.processMessage = (data) => {
   }
 
   // Replace original 'To' header with a manually defined one
-  if (data.config.toEmail)
+  if (data.config.toEmail) {
     header = header.replace(
       /^to:[\t ]?(.*)/gim,
       () => `To: ${data.config.toEmail}`,
     )
+  }
 
   // Remove the Return-Path header.
   header = header.replace(/^return-path:[\t ]?(.*)\r?\n/gim, '')

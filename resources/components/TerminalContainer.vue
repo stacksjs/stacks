@@ -2,7 +2,7 @@
 import { defineProps } from 'vue'
 
 const props = defineProps({
-  live: Boolean
+  live: Boolean,
 })
 </script>
 

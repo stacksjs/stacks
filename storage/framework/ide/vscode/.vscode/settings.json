@@ -10,7 +10,7 @@
 
   // TypeScript
   "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
-  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/unocss.config.ts",
+  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
 
   // JSON
   "[jsonc]": {

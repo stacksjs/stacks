@@ -52,7 +52,7 @@ useHead({
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-              Avg. Run Time
+                Avg. Run Time
               </p>
             </dt>
 

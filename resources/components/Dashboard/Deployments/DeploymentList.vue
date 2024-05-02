@@ -46,7 +46,7 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-              Avg. Deploy Time
+                Avg. Deploy Time
               </p>
             </dt>
 
@@ -184,7 +184,7 @@
                       </div>
                     </td>
 
-                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
                     </td>
 
