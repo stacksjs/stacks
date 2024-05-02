@@ -95,7 +95,7 @@ const plans = [
           ]"
         >
           <h3 class="mt-5 font-display text-lg text-white">
-            {{ plans[0].name }}
+            {{ plans?.[0]?.name }}
           </h3>
           <p
             class="mt-2 text-base"
@@ -103,10 +103,10 @@ const plans = [
               false ? 'text-white' : 'text-slate-400',
             ]"
           >
-            {{ plans[0].description }}
+            {{ plans?.[0]?.description }}
           </p>
           <p class="order-first font-display text-5xl font-light tracking-tight text-white">
-            {{ plans[0].price }}
+            {{ plans?.[0]?.price }}
           </p>
           <ul
             role="list"
@@ -116,11 +116,11 @@ const plans = [
             ]"
           />
           <Button
-            :href="plans[0].href"
+            :href="plans?.[0]?.href"
             :variant="false ? 'solid' : 'outline'"
             color="white"
             class="mt-8"
-            :aria-label="`Get started with the ${plans[0].name} plan for ${plans[0].price}`"
+            :aria-label="`Get started with the ${plans?.[0]?.name} plan for ${plans?.[0]?.price}`"
           >
             Get started
           </Button>
@@ -133,7 +133,7 @@ const plans = [
           ]"
         >
           <h3 class="mt-5 font-display text-lg text-white">
-            {{ plans[1].name }}
+            {{ plans?.[1]?.name }}
           </h3>
           <p
             class="mt-2 text-base"
@@ -141,10 +141,10 @@ const plans = [
               true ? 'text-white' : 'text-slate-400',
             ]"
           >
-            {{ plans[1].description }}
+            {{ plans?.[1]?.description }}
           </p>
           <p class="order-first font-display text-5xl font-light tracking-tight text-white">
-            {{ plans[1].price }}
+            {{ plans?.[1]?.price }}
           </p>
           <ul
             role="list"
@@ -154,11 +154,11 @@ const plans = [
             ]"
           />
           <Button
-            :href="plans[1].href"
+            :href="plans?.[1]?.href"
             :variant="true ? 'solid' : 'outline'"
             color="white"
             class="mt-8"
-            :aria-label="`Get started with the ${plans[1].name} plan for ${plans[1].price}`"
+            :aria-label="`Get started with the ${plans?.[1]?.name} plan for ${plans?.[1]?.price}`"
           >
             Get started
           </Button>
@@ -171,7 +171,7 @@ const plans = [
           ]"
         >
           <h3 class="mt-5 font-display text-lg text-white">
-            {{ plans[2].name }}
+            {{ plans?.[2]?.name }}
           </h3>
           <p
             class="mt-2 text-base"
@@ -179,10 +179,10 @@ const plans = [
               false ? 'text-white' : 'text-slate-400',
             ]"
           >
-            {{ plans[2].description }}
+            {{ plans?.[2]?.description }}
           </p>
           <p class="order-first font-display text-5xl font-light tracking-tight text-white">
-            {{ plans[2].price }}
+            {{ plans?.[2]?.price }}
           </p>
           <ul
             role="list"
@@ -192,11 +192,11 @@ const plans = [
             ]"
           />
           <Button
-            :href="plans[2].href"
+            :href="plans?.[2]?.href"
             :variant="false ? 'solid' : 'outline'"
             color="white"
             class="mt-8"
-            :aria-label="`Get started with the ${plans[2].name} plan for ${plans[2].price}`"
+            :aria-label="`Get started with the ${plans?.[2]?.name} plan for ${plans?.[2]?.price}`"
           >
             Get started
           </Button>

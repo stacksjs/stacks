@@ -33,9 +33,9 @@ function onMediaQueryChange(event) {
   tabOrientation.value = event.matches ? 'vertical' : 'horizontal'
 }
 
-onMounted(() => {
-  const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
+const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
 
+onMounted(() => {
   onMediaQueryChange(lgMediaQuery)
   lgMediaQuery.addEventListener('change', onMediaQueryChange)
 })
@@ -78,7 +78,7 @@ onUnmounted(() => {
             <h3>
               <span class="font-display text-lg ui-not-focus-visible:outline-none">
                 <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
-                {{ features[0].title }}
+                {{ features?.[0]?.title }}
               </span>
             </h3>
             <p
@@ -87,7 +87,7 @@ onUnmounted(() => {
                 ? 'text-white'
                 : 'text-blue-100 group-hover:text-white'"
             >
-              {{ features[0].description }}
+              {{ features?.[0]?.description }}
             </p>
           </Tab>
 
@@ -95,11 +95,11 @@ onUnmounted(() => {
             <h3>
               <span class="font-display text-lg ui-not-focus-visible:outline-none">
                 <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
-                {{ features[1].title }}
+                {{ features?.[1]?.title }}
               </span>
             </h3>
             <p class="mt-2 hidden text-sm lg:block">
-              {{ features[1].description }}
+              {{ features?.[1]?.description }}
             </p>
           </Tab>
 
@@ -107,11 +107,11 @@ onUnmounted(() => {
             <h3>
               <span class="font-display text-lg ui-not-focus-visible:outline-none">
                 <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
-                {{ features[2].title }}
+                {{ features?.[2]?.title }}
               </span>
             </h3>
             <p class="mt-2 hidden text-sm lg:block">
-              {{ features[2].description }}
+              {{ features?.[2]?.description }}
             </p>
           </Tab>
 
@@ -119,11 +119,11 @@ onUnmounted(() => {
             <h3>
               <span class="font-display text-lg ui-not-focus-visible:outline-none">
                 <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
-                {{ features[3].title }}
+                {{ features?.[3]?.title }}
               </span>
             </h3>
             <p class="mt-2 hidden text-sm lg:block">
-              {{ features[3].description }}
+              {{ features?.[3]?.description }}
             </p>
           </Tab>
         </TabList>
@@ -133,7 +133,7 @@ onUnmounted(() => {
             <div class="relative sm:px-6 lg:hidden">
               <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                {{ features[0].description }}
+                {{ features?.[0]?.description }}
               </p>
             </div>
             <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
@@ -145,11 +145,11 @@ onUnmounted(() => {
             <div class="relative sm:px-6 lg:hidden">
               <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                {{ features[1].description }}
+                {{ features?.[1]?.description }}
               </p>
             </div>
             <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-              <img :src="features[1].image" alt="" class="w-full">
+              <img :src="features?.[1]?.image" alt="" class="w-full">
             </div>
           </TabPanel>
 
@@ -157,11 +157,11 @@ onUnmounted(() => {
             <div class="relative sm:px-6 lg:hidden">
               <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                {{ features[2].description }}
+                {{ features?.[2]?.description }}
               </p>
             </div>
             <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-              <img :src="features[2].image" alt="" class="w-full">
+              <img :src="features?.[2]?.image" alt="" class="w-full">
             </div>
           </TabPanel>
 
@@ -169,11 +169,11 @@ onUnmounted(() => {
             <div class="relative sm:px-6 lg:hidden">
               <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                {{ features[3].description }}
+                {{ features?.[3]?.description }}
               </p>
             </div>
             <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-              <img :src="features[3].image" alt="" class="w-full">
+              <img :src="features?.[3]?.image" alt="" class="w-full">
             </div>
           </TabPanel>
         </TabPanels>

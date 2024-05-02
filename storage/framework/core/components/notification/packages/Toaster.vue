@@ -1,24 +1,36 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue'
+import Toast from './Toast.vue'
+import ErrorIcon from './assets/ErrorIcon.vue'
+import InfoIcon from './assets/InfoIcon.vue'
+import LoaderIcon from './assets/Loader.vue'
+import SuccessIcon from './assets/SuccessIcon.vue'
+import WarningIcon from './assets/WarningIcon.vue'
+import { ToastState } from './state'
 import type {
   HeightT,
+  NotificationProps,
   Position,
   ToastT,
   ToastToDismiss,
-  NotificationProps,
 } from './types'
-import { ToastState } from './state'
-import Toast from './Toast.vue'
-import LoaderIcon from './assets/Loader.vue'
-import SuccessIcon from './assets/SuccessIcon.vue'
-import InfoIcon from './assets/InfoIcon.vue'
-import WarningIcon from './assets/WarningIcon.vue'
-import ErrorIcon from './assets/ErrorIcon.vue'
 
 defineOptions({
   name: 'Toaster',
   inheritAttrs: false,
 })
+
+const VISIBLE_TOASTS_AMOUNT = 3
+
+// Viewport padding
+const VIEWPORT_OFFSET = '32px'
+// Default lifetime of a toasts (in ms)
+const TOAST_LIFETIME = 4000
+// Default toast width
+const TOAST_WIDTH = 356
+// Default gap between toasts
+const GAP = 14
+const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
 
 const props = withDefaults(defineProps<NotificationProps>(), {
   invert: false,
@@ -39,22 +51,6 @@ const props = withDefaults(defineProps<NotificationProps>(), {
   containerAriaLabel: 'Notifications',
   pauseWhenPageIsHidden: false,
 })
-
-const VISIBLE_TOASTS_AMOUNT = 3
-
-// Viewport padding
-const VIEWPORT_OFFSET = '32px'
-
-// Default lifetime of a toasts (in ms)
-const TOAST_LIFETIME = 4000
-
-// Default toast width
-const TOAST_WIDTH = 356
-
-// Default gap between toasts
-const GAP = 14
-
-const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
 
 function _cn(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ')
@@ -93,8 +89,7 @@ const actualTheme = ref(
   props.theme !== 'system'
     ? props.theme
     : typeof window !== 'undefined'
-      ? window.matchMedia
-      && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? window?.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light'
       : 'light',

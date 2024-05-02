@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { isString } from '@stacksjs/utils'
 import type { Hits, SearchResponse } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 import { useTable } from '../functions/table'
 
 interface Props {
@@ -50,28 +50,30 @@ const {
 
 const parsedColumns = computed((): string[] => {
   if (isString(columns))
-    return columns.split(',').map(col => col.trim())
+    return (columns as string).split(',').map(col => col.trim())
 
-  return columns
+  return columns as string[]
 })
 
 const parsedSorts = computed((): string[] => {
   if (isString(sorts))
-    return sorts.split(',').map(col => col.trim())
+    return (sorts as string).split(',').map(col => col.trim())
 
-  return sorts
+  return sorts as string[]
 })
+
 const parsedFilters = computed((): string[] => {
   if (isString(filters))
-    return filters.split(',').map(col => col.trim())
+    return (filters as string).split(',').map(col => col.trim())
 
-  return filters
+  return filters as string[]
 })
+
 const itemsPerPage = computed((): number => {
   if (isString(perPage))
-    return Number.parseInt(perPage)
+    return Number.parseInt(perPage as string)
 
-  return perPage
+  return perPage as number
 })
 
 // let's use (init) the table by passing the default state
