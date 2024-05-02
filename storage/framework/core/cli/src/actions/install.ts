@@ -21,8 +21,9 @@ interface InstallPackageOptions {
 export async function installPackage(
   name: string,
   options?: InstallPackageOptions,
-): Promise<ExecaReturnValue<string>> {
-  if (options) return await installPkg(name, options)
+) {
+  if (options)
+    return await installPkg(name, options)
 
   return await installPkg(name, { silent: true })
 }

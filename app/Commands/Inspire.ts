@@ -19,7 +19,6 @@ export default function (cli: CLI) {
     .alias('insp')
     .action((options: InspireOptions) => {
       if (options.two)
-        // @ts-expect-error - this is safe because we hard-coded the quotes
         quotes
           .random(2)
           .map((quote, index) => log.info(`${index + 1}. ${quote}`))

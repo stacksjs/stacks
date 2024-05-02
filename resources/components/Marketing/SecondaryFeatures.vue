@@ -62,72 +62,72 @@ const selectedIndex = computed(() => tabIndex.value)
           <div class="relative">
             <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': 0 === selectedIndex, 'bg-slate-500': 0 !== selectedIndex }">
               <svg aria-hidden="true" class="h-9 w-9" fill="none">
-                {{ features[0].icon }}
+                {{ features?.[0]?.icon }}
               </svg>
             </div>
             <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 0 === selectedIndex, 'text-slate-600': 0 !== selectedIndex }">
-              <Tab>{{ features[0].name }}</Tab>
+              <Tab>{{ features?.[0]?.name }}</Tab>
             </h3>
             <p class="mt-2 font-display text-xl text-slate-900">
-              {{ features[0].summary }}
+              {{ features?.[0]?.summary }}
             </p>
             <p class="mt-4 text-sm text-slate-600">
-              {{ features[0].description }}
+              {{ features?.[0]?.description }}
             </p>
           </div>
 
           <div class="relative">
             <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': 1 === selectedIndex, 'bg-slate-500': 1 !== selectedIndex }">
               <svg aria-hidden="true" class="h-9 w-9" fill="none">
-                {{ features[1].icon }}
+                {{ features?.[1]?.icon }}
               </svg>
             </div>
             <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 1 === selectedIndex, 'text-slate-600': 1 !== selectedIndex }">
-              <Tab>{{ features[1].name }}</Tab>
+              <Tab>{{ features?.[1]?.name }}</Tab>
             </h3>
             <p class="mt-2 font-display text-xl text-slate-900">
-              {{ features[1].summary }}
+              {{ features?.[1]?.summary }}
             </p>
             <p class="mt-4 text-sm text-slate-600">
-              {{ features[1].description }}
+              {{ features?.[1]?.description }}
             </p>
           </div>
 
           <div class="relative">
             <div class="w-9 rounded-lg" :class="{ 'bg-blue-600': 2 === selectedIndex, 'bg-slate-500': 2 !== selectedIndex }">
               <svg aria-hidden="true" class="h-9 w-9" fill="none">
-                {{ features[2].icon }}
+                {{ features?.[2]?.icon }}
               </svg>
             </div>
             <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 2 === selectedIndex, 'text-slate-600': 2 !== selectedIndex }">
-              <Tab>{{ features[2].name }}</Tab>
+              <Tab>{{ features?.[2]?.name }}</Tab>
             </h3>
             <p class="mt-2 font-display text-xl text-slate-900">
-              {{ features[2].summary }}
+              {{ features?.[2]?.summary }}
             </p>
             <p class="mt-4 text-sm text-slate-600">
-              {{ features[2].description }}
+              {{ features?.[2]?.description }}
             </p>
           </div>
         </TabList>
 
         <TabPanels class="relative mt-20 overflow-hidden rounded-4xl bg-slate-200 px-14 py-16 xl:px-16">
           <div class="-mx-5 flex">
-            <TabPanel :key="features[0].summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 0 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="0 !== selectedIndex">
+            <TabPanel :key="features?.[0]?.summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 0 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="0 !== selectedIndex">
               <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
-                <img class="w-full" :src="features[0].image" alt="" sizes="52.75rem">
+                <img class="w-full" :src="features?.[0]?.image" alt="" sizes="52.75rem">
               </div>
             </TabPanel>
 
-            <TabPanel :key="features[1].summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 1 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="1 !== selectedIndex">
+            <TabPanel :key="features?.[1]?.summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 1 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="1 !== selectedIndex">
               <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
-                <img class="w-full" :src="features[1].image" alt="" sizes="52.75rem">
+                <img class="w-full" :src="features?.[1]?.image" alt="" sizes="52.75rem">
               </div>
             </TabPanel>
 
-            <TabPanel :key="features[2].summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 2 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="2 !== selectedIndex">
+            <TabPanel :key="features?.[2]?.summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 2 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="2 !== selectedIndex">
               <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
-                <img class="w-full" :src="features[2].image" alt="" sizes="52.75rem">
+                <img class="w-full" :src="features?.[2]?.image" alt="" sizes="52.75rem">
               </div>
             </TabPanel>
           </div>
