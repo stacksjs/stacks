@@ -64,17 +64,19 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
       },`
     }
 
-    if (apiRoute === 'delete') {
+    if (apiRoute === 'destroy') {
       handleString += `handle() {
         const model = ${modelName}.find(1)
 
         model.delete()
+
+        return 'Model deleted!'
       },`
     }
 
     if (apiRoute === 'store') {
-      handleString += `handle(req) {
-        const model = ${modelName}.create(req)
+      handleString += `handle() {
+        const model = ${modelName}.create({})
 
         return model
       },`
