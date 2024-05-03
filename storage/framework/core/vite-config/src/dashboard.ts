@@ -68,7 +68,7 @@ export default defineConfig({
     VueMacros({
       plugins: {
         vue: Vue({
-          include: /\.(stx|md)($|\?)/,
+          include: /\.(stx|vue|md)($|\?)/,
         }),
       },
     }),
