@@ -98,7 +98,11 @@
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Name
+                      Email
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      User
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -106,7 +110,7 @@
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
-                      Updated At
+                      Unsubscribed At
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
@@ -126,27 +130,51 @@
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 w-10 h-10">
-                          <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
-                            alt=""
-                            class="w-10 h-10 rounded-full"
-                          >
-                        </div>
-                        <div class="ml-4">
-                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Chris Breuer
-                          </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
-                            chris@stacksjs.org
-                          </div>
-                        </div>
+                      <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                        chris@stacksjs.org
                       </div>
                     </td>
 
+                    <!-- could be empty if no relationship exists -->
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Subscribed
+                      Chris Breuer
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Subscribed</span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      <!-- 2024/01/22 11:00am -->
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      2024/01/02
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Subscriber</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap pl-4 pr-3 py-4 text-sm font-medium text-gray-900 sm:pl-6">
+                      2
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                        buddy@stacksjs.org
+                      </div>
+                    </td>
+
+                    <!-- could be empty if no relationship exists -->
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <!-- Chris Breuer -->
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Unsubscribed</span>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
