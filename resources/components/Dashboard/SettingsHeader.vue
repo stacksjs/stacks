@@ -64,6 +64,12 @@
           </RouterLink>
         </li>
         <li>
+          <!-- ./lang/* -->
+          <RouterLink to="/settings/languages">
+            Languages
+          </RouterLink>
+        </li>
+        <li>
           <RouterLink to="/settings/library">
             Library
           </RouterLink>
