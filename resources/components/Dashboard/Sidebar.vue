@@ -35,8 +35,12 @@
             </li>
 
             <li>
-              <div class="text-xs font-semibold leading-6 text-gray-400">
-                Management
+              <div class="flex justify-between items-center">
+                <div class="text-xs font-semibold leading-6 text-gray-400">
+                  Management
+                </div>
+
+                <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               </div>
 
               <ul
@@ -90,8 +94,12 @@
             </li>
 
             <li>
-              <div class="text-xs font-semibold leading-6 text-gray-400">
-                App
+              <div class="flex justify-between items-center">
+                <div class="text-xs font-semibold leading-6 text-gray-400">
+                  App
+                </div>
+
+                <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               </div>
 
               <ul
@@ -103,7 +111,7 @@
                     to="/deployments"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-rocket-launch text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Deployments
                   </RouterLink>
                 </li>
@@ -123,7 +131,7 @@
                     to="/actions"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-rocket-launch text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Actions
                   </RouterLink>
                 </li>
@@ -161,9 +169,14 @@
             </li>
 
             <li>
-              <div class="text-xs font-semibold leading-6 text-gray-400">
-                Your App
+              <div class="flex justify-between items-center">
+                <div class="text-xs font-semibold leading-6 text-gray-400">
+                  Models
+                </div>
+
+                <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               </div>
+
               <ul
                 role="list"
                 class="-mx-2 mt-2 space-y-1"
