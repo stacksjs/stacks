@@ -340,6 +340,14 @@ const showModal = ref(false)
       >
         Close
       </button>
+
+      <button
+        type="button"
+        class="secondary-button mr-4"
+        @click="showModal = false"
+      >
+        View Logs
+      </button>
     </template>
   </BaseModal>
 </template>
