@@ -49,7 +49,7 @@
               >
                 <li>
                   <RouterLink
-                    to="/deployments"
+                    to="/functions"
                     class="sidebar-links group"
                   >
                     <div class="i-heroicons-code-bracket text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
@@ -59,7 +59,7 @@
 
                 <li>
                   <RouterLink
-                    to="/requests"
+                    to="/components"
                     class="sidebar-links group"
                   >
                     <div class="i-heroicons-puzzle-piece text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
@@ -228,7 +228,7 @@
 
                 <li>
                   <RouterLink
-                    to="/library"
+                    to="/releases"
                     class="sidebar-links group"
                   >
                     <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
