@@ -280,33 +280,53 @@ const showModal = ref(false)
             id="modal-title"
             class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
           >
-            Dummy Modal
+            Deployment Information
           </h3>
 
           <div class="mt-2">
-            <p
-              id="subtitle"
-              class="mb-2 text-xs text-green-800 dark:text-green-600"
-            >
-              baseUrl
-            </p>
-
-            <a
-              id="title"
-              target="_new"
-              href="#"
-              class="text-lg text-blue-800 dark:text-blue-400"
-            >
-
-              test title
-            </a>
-
-            <p
-              id="title"
-              class="mt-2 text-sm text-gray-800 dark:text-gray-200"
-            >
-              test desc
-            </p>
+            <div>
+              <div class="px-4 sm:px-0">
+                <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">
+                  In 123 seconds at 12:00 PM on 10/10/2023.
+                </p>
+              </div>
+              <div class="mt-6">
+                <dl class="grid grid-cols-1 sm:grid-cols-2">
+                  <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                      Deployment URL
+                    </dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
+                      https://my-app.org
+                    </dd>
+                  </div>
+                  <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                      Branch
+                    </dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 font-mono">
+                      main
+                    </dd>
+                  </div>
+                  <div class="border-t border-gray-100 py-6 sm:col-span-1">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                      Commit
+                    </dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
+                      fix: auth issues for third-party integration
+                    </dd>
+                  </div>
+                  <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                      Deployed By
+                    </dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
+                      Chris
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
           </div>
         </div>
       </div>

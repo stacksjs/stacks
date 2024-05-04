@@ -103,7 +103,7 @@
                   >
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div class="i-heroicons-document-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">Domains</span>
+                    <span class="truncate">DNS</span>
                   </RouterLink>
                 </li>
 
