@@ -73,6 +73,6 @@
   ],
   "devDependencies": {
     "@antfu/eslint-config": "^2.16.1",
-    "eslint": "^9.1.1"
+    "eslint": "^9.2.0"
   }
 }
