@@ -218,16 +218,6 @@
 
                 <li>
                   <RouterLink
-                    to="/library"
-                    class="sidebar-links"
-                  >
-                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">Library</span>
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <RouterLink
                     to="/logs"
                     class="sidebar-links group"
                   >
@@ -238,7 +228,7 @@
 
                 <li>
                   <RouterLink
-                    to="/actions"
+                    to="/library"
                     class="sidebar-links group"
                   >
                     <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
