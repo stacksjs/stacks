@@ -37,7 +37,7 @@
             <li>
               <div class="flex justify-between items-center">
                 <div class="text-xs font-semibold leading-6 text-gray-400">
-                  Management
+                  Library
                 </div>
 
                 <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
@@ -48,46 +48,22 @@
                 class="-mx-2 mt-2 space-y-1"
               >
                 <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                   <RouterLink
-                    to="/dns"
-                    class="sidebar-links"
-                  >
-                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
-                    <div class="i-heroicons-document-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">DNS</span>
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-                  <RouterLink
-                    to="/emails"
-                    class="sidebar-links"
-                  >
-                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
-                    <div class="i-heroicons-at-symbol text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">Emails</span>
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <RouterLink
-                    to="/library"
-                    class="sidebar-links"
-                  >
-                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">Library</span>
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <RouterLink
-                    to="/logs"
+                    to="/deployments"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-document-text text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Logs
+                    <div class="i-heroicons-code-bracket text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Functions
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/requests"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-puzzle-piece text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Components
                   </RouterLink>
                 </li>
               </ul>
@@ -202,6 +178,76 @@
                 </li>
               </ul>
             </li>
+
+            <li>
+              <div class="flex justify-between items-center">
+                <div class="text-xs font-semibold leading-6 text-gray-400">
+                  Management
+                </div>
+
+                <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              </div>
+
+              <ul
+                role="list"
+                class="-mx-2 mt-2 space-y-1"
+              >
+                <li>
+                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
+                  <RouterLink
+                    to="/dns"
+                    class="sidebar-links"
+                  >
+                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
+                    <div class="i-heroicons-document-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <span class="truncate">DNS</span>
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
+                  <RouterLink
+                    to="/emails"
+                    class="sidebar-links"
+                  >
+                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
+                    <div class="i-heroicons-at-symbol text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <span class="truncate">Emails</span>
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/library"
+                    class="sidebar-links"
+                  >
+                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <span class="truncate">Library</span>
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/logs"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-document-text text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Logs
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/actions"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Releases
+                  </RouterLink>
+                </li>
+              </ul>
+            </li>
+
             <li class="mt-auto flex items-center justify-between space-x-4">
               <div class="flex items-center">
                 <RouterLink

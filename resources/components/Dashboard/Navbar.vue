@@ -45,7 +45,7 @@ watch(theme, (currentVal) => {
           type="button"
           class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
         >
-          <span class="sr-only">View Health Page</span>
+          <span class="sr-only">View Errors</span>
           <RouterLink to="/health">
             <div class="i-heroicons-exclamation-triangle w-6 h-6 transition duration-150 ease-in-out" />
           </RouterLink>
