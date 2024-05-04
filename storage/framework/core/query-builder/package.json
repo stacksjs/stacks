@@ -50,6 +50,6 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@types/pg": "^8.11.5"
+    "@types/pg": "^8.11.6"
   }
 }
