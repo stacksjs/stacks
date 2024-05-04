@@ -2,15 +2,17 @@ import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import {
-  autoImports,
   components,
   cssEngine,
   i18n,
   layouts,
-  router,
 } from '@stacksjs/vite-plugin'
+import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
+import { VueRouterAutoImports } from 'unplugin-vue-router'
+import VueRouter from 'unplugin-vue-router/vite'
 import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
@@ -73,7 +75,7 @@ export default defineConfig({
       },
     }),
 
-    router({
+    VueRouter({
       extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
       routesFolder: [p.resourcesPath('views/dashboard')],
@@ -81,11 +83,47 @@ export default defineConfig({
     }),
 
     layouts({
-      extensions: ['stx'],
+      extensions: ['vue', 'stx'],
       layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
     }),
 
-    autoImports(),
+    // autoImports(),
+    AutoImport({
+      include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
+      imports: [
+        'pinia',
+        'vue',
+        'vue-i18n',
+        // '@vueuse/core',
+        // 'vitepress'
+        // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
+        // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
+        // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
+        VueHeadImports,
+        VueRouterAutoImports,
+        {
+          'vue-router/auto': ['useLink'],
+        },
+      ],
+
+      dts: p.frameworkPath('types/auto-imports.d.ts'),
+
+      dirs: [
+        p.resourcesPath('components'),
+        p.resourcesPath('functions'),
+        p.resourcesPath('stores'),
+        p.corePath(),
+      ],
+
+      vueTemplate: true,
+
+      // eslintrc: {
+      //   enabled: true,
+      //   filepath: '../../.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
+      //   globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
+      // },
+    }),
+
     components(),
     cssEngine(),
     // markdown(),
