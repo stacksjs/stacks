@@ -17,10 +17,6 @@
             class="flex flex-1 flex-col gap-y-8"
           >
             <li>
-              <div class="text-xs font-semibold leading-6 text-gray-400 pt-4">
-                Navigation
-              </div>
-
               <ul
                 role="list"
                 class="-mx-2 mt-2 space-y-1"
@@ -35,54 +31,6 @@
                     Dashboard
                   </RouterLink>
                 </li>
-                <li>
-                  <RouterLink
-                    to="/deployments"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Deployments
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink
-                    to="/commands"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Commands
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <RouterLink
-                    to="/queue"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Queue
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <RouterLink
-                    to="/notifications"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-envelope text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Notifications
-                  </RouterLink>
-                </li>
-
-                <!-- <li>
-                  <RouterLink
-                    to="/queue"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-archive-box text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Storage
-                  </RouterLink>
-                </li> -->
               </ul>
             </li>
 
@@ -129,25 +77,86 @@
                   </RouterLink>
                 </li>
 
-                <!-- <li>
+                <li>
                   <RouterLink
-                    to="/settings/billing"
-                    class="sidebar-links"
+                    to="/logs"
+                    class="sidebar-links group"
                   >
-                    <div class="i-heroicons-cog-6-tooth text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">Config</span>
+                    <div class="i-heroicons-document-text text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Logs
+                  </RouterLink>
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <div class="text-xs font-semibold leading-6 text-gray-400">
+                App
+              </div>
+
+              <ul
+                role="list"
+                class="-mx-2 mt-2 space-y-1"
+              >
+                <li>
+                  <RouterLink
+                    to="/deployments"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Deployments
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink
-                    to="/environment"
-                    class="sidebar-links"
+                    to="/requests"
+                    class="sidebar-links group"
                   >
-                    <div class="i-heroicons-lock-closed text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    <span class="truncate">Secrets</span>
+                    <div class="i-heroicons-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Requests
                   </RouterLink>
-                </li> -->
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/actions"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-rocket-launch text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Actions
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/commands"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Commands
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/jobs"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Jobs
+                  </RouterLink>
+                </li>
+
+                <li>
+                  <RouterLink
+                    to="/notifications"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-envelope text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Notifications
+                  </RouterLink>
+                </li>
               </ul>
             </li>
 

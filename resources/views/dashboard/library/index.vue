@@ -186,7 +186,7 @@ useHead({
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Component A</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Component A, in IDE</span></a>
                     </td>
                   </tr>
                 </tbody>
@@ -234,15 +234,15 @@ useHead({
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
-                      Created At
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
                       Updated At
                     </th>
 
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
+                      Created At
+                    </th>
+
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span class="sr-only">Edit</span>
+                      <span class="sr-only">Open</span>
                     </th>
                   </tr>
                 </thead>
@@ -262,15 +262,15 @@ useHead({
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                      01-03-2023 08:23:15
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
                       04-19-2022 09:04:20
                     </td>
 
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      01-03-2023 08:23:15
+                    </td>
+
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Component A</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Component A, in IDE</span></a>
                     </td>
                   </tr>
                 </tbody>
