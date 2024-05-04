@@ -19,6 +19,7 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
+    '/actions/': RouteRecordInfo<'/actions/', '/actions', Record<never, never>, Record<never, never>>,
     '/buddy/': RouteRecordInfo<'/buddy/', '/buddy', Record<never, never>, Record<never, never>>,
     '/commands/': RouteRecordInfo<'/commands/', '/commands', Record<never, never>, Record<never, never>>,
     '/dependencies/': RouteRecordInfo<'/dependencies/', '/dependencies', Record<never, never>, Record<never, never>>,
@@ -30,10 +31,12 @@ declare module 'vue-router/auto-routes' {
     '/health/': RouteRecordInfo<'/health/', '/health', Record<never, never>, Record<never, never>>,
     '/jobs/': RouteRecordInfo<'/jobs/', '/jobs', Record<never, never>, Record<never, never>>,
     '/library/': RouteRecordInfo<'/library/', '/library', Record<never, never>, Record<never, never>>,
+    '/logs/': RouteRecordInfo<'/logs/', '/logs', Record<never, never>, Record<never, never>>,
     '/models/': RouteRecordInfo<'/models/', '/models', Record<never, never>, Record<never, never>>,
     '/models/subscribers': RouteRecordInfo<'/models/subscribers', '/models/subscribers', Record<never, never>, Record<never, never>>,
     '/models/users': RouteRecordInfo<'/models/users', '/models/users', Record<never, never>, Record<never, never>>,
     '/notifications/': RouteRecordInfo<'/notifications/', '/notifications', Record<never, never>, Record<never, never>>,
+    '/requests/': RouteRecordInfo<'/requests/', '/requests', Record<never, never>, Record<never, never>>,
     '/settings/billing': RouteRecordInfo<'/settings/billing', '/settings/billing', Record<never, never>, Record<never, never>>,
     '/settings/cache': RouteRecordInfo<'/settings/cache', '/settings/cache', Record<never, never>, Record<never, never>>,
     '/settings/database': RouteRecordInfo<'/settings/database', '/settings/database', Record<never, never>, Record<never, never>>,
