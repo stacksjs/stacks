@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const deployScript = ref('')
+const showModal = ref(false)
 </script>
 
 <template>
@@ -233,7 +234,7 @@ const deployScript = ref('')
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Deployment</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900" @click="showModal = true">View<span class="sr-only">, Deployment</span></a>
                     </td>
                   </tr>
                 </tbody>
@@ -245,12 +246,13 @@ const deployScript = ref('')
     </div>
   </div>
 
-  <BaseModal v-if="false">
+  <BaseModal v-if="showModal">
     <template #modal-body>
       <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
         <button
           type="button"
           class="text-gray-400 rounded-md dark:text-gray-200 dark-hover:text-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          @click="showModal = false"
         >
           <span class="sr-only">Close</span>
           <!-- Heroicon name: outline/x-mark -->
@@ -278,8 +280,9 @@ const deployScript = ref('')
             id="modal-title"
             class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
           >
-            Search Engine Instance
+            Dummy Modal
           </h3>
+
           <div class="mt-2">
             <p
               id="subtitle"
@@ -313,6 +316,7 @@ const deployScript = ref('')
       <button
         type="button"
         class="secondary-button"
+        @click="showModal = false"
       >
         Close
       </button>
