@@ -168,7 +168,7 @@
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                      05/04/2024 11:02:34:123 AM UTC <em>(2 mins ago)</em>
+                      05/04/2024 11:02:34:123 AM UTC <em class="text-gray-400">(2 mins ago)</em>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
