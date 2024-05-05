@@ -35,6 +35,16 @@ const nav = [
 const sidebar = {
   '/guide/': [
     {
+      text: 'Prologue',
+      collapsible: true,
+      items: [
+        { text: 'Release Notes', link: '/release-notes' },
+        { text: 'Upgrade Guide', link: '/upgrade-guide' },
+        { text: 'Contribution Guide', link: '/contribution-guide' },
+      ],
+    },
+
+    {
       text: 'Getting Started',
       collapsible: true,
       items: [
