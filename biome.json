@@ -43,7 +43,8 @@
       "recommended": true,
       "style": {
         "noParameterAssign": "off",
-        "noUnusedTemplateLiteral": "off"
+        "noUnusedTemplateLiteral": "off",
+        "useBlockStatements": "off"
       },
       "complexity": {
         "noForEach": "off",
