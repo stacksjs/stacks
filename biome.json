@@ -67,7 +67,8 @@
       "storage/framework/cache/*",
       "storage/framework/server/*",
       "storage/framework/core/vite-config/src/*.ts.timestamp*",
-      "storage/framework/core/orm/src/generated/*"
+      "storage/framework/core/orm/src/generated/*",
+      "storage/framework/core/components/notification/packages/Toast.vue"
     ]
   },
   "vcs": {
