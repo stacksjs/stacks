@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineOptions({
-  name: 'IndexPage',
+  name: 'Stacks.js. Next generation app & library development.',
 })
 
 // import { app } from '@stacksjs/config'
@@ -45,13 +45,13 @@ useHead({
   <main>
     <Hero2 />
     <!-- <Hero /> -->
-    <!-- <PrimaryFeatures />
-    <PrimaryFeatures2 />
+    <!-- <PrimaryFeatures /> -->
+    <!-- <PrimaryFeatures2 />
     <SecondaryFeatures />
     <CallToAction />
     <Testimonials />
-    <Pricing /> -->
-    <!-- <Faqs /> -->
+    <Pricing />
+    <Faqs /> -->
   </main>
 
   <Footer />
