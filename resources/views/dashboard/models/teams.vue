@@ -1,6 +1,3 @@
-<script lang="ts" setup>
-</script>
-
 <template>
   <div class="min-h-screen py-4 lg:py-8 dark:bg-blue-gray-800">
     <div class="px-4 mb-8 sm:px-6 lg:px-8">
@@ -18,12 +15,12 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Total Queued
+                Total Subscribers
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
               <p class="text-2xl font-semibold text-gray-900">
-                71,897
+                1,234
               </p>
               <p class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
                 <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -32,12 +29,6 @@
                 <span class="sr-only"> Increased by </span>
                 122
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Deployments</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
 
@@ -49,13 +40,13 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Avg. Queue Time
+                Unsubscribes
               </p>
             </dt>
 
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
               <p class="text-2xl font-semibold text-gray-900">
-                365 ms
+                12
               </p>
 
               <p class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
@@ -63,45 +54,12 @@
                   <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
                 </svg>
                 <span class="sr-only"> Increased by </span>
-                12 s
+                4
               </p>
 
               <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
                 <div class="text-sm">
                   <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Average Deploy Time</span></a>
-                </div>
-              </div> -->
-            </dd>
-          </div>
-
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
-                </svg>
-              </div>
-              <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Success Rate
-              </p>
-            </dt>
-
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl font-semibold text-gray-900">
-                94.57%
-              </p>
-
-              <p class="ml-2 flex items-baseline text-sm font-semibold text-red-600">
-                <svg class="h-5 w-5 flex-shrink-0 self-center text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Decreased by </span>
-                3.2%
-              </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Success Rate</span></a>
                 </div>
               </div> -->
             </dd>
@@ -114,18 +72,18 @@
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">
-            Jobs
+            Subscribers
           </h1>
           <p class="mt-2 text-sm text-gray-700">
-            A list of all the jobs.
+            A list of all your project subscribers.
           </p>
         </div>
 
-        <!-- <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-            Deploy
+            Add Subscriber
           </button>
-        </div> -->
+        </div>
       </div>
 
       <div class="mt-8 flow-root">
@@ -136,23 +94,27 @@
                 <thead class="bg-gray-50">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                      When
+                      ID
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Initiated By
+                      Email
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Commit
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Branch
+                      User
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                       Status
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
+                      Unsubscribed At
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
+                      Created At
                     </th>
 
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -163,43 +125,68 @@
 
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                      Moments ago
+                    <td class="whitespace-nowrap pl-4 pr-3 py-4 text-sm font-medium text-gray-900 sm:pl-6">
+                      1
                     </td>
+
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 w-10 h-10">
-                          <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
-                            alt=""
-                            class="w-10 h-10 rounded-full"
-                          >
-                        </div>
-                        <div class="ml-4">
-                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Chris Breuer
-                          </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
-                            chris@stacksjs.org
-                          </div>
-                        </div>
+                      <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                        chris@stacksjs.org
                       </div>
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
+                    <!-- could be empty if no relationship exists -->
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      Chris Breuer
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Deployed
+                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Subscribed</span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      <!-- 2024/01/22 11:00am -->
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      2024/01/02
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Queue</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Subscriber</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap pl-4 pr-3 py-4 text-sm font-medium text-gray-900 sm:pl-6">
+                      2
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                        buddy@stacksjs.org
+                      </div>
+                    </td>
+
+                    <!-- could be empty if no relationship exists -->
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <!-- Chris Breuer -->
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Unsubscribed</span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      2024/01/22 11:00am
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      2024/01/02
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Subscriber</span></a>
                     </td>
                   </tr>
                 </tbody>

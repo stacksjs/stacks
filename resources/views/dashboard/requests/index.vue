@@ -18,7 +18,7 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Total Queued
+                Total Requests
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
@@ -49,7 +49,7 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Avg. Queue Time
+                Avg. Request Time
               </p>
             </dt>
 
@@ -140,19 +140,23 @@
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Initiated By
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Commit
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Branch
+                      Method
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                       Status
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Duration
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      IP Address
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Memory Usage
                     </th>
 
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -164,42 +168,69 @@
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                      Moments ago
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 w-10 h-10">
-                          <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
-                            alt=""
-                            class="w-10 h-10 rounded-full"
-                          >
-                        </div>
-                        <div class="ml-4">
-                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Chris Breuer
-                          </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
-                            chris@stacksjs.org
-                          </div>
-                        </div>
-                      </div>
+                      05/04/2024 11:02:34:123 AM UTC <em>(2 mins ago)</em>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">
+                        GET
+                      </span>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Deployed
+                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        Success
+                      </span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      16ms
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      127.0.0.1
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      128MB
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Queue</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Request</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      05/04/2024 11:01:34:123 AM UTC <em>(3 mins ago)</em>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">
+                        POST
+                      </span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+                        Error
+                      </span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      42ms
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      127.0.0.1
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      98MB
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Request</span></a>
                     </td>
                   </tr>
                 </tbody>

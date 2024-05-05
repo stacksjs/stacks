@@ -167,6 +167,17 @@
                     <span class="truncate">Users</span>
                   </RouterLink>
                 </li>
+
+                <li>
+                  <RouterLink
+                    to="/models/teams"
+                    class="sidebar-links"
+                  >
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">T</span>
+                    <span class="truncate">Teams</span>
+                  </RouterLink>
+                </li>
+
                 <li>
                   <RouterLink
                     to="/models/subscribers"
