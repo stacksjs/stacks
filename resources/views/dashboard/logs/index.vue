@@ -18,7 +18,7 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Total Queued
+                Total Logs
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">

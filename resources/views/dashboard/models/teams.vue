@@ -15,7 +15,7 @@
                 </svg>
               </div>
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
-                Total Subscribers
+                Total Teams
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
@@ -72,16 +72,16 @@
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">
-            Subscribers
+            Teams
           </h1>
           <p class="mt-2 text-sm text-gray-700">
-            A list of all your project subscribers.
+            A list of all your teams.
           </p>
         </div>
 
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-            Add Subscriber
+            Add Team
           </button>
         </div>
       </div>
@@ -98,19 +98,15 @@
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Email
+                      Name
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      User
+                      Company Name
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Status
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
-                      Unsubscribed At
+                      Type
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
@@ -120,6 +116,8 @@
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                       <span class="sr-only">Edit</span>
                     </th>
+
+                    <!-- stripe_id, card_brand, card_last_four, card_expiration, extra_billing_information, billing email, trial_ends_at, billing_address, billing_address_line_2, billing_city, billing_state, billing_postal_code, billing_country, vat_id, receipt_emails  -->
                   </tr>
                 </thead>
 
@@ -129,23 +127,36 @@
                       1
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                        chris@stacksjs.org
+                    <td class="whitespace-nowrap text-right px-3 py-4 text-sm text-gray-500">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 w-10 h-10">
+                          <img
+                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
+                            alt=""
+                            class="w-10 h-10 rounded-full"
+                          >
+                        </div>
+
+                        <div class="ml-4">
+                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Stacks.js
+                          </div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
+                            chris@stacksjs.org
+                          </div>
+                        </div>
                       </div>
                     </td>
 
                     <!-- could be empty if no relationship exists -->
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Chris Breuer
+                      Stacks.js, Inc.
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Subscribed</span>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                      <!-- 2024/01/22 11:00am -->
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">
+                        Personal
+                      </span>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
@@ -162,23 +173,36 @@
                       2
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                        buddy@stacksjs.org
+                    <td class="whitespace-nowrap text-right px-3 py-4 text-sm text-gray-500">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 w-10 h-10">
+                          <img
+                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
+                            alt=""
+                            class="w-10 h-10 rounded-full"
+                          >
+                        </div>
+
+                        <div class="ml-4">
+                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Jetbrains
+                          </div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
+                            support@jetbrains.com
+                          </div>
+                        </div>
                       </div>
                     </td>
 
                     <!-- could be empty if no relationship exists -->
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <!-- Chris Breuer -->
+                      Jetbrains, Inc.
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Unsubscribed</span>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                      2024/01/22 11:00am
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">
+                        Professional
+                      </span>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
