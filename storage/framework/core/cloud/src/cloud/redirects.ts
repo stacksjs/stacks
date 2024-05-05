@@ -1,9 +1,5 @@
 import { config } from '@stacksjs/config'
-import {
-  RemovalPolicy,
-  aws_route53 as route53,
-  aws_s3 as s3,
-} from 'aws-cdk-lib'
+import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -20,9 +16,7 @@ export class RedirectsStack {
       // TODO: use string-ts function here instead
       const slug = redirect
         .split('.')
-        .map((part, index) =>
-          index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1),
-        )
+        .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
         .join('') // creates a CamelCase slug from the redirect
       const hostedZone = route53.HostedZone.fromLookup(scope, 'HostedZone', {
         domainName: redirect,
@@ -49,15 +43,9 @@ export class RedirectsStack {
     config.dns.redirects?.forEach((redirect) => {
       const slug = redirect
         .split('.')
-        .map((part, index) =>
-          index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1),
-        )
+        .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
         .join('') // creates a CamelCase slug from the redirect
-      const hostedZone = route53.HostedZone.fromLookup(
-        scope,
-        `RedirectHostedZone${slug}`,
-        { domainName: redirect },
-      )
+      const hostedZone = route53.HostedZone.fromLookup(scope, `RedirectHostedZone${slug}`, { domainName: redirect })
       this.redirectZones.push(hostedZone)
     })
   }

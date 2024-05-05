@@ -135,28 +135,20 @@ export function generate(buddy: CLI) {
       generatePkgxConfig()
     })
 
-  buddy
-    .command('generate:migrations', 'Generate Migrations')
-    .action((options: GeneratorOptions) => {
-      log.debug('Running `buddy generate:migrations` ...', options)
-      // generateMigrations()
-    })
+  buddy.command('generate:migrations', 'Generate Migrations').action((options: GeneratorOptions) => {
+    log.debug('Running `buddy generate:migrations` ...', options)
+    // generateMigrations()
+  })
 
   buddy
-    .command(
-      'generate:core-symlink',
-      'Generate core symlink. A shortcut for core developers.',
-    )
+    .command('generate:core-symlink', 'Generate core symlink. A shortcut for core developers.')
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy core-symlink` ...', options)
       await generateCoreSymlink()
     })
 
   buddy.on('generate:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

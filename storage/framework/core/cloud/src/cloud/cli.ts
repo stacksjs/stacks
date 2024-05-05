@@ -1,8 +1,4 @@
-import {
-  Duration,
-  CfnOutput as Output,
-  aws_lambda as lambda,
-} from 'aws-cdk-lib'
+import { Duration, CfnOutput as Output, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -14,8 +10,7 @@ export class CliStack {
   constructor(scope: Construct, props: CliStackProps) {
     const cliSetupFunc = new lambda.Function(scope, 'CliSetupFunction', {
       functionName: `${props.slug}-${props.appEnv}-cli-setup`,
-      description:
-        'Lambda function that triggers setup script for a Stacks project',
+      description: 'Lambda function that triggers setup script for a Stacks project',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('../core/cloud/src/cloud/lambda/cli-setup'), // path relative to the cloud root package dir

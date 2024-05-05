@@ -28,9 +28,7 @@ cli
     }
 
     if (!found) {
-      console.error(
-        'No stacks project found. Do you want to create a new stacks project?',
-      )
+      console.error('No stacks project found. Do you want to create a new stacks project?')
       // TODO: add prompt for user input
       process.exit(1)
     }
@@ -39,10 +37,7 @@ cli
   })
 
 cli
-  .command(
-    'cd <project>',
-    'Change the current working directory to a different Stacks project',
-  )
+  .command('cd <project>', 'Change the current working directory to a different Stacks project')
   .action((project: string) => {
     const findProjectPath = (base: any, target: any) => {
       const queue = [base]
@@ -67,16 +62,11 @@ cli
       return null // Target directory not found
     }
 
-    const projectPath = findProjectPath(
-      '/',
-      `${project}/storage/framework/core/buddy/`,
-    )
+    const projectPath = findProjectPath('/', `${project}/storage/framework/core/buddy/`)
 
     if (projectPath) {
       console.log(`Project found at ${projectPath}.`)
-      console.log(
-        `Run 'cd ${projectPath}' to navigate to the project directory.`,
-      )
+      console.log(`Run 'cd ${projectPath}' to navigate to the project directory.`)
       // $`cd ${projectPath}`
     } else {
       console.error('Project directory not found.')

@@ -42,10 +42,7 @@ export function fresh(buddy: CLI) {
     })
 
   buddy.on('fresh:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

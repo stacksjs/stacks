@@ -14,19 +14,13 @@ import { parse } from 'yaml'
 // import { semver } from './versions'
 
 export async function packageManager() {
-  const { packageManager } = await storage.readPackageJson(
-    frameworkPath('package.json'),
-  )
+  const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))
   return packageManager
 }
 
 export async function initProject(): Promise<Result<Subprocess, Error>> {
-  if (app.env !== 'production')
-    log.info('Project not yet initialized, generating application key...')
-  else
-    handleError(
-      'Please run `buddy key:generate` to generate an application key',
-    )
+  if (app.env !== 'production') log.info('Project not yet initialized, generating application key...')
+  else handleError('Please run `buddy key:generate` to generate an application key')
 
   const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
@@ -41,8 +35,7 @@ export async function ensureProjectIsInitialized() {
   if (storage.isFile(projectPath('.env'))) return await isAppKeySet()
 
   // copy the .env.example file to .env
-  if (storage.isFile(projectPath('.env.example')))
-    await runCommand('cp .env.example .env', { cwd: projectPath() })
+  if (storage.isFile(projectPath('.env.example'))) await runCommand('cp .env.example .env', { cwd: projectPath() })
   else console.error('no .env.example file found')
 
   return await isAppKeySet()
@@ -83,10 +76,7 @@ export function determineResetPreset(preset?: string) {
   if (preset === 'normalize') return ["import '@unocss/reset/normalize.css'"]
 
   if (preset === 'sanitize')
-    return [
-      "import '@unocss/reset/sanitize/sanitize.css'",
-      "import '@unocss/reset/sanitize/assets.css",
-    ]
+    return ["import '@unocss/reset/sanitize/sanitize.css'", "import '@unocss/reset/sanitize/assets.css"]
 
   if (preset === 'eric-meyer') return ["import '@unocss/reset/eric-meyer.css'"]
 
@@ -128,24 +118,13 @@ export async function setEnvValue(key: string, value: string) {
 /**
  * Runs the specified NPM script in the package.json file.
  */
-export async function runNpmScript(
-  script: NpmScript,
-  options?: CliOptions,
-): Promise<Result<Subprocess, Error>> {
-  const { data: manifest } = await storage.readJsonFile(
-    'package.json',
-    frameworkPath(),
-  )
+export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<Subprocess, Error>> {
+  const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   // simple, yet effective check to see if the script exists
-  if (isManifest(manifest) && hasScript(manifest, script))
-    return await runCommand(`bun --bun run ${script}`, options)
+  if (isManifest(manifest) && hasScript(manifest, script)) return await runCommand(`bun --bun run ${script}`, options)
 
-  return err(
-    handleError(
-      `The ${script} script does not exist in the package.json file.`,
-    ),
-  )
+  return err(handleError(`The ${script} script does not exist in the package.json file.`))
 }
 
 /**

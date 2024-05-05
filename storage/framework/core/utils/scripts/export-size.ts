@@ -52,14 +52,10 @@ async function run() {
   md += `version: ${version}<br>\n`
   md += `date: ${new Date().toISOString()}\n\n`
 
-  md +=
-    '> Please note this is bundle size for each individual APIs (excluding Vue). '
-  md +=
-    'Since we have a lot shared utilities underneath each function, importing two '
-  md +=
-    'different functions does NOT necessarily mean the bundle size will be the sum of them (usually smaller). '
-  md +=
-    'Depends on the bundler and minifier you use, the final result might vary, this list is for reference only.'
+  md += '> Please note this is bundle size for each individual APIs (excluding Vue). '
+  md += 'Since we have a lot shared utilities underneath each function, importing two '
+  md += 'different functions does NOT necessarily mean the bundle size will be the sum of them (usually smaller). '
+  md += 'Depends on the bundler and minifier you use, the final result might vary, this list is for reference only.'
   md += '\n\n'
 
   for (const pkg of [...packages.slice(2), packages[1]]) {

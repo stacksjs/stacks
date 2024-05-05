@@ -33,9 +33,6 @@ export async function send(
 
   return ResultAsync.fromPromise(
     provider.sendMessage(options),
-    () =>
-      new Error(
-        `Failed to send message using provider: ${italic(providerName)}`,
-      ),
+    () => new Error(`Failed to send message using provider: ${italic(providerName)}`),
   )
 }

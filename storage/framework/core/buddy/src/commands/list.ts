@@ -21,9 +21,7 @@ export function list(buddy: CLI) {
       $.cwd(projectPath())
 
       const test = await $`buddy --help`.text()
-      const commandsSection = test.match(
-        /Commands:.*?(?=For more info, run any command with the)/s,
-      )?.[0]
+      const commandsSection = test.match(/Commands:.*?(?=For more info, run any command with the)/s)?.[0]
 
       if (commandsSection) {
         const cleanedCommands = commandsSection
@@ -34,16 +32,11 @@ export function list(buddy: CLI) {
         return
       }
 
-      console.error(
-        '#1 - Please reach out to our Discord for helper: https://discord.gg/stacksjs',
-      )
+      console.error('#1 - Please reach out to our Discord for helper: https://discord.gg/stacksjs')
     })
 
   buddy.on('list:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

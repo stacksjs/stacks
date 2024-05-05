@@ -160,37 +160,32 @@ export function test(buddy: CLI) {
       })
     })
 
-  buddy
-    .command('test:coverage', descriptions.coverage)
-    .action(async (options: TestOptions) => {
-      const perf = await intro('buddy test:coverage')
-      const result = await runAction(Action.TestCoverage, {
-        ...options,
-        cwd: projectPath(),
-        verbose: true,
-      })
-
-      if (result.isErr()) {
-        await outro(
-          'While running `buddy test:coverage`, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
-        )
-        process.exit()
-      }
-
-      await outro('Generated the test coverage report', {
-        startTime: perf,
-        useSeconds: true,
-      })
-      process.exit()
+  buddy.command('test:coverage', descriptions.coverage).action(async (options: TestOptions) => {
+    const perf = await intro('buddy test:coverage')
+    const result = await runAction(Action.TestCoverage, {
+      ...options,
+      cwd: projectPath(),
+      verbose: true,
     })
 
+    if (result.isErr()) {
+      await outro(
+        'While running `buddy test:coverage`, there was an issue',
+        { startTime: perf, useSeconds: true },
+        result.error,
+      )
+      process.exit()
+    }
+
+    await outro('Generated the test coverage report', {
+      startTime: perf,
+      useSeconds: true,
+    })
+    process.exit()
+  })
+
   buddy.on('test:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

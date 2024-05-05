@@ -22,9 +22,7 @@ export function deleteFolder(path: string): Promise<Result<string, Error>> {
   })
 }
 
-export async function isDirectoryEmpty(
-  path: string,
-): Promise<Result<boolean, Error>> {
+export async function isDirectoryEmpty(path: string): Promise<Result<boolean, Error>> {
   return new Promise((resolve, reject) => {
     try {
       if (fs.statSync(path).isDirectory()) {
@@ -39,9 +37,7 @@ export async function isDirectoryEmpty(
   })
 }
 
-export async function deleteEmptyFolder(
-  path: string,
-): Promise<Result<string, Error>> {
+export async function deleteEmptyFolder(path: string): Promise<Result<string, Error>> {
   return new Promise((resolve, reject) => {
     try {
       if (fs.statSync(path).isDirectory()) {
@@ -60,9 +56,7 @@ export async function deleteEmptyFolder(
   })
 }
 
-export async function deleteEmptyFolders(
-  dir: string,
-): Promise<Result<string, Error>> {
+export async function deleteEmptyFolders(dir: string): Promise<Result<string, Error>> {
   try {
     if (!fs.existsSync(dir)) return ok(`Path ${dir} does not exist`)
 
@@ -70,8 +64,7 @@ export async function deleteEmptyFolders(
     for (const file of files) {
       const p = join(dir, file)
       if (isFolder(p)) {
-        if (fs.readdirSync(p).length === 0)
-          fs.rmSync(p, { recursive: true, force: true })
+        if (fs.readdirSync(p).length === 0) fs.rmSync(p, { recursive: true, force: true })
         else await deleteEmptyFolders(p)
       }
     }
@@ -98,8 +91,7 @@ export function deleteFile(path: string): Promise<Result<string, Error>> {
 }
 
 export async function deleteGlob(path: string): Promise<Result<string, Error>> {
-  if (!path.includes('*'))
-    return err(handleError(`Path ${path} does not contain a glob`))
+  if (!path.includes('*')) return err(handleError(`Path ${path} does not contain a glob`))
 
   const directories = await glob([path], { onlyDirectories: true })
 
@@ -123,9 +115,5 @@ export async function del(path: string): Promise<Result<string, Error>> {
 
   if (path.includes('*')) return await deleteGlob(path)
 
-  return err(
-    handleError(
-      `Path ${path} cannot be deleted due to an unhandled condition. Please report this issue.`,
-    ),
-  )
+  return err(handleError(`Path ${path} cannot be deleted due to an unhandled condition. Please report this issue.`))
 }

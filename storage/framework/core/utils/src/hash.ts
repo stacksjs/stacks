@@ -7,9 +7,7 @@ export function originRequestFunctionHash() {
   try {
     return hashPaths(p.cloudPath('src/edge'))
   } catch (error: any) {
-    log.error(
-      'Are we in a Docker container? Failed to hash paths. Error below:',
-    )
+    log.error('Are we in a Docker container? Failed to hash paths. Error below:')
     log.error(error)
     return undefined
   }
@@ -23,7 +21,5 @@ export function websiteSourceHash() {
     // p.projectPath('config/app.ts'),
   ]
 
-  return config.app.docMode === true
-    ? hashPaths(docsSrc)
-    : hashPaths(websiteSrc)
+  return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
 }

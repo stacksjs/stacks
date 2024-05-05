@@ -15,5 +15,4 @@ const email = config(path.resourcesPath('emails'), {
   // },
 })
 
-export const template = async (path: string, options?: RenderOptions) =>
-  await email.render(path, options)
+export const template = async (path: string, options?: RenderOptions) => await email.render(path, options)

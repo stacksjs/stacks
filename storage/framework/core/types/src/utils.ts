@@ -25,17 +25,11 @@ export type Constructor<T = void> = new (...args: any[]) => T
  * @returns U items intersected
  * @see https://stackoverflow.com/a/50375286/9259330
  */
-export type UnionToIntersection<U> = (
-  U extends unknown
-    ? (k: U) => void
-    : never
-) extends (k: infer I) => void
+export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void
   ? I
   : never
 
-export type MergeInsertions<T> = T extends object
-  ? { [K in keyof T]: MergeInsertions<T[K]> }
-  : T
+export type MergeInsertions<T> = T extends object ? { [K in keyof T]: MergeInsertions<T[K]> } : T
 
 export type DeepMerge<F, S> = MergeInsertions<{
   [K in keyof F | keyof S]: K extends keyof S & keyof F

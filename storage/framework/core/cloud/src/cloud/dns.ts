@@ -1,9 +1,4 @@
-import {
-  RemovalPolicy,
-  aws_route53 as route53,
-  aws_s3 as s3,
-  aws_route53_targets as targets,
-} from 'aws-cdk-lib'
+import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3, aws_route53_targets as targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -32,9 +27,7 @@ export class DnsStack {
     new route53.ARecord(scope, 'WwwAliasRecord', {
       recordName: `www.${props.domain}`,
       zone: this.zone,
-      target: route53.RecordTarget.fromAlias(
-        new targets.BucketWebsiteTarget(wwwBucket),
-      ),
+      target: route53.RecordTarget.fromAlias(new targets.BucketWebsiteTarget(wwwBucket)),
     })
 
     // TODO: this only needs to be created if Lemon Squeezy is being used

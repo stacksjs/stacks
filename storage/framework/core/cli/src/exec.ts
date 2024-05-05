@@ -24,13 +24,8 @@ import { log } from './'
  * const result = await exec('ls', { cwd: '/home' })
  * ```
  */
-export async function exec(
-  command: string | string[],
-  options?: CliOptions,
-): Promise<Result<Subprocess, Error>> {
-  const cmd = Array.isArray(command)
-    ? command
-    : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
 
   if (!cmd) return err(handleError(`Failed to parse command: ${cmd}`, options))
 
@@ -41,15 +36,8 @@ export async function exec(
   const proc = Bun.spawn(cmd, {
     ...options,
     stdout:
-      options?.silent || options?.quiet
-        ? 'ignore'
-        : options?.stdin
-          ? options.stdin
-          : options?.stdout || 'inherit',
-    stderr:
-      options?.silent || options?.quiet
-        ? 'ignore'
-        : options?.stderr || 'inherit',
+      options?.silent || options?.quiet ? 'ignore' : options?.stdin ? options.stdin : options?.stdout || 'inherit',
+    stderr: options?.silent || options?.quiet ? 'ignore' : options?.stderr || 'inherit',
     detached: options?.background || false,
     cwd: options?.cwd || process.cwd(),
     // env: { ...e, ...options?.env },
@@ -91,16 +79,11 @@ export async function exec(
  * const output = execSync('ls', { cwd: '/home' })
  * ```
  */
-export async function execSync(
-  command: string | string[],
-  options?: CliOptions,
-): Promise<string> {
+export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
   log.debug('Running ExecSync:', command)
   log.debug('ExecSync Options:', options)
 
-  const cmd = Array.isArray(command)
-    ? command
-    : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
 
   if (!cmd) {
     log.error(`Failed to parse command: ${cmd}`, options)
@@ -123,13 +106,7 @@ export async function execSync(
 }
 
 // @ts-expect-error - missing types is okay here but can be improved later on
-function exitHandler(
-  type: 'spawn' | 'spawnSync',
-  subprocess,
-  exitCode,
-  signalCode,
-  error,
-) {
+function exitHandler(type: 'spawn' | 'spawnSync', subprocess, exitCode, signalCode, error) {
   log.debug(`exitHandler: ${type}`)
   log.debug('subprocess', subprocess)
   log.debug('exitCode', exitCode)

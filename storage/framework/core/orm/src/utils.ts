@@ -18,9 +18,7 @@ export async function extractFieldsFromModel(filePath: string) {
   traverse(ast, {
     ObjectExpression(path) {
       // Look for the `fields` key in the object
-      const fieldsProperty = path.node.properties.find(
-        (property) => property.key?.name === 'attributes',
-      )
+      const fieldsProperty = path.node.properties.find((property) => property.key?.name === 'attributes')
 
       if (fieldsProperty?.value) {
         // Convert the AST back to code (stringify)

@@ -12,8 +12,7 @@ export function getDialect() {
   log.debug(`Using database driver: ${driver}`)
 
   if (driver === 'sqlite') {
-    const path =
-      database.connections?.sqlite.database ?? 'database/stacks.sqlite'
+    const path = database.connections?.sqlite.database ?? 'database/stacks.sqlite'
     return new BunWorkerDialect({
       url: path,
     })

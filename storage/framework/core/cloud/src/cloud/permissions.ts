@@ -25,9 +25,7 @@ export class PermissionsStack {
         passwordResetRequired: true,
       })
 
-      user.addManagedPolicy(
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
-      )
+      user.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'))
 
       // TODO: email the userEmail their credentials
     }

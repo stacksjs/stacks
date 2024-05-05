@@ -16,17 +16,13 @@ interface Props {
 }
 
 const buttonBackground = computed(() => {
-  if (type === 'info')
-    return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+  if (type === 'info') return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
 
-  if (type === 'warning')
-    return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
+  if (type === 'warning') return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
 
-  if (type === 'danger')
-    return 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+  if (type === 'danger') return 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
 
-  if (type === 'success')
-    return 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+  if (type === 'success') return 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
 
   return 'bg-white-600 hover:bg-gray-50  '
 })

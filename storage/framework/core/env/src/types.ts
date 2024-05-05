@@ -1,11 +1,5 @@
 import { schema } from '@stacksjs/validation'
-import type {
-  Infer,
-  VineBoolean,
-  VineEnum,
-  VineNumber,
-  VineString,
-} from '@stacksjs/validation'
+import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import env from '~/config/env'
 import type { EnvKey } from '../../../env'
 

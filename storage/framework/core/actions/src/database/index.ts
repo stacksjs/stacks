@@ -4,15 +4,12 @@ import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 
-export async function getLastMigrationFields(
-  modelName: string,
-): Promise<Attribute> {
+export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = await import(oldModelPath)
   let fields = {} as Attributes
 
-  if (typeof model.default.attributes === 'object')
-    fields = model.default.attributes
+  if (typeof model.default.attributes === 'object') fields = model.default.attributes
   else fields = JSON.parse(model.default.attributes) as Attributes
 
   return fields
@@ -72,12 +69,8 @@ export function prepareTextColumnType(rule) {
   let columnType = 'varchar(255)'
 
   // Find min and max length validations
-  const minLengthValidation = rule.validations.find(
-    (v) => v.options?.min !== undefined,
-  )
-  const maxLengthValidation = rule.validations.find(
-    (v) => v.options?.max !== undefined,
-  )
+  const minLengthValidation = rule.validations.find((v) => v.options?.min !== undefined)
+  const maxLengthValidation = rule.validations.find((v) => v.options?.max !== undefined)
 
   // If there's a max length validation, adjust the column type accordingly
   if (maxLengthValidation) {
@@ -92,17 +85,12 @@ export function prepareTextColumnType(rule) {
   return columnType
 }
 
-export async function checkPivotMigration(
-  dynamicPart: string,
-): Promise<boolean> {
+export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
   const files = await fs.readdir(path.userMigrationsPath())
 
   return files.some((migrationFile) => {
     // Escape special characters in the dynamic part to ensure it's treated as a literal string
-    const escapedDynamicPart = dynamicPart.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      '\\$&',
-    )
+    const escapedDynamicPart = dynamicPart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
     // Construct the regular expression pattern dynamically
     const pattern = new RegExp(`(-${escapedDynamicPart}-)`)

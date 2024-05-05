@@ -33,9 +33,7 @@ const region = 'us-east-1' // currently, us-east-1 is the only fully-supported r
 let timestamp
 
 if (!appKey) {
-  log.info(
-    'Please set an application key. You may need to run `buddy key:generate`.',
-  )
+  log.info('Please set an application key. You may need to run `buddy key:generate`.')
   process.exit(ExitCode.InvalidArgument)
 }
 
@@ -46,9 +44,7 @@ if (parts && parts.length < 2)
   )
 
 if (!account || !region)
-  throw new Error(
-    'Stacks is missing your accountId or region. Please ensure it is set in your .env file',
-  )
+  throw new Error('Stacks is missing your accountId or region. Please ensure it is set in your .env file')
 
 if (!domain) throw new Error('Missing app.url in config.')
 

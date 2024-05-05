@@ -1,13 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
 import { pascalCase } from '@stacksjs/strings'
-import type {
-  RedirectCode,
-  Route,
-  RouteGroupOptions,
-  RouterInterface,
-  StatusCode,
-} from '@stacksjs/types'
+import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
@@ -53,10 +47,7 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public async get(
-    path: Route['url'],
-    callback: Route['callback'],
-  ): Promise<this> {
+  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
     this.path = this.normalizePath(path)
     log.debug(`Normalized Path: ${this.path}`)
 
@@ -95,9 +86,7 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = await import(
-      p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job'))
-    )
+    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
     const callback = jobModule.default.handle
 
     path = this.prepareUri(path)
@@ -110,9 +99,7 @@ export class Router implements RouterInterface {
     path = pascalCase(path) // actions are PascalCase
 
     // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-    const actionModule = await import(
-      p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action'))
-    )
+    const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
     const callback = actionModule.default.handle
 
     path = this.prepareUri(path)
@@ -134,11 +121,7 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public redirect(
-    path: Route['url'],
-    callback: Route['callback'],
-    _status?: RedirectCode,
-  ): this {
+  public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
     this.addRoute('GET', path, callback, 302)
 
     return this
@@ -159,12 +142,8 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public group(
-    options: string | RouteGroupOptions,
-    callback?: () => void,
-  ): this {
-    if (typeof options === 'string')
-      options = options.startsWith('/') ? options.slice(1) : options
+  public group(options: string | RouteGroupOptions, callback?: () => void): this {
+    if (typeof options === 'string') options = options.startsWith('/') ? options.slice(1) : options
 
     let cb: () => void
 
@@ -175,8 +154,7 @@ export class Router implements RouterInterface {
       options = {}
     }
 
-    if (!callback)
-      throw new Error('Missing callback function for your route group.')
+    if (!callback) throw new Error('Missing callback function for your route group.')
 
     cb = callback
 
@@ -263,45 +241,33 @@ export class Router implements RouterInterface {
     return
   }
 
-  private async resolveCallback(
-    callback: Route['callback'],
-  ): Promise<Route['callback']> {
+  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
     if (callback instanceof Promise) {
-
       const actionModule = await callback
       return actionModule.default
     }
 
-    if (typeof callback === 'string')
-      return await this.importCallbackFromPath(callback, this.path)
+    if (typeof callback === 'string') return await this.importCallbackFromPath(callback, this.path)
 
     // in this case, the callback ends up being a function
     return await callback
   }
 
-  private async importCallbackFromPath(
-    callbackPath: string,
-    originalPath: string,
-  ): Promise<Route['callback']> {
+  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
     let modulePath = callbackPath
     let importPathFunction = p.appPath // Default import path function
 
     if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
 
-    if (modulePath.includes('OrmAction'))
-      importPathFunction = p.projectStoragePath
+    if (modulePath.includes('OrmAction')) importPathFunction = p.projectStoragePath
 
     // Remove trailing .ts if present
-    modulePath = modulePath.endsWith('.ts')
-      ? modulePath.slice(0, -3)
-      : modulePath
+    modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
     let actionModule = null
 
     if (modulePath.includes('OrmAction')) {
-      actionModule = await import(
-        importPathFunction(`/framework/orm/${modulePath}.ts`)
-      )
+      actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
     } else {
       actionModule = await import(importPathFunction(`${modulePath}.ts`))
     }

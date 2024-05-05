@@ -21,9 +21,7 @@ const logger = console // import your own logger
  * @returns {Promise<InvokeModelCommandOutput>}
  * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/BedrockRuntime.html#invokeModel-property
  */
-export async function invokeModel(
-  params: InvokeModelCommandInput,
-): Promise<InvokeModelCommandOutput> {
+export async function invokeModel(params: InvokeModelCommandInput): Promise<InvokeModelCommandOutput> {
   logger.debug(params)
   const command = new InvokeModelCommand(params)
   const res = await client.send(command)
@@ -49,7 +47,4 @@ export async function invokeModelWithResponseStream(
   return res
 }
 
-export type {
-  InvokeModelCommandInput,
-  InvokeModelWithResponseStreamCommandInput,
-}
+export type { InvokeModelCommandInput, InvokeModelWithResponseStreamCommandInput }

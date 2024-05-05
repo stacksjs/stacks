@@ -34,12 +34,10 @@ export async function useHttpFetch(endpoint = '') {
     loading.value = true
 
     try {
-      const result:
-        | string
-        | FetchResponse
-        | Blob
-        | ArrayBuffer
-        | ReadableStream<Uint8Array> = await ofetch(url, parameters)
+      const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(
+        url,
+        parameters,
+      )
 
       loading.value = false
       return result

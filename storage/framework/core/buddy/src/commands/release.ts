@@ -21,8 +21,7 @@ export function release(buddy: CLI) {
     .action(async (options: ReleaseOptions) => {
       log.debug('Running `buddy release` ...', options)
 
-      if (options.dryRun)
-        log.warn('Dry run enabled. No changes will be made or committed.')
+      if (options.dryRun) log.warn('Dry run enabled. No changes will be made or committed.')
 
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, {
@@ -42,10 +41,7 @@ export function release(buddy: CLI) {
     })
 
   buddy.on('release:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

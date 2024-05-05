@@ -83,16 +83,7 @@ export interface NotificationOptions {
   }
 
   sms: {
-    default:
-      | 'twilio'
-      | 'nexmo'
-      | 'gupshup'
-      | 'plivo'
-      | 'sms77'
-      | 'sns'
-      | 'telnyx'
-      | 'termii'
-      | string
+    default: 'twilio' | 'nexmo' | 'gupshup' | 'plivo' | 'sms77' | 'sns' | 'telnyx' | 'termii' | string
     from: string
 
     drivers: {

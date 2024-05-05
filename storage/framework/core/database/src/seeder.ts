@@ -13,13 +13,9 @@ async function seedModel(name: string, model?: Model) {
 
   if (!model) model = (await import(path.userModelsPath(name))) as Model
 
-  const tableName =
-    model.table ?? snakeCase(model.name ?? name.replace('.ts', ''))
+  const tableName = model.table ?? snakeCase(model.name ?? name.replace('.ts', ''))
   const seedCount =
-    typeof model.traits?.useSeeder === 'object' &&
-    model.traits?.useSeeder?.count
-      ? model.traits.useSeeder.count
-      : 10
+    typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
   log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
   const records = []
 
@@ -47,9 +43,7 @@ export async function seed() {
 
   // otherwise, seed all models
   const modelsDir = path.userModelsPath()
-  const modelFiles = fs
-    .readdirSync(modelsDir)
-    .filter((file) => file.endsWith('.ts'))
+  const modelFiles = fs.readdirSync(modelsDir).filter((file) => file.endsWith('.ts'))
 
   for (const file of modelFiles) {
     const modelPath = path.join(modelsDir, file)

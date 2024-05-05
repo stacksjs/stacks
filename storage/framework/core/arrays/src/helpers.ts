@@ -31,9 +31,7 @@ export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
  * flatten([1, [2, [3, [4, [5]]]]]) // [1, 2, 3, 4, 5]
  * ```
  */
-export function flatten<T>(
-  array?: Nullable<Arrayable<T | Array<T>>>,
-): Array<T> {
+export function flatten<T>(array?: Nullable<Arrayable<T | Array<T>>>): Array<T> {
   return toArray(array).flat(1) as Array<T>
 }
 
@@ -63,15 +61,8 @@ export type PartitionFilter<T> = (i: T, idx: number, arr: readonly T[]) => any
  * console.log(even) // [2, 4]
  * ```
  */
-export function partition<T>(
-  array: readonly T[],
-  f1: PartitionFilter<T>,
-): [T[], T[]]
-export function partition<T>(
-  array: readonly T[],
-  f1: PartitionFilter<T>,
-  f2: PartitionFilter<T>,
-): [T[], T[], T[]]
+export function partition<T>(array: readonly T[], f1: PartitionFilter<T>): [T[], T[]]
+export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>): [T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
   f1: PartitionFilter<T>,
@@ -102,10 +93,7 @@ export function partition<T>(
   f5: PartitionFilter<T>,
   f6: PartitionFilter<T>,
 ): [T[], T[], T[], T[], T[], T[], T[]]
-export function partition<T>(
-  array: readonly T[],
-  ...filters: PartitionFilter<T>[]
-): any {
+export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>[]): any {
   const result: T[][] = Array.from({ length: filters.length + 1 })
     .fill(null)
     .map(() => [])
@@ -159,10 +147,7 @@ export function unique<T>(array: readonly T[]): T[] {
  * uniqueBy([1, 2, 3, 3, 2, 1], (a, b) => a === b) // [1, 2, 3]
  * ```
  */
-export function uniqueBy<T>(
-  array: readonly T[],
-  equalFn: (a: any, b: any) => boolean,
-): T[] {
+export function uniqueBy<T>(array: readonly T[], equalFn: (a: any, b: any) => boolean): T[] {
   return array.reduce((acc: T[], cur: any) => {
     const index = acc.findIndex((item: any) => equalFn(cur, item))
     if (index === -1) acc.push(cur)
@@ -287,10 +272,7 @@ export function clampArrayRange(arr: readonly unknown[], n: number) {
  * ```
  */
 export function sample<T>(arr: T[], count: number) {
-  return Array.from(
-    { length: count },
-    (_) => arr[Math.round(Math.random() * (arr.length - 1))],
-  )
+  return Array.from({ length: count }, (_) => arr[Math.round(Math.random() * (arr.length - 1))])
 }
 
 /**

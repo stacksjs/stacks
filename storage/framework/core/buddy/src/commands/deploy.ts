@@ -53,25 +53,16 @@ export function deploy(buddy: CLI) {
     })
 
   buddy.on('deploy:*', () => {
-    log.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }
 
-async function configureDomain(
-  domain: string,
-  options: DeployOptions,
-  startTime: number,
-) {
+async function configureDomain(domain: string, options: DeployOptions, startTime: number) {
   if (!domain) {
     log.info('We could not identify a domain to deploy to.')
     log.warn('Please set your .env or ./config/app.ts properly.')
-    log.info(
-      'Alternatively, specify a domain to deploy via the `--domain` flag.',
-    )
+    log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
     console.log('')
     log.info('   ➡️  Example: `buddy deploy --domain example.com`')
     console.log('')
@@ -85,9 +76,7 @@ async function configureDomain(
     log.warn(
       'Please set your .env or ./config/app.ts properly. The domain we are deploying cannot be a `localhost` domain.',
     )
-    log.info(
-      'Alternatively, specify a domain to deploy via the `--domain` flag.',
-    )
+    log.info('Alternatively, specify a domain to deploy via the `--domain` flag.')
     console.log('')
     log.info('   ➡️  Example: `buddy deploy --domain example.com`')
     console.log('')
@@ -119,11 +108,7 @@ async function configureDomain(
   })
 
   if (result.isErr()) {
-    await outro(
-      'While running the `buddy deploy`, there was an issue',
-      { startTime, useSeconds: true },
-      result.error,
-    )
+    await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
     process.exit(ExitCode.FatalError)
   }
 
@@ -139,9 +124,7 @@ async function checkIfAwsIsConfigured() {
 
   if (result.isErr()) {
     log.error('AWS is not configured properly.')
-    log.error(
-      'Please run `buddy configure:aws` to set up your AWS credentials.',
-    )
+    log.error('Please run `buddy configure:aws` to set up your AWS credentials.')
     process.exit(ExitCode.FatalError)
   }
 

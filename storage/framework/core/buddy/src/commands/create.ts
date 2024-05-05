@@ -13,15 +13,13 @@ export function create(buddy: CLI) {
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
     components: 'Are you building UI components?',
-    webComponents:
-      'Automagically built optimized custom elements/web components?',
+    webComponents: 'Automagically built optimized custom elements/web components?',
     vue: 'Automagically built a Vue component library?',
     views: 'How about views?',
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
-    notifications:
-      'Do you need notifications? e.g. email, SMS, push or chat notifications',
+    notifications: 'Do you need notifications? e.g. email, SMS, push or chat notifications',
     cache: 'Do you need caching?',
     email: 'Do you need email?',
     project: 'Target a specific project',
@@ -77,10 +75,7 @@ export function create(buddy: CLI) {
     })
 
   buddy.on('new:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

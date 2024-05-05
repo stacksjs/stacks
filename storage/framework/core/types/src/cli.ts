@@ -43,14 +43,7 @@ export type Out = Writable
  *
  * @default "ignore"
  */
-export type stdin =
-  | 'ignore'
-  | 'inherit'
-  | 'pipe'
-  | ArrayBufferView
-  | number
-  | null
-  | undefined
+export type stdin = 'ignore' | 'inherit' | 'pipe' | ArrayBufferView | number | null | undefined
 
 /**
  * The file descriptor for the standard output. It may be:
@@ -290,14 +283,7 @@ export type MakeOptions = {
   [key in MakeStringOption]: string
 } & CliOptions
 
-export type UpgradeBoolean =
-  | 'framework'
-  | 'dependencies'
-  | 'bun'
-  | 'shell'
-  | 'binary'
-  | 'all'
-  | 'force'
+export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force'
 
 export type UpgradeString = 'version'
 
@@ -308,13 +294,7 @@ export type UpgradeOptions = {
 } & CliOptions
 
 export type ExamplesString = 'version'
-export type ExamplesBoolean =
-  | 'components'
-  | 'vue'
-  | 'webComponents'
-  | 'elements'
-  | 'all'
-  | 'force'
+export type ExamplesBoolean = 'components' | 'vue' | 'webComponents' | 'elements' | 'all' | 'force'
 export type ExamplesOption = ExamplesString & ExamplesBoolean
 export type ExamplesOptions = {
   [key in ExamplesString]: string
@@ -397,10 +377,6 @@ export interface PortsOptions extends CliOptions {
 export interface TinkerOptions extends CliOptions {}
 export interface TypesOptions extends CliOptions {}
 
-export type LibEntryType =
-  | 'vue-components'
-  | 'web-components'
-  | 'functions'
-  | 'all'
+export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 
 export type { CAC as CLI } from 'cac'

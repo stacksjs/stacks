@@ -33,8 +33,7 @@ export const core = [
     sponsor: 'https://github.com/sponsors/konkonam',
   },
   {
-    avatar:
-      'https://www.averyahill.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.626e0c07.jpg&w=128&q=75',
+    avatar: 'https://www.averyahill.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.626e0c07.jpg&w=128&q=75',
     name: 'Avery Hill',
     title: 'Merchandise & Event Planning',
     org: 'Stacks',

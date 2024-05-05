@@ -4,25 +4,16 @@ import { computed, ref } from 'vue'
 import { notification } from '../../packages'
 import type { Position } from '../../packages/types'
 import { useCopyCode } from '../composables/useCopyCode'
-import CopyIcon from './icons/CopyIcon.vue'
 import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
 
 const props = defineProps({
   position: String as PropType<Position>,
 })
 
-const emit = defineEmits<{
-  (e: 'update:position', position: Position): void
-}>()
+const emit = defineEmits<(e: 'update:position', position: Position) => void>()
 
-const positions = [
-  'top-left',
-  'top-center',
-  'top-right',
-  'bottom-left',
-  'bottom-center',
-  'bottom-right',
-] as const
+const positions = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as const
 
 const renderedCode = computed(() => {
   return `<Notification position="${props.position}" />`
@@ -34,8 +25,7 @@ function handleChangePosition(activePosition: Position) {
   emit('update:position', activePosition)
 
   // No need to show a toast when there is already one
-  if (toastsAmount > 0 && props.position !== activePosition)
-    return
+  if (toastsAmount > 0 && props.position !== activePosition) return
 
   notification('Event has been created', {
     description: 'Monday, January 3rd at 6:00pm',

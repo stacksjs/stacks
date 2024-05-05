@@ -21,17 +21,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: [
-        'path',
-        'fs',
-        'net',
-        'tls',
-        'stream',
-        'node:process',
-        'constants',
-        'node:dns/promises',
-        'node:util',
-      ],
+      external: ['path', 'fs', 'net', 'tls', 'stream', 'node:process', 'constants', 'node:dns/promises', 'node:util'],
     },
   },
 
@@ -43,14 +33,7 @@ export default defineConfig({
   assetsInclude: [p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: [
-      'bun:test',
-      'webpack',
-      'chokidar',
-      'fsevents',
-      '@intlify/unplugin-vue-i18n',
-      '@stacksjs/ui',
-    ],
+    exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
   },
 
   // server: server({
@@ -103,12 +86,7 @@ export default defineConfig({
 
       dts: p.frameworkPath('types/auto-imports.d.ts'),
 
-      dirs: [
-        p.resourcesPath('components'),
-        p.resourcesPath('functions'),
-        p.resourcesPath('stores'),
-        p.corePath(),
-      ],
+      dirs: [p.resourcesPath('components'), p.resourcesPath('functions'), p.resourcesPath('stores'), p.corePath()],
 
       vueTemplate: true,
 

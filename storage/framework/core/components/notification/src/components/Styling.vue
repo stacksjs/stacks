@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue'
 import { notification } from '../../packages'
 import { useCopyCode } from '../composables/useCopyCode'
-import CopyIcon from './icons/CopyIcon.vue'
 import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
 
 const currentAction = ref('all')
 const showCheckIcon = ref(false)

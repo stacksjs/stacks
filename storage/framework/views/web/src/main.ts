@@ -22,9 +22,7 @@ export const createApp = ViteSSG(
     // Object.values(import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts'))
     //   .forEach(i => i.install?.(ctx))
     ;(async () => {
-      const modules = import.meta.glob<{ install: UserModule }>(
-        '../../../../../resources/modules/*.ts',
-      )
+      const modules = import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts')
       const promises = Object.values(modules).map((func) => func())
       const modulesArray = await Promise.all(promises)
       for (const module of modulesArray) module.install?.(ctx)

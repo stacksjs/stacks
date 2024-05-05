@@ -9,9 +9,6 @@ export class MoneyValidator extends BaseLiteralType<Money, Money> {
   }
 
   clone() {
-    return new MoneyValidator(
-      this.cloneOptions(),
-      this.cloneValidations(),
-    ) as this
+    return new MoneyValidator(this.cloneOptions(), this.cloneValidations()) as this
   }
 }

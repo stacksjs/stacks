@@ -2,19 +2,18 @@
 import { ref } from 'vue'
 import { Notification } from '../packages'
 import type { Position, Theme } from '../packages/types'
-import { useSEOHeader } from './composables/useSEOHeader'
+import Expand from './components/Expand.vue'
+import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
-import Usage from './components/Usage.vue'
-import Types from './components/Types.vue'
-import Pos from './components/Position.vue'
-import Expand from './components/Expand.vue'
-import Theming from './components/Theming.vue'
-import Styling from './components/Styling.vue'
 import Others from './components/Others.vue'
-import Footer from './components/Footer.vue'
+import Pos from './components/Position.vue'
+import Styling from './components/Styling.vue'
+import Theming from './components/Theming.vue'
+import Types from './components/Types.vue'
+import Usage from './components/Usage.vue'
+import { useSEOHeader } from './composables/useSEOHeader'
 // import { toggleDarkMode, isDark } from './composables/useDarkMode'
-
 
 useSEOHeader()
 

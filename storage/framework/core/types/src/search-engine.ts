@@ -66,62 +66,27 @@ export interface SearchEngineDriver {
   client: MeiliSearch
 
   // Indexes
-  createIndex: (
-    name: string,
-    options?: IndexOptions,
-  ) => MaybePromise<EnqueuedTask>
+  createIndex: (name: string, options?: IndexOptions) => MaybePromise<EnqueuedTask>
   getIndex: (name: string) => MaybePromise<Index>
-  updateIndex: (
-    name: string,
-    options: IndexOptions,
-  ) => MaybePromise<EnqueuedTask>
+  updateIndex: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
   deleteIndex: (name: string) => MaybePromise<EnqueuedTask>
-  updateIndexSettings: (
-    name: string,
-    settings: SearchEngineOptions,
-  ) => MaybePromise<EnqueuedTask>
+  updateIndexSettings: (name: string, settings: SearchEngineOptions) => MaybePromise<EnqueuedTask>
   listAllIndexes: () => MaybePromise<IndexesResults<Index[]>>
   listAllIndices: () => MaybePromise<IndexesResults<Index[]>> // alternatives plural spelling
 
   // Records (MeiliSearch uses the term "documents")
   getRecord: (key: string) => MaybePromise<any>
   getRecords: (key: string) => MaybePromise<RecordOptions>
-  createRecord: (
-    record: any,
-    indexName: string,
-    options: RecordOptions,
-  ) => MaybePromise<EnqueuedTask>
-  createRecords: (
-    records: any,
-    indexName: string,
-    options: RecordOptions,
-  ) => MaybePromise<EnqueuedTask>
-  createOrReplaceRecord: (
-    record: any,
-    indexName: string,
-    options: RecordOptions,
-  ) => MaybePromise<EnqueuedTask>
-  createOrUpdateRecord: (
-    record: any,
-    indexName: string,
-    options: RecordOptions,
-  ) => MaybePromise<EnqueuedTask>
-  deleteRecord: (
-    recordId: string | number,
-    indexName: string,
-  ) => MaybePromise<EnqueuedTask>
+  createRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createRecords: (records: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrReplaceRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  createOrUpdateRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
+  deleteRecord: (recordId: string | number, indexName: string) => MaybePromise<EnqueuedTask>
   deleteAllRecords: (indexName: string) => MaybePromise<EnqueuedTask>
-  batchDeleteRecords: (
-    recordIds: string[] | number[],
-    indexName: string,
-  ) => MaybePromise<EnqueuedTask>
+  batchDeleteRecords: (recordIds: string[] | number[], indexName: string) => MaybePromise<EnqueuedTask>
 
   // Search
-  search: (
-    query: string,
-    indexName: string,
-    options: SearchParams,
-  ) => MaybePromise<Search>
+  search: (query: string, indexName: string, options: SearchParams) => MaybePromise<Search>
 
   calculatePagination: Pages
   currentPage: Page

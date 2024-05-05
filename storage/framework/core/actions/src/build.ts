@@ -8,8 +8,7 @@ import { generateTypes } from './generate'
 export async function invoke(options: BuildOptions) {
   if (options.components) await componentLibraries(options)
   else if (options.vueComponents) await vueComponentLibrary(options)
-  else if (options.webComponents || options.elements)
-    await webComponentLibrary(options)
+  else if (options.webComponents || options.elements) await webComponentLibrary(options)
   else if (options.functions) await functionsLibrary(options)
   else if (options.docs) await docs(options)
   else if (options.stacks) await stacks(options)
@@ -41,9 +40,7 @@ export async function vueComponentLibrary(options: BuildOptions) {
 }
 
 export async function webComponentLibrary(options: BuildOptions) {
-  log.info(
-    'Building your component library for production use & npm/CDN distribution...',
-  )
+  log.info('Building your component library for production use & npm/CDN distribution...')
 
   if (hasComponents()) {
     await runNpmScript(NpmScript.BuildWebComponents, options)
@@ -69,9 +66,7 @@ export async function stacks(options: BuildOptions) {
 export async function functionsLibrary(options: BuildOptions) {
   if (hasFunctions()) {
     log.info('Building your functions library for production usages...')
-    log.info(
-      'Production usages include: manual npm distribution and/or CDN distribution',
-    )
+    log.info('Production usages include: manual npm distribution and/or CDN distribution')
     await runNpmScript(NpmScript.BuildFunctions, options)
     log.success('Functions library built successfully')
   } else {

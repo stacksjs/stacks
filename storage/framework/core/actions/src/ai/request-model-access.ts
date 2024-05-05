@@ -16,15 +16,9 @@ config.getCredentials((err) => {
     log.info(err.stack)
   } else if (config.credentials) {
     const { accessKeyId, secretAccessKey, sessionToken } = config.credentials
-    log.info(
-      'AWS credentials are set',
-      accessKeyId,
-      secretAccessKey,
-      sessionToken,
-    )
+    log.info('AWS credentials are set', accessKeyId, secretAccessKey, sessionToken)
 
-    const endpoint =
-      'https://bedrock.us-east-1.amazonaws.com/foundation-model-entitlement'
+    const endpoint = 'https://bedrock.us-east-1.amazonaws.com/foundation-model-entitlement'
     const region = 'us-east-1'
     const service = 'bedrock'
 
@@ -60,10 +54,7 @@ config.getCredentials((err) => {
 
       // Convert headers to the correct type
       const axiosHeaders = Object.fromEntries(
-        Object.entries(signedRequest.headers || {}).map(([key, value]) => [
-          key,
-          String(value),
-        ]),
+        Object.entries(signedRequest.headers || {}).map(([key, value]) => [key, String(value)]),
       )
 
       const url = `https://${signedRequest.host}${signedRequest.path}`

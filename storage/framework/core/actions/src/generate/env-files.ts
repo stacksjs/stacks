@@ -40,15 +40,9 @@ declare module 'bun' {
 
         type = 'string'
         if (typeof value === 'string') {
-          if (
-            value.toLowerCase() === 'true' ||
-            value.toLowerCase() === 'false'
-          ) {
+          if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
             type = 'boolean'
-          } else if (
-            !Number.isNaN(Number.parseFloat(value)) &&
-            Number.isFinite(Number(value))
-          ) {
+          } else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
             type = 'number'
           } else if (envEnum[key]) {
             // @ts-expect-error envEnum[key] is defined

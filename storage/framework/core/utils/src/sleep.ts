@@ -31,10 +31,7 @@ export function delay(ms: number): Promise<void> {
  * @param interval The interval at which to check the condition, in milliseconds. Defaults to 1000.
  * @returns A promise that resolves when the condition is met.
  */
-export function waitUntil(
-  condition: () => boolean,
-  interval = 1000,
-): Promise<void> {
+export function waitUntil(condition: () => boolean, interval = 1000): Promise<void> {
   return new Promise((resolve) => {
     const check = setInterval(() => {
       if (condition()) {
@@ -51,10 +48,7 @@ export function waitUntil(
  * @param interval The interval at which to check the condition, in milliseconds. Defaults to 1000.
  * @returns A promise that resolves when the condition is no longer met.
  */
-export function waitWhile(
-  condition: () => boolean,
-  interval = 1000,
-): Promise<void> {
+export function waitWhile(condition: () => boolean, interval = 1000): Promise<void> {
   return new Promise((resolve) => {
     const check = setInterval(() => {
       if (!condition()) {

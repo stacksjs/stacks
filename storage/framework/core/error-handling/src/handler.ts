@@ -10,10 +10,7 @@ export const StacksError = Error
 export class ErrorHandler {
   // static logFile = path.logsPath('errors.log')
 
-  static handle(
-    err: ErrorDescription | Error | unknown,
-    options?: ErrorOptions,
-  ): Error {
+  static handle(err: ErrorDescription | Error | unknown, options?: ErrorOptions): Error {
     // let's only write to the console if we are not in silent mode
     if (options?.silent !== false) this.writeErrorToConsole(err)
 
@@ -35,9 +32,7 @@ export class ErrorHandler {
       return
     }
 
-    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${
-      err.message
-    }\n`
+    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
     const errorsLogFilePath = path.logsPath('errors.log')
 
     try {
@@ -56,9 +51,6 @@ export class ErrorHandler {
 }
 
 type ErrorDescription = string
-export function handleError(
-  err: ErrorDescription | Error | unknown,
-  options?: ErrorOptions,
-): Error {
+export function handleError(err: ErrorDescription | Error | unknown, options?: ErrorOptions): Error {
   return ErrorHandler.handle(err, options)
 }

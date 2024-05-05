@@ -80,18 +80,16 @@ export function build(buddy: CLI) {
 
       // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
-        let answers = await log.prompt
-          .require()
-          .multiselect(descriptions.select, {
-            options: [
-              { label: 'Components', value: 'components' },
-              // { label: 'Vue Components', value: 'vue-components' },
-              { label: 'Web Components', value: 'web-components' },
-              { label: 'Functions', value: 'functions' },
-              { label: 'Views', value: 'views' },
-              { label: 'Documentation', value: 'docs' },
-            ],
-          })
+        let answers = await log.prompt.require().multiselect(descriptions.select, {
+          options: [
+            { label: 'Components', value: 'components' },
+            // { label: 'Vue Components', value: 'vue-components' },
+            { label: 'Web Components', value: 'web-components' },
+            { label: 'Functions', value: 'functions' },
+            { label: 'Views', value: 'views' },
+            { label: 'Documentation', value: 'docs' },
+          ],
+        })
 
         if (answers !== null) process.exit(ExitCode.InvalidArgument)
 
@@ -110,10 +108,7 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command(
-      'build:components',
-      'Automagically build component libraries for production use & npm/CDN distribution',
-    )
+    .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .alias('prod:components')
     .option('-c, --components', descriptions.components, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
@@ -146,10 +141,7 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command(
-      'build:functions',
-      'Automagically build function library for npm/CDN distribution',
-    )
+    .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .option('-f, --functions', descriptions.functions, { default: true })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -159,10 +151,7 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command(
-      'build:vue-components',
-      'Automagically build Vue component library for npm/CDN distribution',
-    )
+    .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
     .alias('build:vue')
     .alias('prod:vue-components')
     .alias('prod:vue')
@@ -178,10 +167,7 @@ export function build(buddy: CLI) {
     })
 
   buddy
-    .command(
-      'build:web-components',
-      'Automagically build Web Component library for npm/CDN distribution',
-    )
+    .command('build:web-components', 'Automagically build Web Component library for npm/CDN distribution')
     .alias('build:wc')
     .alias('prod:web-components')
     .alias('prod:wc')
@@ -274,10 +260,7 @@ export function build(buddy: CLI) {
     })
 
   buddy.on('build:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

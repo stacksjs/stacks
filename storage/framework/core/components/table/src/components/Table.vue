@@ -49,29 +49,25 @@ const {
 } = defineProps<Props>()
 
 const parsedColumns = computed((): string[] => {
-  if (isString(columns))
-    return (columns as string).split(',').map(col => col.trim())
+  if (isString(columns)) return (columns as string).split(',').map((col) => col.trim())
 
   return columns as string[]
 })
 
 const parsedSorts = computed((): string[] => {
-  if (isString(sorts))
-    return (sorts as string).split(',').map(col => col.trim())
+  if (isString(sorts)) return (sorts as string).split(',').map((col) => col.trim())
 
   return sorts as string[]
 })
 
 const parsedFilters = computed((): string[] => {
-  if (isString(filters))
-    return (filters as string).split(',').map(col => col.trim())
+  if (isString(filters)) return (filters as string).split(',').map((col) => col.trim())
 
   return filters as string[]
 })
 
 const itemsPerPage = computed((): number => {
-  if (isString(perPage))
-    return Number.parseInt(perPage as string)
+  if (isString(perPage)) return Number.parseInt(perPage as string)
 
   return perPage as number
 })

@@ -9,8 +9,7 @@ interface Request {
 
 export default new Action({
   name: 'Dummy Logger',
-  description:
-    'This action is used to demo how to POST to a server and upon success, log a message.',
+  description: 'This action is used to demo how to POST to a server and upon success, log a message.',
 
   // the request object is optional, but if it is provided, it will be used for validation
   fields: {

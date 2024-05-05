@@ -1,10 +1,6 @@
 import { CloudFormation } from '@aws-sdk/client-cloudformation'
 import type { DescribeLogGroupsCommandOutput } from '@aws-sdk/client-cloudwatch-logs'
-import {
-  CloudWatchLogsClient,
-  DeleteLogGroupCommand,
-  DescribeLogGroupsCommand,
-} from '@aws-sdk/client-cloudwatch-logs'
+import { CloudWatchLogsClient, DeleteLogGroupCommand, DescribeLogGroupsCommand } from '@aws-sdk/client-cloudwatch-logs'
 import { EC2, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { IAM } from '@aws-sdk/client-iam'
@@ -31,8 +27,7 @@ export async function getSecurityGroupId(securityGroupName: string) {
     Filters: [{ Name: 'group-name', Values: [securityGroupName] }],
   })
 
-  if (!SecurityGroups)
-    return err(`Security group ${securityGroupName} not found`)
+  if (!SecurityGroups) return err(`Security group ${securityGroupName} not found`)
 
   if (SecurityGroups[0]) return ok(SecurityGroups[0].GroupId)
 
@@ -141,8 +136,7 @@ export function purchaseDomain(domain: string, options: PurchaseOptions) {
       Email: options.techEmail,
     },
     PrivacyProtectAdminContact: options.privacyAdmin || options.privacy || true,
-    PrivacyProtectRegistrantContact:
-      options.privacyRegistrant || options.privacy || true,
+    PrivacyProtectRegistrantContact: options.privacyRegistrant || options.privacy || true,
     PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
   }
 
@@ -166,8 +160,7 @@ export async function getJumpBoxInstanceId(name?: string) {
     ],
   })
 
-  if (data.Reservations?.[0].Instances?.[0])
-    return data.Reservations[0].Instances[0].InstanceId
+  if (data.Reservations?.[0].Instances?.[0]) return data.Reservations[0].Instances[0].InstanceId
 
   return undefined
 }
@@ -209,8 +202,7 @@ export async function deleteIamUsers() {
       )
     }) || []
 
-  if (!users || users.length === 0)
-    return ok(`No Stacks IAM users found for team ${teamName}`)
+  if (!users || users.length === 0) return ok(`No Stacks IAM users found for team ${teamName}`)
 
   const promises = users.map(async (user) => {
     const userName = user.UserName || ''
@@ -259,9 +251,7 @@ export async function deleteStacksBuckets() {
   try {
     const s3 = new S3({ region: 'us-east-1' })
     const data = await s3.listBuckets({})
-    const stacksBuckets = data.Buckets?.filter((bucket) =>
-      bucket.Name?.includes('stacks'),
-    )
+    const stacksBuckets = data.Buckets?.filter((bucket) => bucket.Name?.includes('stacks'))
 
     if (!stacksBuckets) return err('No stacks buckets found')
 
@@ -281,9 +271,7 @@ export async function deleteStacksBuckets() {
 
         await Promise.all(
           objects.Contents.map((object) =>
-            s3
-              .deleteObject({ Bucket: bucketName, Key: object.Key || '' })
-              .catch((error) => handleError(error)),
+            s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch((error) => handleError(error)),
           ),
         )
 
@@ -339,14 +327,10 @@ export async function deleteStacksBuckets() {
             ),
           ).catch((error) => handleError(error))
 
-          log.info(
-            `Finished aborting multipart uploads from bucket ${bucketName}`,
-          )
+          log.info(`Finished aborting multipart uploads from bucket ${bucketName}`)
         }
 
-        await s3
-          .deleteBucket({ Bucket: bucketName })
-          .catch((error) => handleError(error))
+        await s3.deleteBucket({ Bucket: bucketName }).catch((error) => handleError(error))
 
         log.info(`Bucket ${bucketName} deleted`)
       } catch (error) {
@@ -369,24 +353,17 @@ export async function deleteStacksBuckets() {
 export async function deleteStacksFunctions() {
   const lambda = new Lambda({ region: 'us-east-1' })
   const data = await lambda.listFunctions({})
-  const stacksFunctions =
-    data.Functions?.filter((func) => func.FunctionName?.includes('stacks')) ||
-    []
+  const stacksFunctions = data.Functions?.filter((func) => func.FunctionName?.includes('stacks')) || []
 
-  if (!stacksFunctions || stacksFunctions.length === 0)
-    return ok('No stacks functions found')
+  if (!stacksFunctions || stacksFunctions.length === 0) return ok('No stacks functions found')
 
-  const promises = stacksFunctions.map((func) =>
-    lambda.deleteFunction({ FunctionName: func.FunctionName || '' }),
-  )
+  const promises = stacksFunctions.map((func) => lambda.deleteFunction({ FunctionName: func.FunctionName || '' }))
 
   await Promise.all(promises).catch((error: Error) => {
     if (error.message.includes('it is a replicated function')) {
       log.info('Function is replicated, skipping...')
 
-      return ok(
-        'CloudFront is still deleting the some functions. Try again later.',
-      )
+      return ok('CloudFront is still deleting the some functions. Try again later.')
     }
 
     console.error(error)
@@ -399,17 +376,13 @@ export async function deleteStacksFunctions() {
 export async function deleteLogGroups() {
   try {
     const client = new CloudWatchLogsClient({ region: 'us-east-1' })
-    const logGroups: DescribeLogGroupsCommandOutput = await client.send(
-      new DescribeLogGroupsCommand({}),
-    )
+    const logGroups: DescribeLogGroupsCommandOutput = await client.send(new DescribeLogGroupsCommand({}))
 
     if (!logGroups?.logGroups) return err('No log groups found')
 
     for (const group of logGroups.logGroups) {
       if (group.logGroupName?.includes('stacks'))
-        await client.send(
-          new DeleteLogGroupCommand({ logGroupName: group.logGroupName }),
-        )
+        await client.send(new DeleteLogGroupCommand({ logGroupName: group.logGroupName }))
     }
 
     return ok('Log groups deleted')
@@ -425,15 +398,11 @@ export async function deleteParameterStore() {
 
   if (!data.Parameters) return ok('No parameters found')
 
-  const stacksParameters =
-    data.Parameters.filter((param) => param.Name?.includes('stacks')) || []
+  const stacksParameters = data.Parameters.filter((param) => param.Name?.includes('stacks')) || []
 
-  if (!stacksParameters || stacksParameters.length === 0)
-    return ok('No stacks parameters found')
+  if (!stacksParameters || stacksParameters.length === 0) return ok('No stacks parameters found')
 
-  const promises = stacksParameters.map((param) =>
-    ssm.deleteParameter({ Name: param.Name || '' }),
-  )
+  const promises = stacksParameters.map((param) => ssm.deleteParameter({ Name: param.Name || '' }))
 
   await Promise.all(promises).catch((error: Error) => {
     console.error(error)
@@ -446,13 +415,7 @@ export async function deleteParameterStore() {
 export async function deleteCdkRemnants() {
   try {
     // TODO: use $ once we can use CDK past Bun v1.0.8
-    return ok(
-      await runCommand(
-        `bunx rimraf ${p.cloudPath('cdk.out/')} ${p.cloudPath(
-          'cdk.context.json',
-        )}`,
-      ),
-    )
+    return ok(await runCommand(`bunx rimraf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`))
   } catch (error) {
     console.error(error)
     return err(handleError('Error deleting CDK remnants'))
@@ -466,9 +429,8 @@ export async function hasBeenDeployed() {
     const response = await s3.send(new ListBucketsCommand({}))
 
     return ok(
-      response.Buckets?.some((bucket) =>
-        bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks'),
-      ) || false,
+      response.Buckets?.some((bucket) => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks')) ||
+        false,
     )
   } catch (error) {
     console.error(error)
@@ -479,9 +441,7 @@ export async function hasBeenDeployed() {
 export async function getJumpBoxInstanceProfileName() {
   const iam = new IAM({ region: 'us-east-1' })
   const data = await iam.listInstanceProfiles({})
-  const instanceProfile = data.InstanceProfiles?.find((profile) =>
-    profile.InstanceProfileName?.includes('JumpBox'),
-  )
+  const instanceProfile = data.InstanceProfiles?.find((profile) => profile.InstanceProfileName?.includes('JumpBox'))
 
   if (!instanceProfile) return err('Jump-box IAM instance profile not found')
 
@@ -518,8 +478,7 @@ export async function addJumpBox(stackName?: string) {
   const fileSystem = data.FileSystems?.find((fs) => fs.Name === fileSystemName)
   const fileSystemId = fileSystem?.FileSystemId
 
-  if (!fileSystem || !fileSystemId)
-    return err(`EFS file system ${fileSystemName} not found`)
+  if (!fileSystem || !fileSystemId) return err(`EFS file system ${fileSystemName} not found`)
 
   const userDataScript = `
 #!/bin/bash
@@ -538,8 +497,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
   if (res.isErr()) return err(res.error)
 
   const jumpBoxInstanceProfileName: string | undefined = res.value
-  if (!jumpBoxInstanceProfileName)
-    return err('Jump-box IAM instance profile not found')
+  if (!jumpBoxInstanceProfileName) return err('Jump-box IAM instance profile not found')
 
   const instance = await ec2.runInstances({
     ImageId: 'ami-03a6eaae9938c858c', // Amazon Linux 2023 AMI
@@ -609,9 +567,7 @@ export async function isFirstDeployment() {
   const data = await cloudFormation.listStacks({
     StackStatusFilter: ['CREATE_COMPLETE', 'UPDATE_COMPLETE'],
   })
-  const isStacksCloudPresent = data.StackSummaries?.some(
-    (stack) => stack.StackName === stackName,
-  )
+  const isStacksCloudPresent = data.StackSummaries?.some((stack) => stack.StackName === stackName)
 
   return !isStacksCloudPresent
 }
@@ -619,16 +575,9 @@ export async function isFirstDeployment() {
 export async function isFailedState() {
   const cloudFormation = new CloudFormation()
   const data = await cloudFormation.listStacks({
-    StackStatusFilter: [
-      'CREATE_FAILED',
-      'UPDATE_FAILED',
-      'ROLLBACK_COMPLETE',
-      'UPDATE_ROLLBACK_COMPLETE',
-    ],
+    StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'],
   })
-  const isStacksCloudPresent = data.StackSummaries?.some(
-    (stack) => stack.StackName === cloudName,
-  )
+  const isStacksCloudPresent = data.StackSummaries?.some((stack) => stack.StackName === cloudName)
 
   return !isStacksCloudPresent
 }
@@ -646,9 +595,7 @@ export async function getOrCreateTimestamp(): Promise<string> {
     return timestamp
   } catch (error: any) {
     const timestamp = new Date().getTime().toString()
-    log.debug(
-      `Creating timestamp parameter ${parameterName} with value ${timestamp}`,
-    )
+    log.debug(`Creating timestamp parameter ${parameterName} with value ${timestamp}`)
     await ssm.putParameter({
       Name: parameterName,
       Value: timestamp,

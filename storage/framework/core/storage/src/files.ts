@@ -8,10 +8,7 @@ import { fs, existsSync } from './fs'
 /**
  * Reads a JSON file and returns the parsed data.
  */
-export async function readJsonFile(
-  name: string,
-  cwd?: string,
-): Promise<JsonFile> {
+export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile> {
   const file = await readTextFile(name, cwd)
   const data = JSON.parse(file.data)
   const indent = detectIndent(file.data).indent
@@ -123,8 +120,7 @@ export function deleteFiles(dir: string, exclude: string[] = []) {
     fs.readdirSync(dir).forEach((file) => {
       const p = join(dir, file)
       if (fs.statSync(p).isDirectory()) {
-        if (fs.readdirSync(p).length === 0)
-          fs.rmSync(p, { recursive: true, force: true })
+        if (fs.readdirSync(p).length === 0) fs.rmSync(p, { recursive: true, force: true })
         else deleteFiles(p, exclude)
       } else if (!contains(p, exclude)) {
         fs.rmSync(p)

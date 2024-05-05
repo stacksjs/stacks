@@ -16,9 +16,7 @@ interface ServeOptions {
 export async function serve(options: ServeOptions = {}) {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
-  const development = options.debug
-    ? true
-    : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
+  const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
 
   if (options.timezone) process.env.TZ = options.timezone
 
@@ -44,8 +42,7 @@ export async function serverResponse(req: Request) {
   // Trim trailing slash from the URL if it's not the root '/'
   // This automatically allows for route definitions, like
   // '/about' and '/about/' to be treated as the same
-  const trimmedUrl =
-    req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
+  const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
 
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
@@ -64,8 +61,7 @@ export async function serverResponse(req: Request) {
   // if (url.pathname === '/favicon.ico')
   //   return new Response('')
 
-  if (!foundRoute)
-    return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
+  if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
 
   addRouteParamsAndQuery(url, foundRoute)
   executeMiddleware(foundRoute)
@@ -119,8 +115,7 @@ async function execute(route: Route, request: Request, { statusCode }: Options) 
     return await noCache(response)
   }
 
-  if (route?.method !== request.method)
-    return new Response('Method not allowed', { status: 405 })
+  if (route?.method !== request.method) return new Response('Method not allowed', { status: 405 })
 
   // Check if it's a path to an HTM L file
   if (isString(route.callback) && extname(route.callback) === '.html') {
@@ -142,18 +137,14 @@ async function execute(route: Route, request: Request, { statusCode }: Options) 
     return await new Response(JSON.stringify(result))
   }
 
-  if (isObject(route.callback))
-    return await new Response(JSON.stringify(route.callback))
+  if (isObject(route.callback)) return await new Response(JSON.stringify(route.callback))
 
   // If no known type matched, return a generic error.
   return await new Response('Unknown callback type.', { status: 500 })
 }
 
 function noCache(response: Response) {
-  response.headers.set(
-    'Cache-Control',
-    'no-store, no-cache, must-revalidate, proxy-revalidate',
-  )
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   response.headers.set('Pragma', 'no-cache')
   response.headers.set('Expires', '0')
 

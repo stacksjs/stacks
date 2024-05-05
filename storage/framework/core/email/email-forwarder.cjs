@@ -1,8 +1,4 @@
-const {
-  CopyObjectCommand,
-  GetObjectCommand,
-  S3Client,
-} = require('@aws-sdk/client-s3')
+const { CopyObjectCommand, GetObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const { SendEmailCommand, SESv2Client } = require('@aws-sdk/client-sesv2')
 
 // Configure the S3 bucket and key prefix for stored raw emails, and the
@@ -64,12 +60,12 @@ const defaultConfig = {
 exports.parseEvent = (data) => {
   // Validate characteristics of a SES event record.
   if (
-    !data.event
-    || !data.event.hasOwn('Records')
-    || data.event.Records.length !== 1
-    || !data.event.Records[0].hasOwn('eventSource')
-    || data.event.Records[0].eventSource !== 'aws:ses'
-    || data.event.Records[0].eventVersion !== '1.0'
+    !data.event ||
+    !data.event.hasOwn('Records') ||
+    data.event.Records.length !== 1 ||
+    !data.event.Records[0].hasOwn('eventSource') ||
+    data.event.Records[0].eventSource !== 'aws:ses' ||
+    data.event.Records[0].eventVersion !== '1.0'
   ) {
     data.log({
       message: 'parseEvent() received invalid SES message:',
@@ -96,45 +92,28 @@ exports.transformRecipients = (data) => {
   data.originalRecipients = data.recipients
   data.recipients.forEach((origEmail) => {
     let origEmailKey = origEmail.toLowerCase()
-    if (data.config.allowPlusSign)
-      origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
+    if (data.config.allowPlusSign) origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
 
     if (data.config.forwardMapping.hasOwn(origEmailKey)) {
-      newRecipients = newRecipients.concat(
-        data.config.forwardMapping[origEmailKey],
-      )
+      newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailKey])
       data.originalRecipient = origEmail
-    }
-    else {
+    } else {
       let origEmailDomain
       let origEmailUser
       const pos = origEmailKey.lastIndexOf('@')
       if (pos === -1) {
         origEmailUser = origEmailKey
-      }
-      else {
+      } else {
         origEmailDomain = origEmailKey.slice(pos)
         origEmailUser = origEmailKey.slice(0, pos)
       }
-      if (
-        origEmailDomain
-        && data.config.forwardMapping.hasOwn(origEmailDomain)
-      ) {
-        newRecipients = newRecipients.concat(
-          data.config.forwardMapping[origEmailDomain],
-        )
+      if (origEmailDomain && data.config.forwardMapping.hasOwn(origEmailDomain)) {
+        newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailDomain])
         data.originalRecipient = origEmail
-      }
-      else if (
-        origEmailUser
-        && data.config.forwardMapping.hasOwn(origEmailUser)
-      ) {
-        newRecipients = newRecipients.concat(
-          data.config.forwardMapping[origEmailUser],
-        )
+      } else if (origEmailUser && data.config.forwardMapping.hasOwn(origEmailUser)) {
+        newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailUser])
         data.originalRecipient = origEmail
-      }
-      else if (data.config.forwardMapping.hasOwn('@')) {
+      } else if (data.config.forwardMapping.hasOwn('@')) {
         newRecipients = newRecipients.concat(data.config.forwardMapping['@'])
         data.originalRecipient = origEmail
       }
@@ -186,9 +165,7 @@ exports.fetchMessage = (data) => {
             error: err,
             stack: err.stack,
           })
-          return reject(
-            new Error('Error: Could not make readable copy of email.'),
-          )
+          return reject(new Error('Error: Could not make readable copy of email.'))
         }
 
         // Load the raw email from S3
@@ -205,9 +182,7 @@ exports.fetchMessage = (data) => {
                 error: err,
                 stack: err.stack,
               })
-              return reject(
-                new Error('Error: Failed to load message body from S3.'),
-              )
+              return reject(new Error('Error: Failed to load message body from S3.'))
             }
             result.Body.transformToString().then((body) => {
               data.emailData = body
@@ -243,13 +218,10 @@ exports.processMessage = (data) => {
         level: 'info',
         message: `Added Reply-To address of: ${from}`,
       })
-    }
-    else {
+    } else {
       data.log({
         level: 'info',
-        message:
-          'Reply-To address not added because From address was not '
-          + 'properly extracted.',
+        message: 'Reply-To address not added because From address was not ' + 'properly extracted.',
       })
     }
   }
@@ -257,23 +229,15 @@ exports.processMessage = (data) => {
   // SES does not allow sending messages from an unverified address,
   // so replace the message's "From:" header with the original
   // recipient (which is a verified domain)
-  header = header.replace(
-    /^from:[\t ]?(.*(?:\r?\n\s+.*)*)/gim,
-    (match, from) => {
-      let fromText
-      if (data.config.fromEmail) {
-        fromText = `From: ${from.replace(/<(.*)>/, '').trim()} <${
-          data.config.fromEmail
-        }>`
-      }
-      else {
-        fromText = `From: ${from.replace('<', 'at ').replace('>', '')} <${
-          data.originalRecipient
-        }>`
-      }
-      return fromText
-    },
-  )
+  header = header.replace(/^from:[\t ]?(.*(?:\r?\n\s+.*)*)/gim, (match, from) => {
+    let fromText
+    if (data.config.fromEmail) {
+      fromText = `From: ${from.replace(/<(.*)>/, '').trim()} <${data.config.fromEmail}>`
+    } else {
+      fromText = `From: ${from.replace('<', 'at ').replace('>', '')} <${data.originalRecipient}>`
+    }
+    return fromText
+  })
 
   // Add a prefix to the Subject
   if (data.config.subjectPrefix) {
@@ -284,10 +248,7 @@ exports.processMessage = (data) => {
 
   // Replace original 'To' header with a manually defined one
   if (data.config.toEmail) {
-    header = header.replace(
-      /^to:[\t ]?(.*)/gim,
-      () => `To: ${data.config.toEmail}`,
-    )
+    header = header.replace(/^to:[\t ]?(.*)/gim, () => `To: ${data.config.toEmail}`)
   }
 
   // Remove the Return-Path header.

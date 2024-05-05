@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue'
 import { notification } from '../../packages'
 import { useCopyCode } from '../composables/useCopyCode'
-import CopyIcon from './icons/CopyIcon.vue'
 import CheckIcon from './icons/CheckIcon.vue'
+import CopyIcon from './icons/CopyIcon.vue'
 
 const emit = defineEmits(['setTheme'])
 
@@ -11,9 +11,7 @@ const currentAction = ref('light')
 const showCheckIcon = ref(false)
 
 const renderedCode = computed(() => {
-  return currentAction.value === 'light'
-    ? `<Notification theme="light" />`
-    : `<Notification theme="dark" />`
+  return currentAction.value === 'light' ? `<Notification theme="light" />` : `<Notification theme="dark" />`
 })
 
 function handleClick(action: string) {

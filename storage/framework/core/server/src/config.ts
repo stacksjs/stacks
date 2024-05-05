@@ -78,17 +78,9 @@ export function config(options: ServerOptions) {
 
   if (
     options.type &&
-    [
-      'frontend',
-      'api',
-      'library',
-      'desktop',
-      'docs',
-      'example',
-      'dashboard',
-      'system-tray',
-      'database',
-    ].includes(options.type)
+    ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(
+      options.type,
+    )
   ) {
     return {
       host: serversMap[options.type].host,

@@ -50,9 +50,7 @@ const component = defineComponent({
     )
 
     const autodetect = computed(() => props.autodetect || !language.value)
-    const cannotDetectLanguage = computed(
-      () => !autodetect.value && !hljs.getLanguage(language.value),
-    )
+    const cannotDetectLanguage = computed(() => !autodetect.value && !hljs.getLanguage(language.value))
 
     const className = computed((): string => {
       if (cannotDetectLanguage.value) return ''
@@ -62,9 +60,7 @@ const component = defineComponent({
     const highlightedCode = computed((): string => {
       // No idea what language to use, return raw code
       if (cannotDetectLanguage.value) {
-        console.warn(
-          `The language "${language.value}" you specified could not be found.`,
-        )
+        console.warn(`The language "${language.value}" you specified could not be found.`)
         return escapeHtml(props.code)
       }
 

@@ -10,8 +10,7 @@ import { $ } from 'bun'
 
 export function ports(buddy: CLI) {
   const descriptions = {
-    command:
-      'Let buddy check your project for potential issues and misconfigurations',
+    command: 'Let buddy check your project for potential issues and misconfigurations',
     ports: 'Check if the ports are available',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -49,8 +48,7 @@ export function ports(buddy: CLI) {
         outputPorts(projectPorts, options)
       }
 
-      if (!options.quiet)
-        await outro('Exited', { startTime: perf, useSeconds: false })
+      if (!options.quiet) await outro('Exited', { startTime: perf, useSeconds: false })
 
       process.exit(ExitCode.Success)
     })
@@ -70,8 +68,7 @@ export function ports(buddy: CLI) {
 
       // return the ports for the project
       if (options.project) {
-        if (!options.quiet)
-          log.info(`Listing ports for project: ${italic(options.project)}`)
+        if (!options.quiet) log.info(`Listing ports for project: ${italic(options.project)}`)
 
         const path = await findProjectPath(options.project)
 
@@ -86,8 +83,7 @@ export function ports(buddy: CLI) {
         outputPorts(projectPorts, options)
       }
 
-      if (!options.quiet)
-        await outro('Exited', { startTime: perf, useSeconds: false })
+      if (!options.quiet) await outro('Exited', { startTime: perf, useSeconds: false })
 
       process.exit(ExitCode.Success)
     })
@@ -113,22 +109,17 @@ export function ports(buddy: CLI) {
 
       // need to loop over the projects and then trigger `buddy ports` for each project (which returns a list of ports)
       const projectsPorts: { [project: string]: Ports } = {}
-      for (const project of projects)
-        projectsPorts[project] = await getPortsForProjectPath(project, options)
+      for (const project of projects) projectsPorts[project] = await getPortsForProjectPath(project, options)
 
       log.info('ProjectsPorts:', projectsPorts)
 
-      if (!options.quiet)
-        await outro('Exited', { startTime: perf, useSeconds: false })
+      if (!options.quiet) await outro('Exited', { startTime: perf, useSeconds: false })
 
       process.exit(ExitCode.Success)
     })
 
   buddy.on('ports:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }
@@ -162,10 +153,7 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
   log.debug(`$ Running: ./buddy ports:list --quiet via ${projectPath}`)
   const response = await $`./buddy ports:list --quiet`.json()
 
-  log.debug(
-    `Response for ./buddy ports:list --quiet via ${projectPath}`,
-    response,
-  )
+  log.debug(`Response for ./buddy ports:list --quiet via ${projectPath}`, response)
 
   // Step 1: Add double quotes around keys
   let validJsonString = response.replace(/(\w+)(?=\s*:)/g, '"$1"')

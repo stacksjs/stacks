@@ -55,17 +55,11 @@ export async function rename(
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 
       // Ensure the "from" file exists
-      if (!fs.existsSync(from))
-        return reject(
-          err(new Error(`File or directory does not exist: ${from}`)),
-        )
+      if (!fs.existsSync(from)) return reject(err(new Error(`File or directory does not exist: ${from}`)))
 
       // Ensure the "to" file does not exist
       if (fs.existsSync(to)) {
-        if (!options?.overwrite)
-          return reject(
-            err(new Error(`File or directory already exists: ${to}`)),
-          )
+        if (!options?.overwrite) return reject(err(new Error(`File or directory already exists: ${to}`)))
 
         fs.unlinkSync(to)
       }
@@ -75,8 +69,7 @@ export async function rename(
 
       return resolve(ok({ message: 'File moved successfully' }))
     } catch (error: any) {
-      if (error.code === 'ENOENT')
-        log.error('File or directory does not exist\n\n', error)
+      if (error.code === 'ENOENT') log.error('File or directory does not exist\n\n', error)
       else log.error(error)
 
       return reject(err(new Error(error)))

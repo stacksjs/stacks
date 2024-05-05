@@ -32,14 +32,10 @@ export async function outro(options: {
     }
 
     const relativeFilePath = p.relative(options.dir, file).replace('dist/', '')
-    console.log(
-      `${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`,
-    )
+    console.log(`${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`)
   }
 
-  log.success(
-    `${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`,
-  )
+  log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
 export async function intro(options: { dir: string }) {

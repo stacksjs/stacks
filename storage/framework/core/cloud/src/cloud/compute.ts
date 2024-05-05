@@ -33,28 +33,21 @@ export class ComputeStack {
     const vpc = props.vpc
     const fileSystem = props.fileSystem
 
-    if (!fileSystem)
-      throw new Error(
-        'The file system is missing. Please make sure it was created properly.',
-      )
+    if (!fileSystem) throw new Error('The file system is missing. Please make sure it was created properly.')
 
     this.cluster = new ecs.Cluster(scope, 'StacksCluster', {
       clusterName: `${props.slug}-${props.appEnv}-web-server-cluster`,
       vpc,
     })
 
-    this.taskDefinition = new ecs.FargateTaskDefinition(
-      scope,
-      'TaskDefinition',
-      {
-        family: `${props.appName}-${props.appEnv}-api`,
-        memoryLimitMiB: 512, // Match your Lambda memory size
-        cpu: 256, // Choose an appropriate value
-        runtimePlatform: {
-          cpuArchitecture: ecs.CpuArchitecture.ARM64,
-        },
+    this.taskDefinition = new ecs.FargateTaskDefinition(scope, 'TaskDefinition', {
+      family: `${props.appName}-${props.appEnv}-api`,
+      memoryLimitMiB: 512, // Match your Lambda memory size
+      cpu: 256, // Choose an appropriate value
+      runtimePlatform: {
+        cpuArchitecture: ecs.CpuArchitecture.ARM64,
       },
-    )
+    })
 
     const container = this.taskDefinition.addContainer('WebServerContainer', {
       containerName: `${props.appName}-${props.appEnv}-api`,
@@ -67,10 +60,7 @@ export class ComputeStack {
         }),
       }),
       healthCheck: {
-        command: [
-          'CMD-SHELL',
-          'curl -f http://localhost:3000/api/health || exit 1',
-        ], // requires curl inside the container which isn't available in the base image. I wonder if there is a better way
+        command: ['CMD-SHELL', 'curl -f http://localhost:3000/api/health || exit 1'], // requires curl inside the container which isn't available in the base image. I wonder if there is a better way
         interval: Duration.seconds(10),
         timeout: Duration.seconds(5),
         retries: 3,
@@ -83,79 +73,57 @@ export class ComputeStack {
       hostPort: 3000,
     })
 
-    const serviceSecurityGroup = new ec2.SecurityGroup(
-      scope,
-      'ServiceSecurityGroup',
-      {
-        securityGroupName: `${props.appName}-${props.appEnv}-api-service-sg`,
-        vpc,
-        description: 'Stacks Security Group for API Service',
-      },
-    )
+    const serviceSecurityGroup = new ec2.SecurityGroup(scope, 'ServiceSecurityGroup', {
+      securityGroupName: `${props.appName}-${props.appEnv}-api-service-sg`,
+      vpc,
+      description: 'Stacks Security Group for API Service',
+    })
 
-    const publicLoadBalancerSG = new ec2.SecurityGroup(
-      scope,
-      'PublicLoadBalancerSG',
-      {
-        securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
-        vpc,
-        description: 'Access to the public facing load balancer',
-      },
-    )
+    const publicLoadBalancerSG = new ec2.SecurityGroup(scope, 'PublicLoadBalancerSG', {
+      securityGroupName: `${props.appName}-${props.appEnv}-public-load-balancer-sg`,
+      vpc,
+      description: 'Access to the public facing load balancer',
+    })
 
     // Assuming serviceSecurityGroup and publicLoadBalancerSG are already defined
-    serviceSecurityGroup.addIngressRule(
-      publicLoadBalancerSG,
-      ec2.Port.allTraffic(),
-      'Ingress from the public ALB',
-    )
+    serviceSecurityGroup.addIngressRule(publicLoadBalancerSG, ec2.Port.allTraffic(), 'Ingress from the public ALB')
 
-    this.lb = new elbv2.ApplicationLoadBalancer(
-      scope,
-      'ApplicationLoadBalancer',
-      {
-        http2Enabled: true,
-        loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
-        vpc,
-        vpcSubnets: {
-          subnets: vpc.selectSubnets({
-            subnetType: ec2.SubnetType.PUBLIC,
-            onePerAz: true,
-          }).subnets,
-        },
-        internetFacing: true,
-        idleTimeout: Duration.seconds(30),
-        securityGroup: publicLoadBalancerSG,
+    this.lb = new elbv2.ApplicationLoadBalancer(scope, 'ApplicationLoadBalancer', {
+      http2Enabled: true,
+      loadBalancerName: `${props.appName}-${props.appEnv}-alb`,
+      vpc,
+      vpcSubnets: {
+        subnets: vpc.selectSubnets({
+          subnetType: ec2.SubnetType.PUBLIC,
+          onePerAz: true,
+        }).subnets,
       },
-    )
+      internetFacing: true,
+      idleTimeout: Duration.seconds(30),
+      securityGroup: publicLoadBalancerSG,
+    })
 
     new route53.ARecord(scope, 'ApiDomainAliasRecord', {
       zone: props.zone,
       recordName: 'api',
-      target: route53.RecordTarget.fromAlias(
-        new route53Targets.LoadBalancerTarget(this.lb),
-      ),
+      target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(this.lb)),
     })
 
-    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(
-      scope,
-      'ServiceTargetGroup',
-      {
-        targetGroupName: `${props.appName}-${props.appEnv}-api-tg`,
-        vpc,
-        targetType: elbv2.TargetType.IP,
-        protocol: elbv2.ApplicationProtocol.HTTP,
-        port: 3000,
-        healthCheck: {
-          interval: Duration.seconds(6),
-          path: '/api/health',
-          protocol: elbv2.Protocol.HTTP,
-          timeout: Duration.seconds(5),
-          healthyThresholdCount: 2,
-          unhealthyThresholdCount: 10,
-        },
+    const serviceTargetGroup = new elbv2.ApplicationTargetGroup(scope, 'ServiceTargetGroup', {
+      targetGroupName: `${props.appName}-${props.appEnv}-api-tg`,
+      vpc,
+      targetType: elbv2.TargetType.IP,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      port: 3000,
+      healthCheck: {
+        interval: Duration.seconds(6),
+        path: '/api/health',
+        protocol: elbv2.Protocol.HTTP,
+        timeout: Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 10,
       },
-    )
+    })
 
     const service = new ecs.FargateService(scope, 'StacksApiService', {
       serviceName: `${props.appName}-${props.appEnv}-api-service`,
@@ -173,10 +141,7 @@ export class ComputeStack {
     })
 
     service.attachToApplicationTargetGroup(serviceTargetGroup)
-    publicLoadBalancerSG.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.allTraffic(),
-    )
+    publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic())
 
     this.lb.addListener('HttpsListener', {
       port: 443,

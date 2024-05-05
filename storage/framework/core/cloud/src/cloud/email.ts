@@ -138,10 +138,7 @@ export class EmailStack {
         's3:PutObjectAcl',
         's3:PutObjectVersionAcl',
       ],
-      resources: [
-        this.emailBucket.bucketArn,
-        `${this.emailBucket.bucketArn}/*`,
-      ],
+      resources: [this.emailBucket.bucketArn, `${this.emailBucket.bucketArn}/*`],
     })
 
     const policy = new iam.Policy(scope, 'EmailAccessPolicy', {
@@ -219,44 +216,28 @@ export class EmailStack {
     new route53.TxtRecord(scope, 'TxtDmarcRecord', {
       zone: props.zone,
       recordName: '_dmarc',
-      values: [
-        `v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${props.domain}`,
-      ],
+      values: [`v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${props.domain}`],
     })
 
-    const lambdaEmailOutboundRole = new iam.Role(
-      scope,
-      'LambdaEmailOutboundRole',
-      {
-        roleName: `${props.slug}-${props.appEnv}-email-outbound`,
-        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [
-          iam.ManagedPolicy.fromAwsManagedPolicyName(
-            'service-role/AWSLambdaBasicExecutionRole',
-          ),
-        ],
-      },
-    )
+    const lambdaEmailOutboundRole = new iam.Role(scope, 'LambdaEmailOutboundRole', {
+      roleName: `${props.slug}-${props.appEnv}-email-outbound`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
+    })
 
-    const lambdaEmailOutbound = new lambda.Function(
-      scope,
-      'LambdaEmailOutbound',
-      {
-        functionName: `${props.slug}-${props.appEnv}-email-outbound`,
-        description: 'Take the JSON and convert it in to an raw email.',
-        code: lambda.Code.fromInline(
-          'exports.handler = async (event) => {return true;};',
-        ), // this needs to be updated with the real lambda code
-        handler: 'index.handler',
-        memorySize: 256,
-        runtime: lambda.Runtime.NODEJS_18_X,
-        timeout: Duration.seconds(60),
-        environment: {
-          BUCKET: this.emailBucket.bucketName,
-        },
-        role: lambdaEmailOutboundRole,
+    const lambdaEmailOutbound = new lambda.Function(scope, 'LambdaEmailOutbound', {
+      functionName: `${props.slug}-${props.appEnv}-email-outbound`,
+      description: 'Take the JSON and convert it in to an raw email.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.emailBucket.bucketName,
       },
-    )
+      role: lambdaEmailOutboundRole,
+    })
 
     lambdaEmailOutboundRole.addToPolicy(policyStatement)
 
@@ -268,40 +249,25 @@ export class EmailStack {
 
     lambdaEmailOutboundRole.addToPolicy(sesPolicyStatement)
 
-    const lambdaEmailInboundRole = new iam.Role(
-      scope,
-      'LambdaEmailInboundRole',
-      {
-        roleName: `${props.slug}-${props.appEnv}-email-inbound`,
-        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [
-          iam.ManagedPolicy.fromAwsManagedPolicyName(
-            'service-role/AWSLambdaBasicExecutionRole',
-          ),
-        ],
-      },
-    )
+    const lambdaEmailInboundRole = new iam.Role(scope, 'LambdaEmailInboundRole', {
+      roleName: `${props.slug}-${props.appEnv}-email-inbound`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
+    })
 
-    const lambdaEmailInbound = new lambda.Function(
-      scope,
-      'LambdaEmailInbound',
-      {
-        functionName: `${props.slug}-${props.appEnv}-email-inbound`,
-        description:
-          'This Lambda organizes all the incoming emails based on the From and To field.',
-        code: lambda.Code.fromInline(
-          'exports.handler = async (event) => {return true;};',
-        ), // this needs to be updated with the real lambda code
-        handler: 'index.handler',
-        memorySize: 256,
-        role: lambdaEmailInboundRole,
-        runtime: lambda.Runtime.NODEJS_18_X,
-        timeout: Duration.seconds(60),
-        environment: {
-          BUCKET: this.emailBucket.bucketName,
-        },
+    const lambdaEmailInbound = new lambda.Function(scope, 'LambdaEmailInbound', {
+      functionName: `${props.slug}-${props.appEnv}-email-inbound`,
+      description: 'This Lambda organizes all the incoming emails based on the From and To field.',
+      code: lambda.Code.fromInline('exports.handler = async (event) => {return true;};'), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      role: lambdaEmailInboundRole,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.emailBucket.bucketName,
       },
-    )
+    })
 
     new lambda.CfnPermission(scope, 'S3InboundPermission', {
       action: 'lambda:InvokeFunction',
@@ -312,10 +278,7 @@ export class EmailStack {
     const inboundS3PolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['s3:*'],
-      resources: [
-        this.emailBucket.bucketArn,
-        `${this.emailBucket.bucketArn}/*`,
-      ],
+      resources: [this.emailBucket.bucketArn, `${this.emailBucket.bucketArn}/*`],
     })
 
     lambdaEmailInboundRole.addToPolicy(inboundS3PolicyStatement)
@@ -328,48 +291,32 @@ export class EmailStack {
 
     lambdaEmailInboundRole.addToPolicy(sesInboundPolicyStatement)
 
-    const lambdaEmailConverterRole = new iam.Role(
-      scope,
-      'LambdaEmailConverterRole',
-      {
-        roleName: `${props.slug}-${props.appEnv}-email-converter`,
-        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [
-          iam.ManagedPolicy.fromAwsManagedPolicyName(
-            'service-role/AWSLambdaBasicExecutionRole',
-          ),
-        ],
-      },
-    )
+    const lambdaEmailConverterRole = new iam.Role(scope, 'LambdaEmailConverterRole', {
+      roleName: `${props.slug}-${props.appEnv}-email-converter`,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
+    })
 
-    const lambdaEmailConverter = new lambda.Function(
-      scope,
-      'LambdaEmailConverter',
-      {
-        functionName: `${props.slug}-${props.appEnv}-email-converter`,
-        description:
-          'This Lambda converts raw emails files in to HTML and text.',
-        code: lambda.Code.fromInline(
-          'exports.handler = async (event) => {console.log("hello world email converter");return true;};',
-        ), // this needs to be updated with the real lambda code
-        handler: 'index.handler',
-        memorySize: 256,
-        role: lambdaEmailConverterRole,
-        runtime: lambda.Runtime.NODEJS_18_X,
-        timeout: Duration.seconds(60),
-        environment: {
-          BUCKET: this.emailBucket.bucketName,
-        },
+    const lambdaEmailConverter = new lambda.Function(scope, 'LambdaEmailConverter', {
+      functionName: `${props.slug}-${props.appEnv}-email-converter`,
+      description: 'This Lambda converts raw emails files in to HTML and text.',
+      code: lambda.Code.fromInline(
+        'exports.handler = async (event) => {console.log("hello world email converter");return true;};',
+      ), // this needs to be updated with the real lambda code
+      handler: 'index.handler',
+      memorySize: 256,
+      role: lambdaEmailConverterRole,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      timeout: Duration.seconds(60),
+      environment: {
+        BUCKET: this.emailBucket.bucketName,
       },
-    )
+    })
 
     const converterS3PolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['s3:*'],
-      resources: [
-        this.emailBucket.bucketArn,
-        `${this.emailBucket.bucketArn}/*`,
-      ],
+      resources: [this.emailBucket.bucketArn, `${this.emailBucket.bucketArn}/*`],
     })
 
     new lambda.CfnPermission(scope, 'S3ConverterPermission', {

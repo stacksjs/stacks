@@ -14,10 +14,7 @@ export async function generateVsCodeCustomData() {
     })
     log.success('Generated custom-elements.json for IDEs.')
   } catch (err) {
-    log.error(
-      'There was an error generating the custom-elements.json file.',
-      err,
-    )
+    log.error('There was an error generating the custom-elements.json file.', err)
   }
 }
 

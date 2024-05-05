@@ -8,7 +8,8 @@ import avatarImage5 from '../../assets/images/avatars/avatar-5.png'
 const testimonials = [
   [
     {
-      content: 'Stacks is a rapid development framework that has helped me create and maintain frontends, backends, and clouds without worrying about the boilerplate.',
+      content:
+        'Stacks is a rapid development framework that has helped me create and maintain frontends, backends, and clouds without worrying about the boilerplate.',
       author: {
         name: 'Sheryl Berge',
         role: 'CEO at Lynch LLC',
@@ -16,7 +17,8 @@ const testimonials = [
       },
     },
     {
-      content: 'The Stacks mantra, "Convention over configuration", has made my development process much smoother and efficient.',
+      content:
+        'The Stacks mantra, "Convention over configuration", has made my development process much smoother and efficient.',
       author: {
         name: 'Amy Hahn',
         role: 'Director at Velocity Industries',
@@ -26,7 +28,8 @@ const testimonials = [
   ],
   [
     {
-      content: 'Getting started with Stacks was incredibly easy. The Buddy toolkit has been a game changer for my project. I suggest you guys give it a try today! It\'s probably one of the best decisions you\'ll ever do for yourself this year.',
+      content:
+        "Getting started with Stacks was incredibly easy. The Buddy toolkit has been a game changer for my project. I suggest you guys give it a try today! It's probably one of the best decisions you'll ever do for yourself this year.",
       author: {
         name: 'Leland Kiehn',
         role: 'Founder of Kiehn and Sons',
@@ -34,7 +37,8 @@ const testimonials = [
       },
     },
     {
-      content: 'The Stacks framework is a harmony of several engines that has allowed me to build web and desktop applications in highly scalable and privacy-friendly ways.',
+      content:
+        'The Stacks framework is a harmony of several engines that has allowed me to build web and desktop applications in highly scalable and privacy-friendly ways.',
       author: {
         name: 'Erin Powlowski',
         role: 'COO at Armstrong Inc',
@@ -44,7 +48,8 @@ const testimonials = [
   ],
   [
     {
-      content: 'Stacks has enhanced my productivity as a developer. No more creating boilerplate, and the IDE integration is fantastic.',
+      content:
+        'Stacks has enhanced my productivity as a developer. No more creating boilerplate, and the IDE integration is fantastic.',
       author: {
         name: 'Peter Renolds',
         role: 'Founder of West Inc',

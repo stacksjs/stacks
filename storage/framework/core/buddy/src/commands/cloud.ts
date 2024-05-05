@@ -1,14 +1,5 @@
 import process from 'node:process'
-import {
-  intro,
-  italic,
-  log,
-  outro,
-  prompts,
-  runCommand,
-  runCommandSync,
-  underline,
-} from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
 import {
   addJumpBox,
   deleteCdkRemnants,
@@ -31,10 +22,8 @@ export function cloud(buddy: CLI) {
     ssh: 'SSH into the Stacks Cloud',
     add: 'Add a resource to the Stacks Cloud',
     remove: 'Removes the Stacks Cloud. In case it fails, try again',
-    optimizeCost:
-      'Removes certain resources that may be re-applied at a later time',
-    cleanUp:
-      'Removes all resources that were retained during the cloud deletion',
+    optimizeCost: 'Removes certain resources that may be re-applied at a later time',
+    cleanUp: 'Removes all resources that were retained during the cloud deletion',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -51,14 +40,11 @@ export function cloud(buddy: CLI) {
       if (options.ssh || options.connect) {
         const startTime = performance.now()
         const jumpBoxId = await getJumpBoxInstanceId()
-        const result = await runCommand(
-          `aws ssm start-session --target ${jumpBoxId}`,
-          {
-            ...options,
-            cwd: p.projectPath(),
-            stdin: 'pipe',
-          },
-        )
+        const result = await runCommand(`aws ssm start-session --target ${jumpBoxId}`, {
+          ...options,
+          cwd: p.projectPath(),
+          stdin: 'pipe',
+        })
 
         if (result.isErr()) {
           await outro(
@@ -73,9 +59,7 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      log.info(
-        'Not implemented yet. Please use the --ssh (or --connect) flag to connect to the Stacks Cloud.',
-      )
+      log.info('Not implemented yet. Please use the --ssh (or --connect) flag to connect to the Stacks Cloud.')
       process.exit(ExitCode.Success)
     })
 
@@ -166,11 +150,7 @@ export function cloud(buddy: CLI) {
         const result = await deleteJumpBox()
 
         if (result.isErr()) {
-          await outro(
-            'While removing your jump-box, there was an issue',
-            { startTime, useSeconds: true },
-            result.error,
-          )
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, result.error)
           process.exit(ExitCode.FatalError)
         }
 
@@ -181,21 +161,9 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      console.log(
-        `   ${italic(
-          'ℹ️   Removing your cloud resources takes a while to complete.',
-        )}`,
-      )
-      console.log(
-        `   ${italic(
-          'Please note, your backups will not yet be deleted. Though,',
-        )}`,
-      )
-      console.log(
-        `   ${italic(
-          'Backups are scheduled to delete themselves in 30 days.',
-        )}`,
-      )
+      console.log(`   ${italic('ℹ️   Removing your cloud resources takes a while to complete.')}`)
+      console.log(`   ${italic('Please note, your backups will not yet be deleted. Though,')}`)
+      console.log(`   ${italic('Backups are scheduled to delete themselves in 30 days.')}`)
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -242,11 +210,7 @@ export function cloud(buddy: CLI) {
         })
         process.exit(ExitCode.Success)
       } catch (error) {
-        await outro(
-          'While cleaning up the cloud, there was an issue',
-          { startTime, useSeconds: true },
-          error as Error,
-        )
+        await outro('While cleaning up the cloud, there was an issue', { startTime, useSeconds: true }, error as Error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -266,8 +230,7 @@ export function cloud(buddy: CLI) {
         const { confirm } = await prompts({
           name: 'confirm',
           type: 'confirm',
-          message:
-            'Would you like to remove your jump-box to optimize your costs?',
+          message: 'Would you like to remove your jump-box to optimize your costs?',
         })
 
         if (!confirm) {
@@ -279,10 +242,7 @@ export function cloud(buddy: CLI) {
         // because it can be re-applied at any later time
         await deleteJumpBox()
 
-        await outro(
-          'Your jump-box was removed & cost optimizations are applied.',
-          { startTime, useSeconds: true },
-        )
+        await outro('Your jump-box was removed & cost optimizations are applied.', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
       }
 
@@ -303,9 +263,7 @@ export function cloud(buddy: CLI) {
 
       const startTime = await intro('buddy cloud:cleanup')
 
-      log.info(
-        `Cleaning up your cloud resources will take a while to complete. Please be patient.`,
-      )
+      log.info(`Cleaning up your cloud resources will take a while to complete. Please be patient.`)
 
       // sleep for 2 seconds to get the user to read the message
       await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -315,11 +273,7 @@ export function cloud(buddy: CLI) {
 
       if (result.isErr()) {
         if (result.error !== 'Jump-box not found') {
-          await outro(
-            'While removing your jump-box, there was an issue',
-            { startTime, useSeconds: true },
-            result.error,
-          )
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, result.error)
           process.exit(ExitCode.FatalError)
         }
       }
@@ -420,10 +374,7 @@ export function cloud(buddy: CLI) {
     })
 
   buddy.on('cloud:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

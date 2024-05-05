@@ -5,43 +5,52 @@ const faqs = [
   [
     {
       question: 'What is the goal of the Stacks framework?',
-      answer: 'The goal of the Stacks framework is to help you create and maintain frontends, backends, and clouds—without having to worry about the boilerplate. It is a rapid development framework, meeting all your full stack needs.',
+      answer:
+        'The goal of the Stacks framework is to help you create and maintain frontends, backends, and clouds—without having to worry about the boilerplate. It is a rapid development framework, meeting all your full stack needs.',
     },
     {
       question: 'What does the Buddy toolkit do?',
-      answer: 'Buddy is a toolkit that helps you interact with the Stacks API. It provides commands for installing dependencies, starting dev servers, building libraries or servers, committing changes, creating releases, and updating all dependencies and the Stacks framework.',
+      answer:
+        'Buddy is a toolkit that helps you interact with the Stacks API. It provides commands for installing dependencies, starting dev servers, building libraries or servers, committing changes, creating releases, and updating all dependencies and the Stacks framework.',
     },
     {
       question: 'What are the main features of the Stacks framework?',
-      answer: 'The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It includes Stacks Frontend, Stacks Backend, Stacks Cloud, Stacks CI/CD, and Stacks DX.',
+      answer:
+        'The Stacks framework is a harmony of several “engines” to build any web and/or desktop application, in highly scalable & privacy-friendly ways. It includes Stacks Frontend, Stacks Backend, Stacks Cloud, Stacks CI/CD, and Stacks DX.',
     },
   ],
   [
     {
       question: 'How do I get started with Stacks?',
-      answer: 'You can get started with Stacks by running the command "curl -Ssf stacksjs.org | sh" in your terminal. If Bun >= v1.0 is installed already, you can also get started via "bunx stacks new my-project".',
+      answer:
+        'You can get started with Stacks by running the command "curl -Ssf stacksjs.org | sh" in your terminal. If Bun >= v1.0 is installed already, you can also get started via "bunx stacks new my-project".',
     },
     {
       question: 'What is the Stacks mantra?',
-      answer: 'The Stacks mantra is "Convention over configuration". This means that Stacks provides sensible defaults that allow developers to focus on writing code, rather than setting up configurations.',
+      answer:
+        'The Stacks mantra is "Convention over configuration". This means that Stacks provides sensible defaults that allow developers to focus on writing code, rather than setting up configurations.',
     },
     {
       question: 'What is the Stacks CI/CD?',
-      answer: 'Stacks CI/CD allows you to focus on coding, not publishing. It includes a Deployment Manager for zero-setup push-to-deploy and a Release Manager for auto-publishing libraries to npm.',
+      answer:
+        'Stacks CI/CD allows you to focus on coding, not publishing. It includes a Deployment Manager for zero-setup push-to-deploy and a Release Manager for auto-publishing libraries to npm.',
     },
   ],
   [
     {
       question: 'Is Stacks beginner-friendly?',
-      answer: 'Yes, Stacks is extremely beginner-friendly. The approachable design allows you to learn at your own pace, using thorough documentation covering every aspect of the framework.',
+      answer:
+        'Yes, Stacks is extremely beginner-friendly. The approachable design allows you to learn at your own pace, using thorough documentation covering every aspect of the framework.',
     },
     {
       question: 'What is the Stacks DX?',
-      answer: 'Stacks DX (Developer Experience) enhances productivity for developers. It includes IDE integration, zero-config setup, linter & formatter, type safety, git workflows, auto imports, code snippets, spell checker, utilities collections, team management, and testing.',
+      answer:
+        'Stacks DX (Developer Experience) enhances productivity for developers. It includes IDE integration, zero-config setup, linter & formatter, type safety, git workflows, auto imports, code snippets, spell checker, utilities collections, team management, and testing.',
     },
     {
       question: 'What is the roadmap for Stacks?',
-      answer: 'The roadmap for Stacks includes first-party supported stacks like Table, Calendar, Command Palette, Date Picker, File Manager, Image, Video, Audio, Identity, Digital Ownership, Payments, and Governance. More information can be found in the detailed roadmap.',
+      answer:
+        'The roadmap for Stacks includes first-party supported stacks like Table, Calendar, Command Palette, Date Picker, File Manager, Image, Video, Audio, Identity, Digital Ownership, Payments, and Governance. More information can be found in the detailed roadmap.',
     },
   ],
 ]

@@ -5,18 +5,9 @@ import { extractFieldsFromModel } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes } from '@stacksjs/types'
-import {
-  generateMysqlMigration,
-  resetMysqlDatabase,
-} from 'actions/src/database/mysql'
-import {
-  generatePostgresMigration,
-  resetPostgresDatabase,
-} from 'actions/src/database/postgres'
-import {
-  generateSqliteMigration,
-  resetSqliteDatabase,
-} from 'actions/src/database/sqlite'
+import { generateMysqlMigration, resetMysqlDatabase } from 'actions/src/database/mysql'
+import { generatePostgresMigration, resetPostgresDatabase } from 'actions/src/database/postgres'
+import { generateSqliteMigration, resetSqliteDatabase } from 'actions/src/database/sqlite'
 import { $ } from 'bun'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { db } from './utils'
@@ -120,9 +111,7 @@ export async function getExecutedMigrations() {
   }
 }
 
-export async function haveModelFieldsChangedSinceLastMigration(
-  modelPath: string,
-) {
+export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {
   log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
 
   // const model = await import(modelPath)
@@ -143,12 +132,7 @@ export async function haveModelFieldsChangedSinceLastMigration(
 export async function lastMigration() {
   try {
     // @ts-expect-error the migrations table is not typed yet
-    return await db
-      .selectFrom('migrations')
-      .selectAll()
-      .orderBy('timestamp', 'desc')
-      .limit(1)
-      .execute()
+    return await db.selectFrom('migrations').selectAll().orderBy('timestamp', 'desc').limit(1).execute()
   } catch (error) {
     console.error('Failed to get last migration:', error)
     return { error }
@@ -158,14 +142,8 @@ export async function lastMigration() {
 export async function lastMigrationDate(): Promise<string | undefined> {
   try {
     // @ts-expect-error the migrations table is not typed yet
-    return (
-      await db
-        .selectFrom('migrations')
-        .select('timestamp')
-        .orderBy('timestamp', 'desc')
-        .limit(1)
-        .execute()
-    )[0].timestamp
+    return (await db.selectFrom('migrations').select('timestamp').orderBy('timestamp', 'desc').limit(1).execute())[0]
+      .timestamp
   } catch (error) {
     console.error('Failed to get last migration date:', error)
     return undefined
@@ -174,22 +152,17 @@ export async function lastMigrationDate(): Promise<string | undefined> {
 
 // This is a placeholder function. You need to implement the logic to
 // read the last migration file and extract the fields that were modified.
-export async function getLastMigrationFields(
-  modelName: string,
-): Promise<Attribute> {
+export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = await import(oldModelPath)
   let fields = {} as Attributes
 
-  if (typeof model.default.attributes === 'object')
-    fields = model.default.attributes
+  if (typeof model.default.attributes === 'object') fields = model.default.attributes
   else fields = JSON.parse(model.default.attributes) as Attributes
 
   return fields
 }
 
-export async function getCurrentMigrationFields(
-  modelPath: string,
-): Promise<Attribute | undefined> {
+export async function getCurrentMigrationFields(modelPath: string): Promise<Attribute | undefined> {
   return extractFieldsFromModel(modelPath)
 }

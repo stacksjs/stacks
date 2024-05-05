@@ -7,10 +7,7 @@
 
 import { log } from '@stacksjs/logging'
 import { hasComponents } from '@stacksjs/storage'
-import {
-  generateVsCodeCustomData,
-  generateWebTypes,
-} from '../helpers/vscode-custom-data'
+import { generateVsCodeCustomData, generateWebTypes } from '../helpers/vscode-custom-data'
 
 if (hasComponents()) {
   await generateWebTypes()

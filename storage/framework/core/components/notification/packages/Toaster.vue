@@ -7,13 +7,7 @@ import LoaderIcon from './assets/Loader.vue'
 import SuccessIcon from './assets/SuccessIcon.vue'
 import WarningIcon from './assets/WarningIcon.vue'
 import { ToastState } from './state'
-import type {
-  HeightT,
-  NotificationProps,
-  Position,
-  ToastT,
-  ToastToDismiss,
-} from './types'
+import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss } from './types'
 
 defineOptions({
   name: 'Toaster',
@@ -57,16 +51,13 @@ function _cn(...classes: (string | undefined)[]) {
 }
 
 function getDocumentDirection(): NotificationProps['dir'] {
-  if (typeof window === 'undefined')
-    return 'ltr'
-  if (typeof document === 'undefined')
-    return 'ltr' // For Fresh purpose
+  if (typeof window === 'undefined') return 'ltr'
+  if (typeof document === 'undefined') return 'ltr' // For Fresh purpose
 
   const dirAttribute = document.documentElement.getAttribute('dir')
 
   if (dirAttribute === 'auto' || !dirAttribute) {
-    return window.getComputedStyle(document.documentElement)
-      .direction as NotificationProps['dir']
+    return window.getComputedStyle(document.documentElement).direction as NotificationProps['dir']
   }
 
   return dirAttribute as NotificationProps['dir']
@@ -75,12 +66,8 @@ function getDocumentDirection(): NotificationProps['dir'] {
 const attrs = useAttrs()
 const toasts = ref<ToastT[]>([])
 const possiblePositions = computed(() => {
-  const posList = toasts.value
-    .filter(toast => toast.position)
-    .map(toast => toast.position) as Position[]
-  return posList.length > 0
-    ? Array.from(new Set([props.position].concat(posList)))
-    : [props.position]
+  const posList = toasts.value.filter((toast) => toast.position).map((toast) => toast.position) as Position[]
+  return posList.length > 0 ? Array.from(new Set([props.position].concat(posList))) : [props.position]
 })
 const heights = ref<HeightT[]>([])
 const expanded = ref(false)
@@ -100,20 +87,14 @@ const listRef = ref<HTMLOListElement[] | HTMLOListElement | null>(null)
 const lastFocusedElementRef = ref<HTMLElement | null>(null)
 const isFocusWithinRef = ref(false)
 
-const hotkeyLabel = props.hotkey
-  .join('+')
-  .replace(/Key/g, '')
-  .replace(/Digit/g, '')
+const hotkeyLabel = props.hotkey.join('+').replace(/Key/g, '').replace(/Digit/g, '')
 
 function removeToast(toast: ToastT) {
   toasts.value = toasts.value.filter(({ id }) => id !== toast.id)
 }
 
 function onBlur(event: FocusEvent | any) {
-  if (
-    isFocusWithinRef.value
-    && !event.currentTarget?.contains?.(event.relatedTarget)
-  ) {
+  if (isFocusWithinRef.value && !event.currentTarget?.contains?.(event.relatedTarget)) {
     isFocusWithinRef.value = false
     if (lastFocusedElementRef.value) {
       lastFocusedElementRef.value.focus({ preventScroll: true })
@@ -123,12 +104,9 @@ function onBlur(event: FocusEvent | any) {
 }
 
 function onFocus(event: FocusEvent | any) {
-  const isNotDismissible
-    = event.target instanceof HTMLElement
-    && event.target.dataset.dismissible === 'false'
+  const isNotDismissible = event.target instanceof HTMLElement && event.target.dataset.dismissible === 'false'
 
-  if (isNotDismissible)
-    return
+  if (isNotDismissible) return
 
   if (!isFocusWithinRef.value) {
     isFocusWithinRef.value = true
@@ -138,12 +116,9 @@ function onFocus(event: FocusEvent | any) {
 
 function onPointerDown(event: PointerEvent) {
   if (event.target) {
-    const isNotDismissible
-      = event.target instanceof HTMLElement
-      && event.target.dataset.dismissible === 'false'
+    const isNotDismissible = event.target instanceof HTMLElement && event.target.dataset.dismissible === 'false'
 
-    if (isNotDismissible)
-      return
+    if (isNotDismissible) return
   }
   interacting.value = false
 }
@@ -151,27 +126,21 @@ function onPointerDown(event: PointerEvent) {
 watchEffect((onInvalidate) => {
   const unsubscribe = ToastState.subscribe((toast) => {
     if ((toast as ToastToDismiss).dismiss) {
-      toasts.value = toasts.value.map(t =>
-        t.id === toast.id ? { ...t, delete: true } : t,
-      )
+      toasts.value = toasts.value.map((t) => (t.id === toast.id ? { ...t, delete: true } : t))
       return
     }
 
     nextTick(() => {
-      const indexOfExistingToast = toasts.value.findIndex(
-        t => t.id === toast.id,
-      )
+      const indexOfExistingToast = toasts.value.findIndex((t) => t.id === toast.id)
 
       // Update the toast if it already exists
-      if (indexOfExistingToast !== -1)
-        toasts.value.splice(indexOfExistingToast, 1, toast)
-        // toasts.value = [
-        //   ...toasts.value.slice(0, indexOfExistingToast),
-        //   { ...toasts.value[indexOfExistingToast], ...toast },
-        //   ...toasts.value.slice(indexOfExistingToast + 1)
-        // ]
-      else
-        toasts.value = [toast, ...toasts.value]
+      if (indexOfExistingToast !== -1) toasts.value.splice(indexOfExistingToast, 1, toast)
+      // toasts.value = [
+      //   ...toasts.value.slice(0, indexOfExistingToast),
+      //   { ...toasts.value[indexOfExistingToast], ...toast },
+      //   ...toasts.value.slice(indexOfExistingToast + 1)
+      // ]
+      else toasts.value = [toast, ...toasts.value]
     })
   })
 
@@ -193,24 +162,18 @@ watch(
       if (window?.matchMedia('(prefers-color-scheme: dark)').matches) {
         // it's currently dark
         actualTheme.value = 'dark'
-      }
-      else {
+      } else {
         // it's not dark
         actualTheme.value = 'light'
       }
     }
 
-    if (typeof window === 'undefined')
-      return
+    if (typeof window === 'undefined') return
 
-    window
-      .matchMedia('(prefers-color-scheme: dark)')
-      .addEventListener('change', ({ matches }) => {
-        if (matches)
-          actualTheme.value = 'dark'
-        else
-          actualTheme.value = 'light'
-      })
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
+      if (matches) actualTheme.value = 'dark'
+      else actualTheme.value = 'light'
+    })
   },
 )
 
@@ -231,15 +194,12 @@ watch(
 
 watchEffect(() => {
   // Ensure expanded is always false when no toasts are present / only one left
-  if (toasts.value.length <= 1)
-    expanded.value = false
+  if (toasts.value.length <= 1) expanded.value = false
 })
 
 watchEffect((onInvalidate) => {
   function handleKeyDown(event: KeyboardEvent) {
-    const isHotkeyPressed = props.hotkey.every(
-      key => (event as any)[key] || event.code === key,
-    )
+    const isHotkeyPressed = props.hotkey.every((key) => (event as any)[key] || event.code === key)
 
     const listRefItem = Array.isArray(listRef.value) ? listRef.value[0] : listRef.value
 
@@ -250,12 +210,10 @@ watchEffect((onInvalidate) => {
 
     const isItemActive = document.activeElement === listRef.value || listRefItem?.contains(document.activeElement)
 
-    if (event.code === 'Escape' && isItemActive)
-      expanded.value = false
+    if (event.code === 'Escape' && isItemActive) expanded.value = false
   }
 
-  if (!isClient)
-    return
+  if (!isClient) return
 
   document.addEventListener('keydown', handleKeyDown)
 

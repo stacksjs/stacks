@@ -56,9 +56,7 @@ export function useGitHub() {
   function getActionRunDuration(startTime: Date, endTime: Date): string {
     const start = new Date(startTime)
     const end = new Date(endTime)
-    const durationInSeconds = Math.floor(
-      (end.getTime() - start.getTime()) / 1000,
-    )
+    const durationInSeconds = Math.floor((end.getTime() - start.getTime()) / 1000)
 
     return formatDuration(durationInSeconds)
   }

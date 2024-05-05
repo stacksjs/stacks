@@ -2,12 +2,7 @@ import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-import type {
-  aws_certificatemanager as acm,
-  aws_lambda as lambda,
-  aws_s3 as s3,
-  aws_wafv2 as wafv2,
-} from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
   Fn,
@@ -50,23 +45,14 @@ export class CdnStack {
   constructor(scope: Construct, props: CdnStackProps) {
     this.props = props
 
-    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(
-      scope,
-      'OAI',
-    )
+    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, 'OAI')
 
     this.cdnCachePolicy = new cloudfront.CachePolicy(scope, 'CdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
       cachePolicyName: `${props.slug}-${props.appEnv}-cdn-cache-policy`,
-      minTtl: config.cloud.cdn?.minTtl
-        ? Duration.seconds(config.cloud.cdn.minTtl)
-        : undefined,
-      defaultTtl: config.cloud.cdn?.defaultTtl
-        ? Duration.seconds(config.cloud.cdn.defaultTtl)
-        : undefined,
-      maxTtl: config.cloud.cdn?.maxTtl
-        ? Duration.seconds(config.cloud.cdn.maxTtl)
-        : undefined,
+      minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
+      defaultTtl: config.cloud.cdn?.defaultTtl ? Duration.seconds(config.cloud.cdn.defaultTtl) : undefined,
+      maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
       cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
     })
 
@@ -94,24 +80,20 @@ export class CdnStack {
     // })
 
     // TODO: make this configurable
-    this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(
-      scope,
-      'StacksRealTimeLogConfig',
-      {
-        endPoints: [cloudfront.Endpoint.fromKinesisStream(logStream)],
-        fields: [
-          'timestamp',
-          'c-ip',
-          'cs-method',
-          'cs-uri-stem',
-          'cs-uri-query',
-          'cs-referer',
-          'cs-user-agent',
-          'sc-status',
-        ],
-        samplingRate: 100, // Adjust the sampling rate as needed
-      },
-    )
+    this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
+      endPoints: [cloudfront.Endpoint.fromKinesisStream(logStream)],
+      fields: [
+        'timestamp',
+        'c-ip',
+        'cs-method',
+        'cs-uri-stem',
+        'cs-uri-query',
+        'cs-referer',
+        'cs-user-agent',
+        'sc-status',
+      ],
+      samplingRate: 100, // Adjust the sampling rate as needed
+    })
 
     // the actual CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
@@ -162,9 +144,7 @@ export class CdnStack {
     new route53.ARecord(scope, 'AliasRecord', {
       recordName: props.domain,
       zone: props.zone,
-      target: route53.RecordTarget.fromAlias(
-        new targets.CloudFrontTarget(this.distribution),
-      ),
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
     })
 
     new Output(scope, 'DistributionId', {
@@ -186,9 +166,7 @@ export class CdnStack {
     // this.cdnCachePolicy = cdnCachePolicy
   }
 
-  getCookieBehavior(
-    behavior: string | undefined,
-  ): cloudfront.CacheCookieBehavior | undefined {
+  getCookieBehavior(behavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
     switch (behavior) {
       case 'all':
         return cloudfront.CacheCookieBehavior.all()
@@ -196,9 +174,7 @@ export class CdnStack {
         return cloudfront.CacheCookieBehavior.none()
       case 'allowList':
         // If you have a list of cookies, replace `myCookie` with your cookie
-        return cloudfront.CacheCookieBehavior.allowList(
-          ...(config.cloud.cdn?.allowList.cookies || []),
-        )
+        return cloudfront.CacheCookieBehavior.allowList(...(config.cloud.cdn?.allowList.cookies || []))
       default:
         return undefined
     }
@@ -228,9 +204,7 @@ export class CdnStack {
     }
   }
 
-  allowedMethodsFromString(
-    methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS',
-  ): cloudfront.AllowedMethods {
+  allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
     if (!methods) return cloudfront.AllowedMethods.ALLOW_ALL
 
     switch (methods) {
@@ -245,9 +219,7 @@ export class CdnStack {
     }
   }
 
-  cachedMethodsFromString(
-    methods?: 'GET_HEAD' | 'GET_HEAD_OPTIONS',
-  ): cloudfront.CachedMethods {
+  cachedMethodsFromString(methods?: 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.CachedMethods {
     if (!methods) return cloudfront.CachedMethods.CACHE_GET_HEAD
 
     switch (methods) {
@@ -264,10 +236,7 @@ export class CdnStack {
     return config.api?.deploy
   }
 
-  apiBehaviorOptions(
-    scope: Construct,
-    props: CdnStackProps,
-  ): Record<string, cloudfront.BehaviorOptions> {
+  apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = `api.${props.domain}`
 
     const origin = () => {
@@ -299,9 +268,7 @@ export class CdnStack {
     }
   }
 
-  docsBehaviorOptions(
-    props: CdnStackProps,
-  ): Record<string, cloudfront.BehaviorOptions> {
+  docsBehaviorOptions(props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     return {
       '/docs': {
         origin: new origins.S3Origin(props.publicBucket, {
@@ -309,12 +276,8 @@ export class CdnStack {
           originPath: '/docs',
         }),
         compress: true,
-        allowedMethods: this.allowedMethodsFromString(
-          config.cloud.cdn?.allowedMethods,
-        ),
-        cachedMethods: this.cachedMethodsFromString(
-          config.cloud.cdn?.cachedMethods,
-        ),
+        allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
+        cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         realtimeLogConfig: this.realtimeLogConfig,
@@ -325,12 +288,8 @@ export class CdnStack {
           originPath: '/docs',
         }),
         compress: true,
-        allowedMethods: this.allowedMethodsFromString(
-          config.cloud.cdn?.allowedMethods,
-        ),
-        cachedMethods: this.cachedMethodsFromString(
-          config.cloud.cdn?.cachedMethods,
-        ),
+        allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
+        cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         realtimeLogConfig: this.realtimeLogConfig,
@@ -338,15 +297,9 @@ export class CdnStack {
     }
   }
 
-  aiBehaviorOptions(
-    scope: Construct,
-    props: CdnStackProps,
-  ): Record<string, cloudfront.BehaviorOptions> {
+  aiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = Fn.select(2, Fn.split('/', props.askAiUrl.url))
-    const summaryHostname = Fn.select(
-      2,
-      Fn.split('/', props.summarizeAiUrl.url),
-    )
+    const summaryHostname = Fn.select(2, Fn.split('/', props.summarizeAiUrl.url))
 
     const aiCachePolicy = new cloudfront.CachePolicy(scope, 'AiCachePolicy', {
       comment: 'Stacks AI Cache Policy',
@@ -354,12 +307,7 @@ export class CdnStack {
       defaultTtl: Duration.seconds(0),
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList(
-        'Accept',
-        'x-api-key',
-        'Authorization',
-        'Content-Type',
-      ),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
     })
 
@@ -389,10 +337,7 @@ export class CdnStack {
     }
   }
 
-  cliSetupBehaviorOptions(
-    scope: Construct,
-    props: CdnStackProps,
-  ): Record<string, cloudfront.BehaviorOptions> {
+  cliSetupBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = Fn.select(2, Fn.split('/', props.cliSetupUrl.url))
 
     return {
@@ -430,10 +375,7 @@ export class CdnStack {
     return hasFiles(p.projectPath('docs'))
   }
 
-  additionalBehaviors(
-    scope: Construct,
-    props: CdnStackProps,
-  ): Record<string, cloudfront.BehaviorOptions> {
+  additionalBehaviors(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
     if (this.shouldDeployApi()) {
@@ -497,12 +439,7 @@ export class CdnStack {
       defaultTtl: Duration.seconds(0),
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList(
-        'Accept',
-        'x-api-key',
-        'Authorization',
-        'Content-Type',
-      ),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
     })
 

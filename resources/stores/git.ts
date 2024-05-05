@@ -34,9 +34,7 @@ export const useGitStore = defineStore('git', {
 
       fetch.setToken(token)
 
-      const response = await fetch.get(
-        `/actions/runs?per_page=${numberOfCommits}`,
-      )
+      const response = await fetch.get(`/actions/runs?per_page=${numberOfCommits}`)
 
       this.workflowRuns = response.workflow_runs
     },
@@ -71,5 +69,4 @@ export const useGitStore = defineStore('git', {
   },
 })
 
-if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(useGitStore, import.meta.hot))
+if (import.meta.hot) import.meta.hot.accept(acceptHMRUpdate(useGitStore, import.meta.hot))

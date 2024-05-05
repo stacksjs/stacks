@@ -17,8 +17,7 @@ const result = await runCommands([NpmScript.Lint, NpmScript.LintPackageJson], {
 })
 
 if (Array.isArray(result)) {
-  if (result.map((r) => r.isErr()).includes(true))
-    process.exit(ExitCode.FatalError)
+  if (result.map((r) => r.isErr()).includes(true)) process.exit(ExitCode.FatalError)
 }
 
 log.success('Linted')

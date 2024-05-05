@@ -14,19 +14,18 @@ const features = [
   {
     title: 'Payroll',
     description:
-      'Keep track of everyone\'s salaries and whether or not they\'ve been paid. Direct deposit not supported.',
+      "Keep track of everyone's salaries and whether or not they've been paid. Direct deposit not supported.",
     image: screenshotPayroll,
   },
   {
     title: 'Claim expenses',
-    description:
-      'All of your receipts organized into one place, as long as you don\'t mind typing in the data by hand.',
+    description: "All of your receipts organized into one place, as long as you don't mind typing in the data by hand.",
     // image: screenshotExpenses,
   },
   {
     title: 'VAT handling',
     description:
-      'We only sell our software to companies who don\'t deal with VAT at all, so technically we do all the VAT stuff they need.',
+      "We only sell our software to companies who don't deal with VAT at all, so technically we do all the VAT stuff they need.",
     // image: screenshotVatReturns,
   },
   {

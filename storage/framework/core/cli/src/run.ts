@@ -29,20 +29,14 @@ import { italic } from './utils'
  *   console.log(result)
  * ```
  */
-export async function runCommand(
-  command: string,
-  options?: CliOptions,
-): Promise<Result<Subprocess, CommandError>> {
+export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug('runCommand:', command)
   log.debug('options:', options)
 
   return await exec(command, options)
 }
 
-export async function runProcess(
-  command: string,
-  options?: CliOptions,
-): Promise<Result<Subprocess, CommandError>> {
+export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug('runProcess:', italic(command))
   log.debug('runProcess Options:', options)
 
@@ -74,10 +68,7 @@ export async function runProcess(
  *   console.log(result)
  * ```
  */
-export async function runCommandSync(
-  command: string,
-  options?: CliOptions,
-): Promise<string> {
+export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
   log.debug('runCommandSync:', italic(command))
   log.debug('runCommandSync Options:', options)
 
@@ -101,8 +92,7 @@ export async function runCommandSync(
 export async function runCommands(commands: string[], options?: CliOptions) {
   const results = []
 
-  for (const command of commands)
-    results.push(await runCommand(command, options))
+  for (const command of commands) results.push(await runCommand(command, options))
 
   return results
 }

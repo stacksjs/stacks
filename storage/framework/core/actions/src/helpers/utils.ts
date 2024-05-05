@@ -42,8 +42,7 @@ export async function runActions(actions: string[], options?: ActionOptions) {
 
   for (const action of actions) {
     log.debug(`running action "${action}"`)
-    if (!hasAction(action))
-      return err(`The specified action "${action}" does not exist`)
+    if (!hasAction(action)) return err(`The specified action "${action}" does not exist`)
   }
 
   const opts = buddyOptions()
@@ -53,10 +52,7 @@ export async function runActions(actions: string[], options?: ActionOptions) {
     ...options,
   }
 
-  const commands = actions.map(
-    (action) =>
-      `bun --bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`,
-  )
+  const commands = actions.map((action) => `bun --bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
 
   log.debug('commands:', commands)
 

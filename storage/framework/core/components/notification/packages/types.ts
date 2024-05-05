@@ -1,14 +1,6 @@
 import type { CSSProperties, Component } from 'vue'
 
-export type NotificationTypes =
-  | 'normal'
-  | 'action'
-  | 'success'
-  | 'info'
-  | 'warning'
-  | 'error'
-  | 'loading'
-  | 'default'
+export type NotificationTypes = 'normal' | 'action' | 'success' | 'info' | 'warning' | 'error' | 'loading' | 'default'
 
 export type PromiseT<Data = any> = Promise<Data> | (() => Promise<Data>)
 
@@ -83,13 +75,7 @@ export interface ToastT<T extends Component = Component> {
   position?: Position
 }
 
-export type Position =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right'
-  | 'top-center'
-  | 'bottom-center'
+export type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
 
 export interface HeightT {
   height: number

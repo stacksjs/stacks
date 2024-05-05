@@ -42,16 +42,8 @@ export const frameworkDefaults = {
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
             // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.localhost:3000/docs')}`)
-            console.log(
-              `  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green(
-                'https://stacks.localhost/docs',
-              )}`,
-            )
-            console.log(
-              `  ${c.green('➜')}  ${c.bold('Temp URL')}: ${c.green(
-                'http://stacksjs.test:3000',
-              )}`,
-            )
+            console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('https://stacks.localhost/docs')}`)
+            console.log(`  ${c.green('➜')}  ${c.bold('Temp URL')}: ${c.green('http://stacksjs.test:3000')}`)
           }
         },
       },

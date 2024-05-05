@@ -5,16 +5,11 @@ interface ZipOptions {
   cwd?: string
 }
 
-export async function zip(
-  from: string | string[],
-  to?: string,
-  options?: ZipOptions,
-) {
+export async function zip(from: string | string[], to?: string, options?: ZipOptions) {
   const toPath = to || 'archive.zip'
   const fromPath = Array.isArray(from) ? from.join(' ') : from
 
-  if (Array.isArray(from))
-    return runCommand(`zip -r ${toPath} ${fromPath}`, options)
+  if (Array.isArray(from)) return runCommand(`zip -r ${toPath} ${fromPath}`, options)
 
   return runCommand(`zip -r ${to} ${from}`, options)
 }
@@ -49,10 +44,7 @@ export function gunzipSync(data: Uint8Array) {
   return Bun.gunzipSync(data) // decompressed
 }
 
-export function deflateSync(
-  data: Uint8Array,
-  options?: ZlibCompressionOptions,
-) {
+export function deflateSync(data: Uint8Array, options?: ZlibCompressionOptions) {
   return Bun.deflateSync(data, options) // compressed
 }
 

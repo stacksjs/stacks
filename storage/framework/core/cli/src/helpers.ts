@@ -8,10 +8,7 @@ import { version } from '../package.json'
 /**
  * Prints the intro message.
  */
-export async function intro(
-  command: string,
-  options?: IntroOptions,
-): Promise<number> {
+export async function intro(command: string, options?: IntroOptions): Promise<number> {
   return new Promise((resolve) => {
     if (options?.quiet === false) {
       console.log()
@@ -30,11 +27,7 @@ export async function intro(
 /**
  * Prints the outro message.
  */
-export function outro(
-  text: string,
-  options?: OutroOptions,
-  error?: Error | string,
-) {
+export function outro(text: string, options?: OutroOptions, error?: Error | string) {
   const opts = {
     type: 'success',
     useSeconds: true,
@@ -56,25 +49,19 @@ export function outro(
 
       if (opts.quiet === true) return resolve(ExitCode.Success)
 
-      if (error)
-        log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
+      if (error) log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
       else if (opts.type === 'info')
-        log.info(
-          `${dim(
-            gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`),
-          )} ${opts.message ?? 'Complete'}`,
-        )
+        log.info(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
       else
         log.success(
-          `${dim(
-            gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)),
-          )} ${bold(green(opts.message ?? 'Complete'))}`,
+          `${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(
+            green(opts.message ?? 'Complete'),
+          )}`,
         )
     } else {
       if (opts?.type === 'info') log.info(text)
       // the following condition triggers in the case of "Cleaned up" messages
-      else if (opts?.type === 'success' && opts?.quiet !== true)
-        log.success(text)
+      else if (opts?.type === 'success' && opts?.quiet !== true) log.success(text)
     }
 
     return resolve(ExitCode.Success)

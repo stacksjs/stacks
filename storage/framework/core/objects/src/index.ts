@@ -58,8 +58,7 @@ export function isKeyOf<T extends object>(obj: T, k: keyof any): k is keyof T {
  * @category Object
  */
 export function objectKeys<T extends object>(obj: T) {
-  return Object.keys(obj) as Array<`${keyof T &
-    (string | number | boolean | null | undefined)}`>
+  return Object.keys(obj) as Array<`${keyof T & (string | number | boolean | null | undefined)}`>
 }
 
 /**
@@ -115,11 +114,7 @@ function isMergeableObject(item: any): item is object {
  *
  * @category Object
  */
-export function objectPick<O extends object, T extends keyof O>(
-  obj: O,
-  keys: T[],
-  omitUndefined = false,
-) {
+export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false) {
   return keys.reduce(
     (n, k) => {
       if (k in obj) {
@@ -137,9 +132,7 @@ export function objectPick<O extends object, T extends keyof O>(
  * @category Object
  */
 export function clearUndefined<T extends object>(obj: T): T {
-  Object.keys(obj).forEach((key: string) =>
-    obj[key] === undefined ? delete obj[key] : {},
-  )
+  Object.keys(obj).forEach((key: string) => (obj[key] === undefined ? delete obj[key] : {}))
   return obj
 }
 

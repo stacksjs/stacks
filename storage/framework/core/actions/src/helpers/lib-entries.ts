@@ -26,47 +26,35 @@ export async function createLibraryEntryPoint(type: LibraryType) {
   if (type === 'functions') await createFunctionLibraryEntryPoint()
 }
 
-export async function createVueLibraryEntryPoint(
-  type: LibraryType = 'vue-components',
-) {
+export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
   log.info('Ensuring Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(
-      'There was an error generating the Vue Component Library Entry Point.',
-      err,
-    )
+    log.error('There was an error generating the Vue Component Library Entry Point.', err)
     process.exit(ExitCode.FatalError)
   })
 
   log.success('Created Vue Component Library Entry Point')
 }
 
-export async function createWebComponentLibraryEntryPoint(
-  type: LibraryType = 'web-components',
-) {
+export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
   log.info('Ensuring Web Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
   }).catch((err) => {
-    log.error(
-      'There was an error generating the Web Component library entry point',
-      err,
-    )
+    log.error('There was an error generating the Web Component library entry point', err)
     process.exit(ExitCode.FatalError)
   })
 
   log.success('Created Web Component Library Entry Point')
 }
 
-export async function createFunctionLibraryEntryPoint(
-  type: LibraryType = 'functions',
-) {
+export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
   log.info('Ensuring Function Library Entry Point...')
 
   await writeTextFile({
@@ -94,8 +82,7 @@ export function generateEntryPointData(type: LibraryType): string {
     }
 
     for (const fx of library.functions.functions) {
-      if (Array.isArray(fx))
-        arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
+      if (Array.isArray(fx)) arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
       else arr.push(`export * from '${functionsPath(fx)}'`)
     }
 
@@ -117,17 +104,8 @@ export function generateEntryPointData(type: LibraryType): string {
 
     for (const component of library.vueComponents.tags.map((tag) => tag.name)) {
       if (Array.isArray(component))
-        arr.push(
-          `export { default as ${component[1]} } from '${componentsPath(
-            component[0],
-          )}.stx'`,
-        )
-      else
-        arr.push(
-          `export { default as ${component} } from '${componentsPath(
-            component,
-          )}.stx'`,
-        )
+        arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.stx'`)
+      else arr.push(`export { default as ${component} } from '${componentsPath(component)}.stx'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -151,29 +129,13 @@ export function generateEntryPointData(type: LibraryType): string {
 
   for (const component of library.webComponents.tags.map((tag) => tag.name)) {
     if (Array.isArray(component)) {
-      imports.push(
-        `import ${component[1]} from '${componentsPath(component[0])}.stx'`,
-      )
-      declarations.push(
-        `const ${component[1]}CustomElement = defineCustomElement(${component[1]})`,
-      )
-      definitions.push(
-        `customElements.define('${kebabCase(component[1] as string)}', ${
-          component[1]
-        }CustomElement)`,
-      )
+      imports.push(`import ${component[1]} from '${componentsPath(component[0])}.stx'`)
+      declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
+      definitions.push(`customElements.define('${kebabCase(component[1] as string)}', ${component[1]}CustomElement)`)
     } else {
-      imports.push(
-        `import ${component} from '${componentsPath(component)}.stx'`,
-      )
-      declarations.push(
-        `const ${component}CustomElement = defineCustomElement(${component})`,
-      )
-      definitions.push(
-        `customElements.define('${kebabCase(
-          component,
-        )}', ${component}CustomElement)`,
-      )
+      imports.push(`import ${component} from '${componentsPath(component)}.stx'`)
+      declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
+      definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }
   }
 

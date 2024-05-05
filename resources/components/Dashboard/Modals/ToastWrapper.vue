@@ -1,11 +1,7 @@
 <script setup lang="ts">
-const {
-  position,
-} = defineProps<Props>()
+const { position } = defineProps<Props>()
 
-const emit = defineEmits([
-  'closeToast',
-])
+const emit = defineEmits(['closeToast'])
 
 interface Props {
   width: number // in rem

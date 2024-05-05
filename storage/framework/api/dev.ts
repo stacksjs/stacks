@@ -25,28 +25,23 @@ async function watchFolders() {
     const ignore = ['dist', 'bun-create', 'lint', 'components']
 
     // no need to build these directories
-    if (ignore.includes(dir.name))
-      return
+    if (ignore.includes(dir.name)) return
 
     if (dir.isDirectory()) {
       log.debug(`Watching ${dir.name} for changes ...`)
 
       const srcPath = join(path.corePath(), dir.name, 'src')
-      watch(
-        srcPath,
-        { recursive: true },
-        (event: string, filename: string | null) => {
-          if (filename === null) return
+      watch(srcPath, { recursive: true }, (event: string, filename: string | null) => {
+        if (filename === null) return
 
-          log.info(`Detected ${event} in ./core/${filename}`)
-          log.info(`Rebuilding package ...`)
-          log.debug(`Rebuilding:`, process.cwd(), srcPath, filename)
+        log.info(`Detected ${event} in ./core/${filename}`)
+        log.info(`Rebuilding package ...`)
+        log.debug(`Rebuilding:`, process.cwd(), srcPath, filename)
 
-          runCommandSync('bun run build', {
-            cwd: path.corePath(dir.name),
-          })
-        },
-      )
+        runCommandSync('bun run build', {
+          cwd: path.corePath(dir.name),
+        })
+      })
     }
   })
 
@@ -73,10 +68,6 @@ process.on('SIGINT', () => {
 })
 
 // @ts-expect-error - somehow type is not recognized
-if (globalThis.counter === 1)
-  log.info(`Listening on http://localhost:${ports.api}/api ...`)
+if (globalThis.counter === 1) log.info(`Listening on http://localhost:${ports.api}/api ...`)
 // @ts-expect-error - somehow type is not recognized
-else
-  log.info(
-    `#${globalThis.counter}: Listening on http://localhost:${ports.api}/api ...`,
-  )
+else log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api}/api ...`)

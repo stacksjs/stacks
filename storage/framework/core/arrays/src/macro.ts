@@ -1,12 +1,5 @@
 import type { Arrayable, Nullable } from '@stacksjs/types'
-import {
-  contains,
-  containsAll,
-  containsAny,
-  containsNone,
-  containsOnly,
-  doesNotContain,
-} from './contains'
+import { contains, containsAll, containsAny, containsNone, containsOnly, doesNotContain } from './contains'
 import type { PartitionFilter } from './helpers'
 import {
   at,

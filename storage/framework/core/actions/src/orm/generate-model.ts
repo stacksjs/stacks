@@ -23,7 +23,6 @@ await initiateModelGeneration()
 await setKyselyTypes()
 
 async function generateApiRoutes(model: ModelDefault) {
-
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
   if (model.default.traits?.useApi) {
     const apiRoutes = model.default.traits?.useApi?.routes
@@ -48,41 +47,41 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-   actionString += `import ${modelName} from '../${modelName}'\n\n`
+  actionString += `import ${modelName} from '../${modelName}'\n\n`
 
-    let handleString = ``
+  let handleString = ``
 
-    if (apiRoute === 'index') {
-      handleString += `handle() {
+  if (apiRoute === 'index') {
+    handleString += `handle() {
         return ${modelName}.all()
       },`
-    }
+  }
 
-    if (apiRoute === 'show') {
-      handleString += `handle() {
+  if (apiRoute === 'show') {
+    handleString += `handle() {
         return ${modelName}.find(1)
       },`
-    }
+  }
 
-    if (apiRoute === 'destroy') {
-      handleString += `handle() {
+  if (apiRoute === 'destroy') {
+    handleString += `handle() {
         const model = ${modelName}.find(1)
 
         model.delete()
 
         return 'Model deleted!'
       },`
-    }
+  }
 
-    if (apiRoute === 'store') {
-      handleString += `handle() {
+  if (apiRoute === 'store') {
+    handleString += `handle() {
         const model = ${modelName}.create({})
 
         return model
       },`
-    }
+  }
 
-    actionString += `export default new Action({
+  actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
       description: '${modelName} ${formattedApiRoute} Orm Action',
       
@@ -97,19 +96,14 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
   writer.write(actionString)
 }
 
-async function writeApiRoutes(
-  apiRoute: string,
-  model: ModelDefault,
-): Promise<string> {
+async function writeApiRoutes(apiRoute: string, model: ModelDefault): Promise<string> {
   let routeString = ``
   const tableName = model.default.table
   const modelName = model.default.name
 
-  if (apiRoute === 'index')
-    routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
+  if (apiRoute === 'index') routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
 
-  if (apiRoute === 'store')
-    routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')\n\n`
+  if (apiRoute === 'store') routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')\n\n`
 
   if (apiRoute === 'update')
     routeString += `await route.patch('${tableName}/{id}', 'Actions/${modelName}UpdateOrmAction')\n\n`
@@ -124,7 +118,6 @@ async function writeApiRoutes(
 }
 
 async function initiateModelGeneration(): Promise<void> {
-  
   await deleteExistingModels()
   await deleteExistingOrmActions()
 
@@ -137,11 +130,8 @@ async function initiateModelGeneration(): Promise<void> {
     const modelName = model.default.name
 
     await generateApiRoutes(model)
-   
 
-    const file = Bun.file(
-      path.projectStoragePath(`framework/orm/${modelName}.ts`),
-    )
+    const file = Bun.file(path.projectStoragePath(`framework/orm/${modelName}.ts`))
 
     const fields = await extractFields(model, modelFile)
 
@@ -156,22 +146,14 @@ async function initiateModelGeneration(): Promise<void> {
 }
 
 async function getRelations(model: ModelDefault): Promise<any[]> {
-  const relationsArray = [
-    'hasOne',
-    'belongsTo',
-    'hasMany',
-    'belongsToMany',
-    'hasOneThrough',
-  ]
+  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
 
   for (const relation of relationsArray) {
     if (hasRelations(model.default, relation)) {
       for (const relationInstance of model.default[relation]) {
-        const modelRelationPath = path.userModelsPath(
-          `${relationInstance.model.name}.ts`,
-        )
+        const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
 
         const modelRelation = await import(modelRelationPath)
 
@@ -185,9 +167,7 @@ async function getRelations(model: ModelDefault): Promise<any[]> {
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable:
-            relationInstance?.pivotTable ||
-            `${formattedModelName}_${modelRelation.default.table}`,
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
         })
       }
     }
@@ -207,9 +187,7 @@ async function deleteExistingModels() {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
   }
 
-  const typePath = path.projectStoragePath(
-    `framework/core/orm/src/generated/types.ts`,
-  )
+  const typePath = path.projectStoragePath(`framework/core/orm/src/generated/types.ts`)
 
   if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
 }
@@ -230,8 +208,7 @@ async function setKyselyTypes() {
     const model = await import(modelFile)
 
     const tableName = model.default.table
-    const formattedTableName =
-      tableName.charAt(0).toUpperCase() + tableName.slice(1)
+    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const modelName = model.default.name
 
     text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
@@ -248,9 +225,7 @@ async function setKyselyTypes() {
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
 
-      pivotFormatted = `${words
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('')}Table`
+      pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
         id: Generated<number>
@@ -266,22 +241,18 @@ async function setKyselyTypes() {
     const model = await import(modelFile)
 
     const tableName = model.default.table
-    const formattedTableName =
-      tableName.charAt(0).toUpperCase() + tableName.slice(1)
+    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
 
     const pivotTables = await getPivotTables(model)
 
-    for (const pivotTable of pivotTables)
-      text += `  ${pivotTable.table}: ${pivotFormatted}\n`
+    for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
     text += `  ${tableName}: ${formattedTableName}Table\n`
   }
 
   text += `}`
 
-  const file = Bun.file(
-    path.projectStoragePath(`framework/core/orm/src/generated/types.ts`),
-  )
+  const file = Bun.file(path.projectStoragePath(`framework/core/orm/src/generated/types.ts`))
 
   const writer = file.writer()
 
@@ -290,10 +261,7 @@ async function setKyselyTypes() {
   await writer.end()
 }
 
-async function extractFields(
-  model: ModelDefault,
-  modelFile: string,
-): Promise<ModelElement[]> {
+async function extractFields(model: ModelDefault, modelFile: string): Promise<ModelElement[]> {
   // TODO: we can improve this type
   const fields: Record<string, any> = model.default.attributes
   const fieldKeys = Object.keys(fields)
@@ -386,24 +354,18 @@ function getRelationCount(relation: string): string {
 
 async function getPivotTables(
   model: ModelDefault,
-): Promise<
-  { table: string; firstForeignKey?: string; secondForeignKey?: string }[]
-> {
+): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
   if ('belongsToMany' in model.default) {
     for (const belongsToManyRelation of model.default.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(
-        `${belongsToManyRelation.model.name}.ts`,
-      )
+      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model.name}.ts`)
       const modelRelation = await import(modelRelationPath)
 
       const formattedModelName = model.default.name.toLowerCase()
 
       pivotTable.push({
-        table:
-          belongsToManyRelation?.pivotTable ||
-          `${formattedModelName}_${modelRelation.default.table}`,
+        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
         firstForeignKey: belongsToManyRelation.firstForeignKey,
         secondForeignKey: belongsToManyRelation.secondForeignKey,
       })
@@ -423,8 +385,7 @@ async function generateModelString(
   const modelName = model.default.name
 
   // users -> Users
-  const formattedTableName =
-    tableName.charAt(0).toUpperCase() + tableName.slice(1)
+  const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
 
   // User -> user
   const formattedModelName = modelName.toLowerCase()
@@ -446,20 +407,17 @@ async function generateModelString(
     const tableRelation = relation.table
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
-    const capitalizeTableRelation =
-      tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
+    const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
 
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
     if (relationType === 'throughType') {
-      const relationName =
-        relation.relationName || formattedModelName + modelRelation
+      const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
       const formattedThroughRelation = relation.throughModel.name.toLowerCase()
       const throughTableRelation = throughRelation.table
-      const foreignKeyThroughRelation =
-        relation.throughForeignKey || `${formattedThroughRelation}_id`
+      const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`
 
       relationMethods += `
       async ${relationName}() {
@@ -541,8 +499,7 @@ async function generateModelString(
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const pivotTable = pivotTableRelation || tableRelation
-      const relationName =
-        relation.relationName || formattedModelName + capitalizeTableRelation
+      const relationName = relation.relationName || formattedModelName + capitalizeTableRelation
 
       relationMethods += `
       async ${relationName}() {
@@ -559,8 +516,7 @@ async function generateModelString(
     }
   }
 
-  for (const attribute of attributes)
-    fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
+  for (const attribute of attributes) fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import type { Result } from '@stacksjs/error-handling'

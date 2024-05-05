@@ -1,18 +1,9 @@
 import type { JobOptions, Nullable } from '@stacksjs/types'
-import type {
-  ValidationBoolean,
-  ValidationNumber,
-  ValidationString,
-} from '@stacksjs/validation'
+import type { ValidationBoolean, ValidationNumber, ValidationString } from '@stacksjs/validation'
 
 type FieldKey = string
 interface FieldValue {
-  rule:
-    | ValidationString
-    | ValidationNumber
-    | ValidationBoolean
-    | Date
-    | Nullable<any>
+  rule: ValidationString | ValidationNumber | ValidationBoolean | Date | Nullable<any>
   message: string
   factory?: any
   unique?: boolean
@@ -47,16 +38,7 @@ export class Action {
   enabled?: boolean
   handle: (request?: Request) => Promise<any> | object | string
 
-  constructor({
-    name,
-    description,
-    fields,
-    handle,
-    rate,
-    tries,
-    backoff,
-    enabled,
-  }: ActionOptions) {
+  constructor({ name, description, fields, handle, rate, tries, backoff, enabled }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access
 
     this.name = name

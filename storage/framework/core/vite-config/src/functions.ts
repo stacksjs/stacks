@@ -1,10 +1,5 @@
 import { alias } from '@stacksjs/alias'
-import {
-  frameworkPath,
-  functionsPath,
-  libraryEntryPath,
-  projectPath,
-} from '@stacksjs/path'
+import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'

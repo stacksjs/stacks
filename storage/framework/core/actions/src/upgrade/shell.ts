@@ -33,9 +33,7 @@ if (match) {
   if (!plugins.includes('buddy')) {
     plugins.push('buddy')
     // Trim each plugin name and ensure it’s formatted correctly
-    const formattedPlugins = plugins
-      .map((plugin) => plugin.trim())
-      .join('\n    ')
+    const formattedPlugins = plugins.map((plugin) => plugin.trim()).join('\n    ')
     const newPluginLine = `plugins=(\n    ${formattedPlugins}\n)`
     // Replace the old plugin line with the new one
     data = data.replace(pluginLineRegex, newPluginLine)
@@ -60,10 +58,7 @@ if (match) {
 }
 
 log.success('Oh My Zsh Setup Complete')
-log.info(
-  italic('To see changes reflect, you may need to open a new terminal window'),
-)
+log.info(italic('To see changes reflect, you may need to open a new terminal window'))
 
 // if using the vscode terminal, show the message
-if (process.env.TERM_PROGRAM === 'vscode')
-  log.info('⌘⇧P terminal.create.new.terminal')
+if (process.env.TERM_PROGRAM === 'vscode') log.info('⌘⇧P terminal.create.new.terminal')

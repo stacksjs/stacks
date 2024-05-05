@@ -119,11 +119,9 @@ export function domains(buddy: CLI) {
     .option('--privacy-tech', 'Enable privacy protection for tech', {
       default: c?.privacyTech || c?.privacy || true,
     })
-    .option(
-      '--privacy-registrant',
-      'Enable privacy protection for registrant',
-      { default: c?.privacyRegistrant || c?.privacy || true },
-    )
+    .option('--privacy-registrant', 'Enable privacy protection for registrant', {
+      default: c?.privacyRegistrant || c?.privacy || true,
+    })
     .option('--contact-type <type>', 'Contact type', { default: 'person' })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -170,9 +168,7 @@ export function domains(buddy: CLI) {
       let message = `Great! ${italic(domain)} was added to your account.`
       message += `\n\nAnd your APP_URL has been set to ${italic(domain)}.
       \nPlease note, this change has not been deployed yet.
-      \nThe next time you run ${bgCyan(
-        italic(bold(' buddy deploy ')),
-      )}, your app will deploy to ${italic(domain)}.
+      \nThe next time you run ${bgCyan(italic(bold(' buddy deploy ')))}, your app will deploy to ${italic(domain)}.
       \n${italic(
         'You may need to deploy 2-3 times for the changes to take effect. Issue tracked here: https://github.com/stacksjs/stacks/issues/685',
       )}`
@@ -253,10 +249,7 @@ export function domains(buddy: CLI) {
     })
 
   buddy.on('domains:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

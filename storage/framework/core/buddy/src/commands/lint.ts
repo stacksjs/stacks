@@ -25,11 +25,7 @@ export function lint(buddy: CLI) {
 
       // console.log('res', result)
       if (result.isErr()) {
-        await outro(
-          'While running `buddy lint`, there was an issue',
-          { startTime, useSeconds: true },
-          result.error,
-        )
+        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)
         process.exit()
       }
 
@@ -55,10 +51,7 @@ export function lint(buddy: CLI) {
     })
 
   buddy.on('lint:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

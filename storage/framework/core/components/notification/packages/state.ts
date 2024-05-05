@@ -1,13 +1,5 @@
 import type { Component } from 'vue'
-import type {
-  ExternalToast,
-  HeightT,
-  NotificationTypes,
-  PromiseData,
-  PromiseT,
-  ToastT,
-  ToastToDismiss,
-} from './types'
+import type { ExternalToast, HeightT, NotificationTypes, PromiseData, PromiseT, ToastT, ToastToDismiss } from './types'
 
 let toastsCounter = 0
 
@@ -47,10 +39,7 @@ class Observer {
     },
   ) => {
     const { message, ...rest } = data
-    const id =
-      typeof data.id === 'number' || (data.id && data.id?.length > 0)
-        ? data.id
-        : toastsCounter++
+    const id = typeof data.id === 'number' || (data.id && data.id?.length > 0) ? data.id : toastsCounter++
     const alreadyExists = this.toasts.find((toast) => {
       return toast.id === id
     })
@@ -81,9 +70,7 @@ class Observer {
   dismiss = (id?: number | string) => {
     if (!id) {
       this.toasts.forEach((toast) => {
-        this.subscribers.forEach((subscriber) =>
-          subscriber({ id: toast.id, dismiss: true }),
-        )
+        this.subscribers.forEach((subscriber) => subscriber({ id: toast.id, dismiss: true }))
       })
     }
 
@@ -115,10 +102,7 @@ class Observer {
     return this.create({ ...data, type: 'loading', message })
   }
 
-  promise = <ToastData>(
-    promise: PromiseT<ToastData>,
-    data?: PromiseData<ToastData>,
-  ) => {
+  promise = <ToastData>(promise: PromiseT<ToastData>, data?: PromiseData<ToastData>) => {
     if (!data) {
       // Nothing to show
       return
@@ -131,8 +115,7 @@ class Observer {
         promise,
         type: 'loading',
         message: data.loading,
-        description:
-          typeof data.description !== 'function' ? data.description : undefined,
+        description: typeof data.description !== 'function' ? data.description : undefined,
       })
     }
 
@@ -162,10 +145,7 @@ class Observer {
         this.create({ id, type: 'error', message, description })
       } else if (data.success !== undefined) {
         shouldDismiss = false
-        const message =
-          typeof data.success === 'function'
-            ? data.success(promiseData)
-            : data.success
+        const message = typeof data.success === 'function' ? data.success(promiseData) : data.success
         const description =
           typeof data.description === 'function'
             ? // @ts-expect-error - we need to check if the promise is a boolean
@@ -177,8 +157,7 @@ class Observer {
       .catch((error) => {
         if (data.error !== undefined) {
           shouldDismiss = false
-          const message =
-            typeof data.error === 'function' ? data.error(error) : data.error
+          const message = typeof data.error === 'function' ? data.error(error) : data.error
           const description =
             typeof data.description === 'function'
               ? // @ts-expect-error - we need to check if the promise is a boolean

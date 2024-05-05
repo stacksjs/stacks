@@ -34,8 +34,7 @@ export function avg(arr: number[]): number {
  * ```
  */
 export function median(arr: number[]): number {
-  if (arr.length === 0)
-    throw new Error('Cannot compute median of an empty array')
+  if (arr.length === 0) throw new Error('Cannot compute median of an empty array')
 
   const sorted = [...arr].sort((a, b) => a - b)
 
@@ -63,12 +62,7 @@ export function median(arr: number[]): number {
  * ```
  */
 export function mode(arr: number[]): number {
-  return arr
-    .sort(
-      (a, b) =>
-        arr.filter((v) => v === a).length - arr.filter((v) => v === b).length,
-    )
-    .pop() as number
+  return arr.sort((a, b) => arr.filter((v) => v === a).length - arr.filter((v) => v === b).length).pop() as number
 }
 
 /**
@@ -231,13 +225,10 @@ export function interquartileRange(array: number[]): number {
  * ```
  */
 export function covariance(array1: number[], array2: number[]): number {
-  if (array1.length !== array2.length)
-    throw new Error('Arrays must have the same length')
+  if (array1.length !== array2.length) throw new Error('Arrays must have the same length')
 
   const mean1 = average(array1)
   const mean2 = average(array2)
 
-  return average(
-    array1.map((num1, i) => (num1 - mean1) * ((array2[i] as number) - mean2)),
-  )
+  return average(array1.map((num1, i) => (num1 - mean1) * ((array2[i] as number) - mean2)))
 }

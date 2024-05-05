@@ -30,10 +30,7 @@ export async function generateLibEntries(options: GeneratorOptions) {
   })
 
   if (result.isErr()) {
-    log.error(
-      'There was an error generating your library entry points',
-      result.error,
-    )
+    log.error('There was an error generating your library entry points', result.error)
     process.exit()
   }
 
@@ -44,10 +41,7 @@ export async function generateWebTypes(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
 
   if (result.isErr()) {
-    log.error(
-      'There was an error generating the web-types.json file.',
-      result.error,
-    )
+    log.error('There was an error generating the web-types.json file.', result.error)
     process.exit()
   }
 
@@ -61,10 +55,7 @@ export async function generateVsCodeCustomData(options?: GeneratorOptions) {
   })
 
   if (result.isErr()) {
-    log.error(
-      'There was an error generating the custom-elements.json file.',
-      result.error,
-    )
+    log.error('There was an error generating the custom-elements.json file.', result.error)
     process.exit()
   }
 
@@ -88,10 +79,7 @@ export async function generateComponentMeta(options?: GeneratorOptions) {
   const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
 
   if (result.isErr()) {
-    log.error(
-      'There was an error generating your component meta information.',
-      result.error,
-    )
+    log.error('There was an error generating your component meta information.', result.error)
     process.exit()
   }
 

@@ -13,29 +13,19 @@ async function main() {
   const buddy = cli(config.cli.name)
 
   if (!fs.existsSync(p.projectPath(config.cli.command)))
-    fs.writeFileSync(
-      p.projectPath(config.cli.command),
-      `import('./storage/framework/core/buddy/src/custom-cli')`,
-    )
+    fs.writeFileSync(p.projectPath(config.cli.command), `import('./storage/framework/core/buddy/src/custom-cli')`)
 
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
-  const commandFiles = fs
-    .readdirSync(commandsDir)
-    .filter((file) => file.endsWith('.ts'))
+  const commandFiles = fs.readdirSync(commandsDir).filter((file) => file.endsWith('.ts'))
 
   for (const file of commandFiles) {
     const commandPath = `${commandsDir}/${file}`
     const dynamicImport = await import(commandPath)
 
     // Correctly use the default export function
-    if (typeof dynamicImport.default === 'function')
-      dynamicImport.default(buddy)
-    else
-      console.error(
-        `Expected a default export function in ${file}, but got:`,
-        dynamicImport.default,
-      )
+    if (typeof dynamicImport.default === 'function') dynamicImport.default(buddy)
+    else console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
   }
 
   buddy.parse()

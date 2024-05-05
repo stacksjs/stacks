@@ -238,10 +238,8 @@ export default {
       customScope: 'Select the SCOPE of this change:',
       subject: 'Write a SHORT, IMPERATIVE tense description of the change:\n',
       body: 'Provide a LONGER description of the change (optional). Use "|" to break new line:\n',
-      breaking:
-        'List any BREAKING CHANGES (optional). Use "|" to break new line:\n',
-      footerPrefixesSelect:
-        'Select the ISSUES type of the change list by this change (optional):',
+      breaking: 'List any BREAKING CHANGES (optional). Use "|" to break new line:\n',
+      footerPrefixesSelect: 'Select the ISSUES type of the change list by this change (optional):',
       customFooterPrefixes: 'Input ISSUES prefix:',
       footer: 'List any ISSUES by this change. E.g.: #31, #34:\n',
       confirmCommit: 'Are you sure you want to proceed with the commit above?',
@@ -329,19 +327,11 @@ export default {
     vueComponents: {
       name: 'hello-world-vue',
       description: 'Your Vue component library description',
-      keywords: [
-        'component',
-        'library',
-        'vue',
-        'vite',
-        'typescript',
-        'javascript',
-      ],
+      keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
       tags: [
         {
           name: ['HelloWorld', 'AppHelloWorld'],
-          description:
-            'The Hello World custom element, built via this framework.',
+          description: 'The Hello World custom element, built via this framework.',
           attributes: [
             {
               name: 'greeting',
@@ -355,19 +345,11 @@ export default {
     webComponents: {
       name: 'hello-world-elements',
       description: 'Your framework agnostic web component library description.',
-      keywords: [
-        'custom-elements',
-        'web-components',
-        'library',
-        'framework-agnostic',
-        'typescript',
-        'javascript',
-      ],
+      keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
       tags: [
         {
           name: ['HelloWorld', 'AppHelloWorld'],
-          description:
-            'The Hello World custom element, built via this framework.',
+          description: 'The Hello World custom element, built via this framework.',
           attributes: [
             {
               name: 'greeting',
@@ -381,13 +363,7 @@ export default {
     functions: {
       name: 'hello-world-fx',
       description: 'Your function library description.',
-      keywords: [
-        'functions',
-        'composables',
-        'library',
-        'typescript',
-        'javascript',
-      ],
+      keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
       shouldGenerateSourcemap: false,
       functions: ['counter', 'dark'],
     },

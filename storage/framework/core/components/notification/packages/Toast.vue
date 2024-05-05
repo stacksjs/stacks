@@ -47,7 +47,7 @@ const toastClass = computed(() => {
 const toastStyle = props.toast.style || {}
 
 // Height index is used to calculate the offset as it gets updated before the toast array, which means we can calculate the new layout faster.
-const heightIndex = computed(() => props.heights.findIndex(height => height.toastId === props.toast.id) || 0)
+const heightIndex = computed(() => props.heights.findIndex((height) => height.toastId === props.toast.id) || 0)
 const closeButton = computed(() => props.toast.closeButton ?? props.closeButton)
 const duration = computed(() => props.toast.duration || props.duration || TOAST_LIFETIME)
 
@@ -55,7 +55,7 @@ const closeTimerStartTimeRef = ref(0)
 const offset = ref(0)
 const remainingTime = ref(duration.value)
 const lastCloseTimerStartTimeRef = ref(0)
-const pointerStartRef = ref<{ x: number, y: number } | null>(null)
+const pointerStartRef = ref<{ x: number; y: number } | null>(null)
 const coords = computed(() => props.position.split('-'))
 const y = computed(() => coords.value[0])
 const x = computed(() => coords.value[1])
@@ -65,8 +65,7 @@ const isStringOfDescription = typeof props.toast.description !== 'string'
 const toastsHeightBefore = computed(() => {
   return props.heights.reduce((prev, curr, reducerIndex) => {
     // Calculate offset up untill current  toast
-    if (reducerIndex >= heightIndex.value)
-      return prev
+    if (reducerIndex >= heightIndex.value) return prev
 
     return prev + curr.height
   }, 0)
@@ -76,8 +75,7 @@ const invert = computed(() => props.toast.invert || props.invert)
 const disabled = computed(() => toastType.value === 'loading')
 
 onMounted(() => {
-  if (!mounted.value)
-    return
+  if (!mounted.value) return
 
   const toastNode = toastRef.value
   const originalHeight = toastNode?.style.height
@@ -88,9 +86,7 @@ onMounted(() => {
   initialHeight.value = newHeight
 
   let newHeightArr
-  const alreadyExists = props.heights.find(
-    height => height.toastId === props.toast.id,
-  )
+  const alreadyExists = props.heights.find((height) => height.toastId === props.toast.id)
 
   if (!alreadyExists) {
     newHeightArr = [
@@ -101,12 +97,9 @@ onMounted(() => {
       },
       ...props.heights,
     ]
-  }
-  else {
-    newHeightArr = props.heights.map(height =>
-      height.toastId === props.toast.id
-        ? { ...height, height: newHeight }
-        : height,
+  } else {
+    newHeightArr = props.heights.map((height) =>
+      height.toastId === props.toast.id ? { ...height, height: newHeight } : height,
     )
   }
 
@@ -117,9 +110,7 @@ function deleteToast() {
   // Save the offset for the exit swipe animation
   removed.value = true
   offsetBeforeRemove.value = offset.value
-  const newHeights = props.heights.filter(
-    height => height.toastId !== props.toast.id,
-  )
+  const newHeights = props.heights.filter((height) => height.toastId !== props.toast.id)
   emit('update:heights', newHeights)
 
   setTimeout(() => {
@@ -128,36 +119,28 @@ function deleteToast() {
 }
 
 function handleCloseToast() {
-  if (disabled.value || !dismissible.value)
-    return
+  if (disabled.value || !dismissible.value) return
 
   deleteToast()
   props.toast.onDismiss?.(props.toast)
 }
 
 function onPointerDown(event: PointerEvent) {
-  if (disabled.value || !dismissible.value)
-    return
+  if (disabled.value || !dismissible.value) return
   dragStartTime.value = new Date()
   offsetBeforeRemove.value = offset.value
   // Ensure we maintain correct pointer capture even when going outside of the toast (e.g. when swiping)
   ;(event.target as HTMLElement).setPointerCapture(event.pointerId)
-  if ((event.target as HTMLElement).tagName === 'BUTTON')
-    return
+  if ((event.target as HTMLElement).tagName === 'BUTTON') return
   swiping.value = true
   pointerStartRef.value = { x: event.clientX, y: event.clientY }
 }
 
 function onPointerUp(event: PointerEvent) {
-  if (swipeOut.value)
-    return
+  if (swipeOut.value) return
   pointerStartRef.value = null
 
-  const swipeAmount = Number(
-    toastRef.value?.style
-      .getPropertyValue('--swipe-amount')
-      .replace('px', '') || 0,
-  )
+  const swipeAmount = Number(toastRef.value?.style.getPropertyValue('--swipe-amount').replace('px', '') || 0)
 
   const timeTaken = new Date().getTime() - (dragStartTime.value?.getTime() || 0)
   const velocity = Math.abs(swipeAmount) / timeTaken
@@ -176,8 +159,7 @@ function onPointerUp(event: PointerEvent) {
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (!pointerStartRef.value)
-    return
+  if (!pointerStartRef.value) return
 
   const yPosition = event.clientY - pointerStartRef.value.y
   const xPosition = event.clientX - pointerStartRef.value.x
@@ -189,8 +171,7 @@ function onPointerMove(event: PointerEvent) {
 
   if (isAllowedToSwipe) {
     toastRef.value?.style.setProperty('--swipe-amount', `${yPosition}px`)
-  }
-  else if (Math.abs(xPosition) > swipeStartThreshold) {
+  } else if (Math.abs(xPosition) > swipeStartThreshold) {
     // User is swiping in wrong direction so we disable swipe gesture
     // for the current pointer down interaction
     pointerStartRef.value = null
@@ -203,9 +184,9 @@ watchEffect(() => {
 
 watchEffect((onInvalidate) => {
   if (
-    (props.toast.promise && toastType.value === 'loading')
-    || props.toast.duration === Number.POSITIVE_INFINITY
-    || props.toast.type === 'loading'
+    (props.toast.promise && toastType.value === 'loading') ||
+    props.toast.duration === Number.POSITIVE_INFINITY ||
+    props.toast.type === 'loading'
   )
     return
   let timeoutId: ReturnType<typeof setTimeout>
@@ -231,14 +212,8 @@ watchEffect((onInvalidate) => {
     }, remainingTime.value)
   }
 
-  if (
-    props.expanded
-    || props.interacting
-    || (props.pauseWhenPageIsHidden && isDocumentHidden)
-  )
-    pauseTimer()
-  else
-    startTimer()
+  if (props.expanded || props.interacting || (props.pauseWhenPageIsHidden && isDocumentHidden)) pauseTimer()
+  else startTimer()
 
   onInvalidate(() => {
     clearTimeout(timeoutId)
@@ -246,8 +221,7 @@ watchEffect((onInvalidate) => {
 })
 
 watchEffect(() => {
-  if (props.toast.delete)
-    deleteToast()
+  if (props.toast.delete) deleteToast()
 })
 
 onMounted(() => {
@@ -256,10 +230,7 @@ onMounted(() => {
     // Add toast height tot heights array after the toast is mounted
     initialHeight.value = height
 
-    const newHeights = [
-      { toastId: props.toast.id, height, position: props.toast.position },
-      ...props.heights,
-    ]
+    const newHeights = [{ toastId: props.toast.id, height, position: props.toast.position }, ...props.heights]
     emit('update:heights', newHeights)
   }
   mounted.value = true
@@ -267,9 +238,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (toastRef.value) {
-    const newHeights = props.heights.filter(
-      height => height.toastId !== props.toast.id,
-    )
+    const newHeights = props.heights.filter((height) => height.toastId !== props.toast.id)
     emit('update:heights', newHeights)
   }
 })

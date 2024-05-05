@@ -8,8 +8,7 @@ import { runNpmScript } from '@stacksjs/utils'
 
 export async function invoke(options: ExamplesOptions) {
   if (options.components || options.vue) await componentExample(options)
-  else if (options.webComponents || options.elements)
-    await webComponentExample(options)
+  else if (options.webComponents || options.elements) await webComponentExample(options)
   else
     log.error(
       'An unsupported option was used. Please try again, check the documentation & report the issue, if needed.',

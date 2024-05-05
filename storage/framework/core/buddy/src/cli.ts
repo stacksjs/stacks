@@ -84,25 +84,17 @@ await main()
 async function dynamicImports(buddy: CAC) {
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
-  const commandFiles = fs
-    .readdirSync(commandsDir)
-    .filter((file) => file.endsWith('.ts'))
+  const commandFiles = fs.readdirSync(commandsDir).filter((file) => file.endsWith('.ts'))
 
   for (const file of commandFiles) {
     const commandPath = `${commandsDir}/${file}`
     const dynamicImport = await import(commandPath)
 
     // Correctly use the default export function
-    if (typeof dynamicImport.default === 'function')
-      dynamicImport.default(buddy)
-    else
-      console.error(
-        `Expected a default export function in ${file}, but got:`,
-        dynamicImport.default,
-      )
+    if (typeof dynamicImport.default === 'function') dynamicImport.default(buddy)
+    else console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
   }
 
   const listenerImport = await import(p.listenersPath('Console.ts'))
-  if (typeof listenerImport.default === 'function')
-    listenerImport.default(buddy)
+  if (typeof listenerImport.default === 'function') listenerImport.default(buddy)
 }

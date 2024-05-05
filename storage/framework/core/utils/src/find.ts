@@ -24,24 +24,15 @@ interface FindStacksProjectsOptions {
   quiet?: boolean
 }
 
-export async function findStacksProjects(
-  dir?: string,
-  options?: FindStacksProjectsOptions,
-): Promise<string[]> {
+export async function findStacksProjects(dir?: string, options?: FindStacksProjectsOptions): Promise<string[]> {
   dir = dir || os.homedir()
 
   if (!options?.quiet) {
     log.info(`Searching for Stacks projects in: ${italic(dir)}`)
     log.info(`This may take a few moments...`)
     console.log('')
-    console.log(
-      italic(
-        '  Please note, while Stacks is searching for projects on your machine,',
-      ),
-    )
-    console.log(
-      italic('  you may be asked for permissions to scan certain directories.'),
-    )
+    console.log(italic('  Please note, while Stacks is searching for projects on your machine,'))
+    console.log(italic('  you may be asked for permissions to scan certain directories.'))
     console.log('')
     log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
   }
@@ -57,9 +48,7 @@ async function searchDirectory(directory: string) {
   const foundProjects: string[] = []
 
   const isExcluded = excludePatterns.some((pattern) =>
-    typeof pattern === 'string'
-      ? directory.includes(pattern)
-      : pattern.test(directory),
+    typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory),
   )
   if (isExcluded) return
 

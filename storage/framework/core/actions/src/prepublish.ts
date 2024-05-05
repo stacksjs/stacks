@@ -13,10 +13,7 @@ const result = await runNpmScript(NpmScript.BuildStacks, {
 })
 
 if (result.isErr()) {
-  log.error(
-    new Error('There was an error while prepublishing your stack'),
-    result.error,
-  )
+  log.error(new Error('There was an error while prepublishing your stack'), result.error)
   process.exit()
 }
 

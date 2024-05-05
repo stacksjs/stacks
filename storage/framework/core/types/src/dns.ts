@@ -29,12 +29,7 @@ export interface AAAARecord {
   ttl: number | 'auto'
 }
 
-export type DnsRecord =
-  | ARecord
-  | CNameRecord
-  | MXRecord
-  | TxtRecord
-  | AAAARecord
+export type DnsRecord = ARecord | CNameRecord | MXRecord | TxtRecord | AAAARecord
 
 type CountryCode =
   | 'AC'
@@ -403,13 +398,7 @@ export interface ContactDetail {
    *
    * @default PERSON
    */
-  contactType:
-    | 'PERSON'
-    | 'COMPANY'
-    | 'ASSOCIATION'
-    | 'PUBLIC_BODY'
-    | 'RESELLER'
-    | string
+  contactType: 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER' | string
   /**
    * Name of the organization for contact types other than PERSON.
    */

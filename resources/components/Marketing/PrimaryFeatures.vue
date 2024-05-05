@@ -7,22 +7,27 @@ const features = [
   {
     title: 'Frontend',
     description: 'Powered by a progressive UI Engine, building application interfaces has never been easier.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
   {
     title: 'Backend',
-    description: 'Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
+    description:
+      'Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure.',
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
   {
     title: 'Cloud',
     description: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora in cum blanditiis? Qui omnis unde.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
   {
     title: 'DX',
     description: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora in cum blanditiis? Qui omnis unde.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
 ]
 

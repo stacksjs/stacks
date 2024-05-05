@@ -92,47 +92,36 @@ export interface ErrorReporterContract {
   /**
    * Report error for a field
    */
-  report: (
-    message: string,
-    rule: string,
-    field: FieldContext,
-    args?: Record<string, any>,
-  ) => any
+  report: (message: string, rule: string, field: FieldContext, args?: Record<string, any>) => any
 }
 
-export const isMoney = vine.createRule(
-  (value: unknown, _, field: FieldContext) => {
-    /**
-     * Convert string representation of a number to a JavaScript
-     * Number data type.
-     */
-    const asNumber = (value: unknown): number => {
-      const result = Number(value)
-      return Number.isNaN(result) ? 0 : result
-    }
+export const isMoney = vine.createRule((value: unknown, _, field: FieldContext) => {
+  /**
+   * Convert string representation of a number to a JavaScript
+   * Number data type.
+   */
+  const asNumber = (value: unknown): number => {
+    const result = Number(value)
+    return Number.isNaN(result) ? 0 : result
+  }
 
-    const numericValue = asNumber(value)
+  const numericValue = asNumber(value)
 
-    /**
-     * Report error, if the value is NaN post-conversion
-     */
-    if (Number.isNaN(numericValue)) {
-      field.report(
-        'The {{ field }} field value must be a number',
-        'money',
-        field,
-      )
-      return
-    }
+  /**
+   * Report error, if the value is NaN post-conversion
+   */
+  if (Number.isNaN(numericValue)) {
+    field.report('The {{ field }} field value must be a number', 'money', field)
+    return
+  }
 
-    /**
-     * Create amount type
-     */
-    const amount = currency({ amount: numericValue, currency: USD })
+  /**
+   * Create amount type
+   */
+  const amount = currency({ amount: numericValue, currency: USD })
 
-    /**
-     * Mutate the field's value
-     */
-    field.mutate(amount, field)
-  },
-) as any
+  /**
+   * Mutate the field's value
+   */
+  field.mutate(amount, field)
+}) as any

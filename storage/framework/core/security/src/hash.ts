@@ -8,8 +8,7 @@ interface MakeOptions {
 }
 
 async function make(password: string, options?: MakeOptions) {
-  if (options?.algorithm === 'argon2')
-    return argon2Encode(password, { type: 'argon2id' })
+  if (options?.algorithm === 'argon2') return argon2Encode(password, { type: 'argon2id' })
 
   if (options?.algorithm === 'bcrypt') return bcryptEncode(password)
 
@@ -41,10 +40,7 @@ export async function bcryptEncode(password: string) {
   return bcryptHash
 }
 
-export async function argon2Encode(
-  password: string,
-  options?: { type: 'argon2id' | 'argon2i' | 'argon2d' },
-) {
+export async function argon2Encode(password: string, options?: { type: 'argon2id' | 'argon2i' | 'argon2d' }) {
   if (!hashing.argon2) throw new Error('Argon2 hashing is not configured')
 
   const argon2Hash = await Bun.password.hash(password, {

@@ -95,9 +95,7 @@ export class Schedule {
 
   start() {
     new CronJob(this.cronPattern, this.task, null, true, this.timezone)
-    log.info(
-      `Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`,
-    )
+    log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
   }
 
   // job and action methods need to be added and they accept a path string param

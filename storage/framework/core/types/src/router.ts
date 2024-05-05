@@ -33,19 +33,9 @@ export interface NitroEventHandler {
 }
 
 // need to refactor before, after, view to be a part of some other type
-export type HttpMethod =
-  | 'GET'
-  | 'POST'
-  | 'PUT'
-  | 'PATCH'
-  | 'DELETE'
-  | 'before'
-  | 'after'
-  | 'view'
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
 
-export type RouteCallback = (
-  params?: Record<string, any>,
-) => any | string | object
+export type RouteCallback = (params?: Record<string, any>) => any | string | object
 
 export interface Route {
   name: string
@@ -66,19 +56,7 @@ export interface MiddlewareOptions {
   handle: Function
 }
 
-export type StatusCode =
-  | 200
-  | 201
-  | 202
-  | 204
-  | 301
-  | 302
-  | 304
-  | 400
-  | 401
-  | 403
-  | 404
-  | 500
+export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
 export type RedirectCode = Extract<StatusCode, 301 | 302>
 
 export type MiddlewareFn = () => void
@@ -100,11 +78,7 @@ export interface RouterInterface {
   get: (url: Route['url'], callback: Route['callback']) => Promise<this>
   post: (url: Route['url'], callback: Route['callback']) => this
   view: (url: Route['url'], callback: Route['callback']) => this
-  redirect: (
-    url: Route['url'],
-    callback: Route['callback'],
-    status?: RedirectCode,
-  ) => this
+  redirect: (url: Route['url'], callback: Route['callback'], status?: RedirectCode) => this
   delete: (url: Route['url'], callback: Route['callback']) => this
   patch: (url: Route['url'], callback: Route['callback']) => this
   put: (url: Route['url'], callback: Route['callback']) => this

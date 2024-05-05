@@ -1,10 +1,5 @@
 export function retry(fn: Function, options: any): Promise<any> {
-  const {
-    retries = 3,
-    initialDelay = 1000,
-    backoffFactor = 2,
-    jitter = true,
-  } = options
+  const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
 
   return new Promise((resolve, reject) => {
     let attemptCount = 0
@@ -15,12 +10,7 @@ export function retry(fn: Function, options: any): Promise<any> {
         if (attemptCount >= retries) {
           reject(err)
         } else {
-          const delay = calculateDelay(
-            attemptCount,
-            initialDelay,
-            backoffFactor,
-            jitter,
-          )
+          const delay = calculateDelay(attemptCount, initialDelay, backoffFactor, jitter)
           setTimeout(() => attempt(), delay)
           attemptCount++
         }

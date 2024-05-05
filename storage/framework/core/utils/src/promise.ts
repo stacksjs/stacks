@@ -24,9 +24,7 @@ export interface ControlledPromise<T = void> extends Promise<T> {
  *
  * @category Promise
  */
-export function createSingletonPromise<T>(
-  fn: () => Promise<T>,
-): SingletonPromiseReturn<T> {
+export function createSingletonPromise<T>(fn: () => Promise<T>): SingletonPromiseReturn<T> {
   let _promise: Promise<T> | undefined
 
   function wrapper() {

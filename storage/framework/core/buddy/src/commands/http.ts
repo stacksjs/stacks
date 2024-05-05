@@ -43,9 +43,7 @@ export function http(buddy: CLI) {
 
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)
-        .filter(
-          ([key, value]) => key !== '--' && key.length > 1 && value !== false,
-        ) // filter out '--' key and short options
+        .filter(([key, value]) => key !== '--' && key.length > 1 && value !== false) // filter out '--' key and short options
         .map(([key, value]) => `--${key} ${value}`)
         .join(' ')
 

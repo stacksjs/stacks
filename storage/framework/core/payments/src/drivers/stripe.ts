@@ -16,10 +16,7 @@ export const paymentIntent = (() => {
     return await stripe.paymentIntents.retrieve(stripeId)
   }
 
-  async function update(
-    stripeId: string,
-    params: Stripe.PaymentIntentCreateParams,
-  ) {
+  async function update(stripeId: string, params: Stripe.PaymentIntentCreateParams) {
     return await stripe.paymentIntents.update(stripeId, params)
   }
 

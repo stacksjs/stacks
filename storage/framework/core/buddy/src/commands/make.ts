@@ -54,9 +54,7 @@ export function make(buddy: CLI) {
       const name = buddy.args[0]
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -104,9 +102,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -122,14 +118,10 @@ export function make(buddy: CLI) {
       log.debug('Running `buddy make:database` ...', options)
 
       if (!options?.name) {
-        log.error(
-          'You need to specify a database name via the --name option, or the first argument.',
-        )
+        log.error('You need to specify a database name via the --name option, or the first argument.')
         log.info('Example: `buddy make:database my-cool-database`')
         log.info('Or: `buddy make:database --name=my-cool-database`')
-        log.info(
-          'Read more about the documentation here: https://stacksjs.org/docs/make/database',
-        )
+        log.info('Read more about the documentation here: https://stacksjs.org/docs/make/database')
         process.exit()
       }
 
@@ -137,9 +129,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -158,9 +148,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -180,9 +168,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -212,9 +198,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -238,19 +222,17 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
       const result = await createNotification(options)
 
       if (!result) {
-        await outro(
-          'While running the make:notification command, there was an issue',
-          { startTime: perf, useSeconds: true },
-        )
+        await outro('While running the make:notification command, there was an issue', {
+          startTime: perf,
+          useSeconds: true,
+        })
         process.exit()
       }
 
@@ -273,9 +255,7 @@ export function make(buddy: CLI) {
       options.name = name
 
       if (!name) {
-        log.error(
-          'You need to specify a name. Read more about the documentation here.',
-        )
+        log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
       }
 
@@ -343,10 +323,7 @@ export function make(buddy: CLI) {
     })
 
   buddy.on('make:*', () => {
-    console.error(
-      'Invalid command: %s\nSee --help for a list of available commands.',
-      buddy.args.join(' '),
-    )
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
 }

@@ -66,9 +66,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         for (const [option, url] of Object.entries(urls)) {
           if (options?.[option as keyof StacksPluginOptions])
             console.log(
-              `  ${c.green('➜')}  ${c.bold(
-                option.charAt(0).toUpperCase() + option.slice(1),
-              )}: ${c.green(url)}`,
+              `  ${c.green('➜')}  ${c.bold(option.charAt(0).toUpperCase() + option.slice(1))}: ${c.green(url)}`,
             )
         }
 
@@ -82,15 +80,9 @@ export function stacks(options?: StacksPluginOptions): Plugin {
               )}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.cyan(urls.frontend)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.cyan(
-              urls.frontend,
-            )}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}:  ${c.cyan(
-              await localUrl({ type: 'frontend', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}:  ${c.cyan(await localUrl({ type: 'frontend', network: true }))}`,
           )
         }
 
@@ -102,49 +94,33 @@ export function stacks(options?: StacksPluginOptions): Plugin {
               )}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.cyan(urls.library)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Library')}: ${c.cyan(urls.library)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'library', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'library', network: true }))}`,
           )
         }
 
         if (options?.config?.includes('email')) {
           if (withLocalhost)
             console.log(
-              `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(
-                await localUrl({ type: 'email', localhost: true }),
-              )}`,
+              `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(await localUrl({ type: 'email', localhost: true }))}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Email')}: ${c.cyan(urls.email)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Email')}: ${c.cyan(urls.email)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'email', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'email', network: true }))}`,
           )
         }
 
         if (options?.config?.includes('docs')) {
           if (withLocalhost)
             console.log(
-              `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(
-                await localUrl({ type: 'docs', localhost: true }),
-              )}`,
+              `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(await localUrl({ type: 'docs', localhost: true }))}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan(urls.docs)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan(urls.docs)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'docs', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'docs', network: true }))}`,
           )
         }
 
@@ -156,31 +132,21 @@ export function stacks(options?: StacksPluginOptions): Plugin {
               )}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Inspect')}: ${c.cyan(urls.inspect)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Inspect')}: ${c.cyan(urls.inspect)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'inspect', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'inspect', network: true }))}`,
           )
         }
 
         if (options?.config?.includes('admin')) {
           if (withLocalhost)
             console.log(
-              `  ${c.green('➜')}  ${c.bold('Local')}:   ${c.cyan(
-                await localUrl({ type: 'admin', localhost: true }),
-              )}`,
+              `  ${c.green('➜')}  ${c.bold('Local')}:   ${c.cyan(await localUrl({ type: 'admin', localhost: true }))}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Admin')}:   ${c.cyan(urls.admin)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Admin')}:   ${c.cyan(urls.admin)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'admin', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'admin', network: true }))}`,
           )
         }
 
@@ -192,13 +158,9 @@ export function stacks(options?: StacksPluginOptions): Plugin {
               )}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.cyan(urls.backend)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Backend')}: ${c.cyan(urls.backend)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'backend', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'backend', network: true }))}`,
           )
         }
 
@@ -210,13 +172,9 @@ export function stacks(options?: StacksPluginOptions): Plugin {
               )}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.cyan(urls.backend)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Backend')}: ${c.cyan(urls.backend)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'backend', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'backend', network: true }))}`,
           )
         }
 
@@ -228,13 +186,9 @@ export function stacks(options?: StacksPluginOptions): Plugin {
               )}`,
             )
 
+          console.log(`  ${c.green('➜')}  ${c.bold('Desktop')}: ${c.cyan(urls.desktop)}`)
           console.log(
-            `  ${c.green('➜')}  ${c.bold('Desktop')}: ${c.cyan(urls.desktop)}`,
-          )
-          console.log(
-            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(
-              await localUrl({ type: 'desktop', network: true }),
-            )}`,
+            `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'desktop', network: true }))}`,
           )
         }
       }

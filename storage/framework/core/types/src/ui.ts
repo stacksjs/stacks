@@ -186,10 +186,4 @@ export type UiConfig = Partial<UiOptions>
  *
  * @default "tailwind"
  */
-export type ResetPreset =
-  | 'tailwind'
-  | 'normalize'
-  | 'sanitize'
-  | 'eric-meyer'
-  | 'antfu'
-  | null
+export type ResetPreset = 'tailwind' | 'normalize' | 'sanitize' | 'eric-meyer' | 'antfu' | null

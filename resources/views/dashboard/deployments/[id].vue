@@ -14,8 +14,7 @@ useHead({
 const flag = ref(false)
 
 function getStatus(conclusion: string) {
-  if (conclusion === 'success')
-    return 'Ready'
+  if (conclusion === 'success') return 'Ready'
 
   return 'Failed'
 }

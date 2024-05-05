@@ -3,14 +3,7 @@ import { config as c } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import type { ViteConfig } from '@stacksjs/types'
-import {
-  autoImports,
-  components,
-  cssEngine,
-  devtools,
-  inspect,
-  uiEngine,
-} from '@stacksjs/vite-plugin'
+import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 

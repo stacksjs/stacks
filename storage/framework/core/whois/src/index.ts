@@ -43,8 +43,7 @@ function shallowCopy<T>(obj: T): T {
   if (typeof obj === 'object' && obj !== null) {
     const copy: any = {}
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key))
-        copy[key] = shallowCopy(obj[key])
+      if (Object.prototype.hasOwnProperty.call(obj, key)) copy[key] = shallowCopy(obj[key])
     }
     return copy as T
   }
@@ -89,9 +88,7 @@ function getTLD(domain: string): keyof typeof SERVERS {
 
   if (tld) return tld
 
-  console.debug(
-    'TLD is not found in server list. Returning last element after split as TLD!',
-  )
+  console.debug('TLD is not found in server list. Returning last element after split as TLD!')
 
   const domainData = domain.split('.')
   return domainData[domainData.length - 1] as keyof typeof SERVERS
@@ -296,8 +293,7 @@ export async function tcpWhois(
     return new Promise((resolve, reject) => {
       try {
         socket.connect({ port, host: server }, () => {
-          if (queryOptions !== '')
-            socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
+          if (queryOptions !== '') socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
           else socket.write(encoder.encode(`${domain}\r\n`))
         })
 
@@ -390,9 +386,7 @@ export async function whois(
   if (server === '') {
     let serverData = getWhoIsServer(tld as keyof typeof SERVERS)
     if (!serverData) {
-      console.debug(
-        `No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`,
-      )
+      console.debug(`No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`)
       serverData = await findWhoIsServer(tld)
       if (!serverData) {
         console.debug('WhoIs server could not be found!')
@@ -411,14 +405,7 @@ export async function whois(
   const queryOptions = qOptions || ''
 
   try {
-    const rawData = await tcpWhois(
-      domain,
-      queryOptions,
-      server,
-      port,
-      encoding,
-      proxy,
-    )
+    const rawData = await tcpWhois(domain, queryOptions, server, port, encoding, proxy)
     if (!parse) {
       const parsedData = WhoIsParser.parseData(rawData, null)
       return {
@@ -451,10 +438,7 @@ export async function whois(
   }
 }
 
-export function lookup(
-  domain: string,
-  options: WhoIsOptions | null = null,
-): Promise<WhoIsResponse> {
+export function lookup(domain: string, options: WhoIsOptions | null = null): Promise<WhoIsResponse> {
   return whois(domain, true, options)
 }
 

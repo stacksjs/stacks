@@ -569,9 +569,7 @@ export function coreEnvPath(path?: string): string {
  * @param type - The type of examples to filter by ('vue-components' or 'web-components').
  * @returns The absolute path to the specified type of examples within the `examples` directory.
  */
-export function examplesPath(
-  type: 'vue-components' | 'web-components',
-): string {
+export function examplesPath(type: 'vue-components' | 'web-components'): string {
   return frameworkPath(`examples/${type || ''}`)
 }
 
@@ -594,14 +592,10 @@ export function fakerPath(path?: string): string {
  * @param options.cwd - Specifies a custom working directory.
  * @returns The absolute or relative path to the specified file or directory within the framework directory.
  */
-export function frameworkPath(
-  path?: string,
-  options?: { relative?: boolean; cwd?: string },
-): string {
+export function frameworkPath(path?: string, options?: { relative?: boolean; cwd?: string }): string {
   const absolutePath = projectStoragePath(`framework/${path || ''}`)
 
-  if (options?.relative)
-    return relative(options.cwd || process.cwd(), absolutePath)
+  if (options?.relative) return relative(options.cwd || process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -654,10 +648,7 @@ export function langPath(path?: string): string {
  * @param options.relative - If true, returns the path relative to the current working directory.
  * @returns The absolute or relative path to the specified file or directory within the `layouts` directory.
  */
-export function layoutsPath(
-  path?: string,
-  options?: { relative?: boolean },
-): string {
+export function layoutsPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = resourcesPath(`layouts/${path || ''}`)
 
   if (options?.relative) return relative(process.cwd(), absolutePath)
@@ -792,14 +783,10 @@ export function onboardingPath(path?: string): string {
  * @param type - The type of the library ('vue-components', 'web-components', or 'functions') for which to return the package.json path.
  * @returns The absolute path to the specified package.json file within the framework directory.
  */
-export function packageJsonPath(
-  type: 'vue-components' | 'web-components' | 'functions',
-): string {
-  if (type === 'vue-components')
-    return frameworkPath('libs/components/vue/package.json')
+export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions'): string {
+  if (type === 'vue-components') return frameworkPath('libs/components/vue/package.json')
 
-  if (type === 'web-components')
-    return frameworkPath('libs/components/web/package.json')
+  if (type === 'web-components') return frameworkPath('libs/components/web/package.json')
 
   return frameworkPath(`libs/${type}/package.json`)
 }
@@ -840,10 +827,7 @@ export function paymentsPath(path?: string): string {
  * @param filePath - The relative path to append to the project path. Defaults to an empty string.
  * @returns The absolute path to the specified file or directory within the project directory.
  */
-export function projectPath(
-  filePath = '',
-  options?: { relative: boolean },
-): string {
+export function projectPath(filePath = '', options?: { relative: boolean }): string {
   let path = process.cwd()
 
   while (path.includes('storage')) path = resolve(path, '..')
@@ -877,8 +861,7 @@ export async function findProjectPath(project: string): Promise<string> {
   // since we are targeting a specific project, find its path
   const projectPath = projects.find((proj: string) => proj.includes(project))
 
-  if (!projectPath)
-    throw new Error(`Could not find project with name: ${project}`)
+  if (!projectPath) throw new Error(`Could not find project with name: ${project}`)
 
   return projectPath.startsWith('/') ? projectPath : `/${projectPath}`
 }
@@ -1379,16 +1362,4 @@ export const path = {
   toNamespacedPath,
 }
 
-export {
-  basename,
-  delimiter,
-  dirname,
-  extname,
-  isAbsolute,
-  join,
-  normalize,
-  relative,
-  resolve,
-  sep,
-  toNamespacedPath,
-}
+export { basename, delimiter, dirname, extname, isAbsolute, join, normalize, relative, resolve, sep, toNamespacedPath }

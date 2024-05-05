@@ -52,8 +52,7 @@ export async function localUrl({
 
   switch (type) {
     case 'frontend':
-      if (network)
-        return await createLocalTunnel(config.ports?.frontend || 3000)
+      if (network) return await createLocalTunnel(config.ports?.frontend || 3000)
 
       if (localhost) return `http://localhost:${config.ports?.frontend}`
 

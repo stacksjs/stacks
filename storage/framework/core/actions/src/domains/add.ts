@@ -1,11 +1,7 @@
 import process from 'node:process'
 import { italic, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
-import {
-  createHostedZone,
-  getNameservers,
-  updateNameservers,
-} from '@stacksjs/dns'
+import { createHostedZone, getNameservers, updateNameservers } from '@stacksjs/dns'
 import { handleError } from '@stacksjs/error-handling'
 import { logger } from '@stacksjs/logging'
 import { projectConfigPath } from '@stacksjs/path'
@@ -32,9 +28,7 @@ if (result.isErr()) {
 const nameServers = await getNameservers(domain)
 
 if (!nameServers) {
-  handleError(
-    `No nameservers found for domain: ${domain}. Please ensure the Hosted Zone exists in Route53.`,
-  )
+  handleError(`No nameservers found for domain: ${domain}. Please ensure the Hosted Zone exists in Route53.`)
   process.exit(1)
 }
 
@@ -69,9 +63,7 @@ nameServers.forEach((nameserver: string, index: number) => {
 logger.log('')
 logger.log(italic(`stored in ${projectConfigPath('dns.ts')}`))
 logger.log('')
-logger.log(
-  'Once the nameservers have been updated, re-run the following command:',
-)
+logger.log('Once the nameservers have been updated, re-run the following command:')
 logger.log('')
 logger.log(`  ➡️  ${italic('buddy deploy')}`)
 logger.log('')

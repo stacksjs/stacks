@@ -59,15 +59,10 @@ function parseShortOption(
   if (key === undefined) return index
 
   if (value !== undefined && key !== undefined) {
-    for (let j = 0; j < key.length; j++)
-      options[key[j] as string] = parseValue(value)
+    for (let j = 0; j < key.length; j++) options[key[j] as string] = parseValue(value)
   } else {
     for (let j = 0; j < key.length; j++) {
-      if (
-        index + 1 < argv.length &&
-        j === key.length - 1 &&
-        !argv[index + 1]?.startsWith('-')
-      ) {
+      if (index + 1 < argv.length && j === key.length - 1 && !argv[index + 1]?.startsWith('-')) {
         options[key[j] as string] = parseValue(argv[index + 1] as string)
         index++
       } else {
@@ -139,8 +134,7 @@ export function parseOptions(options?: CliOptions): CliOptions {
   }
 
   // if options has no keys, return undefined, e.g. `buddy release`
-  if (Object.keys(options).length === 0)
-    return { dryRun: false, quiet: false, verbose: false }
+  if (Object.keys(options).length === 0) return { dryRun: false, quiet: false, verbose: false }
 
   // convert the string 'true' or 'false' to a boolean
   Object.keys(options).forEach((key) => {

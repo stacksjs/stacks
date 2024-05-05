@@ -5,23 +5,29 @@ const features = [
   {
     name: 'Dashboard',
     summary: 'The UI to your application.',
-    description: 'Whether you are a developer or a client, The Dashboard visualizes your data. Easily extend your admin panel.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
+    description:
+      'Whether you are a developer or a client, The Dashboard visualizes your data. Easily extend your admin panel.',
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
     icon: '',
   },
   {
     name: 'Buddy CLI',
     summary: 'The Stacks runtime.',
-    description: 'The Buddy toolkit makes it easy to interact with all your application needs. From development to releases and upgrades, this handy yet incredible tool is the last thing you\'ll ever need.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
+    description:
+      "The Buddy toolkit makes it easy to interact with all your application needs. From development to releases and upgrades, this handy yet incredible tool is the last thing you'll ever need.",
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
     icon: '',
   },
 
   {
     name: 'CI/CD',
     summary: 'Streamline Your Deployment Process',
-    description: 'Embrace the ease of our CI/CD solutions, designed to simplify your deployment and release management. With Stacks, you can focus on the what and why of your project, leaving the how to us.',
-    image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
+    description:
+      'Embrace the ease of our CI/CD solutions, designed to simplify your deployment and release management. With Stacks, you can focus on the what and why of your project, leaving the how to us.',
+    image:
+      'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
     icon: '',
   },
 ]

@@ -21,8 +21,7 @@ function getFileBasedRouteName(node: TreeNode): string {
   // Recursive case: Concatenate the parent's value with the current node's value
   const segment = node.value.rawSegment === 'index' ? '' : node.value.rawSegment
 
-  const path =
-    getFileBasedRouteName(node.parent) + (segment ? `/${segment}` : '')
+  const path = getFileBasedRouteName(node.parent) + (segment ? `/${segment}` : '')
 
   // Process the path to get the desired format
   const cleanedPath = path

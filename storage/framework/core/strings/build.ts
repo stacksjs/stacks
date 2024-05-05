@@ -9,15 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
 
-  external: [
-    'change-case',
-    'title-case',
-    'validator',
-    'pluralize',
-    'slugify',
-    'detect-indent',
-    'detect-newline',
-  ],
+  external: ['change-case', 'title-case', 'validator', 'pluralize', 'slugify', 'detect-indent', 'detect-newline'],
 })
 
 await outro({

@@ -47,9 +47,7 @@ export class QueueStack {
     for (const ormFile of ormActionFiles) {
       if (!ormFile.endsWith('.ts')) continue
 
-      const ormActionPath = path.projectStoragePath(
-        `framework/orm/Actions/${ormFile}`,
-      )
+      const ormActionPath = path.projectStoragePath(`framework/orm/Actions/${ormFile}`)
 
       // Await the loading of the job module
       const ormAction = await this.loadModule(ormActionPath)
@@ -112,9 +110,7 @@ export class QueueStack {
     // Perform operations with the jobModule.default as needed
     const rule = new Rule(this.scope, id, {
       // schedule to run every second
-      ruleName: `${this.props.appName}-${this.props.appEnv}-queue-rule-${slug(
-        file.replace('.ts', ''),
-      )}`,
+      ruleName: `${this.props.appName}-${this.props.appEnv}-queue-rule-${slug(file.replace('.ts', ''))}`,
       schedule,
     })
 

@@ -13,11 +13,7 @@ async function request(url = '', method = 'GET', data = {}): Promise<any> {
     body: JSON.stringify(data),
   }
 
-  if (
-    data &&
-    Object.keys(data).length === 0 &&
-    Object.getPrototypeOf(data) === Object.prototype
-  )
+  if (data && Object.keys(data).length === 0 && Object.getPrototypeOf(data) === Object.prototype)
     fetchBody.body = undefined
 
   const response = await fetch(url, fetchBody)
