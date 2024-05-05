@@ -1,5 +1,5 @@
-import { User } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { User } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetTotalUsers',

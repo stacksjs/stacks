@@ -3,13 +3,7 @@ import { computed } from 'vue'
 import AppButton from '../../Buttons/AppButton.vue'
 import BaseModal from '../BaseModal.vue'
 
-const {
-  title,
-  description,
-  type,
-  confirmationText,
-  abortText,
-} = defineProps<Props>()
+const { title, description, type, confirmationText, abortText } = defineProps<Props>()
 
 const emit = defineEmits(['cancel', 'confirm'])
 

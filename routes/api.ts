@@ -24,4 +24,3 @@ await route.health() // adds an `/api/health` route
 // await route.group('/some-path', async () => {...})
 // await route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // await route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`
-

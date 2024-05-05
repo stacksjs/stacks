@@ -7,11 +7,7 @@ interface Props {
   passedClass: string
 }
 
-const {
-  buttonText,
-  loadingText,
-  passedClass,
-} = defineProps<Props>()
+const { buttonText, loadingText, passedClass } = defineProps<Props>()
 
 const loading = ref(false)
 
