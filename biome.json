@@ -27,7 +27,8 @@
       "attributePosition": "auto",
       "indentStyle": "space",
       "indentWidth": 2,
-      "lineEnding": "lf"
+      "lineEnding": "lf",
+      "lineWidth": 120
     }
   },
   "json": {

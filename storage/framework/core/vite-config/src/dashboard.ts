@@ -1,12 +1,7 @@
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import {
-  components,
-  cssEngine,
-  i18n,
-  layouts,
-} from '@stacksjs/vite-plugin'
+import { components, cssEngine, i18n, layouts } from '@stacksjs/vite-plugin'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
