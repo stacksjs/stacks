@@ -190,10 +190,7 @@ watch(
 
     if (newTheme === 'system') {
       // check if current preference is dark
-      if (
-        window.matchMedia
-        && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ) {
+      if (window?.matchMedia('(prefers-color-scheme: dark)').matches) {
         // it's currently dark
         actualTheme.value = 'dark'
       }
@@ -320,7 +317,7 @@ watchEffect((onInvalidate) => {
             :index="idx"
             :toast="toast"
             :duration="toastOptions?.duration ?? duration"
-            :class="toastOptions?.class"
+            :class="toastOptions?.class ?? ''"
             :description-class="toastOptions?.descriptionClass"
             :invert="invert"
             :visible-toasts="visibleToasts"
