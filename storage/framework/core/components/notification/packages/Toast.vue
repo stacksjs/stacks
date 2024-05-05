@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import './styles.css'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
-import type { HeightT, ToastProps, ToastT } from './types'
 import CloseIcon from './assets/CloseIcon.vue'
 import { useIsDocumentHidden } from './hooks'
+import type { HeightT, ToastProps, ToastT } from './types'
 
 const props = defineProps<ToastProps>()
 
@@ -81,9 +81,9 @@ onMounted(() => {
 
   const toastNode = toastRef.value
   const originalHeight = toastNode?.style.height
-  toastNode!.style.height = 'auto'
-  const newHeight = toastNode!.getBoundingClientRect().height
-  toastNode!.style.height = originalHeight as string
+  toastNode.style.height = 'auto'
+  const newHeight = toastNode.getBoundingClientRect().height
+  toastNode.style.height = originalHeight as string
 
   initialHeight.value = newHeight
 
@@ -159,7 +159,7 @@ function onPointerUp(event: PointerEvent) {
       .replace('px', '') || 0,
   )
 
-  const timeTaken = new Date().getTime() - dragStartTime!.value!.getTime()
+  const timeTaken = new Date().getTime() - (dragStartTime.value?.getTime() || 0)
   const velocity = Math.abs(swipeAmount) / timeTaken
 
   // Remove only if treshold is met
@@ -257,7 +257,7 @@ onMounted(() => {
     initialHeight.value = height
 
     const newHeights = [
-      { toastId: props.toast.id, height, position: props.toast.position! },
+      { toastId: props.toast.id, height, position: props.toast.position },
       ...props.heights,
     ]
     emit('update:heights', newHeights)
