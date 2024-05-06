@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+useHead({
+  title: 'Dashboard - Jobs',
+})
+</script>
+
 <template>
   <div class="min-h-screen py-4 lg:py-8 dark:bg-blue-gray-800">
     <div class="px-4 mb-8 sm:px-6 lg:px-8">

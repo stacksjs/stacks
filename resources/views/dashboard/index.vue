@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+useHead({
+  title: 'Dashboard - Home',
+})
+</script>
+
 <template>
   <main>
     <div class="relative isolate overflow-hidden">

@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+useHead({
+  title: 'Dashboard - Notifications',
+})
 </script>
 
 <template>

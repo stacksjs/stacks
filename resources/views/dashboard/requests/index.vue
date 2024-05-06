@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+useHead({
+  title: 'Dashboard - Requests',
+})
 </script>
 
 <template>
