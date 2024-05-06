@@ -43,7 +43,7 @@ useHead({
   <!-- <Header /> -->
 
   <main>
-    <Hero2 />
+    <ComingSoon />
     <!-- <Hero /> -->
     <!-- <PrimaryFeatures /> -->
     <!-- <PrimaryFeatures2 />
