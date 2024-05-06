@@ -66,6 +66,16 @@
                     Components
                   </RouterLink>
                 </li>
+
+                <li>
+                  <RouterLink
+                    to="/releases"
+                    class="sidebar-links group"
+                  >
+                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    Releases
+                  </RouterLink>
+                </li>
               </ul>
             </li>
 
@@ -107,7 +117,7 @@
                     to="/actions"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-clock text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-bolt text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Actions
                   </RouterLink>
                 </li>
@@ -234,16 +244,6 @@
                   >
                     <div class="i-heroicons-document-text text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Logs
-                  </RouterLink>
-                </li>
-
-                <li>
-                  <RouterLink
-                    to="/releases"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                    Releases
                   </RouterLink>
                 </li>
               </ul>
