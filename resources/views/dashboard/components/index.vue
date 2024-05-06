@@ -35,12 +35,6 @@ useHead({
                 <span class="sr-only"> Increased by </span>
                 122
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Deployments</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
 
@@ -68,12 +62,6 @@ useHead({
                 <span class="sr-only"> Increased by </span>
                 12 s
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Average Deploy Time</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
 
@@ -101,12 +89,6 @@ useHead({
                 <span class="sr-only"> Decreased by </span>
                 3.2%
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Success Rate</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
         </dl>
@@ -123,11 +105,12 @@ useHead({
             A list of all the components in your library.
           </p>
         </div>
-        <!-- <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
             Deploy
           </button>
-        </div> -->
+        </div>
       </div>
 
       <div class="mt-8 flow-root">

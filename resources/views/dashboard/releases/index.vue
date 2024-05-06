@@ -173,7 +173,7 @@ useHead({
                       Playa Vista
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       5kb
                     </td>
 

@@ -117,10 +117,10 @@ useHead({
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">
-            Requests
+            Request History
           </h1>
           <p class="mt-2 text-sm text-gray-700">
-            A list of all the requests.
+            A list of all the requests that came in.
           </p>
         </div>
 
