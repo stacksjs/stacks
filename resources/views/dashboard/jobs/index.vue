@@ -149,7 +149,7 @@ useHead({
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Queued At
+                      Execution Time
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -165,38 +165,27 @@ useHead({
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                      05/04/2024 11:02:34:123 AM UTC <em class="text-gray-400">(2 mins ago)</em>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 w-10 h-10">
-                          <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
-                            alt=""
-                            class="w-10 h-10 rounded-full"
-                          >
-                        </div>
-                        <div class="ml-4">
-                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Chris Breuer
-                          </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
-                            chris@stacksjs.org
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
+                      05/04/2024 11:02:34<span class="text-gray-400">:123</span> AM UTC <em class="text-gray-400">(2 mins ago)</em>
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Deployed
+                      VideoConverter
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">
+                        Media
+                      </span>
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      500ms
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        Deployed
+                      </span>
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
