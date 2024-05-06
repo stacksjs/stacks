@@ -139,23 +139,23 @@ useHead({
                 <thead class="bg-gray-50">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                      When
+                      Name
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Triggered By
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Commit
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Branch
+                      Path
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                       Status
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:text-right">
+                      Created At
+                    </th>
+
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:text-right">
+                      Updated At
                     </th>
 
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -167,42 +167,29 @@ useHead({
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                      Moments ago
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 w-10 h-10">
-                          <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
-                            alt=""
-                            class="w-10 h-10 rounded-full"
-                          >
-                        </div>
-                        <div class="ml-4">
-                          <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Chris Breuer
-                          </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-300">
-                            chris@stacksjs.org
-                          </div>
-                        </div>
-                      </div>
+                      SendWelcomeEmail
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
+                      ./app/Actions/Example.ts
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
+                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        Enabled
+                      </span>
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Deployed
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      01-03-2023 08:23:15
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Queue</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Action in IDE</span></a>
                     </td>
                   </tr>
                 </tbody>
