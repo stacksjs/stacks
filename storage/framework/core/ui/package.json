@@ -51,7 +51,7 @@
     "pinia": "^2.1.7",
     "unocss": "^0.59.4",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.26",
+    "vue": "^3.4.27",
     "vue-tsc": "^2.0.16"
   },
   "dependencies": {
@@ -64,13 +64,13 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@unhead/vue": "^1.9.9",
+    "@unhead/vue": "^1.9.10",
     "pinia": "^2.1.7",
-    "unhead": "^1.9.9",
+    "unhead": "^1.9.10",
     "unocss": "^0.59.4",
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.26",
+    "vue": "^3.4.27",
     "vue-tsc": "^2.0.16"
   },
   "devDependencies": {
