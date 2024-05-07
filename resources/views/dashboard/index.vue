@@ -74,7 +74,7 @@ useHead({
 
           <ul
             role="list"
-            class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-5 xl:gap-x-8"
+            class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-4 xl:gap-x-8"
           >
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
               <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
