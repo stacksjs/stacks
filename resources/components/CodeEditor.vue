@@ -11,7 +11,7 @@ defineProps({
 // const langs = ['json', 'javascript', 'typescript', 'sh', 'html', 'yaml', 'markdown']
 // const themes = ['github', 'github_dark', 'chrome', 'monokai', 'nord_dark']
 
-const states = reactive({
+const options = reactive({
   lang: 'typescript',
   theme: 'nord_dark',
   content: `echo 'Hello World!'
@@ -34,11 +34,11 @@ cp`,
   </header>
 
   <VAceEditor
-    v-model:value="states.content"
+    v-model:value="options.content"
     class="vue-ace-editor rounded-b-lg"
-    :placeholder="`Enter your ${states.lang} code here`"
-    :lang="states.lang"
-    :theme="states.theme"
+    :placeholder="`Enter your ${options.lang} code here`"
+    :lang="options.lang"
+    :theme="options.theme"
     :options="{
       useWorker: true,
       enableBasicAutocompletion: true,

@@ -77,7 +77,7 @@ useHead({
             class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-5 xl:gap-x-8"
           >
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
                 <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
                   U
                 </div>
@@ -93,7 +93,7 @@ useHead({
             </li>
 
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
                 <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
                   T
                 </div>
@@ -109,7 +109,7 @@ useHead({
             </li>
 
             <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
                 <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
                   S
                 </div>
