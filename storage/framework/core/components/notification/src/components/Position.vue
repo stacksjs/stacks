@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
 import { computed, ref } from 'vue'
-import { notification } from '../../packages'
-import type { Position } from '../../packages/types'
+import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
+import type { Position } from '../types'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 

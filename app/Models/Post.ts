@@ -7,6 +7,7 @@ export default {
   table: 'posts', // defaults to the lowercase, plural name of the model
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
+  // highlight: 3,
 
   traits: {
     useTimestamps: true, // defaults to true

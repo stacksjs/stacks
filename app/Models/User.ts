@@ -12,6 +12,7 @@ export default {
   table: 'users', // defaults to the lowercase, plural name of the model name
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
+  highlight: true,
 
   traits: {
     useAuth: true, // defaults to false, `authenticatable` used as an alias

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { markRaw, ref } from 'vue'
-import { notification } from '../../packages'
+import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import HeadlessToast from './HeadlessToast.vue'
 import HeadlessToastWithProps from './HeadlessToastWithProps.vue'

@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue'
+import { ToastState } from '../state'
+import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss } from '../types'
 import Toast from './Toast.vue'
-import ErrorIcon from './assets/ErrorIcon.vue'
-import InfoIcon from './assets/InfoIcon.vue'
-import LoaderIcon from './assets/Loader.vue'
-import SuccessIcon from './assets/SuccessIcon.vue'
-import WarningIcon from './assets/WarningIcon.vue'
-import { ToastState } from './state'
-import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss } from './types'
+import ErrorIcon from './icons/ErrorIcon.vue'
+import InfoIcon from './icons/InfoIcon.vue'
+import LoaderIcon from './icons/Loader.vue'
+import SuccessIcon from './icons/SuccessIcon.vue'
+import WarningIcon from './icons/WarningIcon.vue'
 
 defineOptions({
   name: 'Toaster',

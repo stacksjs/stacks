@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { Notification } from '../packages'
-import type { Position, Theme } from '../packages/types'
+import { Notification } from '.'
+import type { Position, Theme } from './types'
 import Expand from './components/Expand.vue'
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import './styles.css'
+import '../styles/styles.css'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
-import CloseIcon from './assets/CloseIcon.vue'
-import { useIsDocumentHidden } from './hooks'
-import type { HeightT, ToastProps, ToastT } from './types'
+import { useIsDocumentHidden } from '../composables/useIsDocumentHidden'
+import type { HeightT, ToastProps, ToastT } from '../types'
+import CloseIcon from './icons/CloseIcon.vue'
 
 const props = defineProps<ToastProps>()
 
