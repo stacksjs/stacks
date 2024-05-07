@@ -64,6 +64,69 @@ useHead({
     </div>
 
     <div class="px-12">
+      <div class="mx-auto max-w-7xl pt-12">
+        <div class="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
+              Models
+            </h2>
+          </div>
+
+          <ul
+            role="list"
+            class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-5 xl:gap-x-8"
+          >
+            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
+                <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
+                  U
+                </div>
+
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  Users
+                </div>
+
+                <!-- <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+                </div> -->
+              </div>
+            </li>
+
+            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
+                <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
+                  T
+                </div>
+
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  Teams
+                </div>
+
+                <!-- <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+                </div> -->
+              </div>
+            </li>
+
+            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
+                <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
+                  S
+                </div>
+
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  Subscribers
+                </div>
+
+                <!-- <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+                </div> -->
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <div class="flex flex-col lg:flex-row py-16 max-w-7xl mx-auto">
         <!-- Recent Deployments -->
         <div class="flex-auto mx-auto lg:flex-1 pr-24">

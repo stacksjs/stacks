@@ -54,7 +54,10 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "stacks": "workspace:*"
+    "ace-builds": "^1.33.1",
+    "resize-observer-polyfill": "^1.5.1",
+    "stacks": "workspace:*",
+    "vue3-ace-editor": "^2.2.4"
   },
   "config": {
     "commitizen": {
