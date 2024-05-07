@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
 import { VAceEditor } from 'vue3-ace-editor'
 import './ace-config'
 
+defineProps({
+  live: Boolean,
+})
+
 // import OutlineTree from './OutlineTree.vue';
 
-const langs = ['json', 'javascript', 'typescript', 'sh', 'html', 'yaml', 'markdown']
-const themes = ['github', 'github_dark', 'chrome', 'monokai', 'nord_dark']
+// const langs = ['json', 'javascript', 'typescript', 'sh', 'html', 'yaml', 'markdown']
+// const themes = ['github', 'github_dark', 'chrome', 'monokai', 'nord_dark']
 
 const states = reactive({
   lang: 'typescript',
@@ -16,33 +19,9 @@ const states = reactive({
 mv ./test/test.ts ./jello
 cp`,
 })
-
-watch(
-  () => states.lang,
-  async (lang) => {
-    states.content = `echo 'Hello World!'
-
-mv ./test/test.ts ./jello
-cp `
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
-  <select v-model="states.lang">
-    <option v-for="lang of langs" :key="lang" :value="lang">
-      {{ lang }}
-    </option>
-  </select>
-
-  <select v-model="states.theme">
-    <option v-for="theme of themes" :key="theme" :value="theme">
-      {{ theme }}
-    </option>
-  </select>
-
-  <!-- <div class="w-full h-full bg-[#1D1F21] text-[#C5C8C6] font-mono flex flex-col rounded-lg shadow"> -->
   <header class="flex items-center justify-between p-4 bg-[#373b41] border-b border-[#282a2e] rounded-t-lg">
     <div class="flex items-center gap-2">
       <div class="w-3 h-3 rounded-full bg-[#CC6666]" />
@@ -50,7 +29,8 @@ cp `
       <div class="w-3 h-3 rounded-full bg-[#68B5BD]" />
     </div>
 
-    <span class="text-sm text-white font-mono">Live Terminal Output</span>
+    <span v-if="!live" class="text-sm text-white font-mono">Deploy Script</span>
+    <span v-else class="text-sm text-white font-mono">Live Terminal Output</span>
   </header>
 
   <VAceEditor
