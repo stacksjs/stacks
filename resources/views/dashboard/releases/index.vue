@@ -171,6 +171,174 @@ useHead({
                       <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
                     </td>
                   </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v1.0.0-rc.1
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v1.0.0-beta.1
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v1.0.0-alpha.1
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v0.60.3
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v0.60.2
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v0.60.1
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      v0.60.0
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" />
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      5kb
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      ./storage/framework/libs/dist/*
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
+                      04-19-2022 09:04:20
+                    </td>
+
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Release 1.0, in GitHub</span></a>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
