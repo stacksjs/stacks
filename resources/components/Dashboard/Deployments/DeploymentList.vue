@@ -27,6 +27,7 @@ const showModal = ref(false)
               <p class="text-2xl font-semibold text-gray-900">
                 71,897
               </p>
+
               <p class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
                 <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
@@ -34,12 +35,6 @@ const showModal = ref(false)
                 <span class="sr-only"> Increased by </span>
                 122
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Deployments</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
 
@@ -50,6 +45,7 @@ const showModal = ref(false)
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
                 </svg>
               </div>
+
               <p class="ml-16 truncate text-sm font-medium text-gray-500">
                 Avg. Deploy Time
               </p>
@@ -67,12 +63,6 @@ const showModal = ref(false)
                 <span class="sr-only"> Increased by </span>
                 12 s
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Average Deploy Time</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
 
@@ -100,12 +90,6 @@ const showModal = ref(false)
                 <span class="sr-only"> Decreased by </span>
                 3.2%
               </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Success Rate</span></a>
-                </div>
-              </div> -->
             </dd>
           </div>
         </dl>
@@ -141,6 +125,10 @@ const showModal = ref(false)
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="mt-8 flow-root">
+        <Editor />
       </div>
     </div>
 

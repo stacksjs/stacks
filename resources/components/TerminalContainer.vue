@@ -1,7 +1,7 @@
 <script setup>
 import { defineProps } from 'vue'
 
-const props = defineProps({
+defineProps({
   live: Boolean,
 })
 </script>
@@ -12,8 +12,8 @@ const props = defineProps({
       <header class="flex items-center justify-between p-4 bg-[#373b41] border-b border-[#282a2e] rounded-t-lg">
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full bg-[#CC6666]" />
+          <div class="w-3 h-3 rounded-full bg-[#E6E074]" />
           <div class="w-3 h-3 rounded-full bg-[#68B5BD]" />
-          <div class="w-3 h-3 rounded-full bg-[#74C6F0]" />
         </div>
 
         <div v-if="live" class="text-sm">
@@ -23,6 +23,7 @@ const props = defineProps({
           root@localhost:~
         </div>
       </header>
+
       <div class="h-54 w-full overflow-auto p-4">
         <div class="text-sm leading-7">
           <p class="text-[#68B5BD]">
@@ -39,6 +40,7 @@ const props = defineProps({
           <p>root</p>
         </div>
       </div>
+
       <div v-if="!live" class="flex items-center gap-2 p-4 border-t border-[#282a2e]">
         <span class="text-[#68B5BD]">root@localhost:~$</span>
         <input

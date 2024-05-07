@@ -181,6 +181,7 @@ minzipped
 mkcert
 mkdirs
 mkdist
+monokai
 mult
 mylesmmurphy
 mylesmurphy
@@ -190,7 +191,9 @@ neverthrow
 nexe
 nexmo
 nitropack
+noconflict
 noopener
+Nord
 npmjs
 npmrc
 nprogress
@@ -247,6 +250,7 @@ safelist
 sasl
 scanlon
 scrollback
+searchbox
 seedable
 sendemail
 sendgrid
