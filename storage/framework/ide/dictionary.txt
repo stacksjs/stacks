@@ -190,6 +190,7 @@ netcore
 neverthrow
 nexe
 nexmo
+nhoizey
 nitropack
 noconflict
 noopener

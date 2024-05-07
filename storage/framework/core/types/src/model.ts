@@ -38,7 +38,9 @@ export interface ModelOptions extends Base {
   table: string // defaults to the lowercase, plural name of the model
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true
-  highlight?: boolean | number // defaults to undefined
+  dashboard?: {
+    highlight?: boolean | number // defaults to undefined
+  }
 
   traits: {
     useUuid?: boolean // defaults to false

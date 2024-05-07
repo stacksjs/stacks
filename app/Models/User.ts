@@ -12,7 +12,6 @@ export default {
   table: 'users', // defaults to the lowercase, plural name of the model name
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
-  highlight: true,
 
   traits: {
     useAuth: true, // defaults to false, `authenticatable` used as an alias
@@ -33,7 +32,7 @@ export default {
     },
 
     useApi: {
-      uri: 'users', // defaults to the table name,
+      uri: 'users', // your-url.com/api/users
       middleware: ['auth'], // defaults to `[]`
       routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
@@ -93,5 +92,9 @@ export default {
 
   set: {
     password: (password: string) => Bun.password.hash(password),
+  },
+
+  dashboard: {
+    highlight: true,
   },
 } satisfies Model

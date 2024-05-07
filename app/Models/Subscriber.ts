@@ -7,7 +7,6 @@ export default {
   table: 'subscribers', // defaults to the lowercase, plural name of the model
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
-  // highlight: 2,
 
   traits: {
     useTimestamps: true, // defaults to true
@@ -33,5 +32,9 @@ export default {
         message: '',
       },
     },
+  },
+
+  dashboard: {
+    highlight: true,
   },
 } satisfies Model
