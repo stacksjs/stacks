@@ -44,7 +44,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@headlessui/vue": "^1.7.21",
+    "@headlessui/vue": "^1.7.22",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
@@ -55,7 +55,7 @@
     "vue-tsc": "^2.0.16"
   },
   "dependencies": {
-    "@headlessui/vue": "^1.7.21",
+    "@headlessui/vue": "^1.7.22",
     "@iconify-json/heroicons": "^1.1.21",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
