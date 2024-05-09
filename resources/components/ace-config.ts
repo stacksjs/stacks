@@ -17,7 +17,7 @@ import themeGithubDarkUrl from 'ace-builds/src-noconflict/theme-github_dark?url'
 import themeMonokaiUrl from 'ace-builds/src-noconflict/theme-monokai?url'
 import themeNordDarkUrl from 'ace-builds/src-noconflict/theme-nord_dark?url'
 import workerBaseUrl from 'ace-builds/src-noconflict/worker-base?url'
-import workerHtmlUrl from 'ace-builds/src-noconflict/worker-html?url';
+import workerHtmlUrl from 'ace-builds/src-noconflict/worker-html?url'
 import workerJavascriptUrl from 'ace-builds/src-noconflict/worker-javascript?url'
 import workerJsonUrl from 'ace-builds/src-noconflict/worker-json?url'
 import workerYamlUrl from 'ace-builds/src-noconflict/worker-yaml?url'

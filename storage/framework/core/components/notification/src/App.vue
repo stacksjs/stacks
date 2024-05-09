@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { Notification } from '.'
-import type { Position, Theme } from './types'
 import Expand from './components/Expand.vue'
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
@@ -13,6 +12,7 @@ import Theming from './components/Theming.vue'
 import Types from './components/Types.vue'
 import Usage from './components/Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
+import type { Position, Theme } from './types'
 // import { toggleDarkMode, isDark } from './composables/useDarkMode'
 
 useSEOHeader()
