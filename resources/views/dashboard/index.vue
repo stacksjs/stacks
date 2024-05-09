@@ -86,9 +86,9 @@ useHead({
                   Users
                 </div>
 
-                <!-- <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
-                </div> -->
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">123.5k</span>
+                </div>
               </div>
             </li>
 
@@ -102,9 +102,9 @@ useHead({
                   Teams
                 </div>
 
-                <!-- <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
-                </div> -->
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">912</span>
+                </div>
               </div>
             </li>
 
@@ -118,9 +118,9 @@ useHead({
                   Subscribers
                 </div>
 
-                <!-- <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
-                </div> -->
+                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">4.6k</span>
+                </div>
               </div>
             </li>
           </ul>
@@ -367,9 +367,11 @@ useHead({
                 <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
                   X App
                 </div>
+
                 <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
                   <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
                 </div>
+
                 <div class="relative ml-auto">
                   <button
                     id="options-menu-0-button"
