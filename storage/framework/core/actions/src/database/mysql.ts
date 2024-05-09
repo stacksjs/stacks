@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Attributes } from '@stacksjs/types'
+import type { Attributes, ModelDefault, RelationConfig } from '@stacksjs/types'
 import { checkPivotMigration, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetMysqlDatabase() {
@@ -15,7 +15,10 @@ export async function resetMysqlDatabase() {
   await db.schema.dropTable('migration_locks').ifExists().execute()
 
   const files = await fs.readdir(path.userMigrationsPath())
+  const filesForeign = await fs.readdir(path.userMigrationsPath('foreign'))
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+
+  console.log(filesForeign)
 
   const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
 
@@ -34,6 +37,14 @@ export async function resetMysqlDatabase() {
 
         if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
       }
+    }
+  }
+
+  if (filesForeign.length) {
+    for (const foreignFile of filesForeign) {
+      const foreignPath = path.userMigrationsPath(`foreign/${foreignFile}`)
+
+      if (fs.existsSync(foreignPath)) await Bun.$`rm ${foreignPath}`
     }
   }
 
@@ -70,6 +81,7 @@ export async function generateMysqlMigration(modelPath: string) {
   }
 
   const model = await import(modelPath)
+
   const fileName = path.basename(modelPath)
   const tableName = model.default.table
 
@@ -107,8 +119,47 @@ export async function generateMysqlMigration(modelPath: string) {
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
+  await createForeignKeysMigration(model)
+
   if (haveFieldsChanged) await createAlterTableMigration(modelPath)
   else await createTableMigration(modelPath)
+}
+
+
+
+async function getRelations(model: ModelDefault): Promise<RelationConfig[]> {
+  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
+
+  const relationships = []
+
+  for (const relation of relationsArray) {
+    if (hasRelations(model.default, relation)) {
+      for (const relationInstance of model.default[relation]) {
+        const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
+
+        const modelRelation = await import(modelRelationPath)
+
+        const formattedModelName = model.default.name.toLowerCase()
+
+        relationships.push({
+          relationship: relation,
+          model: relationInstance.model.name,
+          table: modelRelation.default.table,
+          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
+          relationName: relationInstance.relationName || '',
+          throughModel: relationInstance.through || '',
+          throughForeignKey: relationInstance.throughForeignKey || '',
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+        })
+      }
+    }
+  }
+
+  return relationships
+}
+
+function hasRelations(obj: any, key: string): boolean {
+  return key in obj
 }
 
 async function getPivotTables(
@@ -141,7 +192,7 @@ async function createTableMigration(modelPath: string) {
 
   const model = await import(modelPath)
   const tableName = model.default.table
-
+  
   await createPivotTableMigration(model)
 
   const fields = model.default.attributes
@@ -193,7 +244,7 @@ async function createTableMigration(modelPath: string) {
   log.success(`Created migration: ${migrationFileName}`)
 }
 
-async function createPivotTableMigration(model: any) {
+async function createPivotTableMigration(model: ModelDefault) {
   const pivotTables = await getPivotTables(model)
 
   if (!pivotTables.length) return
@@ -221,6 +272,28 @@ async function createPivotTableMigration(model: any) {
     Bun.write(migrationFilePath, migrationContent)
 
     log.success(`Created pivot migration: ${migrationFileName}`)
+  }
+}
+
+async function createForeignKeysMigration(model: ModelDefault) {
+  const relations = await getRelations(model)
+
+
+  for (const relation of relations) {
+    let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+    migrationContent += `export async function up(db: Database<any>) {\n`
+    migrationContent += `  await db.schema\n`
+    migrationContent += `    .alterTable('${relation.table}')\n`
+
+    migrationContent += `    .addColumn('${relation.foreignKey}', 'integer')\n`
+    migrationContent += `    .execute()\n`
+    migrationContent += `    }\n`
+
+    const timestamp = new Date().getTime().toString()
+    const migrationFileName = `${timestamp}-create-${relation.table}-foreign-table.ts`
+    const migrationFilePath = path.userMigrationsPath(`foreign/${migrationFileName}`)
+
+    Bun.write(migrationFilePath, migrationContent)
   }
 }
 

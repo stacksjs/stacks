@@ -32,25 +32,23 @@ export default {
     },
 
     useApi: {
-      uri: 'users', // defaults to the table name,
+      uri: 'users', // your-url.com/api/users
       middleware: ['auth'], // defaults to `[]`
-      routes: {
-        // defaults to all routes
-        index: true,
-        show: true,
-        store: true,
-        update: true,
-        destroy: true,
-      },
+      routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
 
     // useUuid: true, // defaults to false
   },
 
-  hasOneThrough: [
+  hasMany: [
     {
       model: Post,
-      through: Subscriber,
+    },
+  ],
+
+  hasOne: [
+    {
+      model: Subscriber,
     },
   ],
 
@@ -99,5 +97,9 @@ export default {
 
   set: {
     password: (password: string) => Bun.password.hash(password),
+  },
+
+  dashboard: {
+    highlight: true,
   },
 } satisfies Model

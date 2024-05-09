@@ -40,10 +40,15 @@ export default {
     // useUuid: true, // defaults to false
   },
 
-  hasOneThrough: [
+  hasMany: [
     {
       model: Post,
-      through: Subscriber,
+    },
+  ],
+
+  hasOne: [
+    {
+      model: Subscriber,
     },
   ],
 

@@ -13,7 +13,7 @@ export default {
 
   connections: {
     sqlite: {
-      database: env.DB_DATABASE || 'database/stacks.sqlite',
+      database: env.DB_DATABASE || 'stacks',
       prefix: '',
     },
 

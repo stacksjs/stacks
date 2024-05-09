@@ -25,13 +25,6 @@ export default {
 
       factory: () => faker.datatype.boolean(),
     },
-
-    user_id: {
-      validator: {
-        rule: schema.number(),
-        message: '',
-      },
-    },
   },
 
   dashboard: {

@@ -32,11 +32,5 @@ export default {
 
       factory: () => faker.datatype.string(),
     },
-    subscriber_id: {
-      validator: {
-        rule: schema.number(),
-        message: '',
-      },
-    },
   },
 } satisfies Model

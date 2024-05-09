@@ -1,6 +1,6 @@
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { ModelOptions } from '@stacksjs/types'
+import type { ModelDefault, RelationConfig } from '@stacksjs/types'
 
 export interface FieldArrayElement {
   entity: string
@@ -13,10 +13,6 @@ export interface ModelElement {
   default: string | number | boolean | Date | undefined | null
   unique: boolean
   fieldArray: FieldArrayElement | null
-}
-
-interface ModelDefault {
-  default: ModelOptions
 }
 
 await initiateModelGeneration()
@@ -145,7 +141,7 @@ async function initiateModelGeneration(): Promise<void> {
   }
 }
 
-async function getRelations(model: ModelDefault): Promise<any[]> {
+async function getRelations(model: ModelDefault): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
