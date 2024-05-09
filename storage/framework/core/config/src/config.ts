@@ -20,6 +20,7 @@ export const {
   dns,
   docs,
   email,
+  errors,
   git,
   hashing,
   library,

@@ -10,6 +10,7 @@ import database from '~/config/database'
 import dns from '~/config/dns'
 import docs from '~/config/docs'
 import email from '~/config/email'
+import errors from '~/config/errors'
 import git from '~/config/git'
 import hashing from '~/config/hashing'
 import library from '~/config/library'
@@ -38,6 +39,7 @@ export default {
   dns,
   docs,
   email,
+  errors,
   git,
   hashing,
   library,

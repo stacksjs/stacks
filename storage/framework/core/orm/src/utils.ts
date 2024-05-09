@@ -31,3 +31,7 @@ export async function extractFieldsFromModel(filePath: string) {
 
   return fields
 }
+
+export function userModels() {
+  return import.meta.glob<{ default: Model }>(path.userModelsPath('*.ts'))
+}
