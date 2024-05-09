@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VAceEditor } from 'vue3-ace-editor'
-import './ace-config'
+import '../../storage/framework/config/ace-config'
 
 defineProps({
   live: Boolean,
