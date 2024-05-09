@@ -118,18 +118,17 @@ export interface Attributes {
 
 export type Model = Partial<ModelOptions>
 
-
 export interface ModelDefault {
   default: ModelOptions
 }
 
 export interface RelationConfig {
-  relationship: string;
-  model: string;
-  table: string;
-  foreignKey: string;
-  relationName: string;
-  throughModel: string;
-  throughForeignKey: string;
-  pivotTable: string;
+  relationship: string
+  model: string
+  table: string
+  foreignKey: string
+  relationName: string
+  throughModel: string
+  throughForeignKey: string
+  pivotTable: string
 }

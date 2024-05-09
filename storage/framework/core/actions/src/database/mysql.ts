@@ -125,8 +125,6 @@ export async function generateMysqlMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
-
-
 async function getRelations(model: ModelDefault): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
@@ -192,7 +190,7 @@ async function createTableMigration(modelPath: string) {
 
   const model = await import(modelPath)
   const tableName = model.default.table
-  
+
   await createPivotTableMigration(model)
 
   const fields = model.default.attributes
@@ -277,7 +275,6 @@ async function createPivotTableMigration(model: ModelDefault) {
 
 async function createForeignKeysMigration(model: ModelDefault) {
   const relations = await getRelations(model)
-
 
   for (const relation of relations) {
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`

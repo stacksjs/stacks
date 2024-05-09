@@ -13,7 +13,6 @@ if (result?.isErr()) {
 
 const result2 = await runDatabaseMigration()
 
-
 if (result2.isErr()) {
   log.error('runDatabaseMigration failed')
   log.error(result2.error)
