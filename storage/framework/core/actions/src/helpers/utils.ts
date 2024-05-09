@@ -1,9 +1,11 @@
+import type { Action } from '@stacksjs/actions'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import type { ActionOptions } from '@stacksjs/types'
+import { Glob } from 'bun'
 
 /**
  * Run an Action the Stacks way.
@@ -13,6 +15,25 @@ import type { ActionOptions } from '@stacksjs/types'
  * @returns The result of the command.
  */
 export async function runAction(action: string, options?: ActionOptions) {
+  // check if action is a file anywhere in ./app/Actions/**/*.ts
+  // if it is, return and await the action
+  console.log('action', action)
+  const glob = new Glob('**/*.ts')
+  const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true }
+
+  for await (const file of glob.scan(scanOptions)) {
+    console.log('file', file)
+    if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
+      return ((await import(p.userActionsPath(file))).default as Action).handle()
+
+    // console.log('model', model.name)
+    // WIP: if (model.name === action) return await model.handle()
+
+    // const a = await import(p.userActionsPath(file))
+    // if (a.name === action) return await a.handle()
+  }
+
+  // or else, just run the action normally by assuming it's stored in p.actionsPath
   const opts = buddyOptions()
   const path = p.relativeActionsPath(`src/${action}.ts`)
   const cmd = `bun --bun ${path} ${opts}`.trimEnd()
