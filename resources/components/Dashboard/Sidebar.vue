@@ -2,7 +2,6 @@
   <div>
     <!-- Static sidebar for desktop -->
     <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-      <!-- Sidebar component, swap this element with another sidebar if you like -->
       <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 bg-white px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center">
           <img
@@ -22,12 +21,11 @@
                 class="-mx-2 mt-2 space-y-1"
               >
                 <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                   <RouterLink
                     to="/"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-home text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-home text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Dashboard
                   </RouterLink>
                 </li>
@@ -52,7 +50,7 @@
                     to="/functions"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-code-bracket text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-code-bracket text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Functions
                   </RouterLink>
                 </li>
@@ -62,7 +60,7 @@
                     to="/components"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-puzzle-piece text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-puzzle-piece text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Components
                   </RouterLink>
                 </li>
@@ -72,7 +70,7 @@
                     to="/releases"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-building-library text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-building-library text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Releases
                   </RouterLink>
                 </li>
@@ -97,7 +95,7 @@
                     to="/deployments"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-rocket-launch text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-rocket-launch text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Deployments
                   </RouterLink>
                 </li>
@@ -107,7 +105,7 @@
                     to="/requests"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-magnifying-glass text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Requests
                   </RouterLink>
                 </li>
@@ -117,7 +115,7 @@
                     to="/actions"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-bolt text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-bolt text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Actions
                   </RouterLink>
                 </li>
@@ -127,7 +125,7 @@
                     to="/commands"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-command-line text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-command-line text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Commands
                   </RouterLink>
                 </li>
@@ -137,7 +135,7 @@
                     to="/jobs"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-queue-list text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-queue-list text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Jobs
                   </RouterLink>
                 </li>
@@ -147,7 +145,7 @@
                     to="/notifications"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-envelope text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-envelope text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Notifications
                   </RouterLink>
                 </li>
@@ -220,7 +218,7 @@
                     class="sidebar-links"
                   >
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
-                    <div class="i-heroicons-document-magnifying-glass text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-document-magnifying-glass text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     <span class="truncate">DNS</span>
                   </RouterLink>
                 </li>
@@ -232,7 +230,7 @@
                     class="sidebar-links"
                   >
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
-                    <div class="i-heroicons-at-symbol text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-at-symbol text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     <span class="truncate">Emails</span>
                   </RouterLink>
                 </li>
@@ -242,7 +240,7 @@
                     to="/logs"
                     class="sidebar-links group"
                   >
-                    <div class="i-heroicons-document-text text-gray-500 w-6 h-6 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                    <div class="i-heroicons-document-text text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
                     Logs
                   </RouterLink>
                 </li>
@@ -256,7 +254,7 @@
                   class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
                   active-class="active"
                 >
-                  <div class="i-heroicons-chat-bubble-left-ellipsis text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                  <div class="i-heroicons-chat-bubble-left-ellipsis text-gray-500 w-5 h-5 dark:text-gray-200 transition-all duration-150 ease-in-out" />
                 </RouterLink>
 
                 <RouterLink
@@ -264,7 +262,7 @@
                   class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
                   active-class="active"
                 >
-                  <div class="i-heroicons-key text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                  <div class="i-heroicons-key text-gray-500 w-5 h-5 dark:text-gray-200 transition-all duration-150 ease-in-out" />
                 </RouterLink>
 
                 <RouterLink
@@ -272,7 +270,7 @@
                   class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
                   active-class="active"
                 >
-                  <div class="i-heroicons-cog-8-tooth text-gray-500 w-6 h-6 dark:text-gray-200 transition-all duration-150 ease-in-out" />
+                  <div class="i-heroicons-cog-8-tooth text-gray-500 w-5 h-5 dark:text-gray-200 transition-all duration-150 ease-in-out" />
                 </RouterLink>
               </div>
               <!-- <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Production</span> -->
