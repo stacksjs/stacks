@@ -17,12 +17,11 @@ import { Glob } from 'bun'
 export async function runAction(action: string, options?: ActionOptions) {
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
-  console.log('action', action)
   const glob = new Glob('**/*.ts')
   const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true }
 
   for await (const file of glob.scan(scanOptions)) {
-    console.log('file', file)
+    log.debug('file', file)
     if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
       return ((await import(p.userActionsPath(file))).default as Action).handle()
 

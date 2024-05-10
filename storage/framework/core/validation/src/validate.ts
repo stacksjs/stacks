@@ -5,9 +5,7 @@ import { MoneyValidator } from './types/money'
 export { schema, rule }
 
 // @ts-expect-error - investigate why this is not working
-Vine.macro('money', () => {
-  return new MoneyValidator()
-})
+Vine.macro('money', () => new MoneyValidator())
 
 type SchemaString = string
 type SchemaNumber = number
@@ -24,4 +22,4 @@ export const validate = {
 }
 
 export type { Infer } from '@vinejs/vine/types'
-export { VineString, VineBoolean, VineEnum, VineNumber } from '@vinejs/vine'
+export { VineString, VineBoolean, VineEnum, VineNumber, VineDate } from '@vinejs/vine'

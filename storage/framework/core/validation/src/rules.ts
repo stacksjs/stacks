@@ -1,6 +1,6 @@
 import { USD } from '@dinero.js/currencies'
-import vine from '@vinejs/vine'
 import { dinero as currency } from 'dinero.js'
+import { schema } from './validate'
 
 /**
  * Thanks to VineJS for the following types:
@@ -95,23 +95,22 @@ export interface ErrorReporterContract {
   report: (message: string, rule: string, field: FieldContext, args?: Record<string, any>) => any
 }
 
-export const isMoney = vine.createRule((value: unknown, _, field: FieldContext) => {
+export const isMoney = schema.createRule((value: unknown, _, field: FieldContext) => {
   /**
    * Convert string representation of a number to a JavaScript
    * Number data type.
    */
-  const asNumber = (value: unknown): number => {
-    const result = Number(value)
-    return Number.isNaN(result) ? 0 : result
-  }
-
-  const numericValue = asNumber(value)
+  const numericValue = schema.helpers.asNumber(value)
 
   /**
    * Report error, if the value is NaN post-conversion
    */
   if (Number.isNaN(numericValue)) {
-    field.report('The {{ field }} field value must be a number', 'money', field)
+    field.report(
+      'The {{ field }} field value must be a number',
+      'money',
+      field
+    )
     return
   }
 
@@ -124,4 +123,4 @@ export const isMoney = vine.createRule((value: unknown, _, field: FieldContext) 
    * Mutate the field's value
    */
   field.mutate(amount, field)
-}) as any
+})
