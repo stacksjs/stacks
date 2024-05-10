@@ -39,7 +39,7 @@
     "shikiji": "^0.10.2",
     "taze": "^0.13.8",
     "unocss": "^0.60.0",
-    "unplugin-auto-import": "^0.17.5",
+    "unplugin-auto-import": "^0.17.6",
     "unplugin-vue-components": "^0.27.0",
     "unplugin-vue-macros": "^2.9.2",
     "unplugin-vue-markdown": "^0.26.2",
@@ -53,6 +53,6 @@
     "vite-plugin-webfont-dl": "^3.9.4",
     "vite-ssg": "^0.23.7",
     "vite-ssg-sitemap": "^0.6.1",
-    "vue-tsc": "^2.0.16"
+    "vue-tsc": "^2.0.17"
   }
 }
