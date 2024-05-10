@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Commit } from '@stacksjs/orm'
+// import { Commit } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetRecentCommits',
@@ -7,6 +7,6 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    return Commit.recent(3)
+    // return Commit.recent(3)
   },
 })

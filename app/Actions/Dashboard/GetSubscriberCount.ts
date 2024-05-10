@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Subscriber } from '@stacksjs/orm'
+// import { Subscriber } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetSubscriberCount',
@@ -7,6 +7,6 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    return Subscriber.count()
+    // return Subscriber.count()
   },
 })

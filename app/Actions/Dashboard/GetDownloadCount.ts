@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Library } from '@stacksjs/orm'
+// import { Library } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetDownloadCount',
@@ -7,6 +7,6 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    return Library.downloadCount()
+    // return Library.downloadCount()
   },
 })

@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Deployment } from '@stacksjs/orm'
+// import { Deployment } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetRecentDeployments',
@@ -7,6 +7,6 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    return Deployment.recent(3)
+    // return Deployment.recent(3)
   },
 })

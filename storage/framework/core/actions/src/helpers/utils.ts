@@ -26,14 +26,12 @@ export async function runAction(action: string, options?: ActionOptions) {
     if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
       return ((await import(p.userActionsPath(file))).default as Action).handle()
 
-    // console.log('model', model.name)
-    // WIP: if (model.name === action) return await model.handle()
-
-    // const a = await import(p.userActionsPath(file))
-    // if (a.name === action) return await a.handle()
+    // if a custom model name is used, we need to check for it
+    const a = await import(p.userActionsPath(file))
+    if (a.name === action) return await a.handle()
   }
 
-  // or else, just run the action normally by assuming it's stored in p.actionsPath
+  // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath
   const opts = buddyOptions()
   const path = p.relativeActionsPath(`src/${action}.ts`)
   const cmd = `bun --bun ${path} ${opts}`.trimEnd()

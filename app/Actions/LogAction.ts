@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
-import { rule } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation'
 
 interface Request {
   message: string
@@ -14,12 +14,12 @@ export default new Action({
   // the request object is optional, but if it is provided, it will be used for validation
   fields: {
     message: {
-      rule: rule.string().minLength(3).maxLength(255),
+      rule: schema.string().minLength(3).maxLength(255),
       message: 'The message must be between 3 and 255 characters long.',
     },
 
     level: {
-      rule: rule.enum(['info', 'warn', 'error']),
+      rule: schema.enum(['info', 'warn', 'error']),
       message: 'The log level must be one of "info", "warn", or "error".',
     },
   },
