@@ -217,7 +217,11 @@ const sidebar = {
               collapsible: true,
               collapsed: true,
               items: [
+                { text: 'Auth', link: '/guide/components/auth' },
+                { text: 'Modal', link: '/guide/components/modal' },
+                { text: 'Notification', link: '/guide/components/notification' },
                 { text: 'KeepAlive', link: '/guide/components/keep-alive' },
+                { text: 'Stepper', link: '/guide/components/stepper' },
                 { text: 'Suspense', link: '/guide/components/suspense' },
                 { text: 'Table', link: '/guide/components/table' },
                 { text: 'Teleport', link: '/guide/components/teleport' },
@@ -235,8 +239,6 @@ const sidebar = {
                 // { text: 'Video', link: '/guide/components/video' },
               ],
             },
-            { text: 'Dashboard', link: '/guide/dashboard' },
-            { text: 'System Tray', link: '/guide/system-tray' },
           ],
         },
 
@@ -265,9 +267,9 @@ const sidebar = {
               ],
             },
             { text: 'Payments', link: '/packages/payments' },
-            // { text: 'Permissions', link: '/packages/permissions' },
+            { text: 'Permissions', link: '/packages/permissions' },
             { text: 'Queue', link: '/packages/queue' },
-            // { text: 'Realtime', link: '/packages/realtime' },
+            { text: 'Realtime', link: '/packages/realtime' },
             { text: 'Router', link: '/packages/router' },
             { text: 'Scheduler', link: '/packages/scheduler' },
             { text: 'Search Engine', link: '/packages/search-engine' },
@@ -348,6 +350,7 @@ const sidebar = {
 
         { text: 'Bootstrap', link: '/guide/bootstrap' },
         { text: 'CI / CD', link: '/guide/ci' },
+        { text: 'Dashboard', link: '/guide/dashboard' },
         { text: 'Model-View-Action', link: '/guide/model-view-action' },
 
         {
@@ -385,6 +388,7 @@ const sidebar = {
         },
 
         { text: 'Plugins', link: '/guide/plugins' },
+        { text: 'System Tray', link: '/guide/system-tray' },
         { text: '$ Shell', link: '/guide/$-shell' },
       ],
     },
