@@ -6,7 +6,6 @@ import { Glob } from 'bun'
 export default new Action({
   name: 'GetModels',
   description: 'Gets the application models.',
-  apiResponse: true,
 
   async handle() {
     const glob = new Glob('**/*.ts')
@@ -29,6 +28,10 @@ export default new Action({
     if (displayModels.length > 8) displayModels.length = 8
     displayModels.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
 
-    return displayModels.map((model) => model.name)
+    return displayModels.map((model) => ({
+      model: model.name,
+      // TODO: implement this total logic
+      total: Math.floor(Math.random() * (999 - 10 + 1)) + 10,
+    }))
   },
 })

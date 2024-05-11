@@ -74,55 +74,61 @@ useHead({
 
           <ul
             role="list"
-            class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-4 xl:gap-x-8"
+            class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8"
           >
-            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
-                <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
-                  U
-                </div>
+            <router-link to="/models/users">
+              <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
+                  <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
+                    U
+                  </div>
 
-                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  Users
-                </div>
+                  <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    Users
+                  </div>
 
-                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">123.5k</span>
+                  <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">123.5k</span>
+                  </div>
                 </div>
-              </div>
-            </li>
+              </li>
+            </router-link>
 
-            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
-                <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
-                  T
-                </div>
+            <router-link to="/models/teams">
+              <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
+                  <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
+                    T
+                  </div>
 
-                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  Teams
-                </div>
+                  <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    Teams
+                  </div>
 
-                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">912</span>
+                  <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">912</span>
+                  </div>
                 </div>
-              </div>
-            </li>
+              </li>
+            </router-link>
 
-            <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
-                <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
-                  S
-                </div>
+            <router-link to="/models/subscribers">
+              <li class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 hover:bg-white p-6 dark:bg-blue-gray-700 transform duration-250 ease-in-out">
+                  <div class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10 flex items-center justify-center">
+                    S
+                  </div>
 
-                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  Subscribers
-                </div>
+                  <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    Subscribers
+                  </div>
 
-                <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">4.6k</span>
+                  <div class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+                    <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">4.6k</span>
+                  </div>
                 </div>
-              </div>
-            </li>
+              </li>
+            </router-link>
           </ul>
         </div>
       </div>
