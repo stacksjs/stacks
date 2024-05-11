@@ -98,9 +98,20 @@ export class Router implements RouterInterface {
   public async action(path: Route['url']): Promise<this> {
     path = pascalCase(path) // actions are PascalCase
 
-    // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-    const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
-    const callback = actionModule.default.handle
+    let callback: Route['callback']
+    try {
+      // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
+      const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
+      callback = actionModule.default.handle
+    } catch (error) {
+      try {
+        const actionModule = await import(p.userActionsPath(`${path}.ts`.replace(/ActionAction/, 'Action')))
+        callback = actionModule.default.handle
+      } catch (error) {
+        log.error(`Could not find action module for path: ${path}`)
+        return this
+      }
+    }
 
     path = this.prepareUri(path)
     this.addRoute('GET', path, callback, 200)

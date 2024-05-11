@@ -1,3 +1,4 @@
+import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { ModelDefault, RelationConfig } from '@stacksjs/types'
@@ -22,7 +23,7 @@ async function generateApiRoutes(model: ModelDefault) {
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
   if (model.default.traits?.useApi) {
     const apiRoutes = model.default.traits?.useApi?.routes
-    if (apiRoutes.length) {
+    if (apiRoutes?.length) {
       for (const apiRoute of apiRoutes) {
         await writeOrmActions(apiRoute, model)
         routeString += await writeApiRoutes(apiRoute, model)
@@ -80,7 +81,7 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
   actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
       description: '${modelName} ${formattedApiRoute} Orm Action',
-      
+
       ${handleString}
     })
   `
@@ -120,23 +121,21 @@ async function initiateModelGeneration(): Promise<void> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
-    const model = await import(modelFile)
+    log.debug(`Processing model file: ${modelFile}`)
 
+    const model = await import(modelFile)
     const tableName = model.default.table
-    const modelName = model.default.name
+    const modelName = path.basename(modelFile, '.ts')
 
     await generateApiRoutes(model)
 
+    Bun.write(path.projectStoragePath(`framework/orm/${modelName}.ts`), '')
     const file = Bun.file(path.projectStoragePath(`framework/orm/${modelName}.ts`))
-
     const fields = await extractFields(model, modelFile)
-
     const classString = await generateModelString(tableName, model, fields)
 
     const writer = file.writer()
-
     writer.write(classString)
-
     await writer.end()
   }
 }
@@ -425,7 +424,7 @@ async function generateModelString(
         .selectAll()
         .executeTakeFirst()
 
-        if (! firstModel) 
+        if (! firstModel)
           throw new Error('Model Relation Not Found!')
 
         const finalModel = await db.selectFrom('${tableRelation}')
@@ -580,7 +579,7 @@ async function generateModelString(
 
         if (!model)
           return null
-    
+
         return new ${modelName}Model(model)
       }
 
