@@ -106,11 +106,7 @@ export const isMoney = schema.createRule((value: unknown, _, field: FieldContext
    * Report error, if the value is NaN post-conversion
    */
   if (Number.isNaN(numericValue)) {
-    field.report(
-      'The {{ field }} field value must be a number',
-      'money',
-      field
-    )
+    field.report('The {{ field }} field value must be a number', 'money', field)
     return
   }
 

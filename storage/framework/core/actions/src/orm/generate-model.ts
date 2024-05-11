@@ -1075,7 +1075,7 @@ async function generateModelString(
       last,
       where,
       whereIn,
-      modelInstance: ${modelName}Model
+      model: ${modelName}Model
     }
 
     export default ${modelName}`
