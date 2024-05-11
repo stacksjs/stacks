@@ -29,6 +29,6 @@ export default new Action({
     if (displayModels.length > 8) displayModels.length = 8
     displayModels.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
 
-    console.log(displayModels.map((model) => model.name))
+    return displayModels.map((model) => model.name)
   },
 })

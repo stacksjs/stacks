@@ -90,6 +90,7 @@ declare global {
   const ValidationNumber: typeof import('../core/validation/src/types/index')['ValidationNumber']
   const ValidationString: typeof import('../core/validation/src/types/index')['ValidationString']
   const VineBoolean: typeof import('../core/validation/src/validate')['VineBoolean']
+  const VineDate: typeof import('../core/validation/src/validate')['VineDate']
   const VineEnum: typeof import('../core/validation/src/validate')['VineEnum']
   const VineNumber: typeof import('../core/validation/src/validate')['VineNumber']
   const VineString: typeof import('../core/validation/src/validate')['VineString']
@@ -676,6 +677,7 @@ declare global {
   const runComponentsDevServer: typeof import('../core/actions/src/dev/index')['runComponentsDevServer']
   const runDashboardDevServer: typeof import('../core/actions/src/dev/index')['runDashboardDevServer']
   const runDatabaseMigration: typeof import('../core/database/src/migrations')['runDatabaseMigration']
+  const runDatabaseMigrationForeign: typeof import('../core/database/src/migrations')['runDatabaseMigrationForeign']
   const runDesktopDevServer: typeof import('../core/actions/src/dev/index')['runDesktopDevServer']
   const runDevServer: typeof import('../core/actions/src/dev/index')['runDevServer']
   const runDocsDevServer: typeof import('../core/actions/src/dev/index')['runDocsDevServer']
@@ -991,6 +993,7 @@ declare global {
   const userListenersPath: typeof import('../core/path/src/paths')['userListenersPath']
   const userMiddlewarePath: typeof import('../core/path/src/paths')['userMiddlewarePath']
   const userMigrationsPath: typeof import('../core/path/src/paths')['userMigrationsPath']
+  const userModels: typeof import('../core/orm/src/utils')['userModels']
   const userModelsPath: typeof import('../core/path/src/paths')['userModelsPath']
   const userNotificationsPath: typeof import('../core/path/src/paths')['userNotificationsPath']
   const utilsPath: typeof import('../core/path/src/paths')['utilsPath']
@@ -1098,6 +1101,7 @@ declare module 'vue' {
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
     readonly ValidationString: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationString']>
     readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['VineBoolean']>
+    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/validate')['VineDate']>
     readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/validate')['VineEnum']>
     readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/validate')['VineNumber']>
     readonly VineString: UnwrapRef<typeof import('../core/validation/src/validate')['VineString']>
@@ -1647,6 +1651,7 @@ declare module 'vue' {
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
     readonly runDatabaseMigration: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigration']>
+    readonly runDatabaseMigrationForeign: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigrationForeign']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
@@ -1946,6 +1951,7 @@ declare module 'vue' {
     readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/paths')['userListenersPath']>
     readonly userMiddlewarePath: UnwrapRef<typeof import('../core/path/src/paths')['userMiddlewarePath']>
     readonly userMigrationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userMigrationsPath']>
+    readonly userModels: UnwrapRef<typeof import('../core/orm/src/utils')['userModels']>
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
@@ -2036,6 +2042,7 @@ declare module '@vue/runtime-core' {
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
     readonly ValidationString: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationString']>
     readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['VineBoolean']>
+    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/validate')['VineDate']>
     readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/validate')['VineEnum']>
     readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/validate')['VineNumber']>
     readonly VineString: UnwrapRef<typeof import('../core/validation/src/validate')['VineString']>
@@ -2585,6 +2592,7 @@ declare module '@vue/runtime-core' {
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
     readonly runDatabaseMigration: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigration']>
+    readonly runDatabaseMigrationForeign: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigrationForeign']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
@@ -2884,6 +2892,7 @@ declare module '@vue/runtime-core' {
     readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/paths')['userListenersPath']>
     readonly userMiddlewarePath: UnwrapRef<typeof import('../core/path/src/paths')['userMiddlewarePath']>
     readonly userMigrationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userMigrationsPath']>
+    readonly userModels: UnwrapRef<typeof import('../core/orm/src/utils')['userModels']>
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>

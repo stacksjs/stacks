@@ -6,7 +6,7 @@
           Deployment History
         </h1>
         <p class="mt-2 text-sm text-gray-700">
-          A list of all the deployments relating your project/s.
+          A list of all the <em>(zero-downtime)</em> deployments relating your project.
         </p>
       </div>
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
