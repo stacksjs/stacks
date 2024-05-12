@@ -72,6 +72,6 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/pluralize": "^0.0.33",
-    "@types/validator": "^13.11.9"
+    "@types/validator": "^13.11.10"
   }
 }

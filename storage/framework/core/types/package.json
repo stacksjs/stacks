@@ -56,7 +56,7 @@
     "meilisearch": "^0.39.0",
     "neverthrow": "^6.2.1",
     "ora": "^8.0.1",
-    "unocss": "^0.60.0",
+    "unocss": "^0.60.2",
     "unplugin-auto-import": "^0.17.6",
     "unplugin-vue-components": "^0.27.0",
     "vite": "^5.2.11",
