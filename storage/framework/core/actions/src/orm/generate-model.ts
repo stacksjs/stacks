@@ -2,6 +2,7 @@ import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { ModelDefault, RelationConfig } from '@stacksjs/types'
+import { pascalCase } from '@stacksjs/strings'
 
 export interface FieldArrayElement {
   entity: string
@@ -20,21 +21,20 @@ await initiateModelGeneration()
 await setKyselyTypes()
 
 async function generateApiRoutes(model: ModelDefault) {
-  let routeString = `import { route } from '@stacksjs/router'\n\n\n`
   if (model.default.traits?.useApi) {
+    let routeString = `import { route } from '@stacksjs/router'\n\n\n`
     const apiRoutes = model.default.traits?.useApi?.routes
+
     if (apiRoutes?.length) {
       for (const apiRoute of apiRoutes) {
         await writeOrmActions(apiRoute, model)
         routeString += await writeApiRoutes(apiRoute, model)
       }
     }
+
     const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
-
     const writer = file.writer()
-
     writer.write(routeString)
-
     await writer.end()
   }
 }
@@ -80,7 +80,7 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
 
   actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
-      description: '${modelName} ${formattedApiRoute} Orm Action',
+      description: '${modelName} ${formattedApiRoute} ORM Action',
 
       ${handleString}
     })
@@ -129,8 +129,8 @@ async function initiateModelGeneration(): Promise<void> {
 
     await generateApiRoutes(model)
 
-    Bun.write(path.projectStoragePath(`framework/orm/${modelName}.ts`), '')
-    const file = Bun.file(path.projectStoragePath(`framework/orm/${modelName}.ts`))
+    Bun.write(path.projectStoragePath(`framework/orm/src/${modelName}.ts`), '')
+    const file = Bun.file(path.projectStoragePath(`framework/orm/src/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
     const classString = await generateModelString(tableName, model, fields)
 
@@ -380,7 +380,7 @@ async function generateModelString(
   const modelName = model.default.name
 
   // users -> Users
-  const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
+  const formattedTableName = pascalCase(tableName)
 
   // User -> user
   const formattedModelName = modelName.toLowerCase()

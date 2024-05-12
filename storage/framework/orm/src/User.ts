@@ -2,22 +2,29 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
-    
+    import Subscriber from './Subscriber'
+
+import Post from './Post'
+
+
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
 
     // TODO: we need an action that auto-generates these table interfaces
-    export interface SubscribersTable {
+    export interface UsersTable {
       id: Generated<number>
-      subscribed: boolean
+      name: string
+      email: string
+      jobTitle: string
+      password: string
      
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
     }
 
-    interface SubscriberResponse {
-      data: Subscribers
+    interface UserResponse {
+      data: Users
       paging: {
         total_records: number
         page: number
@@ -26,16 +33,16 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       next_cursor: number | null
     }
 
-    export type SubscriberType = Selectable<SubscribersTable>
-    export type NewSubscriber = Insertable<SubscribersTable>
-    export type SubscriberUpdate = Updateable<SubscribersTable>
-    export type Subscribers = SubscriberType[]
+    export type UserType = Selectable<UsersTable>
+    export type NewUser = Insertable<UsersTable>
+    export type UserUpdate = Updateable<UsersTable>
+    export type Users = UserType[]
 
-    export type SubscriberColumn = Subscribers
-    export type SubscriberColumns = Array<keyof Subscribers>
+    export type UserColumn = Users
+    export type UserColumns = Array<keyof Users>
 
     type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: SubscriberType, order: SortDirection }
+    interface SortOptions { column: UserType, order: SortDirection }
     // Define a type for the options parameter
     interface QueryOptions {
       sort?: SortOptions
@@ -44,17 +51,17 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       page?: number
     }
 
-    export class SubscriberModel {
-      private subscriber: Partial<SubscriberType>
+    export class UserModel {
+      private user: Partial<UserType>
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
-      constructor(subscriber: Partial<SubscriberType>) {
-        this.subscriber = subscriber
+      constructor(user: Partial<UserType>) {
+        this.user = user
       }
 
-      // Method to find a subscriber by ID
-      static async find(id: number, fields?: (keyof SubscriberType)[]) {
-        let query = db.selectFrom('subscribers').where('id', '=', id)
+      // Method to find a user by ID
+      static async find(id: number, fields?: (keyof UserType)[]) {
+        let query = db.selectFrom('users').where('id', '=', id)
 
         if (fields)
           query = query.select(fields)
@@ -66,11 +73,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!model)
           return null
 
-        return new SubscriberModel(model)
+        return new UserModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof SubscriberType)[]) {
-        let query = db.selectFrom('subscribers').where('id', 'in', ids)
+      static async findMany(ids: number[], fields?: (keyof UserType)[]) {
+        let query = db.selectFrom('users').where('id', 'in', ids)
 
         if (fields)
           query = query.select(fields)
@@ -79,12 +86,12 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
         const model = await query.execute()
 
-        return model.map(modelItem => new SubscriberModel(modelItem))
+        return model.map(modelItem => new UserModel(modelItem))
       }
 
-      // Method to get a subscriber by criteria
-      static async get(criteria: Partial<SubscriberType>, options: QueryOptions = {}): Promise<SubscriberModel[]> {
-        let query = db.selectFrom('subscribers')
+      // Method to get a user by criteria
+      static async get(criteria: Partial<UserType>, options: QueryOptions = {}): Promise<UserModel[]> {
+        let query = db.selectFrom('users')
 
         // Apply sorting from options
         if (options.sort)
@@ -98,19 +105,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           query = query.offset(options.offset)
 
         const model = await query.selectAll().execute()
-        return model.map(modelItem => new SubscriberModel(modelItem))
+        return model.map(modelItem => new UserModel(modelItem))
       }
 
-      // Method to get all subscribers
-      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
-        const totalRecordsResult = await db.selectFrom('subscribers')
+      // Method to get all users
+      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
+        const totalRecordsResult = await db.selectFrom('users')
           .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
           .executeTakeFirst()
 
         const totalRecords = Number(totalRecordsResult?.total) || 0
         const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-        const subscribersWithExtra = await db.selectFrom('subscribers')
+        const usersWithExtra = await db.selectFrom('users')
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -118,11 +125,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .execute()
 
         let nextCursor = null
-        if (subscribersWithExtra.length > (options.limit ?? 10))
-          nextCursor = subscribersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+        if (usersWithExtra.length > (options.limit ?? 10))
+          nextCursor = usersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
         return {
-          data: subscribersWithExtra,
+          data: usersWithExtra,
           paging: {
             total_records: totalRecords,
             page: options.page!,
@@ -132,47 +139,47 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         }
       }
 
-      // Method to create a new subscriber
-      static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-        const model = await db.insertInto('subscribers')
-          .values(newSubscriber)
+      // Method to create a new user
+      static async create(newUser: NewUser): Promise<UserModel> {
+        const model = await db.insertInto('users')
+          .values(newUser)
           .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new SubscriberModel(model)
+        return new UserModel(model)
       }
 
-      // Method to update a subscriber
-      static async update(id: number, subscriberUpdate: SubscriberUpdate): Promise<SubscriberModel> {
-        const model = await db.updateTable('subscribers')
-          .set(subscriberUpdate)
+      // Method to update a user
+      static async update(id: number, userUpdate: UserUpdate): Promise<UserModel> {
+        const model = await db.updateTable('users')
+          .set(userUpdate)
           .where('id', '=', id)
           .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new SubscriberModel(model)
+        return new UserModel(model)
       }
 
-      // Method to remove a subscriber
-      static async remove(id: number): Promise<SubscriberModel> {
-        const model = await db.deleteFrom('subscribers')
+      // Method to remove a user
+      static async remove(id: number): Promise<UserModel> {
+        const model = await db.deleteFrom('users')
           .where('id', '=', id)
           .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new SubscriberModel(model)
+        return new UserModel(model)
       }
 
       async where(column: string, operator = '=', value: any) {
-        let query = db.selectFrom('subscribers')
+        let query = db.selectFrom('users')
 
         query = query.where(column, operator, value)
 
         return await query.selectAll().execute()
       }
 
-      async whereIs(criteria: Partial<SubscriberType>, options: QueryOptions = {}) {
-        let query = db.selectFrom('subscribers')
+      async whereIs(criteria: Partial<UserType>, options: QueryOptions = {}) {
+        let query = db.selectFrom('users')
 
         // Existing criteria checks
         if (criteria.id)
@@ -215,8 +222,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof SubscriberType, values: any[], options: QueryOptions = {}) {
-        let query = db.selectFrom('subscribers')
+      async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}) {
+        let query = db.selectFrom('users')
 
         query = query.where(column, 'in', values)
 
@@ -235,136 +242,165 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       async first() {
-        return await db.selectFrom('subscribers')
+        return await db.selectFrom('users')
           .selectAll()
           .executeTakeFirst()
       }
 
       async last() {
-        return await db.selectFrom('subscribers')
+        return await db.selectFrom('users')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof SubscriberType, order: 'asc' | 'desc') {
-        return await db.selectFrom('subscribers')
+      async orderBy(column: keyof UserType, order: 'asc' | 'desc') {
+        return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof SubscriberType) {
-        return await db.selectFrom('subscribers')
+      async orderByDesc(column: keyof UserType) {
+        return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof SubscriberType) {
-        return await db.selectFrom('subscribers')
+      async orderByAsc(column: keyof UserType) {
+        return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, 'asc')
           .execute()
       }
 
-      // Method to get the subscriber instance itself
+      // Method to get the user instance itself
       self() {
         return this
       }
 
-      // Method to get the subscriber instance data
+      // Method to get the user instance data
       get() {
-        return this.subscriber
+        return this.user
       }
 
-      // Method to update the subscriber instance
-      async update(subscriber: SubscriberUpdate): Promise<Result<SubscriberType, Error>> {
-        if (this.subscriber.id === undefined)
-          return err(handleError('Subscriber ID is undefined'))
+      // Method to update the user instance
+      async update(user: UserUpdate): Promise<Result<UserType, Error>> {
+        if (this.user.id === undefined)
+          return err(handleError('User ID is undefined'))
 
-        const updatedModel = await db.updateTable('subscribers')
-          .set(subscriber)
-          .where('id', '=', this.subscriber.id)
+        const updatedModel = await db.updateTable('users')
+          .set(user)
+          .where('id', '=', this.user.id)
           .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
-          return err(handleError('Subscriber not found'))
+          return err(handleError('User not found'))
 
-        this.subscriber = updatedModel
+        this.user = updatedModel
 
         return ok(updatedModel)
       }
 
-      // Method to save (insert or update) the subscriber instance
+      // Method to save (insert or update) the user instance
       async save(): Promise<void> {
-        if (!this.subscriber)
-          throw new Error('Subscriber data is undefined')
+        if (!this.user)
+          throw new Error('User data is undefined')
 
-        if (this.subscriber.id === undefined) {
-          // Insert new subscriber
-          const newModel = await db.insertInto('subscribers')
-            .values(this.subscriber as NewSubscriber)
+        if (this.user.id === undefined) {
+          // Insert new user
+          const newModel = await db.insertInto('users')
+            .values(this.user as NewUser)
             .returningAll()
             .executeTakeFirstOrThrow()
-          this.subscriber = newModel
+          this.user = newModel
         }
         else {
-          // Update existing subscriber
-          await this.update(this.subscriber)
+          // Update existing user
+          await this.update(this.user)
         }
       }
 
-      // Method to delete the subscriber instance
+      // Method to delete the user instance
       async delete(): Promise<void> {
-        if (this.subscriber.id === undefined)
-          throw new Error('Subscriber ID is undefined')
+        if (this.user.id === undefined)
+          throw new Error('User ID is undefined')
 
-        await db.deleteFrom('subscribers')
-          .where('id', '=', this.subscriber.id)
+        await db.deleteFrom('users')
+          .where('id', '=', this.user.id)
           .execute()
 
-        this.subscriber = {}
+        this.user = {}
       }
 
-      // Method to refresh the subscriber instance data from the database
+      // Method to refresh the user instance data from the database
       async refresh(): Promise<void> {
-        if (this.subscriber.id === undefined)
-          throw new Error('Subscriber ID is undefined')
+        if (this.user.id === undefined)
+          throw new Error('User ID is undefined')
 
-        const refreshedModel = await db.selectFrom('subscribers')
-          .where('id', '=', this.subscriber.id)
+        const refreshedModel = await db.selectFrom('users')
+          .where('id', '=', this.user.id)
           .selectAll()
           .executeTakeFirst()
 
         if (!refreshedModel)
-          throw new Error('Subscriber not found')
+          throw new Error('User not found')
 
-        this.subscriber = refreshedModel
+        this.user = refreshedModel
       }
 
       
+      async subscriber() {
+        if (this.user.id === undefined)
+          throw new Error('Relation Error!')
+
+        const model = await db.selectFrom('subscribers')
+        .where('user_id', '=', this.user.id)
+        .selectAll()
+        .executeTakeFirst()
+
+        if (! model)
+          throw new Error('Model Relation Not Found!')
+
+        return new Subscriber.modelInstance(model)
+      }
+
+
+      async posts() {
+        if (this.user.id === undefined)
+          throw new Error('Relation Error!')
+
+        const results = await db.selectFrom('posts')
+          .where('user_id', '=', this.user.id)
+          .selectAll()
+          .execute()
+
+          return results
+      }
+
+
 
       toJSON() {
-        const output: Partial<SubscriberType> = { ...this.subscriber }
+        const output: Partial<UserType> = { ...this.user }
 
         this.hidden.forEach((attr) => {
           if (attr in output)
-            delete output[attr as keyof Partial<SubscriberType>]
+            delete output[attr as keyof Partial<UserType>]
         })
 
-        type Subscriber = Omit<SubscriberType, 'password'>
+        type User = Omit<UserType, 'password'>
 
-        return output as Subscriber
+        return output as User
       }
     }
 
-    const Model = SubscriberModel
+    const Model = UserModel
 
     // starting here, ORM functions
-    export async function find(id: number, fields?: (keyof SubscriberType)[]) {
-      let query = db.selectFrom('subscribers').where('id', '=', id)
+    export async function find(id: number, fields?: (keyof UserType)[]) {
+      let query = db.selectFrom('users').where('id', '=', id)
 
       if (fields)
         query = query.select(fields)
@@ -376,11 +412,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      return new SubscriberModel(model)
+      return new UserModel(model)
     }
 
-    export async function findMany(ids: number[], fields?: (keyof SubscriberType)[]) {
-      let query = db.selectFrom('subscribers').where('id', 'in', ids)
+    export async function findMany(ids: number[], fields?: (keyof UserType)[]) {
+      let query = db.selectFrom('users').where('id', 'in', ids)
 
       if (fields)
         query = query.select(fields)
@@ -389,11 +425,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       const model = await query.execute()
 
-      return model.map(modelItem => new SubscriberModel(modelItem))
+      return model.map(modelItem => new UserModel(modelItem))
     }
 
-    export async function get(criteria: Partial<SubscriberType>, sort: { column: keyof SubscriberType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
-      let query = db.selectFrom('subscribers')
+    export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+      let query = db.selectFrom('users')
 
       if (criteria.id)
         query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
@@ -428,7 +464,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function all(limit: number = 10, offset: number = 0) {
-      return await db.selectFrom('subscribers')
+      return await db.selectFrom('users')
         .selectAll()
         .orderBy('created_at', 'desc')
         .limit(limit)
@@ -436,42 +472,42 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newSubscriber: NewSubscriber) {
-      return await db.insertInto('subscribers')
-        .values(newSubscriber)
+    export async function create(newUser: NewUser) {
+      return await db.insertInto('users')
+        .values(newUser)
         .returningAll()
         .executeTakeFirstOrThrow()
     }
 
     export async function first() {
-      return await db.selectFrom('subscribers')
+      return await db.selectFrom('users')
         .selectAll()
         .executeTakeFirst()
     }
 
     export async function last() {
-      return await db.selectFrom('subscribers')
+      return await db.selectFrom('users')
         .selectAll()
         .orderBy('id', 'desc')
         .executeTakeFirst()
     }
 
-    export async function update(id: number, subscriberUpdate: SubscriberUpdate) {
-      return await db.updateTable('subscribers')
-        .set(subscriberUpdate)
+    export async function update(id: number, userUpdate: UserUpdate) {
+      return await db.updateTable('users')
+        .set(userUpdate)
         .where('id', '=', id)
         .execute()
     }
 
     export async function remove(id: number) {
-      return await db.deleteFrom('subscribers')
+      return await db.deleteFrom('users')
         .where('id', '=', id)
         .returningAll()
         .executeTakeFirst()
     }
 
     export async function where(column: string, operator = '=', value: any) {
-      let query = db.selectFrom('subscribers')
+      let query = db.selectFrom('users')
 
       query = query.where(column, operator, value)
 
@@ -479,10 +515,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function whereIs(
-      criteria: Partial<SubscriberType>,
+      criteria: Partial<UserType>,
       options: QueryOptions = {},
     ) {
-      let query = db.selectFrom('subscribers')
+      let query = db.selectFrom('users')
 
       // Apply criteria
       if (criteria.id)
@@ -526,11 +562,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function whereIn(
-      column: keyof SubscriberType,
+      column: keyof UserType,
       values: any[],
       options: QueryOptions = {},
     ) {
-      let query = db.selectFrom('subscribers')
+      let query = db.selectFrom('users')
 
       query = query.where(column, 'in', values)
 
@@ -548,7 +584,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export const Subscriber = {
+    export const User = {
       find,
       findMany,
       get,
@@ -561,7 +597,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       last,
       where,
       whereIn,
-      model: SubscriberModel
+      model: UserModel
     }
 
-    export default Subscriber
+    export default User
