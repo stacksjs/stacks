@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Attributes, ModelDefault, RelationConfig } from '@stacksjs/types'
+import type { Attributes, ModelOptions, RelationConfig } from '@stacksjs/types'
 import { checkPivotMigration, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetMysqlDatabase() {
@@ -25,7 +25,7 @@ export async function resetMysqlDatabase() {
   for (const userModel of userModelFiles) {
     const userModelPath = await import(userModel)
 
-    const pivotTables = await getPivotTables(userModelPath)
+    const pivotTables = await getPivotTables(userModelPath.default)
 
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
   }
@@ -119,25 +119,25 @@ export async function generateMysqlMigration(modelPath: string) {
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
-  await createForeignKeysMigration(model)
+  await createForeignKeysMigration(model.default)
 
   if (haveFieldsChanged) await createAlterTableMigration(modelPath)
   else await createTableMigration(modelPath)
 }
 
-async function getRelations(model: ModelDefault): Promise<RelationConfig[]> {
+async function getRelations(model: ModelOptions): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
 
   for (const relation of relationsArray) {
-    if (hasRelations(model.default, relation)) {
-      for (const relationInstance of model.default[relation]) {
+    if (hasRelations(model, relation)) {
+      for (const relationInstance of model[relation]) {
         const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
 
         const modelRelation = await import(modelRelationPath)
 
-        const formattedModelName = model.default.name.toLowerCase()
+        const formattedModelName = model.name.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -161,16 +161,16 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function getPivotTables(
-  model: any,
+  model: ModelOptions,
 ): Promise<{ table: string; firstForeignKey: string; secondForeignKey: string }[]> {
   const pivotTable = []
 
-  if ('belongsToMany' in model.default) {
-    for (const belongsToManyRelation of model.default.belongsToMany) {
+  if ('belongsToMany' in model) {
+    for (const belongsToManyRelation of model.belongsToMany) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
       const modelRelation = await import(modelRelationPath)
 
-      const formattedModelName = model.default.name.toLowerCase()
+      const formattedModelName = model.name.toLowerCase()
 
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
@@ -191,7 +191,7 @@ async function createTableMigration(modelPath: string) {
   const model = await import(modelPath)
   const tableName = model.default.table
 
-  await createPivotTableMigration(model)
+  await createPivotTableMigration(model.default)
 
   const fields = model.default.attributes
   const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
@@ -242,7 +242,7 @@ async function createTableMigration(modelPath: string) {
   log.success(`Created migration: ${migrationFileName}`)
 }
 
-async function createPivotTableMigration(model: ModelDefault) {
+async function createPivotTableMigration(model: ModelOptions) {
   const pivotTables = await getPivotTables(model)
 
   if (!pivotTables.length) return
@@ -273,7 +273,7 @@ async function createPivotTableMigration(model: ModelDefault) {
   }
 }
 
-async function createForeignKeysMigration(model: ModelDefault) {
+async function createForeignKeysMigration(model: ModelOptions) {
   const relations = await getRelations(model)
 
   for (const relation of relations) {

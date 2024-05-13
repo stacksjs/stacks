@@ -118,10 +118,6 @@ export interface Attributes {
 
 export type Model = Partial<ModelOptions>
 
-export interface ModelDefault {
-  default: ModelOptions
-}
-
 export interface RelationConfig {
   relationship: string
   model: string

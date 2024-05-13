@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { ModelDefault, RelationConfig } from '@stacksjs/types'
+import type { ModelOptions, RelationConfig } from '@stacksjs/types'
 import { pascalCase } from '@stacksjs/strings'
 
 export interface FieldArrayElement {
@@ -20,10 +20,10 @@ export interface ModelElement {
 await initiateModelGeneration()
 await setKyselyTypes()
 
-async function generateApiRoutes(model: ModelDefault) {
-  if (model.default.traits?.useApi) {
+async function generateApiRoutes(model: ModelOptions) {
+  if (model.traits?.useApi) {
     let routeString = `import { route } from '@stacksjs/router'\n\n\n`
-    const apiRoutes = model.default.traits?.useApi?.routes
+    const apiRoutes = model.traits?.useApi?.routes
 
     if (apiRoutes?.length) {
       for (const apiRoute of apiRoutes) {
@@ -39,8 +39,8 @@ async function generateApiRoutes(model: ModelDefault) {
   }
 }
 
-async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<void> {
-  const modelName = model.default.name
+async function writeOrmActions(apiRoute: string, model: ModelOptions): Promise<void> {
+  const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let actionString = `import { Action } from '@stacksjs/actions'\n`
@@ -93,10 +93,10 @@ async function writeOrmActions(apiRoute: string, model: ModelDefault): Promise<v
   writer.write(actionString)
 }
 
-async function writeApiRoutes(apiRoute: string, model: ModelDefault): Promise<string> {
+async function writeApiRoutes(apiRoute: string, model: ModelOptions): Promise<string> {
   let routeString = ``
-  const tableName = model.default.table
-  const modelName = model.default.name
+  const tableName = model.table
+  const modelName = model.name
 
   if (apiRoute === 'index') routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
 
@@ -127,12 +127,12 @@ async function initiateModelGeneration(): Promise<void> {
     const tableName = model.default.table
     const modelName = path.basename(modelFile, '.ts')
 
-    await generateApiRoutes(model)
+    await generateApiRoutes(model.default)
 
     Bun.write(path.projectStoragePath(`framework/orm/src/${modelName}.ts`), '')
     const file = Bun.file(path.projectStoragePath(`framework/orm/src/${modelName}.ts`))
-    const fields = await extractFields(model, modelFile)
-    const classString = await generateModelString(tableName, model, fields)
+    const fields = await extractFields(model.default, modelFile)
+    const classString = await generateModelString(tableName, model.default, fields)
 
     const writer = file.writer()
     writer.write(classString)
@@ -140,19 +140,19 @@ async function initiateModelGeneration(): Promise<void> {
   }
 }
 
-async function getRelations(model: ModelDefault): Promise<RelationConfig[]> {
+async function getRelations(model: ModelOptions): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
 
   for (const relation of relationsArray) {
-    if (hasRelations(model.default, relation)) {
-      for (const relationInstance of model.default[relation]) {
+    if (hasRelations(model, relation)) {
+      for (const relationInstance of model[relation]) {
         const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
 
         const modelRelation = await import(modelRelationPath)
 
-        const formattedModelName = model.default.name.toLowerCase()
+        const formattedModelName = model.name.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -215,7 +215,7 @@ async function setKyselyTypes() {
   for (const modelFile of modelFiles) {
     const model = await import(modelFile)
 
-    const pivotTables = await getPivotTables(model)
+    const pivotTables = await getPivotTables(model.default)
 
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
@@ -238,7 +238,7 @@ async function setKyselyTypes() {
     const tableName = model.default.table
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
 
-    const pivotTables = await getPivotTables(model)
+    const pivotTables = await getPivotTables(model.default)
 
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
@@ -256,9 +256,9 @@ async function setKyselyTypes() {
   await writer.end()
 }
 
-async function extractFields(model: ModelDefault, modelFile: string): Promise<ModelElement[]> {
+async function extractFields(model: ModelOptions, modelFile: string): Promise<ModelElement[]> {
   // TODO: we can improve this type
-  const fields: Record<string, any> = model.default.attributes
+  const fields: Record<string, any> = model.attributes
   const fieldKeys = Object.keys(fields)
 
   const rules: string[] = []
@@ -348,16 +348,16 @@ function getRelationCount(relation: string): string {
 }
 
 async function getPivotTables(
-  model: ModelDefault,
+  model: ModelOptions,
 ): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
-  if ('belongsToMany' in model.default) {
-    for (const belongsToManyRelation of model.default.belongsToMany) {
+  if ('belongsToMany' in model) {
+    for (const belongsToManyRelation of model.belongsToMany) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model.name}.ts`)
       const modelRelation = await import(modelRelationPath)
 
-      const formattedModelName = model.default.name.toLowerCase()
+      const formattedModelName = model.name.toLowerCase()
 
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
@@ -374,7 +374,7 @@ async function getPivotTables(
 
 async function generateModelString(
   tableName: string,
-  model: ModelDefault,
+  model: ModelOptions,
   attributes: ModelElement[],
 ): Promise<string> {
   const modelName = model.default.name
