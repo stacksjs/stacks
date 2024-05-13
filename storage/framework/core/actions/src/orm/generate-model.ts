@@ -1,8 +1,8 @@
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { ModelOptions, RelationConfig } from '@stacksjs/types'
 import { pascalCase } from '@stacksjs/strings'
+import type { Model, RelationConfig } from '@stacksjs/types'
 
 export interface FieldArrayElement {
   entity: string
@@ -20,7 +20,7 @@ export interface ModelElement {
 await initiateModelGeneration()
 await setKyselyTypes()
 
-async function generateApiRoutes(model: ModelOptions) {
+async function generateApiRoutes(model: Model) {
   if (model.traits?.useApi) {
     let routeString = `import { route } from '@stacksjs/router'\n\n\n`
     const apiRoutes = model.traits?.useApi?.routes
@@ -39,7 +39,7 @@ async function generateApiRoutes(model: ModelOptions) {
   }
 }
 
-async function writeOrmActions(apiRoute: string, model: ModelOptions): Promise<void> {
+async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
@@ -93,7 +93,7 @@ async function writeOrmActions(apiRoute: string, model: ModelOptions): Promise<v
   writer.write(actionString)
 }
 
-async function writeApiRoutes(apiRoute: string, model: ModelOptions): Promise<string> {
+async function writeApiRoutes(apiRoute: string, model: Model): Promise<string> {
   let routeString = ``
   const tableName = model.table
   const modelName = model.name
@@ -123,16 +123,16 @@ async function initiateModelGeneration(): Promise<void> {
   for (const modelFile of modelFiles) {
     log.debug(`Processing model file: ${modelFile}`)
 
-    const model = await import(modelFile)
-    const tableName = model.default.table
+    const model = (await import(modelFile)).default as Model
+    const tableName = model.table
     const modelName = path.basename(modelFile, '.ts')
 
-    await generateApiRoutes(model.default)
+    await generateApiRoutes(model)
 
     Bun.write(path.projectStoragePath(`framework/orm/src/${modelName}.ts`), '')
     const file = Bun.file(path.projectStoragePath(`framework/orm/src/${modelName}.ts`))
-    const fields = await extractFields(model.default, modelFile)
-    const classString = await generateModelString(tableName, model.default, fields)
+    const fields = await extractFields(model, modelFile)
+    const classString = await generateModelString(tableName, model, fields)
 
     const writer = file.writer()
     writer.write(classString)
@@ -140,7 +140,7 @@ async function initiateModelGeneration(): Promise<void> {
   }
 }
 
-async function getRelations(model: ModelOptions): Promise<RelationConfig[]> {
+async function getRelations(model: Model): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
@@ -157,12 +157,12 @@ async function getRelations(model: ModelOptions): Promise<RelationConfig[]> {
         relationships.push({
           relationship: relation,
           model: relationInstance.model.name,
-          table: modelRelation.default.table,
+          table: modelRelation.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
         })
       }
     }
@@ -200,11 +200,10 @@ async function setKyselyTypes() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
-    const model = await import(modelFile)
-
-    const tableName = model.default.table
+    const model = (await import(modelFile)).default as Model
+    const tableName = model.table
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
-    const modelName = model.default.name
+    const modelName = model.name
 
     text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
   }
@@ -213,9 +212,8 @@ async function setKyselyTypes() {
 
   let pivotFormatted = ''
   for (const modelFile of modelFiles) {
-    const model = await import(modelFile)
-
-    const pivotTables = await getPivotTables(model.default)
+    const model = (await import(modelFile)).default as Model
+    const pivotTables = await getPivotTables(model)
 
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
@@ -233,12 +231,10 @@ async function setKyselyTypes() {
   text += `\nexport interface Database {\n`
 
   for (const modelFile of modelFiles) {
-    const model = await import(modelFile)
-
-    const tableName = model.default.table
+    const model = (await import(modelFile)).default as Model
+    const tableName = model.table
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
-
-    const pivotTables = await getPivotTables(model.default)
+    const pivotTables = await getPivotTables(model)
 
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
@@ -256,7 +252,7 @@ async function setKyselyTypes() {
   await writer.end()
 }
 
-async function extractFields(model: ModelOptions, modelFile: string): Promise<ModelElement[]> {
+async function extractFields(model: Model, modelFile: string): Promise<ModelElement[]> {
   // TODO: we can improve this type
   const fields: Record<string, any> = model.attributes
   const fieldKeys = Object.keys(fields)
@@ -283,7 +279,7 @@ async function extractFields(model: ModelOptions, modelFile: string): Promise<Mo
     let uniqueValue = false
 
     if (fieldExist) {
-      defaultValue = fieldExist.default || null
+      defaultValue = fieldExist || null
       uniqueValue = fieldExist.unique || false
     }
 
@@ -348,19 +344,18 @@ function getRelationCount(relation: string): string {
 }
 
 async function getPivotTables(
-  model: ModelOptions,
+  model: Model,
 ): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
   if ('belongsToMany' in model) {
     for (const belongsToManyRelation of model.belongsToMany) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model.name}.ts`)
-      const modelRelation = await import(modelRelationPath)
-
+      const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = model.name.toLowerCase()
 
       pivotTable.push({
-        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
+        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
         firstForeignKey: belongsToManyRelation.firstForeignKey,
         secondForeignKey: belongsToManyRelation.secondForeignKey,
       })
@@ -374,19 +369,14 @@ async function getPivotTables(
 
 async function generateModelString(
   tableName: string,
-  model: ModelOptions,
+  model: Model,
   attributes: ModelElement[],
 ): Promise<string> {
-  const modelName = model.default.name
-
-  // users -> Users
-  const formattedTableName = pascalCase(tableName)
-
-  // User -> user
-  const formattedModelName = modelName.toLowerCase()
+  const modelName = model.name
+  const formattedTableName = pascalCase(tableName) // users -> Users
+  const formattedModelName = modelName.toLowerCase() // User -> user
 
   let fieldString = ''
-
   let relationMethods = ``
   let relationImports = ``
 
