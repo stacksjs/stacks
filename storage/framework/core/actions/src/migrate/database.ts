@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { generateMigrations, runDatabaseMigration, runDatabaseMigrationForeign } from '@stacksjs/database'
+import { generateMigrations, runDatabaseMigration } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // this is run and checks whether new created or update migrations need to be generated
@@ -19,12 +19,12 @@ if (result2.isErr()) {
   process.exit(1)
 }
 
-const result3 = await runDatabaseMigrationForeign()
+// const result3 = await runDatabaseMigrationForeign()
 
-if (result3.isErr()) {
-  log.error('runDatabaseMigration failed')
-  log.error(result3.error)
-  process.exit(1)
-}
+// if (result3.isErr()) {
+//   log.error('runDatabaseMigration failed')
+//   log.error(result3.error)
+//   process.exit(1)
+// }
 
 process.exit(0)

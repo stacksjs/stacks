@@ -4,7 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attributes } from '@stacksjs/types'
-import { checkPivotMigration, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetPostgresDatabase() {
   const tables = await fetchMysqlTables()
@@ -119,6 +119,10 @@ async function createTableMigration(modelPath: string) {
 
   await createPivotTableMigration(model)
 
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
+
   const fields = model.default.attributes
   const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
   const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
@@ -145,6 +149,12 @@ async function createTableMigration(modelPath: string) {
 
     migrationContent += `)\n`
   }
+
+  if (otherModelRelations && otherModelRelations.length) {
+    for (const modelRelation of otherModelRelations) {
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer') \n`
+    }
+  }  
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {

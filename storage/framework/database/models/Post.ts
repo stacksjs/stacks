@@ -15,6 +15,7 @@ export default {
       count: 10,
     },
   },
+
   attributes: {
     title: {
       validator: {
@@ -24,6 +25,7 @@ export default {
 
       factory: () => faker.datatype.string(),
     },
+
     body: {
       validator: {
         rule: schema.string(),

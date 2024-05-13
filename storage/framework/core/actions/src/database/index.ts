@@ -3,6 +3,7 @@ import { db } from '@stacksjs/database'
 // import type { Attribute, Attributes } from '@stacksjs/types'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
+import { Attributes, Model, RelationConfig } from '@stacksjs/types'
 
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
@@ -98,4 +99,60 @@ export async function checkPivotMigration(dynamicPart: string): Promise<boolean>
     // Test if the input string matches the pattern
     return pattern.test(migrationFile)
   })
+}
+
+
+export async function getRelations(model: Model): Promise<RelationConfig[]> {
+  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
+  const relationships = []
+
+  for (const relation of relationsArray) {
+    if (hasRelations(model, relation)) {
+      for (const relationInstance of model[relation]) {
+        const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
+        const modelRelation = (await import(modelRelationPath)).default
+        const formattedModelName = model.name.toLowerCase()
+
+        relationships.push({
+          relationship: relation,
+          model: relationInstance.model.name,
+          table: modelRelation.table,
+          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
+          relationName: relationInstance.relationName || '',
+          throughModel: relationInstance.through || '',
+          throughForeignKey: relationInstance.throughForeignKey || '',
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+        })
+      }
+    }
+  }
+
+  return relationships
+}
+
+export async function fetchOtherModelRelations(model: Model, modelFiles: string[]) {
+  const modelRelations = []
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelFileElement = modelFiles[i] as string
+
+    const modelFile = await import(modelFileElement)
+
+    if (model.name === modelFile.default.name) continue
+
+    const relations = await getRelations(modelFile.default)
+    
+    if (! relations.length) continue
+   
+    const relation = relations.find(relation => relation.model === model.name)
+
+    if (relation)
+      modelRelations.push(relation)
+
+    return modelRelations
+  }
+}
+
+function hasRelations(obj: any, key: string): boolean {
+  return key in obj
 }
