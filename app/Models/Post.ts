@@ -1,6 +1,7 @@
 import { faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
+import User from './User'
 
 export default {
   name: 'Post', // defaults to the sanitized file name
@@ -15,7 +16,11 @@ export default {
       count: 10,
     },
   },
-
+  belongsTo: [
+    {
+      model: 'User'
+    }
+  ],
   attributes: {
     title: {
       validator: {

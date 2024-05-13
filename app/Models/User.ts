@@ -42,13 +42,13 @@ export default {
 
   hasMany: [
     {
-      model: Post,
+      model: 'Post',
     },
   ],
 
   hasOne: [
     {
-      model: Subscriber,
+      model: 'Subscriber',
     },
   ],
 

@@ -2,7 +2,9 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
-    
+    import User from './User'
+
+
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
 
@@ -346,6 +348,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       
+      async user() {
+        if (this.post_id === undefined)
+          throw new Error('Relation Error!')
+
+        const model = await db.selectFrom('users')
+        .where('id', '=', post_id)
+        .selectAll()
+        .executeTakeFirst()
+
+        if (! model)
+          throw new Error('Model Relation Not Found!')
+
+        return new User.modelInstance(model)
+      }
+
+
 
       toJSON() {
         const output: Partial<PostType> = { ...this.post }

@@ -39,6 +39,30 @@ async function generateApiRoutes(model: Model) {
   }
 }
 
+async function writeModelNames() {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  let fileString = `export type ModelNames = `
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modeFileElement = modelFiles[i] as string
+
+    const model = (await import(modeFileElement)).default as Model
+
+    const typeFile = Bun.file(path.projectStoragePath(`framework/core/types/src/model-names.ts`))
+
+    fileString += `'${model.name}'`
+
+    if (i < modelFiles.length - 1) {
+      fileString += ' | '
+    }
+
+    const writer = typeFile.writer()
+
+    writer.write(fileString)
+  }
+}
+
 async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
@@ -117,7 +141,9 @@ async function writeApiRoutes(apiRoute: string, model: Model): Promise<string> {
 async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   await deleteExistingOrmActions()
-
+  await deleteExistingModelNameTypes()
+  await writeModelNames()
+  
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
@@ -148,15 +174,16 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
-        const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
 
-        const modelRelation = await import(modelRelationPath)
+        const modelRelationPath = path.userModelsPath(`${relationInstance.model}.ts`)
 
+        const modelRelation = (await import(modelRelationPath)).default
+        
         const formattedModelName = model.name.toLowerCase()
 
         relationships.push({
           relationship: relation,
-          model: relationInstance.model.name,
+          model: relationInstance.model,
           table: modelRelation.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
@@ -193,6 +220,12 @@ async function deleteExistingOrmActions() {
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
   }
+}
+
+async function deleteExistingModelNameTypes() {
+  const typeFile = path.projectStoragePath(`framework/core/types/src/model-names.ts`)
+
+  if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
 async function setKyselyTypes() {

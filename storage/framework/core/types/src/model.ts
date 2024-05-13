@@ -1,4 +1,4 @@
-import type { Model as ModelType } from '@stacksjs/types'
+import type { ModelNames, Model as ModelType } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable, SearchOptions } from '.'
 
@@ -62,29 +62,29 @@ export interface ModelOptions extends Base {
 
   // relationships
   hasOne: {
-    model: ModelType
+    model: ModelNames
     foreignKey?: string
     relationName?: string
   }[]
   hasMany: {
-    model: ModelType // should be typed as ModelName
+    model: ModelNames // should be typed as ModelName
     foreignKey?: string
     relationName?: string
   }[]
   belongsTo: {
-    model: ModelType // should be typed as ModelName
+    model: ModelNames // should be typed as ModelName
     foreignKey?: string
     relationName?: string
   }[] // belongsTo: 'User'
   belongsToMany: {
-    model: ModelType
+    model: ModelNames
     firstForeignKey?: string
     secondForeignKey?: string
     pivotTable?: string
     relationName?: string
   }[]
   hasOneThrough: {
-    model: ModelType
+    model: ModelNames
     through: ModelType
     foreignKey?: string
     throughForeignKey?: string
