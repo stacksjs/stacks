@@ -171,11 +171,11 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `)\n`
   }
 
-  if (otherModelRelations && otherModelRelations.length) {
+  if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer') \n`
     }
-  }  
+  }
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {

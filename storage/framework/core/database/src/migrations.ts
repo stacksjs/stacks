@@ -56,10 +56,6 @@ export async function runDatabaseMigration() {
     }
 
     if (migration.results) {
-      migration.results.forEach(({ migrationName }) => {
-        console.log(italic(`${dim(`   - Migration Name:`)} ${migrationName}`))
-      })
-
       log.success('Database migrated successfully.')
       return ok(migration)
     }
