@@ -43,19 +43,19 @@ export async function runDatabaseMigration() {
   try {
     log.info('Migrating database...')
 
-    const migration = await migrator.migrateToLatest()
+    const { error, results } = await migrator.migrateToLatest()
 
-    if (migration.error) {
-      log.error(migration.error)
-      return err(migration.error)
+    if (error) {
+      log.error(error)
+      return err(error)
     }
 
-    if (migration.results?.length === 0) {
+    if (results?.length === 0) {
       log.success('No new migrations were executed')
       return ok('No new migrations were executed')
     }
 
-    if (migration.results) {
+    if (results) {
       log.success('Database migrated successfully.')
       return ok(migration)
     }
