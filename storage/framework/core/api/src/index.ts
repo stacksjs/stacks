@@ -1,9 +1,40 @@
 import { ofetch } from 'ofetch'
-import type { FetchOptions } from 'ofetch'
-import { ref } from 'vue'
 
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
+}
+interface FetchRequestHeaders {
+  'Content-Type'?: string;
+  'Authorization'?: string;
+  'Accept'?: string;
+  'User-Agent'?: string;
+  'Referer'?: string;
+  'Origin'?: string;
+  'Cache-Control'?: string;
+  'Pragma'?: string;
+  'Cookie'?: string;
+  'If-Modified-Since'?: string;
+  'If-None-Match'?: string;
+  'X-Requested-With'?: string;
+  'Accept-Encoding'?: string;
+  'Accept-Language'?: string;
+  [key: string]: string | undefined; // To allow additional headers
+}
+
+interface FetchRequestParams {
+  headers?: FetchRequestHeaders;
+  method?: string;
+  baseURL?: string;
+  body?: any; // Optional, for request bodies like in POST or PUT requests
+  mode?: RequestMode; // Optional, e.g., 'cors', 'no-cors', 'same-origin'
+  credentials?: RequestCredentials; // Optional, e.g., 'include', 'same-origin', 'omit'
+  cache?: RequestCache; // Optional, e.g., 'default', 'no-store', 'reload'
+  redirect?: RequestRedirect; // Optional, e.g., 'follow', 'manual', 'error'
+  referrerPolicy?: ReferrerPolicy; // Optional, e.g., 'no-referrer', 'origin'
+  integrity?: string; // Optional, for subresource integrity
+  keepalive?: boolean; // Optional, for whether the request should outlive the page
+  signal?: AbortSignal; // Optional, to abort the request
+  [key: string]: any; // To allow additional parameters
 }
 
 type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array>
@@ -11,103 +42,109 @@ type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array>
 const loading = ref(false)
 const token = ref('')
 
-export async function useHttpFetch(endpoint = '') {
-  let baseURL = '/'
 
-  if (endpoint) baseURL = endpoint
+let baseURL = '/'
 
-  async function post(url: string, params?: Params): Promise<any> {
-    const headers: any = { Accept: 'application/json' }
+async function post(url: string, params?: Params): Promise<any> {
+  const headers: FetchRequestHeaders = { Accept: 'application/json' }
 
-    if (token.value) headers.Authorization = `Bearer ${token.value}`
+  if (token.value) headers.Authorization = `Bearer ${token.value}`
 
-    const parameters: FetchOptions = {
-      ...params,
-      ...{
-        headers,
-        parseResponse: JSON.parse,
-        method: 'POST',
-        baseURL,
-      },
-    }
-
-    loading.value = true
-
-    try {
-      const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(
-        url,
-        parameters,
-      )
-
-      loading.value = false
-      return result
-    } catch (err: any) {
-      loading.value = false
-
-      throw err
-    }
+  const parameters: FetchRequestParams = {
+    ...params,
+    ...{
+      headers,
+      parseResponse: JSON.parse,
+      method: 'POST',
+      baseURL,
+    },
   }
 
-  async function get(url: string, params?: Params): Promise<any> {
-    const headers: any = { Accept: 'application/json' }
+  loading.value = true
 
-    if (token.value) headers.Authorization = `Bearer ${token.value}`
+  try {
+    const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(
+      url,
+      parameters,
+    )
 
-    const parameters: FetchOptions = {
-      ...params,
-      ...{
-        headers,
-        parseResponse: JSON.parse,
-        method: 'GET',
-        baseURL,
-      },
-    }
+    loading.value = false
+    return result
+  } catch (err: any) {
+    loading.value = false
 
-    return (await ofetch(url, parameters)) as FetchResponse
+    throw err
+  }
+}
+
+async function get(url: string, params?: Params): Promise<any> {
+  const headers: FetchRequestHeaders = { Accept: 'application/json' }
+
+  if (token.value) headers.Authorization = `Bearer ${token.value}`
+
+  const parameters: FetchRequestParams = {
+    ...params,
+    ...{
+      headers,
+      parseResponse: JSON.parse,
+      method: 'GET',
+      baseURL,
+    },
   }
 
-  async function patch(url: string, params?: Params): Promise<any> {
-    const headers: any = { Accept: 'application/json' }
+  return (await ofetch(url, parameters)) as FetchResponse
+}
 
-    if (token.value) headers.Authorization = `Bearer ${token.value}`
+async function patch(url: string, params?: Params): Promise<any> {
+  const headers: FetchRequestHeaders = { Accept: 'application/json' }
 
-    const parameters: FetchOptions = {
-      ...params,
-      ...{
-        headers,
-        parseResponse: JSON.parse,
-        method: 'PATCH',
-        baseURL,
-      },
-    }
+  if (token.value) headers.Authorization = `Bearer ${token.value}`
 
-    loading.value = true
-
-    return (await ofetch(url, parameters)) as FetchResponse
+  const parameters: FetchRequestParams = {
+    ...params,
+    ...{
+      headers,
+      parseResponse: JSON.parse,
+      method: 'PATCH',
+      baseURL,
+    },
   }
 
-  async function destroy(url: string, params?: Params): Promise<any> {
-    const headers: any = { Accept: 'application/json' }
+  loading.value = true
 
-    if (token.value) headers.Authorization = `Bearer ${token.value}`
+  return (await ofetch(url, parameters)) as FetchResponse
+}
 
-    const parameters: FetchOptions = {
-      ...params,
-      ...{
-        headers,
-        method: 'DELETE',
-        baseURL,
-      },
-    }
+async function destroy(url: string, params?: Params): Promise<any> {
+  const headers: FetchRequestHeaders = { Accept: 'application/json' }
 
-    loading.value = true
+  if (token.value) headers.Authorization = `Bearer ${token.value}`
 
-    return (await ofetch(url, parameters)) as FetchResponse
+  const parameters: FetchRequestParams = {
+    ...params,
+    ...{
+      headers,
+      method: 'DELETE',
+      baseURL,
+    },
   }
 
-  function setToken(authToken: string) {
-    token.value = authToken
-  }
+  loading.value = true
 
-  return { post, get, patch, destroy, baseURL, loading, token, setToken }
+  return (await ofetch(url, parameters)) as FetchResponse
+}
+
+function setToken(authToken: string) {
+  token.value = authToken
+}
+
+export const Fetch = { 
+  post, 
+  get, 
+  patch, 
+  destroy, 
+  baseURL, 
+  loading, 
+  token, 
+  setToken 
 }
