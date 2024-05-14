@@ -583,6 +583,7 @@ async function generateModelString(
 
     export class ${modelName}Model {
       private ${formattedModelName}: Partial<${modelName}Type>
+      private results: Partial<${modelName}Type>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
       constructor(${formattedModelName}: Partial<${modelName}Type>) {
@@ -913,6 +914,7 @@ async function generateModelString(
       if (!model)
         return null
 
+      this.${formattedModelName} = model
       return new ${modelName}Model(model)
     }
 
@@ -927,6 +929,14 @@ async function generateModelString(
       const model = await query.execute()
 
       return model.map(modelItem => new ${modelName}Model(modelItem))
+    }
+
+    export async function count() {
+      const results = await db.selectFrom('${tableName}')
+        .selectAll()
+        .execute()
+
+      return results.length
     }
 
     export async function get(criteria: Partial<${modelName}Type>, sort: { column: keyof ${modelName}Type, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
@@ -981,13 +991,13 @@ async function generateModelString(
     }
 
     export async function first() {
-      return await db.selectFrom('${tableName}')
+     return await db.selectFrom('${tableName}')
         .selectAll()
         .executeTakeFirst()
     }
 
     export async function last() {
-      return await db.selectFrom('${tableName}')
+     return await db.selectFrom('${tableName}')
         .selectAll()
         .orderBy('id', 'desc')
         .executeTakeFirst()
@@ -1089,6 +1099,7 @@ async function generateModelString(
       find,
       findMany,
       get,
+      count,
       all,
       create,
       update,

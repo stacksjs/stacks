@@ -49,6 +49,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export class PostModel {
       private post: Partial<PostType>
+      private results: Partial<PostType>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
       constructor(post: Partial<PostType>) {
@@ -395,6 +396,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
+      this.post = model
       return new PostModel(model)
     }
 
@@ -409,6 +411,14 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       const model = await query.execute()
 
       return model.map(modelItem => new PostModel(modelItem))
+    }
+
+    export async function count() {
+      const results = await db.selectFrom('posts')
+        .selectAll()
+        .execute()
+
+      return results.length
     }
 
     export async function get(criteria: Partial<PostType>, sort: { column: keyof PostType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
@@ -463,13 +473,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function first() {
-      return await db.selectFrom('posts')
+     return await db.selectFrom('posts')
         .selectAll()
         .executeTakeFirst()
     }
 
     export async function last() {
-      return await db.selectFrom('posts')
+     return await db.selectFrom('posts')
         .selectAll()
         .orderBy('id', 'desc')
         .executeTakeFirst()
@@ -571,6 +581,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       find,
       findMany,
       get,
+      count,
       all,
       create,
       update,

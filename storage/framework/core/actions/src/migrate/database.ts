@@ -19,12 +19,4 @@ if (result2.isErr()) {
   process.exit(1)
 }
 
-// const result3 = await runDatabaseMigrationForeign()
-
-// if (result3.isErr()) {
-//   log.error('runDatabaseMigration failed')
-//   log.error(result3.error)
-//   process.exit(1)
-// }
-
 process.exit(0)

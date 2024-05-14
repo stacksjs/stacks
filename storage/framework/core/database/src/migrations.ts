@@ -72,39 +72,6 @@ export async function runDatabaseMigration() {
   }
 }
 
-// export async function runDatabaseMigrationForeign() {
-//   try {
-//     log.info('Migrating database...')
-
-//     const migration = await migratorForeign.migrateToLatest()
-
-//     if (migration.error) {
-//       log.error(migration.error)
-//       return err(migration.error)
-//     }
-
-//     if (migration.results?.length === 0) {
-//       log.success('No new migrations were executed')
-//       return ok('No new migrations were executed')
-//     }
-
-//     if (migration.results) {
-//       migration.results.forEach(({ migrationName }) => {
-//         console.log(italic(`${dim(`   - Migration Name:`)} ${migrationName}`))
-//       })
-
-//       log.success('Database migrated successfully.')
-//       return ok(migration)
-//     }
-
-//     log.success('Database migration completed with no new migrations.')
-//     return ok('Database migration completed with no new migrations.')
-//   } catch (error) {
-//     console.error('Migration failed:', error)
-//     return err(error)
-//   }
-// }
-
 export interface MigrationOptions {
   name: string
   up: string

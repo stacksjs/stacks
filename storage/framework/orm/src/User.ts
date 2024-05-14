@@ -53,6 +53,7 @@ import Post from './Post'
 
     export class UserModel {
       private user: Partial<UserType>
+      private results: Partial<UserType>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
       constructor(user: Partial<UserType>) {
@@ -412,6 +413,7 @@ import Post from './Post'
       if (!model)
         return null
 
+      this.user = model
       return new UserModel(model)
     }
 
@@ -426,6 +428,14 @@ import Post from './Post'
       const model = await query.execute()
 
       return model.map(modelItem => new UserModel(modelItem))
+    }
+
+    export async function count() {
+      const results = await db.selectFrom('users')
+        .selectAll()
+        .execute()
+
+      return results.length
     }
 
     export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
@@ -480,13 +490,13 @@ import Post from './Post'
     }
 
     export async function first() {
-      return await db.selectFrom('users')
+     return await db.selectFrom('users')
         .selectAll()
         .executeTakeFirst()
     }
 
     export async function last() {
-      return await db.selectFrom('users')
+     return await db.selectFrom('users')
         .selectAll()
         .orderBy('id', 'desc')
         .executeTakeFirst()
@@ -588,6 +598,7 @@ import Post from './Post'
       find,
       findMany,
       get,
+      count,
       all,
       create,
       update,

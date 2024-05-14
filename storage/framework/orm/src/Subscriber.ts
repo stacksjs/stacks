@@ -46,6 +46,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export class SubscriberModel {
       private subscriber: Partial<SubscriberType>
+      private results: Partial<SubscriberType>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
       constructor(subscriber: Partial<SubscriberType>) {
@@ -376,6 +377,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
+      this.subscriber = model
       return new SubscriberModel(model)
     }
 
@@ -390,6 +392,14 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       const model = await query.execute()
 
       return model.map(modelItem => new SubscriberModel(modelItem))
+    }
+
+    export async function count() {
+      const results = await db.selectFrom('subscribers')
+        .selectAll()
+        .execute()
+
+      return results.length
     }
 
     export async function get(criteria: Partial<SubscriberType>, sort: { column: keyof SubscriberType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
@@ -444,13 +454,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function first() {
-      return await db.selectFrom('subscribers')
+     return await db.selectFrom('subscribers')
         .selectAll()
         .executeTakeFirst()
     }
 
     export async function last() {
-      return await db.selectFrom('subscribers')
+     return await db.selectFrom('subscribers')
         .selectAll()
         .orderBy('id', 'desc')
         .executeTakeFirst()
@@ -552,6 +562,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       find,
       findMany,
       get,
+      count,
       all,
       create,
       update,
