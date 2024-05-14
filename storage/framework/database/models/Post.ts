@@ -28,7 +28,7 @@ export default {
         message: '`title` must be a string',
       },
 
-      factory: () => faker.datatype.string(),
+      factory: () => faker.string.sample(),
     },
 
     body: {
@@ -37,7 +37,7 @@ export default {
         message: '`body` must be a string',
       },
 
-      factory: () => faker.datatype.string(),
+      factory: () => faker.string.sample(),
     },
   },
 } satisfies Model

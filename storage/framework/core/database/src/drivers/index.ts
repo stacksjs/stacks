@@ -1,9 +1,12 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-// import type { Attribute, Attributes } from '@stacksjs/types'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { Attributes, Model, RelationConfig } from '@stacksjs/types'
+import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
+
+export * from './mysql'
+export * from './postgres'
+export * from './sqlite'
 
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
@@ -135,7 +138,7 @@ export async function fetchOtherModelRelations(model: Model, modelFiles: string[
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
-    
+
     const modelFile = await import(modelFileElement)
 
     if (model.name === modelFile.default.name) continue
@@ -143,7 +146,7 @@ export async function fetchOtherModelRelations(model: Model, modelFiles: string[
     const relations = await getRelations(modelFile.default)
 
     if (! relations.length) continue
-   
+
     const relation = relations.find(relation => relation.model === model.name)
 
     if (relation)

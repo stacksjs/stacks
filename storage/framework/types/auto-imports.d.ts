@@ -1651,7 +1651,6 @@ declare module 'vue' {
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
     readonly runDatabaseMigration: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigration']>
-    readonly runDatabaseMigrationForeign: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigrationForeign']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
@@ -2592,7 +2591,6 @@ declare module '@vue/runtime-core' {
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
     readonly runDatabaseMigration: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigration']>
-    readonly runDatabaseMigrationForeign: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigrationForeign']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
