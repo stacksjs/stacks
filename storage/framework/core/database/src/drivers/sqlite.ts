@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -196,7 +196,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   // Assuming fs.writeFileSync is available or use an equivalent method
   Bun.write(migrationFilePath, migrationContent)
 
-  log.success(`Created migration: ${migrationFileName}`)
+  log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
 async function createPivotTableMigration(model: Model) {
@@ -272,5 +272,5 @@ export async function createAlterTableMigration(modelPath: string) {
   // Assuming fs.writeFileSync is available or use an equivalent method
   Bun.write(migrationFilePath, migrationContent)
 
-  log.success(`Created migration: ${migrationFileName}`)
+  log.success(`Created migration: ${italic(migrationFileName)}`)
 }
