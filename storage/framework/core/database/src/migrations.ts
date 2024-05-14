@@ -90,12 +90,12 @@ export async function generateMigrations() {
     const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
     for (const file of modelFiles) {
-      log.info('Generating migration for:', italic(file))
+      log.debug('Generating migration for:', file)
       await generateMigration(file)
     }
 
-    log.success('Migrations generated successfully.')
-    return ok('Migrations generated successfully.')
+    log.success('Migrations generated')
+    return ok('Migrations generated')
   } catch (error) {
     return err(error)
   }
