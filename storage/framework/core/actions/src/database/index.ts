@@ -103,19 +103,19 @@ export async function checkPivotMigration(dynamicPart: string): Promise<boolean>
 
 
 export async function getRelations(model: Model): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
+  const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
-        const modelRelationPath = path.userModelsPath(`${relationInstance.model.name}.ts`)
+        const modelRelationPath = path.userModelsPath(`${relationInstance.model}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
         const formattedModelName = model.name.toLowerCase()
 
         relationships.push({
           relationship: relation,
-          model: relationInstance.model.name,
+          model: relationInstance.model,
           table: modelRelation.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
@@ -135,13 +135,13 @@ export async function fetchOtherModelRelations(model: Model, modelFiles: string[
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
-
+    
     const modelFile = await import(modelFileElement)
 
     if (model.name === modelFile.default.name) continue
 
     const relations = await getRelations(modelFile.default)
-    
+
     if (! relations.length) continue
    
     const relation = relations.find(relation => relation.model === model.name)

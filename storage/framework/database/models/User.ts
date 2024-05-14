@@ -4,8 +4,6 @@ import type { UserType as User } from '@stacksjs/orm'
 import { capitalize } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
-import Post from './Post'
-import Subscriber from './Subscriber'
 
 export default {
   name: 'User', // defaults to the sanitized file name
@@ -42,13 +40,13 @@ export default {
 
   hasMany: [
     {
-      model: Post,
+      model: 'Post',
     },
   ],
 
   hasOne: [
     {
-      model: Subscriber,
+      model: 'Subscriber',
     },
   ],
 
