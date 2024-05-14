@@ -1112,5 +1112,8 @@ async function generateModelString(
       model: ${modelName}Model
     }
 
-    export default ${modelName}`
+    export default ${modelName}
+    
+    process.exit(0)
+    `
 }
