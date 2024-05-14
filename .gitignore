@@ -13,7 +13,6 @@ tests/unit/coverage
 dist*
 !.gitkeep
 database/stacks.sqlite
-database/migrations
 custom-cli
 *bun-build
 
