@@ -77,7 +77,7 @@ export async function generateSqliteMigration(modelPath: string) {
 
   // if the file exists, we need to check if the fields have changed
   if (fs.existsSync(copiedModelPath)) {
-    log.info(`Fields have already been generated for ${tableName}`)
+    log.debug(`Fields have already been generated for ${tableName}`)
 
     const previousFields = await getLastMigrationFields(fileName)
     const previousFieldsString = JSON.stringify(previousFields, null, 2) // Convert to string for comparison

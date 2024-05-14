@@ -16,11 +16,13 @@ export default {
       count: 10,
     },
   },
+
   belongsTo: [
     {
-      model: 'User'
-    }
+      model: 'User',
+    },
   ],
+
   attributes: {
     title: {
       validator: {
@@ -28,7 +30,7 @@ export default {
         message: '`title` must be a string',
       },
 
-      factory: () => faker.string.sample(),
+      factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     body: {
@@ -37,7 +39,7 @@ export default {
         message: '`body` must be a string',
       },
 
-      factory: () => faker.string.sample(),
+      factory: () => faker.lorem.sentence({ min: 25, max: 40 }),
     },
   },
 } satisfies Model

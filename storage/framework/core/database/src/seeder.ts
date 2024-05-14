@@ -36,18 +36,19 @@ async function seedModel(name: string, model?: Model) {
 
 export async function seed() {
   // TODO: need to check other databases too
-  // check if ./database/stacks.sqlite exists
   const dbPath = path.userDatabasePath('stacks.sqlite')
   if (!fs.existsSync(dbPath)) {
     log.warn('No database found, configuring it...')
     await resetDatabase()
+
+    // generate the migrations
+    await generateMigrations()
+
+    // migrate the database
+    await runDatabaseMigration()
+  } else {
+    log.debug('Database configured...')
   }
-
-  // generate the migrations
-  await generateMigrations()
-
-  // migrate the database
-  await runDatabaseMigration()
 
   // if a custom seeder exists, use it instead
   const customSeederPath = path.userDatabasePath('seeder.ts')
