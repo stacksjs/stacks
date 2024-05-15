@@ -34,6 +34,7 @@ declare global {
   const ErrorHandler: typeof import('../core/error-handling/src/handler')['ErrorHandler']
   const Every: typeof import('../core/types/src/cron-jobs')['Every']
   const ExitCode: typeof import('../core/types/src/exit-code')['ExitCode']
+  const Fetch: typeof import('../core/api/src/index')['Fetch']
   const Head: typeof import('../core/utils/src/vendors')['Head']
   const HeadVuePlugin: typeof import('../core/utils/src/vendors')['HeadVuePlugin']
   const LogLevels: typeof import('../core/types/src/logger')['LogLevels']
@@ -336,6 +337,7 @@ declare global {
   const fathomWip: typeof import('../core/analytics/src/drivers/fathom')['fathomWip']
   const fcm: typeof import('../core/push/src/drivers/index')['fcm']
   const feature: typeof import('../core/testing/src/index')['feature']
+  const fetchOtherModelRelations: typeof import('../core/database/src/seeder')['fetchOtherModelRelations']
   const files: typeof import('../core/storage/src/files')['files']
   const filterName: typeof import('../core/search-engine/src/index')['filterName']
   const filters: typeof import('../core/search-engine/src/index')['filters']
@@ -387,6 +389,7 @@ declare global {
   const getLastMigrationFields: typeof import('../core/database/src/migrations')['getLastMigrationFields']
   const getModelCustomizationJob: typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']
   const getNameservers: typeof import('../core/dns/src/drivers/aws')['getNameservers']
+  const getRelations: typeof import('../core/database/src/seeder')['getRelations']
   const getSSRHandler: typeof import('../core/utils/src/vendors')['getSSRHandler']
   const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
   const gitPath: typeof import('../core/path/src/paths')['gitPath']
@@ -1071,6 +1074,7 @@ declare module 'vue' {
     readonly ErrorHandler: UnwrapRef<typeof import('../core/error-handling/src/handler')['ErrorHandler']>
     readonly Every: UnwrapRef<typeof import('../core/types/src/cron-jobs')['Every']>
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
+    readonly Fetch: UnwrapRef<typeof import('../core/api/src/index')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
     readonly LogLevels: UnwrapRef<typeof import('../core/types/src/logger')['LogLevels']>
@@ -1330,6 +1334,7 @@ declare module 'vue' {
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
     readonly fcm: UnwrapRef<typeof import('../core/push/src/drivers/index')['fcm']>
     readonly feature: UnwrapRef<typeof import('../core/testing/src/index')['feature']>
+    readonly fetchOtherModelRelations: UnwrapRef<typeof import('../core/database/src/seeder')['fetchOtherModelRelations']>
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
@@ -1374,6 +1379,7 @@ declare module 'vue' {
     readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
+    readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/paths')['gitPath']>
@@ -1831,7 +1837,6 @@ declare module 'vue' {
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
-    readonly useHttpFetch: UnwrapRef<typeof import('../core/api/src/index')['useHttpFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../core/utils/src/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../core/utils/src/vendors')['useImage']>
@@ -2011,6 +2016,7 @@ declare module '@vue/runtime-core' {
     readonly ErrorHandler: UnwrapRef<typeof import('../core/error-handling/src/handler')['ErrorHandler']>
     readonly Every: UnwrapRef<typeof import('../core/types/src/cron-jobs')['Every']>
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
+    readonly Fetch: UnwrapRef<typeof import('../core/api/src/index')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
     readonly LogLevels: UnwrapRef<typeof import('../core/types/src/logger')['LogLevels']>
@@ -2270,6 +2276,7 @@ declare module '@vue/runtime-core' {
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
     readonly fcm: UnwrapRef<typeof import('../core/push/src/drivers/index')['fcm']>
     readonly feature: UnwrapRef<typeof import('../core/testing/src/index')['feature']>
+    readonly fetchOtherModelRelations: UnwrapRef<typeof import('../core/database/src/seeder')['fetchOtherModelRelations']>
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
@@ -2314,6 +2321,7 @@ declare module '@vue/runtime-core' {
     readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
+    readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/paths')['gitPath']>
@@ -2771,7 +2779,6 @@ declare module '@vue/runtime-core' {
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
-    readonly useHttpFetch: UnwrapRef<typeof import('../core/api/src/index')['useHttpFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../core/utils/src/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../core/utils/src/vendors')['useImage']>
