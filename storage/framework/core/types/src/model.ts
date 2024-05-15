@@ -122,8 +122,8 @@ export interface RelationConfig {
   relationship: string
   model: string
   table: string
-  relationModel: string
-  relationTable: string,
+  relationModel?: string
+  relationTable?: string,
   foreignKey: string
   relationName: string
   throughModel: string
