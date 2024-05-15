@@ -38,17 +38,7 @@ export default {
     // useUuid: true, // defaults to false
   },
 
-  hasMany: [
-    {
-      model: 'Post',
-    },
-  ],
-
-  hasOne: [
-    {
-      model: 'Subscriber',
-    },
-  ],
+  hasOne: ['Post', 'Subscriber'],
 
   attributes: {
     name: {

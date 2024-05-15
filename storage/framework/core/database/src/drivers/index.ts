@@ -2,6 +2,7 @@ import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
+import { isString } from '@stacksjs/validation'
 import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
 
 export * from './mysql'
@@ -112,14 +113,22 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
-        const modelRelationPath = path.userModelsPath(`${relationInstance.model}.ts`)
+        let relationModel = relationInstance.model
+
+        if (isString(relationInstance)) {
+          relationModel = relationInstance
+        }
+
+        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
         const formattedModelName = model.name.toLowerCase()
 
         relationships.push({
           relationship: relation,
-          model: relationInstance.model,
+          model: relationModel,
           table: modelRelation.table,
+          relationModel: model.name,
+          relationTable: model.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',

@@ -152,7 +152,9 @@ async function createTableMigration(modelPath: string) {
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer') \n`
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade').notNull()
+      ) \n`
     }
   }
 
