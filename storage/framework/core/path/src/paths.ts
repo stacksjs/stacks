@@ -637,7 +637,7 @@ export function gitPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the lang directory.
  */
 export function langPath(path?: string): string {
-  return projectPath(`lang/${path || ''}`)
+  return resourcesPath(`lang/${path || ''}`)
 }
 
 /**

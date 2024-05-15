@@ -7,7 +7,6 @@ import { log } from '@stacksjs/logging'
 
 const targetFileName = 'buddy' // The exact name of the target file
 
-// Assuming excludePatterns is defined somewhere in your script
 const excludePatterns = [
   'node_modules',
   'dist',

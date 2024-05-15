@@ -23,8 +23,8 @@ async function seedModel(name: string, model?: Model) {
 
   const otherRelations = await fetchOtherModelRelations(model)
 
-  console.log(otherRelations)
-  
+  log.debug(otherRelations)
+
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
     for (const fieldName in model.attributes) {
