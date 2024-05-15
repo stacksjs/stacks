@@ -2,6 +2,7 @@ import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { pascalCase } from '@stacksjs/strings'
+import { isString } from '@stacksjs/validation'
 import type { Model, RelationConfig } from '@stacksjs/types'
 
 export interface FieldArrayElement {
@@ -175,7 +176,13 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
 
-        const modelRelationPath = path.userModelsPath(`${relationInstance.model}.ts`)
+        let relationModel = relationInstance.model
+
+        if (isString(relationInstance)) {
+          relationModel = relationInstance
+        }
+
+        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
 
         const modelRelation = (await import(modelRelationPath)).default
         
@@ -183,7 +190,7 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         relationships.push({
           relationship: relation,
-          model: relationInstance.model,
+          model: relationModel,
           table: modelRelation.table,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
@@ -191,6 +198,8 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
           throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
         })
+
+        console.log(relationships)
       }
     }
   }

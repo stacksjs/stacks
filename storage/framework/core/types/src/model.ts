@@ -65,17 +65,17 @@ export interface ModelOptions extends Base {
     model: ModelNames
     foreignKey?: string
     relationName?: string
-  }[]
+  }[] | string[]
   hasMany: {
     model: ModelNames // should be typed as ModelName
     foreignKey?: string
     relationName?: string
-  }[]
+  }[] | string[]
   belongsTo: {
     model: ModelNames // should be typed as ModelName
     foreignKey?: string
     relationName?: string
-  }[] // belongsTo: 'User'
+  }[] | string[] // belongsTo: 'User'
   belongsToMany: {
     model: ModelNames
     firstForeignKey?: string

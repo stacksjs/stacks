@@ -2,9 +2,9 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
-    import Subscriber from './Subscriber'
+    import Post from './Post'
 
-import Post from './Post'
+import Subscriber from './Subscriber'
 
 
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -353,6 +353,22 @@ import Post from './Post'
       }
 
       
+      async post() {
+        if (this.user.id === undefined)
+          throw new Error('Relation Error!')
+
+        const model = await db.selectFrom('posts')
+        .where('user_id', '=', this.user.id)
+        .selectAll()
+        .executeTakeFirst()
+
+        if (! model)
+          throw new Error('Model Relation Not Found!')
+
+        return new Post.modelInstance(model)
+      }
+
+
       async subscriber() {
         if (this.user.id === undefined)
           throw new Error('Relation Error!')
@@ -366,19 +382,6 @@ import Post from './Post'
           throw new Error('Model Relation Not Found!')
 
         return new Subscriber.modelInstance(model)
-      }
-
-
-      async posts() {
-        if (this.user.id === undefined)
-          throw new Error('Relation Error!')
-
-        const results = await db.selectFrom('posts')
-          .where('user_id', '=', this.user.id)
-          .selectAll()
-          .execute()
-
-          return results
       }
 
 
@@ -612,3 +615,6 @@ import Post from './Post'
     }
 
     export default User
+    
+    process.exit(0)
+    

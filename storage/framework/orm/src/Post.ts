@@ -595,3 +595,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export default Post
+    
+    process.exit(0)
+    
