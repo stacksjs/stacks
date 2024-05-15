@@ -46,6 +46,6 @@
     "@stacksjs/development": "workspace:*",
     "@types/luxon": "^3.4.2",
     "@types/sinon": "^17.0.3",
-    "sinon": "^17.0.2"
+    "sinon": "^18.0.0"
   }
 }
