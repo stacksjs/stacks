@@ -35,7 +35,7 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "meilisearch": "^0.39.0"
+    "meilisearch": "^0.40.0"
   },
   "dependencies": {
     "@vueform/multiselect": "^2.6.7",
