@@ -3,6 +3,7 @@ import { ofetch } from 'ofetch'
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
 }
+
 interface FetchRequestHeaders {
   'Content-Type'?: string;
   'Authorization'?: string;
@@ -41,9 +42,7 @@ type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array>
 
 const loading = ref(false)
 const token = ref('')
-
-
-let baseURL = '/'
+const baseURL = '/'
 
 async function post(url: string, params?: Params): Promise<any> {
   const headers: FetchRequestHeaders = { Accept: 'application/json' }
@@ -138,13 +137,13 @@ function setToken(authToken: string) {
   token.value = authToken
 }
 
-export const Fetch = { 
-  post, 
-  get, 
-  patch, 
-  destroy, 
-  baseURL, 
-  loading, 
-  token, 
-  setToken 
+export const Fetch = {
+  post,
+  get,
+  patch,
+  destroy,
+  baseURL,
+  loading,
+  token,
+  setToken
 }

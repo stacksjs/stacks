@@ -117,7 +117,7 @@ async function execute(route: Route, request: Request, { statusCode }: Options) 
 
   if (route?.method !== request.method) return new Response('Method not allowed', { status: 405 })
 
-  // Check if it's a path to an HTM L file
+  // Check if it's a path to an HTML file
   if (isString(route.callback) && extname(route.callback) === '.html') {
     try {
       const fileContent = Bun.file(route.callback)
