@@ -5,8 +5,18 @@ interface RequestData {
 type RouteParams = { [key: string]: string } | null
 
 export class Request {
+  private static instance: Request;
   private query: RequestData = {}
   private params: RouteParams = null
+
+  // An attempt to singleston instance, might be needed at some point
+  public static getInstance(): Request {
+    if (!Request.instance) {
+      Request.instance = new Request();
+    }
+    return Request.instance;
+  }
+
 
   public addQuery(url: URL): void {
     this.query = Object.fromEntries(url.searchParams)

@@ -577,5 +577,3 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export default Subscriber
     
-    process.exit(0)
-    

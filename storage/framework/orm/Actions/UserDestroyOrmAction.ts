@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import User from '../User'
+import User from '../src/User'
 
 export default new Action({
       name: 'User Destroy',

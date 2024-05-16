@@ -4,7 +4,7 @@ import { extname } from '@stacksjs/path'
 import type { Route, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
-import { request } from './request'
+import { request as RequestParam } from './request'
 
 interface ServeOptions {
   host?: string
@@ -44,10 +44,13 @@ export async function serverResponse(req: Request) {
   // '/about' and '/about/' to be treated as the same
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
 
+  const url = new URL(trimmedUrl)
+  addRouteParamsAndQuery(url)
+
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
 
-  const url = new URL(trimmedUrl)
+  
   log.info(`URL: ${JSON.stringify(url)}`)
 
   const foundRoute: Route | undefined = routesList.find((route: Route) => {
@@ -63,16 +66,16 @@ export async function serverResponse(req: Request) {
 
   if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
 
-  addRouteParamsAndQuery(url, foundRoute)
-  executeMiddleware(foundRoute)
+  // addRouteParamsAndQuery(url, foundRoute)
+  await executeMiddleware(foundRoute)
 
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
 
-function addRouteParamsAndQuery(url: URL, route: Route): void {
-  if (!isObjectNotEmpty(url.searchParams)) request.addQuery(url)
+function addRouteParamsAndQuery(url: URL): void {
+  if (!isObjectNotEmpty(url.searchParams)) RequestParam.addQuery(url)
 
-  request.extractParamsFromRoute(route.uri, url.pathname)
+  // requestInstance.extractParamsFromRoute(route.uri, url.pathname)
 }
 
 function executeMiddleware(route: Route): void {
@@ -105,7 +108,7 @@ interface Options {
   statusCode?: StatusCode
 }
 
-async function execute(route: Route, request: Request, { statusCode }: Options) {
+async function execute(route: Route, req: Request, { statusCode }: Options) {
   if (!statusCode) statusCode = 200
 
   if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
@@ -115,7 +118,7 @@ async function execute(route: Route, request: Request, { statusCode }: Options) 
     return await noCache(response)
   }
 
-  if (route?.method !== request.method) return new Response('Method not allowed', { status: 405 })
+  if (route?.method !== req.method) return new Response('Method not allowed', { status: 405 })
 
   // Check if it's a path to an HTML file
   if (isString(route.callback) && extname(route.callback) === '.html') {

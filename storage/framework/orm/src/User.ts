@@ -616,5 +616,3 @@ import Subscriber from './Subscriber'
 
     export default User
     
-    process.exit(0)
-    

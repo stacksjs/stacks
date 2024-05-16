@@ -69,7 +69,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../${modelName}'\n\n`
+  actionString += `import ${modelName} from '../src/${modelName}'\n\n`
 
   let handleString = ``
 
@@ -96,6 +96,14 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   }
 
   if (apiRoute === 'store') {
+    handleString += `handle() {
+        const model = ${modelName}.create({})
+
+        return model
+      },`
+  }
+
+  if (apiRoute === 'update') {
     handleString += `handle() {
         const model = ${modelName}.create({})
 
@@ -186,7 +194,7 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelation = (await import(modelRelationPath)).default
         
-        const formattedModelName = model.name.toLowerCase()
+        const formattedModelName = model.name?.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -198,8 +206,6 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
           throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
         })
-
-        console.log(relationships)
       }
     }
   }
@@ -1122,7 +1128,5 @@ async function generateModelString(
     }
 
     export default ${modelName}
-    
-    process.exit(0)
     `
 }
