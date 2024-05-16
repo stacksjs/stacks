@@ -335,6 +335,16 @@ export function libsPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the user `libs` directory within the root project directory.
+ *
+ * @param path - The relative path to the file or directory within the `libs` directory.
+ * @returns The absolute path to the specified file or directory within the `libs` directory.
+ */
+export function userLibsPath(path?: string): string {
+  return projectPath(`libs/${path || ''}`)
+}
+
+/**
  * Returns the path to the `entries` directory within the `libs` directory.
  *
  * @param path - The relative path to the file or directory within the `entries` directory.
@@ -421,7 +431,7 @@ export function commandsPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the `components` directory.
  */
 export function componentsPath(path?: string): string {
-  return resourcesPath(`components/${path || ''}`)
+  return userLibsPath(`components/${path || ''}`)
 }
 
 /**
@@ -617,7 +627,7 @@ export function healthPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the `functions` directory.
  */
 export function functionsPath(path?: string): string {
-  return resourcesPath(`functions/${path || ''}`)
+  return userLibsPath(`functions/${path || ''}`)
 }
 
 /**
