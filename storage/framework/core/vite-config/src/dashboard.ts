@@ -30,7 +30,7 @@ export default defineConfig({
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
@@ -86,7 +86,7 @@ export default defineConfig({
 
       dts: p.frameworkPath('types/auto-imports.d.ts'),
 
-      dirs: [p.resourcesPath('components'), p.resourcesPath('functions'), p.resourcesPath('stores'), p.corePath()],
+      dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
 
       vueTemplate: true,
 

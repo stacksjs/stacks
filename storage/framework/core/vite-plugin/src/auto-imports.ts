@@ -25,7 +25,7 @@ export function autoImports(options?: AutoImportsOptions) {
 
     dts: p.frameworkPath('types/auto-imports.d.ts'),
 
-    dirs: [p.resourcesPath('components'), p.resourcesPath('functions'), p.resourcesPath('stores'), p.corePath()],
+    dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
 
     vueTemplate: true,
 

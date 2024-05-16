@@ -14,6 +14,8 @@ const config = {
   publicDir: p.publicPath(),
   base: '/libs',
 
+  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+
   server: server({
     type: 'library',
   }),

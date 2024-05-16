@@ -6,7 +6,7 @@
         <div class="flex h-16 shrink-0 items-center">
           <img
             class="h-12 rounded-lg mt-4 w-auto"
-            src="/logo.svg"
+            src="/images/logos/logo.svg"
             alt="Stacks"
           >
         </div>

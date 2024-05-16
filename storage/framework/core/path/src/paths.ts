@@ -1296,6 +1296,7 @@ export const path = {
   langPath,
   layoutsPath,
   libsPath,
+  userLibsPath,
   libraryEntryPath,
   lintPath,
   listenersPath,

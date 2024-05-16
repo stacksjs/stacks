@@ -50,10 +50,10 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         external: ['vue'],
         output: [
-          {
-            format: 'cjs',
-            entryFileNames: `stacks-notification.cjs`,
-          },
+          // {
+          //   format: 'cjs',
+          //   entryFileNames: `stacks-notification.cjs`,
+          // },
           {
             format: 'es',
             entryFileNames: `stacks-notification.js`,
