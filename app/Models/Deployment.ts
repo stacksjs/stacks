@@ -57,5 +57,32 @@ export default {
 
       factory: () => collect(['pending', 'success', 'failure']).random(),
     },
+
+    executionTime: { // in nanoseconds
+      validator: {
+        rule: schema.number(),
+        message: '`execution_time` must be a number',
+      },
+
+      factory: () => faker.number.int(),
+    },
+
+    deployScript: {
+      validator: {
+        rule: schema.string(),
+        message: '`deploy_script` must be a string',
+      },
+
+      factory: () => faker.lorem.sentence(),
+    },
+
+    terminalOutput: {
+      validator: {
+        rule: schema.string(),
+        message: '`terminal_output` must be a string',
+      },
+
+      factory: () => faker.lorem.sentence(),
+    },
   },
 } satisfies Model
