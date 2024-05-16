@@ -39,6 +39,7 @@ export default {
   },
 
   hasOne: ['Post', 'Subscriber'],
+  hasMany: ['Deployment'],
 
   attributes: {
     name: {

@@ -271,37 +271,27 @@ export async function createModel(options: MakeOptions) {
     await writeTextFile({
       path: `${path}`,
       data: `import { faker } from '@stacksjs/faker'
-import { validate } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
   name: '${name}',
 
   traits: {
-    useAuth: false, 
-    useTimestamps: false, 
-    useSoftDeletes: true,
+    useTimestamps: true,
 
     useSeeder: {
-      // defaults to a count of 10,
-      count: 100,
+      count: 10,
     },
-
-    // useUuid: true, // defaults to false
   },
 
   attributes: {
-    
-  },
-  get: {
-  },
-
-  set: {
+    // your attributes here
   },
 } satisfies Model`,
     })
 
-    log.success(`Successfully created your model at app/Models/${name}.ts`)
+    log.success(`Model created: ${italic(`app/Models/${name}.ts`)}`)
   } catch (error: any) {
     log.error(error)
   }
