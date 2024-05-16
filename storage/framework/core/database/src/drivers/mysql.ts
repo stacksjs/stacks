@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Attributes, Model } from '@stacksjs/types'
+import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetMysqlDatabase() {
@@ -102,7 +102,7 @@ export async function generateMysqlMigration(modelPath: string) {
   // if the fields have not changed, we need to migrate the table
 
   // we need to check if this tableName has already been migrated
-  const hasBeenMigrated = await hasTableBeenMigrated(tableName)
+  const hasBeenMigrated = await hasTableBeenMigrated(tableName as string)
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
@@ -112,23 +112,25 @@ export async function generateMysqlMigration(modelPath: string) {
 
 async function getPivotTables(
   model: Model,
-): Promise<{ table: string; firstForeignKey: string; secondForeignKey: string }[]> {
+): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
   const pivotTable = []
 
-  if ('belongsToMany' in model) {
-    for (const belongsToManyRelation of model.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
-      const modelRelation = (await import(modelRelationPath)).default
-      const formattedModelName = model.name.toLowerCase()
-
-      pivotTable.push({
-        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-        firstForeignKey: belongsToManyRelation.firstForeignKey,
-        secondForeignKey: belongsToManyRelation.secondForeignKey,
-      })
+  if (model.belongsToMany && model.name) {
+    if ('belongsToMany' in model) {
+      for (const belongsToManyRelation of model.belongsToMany) {
+        const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
+        const modelRelation = (await import(modelRelationPath)).default
+        const formattedModelName = model.name.toLowerCase()
+  
+        pivotTable.push({
+          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          firstForeignKey: belongsToManyRelation.firstForeignKey,
+          secondForeignKey: belongsToManyRelation.secondForeignKey,
+        })
+      }
+  
+      return pivotTable
     }
-
-    return pivotTable
   }
 
   return []
@@ -146,7 +148,7 @@ async function createTableMigration(modelPath: string) {
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
 
-  const fields = model.attributes
+  const fields = model.attributes as Attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable
 
@@ -158,7 +160,7 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
   for (const [fieldName, options] of Object.entries(fields)) {
-    const fieldOptions = options as Attributes
+    const fieldOptions = options as Attribute
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
@@ -176,7 +178,7 @@ async function createTableMigration(modelPath: string) {
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade').notNull()
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
       ) \n`
     }
   }
@@ -258,7 +260,7 @@ export async function createAlterTableMigration(modelPath: string) {
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
-    const options = currentFields[fieldName] as Attributes
+    const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validator?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
   }
@@ -286,7 +288,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
 
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default as Model
-    const tableName = model.table
+    const tableName = model.table as string
 
     tables.push(tableName)
   }

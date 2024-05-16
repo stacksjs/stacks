@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Attributes } from '@stacksjs/types'
+import type { Attribute, Attributes } from '@stacksjs/types'
 import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
 export async function resetPostgresDatabase() {
@@ -135,7 +135,7 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
 
   for (const [fieldName, options] of Object.entries(fields)) {
-    const fieldOptions = options as Attributes
+    const fieldOptions = options as Attribute
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
@@ -260,7 +260,7 @@ export async function createAlterTableMigration(modelPath: string) {
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
-    const options = currentFields[fieldName] as Attributes
+    const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validator?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
   }

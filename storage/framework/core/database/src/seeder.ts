@@ -37,7 +37,7 @@ async function seedModel(name: string, model?: Model) {
       for (let j = 0; j < otherRelations.length; j++) {
         const relationElement = otherRelations[j] as RelationConfig
 
-        record[relationElement?.foreignKey] = 1 // TODO: make this dynamic
+        record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
       }
     }
 
@@ -46,6 +46,31 @@ async function seedModel(name: string, model?: Model) {
 
   // @ts-expect-error todo: we can improve this in the future
   await db.insertInto(tableName).values(records).execute()
+}
+
+async function seedModelRelation(modelName: string): Promise<BigInt | number> {
+
+  const modelInstance = (await import(path.userModelsPath(modelName))).default
+
+  if (! modelInstance) return 1
+
+  const record: any = {}
+
+  const table = modelInstance.table
+
+  for (const fieldName in modelInstance.attributes) {
+    
+    const field = modelInstance.attributes[fieldName]
+
+    // Use the factory function if available, otherwise leave the field undefined
+    record[fieldName] = field?.factory ? field.factory() : undefined
+  }
+
+  const data = await db.insertInto(table)
+    .values(record)
+    .executeTakeFirstOrThrow()
+  
+  return data.insertId || 1
 }
 
 export async function getRelations(model: Model): Promise<RelationConfig[]> {
@@ -63,7 +88,7 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name.toLowerCase()
+        const formattedModelName = model.name?.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -84,7 +109,7 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
   return relationships
 }
 
-export async function fetchOtherModelRelations(model: Model) {
+export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
@@ -105,9 +130,9 @@ export async function fetchOtherModelRelations(model: Model) {
 
     if (relation)
       modelRelations.push(relation)
-
-    return modelRelations
   }
+
+  return modelRelations
 }
 
 function hasRelations(obj: any, key: string): boolean {

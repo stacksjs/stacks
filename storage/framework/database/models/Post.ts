@@ -38,8 +38,7 @@ export default {
         rule: schema.string(),
         message: '`body` must be a string',
       },
-
-      factory: () => faker.lorem.sentence({ min: 25, max: 40 }),
+      factory: () => faker.lorem.sentence({ min: 10, max: 10 }),
     },
   },
 } satisfies Model

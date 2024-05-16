@@ -3,13 +3,13 @@ import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { isString } from '@stacksjs/validation'
-import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
+import type { Attributes, Model, RelationConfig, VineType } from '@stacksjs/types'
 
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
 
-export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
+export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = await import(oldModelPath)
   let fields = {} as Attributes
@@ -37,7 +37,7 @@ export async function getExecutedMigrations() {
   }
 }
 
-export function mapFieldTypeToColumnType(rule: any): string {
+export function mapFieldTypeToColumnType(rule: VineType): string {
   // Check if the rule is for a string and has specific validations
   if (rule[Symbol.for('schema_name')].includes('string'))
     // Default column type for strings
@@ -70,7 +70,7 @@ export function mapFieldTypeToColumnType(rule: any): string {
   }
 }
 
-export function prepareTextColumnType(rule) {
+export function prepareTextColumnType(rule: VineType) {
   let columnType = 'varchar(255)'
 
   // Find min and max length validations
@@ -142,7 +142,7 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
   return relationships
 }
 
-export async function fetchOtherModelRelations(model: Model, modelFiles: string[]) {
+export async function fetchOtherModelRelations(model: Model, modelFiles: string[]): Promise<RelationConfig[]> {
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
@@ -160,9 +160,9 @@ export async function fetchOtherModelRelations(model: Model, modelFiles: string[
 
     if (relation)
       modelRelations.push(relation)
-
-    return modelRelations
   }
+
+  return modelRelations
 }
 
 function hasRelations(obj: any, key: string): boolean {

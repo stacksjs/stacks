@@ -6,6 +6,7 @@ export type AuthOptions = {}
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
+export type VineType = VineString | VineNumber | VineBoolean | Date | Nullable<any>
 export interface SeedOptions {
   count: number
 }
@@ -106,7 +107,7 @@ export interface Attribute {
   required?: boolean
   factory?: () => any
   validator?: {
-    rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
+    rule: VineType
     message: string
   }
   // validation?: String | Number | Boolean | Date

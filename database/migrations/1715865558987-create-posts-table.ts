@@ -8,7 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('title', 'varchar(255)')
     .addColumn('body', 'varchar(255)')
     .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade').notNull()
+        col.references('users.id').onDelete('cascade')
       ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
