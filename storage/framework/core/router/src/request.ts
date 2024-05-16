@@ -32,11 +32,16 @@ export class Request {
     const pattern = new RegExp(`^${routePattern.replace(/:(\w+)/g, (match, paramName) => `(?<${paramName}>\\w+)`)}$`)
     const match = pattern.exec(pathname)
 
-    if (match?.groups) this.params = match?.groups
+    if (match?.groups) this.params = match.groups
   }
 
   public getParams(key: string): number | string | null {
     return this.params ? this.params[key] || null : null
+  }
+
+  public getParamAsInt(key: string): number | null {
+    const value = this.params ? this.params[key] || null : null
+    return value ? Number.parseInt(value) : null
   }
 }
 
