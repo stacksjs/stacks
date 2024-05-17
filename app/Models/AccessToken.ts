@@ -37,5 +37,14 @@ export default {
 
       factory: () => faker.random.uuid(),
     },
+
+    abilities: {
+      validator: {
+        rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
+        message: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
+      },
+
+      factory: () => faker.random.arrayElement(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
+    },
   },
 } satisfies Model
