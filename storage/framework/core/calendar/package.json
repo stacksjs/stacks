@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/calendar",
+  "name": "@stacksjs/calendar-api",
   "type": "module",
   "version": "0.60.3",
   "description": "Easily interact with calendar APIs.",
