@@ -1,10 +1,10 @@
 import process from 'node:process'
-import { isString } from '@stacksjs/validation'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
+import { isString } from '@stacksjs/validation'
 
 export function build(buddy: CLI) {
   const descriptions = {
@@ -80,26 +80,26 @@ export function build(buddy: CLI) {
 
       // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
-        let answers = await log.prompt.require()
-          .multiselect(descriptions.select, {
-            options: [
-              { label: 'Components', value: 'components' },
-              // { label: 'Vue Components', value: 'vue-components' },
-              { label: 'Web Components', value: 'web-components' },
-              { label: 'Functions', value: 'functions' },
-              { label: 'Views', value: 'views' },
-              { label: 'Documentation', value: 'docs' },
-            ],
-          })
+        let answers = await log.prompt.require().multiselect(descriptions.select, {
+          options: [
+            { label: 'Components', value: 'components' },
+            // { label: 'Vue Components', value: 'vue-components' },
+            { label: 'Web Components', value: 'web-components' },
+            { label: 'Functions', value: 'functions' },
+            { label: 'Views', value: 'views' },
+            { label: 'Documentation', value: 'docs' },
+          ],
+        })
 
-        if (answers !== null)
-          process.exit(ExitCode.InvalidArgument)
+        if (answers !== null) process.exit(ExitCode.InvalidArgument)
 
-        if (isString(answers))
-          answers = [answers]
+        if (isString(answers)) answers = [answers]
 
         // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+        options = answers.reduce((a: any, v: any) => {
+          a[v] = true
+          return a
+        }, {})
       }
 
       await runAction(Action.BuildStacks, options)
@@ -155,7 +155,9 @@ export function build(buddy: CLI) {
     .alias('build:vue')
     .alias('prod:vue-components')
     .alias('prod:vue')
-    .option('-v, --vue-components', descriptions.vueComponents, { default: true })
+    .option('-v, --vue-components', descriptions.vueComponents, {
+      default: true,
+    })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('build:vue')
@@ -169,7 +171,9 @@ export function build(buddy: CLI) {
     .alias('build:wc')
     .alias('prod:web-components')
     .alias('prod:wc')
-    .option('-w, --web-components', descriptions.webComponents, { default: true })
+    .option('-w, --web-components', descriptions.webComponents, {
+      default: true,
+    })
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
@@ -205,7 +209,10 @@ export function build(buddy: CLI) {
         process.exit()
       }
 
-      await outro('Core packages built successfully', { startTime, useSeconds: true })
+      await outro('Core packages built successfully', {
+        startTime,
+        useSeconds: true,
+      })
     })
 
   buddy
@@ -220,11 +227,14 @@ export function build(buddy: CLI) {
       const result = await runAction(Action.BuildDesktop, options)
 
       if (result.isErr()) {
-        await outro('While running the build:desktop command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the build:desktop command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
-      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
@@ -256,5 +266,15 @@ export function build(buddy: CLI) {
 }
 
 function hasNoOptions(options: BuildOptions) {
-  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.views && !options.docs && !options.stacks && !options.buddy
+  return (
+    !options.components &&
+    !options.vueComponents &&
+    !options.webComponents &&
+    !options.elements &&
+    !options.functions &&
+    !options.views &&
+    !options.docs &&
+    !options.stacks &&
+    !options.buddy
+  )
 }

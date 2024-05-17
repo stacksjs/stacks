@@ -1,13 +1,12 @@
-import os from 'node:os'
-import fs from 'node:fs/promises'
-import path from 'node:path'
 import type { Dirent } from 'node:fs'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 
 const targetFileName = 'buddy' // The exact name of the target file
 
-// Assuming excludePatterns is defined somewhere in your script
 const excludePatterns = [
   'node_modules',
   'dist',
@@ -30,21 +29,16 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
   if (!options?.quiet) {
     log.info(`Searching for Stacks projects in: ${italic(dir)}`)
     log.info(`This may take a few moments...`)
-    // eslint-disable-next-line no-console
     console.log('')
-    // eslint-disable-next-line no-console
     console.log(italic('  Please note, while Stacks is searching for projects on your machine,'))
-    // eslint-disable-next-line no-console
     console.log(italic('  you may be asked for permissions to scan certain directories.'))
-    // eslint-disable-next-line no-console
     console.log('')
     log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
   }
 
   const foundProjects = await searchDirectory(dir)
 
-  if (!foundProjects)
-    throw new Error('No Stacks projects found')
+  if (!foundProjects) throw new Error('No Stacks projects found')
 
   return foundProjects
 }
@@ -52,15 +46,15 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
 async function searchDirectory(directory: string) {
   const foundProjects: string[] = []
 
-  const isExcluded = excludePatterns.some(pattern => typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory))
-  if (isExcluded)
-    return
+  const isExcluded = excludePatterns.some((pattern) =>
+    typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory),
+  )
+  if (isExcluded) return
 
   let items: Dirent[]
   try {
     items = await fs.readdir(directory, { withFileTypes: true })
-  }
-  catch (error) {
+  } catch (error) {
     console.error(`Error reading directory ${directory}:`, error)
     return
   }
@@ -71,8 +65,7 @@ async function searchDirectory(directory: string) {
   for (const item of items) {
     if (item.isFile() && item.name === targetFileName) {
       buddyFileFound = true
-    }
-    else if (item.isDirectory()) {
+    } else if (item.isDirectory()) {
       // Recursively search in directories
       const fullPath = path.join(directory, item.name)
       if (item.name === 'storage') {
@@ -81,8 +74,7 @@ async function searchDirectory(directory: string) {
           const storagePath = path.join(fullPath, 'framework/core/buddy')
           await fs.access(storagePath)
           storageDirFound = true
-        }
-        catch (error) {
+        } catch (error) {
           // The specific directory structure does not exist
         }
       }
@@ -90,8 +82,7 @@ async function searchDirectory(directory: string) {
     }
   }
 
-  if (buddyFileFound && storageDirFound)
-    foundProjects.push(directory) // Both conditions are met
+  if (buddyFileFound && storageDirFound) foundProjects.push(directory) // Both conditions are met
 
   return foundProjects
 }

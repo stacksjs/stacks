@@ -25,12 +25,9 @@ import { log } from './'
  * ```
  */
 export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
-  const cmd = Array.isArray(command)
-    ? command
-    : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
 
-  if (!cmd)
-    return err(handleError(`Failed to parse command: ${cmd}`, options))
+  if (!cmd) return err(handleError(`Failed to parse command: ${cmd}`, options))
 
   log.debug('exec:', Array.isArray(command) ? command.join(' ') : command)
   log.debug('cmd:', cmd)
@@ -38,8 +35,9 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
 
   const proc = Bun.spawn(cmd, {
     ...options,
-    stdout: (options?.silent || options?.quiet) ? 'ignore' : (options?.stdin ? options.stdin : (options?.stdout || 'inherit')),
-    stderr: (options?.silent || options?.quiet) ? 'ignore' : (options?.stderr || 'inherit'),
+    stdout:
+      options?.silent || options?.quiet ? 'ignore' : options?.stdin ? options.stdin : options?.stdout || 'inherit',
+    stderr: options?.silent || options?.quiet ? 'ignore' : options?.stderr || 'inherit',
     detached: options?.background || false,
     cwd: options?.cwd || process.cwd(),
     // env: { ...e, ...options?.env },
@@ -60,8 +58,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   }
 
   const exited = await proc.exited
-  if (exited === ExitCode.Success)
-    return ok(proc)
+  if (exited === ExitCode.Success) return ok(proc)
 
   return err(handleError(`Failed to execute command: ${cmd.join(' ')}`))
 }
@@ -86,9 +83,7 @@ export async function execSync(command: string | string[], options?: CliOptions)
   log.debug('Running ExecSync:', command)
   log.debug('ExecSync Options:', options)
 
-  const cmd = Array.isArray(command)
-    ? command
-    : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
 
   if (!cmd) {
     log.error(`Failed to parse command: ${cmd}`, options)
@@ -122,6 +117,5 @@ function exitHandler(type: 'spawn' | 'spawnSync', subprocess, exitCode, signalCo
     process.exit(ExitCode.FatalError)
   }
 
-  if (exitCode !== ExitCode.Success && exitCode)
-    process.exit(exitCode)
+  if (exitCode !== ExitCode.Success && exitCode) process.exit(exitCode)
 }

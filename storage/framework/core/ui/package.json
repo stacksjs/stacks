@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,15 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "css",
-    "atomic",
-    "ui",
-    "engine",
-    "styles",
-    "stacks",
-    "unocss"
-  ],
+  "keywords": ["css", "atomic", "ui", "engine", "styles", "stacks", "unocss"],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -44,48 +36,42 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@headlessui/vue": "^1.7.19",
+    "@headlessui/vue": "^1.7.22",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "pinia": "^2.1.7",
-    "unocss": "^0.58.5",
+    "unocss": "^0.60.2",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.21",
-    "vue-tsc": "^2.0.6"
+    "vue": "^3.4.27",
+    "vue-tsc": "^2.0.19"
   },
   "dependencies": {
-    "@headlessui/vue": "^1.7.19",
-    "@iconify-json/heroicons": "^1.1.20",
+    "@headlessui/vue": "^1.7.22",
+    "@iconify-json/heroicons": "^1.1.21",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.191",
+    "@iconify/json": "^2.2.210",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@unhead/vue": "^1.8.16",
+    "@unhead/vue": "^1.9.10",
     "pinia": "^2.1.7",
-    "unhead": "^1.8.16",
-    "unocss": "^0.58.5",
+    "unhead": "^1.9.10",
+    "unocss": "^0.60.2",
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.21",
-    "vue-tsc": "^2.0.6"
+    "vue": "^3.4.27",
+    "vue-tsc": "^2.0.19"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

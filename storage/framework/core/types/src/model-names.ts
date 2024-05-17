@@ -1,0 +1,1 @@
+export type ModelNames = 'Subscriber' | 'User' | 'Post'

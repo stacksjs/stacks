@@ -58,7 +58,6 @@
 		"scope": "javascript,typescript",
 		"prefix": "clo",
 		"body": [
-			"// eslint-disable-next-line no-console",
 			"console.log('$1')$2",
 		],
 		"description": "Log output to console"

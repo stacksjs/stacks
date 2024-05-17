@@ -11,10 +11,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    'ioredis',
-    '@stacksjs/config',
-  ],
+  external: ['@stacksjs/config'],
 })
 
 await outro({

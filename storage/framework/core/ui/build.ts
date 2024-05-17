@@ -10,14 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    '@stacksjs/config',
-    'unocss',
-    '@headlessui/vue',
-    '@julr/unocss-preset-forms',
-    'vue',
-    'pinia',
-  ],
+  external: ['@stacksjs/config', 'unocss', '@headlessui/vue', '@julr/unocss-preset-forms', 'vue', 'pinia'],
 })
 
 await outro({

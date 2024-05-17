@@ -21,6 +21,7 @@ declare global {
   const CronJob: typeof import('../core/scheduler/src/index')['CronJob']
   const CronTime: typeof import('../core/scheduler/src/index')['CronTime']
   const CssEngine: typeof import('../core/ui/src/index')['CssEngine']
+  const Database: typeof import('../core/database/src/types')['Database']
   const Dialog: typeof import('../core/ui/src/components/modal')['Dialog']
   const DialogDescription: typeof import('../core/ui/src/components/modal')['DialogDescription']
   const DialogPanel: typeof import('../core/ui/src/components/modal')['DialogPanel']
@@ -33,6 +34,7 @@ declare global {
   const ErrorHandler: typeof import('../core/error-handling/src/handler')['ErrorHandler']
   const Every: typeof import('../core/types/src/cron-jobs')['Every']
   const ExitCode: typeof import('../core/types/src/exit-code')['ExitCode']
+  const Fetch: typeof import('../core/api/src/index')['Fetch']
   const Head: typeof import('../core/utils/src/vendors')['Head']
   const HeadVuePlugin: typeof import('../core/utils/src/vendors')['HeadVuePlugin']
   const LogLevels: typeof import('../core/types/src/logger')['LogLevels']
@@ -82,11 +84,14 @@ declare global {
   const USD: typeof import('../core/utils/src/currency')['USD']
   const UiEngine: typeof import('../core/ui/src/index')['UiEngine']
   const UnocssConfig: typeof import('../core/ui/src/index')['UnocssConfig']
+  const User: typeof import('../core/orm/src/generated/User')['default']
+  const UserModel: typeof import('../core/orm/src/generated/User')['UserModel']
   const ValidationBoolean: typeof import('../core/validation/src/types/index')['ValidationBoolean']
   const ValidationEnum: typeof import('../core/validation/src/types/index')['ValidationEnum']
   const ValidationNumber: typeof import('../core/validation/src/types/index')['ValidationNumber']
   const ValidationString: typeof import('../core/validation/src/types/index')['ValidationString']
   const VineBoolean: typeof import('../core/validation/src/validate')['VineBoolean']
+  const VineDate: typeof import('../core/validation/src/validate')['VineDate']
   const VineEnum: typeof import('../core/validation/src/validate')['VineEnum']
   const VineNumber: typeof import('../core/validation/src/validate')['VineNumber']
   const VineString: typeof import('../core/validation/src/validate')['VineString']
@@ -107,6 +112,8 @@ declare global {
   const anyOf: typeof import('../core/utils/src/regex')['anyOf']
   const appPath: typeof import('../core/path/src/paths')['appPath']
   const archive: typeof import('../core/storage/src/zip')['archive']
+  const argon2Encode: typeof import('../core/security/src/hash')['argon2Encode']
+  const argon2Verify: typeof import('../core/security/src/hash')['argon2Verify']
   const arrays: typeof import('../core/index')['arrays']
   const arraysPath: typeof import('../core/path/src/paths')['arraysPath']
   const assert: typeof import('../core/testing/src/index')['assert']
@@ -178,7 +185,9 @@ declare global {
   const copyFolder: typeof import('../core/storage/src/copy')['copyFolder']
   const coreEnvPath: typeof import('../core/path/src/paths')['coreEnvPath']
   const corePath: typeof import('../core/path/src/paths')['corePath']
-  const count: typeof import('../../../resources/functions/counter')['count']
+  const count: typeof import('../../../libs/functions/counter')['count']
+  const create: typeof import('../core/orm/src/generated/User')['create']
+  const createAlterTableMigration: typeof import('../core/database/src/migrations')['createAlterTableMigration']
   const createApp: typeof import('vue')['createApp']
   const createComponent: typeof import('../core/actions/src/index')['createComponent']
   const createControlledPromise: typeof import('../core/utils/src/promise')['createControlledPromise']
@@ -209,6 +218,7 @@ declare global {
   const createReusableTemplate: typeof import('../core/utils/src/vendors')['createReusableTemplate']
   const createSharedComposable: typeof import('../core/utils/src/vendors')['createSharedComposable']
   const createSingletonPromise: typeof import('../core/utils/src/promise')['createSingletonPromise']
+  const createTableMigration: typeof import('../core/database/src/migrations')['createTableMigration']
   const createTemplatePromise: typeof import('../core/utils/src/vendors')['createTemplatePromise']
   const createUnrefFn: typeof import('../core/utils/src/vendors')['createUnrefFn']
   const currency: typeof import('../core/utils/src/currency')['currency']
@@ -220,7 +230,7 @@ declare global {
   const databasePath: typeof import('../core/path/src/paths')['databasePath']
   const dateFormat: typeof import('../core/datetime/src/index')['dateFormat']
   const datetimePath: typeof import('../core/path/src/paths')['datetimePath']
-  const db: typeof import('../core/database/src/index')['db']
+  const db: typeof import('../core/database/src/utils')['db']
   const dbDialect: typeof import('../core/database/src/index')['dbDialect']
   const dd: typeof import('../core/logging/src/index')['dd']
   const debounce: typeof import('../core/utils/src/debounce')['debounce']
@@ -310,8 +320,6 @@ declare global {
   const err: typeof import('../core/error-handling/src/index')['err']
   const errAsync: typeof import('../core/error-handling/src/index')['errAsync']
   const errorHandlingPath: typeof import('../core/path/src/paths')['errorHandlingPath']
-  const eslint: typeof import('../core/lint/src/index')['eslint']
-  const eslintPath: typeof import('../core/path/src/paths')['eslintPath']
   const events: typeof import('../core/events/src/index')['events']
   const eventsPath: typeof import('../core/path/src/paths')['eventsPath']
   const exactly: typeof import('../core/utils/src/regex')['exactly']
@@ -323,17 +331,23 @@ declare global {
   const expo: typeof import('../core/push/src/drivers/index')['expo']
   const extendRef: typeof import('../core/utils/src/vendors')['extendRef']
   const extname: typeof import('../core/path/src/paths')['extname']
+  const extractFieldsFromModel: typeof import('../core/orm/src/utils')['extractFieldsFromModel']
   const faker: typeof import('../core/faker/src/index')['faker']
   const fakerPath: typeof import('../core/path/src/paths')['fakerPath']
   const fathomWip: typeof import('../core/analytics/src/drivers/fathom')['fathomWip']
   const fcm: typeof import('../core/push/src/drivers/index')['fcm']
   const feature: typeof import('../core/testing/src/index')['feature']
+  const fetchOtherModelRelations: typeof import('../core/database/src/seeder')['fetchOtherModelRelations']
   const files: typeof import('../core/storage/src/files')['files']
   const filterName: typeof import('../core/search-engine/src/index')['filterName']
   const filters: typeof import('../core/search-engine/src/index')['filters']
+  const find: typeof import('../core/orm/src/generated/User')['find']
+  const findByEmail: typeof import('../core/orm/src/generated/User')['findByEmail']
   const findHostedZone: typeof import('../core/dns/src/drivers/aws')['findHostedZone']
+  const findMany: typeof import('../core/orm/src/generated/User')['findMany']
   const findProjectPath: typeof import('../core/path/src/paths')['findProjectPath']
   const findStacksProjects: typeof import('../core/utils/src/find')['findStacksProjects']
+  const first: typeof import('../core/orm/src/generated/User')['first']
   const folders: typeof import('../core/storage/src/folders')['folders']
   const format: typeof import('../core/path/src/index')['format']
   const formatTimeAgo: typeof import('../core/utils/src/vendors')['formatTimeAgo']
@@ -352,23 +366,30 @@ declare global {
   const generateCoreSymlink: typeof import('../core/actions/src/generate/index')['generateCoreSymlink']
   const generateIdeHelpers: typeof import('../core/actions/src/generate/index')['generateIdeHelpers']
   const generateLibEntries: typeof import('../core/actions/src/generate/index')['generateLibEntries']
+  const generateMigration: typeof import('../core/database/src/migrations')['generateMigration']
   const generateMigrationFile: typeof import('../core/database/src/migrations')['generateMigrationFile']
-  const generateMigrations: typeof import('../core/actions/src/generate/index')['generateMigrations']
+  const generateMigrations: typeof import('../core/database/src/migrations')['generateMigrations']
   const generatePkgxConfig: typeof import('../core/actions/src/generate/index')['generatePkgxConfig']
   const generateSeeder: typeof import('../core/actions/src/generate/index')['generateSeeder']
   const generateTypes: typeof import('../core/actions/src/generate/index')['generateTypes']
   const generateVsCodeCustomData: typeof import('../core/actions/src/generate/index')['generateVsCodeCustomData']
   const generateWebTypes: typeof import('../core/actions/src/generate/index')['generateWebTypes']
+  const generator: typeof import('../core/build/src/utils')['generator']
   const get: typeof import('../core/storage/src/files')['get']
   const getActiveHead: typeof import('@unhead/vue')['getActiveHead']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
+  const getCurrentMigrationFields: typeof import('../core/database/src/migrations')['getCurrentMigrationFields']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getDialect: typeof import('../core/database/src/utils')['getDialect']
+  const getExecutedMigrations: typeof import('../core/database/src/migrations')['getExecutedMigrations']
   const getExportsSize: typeof import('../core/utils/src/export-size')['getExportsSize']
   const getFiles: typeof import('../core/storage/src/files')['getFiles']
   const getFolders: typeof import('../core/storage/src/folders')['getFolders']
+  const getLastMigrationFields: typeof import('../core/database/src/migrations')['getLastMigrationFields']
   const getModelCustomizationJob: typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']
   const getNameservers: typeof import('../core/dns/src/drivers/aws')['getNameservers']
+  const getRelations: typeof import('../core/database/src/seeder')['getRelations']
   const getSSRHandler: typeof import('../core/utils/src/vendors')['getSSRHandler']
   const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
   const gitPath: typeof import('../core/path/src/paths')['gitPath']
@@ -391,11 +412,13 @@ declare global {
   const hasOwnProperty: typeof import('../core/objects/src/index')['hasOwnProperty']
   const hasScript: typeof import('../core/utils/src/helpers')['hasScript']
   const hasSubUnits: typeof import('../core/utils/src/currency')['hasSubUnits']
+  const hasTableBeenMigrated: typeof import('../core/database/src/migrations')['hasTableBeenMigrated']
   const hasUserDomainBeenAddedToCloud: typeof import('../core/dns/src/drivers/aws')['hasUserDomainBeenAddedToCloud']
   const hashDirectory: typeof import('../core/storage/src/hash')['hashDirectory']
   const hashFileOrDirectory: typeof import('../core/storage/src/hash')['hashFileOrDirectory']
   const hashPath: typeof import('../core/storage/src/hash')['hashPath']
   const hashPaths: typeof import('../core/storage/src/hash')['hashPaths']
+  const haveModelFieldsChangedSinceLastMigration: typeof import('../core/database/src/migrations')['haveModelFieldsChangedSinceLastMigration']
   const haveSameAmount: typeof import('../core/utils/src/currency')['haveSameAmount']
   const haveSameCurrency: typeof import('../core/utils/src/currency')['haveSameCurrency']
   const healthNotificationsWip: typeof import('../core/health/src/notifications/index')['healthNotificationsWip']
@@ -404,7 +427,7 @@ declare global {
   const hits: typeof import('../core/search-engine/src/index')['hits']
   const homeDir: typeof import('../core/path/src/paths')['homeDir']
   const ignorableWatch: typeof import('../core/utils/src/vendors')['ignorableWatch']
-  const increment: typeof import('../../../resources/functions/counter')['increment']
+  const increment: typeof import('../../../libs/functions/counter')['increment']
   const index: typeof import('../core/search-engine/src/index')['index']
   const inflateSync: typeof import('../core/storage/src/zip')['inflateSync']
   const initProject: typeof import('../core/utils/src/helpers')['initProject']
@@ -421,7 +444,7 @@ declare global {
   const isArray: typeof import('../core/validation/src/is')['isArray']
   const isBoolean: typeof import('../core/validation/src/is')['isBoolean']
   const isBrowser: typeof import('../core/validation/src/is')['isBrowser']
-  const isDark: typeof import('../../../resources/functions/dark')['isDark']
+  const isDark: typeof import('../../../libs/functions/dark')['isDark']
   const isDate: typeof import('../core/validation/src/is')['isDate']
   const isDeepEqual: typeof import('../core/utils/src/equal')['isDeepEqual']
   const isDef: typeof import('../core/validation/src/is')['isDef']
@@ -471,6 +494,9 @@ declare global {
   const jobsPath: typeof import('../core/path/src/paths')['jobsPath']
   const join: typeof import('../core/path/src/paths')['join']
   const langPath: typeof import('../core/path/src/paths')['langPath']
+  const last: typeof import('../core/orm/src/generated/User')['last']
+  const lastMigration: typeof import('../core/database/src/migrations')['lastMigration']
+  const lastMigrationDate: typeof import('../core/database/src/migrations')['lastMigrationDate']
   const lastPageNumber: typeof import('../core/search-engine/src/index')['lastPageNumber']
   const layoutsPath: typeof import('../core/path/src/paths')['layoutsPath']
   const lessThan: typeof import('../core/utils/src/currency')['lessThan']
@@ -515,6 +541,7 @@ declare global {
   const maybe: typeof import('../core/utils/src/regex')['maybe']
   const md5Encode: typeof import('../core/security/src/hash')['md5Encode']
   const middlewares: typeof import('../core/router/src/middleware')['middlewares']
+  const migrator: typeof import('../core/database/src/migrations')['migrator']
   const minimum: typeof import('../core/utils/src/currency')['minimum']
   const mitt: typeof import('../core/events/src/index')['mitt']
   const mkdirSync: typeof import('../core/storage/src/fs')['mkdirSync']
@@ -580,6 +607,7 @@ declare global {
   const packageManager: typeof import('../core/utils/src/helpers')['packageManager']
   const parse: typeof import('../core/path/src/index')['parse']
   const parseYaml: typeof import('../core/utils/src/helpers')['parseYaml']
+  const parser: typeof import('../core/build/src/utils')['parser']
   const path: typeof import('../core/path/src/paths')['path']
   const pathPath: typeof import('../core/path/src/paths')['pathPath']
   const pausableWatch: typeof import('../core/utils/src/vendors')['pausableWatch']
@@ -587,7 +615,7 @@ declare global {
   const perPage: typeof import('../core/search-engine/src/index')['perPage']
   const playwrightConfig: typeof import('../core/playwright.config')['default']
   const plivo: typeof import('../core/sms/src/drivers/index')['plivo']
-  const preferredDark: typeof import('../../../resources/functions/dark')['preferredDark']
+  const preferredDark: typeof import('../../../libs/functions/dark')['preferredDark']
   const presetForms: typeof import('../core/ui/src/index')['presetForms']
   const process: typeof import('../core/env/src/index')['process']
   const projectConfigPath: typeof import('../core/path/src/paths')['projectConfigPath']
@@ -625,6 +653,7 @@ declare global {
   const refWithControl: typeof import('../core/utils/src/vendors')['refWithControl']
   const relative: typeof import('../core/path/src/paths')['relative']
   const relativeActionsPath: typeof import('../core/path/src/paths')['relativeActionsPath']
+  const remove: typeof import('../core/orm/src/generated/User')['remove']
   const renderHeadToString: typeof import('../core/utils/src/vendors')['renderHeadToString']
   const replPath: typeof import('../core/path/src/paths')['replPath']
   const request: typeof import('../core/router/src/request')['request']
@@ -641,6 +670,7 @@ declare global {
   const route: typeof import('../core/router/src/router')['route']
   const routerPath: typeof import('../core/path/src/paths')['routerPath']
   const routesPath: typeof import('../core/path/src/paths')['routesPath']
+  const rule: typeof import('../core/validation/src/validate')['rule']
   const runAction: typeof import('../core/actions/src/helpers/utils')['runAction']
   const runActions: typeof import('../core/actions/src/helpers/utils')['runActions']
   const runAdd: typeof import('../core/actions/src/index')['runAdd']
@@ -649,6 +679,8 @@ declare global {
   const runCommit: typeof import('../core/actions/src/index')['runCommit']
   const runComponentsDevServer: typeof import('../core/actions/src/dev/index')['runComponentsDevServer']
   const runDashboardDevServer: typeof import('../core/actions/src/dev/index')['runDashboardDevServer']
+  const runDatabaseMigration: typeof import('../core/database/src/migrations')['runDatabaseMigration']
+  const runDatabaseMigrationForeign: typeof import('../core/database/src/migrations')['runDatabaseMigrationForeign']
   const runDesktopDevServer: typeof import('../core/actions/src/dev/index')['runDesktopDevServer']
   const runDevServer: typeof import('../core/actions/src/dev/index')['runDevServer']
   const runDocsDevServer: typeof import('../core/actions/src/dev/index')['runDocsDevServer']
@@ -662,11 +694,13 @@ declare global {
   const runtimePath: typeof import('../core/path/src/paths')['runtimePath']
   const schedule: typeof import('../core/scheduler/src/schedule')['default']
   const schedulerPath: typeof import('../core/path/src/paths')['schedulerPath']
+  const schema: typeof import('../core/validation/src/validate')['schema']
   const scriptsPath: typeof import('../core/path/src/paths')['scriptsPath']
   const searchEnginePath: typeof import('../core/path/src/paths')['searchEnginePath']
   const searchFilters: typeof import('../core/search-engine/src/index')['searchFilters']
   const searchParams: typeof import('../core/search-engine/src/index')['searchParams']
   const securityPath: typeof import('../core/path/src/paths')['securityPath']
+  const seed: typeof import('../core/database/src/seeder')['seed']
   const semver: typeof import('../core/utils/src/versions')['semver']
   const sendAt: typeof import('../core/scheduler/src/schedule')['sendAt']
   const sep: typeof import('../core/path/src/paths')['sep']
@@ -736,9 +770,10 @@ declare global {
   const toString: typeof import('../core/utils/src/base')['toString']
   const toUnits: typeof import('../core/utils/src/currency')['toUnits']
   const toValue: typeof import('vue')['toValue']
-  const toggleDark: typeof import('../../../resources/functions/dark')['toggleDark']
+  const toggleDark: typeof import('../../../libs/functions/dark')['toggleDark']
   const totalPages: typeof import('../core/search-engine/src/index')['totalPages']
   const transformerCompileClass: typeof import('../core/ui/src/index')['transformerCompileClass']
+  const traverse: typeof import('../core/build/src/utils')['traverse']
   const triggerRef: typeof import('vue')['triggerRef']
   const trimScale: typeof import('../core/utils/src/currency')['trimScale']
   const tryOnBeforeMount: typeof import('../core/utils/src/vendors')['tryOnBeforeMount']
@@ -757,6 +792,7 @@ declare global {
   const unrefElement: typeof import('../core/utils/src/vendors')['unrefElement']
   const until: typeof import('../core/utils/src/vendors')['until']
   const unzip: typeof import('../core/storage/src/zip')['unzip']
+  const update: typeof import('../core/orm/src/generated/User')['update']
   const updateConfigFile: typeof import('../core/storage/src/helpers')['updateConfigFile']
   const updateNameservers: typeof import('../core/dns/src/drivers/aws')['updateNameservers']
   const useAbs: typeof import('../core/utils/src/math')['useAbs']
@@ -954,10 +990,14 @@ declare global {
   const useWindowScroll: typeof import('../core/utils/src/vendors')['useWindowScroll']
   const useWindowSize: typeof import('../core/utils/src/vendors')['useWindowSize']
   const userActionsPath: typeof import('../core/path/src/paths')['userActionsPath']
+  const userDatabasePath: typeof import('../core/path/src/paths')['userDatabasePath']
   const userEventsPath: typeof import('../core/path/src/paths')['userEventsPath']
   const userJobsPath: typeof import('../core/path/src/paths')['userJobsPath']
+  const userLibsPath: typeof import('../core/path/src/paths')['userLibsPath']
   const userListenersPath: typeof import('../core/path/src/paths')['userListenersPath']
   const userMiddlewarePath: typeof import('../core/path/src/paths')['userMiddlewarePath']
+  const userMigrationsPath: typeof import('../core/path/src/paths')['userMigrationsPath']
+  const userModels: typeof import('../core/orm/src/utils')['userModels']
   const userModelsPath: typeof import('../core/path/src/paths')['userModelsPath']
   const userNotificationsPath: typeof import('../core/path/src/paths')['userNotificationsPath']
   const utilsPath: typeof import('../core/path/src/paths')['utilsPath']
@@ -995,6 +1035,8 @@ declare global {
   const webComponents: typeof import('../core/build/src/index')['webComponents']
   const websiteSourceHash: typeof import('../core/utils/src/hash')['websiteSourceHash']
   const whenever: typeof import('../core/utils/src/vendors')['whenever']
+  const where: typeof import('../core/orm/src/generated/User')['where']
+  const whereIn: typeof import('../core/orm/src/generated/User')['whereIn']
   const whitespace: typeof import('../core/utils/src/regex')['whitespace']
   const wipOrm: typeof import('../core/orm/src/index')['wipOrm']
   const wipSlug: typeof import('../core/slug/src/index')['wipSlug']
@@ -1027,18 +1069,19 @@ declare module 'vue' {
     readonly BunCronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['BunCronJob']>
     readonly CronTime: UnwrapRef<typeof import('../core/scheduler/src/index')['CronTime']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
+    readonly Database: UnwrapRef<typeof import('../core/database/src/types')['Database']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly Err: UnwrapRef<typeof import('../core/error-handling/src/index')['Err']>
     readonly ErrorHandler: UnwrapRef<typeof import('../core/error-handling/src/handler')['ErrorHandler']>
     readonly Every: UnwrapRef<typeof import('../core/types/src/cron-jobs')['Every']>
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
+    readonly Fetch: UnwrapRef<typeof import('../core/api/src/index')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
     readonly LogLevels: UnwrapRef<typeof import('../core/types/src/logger')['LogLevels']>
     readonly LogTypes: UnwrapRef<typeof import('../core/types/src/logger')['LogTypes']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
     readonly Middleware: UnwrapRef<typeof import('../core/router/src/middleware')['Middleware']>
-    readonly Migration: UnwrapRef<typeof import('../core/database/src/types')['Migration']>
     readonly MoneyValidator: UnwrapRef<typeof import('../core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('../core/query-builder/src/kysely')['MysqlDialect']>
     readonly Ok: UnwrapRef<typeof import('../core/error-handling/src/index')['Ok']>
@@ -1048,12 +1091,6 @@ declare module 'vue' {
     readonly Result: UnwrapRef<typeof import('../core/error-handling/src/index')['Result']>
     readonly ResultAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['ResultAsync']>
     readonly Router: UnwrapRef<typeof import('../core/router/src/router')['Router']>
-    readonly RuleAny: UnwrapRef<typeof import('../core/validation/src/validate')['RuleAny']>
-    readonly RuleArray: UnwrapRef<typeof import('../core/validation/src/validate')['RuleArray']>
-    readonly RuleBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['RuleBoolean']>
-    readonly RuleNumber: UnwrapRef<typeof import('../core/validation/src/validate')['RuleNumber']>
-    readonly RuleObject: UnwrapRef<typeof import('../core/validation/src/validate')['RuleObject']>
-    readonly RuleString: UnwrapRef<typeof import('../core/validation/src/validate')['RuleString']>
     readonly Schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['Schedule']>
     readonly Schema: UnwrapRef<typeof import('../core/database/src/schema')['Schema']>
     readonly SocialLinkIcon: UnwrapRef<typeof import('../core/types/src/docs')['SocialLinkIcon']>
@@ -1062,11 +1099,14 @@ declare module 'vue' {
     readonly USD: UnwrapRef<typeof import('../core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('../core/ui/src/index')['UiEngine']>
     readonly UnocssConfig: UnwrapRef<typeof import('../core/ui/src/index')['UnocssConfig']>
+    readonly User: UnwrapRef<typeof import('../core/orm/src/generated/User')['default']>
+    readonly UserModel: UnwrapRef<typeof import('../core/orm/src/generated/User')['UserModel']>
     readonly ValidationBoolean: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationBoolean']>
     readonly ValidationEnum: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationEnum']>
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
     readonly ValidationString: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationString']>
     readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['VineBoolean']>
+    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/validate')['VineDate']>
     readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/validate')['VineEnum']>
     readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/validate')['VineNumber']>
     readonly VineString: UnwrapRef<typeof import('../core/validation/src/validate')['VineString']>
@@ -1085,6 +1125,8 @@ declare module 'vue' {
     readonly anyOf: UnwrapRef<typeof import('../core/utils/src/regex')['anyOf']>
     readonly appPath: UnwrapRef<typeof import('../core/path/src/paths')['appPath']>
     readonly archive: UnwrapRef<typeof import('../core/storage/src/zip')['archive']>
+    readonly argon2Encode: UnwrapRef<typeof import('../core/security/src/hash')['argon2Encode']>
+    readonly argon2Verify: UnwrapRef<typeof import('../core/security/src/hash')['argon2Verify']>
     readonly arrays: UnwrapRef<typeof import('../core/index')['arrays']>
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/paths')['arraysPath']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/paths')['assetsPath']>
@@ -1152,8 +1194,7 @@ declare module 'vue' {
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
-    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
-    readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
+    readonly count: UnwrapRef<typeof import('../../../libs/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -1193,8 +1234,7 @@ declare module 'vue' {
     readonly customStorageEventName: UnwrapRef<typeof import('../core/utils/src/vendors')['customStorageEventName']>
     readonly databasePath: UnwrapRef<typeof import('../core/path/src/paths')['databasePath']>
     readonly datetimePath: UnwrapRef<typeof import('../core/path/src/paths')['datetimePath']>
-    readonly db: UnwrapRef<typeof import('../core/database/src/index')['db']>
-    readonly dbDialect: UnwrapRef<typeof import('../core/database/src/index')['dbDialect']>
+    readonly db: UnwrapRef<typeof import('../core/database/src/utils')['db']>
     readonly dd: UnwrapRef<typeof import('../core/logging/src/index')['dd']>
     readonly debounce: UnwrapRef<typeof import('../core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('../core/utils/src/vendors')['debouncedRef']>
@@ -1279,8 +1319,6 @@ declare module 'vue' {
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('../core/path/src/paths')['errorHandlingPath']>
-    readonly eslint: UnwrapRef<typeof import('../core/lint/src/index')['eslint']>
-    readonly eslintPath: UnwrapRef<typeof import('../core/path/src/paths')['eslintPath']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/paths')['eventsPath']>
     readonly exactly: UnwrapRef<typeof import('../core/utils/src/regex')['exactly']>
@@ -1291,11 +1329,13 @@ declare module 'vue' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
+    readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
     readonly faker: UnwrapRef<typeof import('../core/faker/src/index')['faker']>
     readonly fakerPath: UnwrapRef<typeof import('../core/path/src/paths')['fakerPath']>
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
     readonly fcm: UnwrapRef<typeof import('../core/push/src/drivers/index')['fcm']>
     readonly feature: UnwrapRef<typeof import('../core/testing/src/index')['feature']>
+    readonly fetchOtherModelRelations: UnwrapRef<typeof import('../core/database/src/seeder')['fetchOtherModelRelations']>
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
@@ -1318,23 +1358,29 @@ declare module 'vue' {
     readonly generateCoreSymlink: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateCoreSymlink']>
     readonly generateIdeHelpers: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateIdeHelpers']>
     readonly generateLibEntries: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateLibEntries']>
-    readonly generateMigrationFile: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrationFile']>
-    readonly generateMigrations: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateMigrations']>
+    readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
+    readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
     readonly generateTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateVsCodeCustomData']>
     readonly generateWebTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateWebTypes']>
+    readonly generator: UnwrapRef<typeof import('../core/build/src/utils')['generator']>
     readonly get: UnwrapRef<typeof import('../core/storage/src/files')['get']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
+    readonly getCurrentMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getCurrentMigrationFields']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getDialect: UnwrapRef<typeof import('../core/database/src/utils')['getDialect']>
+    readonly getExecutedMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['getExecutedMigrations']>
     readonly getExportsSize: UnwrapRef<typeof import('../core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
+    readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
+    readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/paths')['gitPath']>
@@ -1362,6 +1408,7 @@ declare module 'vue' {
     readonly hashFileOrDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashFileOrDirectory']>
     readonly hashPath: UnwrapRef<typeof import('../core/storage/src/hash')['hashPath']>
     readonly hashPaths: UnwrapRef<typeof import('../core/storage/src/hash')['hashPaths']>
+    readonly haveModelFieldsChangedSinceLastMigration: UnwrapRef<typeof import('../core/database/src/migrations')['haveModelFieldsChangedSinceLastMigration']>
     readonly haveSameAmount: UnwrapRef<typeof import('../core/utils/src/currency')['haveSameAmount']>
     readonly haveSameCurrency: UnwrapRef<typeof import('../core/utils/src/currency')['haveSameCurrency']>
     readonly healthNotificationsWip: UnwrapRef<typeof import('../core/health/src/notifications/index')['healthNotificationsWip']>
@@ -1370,7 +1417,7 @@ declare module 'vue' {
     readonly hits: UnwrapRef<typeof import('../core/search-engine/src/index')['hits']>
     readonly homeDir: UnwrapRef<typeof import('../core/path/src/paths')['homeDir']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
+    readonly increment: UnwrapRef<typeof import('../../../libs/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../core/search-engine/src/index')['index']>
     readonly inflateSync: UnwrapRef<typeof import('../core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../core/utils/src/helpers')['initProject']>
@@ -1387,7 +1434,7 @@ declare module 'vue' {
     readonly isArray: UnwrapRef<typeof import('../core/validation/src/is')['isArray']>
     readonly isBoolean: UnwrapRef<typeof import('../core/validation/src/is')['isBoolean']>
     readonly isBrowser: UnwrapRef<typeof import('../core/validation/src/is')['isBrowser']>
-    readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
+    readonly isDark: UnwrapRef<typeof import('../../../libs/functions/dark')['isDark']>
     readonly isDate: UnwrapRef<typeof import('../core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('../core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('../core/validation/src/is')['isDef']>
@@ -1435,6 +1482,8 @@ declare module 'vue' {
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/paths')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/paths')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/paths')['langPath']>
+    readonly lastMigration: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigration']>
+    readonly lastMigrationDate: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigrationDate']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
     readonly layoutsPath: UnwrapRef<typeof import('../core/path/src/paths')['layoutsPath']>
     readonly lessThan: UnwrapRef<typeof import('../core/utils/src/currency')['lessThan']>
@@ -1478,6 +1527,7 @@ declare module 'vue' {
     readonly maybe: UnwrapRef<typeof import('../core/utils/src/regex')['maybe']>
     readonly md5Encode: UnwrapRef<typeof import('../core/security/src/hash')['md5Encode']>
     readonly middlewares: UnwrapRef<typeof import('../core/router/src/middleware')['middlewares']>
+    readonly migrator: UnwrapRef<typeof import('../core/database/src/migrations')['migrator']>
     readonly minimum: UnwrapRef<typeof import('../core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../core/storage/src/fs')['mkdirSync']>
@@ -1538,6 +1588,7 @@ declare module 'vue' {
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/paths')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
     readonly parseYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['parseYaml']>
+    readonly parser: UnwrapRef<typeof import('../core/build/src/utils')['parser']>
     readonly path: UnwrapRef<typeof import('../core/path/src/paths')['path']>
     readonly pathPath: UnwrapRef<typeof import('../core/path/src/paths')['pathPath']>
     readonly pausableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['pausableWatch']>
@@ -1545,7 +1596,7 @@ declare module 'vue' {
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
     readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
     readonly plivo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['plivo']>
-    readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
+    readonly preferredDark: UnwrapRef<typeof import('../../../libs/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('../core/ui/src/index')['presetForms']>
     readonly process: UnwrapRef<typeof import('../core/env/src/index')['process']>
     readonly projectConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['projectConfigPath']>
@@ -1597,6 +1648,7 @@ declare module 'vue' {
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../core/path/src/paths')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../core/path/src/paths')['routesPath']>
+    readonly rule: UnwrapRef<typeof import('../core/validation/src/validate')['rule']>
     readonly runAction: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runAction']>
     readonly runActions: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runActions']>
     readonly runAdd: UnwrapRef<typeof import('../core/actions/src/index')['runAdd']>
@@ -1605,6 +1657,7 @@ declare module 'vue' {
     readonly runCommit: UnwrapRef<typeof import('../core/actions/src/index')['runCommit']>
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
+    readonly runDatabaseMigration: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigration']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
@@ -1615,11 +1668,13 @@ declare module 'vue' {
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/paths')['runtimePath']>
     readonly schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['default']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/paths')['schedulerPath']>
+    readonly schema: UnwrapRef<typeof import('../core/validation/src/validate')['schema']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/paths')['scriptsPath']>
     readonly searchEnginePath: UnwrapRef<typeof import('../core/path/src/paths')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('../core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('../core/search-engine/src/index')['searchParams']>
     readonly securityPath: UnwrapRef<typeof import('../core/path/src/paths')['securityPath']>
+    readonly seed: UnwrapRef<typeof import('../core/database/src/seeder')['seed']>
     readonly sendAt: UnwrapRef<typeof import('../core/scheduler/src/schedule')['sendAt']>
     readonly sep: UnwrapRef<typeof import('../core/path/src/paths')['sep']>
     readonly serve: UnwrapRef<typeof import('../core/router/src/server')['serve']>
@@ -1682,8 +1737,9 @@ declare module 'vue' {
     readonly toString: UnwrapRef<typeof import('../core/utils/src/base')['toString']>
     readonly toUnits: UnwrapRef<typeof import('../core/utils/src/currency')['toUnits']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
+    readonly toggleDark: UnwrapRef<typeof import('../../../libs/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('../core/search-engine/src/index')['totalPages']>
+    readonly traverse: UnwrapRef<typeof import('../core/build/src/utils')['traverse']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly trimScale: UnwrapRef<typeof import('../core/utils/src/currency')['trimScale']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/utils/src/vendors')['tryOnBeforeMount']>
@@ -1782,7 +1838,6 @@ declare module 'vue' {
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
-    readonly useHttpFetch: UnwrapRef<typeof import('../core/api/src/index')['useHttpFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../core/utils/src/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../core/utils/src/vendors')['useImage']>
@@ -1895,16 +1950,19 @@ declare module 'vue' {
     readonly useWindowScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowSize']>
     readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['userActionsPath']>
+    readonly userDatabasePath: UnwrapRef<typeof import('../core/path/src/paths')['userDatabasePath']>
     readonly userEventsPath: UnwrapRef<typeof import('../core/path/src/paths')['userEventsPath']>
     readonly userJobsPath: UnwrapRef<typeof import('../core/path/src/paths')['userJobsPath']>
+    readonly userLibsPath: UnwrapRef<typeof import('../core/path/src/paths')['userLibsPath']>
     readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/paths')['userListenersPath']>
     readonly userMiddlewarePath: UnwrapRef<typeof import('../core/path/src/paths')['userMiddlewarePath']>
+    readonly userMigrationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userMigrationsPath']>
+    readonly userModels: UnwrapRef<typeof import('../core/orm/src/utils')['userModels']>
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/validate')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
-    readonly validator: UnwrapRef<typeof import('../core/validation/src/validate')['validator']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/paths')['viewsPath']>
@@ -1931,7 +1989,6 @@ declare module 'vue' {
     readonly websiteSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['websiteSourceHash']>
     readonly whenever: UnwrapRef<typeof import('../core/utils/src/vendors')['whenever']>
     readonly whitespace: UnwrapRef<typeof import('../core/utils/src/regex')['whitespace']>
-    readonly wipOrm: UnwrapRef<typeof import('../core/orm/src/index')['wipOrm']>
     readonly wipSlug: UnwrapRef<typeof import('../core/slug/src/index')['wipSlug']>
     readonly withIndices: UnwrapRef<typeof import('../core/utils/src/regex')['withIndices']>
     readonly word: UnwrapRef<typeof import('../core/utils/src/regex')['word']>
@@ -1955,18 +2012,19 @@ declare module '@vue/runtime-core' {
     readonly BunCronJob: UnwrapRef<typeof import('../core/scheduler/src/index')['BunCronJob']>
     readonly CronTime: UnwrapRef<typeof import('../core/scheduler/src/index')['CronTime']>
     readonly CssEngine: UnwrapRef<typeof import('../core/ui/src/index')['CssEngine']>
+    readonly Database: UnwrapRef<typeof import('../core/database/src/types')['Database']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly Err: UnwrapRef<typeof import('../core/error-handling/src/index')['Err']>
     readonly ErrorHandler: UnwrapRef<typeof import('../core/error-handling/src/handler')['ErrorHandler']>
     readonly Every: UnwrapRef<typeof import('../core/types/src/cron-jobs')['Every']>
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
+    readonly Fetch: UnwrapRef<typeof import('../core/api/src/index')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
     readonly LogLevels: UnwrapRef<typeof import('../core/types/src/logger')['LogLevels']>
     readonly LogTypes: UnwrapRef<typeof import('../core/types/src/logger')['LogTypes']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
     readonly Middleware: UnwrapRef<typeof import('../core/router/src/middleware')['Middleware']>
-    readonly Migration: UnwrapRef<typeof import('../core/database/src/types')['Migration']>
     readonly MoneyValidator: UnwrapRef<typeof import('../core/validation/src/types/money')['MoneyValidator']>
     readonly MysqlDialect: UnwrapRef<typeof import('../core/query-builder/src/kysely')['MysqlDialect']>
     readonly Ok: UnwrapRef<typeof import('../core/error-handling/src/index')['Ok']>
@@ -1976,12 +2034,6 @@ declare module '@vue/runtime-core' {
     readonly Result: UnwrapRef<typeof import('../core/error-handling/src/index')['Result']>
     readonly ResultAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['ResultAsync']>
     readonly Router: UnwrapRef<typeof import('../core/router/src/router')['Router']>
-    readonly RuleAny: UnwrapRef<typeof import('../core/validation/src/validate')['RuleAny']>
-    readonly RuleArray: UnwrapRef<typeof import('../core/validation/src/validate')['RuleArray']>
-    readonly RuleBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['RuleBoolean']>
-    readonly RuleNumber: UnwrapRef<typeof import('../core/validation/src/validate')['RuleNumber']>
-    readonly RuleObject: UnwrapRef<typeof import('../core/validation/src/validate')['RuleObject']>
-    readonly RuleString: UnwrapRef<typeof import('../core/validation/src/validate')['RuleString']>
     readonly Schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['Schedule']>
     readonly Schema: UnwrapRef<typeof import('../core/database/src/schema')['Schema']>
     readonly SocialLinkIcon: UnwrapRef<typeof import('../core/types/src/docs')['SocialLinkIcon']>
@@ -1990,11 +2042,14 @@ declare module '@vue/runtime-core' {
     readonly USD: UnwrapRef<typeof import('../core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('../core/ui/src/index')['UiEngine']>
     readonly UnocssConfig: UnwrapRef<typeof import('../core/ui/src/index')['UnocssConfig']>
+    readonly User: UnwrapRef<typeof import('../core/orm/src/generated/User')['default']>
+    readonly UserModel: UnwrapRef<typeof import('../core/orm/src/generated/User')['UserModel']>
     readonly ValidationBoolean: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationBoolean']>
     readonly ValidationEnum: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationEnum']>
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
     readonly ValidationString: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationString']>
     readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['VineBoolean']>
+    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/validate')['VineDate']>
     readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/validate')['VineEnum']>
     readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/validate')['VineNumber']>
     readonly VineString: UnwrapRef<typeof import('../core/validation/src/validate')['VineString']>
@@ -2013,6 +2068,8 @@ declare module '@vue/runtime-core' {
     readonly anyOf: UnwrapRef<typeof import('../core/utils/src/regex')['anyOf']>
     readonly appPath: UnwrapRef<typeof import('../core/path/src/paths')['appPath']>
     readonly archive: UnwrapRef<typeof import('../core/storage/src/zip')['archive']>
+    readonly argon2Encode: UnwrapRef<typeof import('../core/security/src/hash')['argon2Encode']>
+    readonly argon2Verify: UnwrapRef<typeof import('../core/security/src/hash')['argon2Verify']>
     readonly arrays: UnwrapRef<typeof import('../core/index')['arrays']>
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/paths')['arraysPath']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/paths')['assetsPath']>
@@ -2080,8 +2137,7 @@ declare module '@vue/runtime-core' {
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
-    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
-    readonly create: UnwrapRef<typeof import('../core/orm/src/generated/User')['create']>
+    readonly count: UnwrapRef<typeof import('../../../libs/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -2121,8 +2177,7 @@ declare module '@vue/runtime-core' {
     readonly customStorageEventName: UnwrapRef<typeof import('../core/utils/src/vendors')['customStorageEventName']>
     readonly databasePath: UnwrapRef<typeof import('../core/path/src/paths')['databasePath']>
     readonly datetimePath: UnwrapRef<typeof import('../core/path/src/paths')['datetimePath']>
-    readonly db: UnwrapRef<typeof import('../core/database/src/index')['db']>
-    readonly dbDialect: UnwrapRef<typeof import('../core/database/src/index')['dbDialect']>
+    readonly db: UnwrapRef<typeof import('../core/database/src/utils')['db']>
     readonly dd: UnwrapRef<typeof import('../core/logging/src/index')['dd']>
     readonly debounce: UnwrapRef<typeof import('../core/utils/src/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('../core/utils/src/vendors')['debouncedRef']>
@@ -2207,8 +2262,6 @@ declare module '@vue/runtime-core' {
     readonly err: UnwrapRef<typeof import('../core/error-handling/src/index')['err']>
     readonly errAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['errAsync']>
     readonly errorHandlingPath: UnwrapRef<typeof import('../core/path/src/paths')['errorHandlingPath']>
-    readonly eslint: UnwrapRef<typeof import('../core/lint/src/index')['eslint']>
-    readonly eslintPath: UnwrapRef<typeof import('../core/path/src/paths')['eslintPath']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/paths')['eventsPath']>
     readonly exactly: UnwrapRef<typeof import('../core/utils/src/regex')['exactly']>
@@ -2219,11 +2272,13 @@ declare module '@vue/runtime-core' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
+    readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
     readonly faker: UnwrapRef<typeof import('../core/faker/src/index')['faker']>
     readonly fakerPath: UnwrapRef<typeof import('../core/path/src/paths')['fakerPath']>
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
     readonly fcm: UnwrapRef<typeof import('../core/push/src/drivers/index')['fcm']>
     readonly feature: UnwrapRef<typeof import('../core/testing/src/index')['feature']>
+    readonly fetchOtherModelRelations: UnwrapRef<typeof import('../core/database/src/seeder')['fetchOtherModelRelations']>
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
@@ -2246,23 +2301,29 @@ declare module '@vue/runtime-core' {
     readonly generateCoreSymlink: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateCoreSymlink']>
     readonly generateIdeHelpers: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateIdeHelpers']>
     readonly generateLibEntries: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateLibEntries']>
-    readonly generateMigrationFile: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrationFile']>
-    readonly generateMigrations: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateMigrations']>
+    readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
+    readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
     readonly generateTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateVsCodeCustomData']>
     readonly generateWebTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateWebTypes']>
+    readonly generator: UnwrapRef<typeof import('../core/build/src/utils')['generator']>
     readonly get: UnwrapRef<typeof import('../core/storage/src/files')['get']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
+    readonly getCurrentMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getCurrentMigrationFields']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getDialect: UnwrapRef<typeof import('../core/database/src/utils')['getDialect']>
+    readonly getExecutedMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['getExecutedMigrations']>
     readonly getExportsSize: UnwrapRef<typeof import('../core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
+    readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
+    readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/paths')['gitPath']>
@@ -2290,6 +2351,7 @@ declare module '@vue/runtime-core' {
     readonly hashFileOrDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashFileOrDirectory']>
     readonly hashPath: UnwrapRef<typeof import('../core/storage/src/hash')['hashPath']>
     readonly hashPaths: UnwrapRef<typeof import('../core/storage/src/hash')['hashPaths']>
+    readonly haveModelFieldsChangedSinceLastMigration: UnwrapRef<typeof import('../core/database/src/migrations')['haveModelFieldsChangedSinceLastMigration']>
     readonly haveSameAmount: UnwrapRef<typeof import('../core/utils/src/currency')['haveSameAmount']>
     readonly haveSameCurrency: UnwrapRef<typeof import('../core/utils/src/currency')['haveSameCurrency']>
     readonly healthNotificationsWip: UnwrapRef<typeof import('../core/health/src/notifications/index')['healthNotificationsWip']>
@@ -2298,7 +2360,7 @@ declare module '@vue/runtime-core' {
     readonly hits: UnwrapRef<typeof import('../core/search-engine/src/index')['hits']>
     readonly homeDir: UnwrapRef<typeof import('../core/path/src/paths')['homeDir']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
+    readonly increment: UnwrapRef<typeof import('../../../libs/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../core/search-engine/src/index')['index']>
     readonly inflateSync: UnwrapRef<typeof import('../core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../core/utils/src/helpers')['initProject']>
@@ -2315,7 +2377,7 @@ declare module '@vue/runtime-core' {
     readonly isArray: UnwrapRef<typeof import('../core/validation/src/is')['isArray']>
     readonly isBoolean: UnwrapRef<typeof import('../core/validation/src/is')['isBoolean']>
     readonly isBrowser: UnwrapRef<typeof import('../core/validation/src/is')['isBrowser']>
-    readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
+    readonly isDark: UnwrapRef<typeof import('../../../libs/functions/dark')['isDark']>
     readonly isDate: UnwrapRef<typeof import('../core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('../core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('../core/validation/src/is')['isDef']>
@@ -2363,6 +2425,8 @@ declare module '@vue/runtime-core' {
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/paths')['jobsPath']>
     readonly join: UnwrapRef<typeof import('../core/path/src/paths')['join']>
     readonly langPath: UnwrapRef<typeof import('../core/path/src/paths')['langPath']>
+    readonly lastMigration: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigration']>
+    readonly lastMigrationDate: UnwrapRef<typeof import('../core/database/src/migrations')['lastMigrationDate']>
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
     readonly layoutsPath: UnwrapRef<typeof import('../core/path/src/paths')['layoutsPath']>
     readonly lessThan: UnwrapRef<typeof import('../core/utils/src/currency')['lessThan']>
@@ -2406,6 +2470,7 @@ declare module '@vue/runtime-core' {
     readonly maybe: UnwrapRef<typeof import('../core/utils/src/regex')['maybe']>
     readonly md5Encode: UnwrapRef<typeof import('../core/security/src/hash')['md5Encode']>
     readonly middlewares: UnwrapRef<typeof import('../core/router/src/middleware')['middlewares']>
+    readonly migrator: UnwrapRef<typeof import('../core/database/src/migrations')['migrator']>
     readonly minimum: UnwrapRef<typeof import('../core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../core/storage/src/fs')['mkdirSync']>
@@ -2466,6 +2531,7 @@ declare module '@vue/runtime-core' {
     readonly packageJsonPath: UnwrapRef<typeof import('../core/path/src/paths')['packageJsonPath']>
     readonly packageManager: UnwrapRef<typeof import('../core/utils/src/helpers')['packageManager']>
     readonly parseYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['parseYaml']>
+    readonly parser: UnwrapRef<typeof import('../core/build/src/utils')['parser']>
     readonly path: UnwrapRef<typeof import('../core/path/src/paths')['path']>
     readonly pathPath: UnwrapRef<typeof import('../core/path/src/paths')['pathPath']>
     readonly pausableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['pausableWatch']>
@@ -2473,7 +2539,7 @@ declare module '@vue/runtime-core' {
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
     readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
     readonly plivo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['plivo']>
-    readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
+    readonly preferredDark: UnwrapRef<typeof import('../../../libs/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('../core/ui/src/index')['presetForms']>
     readonly process: UnwrapRef<typeof import('../core/env/src/index')['process']>
     readonly projectConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['projectConfigPath']>
@@ -2525,6 +2591,7 @@ declare module '@vue/runtime-core' {
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../core/path/src/paths')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../core/path/src/paths')['routesPath']>
+    readonly rule: UnwrapRef<typeof import('../core/validation/src/validate')['rule']>
     readonly runAction: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runAction']>
     readonly runActions: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runActions']>
     readonly runAdd: UnwrapRef<typeof import('../core/actions/src/index')['runAdd']>
@@ -2533,6 +2600,7 @@ declare module '@vue/runtime-core' {
     readonly runCommit: UnwrapRef<typeof import('../core/actions/src/index')['runCommit']>
     readonly runComponentsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runComponentsDevServer']>
     readonly runDashboardDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDashboardDevServer']>
+    readonly runDatabaseMigration: UnwrapRef<typeof import('../core/database/src/migrations')['runDatabaseMigration']>
     readonly runDesktopDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDesktopDevServer']>
     readonly runDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDevServer']>
     readonly runDocsDevServer: UnwrapRef<typeof import('../core/actions/src/dev/index')['runDocsDevServer']>
@@ -2543,11 +2611,13 @@ declare module '@vue/runtime-core' {
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/paths')['runtimePath']>
     readonly schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['default']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/paths')['schedulerPath']>
+    readonly schema: UnwrapRef<typeof import('../core/validation/src/validate')['schema']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/paths')['scriptsPath']>
     readonly searchEnginePath: UnwrapRef<typeof import('../core/path/src/paths')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('../core/search-engine/src/index')['searchFilters']>
     readonly searchParams: UnwrapRef<typeof import('../core/search-engine/src/index')['searchParams']>
     readonly securityPath: UnwrapRef<typeof import('../core/path/src/paths')['securityPath']>
+    readonly seed: UnwrapRef<typeof import('../core/database/src/seeder')['seed']>
     readonly sendAt: UnwrapRef<typeof import('../core/scheduler/src/schedule')['sendAt']>
     readonly sep: UnwrapRef<typeof import('../core/path/src/paths')['sep']>
     readonly serve: UnwrapRef<typeof import('../core/router/src/server')['serve']>
@@ -2610,8 +2680,9 @@ declare module '@vue/runtime-core' {
     readonly toString: UnwrapRef<typeof import('../core/utils/src/base')['toString']>
     readonly toUnits: UnwrapRef<typeof import('../core/utils/src/currency')['toUnits']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
+    readonly toggleDark: UnwrapRef<typeof import('../../../libs/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('../core/search-engine/src/index')['totalPages']>
+    readonly traverse: UnwrapRef<typeof import('../core/build/src/utils')['traverse']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly trimScale: UnwrapRef<typeof import('../core/utils/src/currency')['trimScale']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/utils/src/vendors')['tryOnBeforeMount']>
@@ -2710,7 +2781,6 @@ declare module '@vue/runtime-core' {
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
-    readonly useHttpFetch: UnwrapRef<typeof import('../core/api/src/index')['useHttpFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useIdle: UnwrapRef<typeof import('../core/utils/src/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../core/utils/src/vendors')['useImage']>
@@ -2823,16 +2893,19 @@ declare module '@vue/runtime-core' {
     readonly useWindowScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowSize']>
     readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['userActionsPath']>
+    readonly userDatabasePath: UnwrapRef<typeof import('../core/path/src/paths')['userDatabasePath']>
     readonly userEventsPath: UnwrapRef<typeof import('../core/path/src/paths')['userEventsPath']>
     readonly userJobsPath: UnwrapRef<typeof import('../core/path/src/paths')['userJobsPath']>
+    readonly userLibsPath: UnwrapRef<typeof import('../core/path/src/paths')['userLibsPath']>
     readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/paths')['userListenersPath']>
     readonly userMiddlewarePath: UnwrapRef<typeof import('../core/path/src/paths')['userMiddlewarePath']>
+    readonly userMigrationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userMigrationsPath']>
+    readonly userModels: UnwrapRef<typeof import('../core/orm/src/utils')['userModels']>
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/validate')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
-    readonly validator: UnwrapRef<typeof import('../core/validation/src/validate')['validator']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/paths')['viewsPath']>
@@ -2859,7 +2932,6 @@ declare module '@vue/runtime-core' {
     readonly websiteSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['websiteSourceHash']>
     readonly whenever: UnwrapRef<typeof import('../core/utils/src/vendors')['whenever']>
     readonly whitespace: UnwrapRef<typeof import('../core/utils/src/regex')['whitespace']>
-    readonly wipOrm: UnwrapRef<typeof import('../core/orm/src/index')['wipOrm']>
     readonly wipSlug: UnwrapRef<typeof import('../core/slug/src/index')['wipSlug']>
     readonly withIndices: UnwrapRef<typeof import('../core/utils/src/regex')['withIndices']>
     readonly word: UnwrapRef<typeof import('../core/utils/src/regex')['word']>

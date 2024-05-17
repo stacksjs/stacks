@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
-import { writeTextFile } from '@stacksjs/storage'
+import { cli } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
-import { cli } from '@stacksjs/config'
+import { writeTextFile } from '@stacksjs/storage'
+import { ExitCode } from '@stacksjs/types'
 
 log.info('Ensuring Component Library Entry Point...')
 

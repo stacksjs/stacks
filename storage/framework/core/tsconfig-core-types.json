@@ -3,9 +3,7 @@
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "moduleDetection": "force",
     "baseUrl": ".",
     "module": "esnext",
@@ -20,7 +18,6 @@
     "resolveJsonModule": true,
     "types": [
       "vite/client",
-      // "vue/ref-macros",
       "vite-plugin-pages/client",
       "vite-plugin-pwa/client",
       "vite-plugin-vue-layouts/client",
@@ -45,6 +42,8 @@
   "include": [
     "./*.stx",
     "./**/*.stx",
+    "./*.vue",
+    "./**/*.vue",
     "./*.ts",
     "./**/*.ts"
   ],

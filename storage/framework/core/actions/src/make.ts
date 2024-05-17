@@ -1,34 +1,27 @@
 import process from 'node:process'
 import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
+import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import type { MakeOptions } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
-  if (options.component)
-    await makeComponent(options)
+  if (options.component) await makeComponent(options)
 
-  if (options.database)
-    makeDatabase(options)
+  if (options.database) makeDatabase(options)
 
-  if (options.function)
-    await makeFunction(options)
+  if (options.function) await makeFunction(options)
 
-  if (options.language)
-    await makeLanguage(options)
+  if (options.language) await makeLanguage(options)
 
   // if (options.migration)
   //   await migration(options)
 
-  if (options.notification)
-    await makeNotification(options)
+  if (options.notification) await makeNotification(options)
 
-  if (options.page)
-    await makePage(options)
+  if (options.page) await makePage(options)
 
-  if (options.stack)
-    makeStack(options)
+  if (options.stack) makeStack(options)
 }
 
 export async function make(options: MakeOptions) {
@@ -41,8 +34,7 @@ export async function makeComponent(options: MakeOptions) {
     log.info('Creating your component...')
     await createComponent(options)
     log.success(`Created ${italic(name)} component`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your component', error)
     process.exit()
   }
@@ -53,7 +45,6 @@ export async function createComponent(options: MakeOptions) {
   await writeTextFile({
     path: `./components/${name}.stx`,
     data: `<script setup lang="ts">
-// eslint-disable-next-line no-console
 console.log('Hello World component created')
 </script>
 
@@ -72,16 +63,14 @@ export function makeDatabase(options: MakeOptions) {
     log.info(`Creating your ${italic(name)} database...`)
     createDatabase(options)
     log.success(`Created ${italic(name)} database`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your database', error)
     process.exit()
   }
 }
 
 export function createDatabase(options: MakeOptions) {
-  // eslint-disable-next-line no-console
-  console.log('options', options) // wip
+  console.log('createDatabase options', options) // wip
 }
 
 export function factory(options: MakeOptions) {
@@ -90,15 +79,13 @@ export function factory(options: MakeOptions) {
     log.info(`Creating your ${italic(name)} factory...`)
     createDatabase(options)
     log.success(`Created ${italic(name)} factory`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your factory', error)
     process.exit()
   }
 }
 
 export function createFactory(options: MakeOptions) {
-  // eslint-disable-next-line no-console
   console.log('options', options) // wip
 }
 
@@ -108,8 +95,7 @@ export async function makeNotification(options: MakeOptions) {
     log.info(`Creating your ${italic(name)} notification...`)
     await createNotification(options)
     log.success(`Created ${italic(name)} notification`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your notification', error)
     process.exit()
   }
@@ -121,8 +107,7 @@ export async function makePage(options: MakeOptions) {
     log.info('Creating your page...')
     await createPage(options)
     log.success(`Created ${name} page`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your page', error)
     process.exit()
   }
@@ -132,9 +117,7 @@ export async function createPage(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
     path: `./pages/${name}.stx`,
-    data:
-`<script setup lang="ts">
-// eslint-disable-next-line no-console
+    data: `<script setup lang="ts">
 console.log('Hello World page created')
 </script>
 
@@ -153,8 +136,7 @@ export async function makeFunction(options: MakeOptions) {
     log.info('Creating your function...')
     await createFunction(options)
     log.success(`Created ${name} function`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your function', error)
     process.exit()
   }
@@ -186,8 +168,7 @@ export async function makeLanguage(options: MakeOptions) {
     log.info('Creating your translation file...')
     await createLanguage(options)
     log.success(`Created ${name} translation file`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your language.', error)
     process.exit()
   }
@@ -212,8 +193,7 @@ export function makeStack(options: MakeOptions) {
     // await spawn(`giget stacks ${path}`)
     log.success('Successfully scaffolded your project')
     log.info(`cd ${path} && bun install`)
-  }
-  catch (error) {
+  } catch (error) {
     log.error('There was an error creating your stack', error)
     process.exit()
   }
@@ -224,14 +204,11 @@ export async function createNotification(options: MakeOptions) {
   try {
     let importOption = 'EmailOptions'
 
-    if (!doesFolderExist('notifications'))
-      await createFolder('./notifications')
+    if (!doesFolderExist('notifications')) await createFolder('./notifications')
 
-    if (options.chat)
-      importOption = 'ChatOptions'
+    if (options.chat) importOption = 'ChatOptions'
 
-    if (options.sms)
-      importOption = 'SMSOptions'
+    if (options.sms) importOption = 'SMSOptions'
 
     await writeTextFile({
       path: `./notifications/${name}.ts`,
@@ -249,8 +226,7 @@ function send(): ${importOption} {
     })
 
     return true
-  }
-  catch (error) {
+  } catch (error) {
     return false
   }
 }
@@ -260,8 +236,7 @@ export async function createMigration(options: MakeOptions) {
   // const table = options.tableName
   const table = 'dummy-name'
 
-  if (!optionName[0])
-    throw new Error('options.name is required and cannot be empty')
+  if (!optionName[0]) throw new Error('options.name is required and cannot be empty')
 
   const name = optionName[0].toUpperCase() + optionName.slice(1)
   const path = frameworkPath(`database/migrations/${name}.ts`)
@@ -274,14 +249,13 @@ export async function createMigration(options: MakeOptions) {
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('${table}')
-    .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
+    .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
     .execute()
 }`,
     })
 
     log.success(`Successfully created your migration file at stacks/database/migrations/${name}.ts`)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     log.error(error)
   }
 }
@@ -289,8 +263,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 export async function createModel(options: MakeOptions) {
   const optionName = options.name
 
-  if (!optionName[0])
-    throw new Error('options.name is required and cannot be empty')
+  if (!optionName[0]) throw new Error('options.name is required and cannot be empty')
 
   const name = optionName[0].toUpperCase() + optionName.slice(1)
   const path = projectPath(`app/Models/${name}.ts`)
@@ -298,33 +271,28 @@ export async function createModel(options: MakeOptions) {
     await writeTextFile({
       path: `${path}`,
       data: `import { faker } from '@stacksjs/faker'
-import { validate } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
-export default <Model> {
+export default {
   name: '${name}',
 
-  searchable: true, // boolean | IndexSettings,
-  authenticatable: true, // boolean | AuthSettings,
+  traits: {
+    useTimestamps: true,
 
-  seeder: {
-    count: 10,
-  },
-
-  fields: {
-    name: {
-      validation: validate.string().min(3).max(255),
-      factory: () => faker.person,
+    useSeeder: {
+      count: 10,
     },
-
-    // more fields here
   },
-}`,
+
+  attributes: {
+    // your attributes here
+  },
+} satisfies Model`,
     })
 
-    log.success(`Successfully created your model at app/Models/${name}.ts`)
-  }
-  catch (error: any) {
+    log.success(`Model created: ${italic(`app/Models/${name}.ts`)}`)
+  } catch (error: any) {
     log.error(error)
   }
 }

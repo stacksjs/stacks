@@ -8,7 +8,11 @@ interface Options {
 type ColumnType = 'integer' | 'varchar' | 'timestamp' | `varchar(${number})`
 
 export class Column {
-  constructor(public name: string, public type: ColumnType, public options: Options = {}) {}
+  constructor(
+    public name: string,
+    public type: ColumnType,
+    public options: Options = {},
+  ) {}
 
   notNullable(): this {
     this.options.notNull = true

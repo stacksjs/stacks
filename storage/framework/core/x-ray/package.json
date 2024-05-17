@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/x-ray",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -28,14 +28,8 @@
   ],
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "echo 'wip'",
     "serve": "vite --config ../build/src/desktop.ts",

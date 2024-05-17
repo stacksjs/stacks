@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,12 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "docs",
-    "utilities",
-    "functions",
-    "stacks"
-  ],
+  "keywords": ["docs", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -33,14 +28,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -51,7 +40,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "vitepress": "1.0.0-rc.45",
+    "vitepress": "1.1.4",
     "vitepress-plugin-twoslash": "^0.10.2"
   },
   "dependencies": {
@@ -59,11 +48,11 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "vitepress": "1.0.0-rc.45",
+    "vitepress": "1.1.4",
     "vitepress-plugin-twoslash": "^0.10.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@vite-pwa/vitepress": "^0.4.0"
+    "@vite-pwa/vitepress": "^0.5.0"
   }
 }

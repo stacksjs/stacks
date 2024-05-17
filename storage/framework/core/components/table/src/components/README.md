@@ -74,7 +74,7 @@ Read more about these tips in the docs.
 ### Coding Style
 
 - Composition API with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227)
-- [ESLint](https://eslint.org/) - statically analyzes, fixes and formats your code without the need for Prettier
+- [biome](https://github.com/biomejs/biome) - statically analyzes, fixes and formats your code without the need for Prettier and ESLint
 
 When using this template, feel free to adjust it to your needs. It is a framework to help you quickly & efficiently bootstrap & design component libraries using industry best practices.
 

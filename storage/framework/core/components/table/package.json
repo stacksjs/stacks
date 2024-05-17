@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/table",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The easy & modern way to work with tables. Facet filtering, searching, pagination, and more.",
   "author": "Stacks.js",
   "license": "MIT",
@@ -23,9 +23,7 @@
     "typescript",
     "javascript"
   ],
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "scripts": {
     "dev": "vite",
     "build": "echo 'Coming soon'",
@@ -37,11 +35,11 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@vueform/multiselect": "^2.6.6",
-    "meilisearch": "^0.38.0"
+    "meilisearch": "^0.40.0"
   },
   "dependencies": {
-    "vite": "^5.1.6"
+    "@vueform/multiselect": "^2.6.7",
+    "vite": "^5.2.11"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

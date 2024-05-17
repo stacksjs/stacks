@@ -1,8 +1,8 @@
 import process from 'node:process'
+import { log } from '@stacksjs/logging'
+import { projectPath } from '@stacksjs/path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import { $ } from 'bun'
-import { projectPath } from '@stacksjs/path'
-import { log } from '@stacksjs/logging'
 
 export function list(buddy: CLI) {
   const descriptions = {
@@ -28,7 +28,6 @@ export function list(buddy: CLI) {
           .replace('Commands:', '') // Remove "Commands:"
           .replace(/^\s+/gm, '') // Trim leading whitespace from the start of each line
 
-        // eslint-disable-next-line no-console
         console.log(cleanedCommands)
         return
       }

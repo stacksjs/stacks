@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { config } from '@vue-email/compiler'
 import { path } from '@stacksjs/path'
+import { config } from '@vue-email/compiler'
 import type { I18n } from 'vue-email'
 
 export interface RenderOptions {

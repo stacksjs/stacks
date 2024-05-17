@@ -1,12 +1,11 @@
-/* eslint-disable no-new */
 import { log } from '@stacksjs/cli'
 import type { DateTime } from 'luxon'
-import { CronTime } from './time'
 import { CronJob } from './job'
+import { CronTime } from './time'
 
 export class Schedule {
-  private cronPattern: string = ''
-  private timezone: string = 'America/Los_Angeles'
+  private cronPattern = ''
+  private timezone = 'America/Los_Angeles'
   private readonly task: () => void
   // private cmd?: string
 

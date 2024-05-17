@@ -6,8 +6,6 @@ export function i18n() {
     runtimeOnly: true,
     compositionOnly: true,
     fullInstall: true,
-    include: [
-      p.resolve(__dirname, '../../../../../../../lang/**'),
-    ],
+    include: [p.resolve(__dirname, '../../../../../../../lang/**')],
   })
 }

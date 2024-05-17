@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { $ } from 'bun'
-import { findStacksProjects } from '@stacksjs/utils'
 import { log } from '@stacksjs/logging'
+import { findStacksProjects } from '@stacksjs/utils'
+import { $ } from 'bun'
 
 const projects = await findStacksProjects(undefined, { quiet: true })
 
@@ -18,7 +18,6 @@ for (const project of projects) {
   $.cwd(project)
   const ports = await $`./buddy ports --project ${project} --quiet`.text()
 
-  // eslint-disable-next-line no-console
   console.log('ports', ports)
 }
 

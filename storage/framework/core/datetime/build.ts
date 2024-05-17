@@ -10,11 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    'vite',
-    'bun',
-    '@stacksjs/utils',
-  ],
+  external: ['vite', 'bun', '@stacksjs/utils'],
 })
 
 await outro({

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/datetime",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks datetime helpers.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,14 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "datetime",
-    "date",
-    "time",
-    "helpers",
-    "composables",
-    "stacks"
-  ],
+  "keywords": ["datetime", "date", "time", "helpers", "composables", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -35,21 +28,15 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@formkit/tempo": "^0.0.15",
+    "@formkit/tempo": "^0.1.1",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {

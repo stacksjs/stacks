@@ -1,7 +1,7 @@
 import process from 'node:process'
-import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export function configure(buddy: CLI) {
@@ -33,7 +33,9 @@ export function configure(buddy: CLI) {
   buddy
     .command('configure:aws', descriptions.aws)
     .option('-p, --project', descriptions.project, { default: false })
-    .option('--profile', descriptions.profile, { default: process.env.AWS_PROFILE })
+    .option('--profile', descriptions.profile, {
+      default: process.env.AWS_PROFILE,
+    })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--access-key-id', 'The AWS access key')
     .option('--secret-access-key', 'The AWS secret access key')
@@ -74,8 +76,7 @@ async function configureAws(options?: ConfigureOptions) {
     process.exit(ExitCode.FatalError)
   }
 
-  if (options?.quiet)
-    return
+  if (options?.quiet) return
 
   await outro('Exited', { startTime, useSeconds: true })
 }

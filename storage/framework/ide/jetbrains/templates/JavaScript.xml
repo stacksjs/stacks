@@ -1,6 +1,6 @@
 <templateSet group="JavaScript">
-  <template name="log" value="// eslint-disable-next-line no-console&#10;console.log($END$)" description="console.log()" toReformat="true" toShortenFQNames="true">
+  <template name="log" value="console.log($END$)" description="console.log()" toReformat="true" toShortenFQNames="true">
     <context />
   </template>
-  <template name="clo" value="// eslint-disable-next-line no-console&#10;console.log($END$)" description="console.log() w/ eslint error suppressed" toReformat="true" toShortenFQNames="true" />
+  <template name="clo" value="console.log($END$)" description="console.log()" toReformat="true" toShortenFQNames="true" />
 </templateSet>

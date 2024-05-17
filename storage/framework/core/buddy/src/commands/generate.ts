@@ -4,7 +4,6 @@ import {
   generateCoreSymlink,
   generateIdeHelpers,
   generateLibEntries,
-  generateMigrations,
   generatePkgxConfig,
   generateTypes,
   generateVsCodeCustomData,
@@ -16,7 +15,8 @@ import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
 
 export function generate(buddy: CLI) {
   const descriptions = {
-    command: 'Automagically build any of your libraries/packages for production use. Select any of the following packages',
+    command:
+      'Automagically build any of your libraries/packages for production use. Select any of the following packages',
     types: 'Generate your TypeScript types',
     entries: 'Generate your function & Component Library Entry Points',
     webTypes: 'Generate web-types.json for IDEs',
@@ -135,12 +135,10 @@ export function generate(buddy: CLI) {
       generatePkgxConfig()
     })
 
-  buddy
-    .command('generate:migrations', 'Generate Migrations')
-    .action((options: GeneratorOptions) => {
-      log.debug('Running `buddy generate:migrations` ...', options)
-      generateMigrations()
-    })
+  buddy.command('generate:migrations', 'Generate Migrations').action((options: GeneratorOptions) => {
+    log.debug('Running `buddy generate:migrations` ...', options)
+    // generateMigrations()
+  })
 
   buddy
     .command('generate:core-symlink', 'Generate core symlink. A shortcut for core developers.')

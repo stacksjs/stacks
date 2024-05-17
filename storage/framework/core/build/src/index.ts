@@ -1,7 +1,7 @@
 import process from 'node:process'
+import { bold, dim, green, italic, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { bold, dim, green, italic, log } from '@stacksjs/cli'
 
 export async function outro(options: {
   dir: string
@@ -13,7 +13,6 @@ export async function outro(options: {
   const pkgName = `@stacksjs/${p.basename(options.dir)}`
 
   if (!options.result.success) {
-    // eslint-disable-next-line no-console
     console.log(options.result.logs[0])
     process.exit(1)
   }
@@ -27,23 +26,19 @@ export async function outro(options: {
     if (stats.size < 1024 * 1024) {
       const sizeInKb = stats.size / 1024
       sizeStr = `${sizeInKb.toFixed(2)}kb`
-    }
-    else {
+    } else {
       const sizeInMb = stats.size / 1024 / 1024
       sizeStr = `${sizeInMb.toFixed(2)}mb`
     }
 
     const relativeFilePath = p.relative(options.dir, file).replace('dist/', '')
-    // eslint-disable-next-line no-console
     console.log(`${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`)
   }
 
   log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
-export async function intro(options: {
-  dir: string
-}) {
+export async function intro(options: { dir: string }) {
   const pkgName = `@stacksjs/${p.basename(options.dir)}`
 
   log.info(`Building ${italic(pkgName)}...`)
@@ -51,3 +46,5 @@ export async function intro(options: {
 
   return { startTime }
 }
+
+export * from './utils'

@@ -29,16 +29,18 @@ export function throttle(fn: Function, wait = 300) {
 
       lastTime = Date.now()
       inThrottle = true
-    }
-    else {
+    } else {
       clearTimeout(lastFn)
 
-      lastFn = setTimeout(() => {
-        if (Date.now() - lastTime >= wait) {
-          fn.apply(this, args) // Use 'this' directly
-          lastTime = Date.now()
-        }
-      }, Math.max(wait - (Date.now() - lastTime), 0))
+      lastFn = setTimeout(
+        () => {
+          if (Date.now() - lastTime >= wait) {
+            fn.apply(this, args) // Use 'this' directly
+            lastTime = Date.now()
+          }
+        },
+        Math.max(wait - (Date.now() - lastTime), 0),
+      )
     }
   }
 }

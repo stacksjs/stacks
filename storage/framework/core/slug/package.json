@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/slug",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks slug functionality.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,12 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "slugs",
-    "models",
-    "urls",
-    "stacks"
-  ],
+  "keywords": ["slugs", "models", "urls", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -33,14 +28,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

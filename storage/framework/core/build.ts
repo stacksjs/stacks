@@ -1,6 +1,6 @@
+import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { exists, glob } from '@stacksjs/storage'
-import { log, runCommand } from '@stacksjs/cli'
 
 // import { $ } from 'bun'
 
@@ -11,8 +11,7 @@ const startTime = Date.now()
 
 for (const dir of dirs) {
   // bun-create has only nested dirs, no need to build
-  if (dir.includes('bun-create') || dir.includes('components') || dir.includes('dist'))
-    continue
+  if (dir.includes('bun-create') || dir.includes('components') || dir.includes('dist')) continue
 
   // rm the dist folder before building
   // await $`rm -rf ${p.resolve(dir, 'dist')}`

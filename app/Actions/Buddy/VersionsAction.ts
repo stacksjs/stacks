@@ -6,9 +6,7 @@ export default new Action({
 
   handle() {
     return {
-      versions: [
-        '1.0',
-      ],
+      versions: ['1.0'],
     }
   },
 })

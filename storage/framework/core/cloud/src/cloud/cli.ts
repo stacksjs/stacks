@@ -1,10 +1,8 @@
-/* eslint-disable no-new */
 import { Duration, CfnOutput as Output, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
-export interface CliStackProps extends NestedCloudProps {
-}
+export interface CliStackProps extends NestedCloudProps {}
 
 export class CliStack {
   cliSetupUrl: lambda.FunctionUrl

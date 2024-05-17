@@ -1,18 +1,23 @@
+import { schema } from '@stacksjs/validation'
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
-import { validator } from '@stacksjs/validation'
-import type { EnvKey } from '../../../env'
 import env from '~/config/env'
-
-// import type { Validate } from '@stacksjs/validation'
+import type { EnvKey } from '../../../env'
 
 // we need to get this just into right format so we can infer the type
 type EnvValue = string | boolean | number | readonly string[]
 type EnvType = typeof env
 type EnvKeys = keyof EnvType
-type EnvMap = { [K in EnvKeys]: EnvType[K] extends string ? VineString :
-  EnvType[K] extends number ? VineNumber :
-    EnvType[K] extends boolean ? VineBoolean :
-      EnvType[K] extends readonly string[] ? VineEnum<string[]> : unknown }
+type EnvMap = {
+  [K in EnvKeys]: EnvType[K] extends string
+    ? VineString
+    : EnvType[K] extends number
+      ? VineNumber
+      : EnvType[K] extends boolean
+        ? VineBoolean
+        : EnvType[K] extends readonly string[]
+          ? VineEnum<string[]>
+          : unknown
+}
 
 type ValidatorType = VineString | VineNumber | VineBoolean | VineEnum<string[]>
 
@@ -20,17 +25,17 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
   let validatorType: ValidatorType
   switch (typeof value) {
     case 'string':
-      validatorType = validator.string()
+      validatorType = schema.string()
       break
     case 'number':
-      validatorType = validator.number()
+      validatorType = schema.number()
       break
     case 'boolean':
-      validatorType = validator.boolean()
+      validatorType = schema.boolean()
       break
     default:
       if (Array.isArray(value)) {
-        validatorType = validator.enum(value as string[])
+        validatorType = schema.enum(value as string[])
         break
       }
       throw new Error(`Invalid env value for ${key}`)
@@ -41,7 +46,7 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
   return acc
 }, {} as EnvMap)
 
-export const envSchema = validator.object(envStructure)
+export const envSchema = schema.object(envStructure)
 export type Env = Infer<typeof envSchema>
 
 export type EnvOptions = Env

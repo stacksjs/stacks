@@ -7,7 +7,7 @@ _Please note, the Stacks framework auto-configures any extension that needs to b
 ## Extensions Included
 
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Vue Language Features is a language support extension built for Vue, Vitepress and petite-vue. this is based on @vue/reactivity to calculate everything on-demand, to implement native TypeScript language service level performance ⚡
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Integrates ESLint into VS Code.
+- [biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) - Linting & formatting
 - [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - a plugin that auto-completes npm modules in import statements.
 - [UnoCSS](https://marketplace.visualstudio.com/items?itemName=antfu.unocss) - An atomic CSS framework.
 - [Goto Definition Alias](https://marketplace.visualstudio.com/items?itemName=antfu.goto-definition-alias) - An extension that allows you to jump to the definition of an aliased import.

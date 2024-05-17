@@ -27,7 +27,6 @@ const options: MiddlewareOtions = {
 export default new Middleware(options)
 ```
 
-
 ## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.

@@ -1,12 +1,12 @@
 import process from 'node:process'
+import { runAction } from '@stacksjs/actions'
+import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
+import { resolve } from '@stacksjs/path'
+import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
 import { useOnline } from '@stacksjs/utils'
-import { isFolder } from '@stacksjs/storage'
-import { resolve } from '@stacksjs/path'
-import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
 
 export function create(buddy: CLI) {
   const descriptions = {
@@ -31,7 +31,9 @@ export function create(buddy: CLI) {
     .alias('create <name>')
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
-    .option('-w, --web-components', descriptions.webComponents, { default: true })
+    .option('-w, --web-components', descriptions.webComponents, {
+      default: true,
+    })
     .option('-v, --vue', descriptions.vue, { default: true })
     .option('-p, --views', descriptions.views, { default: true }) // i.e. `buddy dev`
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false

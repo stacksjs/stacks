@@ -1,15 +1,22 @@
-/* eslint-disable no-new */
-import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
-import { Duration, Fn, CfnOutput as Output, aws_cloudfront as cloudfront, aws_cloudfront_origins as origins, aws_route53 as route53, aws_route53_targets as targets } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
 import { config } from '@stacksjs/config'
-import { hasFiles } from '@stacksjs/storage'
-import { path as p } from '@stacksjs/path'
 import { env } from '@stacksjs/env'
+import { path as p } from '@stacksjs/path'
+import { hasFiles } from '@stacksjs/storage'
+import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import {
+  Duration,
+  Fn,
+  CfnOutput as Output,
+  aws_cloudfront as cloudfront,
+  aws_cloudfront_origins as origins,
+  aws_route53 as route53,
+  aws_route53_targets as targets,
+} from 'aws-cdk-lib'
 import type { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import * as kinesis from 'aws-cdk-lib/aws-kinesis'
-import type { NestedCloudProps } from '../types'
+import type { Construct } from 'constructs'
 import type { EnvKey } from '../../../../env'
+import type { NestedCloudProps } from '../types'
 
 export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate
@@ -74,9 +81,7 @@ export class CdnStack {
 
     // TODO: make this configurable
     this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
-      endPoints: [
-        cloudfront.Endpoint.fromKinesisStream(logStream),
-      ],
+      endPoints: [cloudfront.Endpoint.fromKinesisStream(logStream)],
       fields: [
         'timestamp',
         'c-ip',
@@ -169,7 +174,7 @@ export class CdnStack {
         return cloudfront.CacheCookieBehavior.none()
       case 'allowList':
         // If you have a list of cookies, replace `myCookie` with your cookie
-        return cloudfront.CacheCookieBehavior.allowList(...config.cloud.cdn?.allowList.cookies || [])
+        return cloudfront.CacheCookieBehavior.allowList(...(config.cloud.cdn?.allowList.cookies || []))
       default:
         return undefined
     }
@@ -200,8 +205,7 @@ export class CdnStack {
   }
 
   allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
-    if (!methods)
-      return cloudfront.AllowedMethods.ALLOW_ALL
+    if (!methods) return cloudfront.AllowedMethods.ALLOW_ALL
 
     switch (methods) {
       case 'ALL':
@@ -216,8 +220,7 @@ export class CdnStack {
   }
 
   cachedMethodsFromString(methods?: 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.CachedMethods {
-    if (!methods)
-      return cloudfront.CachedMethods.CACHE_GET_HEAD
+    if (!methods) return cloudfront.CachedMethods.CACHE_GET_HEAD
 
     switch (methods) {
       case 'GET_HEAD':
@@ -230,7 +233,7 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
-    return config.cloud.api?.deploy
+    return config.api?.deploy
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
@@ -376,8 +379,27 @@ export class CdnStack {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
     if (this.shouldDeployApi()) {
-      const keysToRemove = ['_HANDLER', '_X_AMZN_TRACE_ID', 'AWS_REGION', 'AWS_EXECUTION_ENV', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 'AWS_LAMBDA_FUNCTION_VERSION', 'AWS_LAMBDA_INITIALIZATION_TYPE', 'AWS_LAMBDA_LOG_GROUP_NAME', 'AWS_LAMBDA_LOG_STREAM_NAME', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_LAMBDA_RUNTIME_API', 'LAMBDA_TASK_ROOT', 'LAMBDA_RUNTIME_DIR', '_']
-      keysToRemove.forEach(key => delete env[key as EnvKey])
+      const keysToRemove = [
+        '_HANDLER',
+        '_X_AMZN_TRACE_ID',
+        'AWS_REGION',
+        'AWS_EXECUTION_ENV',
+        'AWS_LAMBDA_FUNCTION_NAME',
+        'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
+        'AWS_LAMBDA_FUNCTION_VERSION',
+        'AWS_LAMBDA_INITIALIZATION_TYPE',
+        'AWS_LAMBDA_LOG_GROUP_NAME',
+        'AWS_LAMBDA_LOG_STREAM_NAME',
+        'AWS_ACCESS_KEY',
+        'AWS_ACCESS_KEY_ID',
+        'AWS_SECRET_ACCESS_KEY',
+        'AWS_SESSION_TOKEN',
+        'AWS_LAMBDA_RUNTIME_API',
+        'LAMBDA_TASK_ROOT',
+        'LAMBDA_RUNTIME_DIR',
+        '_',
+      ]
+      keysToRemove.forEach((key) => delete env[key as EnvKey])
 
       behaviorOptions = this.apiBehaviorOptions(scope, props)
     }
@@ -409,8 +431,7 @@ export class CdnStack {
   }
 
   setApiCachePolicy(scope: Construct) {
-    if (this.apiCachePolicy)
-      return this.apiCachePolicy
+    if (this.apiCachePolicy) return this.apiCachePolicy
 
     this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
       comment: 'Stacks API Cache Policy',

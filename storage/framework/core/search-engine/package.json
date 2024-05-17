@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/search-engine",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks search engine integrations.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -40,14 +40,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -58,8 +52,8 @@
     "@stacksjs/ui": "workspace:*"
   },
   "dependencies": {
-    "@opensearch-project/opensearch": "^2.6.0",
-    "meilisearch": "^0.38.0"
+    "@opensearch-project/opensearch": "^2.8.0",
+    "meilisearch": "^0.40.0"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",

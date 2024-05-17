@@ -1,5 +1,5 @@
-import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
+import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
@@ -34,11 +34,9 @@ export function functionsBuildOptions(): ViteBuildOptions {
       // name: library.functions?.name,
       formats: ['cjs', 'es'],
       fileName: (format: string) => {
-        if (format === 'es')
-          return 'index.mjs'
+        if (format === 'es') return 'index.mjs'
 
-        if (format === 'cjs')
-          return 'index.cjs'
+        if (format === 'cjs') return 'index.cjs'
 
         return 'index.?.js'
       },
@@ -47,8 +45,7 @@ export function functionsBuildOptions(): ViteBuildOptions {
 }
 
 export default defineConfig(({ command }) => {
-  if (command === 'serve')
-    return functionsConfig
+  if (command === 'serve') return functionsConfig
 
   // command === 'build'
   return functionsConfig

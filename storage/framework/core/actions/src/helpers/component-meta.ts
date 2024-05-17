@@ -1,4 +1,4 @@
-import { frameworkPath, join, path, projectPath } from '@stacksjs/path'
+import { path, frameworkPath, join, projectPath } from '@stacksjs/path'
 import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
 import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
@@ -21,10 +21,7 @@ export function generateComponentMeta() {
     printer: { newLine: 1 },
   }
 
-  const tsconfigChecker = createComponentMetaChecker(
-    projectPath('tsconfig.json'),
-    checkerOptions,
-  )
+  const tsconfigChecker = createComponentMetaChecker(projectPath('tsconfig.json'), checkerOptions)
 
   const filterMeta = (meta: ComponentMeta): ComponentApi => {
     // const clonedMeta: ComponentMeta = JSON.parse(JSON.stringify(meta))
@@ -32,8 +29,7 @@ export function generateComponentMeta() {
     // Exclude global props
     const props: ComponentApiProps[] = []
     meta.props.forEach((prop) => {
-      if (prop?.global)
-        return
+      if (prop?.global) return
 
       const { name, description, required, type, default: defaultValue } = prop
 
@@ -55,7 +51,7 @@ export function generateComponentMeta() {
     }
   }
 
-  const components = glob.sync(['components/*.stx', 'components/**/*.stx'], {
+  const components = glob.sync(['components/*.stx', 'components/**/*.stx', 'components/*.vue', 'components/**/*.vue'], {
     cwd: projectPath(),
     absolute: true,
   })
@@ -69,8 +65,7 @@ export function generateComponentMeta() {
 
     // if meta dir doesn't exist create
 
-    if (!existsSync(metaDirPath))
-      mkdirSync(metaDirPath)
+    if (!existsSync(metaDirPath)) mkdirSync(metaDirPath)
 
     const metaJsonFilePath = join(metaDirPath, `${componentExportName}.json`)
     writeFileSync(metaJsonFilePath, JSON.stringify(meta, null, 4))

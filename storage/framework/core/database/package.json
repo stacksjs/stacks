@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/database",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,14 +36,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -57,9 +51,10 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.5.7"
+    "kysely-bun-worker": "^0.6.1"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -67,12 +62,17 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.5.7"
+    "kysely-bun-worker": "^0.6.1"
   },
   "optionalDependencies": {
-    "mysql2": "^3.9.2"
+    "mysql2": "^3.9.7"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/tar": "^6.1.13",
+    "debug": "^4.3.4",
+    "mkdirp": "^3.0.1",
+    "q": "^1.5.1",
+    "tar": "^7.1.0"
   }
 }

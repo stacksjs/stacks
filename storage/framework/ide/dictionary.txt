@@ -21,6 +21,7 @@ bazel
 bazelignore
 bazelproject
 bazelrc
+biomejs
 boject
 booleanish
 Bootcamp
@@ -137,6 +138,7 @@ iconify
 iife
 imds
 Imdsv
+Insertable
 intlify
 itemprop
 jetbrains
@@ -179,6 +181,7 @@ minzipped
 mkcert
 mkdirs
 mkdist
+monokai
 mult
 mylesmmurphy
 mylesmurphy
@@ -187,8 +190,11 @@ netcore
 neverthrow
 nexe
 nexmo
+nhoizey
 nitropack
+noconflict
 noopener
+Nord
 npmjs
 npmrc
 nprogress
@@ -245,6 +251,7 @@ safelist
 sasl
 scanlon
 scrollback
+searchbox
 seedable
 sendemail
 sendgrid
@@ -259,6 +266,7 @@ singleline
 singlestore
 sizecheck
 solana
+sonner
 Spatie
 Squeezy
 stackblitz
@@ -279,12 +287,14 @@ templating
 termii
 terserrc
 textlint
+timestampable
 treeshaking
 triggerable
 tsdoc
 tsup
 twoslash
 typecheck
+typegen
 typesense
 unconfig
 undeploys
@@ -297,6 +307,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+Updateable
 upstash
 vclass
 vemit
@@ -324,6 +335,7 @@ wafv
 webfont
 whois
 wmaurer
+xiaoluoboding
 xvda
 yourdomain
 zixuanchen

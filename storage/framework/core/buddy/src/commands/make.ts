@@ -12,8 +12,8 @@ import {
 } from '@stacksjs/actions'
 import { intro, italic, outro, runCommand } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
-import { path as p } from '@stacksjs/path'
 import { log } from '@stacksjs/logging'
+import { path as p } from '@stacksjs/path'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
@@ -110,14 +110,22 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:database', descriptions.database)
+    .command('make:database [name]', descriptions.database)
     .option('-n, --name', 'The name of the database')
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
       log.debug('Running `buddy make:database` ...', options)
 
-      const name = buddy.args[0] || options.name
+      if (!options?.name) {
+        log.error('You need to specify a database name via the --name option, or the first argument.')
+        log.info('Example: `buddy make:database my-cool-database`')
+        log.info('Or: `buddy make:database --name=my-cool-database`')
+        log.info('Read more about the documentation here: https://stacksjs.org/docs/make/database')
+        process.exit()
+      }
+
+      const name = options.name ?? options // if the name is not in options, it's in the first argument (ie `options`)
       options.name = name
 
       if (!name) {
@@ -221,11 +229,17 @@ export function make(buddy: CLI) {
       const result = await createNotification(options)
 
       if (!result) {
-        await outro('While running the make:notification command, there was an issue', { startTime: perf, useSeconds: true })
+        await outro('While running the make:notification command, there was an issue', {
+          startTime: perf,
+          useSeconds: true,
+        })
         process.exit()
       }
 
-      await outro(`Created your ${italic(name)} notification.`, { startTime: perf, useSeconds: true })
+      await outro(`Created your ${italic(name)} notification.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
       process.exit(ExitCode.Success)
     })
 
@@ -268,7 +282,9 @@ export function make(buddy: CLI) {
   buddy
     .command('make:migration', descriptions.migration)
     .option('-n, --name', 'The name of the migration')
-    .option('-e, --env', 'The environment to run the migration in', { default: 'dev' })
+    .option('-e, --env', 'The environment to run the migration in', {
+      default: 'dev',
+    })
     .action((options: MakeOptions) => {
       log.debug('Running `buddy make:migration` ...', options)
 

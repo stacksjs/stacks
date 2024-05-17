@@ -22,11 +22,8 @@ interface MysqlConfig {
 // export const Cursor = qbCursor
 
 export const sql = qbSql
-
 export const QueryBuilder = Kysely
-
 export const MysqlDialect = qbMysqlDialect
-
 export const PostgresDialect = qbPostgresql
 
 // export function createPostgresPool(config: PostgresqlConfig) {

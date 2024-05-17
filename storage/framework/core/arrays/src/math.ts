@@ -34,8 +34,7 @@ export function avg(arr: number[]): number {
  * ```
  */
 export function median(arr: number[]): number {
-  if (arr.length === 0)
-    throw new Error('Cannot compute median of an empty array')
+  if (arr.length === 0) throw new Error('Cannot compute median of an empty array')
 
   const sorted = [...arr].sort((a, b) => a - b)
 
@@ -43,10 +42,8 @@ export function median(arr: number[]): number {
 
   let medianValue: number
 
-  if (sorted.length % 2 !== 0)
-    medianValue = sorted[mid]! // TypeScript now understands that `sorted[mid]` is safely accessed
-  else
-    medianValue = (sorted[mid]! + sorted[mid - 1]!) / 2 // and that `sorted[mid]` and `sorted[mid - 1]` are safely accessed
+  if (sorted.length % 2 !== 0) medianValue = sorted[mid] as number
+  else medianValue = ((sorted[mid] as number) + (sorted[mid - 1] as number)) / 2 // or (sorted[mid - 1] + sorted[mid]) / 2
 
   return medianValue
 }
@@ -65,7 +62,7 @@ export function median(arr: number[]): number {
  * ```
  */
 export function mode(arr: number[]): number {
-  return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop()!
+  return arr.sort((a, b) => arr.filter((v) => v === a).length - arr.filter((v) => v === b).length).pop() as number
 }
 
 /**
@@ -149,7 +146,7 @@ export function range(array: readonly number[]): number {
  */
 export function variance(array: number[]): number {
   const mean = average(array)
-  return average(array.map(num => (num - mean) ** 2))
+  return average(array.map((num) => (num - mean) ** 2))
 }
 
 /**
@@ -196,7 +193,7 @@ export function zScore(array: number[], num: number): number {
  * @see https://en.wikipedia.org/wiki/Percentile
  */
 export function percentile(array: number[], num: number): number {
-  return array.filter(n => n < num).length / array.length
+  return array.filter((n) => n < num).length / array.length
 }
 
 /**
@@ -228,11 +225,10 @@ export function interquartileRange(array: number[]): number {
  * ```
  */
 export function covariance(array1: number[], array2: number[]): number {
-  if (array1.length !== array2.length)
-    throw new Error('Arrays must have the same length')
+  if (array1.length !== array2.length) throw new Error('Arrays must have the same length')
 
   const mean1 = average(array1)
   const mean2 = average(array2)
 
-  return average(array1.map((num1, i) => (num1 - mean1) * (array2[i]! - mean2)))
+  return average(array1.map((num1, i) => (num1 - mean1) * ((array2[i] as number) - mean2)))
 }

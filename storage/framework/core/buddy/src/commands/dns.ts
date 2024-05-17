@@ -1,8 +1,8 @@
 import process from 'node:process'
+import { log, runCommand } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
-import { log, runCommand } from '@stacksjs/cli'
 
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'
@@ -65,8 +65,8 @@ export function dns(buddy: CLI) {
       // if (options.json && options.pretty)
       //   prettyOutput = true
 
-      delete options.pretty
-      delete options.p
+      options.pretty = undefined
+      options.p = undefined
 
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)

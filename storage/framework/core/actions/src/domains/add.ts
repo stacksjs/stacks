@@ -1,17 +1,19 @@
 import process from 'node:process'
+import { italic, log, parseOptions, runCommand } from '@stacksjs/cli'
+import { app } from '@stacksjs/config'
 import { createHostedZone, getNameservers, updateNameservers } from '@stacksjs/dns'
 import { handleError } from '@stacksjs/error-handling'
-import { app } from '@stacksjs/config'
-import { italic, log, parseOptions, runCommand } from '@stacksjs/cli'
-import { whois } from '@stacksjs/whois'
 import { logger } from '@stacksjs/logging'
 import { projectConfigPath } from '@stacksjs/path'
+import { whois } from '@stacksjs/whois'
 
 const options = parseOptions()
 const domain = (options.domain as string | undefined) ?? app.url
 
 if (!domain) {
-  log.error('There was no Domain or App URL provided. Please provide a domain using the --domain flag or add a url to your app config.')
+  log.error(
+    'There was no Domain or App URL provided. Please provide a domain using the --domain flag or add a url to your app config.',
+  )
   process.exit(1)
 }
 
@@ -39,8 +41,7 @@ const registrar: string = (await whois(domain, true)).parsedData.Registrar
 if (registrar.includes('Amazon')) {
   if (options.deploy) {
     await runCommand('buddy deploy')
-  }
-  else {
+  } else {
     logger.log('')
     logger.log('You can now continue your deployment process by re-running:')
     logger.log('')

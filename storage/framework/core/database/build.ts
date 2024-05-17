@@ -14,12 +14,15 @@ const result = await Bun.build({
     '@stacksjs/config',
     '@stacksjs/faker',
     '@stacksjs/path',
+    '@stacksjs/cli',
+    '@stacksjs/logging',
     '@stacksjs/query-builder',
     '@stacksjs/storage',
     '@stacksjs/strings',
     '@stacksjs/utils',
     'kysely',
     'mysql2',
+    'bun',
   ],
 })
 

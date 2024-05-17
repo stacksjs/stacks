@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/tinker",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "All you need to tinker.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,23 +15,11 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "tinker-stack",
-    "repl",
-    "ts",
-    "vue",
-    "stacks"
-  ],
+  "keywords": ["tinker-stack", "repl", "ts", "vue", "stacks"],
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "echo 'wip'",
     "prepublishOnly": "bun run build",

@@ -5,16 +5,12 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: [
-    './src/index.ts',
-  ],
+  entrypoints: ['./src/index.ts'],
 
   outdir: './dist',
   format: 'esm',
 
-  external: [
-    '@stacksjs/path',
-  ],
+  external: ['@stacksjs/path'],
 })
 
 await outro({

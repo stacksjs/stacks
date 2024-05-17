@@ -1,9 +1,9 @@
 import { open as shellOpen } from '@tauri-apps/api/shell'
 
 import * as app from '@tauri-apps/api/app'
-import * as event from '@tauri-apps/api/event'
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as dialog from '@tauri-apps/api/dialog'
+import * as event from '@tauri-apps/api/event'
 import * as fs from '@tauri-apps/api/fs'
 import * as globalShortcut from '@tauri-apps/api/globalShortcut'
 import * as http from '@tauri-apps/api/http'

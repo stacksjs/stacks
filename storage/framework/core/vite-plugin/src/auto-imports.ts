@@ -6,7 +6,7 @@ import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export function autoImports(options?: AutoImportsOptions) {
   return AutoImport({
-    include: /\.(stx|js|ts|mdx?|elm|html)($|\?)/,
+    include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
     imports: [
       'pinia',
       'vue',
@@ -25,14 +25,15 @@ export function autoImports(options?: AutoImportsOptions) {
 
     dts: p.frameworkPath('types/auto-imports.d.ts'),
 
-    dirs: [
-      p.resourcesPath('components'),
-      p.resourcesPath('functions'),
-      p.resourcesPath('stores'),
-      p.corePath(),
-    ],
+    dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
 
     vueTemplate: true,
+
+    eslintrc: {
+      enabled: true,
+      filepath: './.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
+      globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
+    },
 
     ...options,
   } as AutoImportsOptions)

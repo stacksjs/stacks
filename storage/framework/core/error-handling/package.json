@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/error-handling",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,13 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "errors",
-    "error-handling",
-    "neverthrow",
-    "type safe",
-    "stacks"
-  ],
+  "keywords": ["errors", "error-handling", "neverthrow", "type safe", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -33,14 +27,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -55,7 +43,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "neverthrow": "^6.1.0"
+    "neverthrow": "^6.2.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

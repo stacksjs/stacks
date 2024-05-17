@@ -10,10 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    '@stacksjs/env',
-    '@stacksjs/config',
-  ],
+  external: ['@stacksjs/env', '@stacksjs/config'],
 })
 
 await outro({

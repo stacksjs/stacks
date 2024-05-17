@@ -1,5 +1,5 @@
-import { examplesPath } from '@stacksjs/path'
 import { alias } from '@stacksjs/alias'
+import { examplesPath } from '@stacksjs/path'
 import { defineConfig } from 'vite'
 
 export const webComponentsExampleConfig = {

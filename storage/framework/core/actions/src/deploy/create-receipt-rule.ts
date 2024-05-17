@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
 import { S3 } from '@aws-sdk/client-s3'
 import { SES } from '@aws-sdk/client-ses'
+import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 
 const ses = new SES({ apiVersion: '2010-12-01' })
@@ -16,14 +16,11 @@ const s3 = new S3({ apiVersion: '2006-03-01' })
 let bucketName: string | undefined
 const data = await s3.listBuckets({})
 
-if (data.Buckets)
-  bucketName = data.Buckets.find(bucket => bucket.Name && bucket.Name.includes('-email-'))?.Name
+if (data.Buckets) bucketName = data.Buckets.find((bucket) => bucket.Name?.includes('-email-'))?.Name
 
-// eslint-disable-next-line no-console
 console.log('Bucket Name:', bucketName)
 
 if (!bucketName) {
-  // eslint-disable-next-line no-console
   console.log('Stacks Email Bucket not found')
   process.exit(ExitCode.FatalError)
 }
@@ -49,7 +46,6 @@ const params: any = {
 try {
   const data = await ses.createReceiptRule(params)
   log.info('Success', data)
-}
-catch (error) {
+} catch (error) {
   console.error(error)
 }

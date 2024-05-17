@@ -1,12 +1,15 @@
-import { path as p } from '@stacksjs/path'
-import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
-import generateSitemap from 'vite-ssg-sitemap'
-import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import VueMacros from 'unplugin-vue-macros/vite'
 import { config } from '@stacksjs/config'
-import { autoImports, components, cssEngine, i18n, layouts, router } from '@stacksjs/vite-plugin'
+import { path as p } from '@stacksjs/path'
+import { components, cssEngine, i18n, layouts } from '@stacksjs/vite-plugin'
+import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
+import Vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import VueMacros from 'unplugin-vue-macros/vite'
+import { VueRouterAutoImports } from 'unplugin-vue-router'
+import VueRouter from 'unplugin-vue-router/vite'
+import { defineConfig } from 'vite'
+import generateSitemap from 'vite-ssg-sitemap'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
 
@@ -27,18 +30,15 @@ export default defineConfig({
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [
-    p.resourcesPath('assets/*'),
-    p.resourcesPath('assets/**/*'),
-  ],
+  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
   },
 
-  server: server({
-    type: 'admin',
-  }),
+  // server: server({
+  //   type: 'admin',
+  // }),
 
   resolve: {
     alias,
@@ -48,25 +48,55 @@ export default defineConfig({
     VueMacros({
       plugins: {
         vue: Vue({
-          include: /\.(stx|md)($|\?)/,
+          include: /\.(stx|vue|md)($|\?)/,
         }),
       },
     }),
 
-    router({
-      extensions: ['.stx', '.md'],
+    VueRouter({
+      extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
-      routesFolder: [
-        p.resourcesPath('views/dashboard'),
-      ],
+      routesFolder: [p.resourcesPath('views/dashboard')],
       logs: config.app.debug || false,
     }),
 
     layouts({
-      extensions: ['stx'],
+      extensions: ['vue', 'stx'],
       layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
     }),
-    autoImports(),
+
+    // autoImports(),
+    AutoImport({
+      include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
+      imports: [
+        'pinia',
+        'vue',
+        'vue-i18n',
+        // '@vueuse/core',
+        // 'vitepress'
+        // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
+        // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
+        // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
+        VueHeadImports,
+        VueRouterAutoImports,
+        {
+          'vue-router/auto': ['useLink'],
+        },
+      ],
+
+      dts: p.frameworkPath('types/auto-imports.d.ts'),
+
+      dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
+
+      vueTemplate: true,
+
+      // eslintrc: {
+      //   enabled: true,
+      //   filepath: '../../.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
+      //   globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
+      // },
+    }),
+
     components(),
     cssEngine(),
     // markdown(),

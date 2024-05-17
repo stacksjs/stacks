@@ -1,8 +1,8 @@
-import type { CliOptions, CommandError, Subprocess } from '@stacksjs/types'
 import type { Result } from '@stacksjs/error-handling'
+import type { CliOptions, CommandError, Subprocess } from '@stacksjs/types'
+import { log } from './console'
 import { exec, execSync } from './exec'
 import { italic } from './utils'
-import { log } from './console'
 
 /**
  * Run a command.
@@ -92,8 +92,7 @@ export async function runCommandSync(command: string, options?: CliOptions): Pro
 export async function runCommands(commands: string[], options?: CliOptions) {
   const results = []
 
-  for (const command of commands)
-    results.push(await runCommand(command, options))
+  for (const command of commands) results.push(await runCommand(command, options))
 
   return results
 }

@@ -2,7 +2,7 @@
   "publisher": "Stacks",
   "name": "vscode-stacks",
   "displayName": "Stacks",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -21,13 +21,9 @@
     "extension pack",
     "stacks extension collection"
   ],
-  "categories": [
-    "Extension Packs"
-  ],
+  "categories": ["Extension Packs"],
   "icon": "logo.png",
-  "files": [
-    "logo.png"
-  ],
+  "files": ["logo.png"],
   "engines": {
     "vscode": "^2023.8.100"
   },
@@ -41,21 +37,21 @@
   },
   "extensionPack": [
     "vue.volar",
-    "dbaeumer.vscode-eslint",
+    "biomejs.biome",
     "streetsidesoftware.code-spell-checker",
     "antfu.unocss",
     "davidanson.vscode-markdownlint",
     "christian-kohler.npm-intellisense",
-    "IBM.output-colorizer",
     "mattpocock.ts-error-translator",
     "amazonwebservices.aws-toolkit-vscode",
     "antfu.goto-alias",
     "mikestead.dotenv",
     "foxundermoon.shell-format",
     "mylesmurphy.prettify-ts",
-    "Orta.vscode-twoslash-queries"
+    "Orta.vscode-twoslash-queries",
+    "nhoizey.gremlins"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.24.0"
+    "@vscode/vsce": "^2.26.1"
   }
 }

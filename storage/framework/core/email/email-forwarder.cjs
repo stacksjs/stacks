@@ -1,7 +1,3 @@
-/* eslint-disable eslint-comments/no-unlimited-disable */
-/* eslint-disable */
-'use strict'
-
 const { CopyObjectCommand, GetObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const { SendEmailCommand, SESv2Client } = require('@aws-sdk/client-sesv2')
 
@@ -43,15 +39,11 @@ const defaultConfig = {
   emailKeyPrefix: 'stacks/',
   allowPlusSign: true,
   forwardMapping: {
-    'hello@stacksjs.com': [
-      'chrisbreuer93@gmail.com',
-    ],
+    'hello@stacksjs.com': ['chrisbreuer93@gmail.com'],
     // 'abuse@example.com': [
     //   'example.jim@example.com',
     // ],
-    '@stacksjs.com': [
-      'chrisbreuer93@gmail.com',
-    ],
+    '@stacksjs.com': ['chrisbreuer93@gmail.com'],
     // 'info': [
     //   'info@example.com',
     // ],
@@ -65,14 +57,16 @@ const defaultConfig = {
  *
  * @return {object} - Promise resolved with data.
  */
-exports.parseEvent = function (data) {
+exports.parseEvent = (data) => {
   // Validate characteristics of a SES event record.
-  if (!data.event
-      || !data.event.hasOwnProperty('Records')
-      || data.event.Records.length !== 1
-      || !data.event.Records[0].hasOwnProperty('eventSource')
-      || data.event.Records[0].eventSource !== 'aws:ses'
-      || data.event.Records[0].eventVersion !== '1.0') {
+  if (
+    !data.event ||
+    !data.event.hasOwn('Records') ||
+    data.event.Records.length !== 1 ||
+    !data.event.Records[0].hasOwn('eventSource') ||
+    data.event.Records[0].eventSource !== 'aws:ses' ||
+    data.event.Records[0].eventVersion !== '1.0'
+  ) {
     data.log({
       message: 'parseEvent() received invalid SES message:',
       level: 'error',
@@ -93,49 +87,34 @@ exports.parseEvent = function (data) {
  *
  * @return {object} - Promise resolved with data.
  */
-exports.transformRecipients = function (data) {
+exports.transformRecipients = (data) => {
   let newRecipients = []
   data.originalRecipients = data.recipients
   data.recipients.forEach((origEmail) => {
     let origEmailKey = origEmail.toLowerCase()
-    if (data.config.allowPlusSign)
-      origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
+    if (data.config.allowPlusSign) origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
 
-    if (data.config.forwardMapping.hasOwnProperty(origEmailKey)) {
-      newRecipients = newRecipients.concat(
-        data.config.forwardMapping[origEmailKey],
-      )
+    if (data.config.forwardMapping.hasOwn(origEmailKey)) {
+      newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailKey])
       data.originalRecipient = origEmail
-    }
-    else {
+    } else {
       let origEmailDomain
       let origEmailUser
       const pos = origEmailKey.lastIndexOf('@')
       if (pos === -1) {
         origEmailUser = origEmailKey
-      }
-      else {
+      } else {
         origEmailDomain = origEmailKey.slice(pos)
         origEmailUser = origEmailKey.slice(0, pos)
       }
-      if (origEmailDomain
-          && data.config.forwardMapping.hasOwnProperty(origEmailDomain)) {
-        newRecipients = newRecipients.concat(
-          data.config.forwardMapping[origEmailDomain],
-        )
+      if (origEmailDomain && data.config.forwardMapping.hasOwn(origEmailDomain)) {
+        newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailDomain])
         data.originalRecipient = origEmail
-      }
-      else if (origEmailUser
-        && data.config.forwardMapping.hasOwnProperty(origEmailUser)) {
-        newRecipients = newRecipients.concat(
-          data.config.forwardMapping[origEmailUser],
-        )
+      } else if (origEmailUser && data.config.forwardMapping.hasOwn(origEmailUser)) {
+        newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailUser])
         data.originalRecipient = origEmail
-      }
-      else if (data.config.forwardMapping.hasOwnProperty('@')) {
-        newRecipients = newRecipients.concat(
-          data.config.forwardMapping['@'],
-        )
+      } else if (data.config.forwardMapping.hasOwn('@')) {
+        newRecipients = newRecipients.concat(data.config.forwardMapping['@'])
         data.originalRecipient = origEmail
       }
     }
@@ -143,8 +122,9 @@ exports.transformRecipients = function (data) {
 
   if (!newRecipients.length) {
     data.log({
-      message: 'Finishing process. No new recipients found for '
-        + `original destinations: ${data.originalRecipients.join(', ')}`,
+      message: `Finishing process. No new recipients found for original destinations: ${data.originalRecipients.join(
+        ', ',
+      )}`,
       level: 'info',
     })
     return data.callback()
@@ -161,59 +141,57 @@ exports.transformRecipients = function (data) {
  *
  * @return {object} - Promise resolved with data.
  */
-exports.fetchMessage = function (data) {
+exports.fetchMessage = (data) => {
   // Copying email object to ensure read permission
   data.log({
     level: 'info',
-    message: `Fetching email at s3://${data.config.emailBucket}/${
-       data.config.emailKeyPrefix}${data.email.messageId}`,
+    message: `Fetching email at s3://${data.config.emailBucket}/${data.config.emailKeyPrefix}${data.email.messageId}`,
   })
   return new Promise((resolve, reject) => {
-    data.s3.send(new CopyObjectCommand({
-      Bucket: data.config.emailBucket,
-      CopySource: `${data.config.emailBucket}/${data.config.emailKeyPrefix
-        }${data.email.messageId}`,
-      Key: data.config.emailKeyPrefix + data.email.messageId,
-      ACL: 'private',
-      ContentType: 'text/plain',
-      StorageClass: 'STANDARD',
-    }), (err) => {
-      if (err) {
-        data.log({
-          level: 'error',
-          message: 'copyObject() returned error:',
-          error: err,
-          stack: err.stack,
-        })
-        return reject(
-          new Error('Error: Could not make readable copy of email.'),
-        )
-      }
-
-      // Load the raw email from S3
-      data.s3.send(new GetObjectCommand({
+    data.s3.send(
+      new CopyObjectCommand({
         Bucket: data.config.emailBucket,
+        CopySource: `${data.config.emailBucket}/${data.config.emailKeyPrefix}${data.email.messageId}`,
         Key: data.config.emailKeyPrefix + data.email.messageId,
-      }), (err, result) => {
+        ACL: 'private',
+        ContentType: 'text/plain',
+        StorageClass: 'STANDARD',
+      }),
+      (err) => {
         if (err) {
           data.log({
             level: 'error',
-            message: 'getObject() returned error:',
+            message: 'copyObject() returned error:',
             error: err,
             stack: err.stack,
           })
-          return reject(
-            new Error('Error: Failed to load message body from S3.'),
-          )
+          return reject(new Error('Error: Could not make readable copy of email.'))
         }
-        result.Body.transformToString().then(
-          (body) => {
-            data.emailData = body
-            resolve(data)
+
+        // Load the raw email from S3
+        data.s3.send(
+          new GetObjectCommand({
+            Bucket: data.config.emailBucket,
+            Key: data.config.emailKeyPrefix + data.email.messageId,
+          }),
+          (err, result) => {
+            if (err) {
+              data.log({
+                level: 'error',
+                message: 'getObject() returned error:',
+                error: err,
+                stack: err.stack,
+              })
+              return reject(new Error('Error: Failed to load message body from S3.'))
+            }
+            result.Body.transformToString().then((body) => {
+              data.emailData = body
+              resolve(data)
+            })
           },
         )
-      })
-    })
+      },
+    )
   })
 }
 
@@ -225,27 +203,25 @@ exports.fetchMessage = function (data) {
  *
  * @return {object} - Promise resolved with data.
  */
-exports.processMessage = function (data) {
+exports.processMessage = (data) => {
   let match = data.emailData.match(/^((?:.+\r?\n)*)(\r?\n(?:.*\s+)*)/m)
-  let header = match && match[1] ? match[1] : data.emailData
-  const body = match && match[2] ? match[2] : ''
+  let header = match?.[1] ?? data.emailData
+  const body = match?.[2] ?? ''
 
   // Add "Reply-To:" with the "From" address if it doesn't already exists
-  if (!/^reply-to:[\t ]?/mi.test(header)) {
-    match = header.match(/^from:[\t ]?(.*(?:\r?\n\s+.*)*\r?\n)/mi)
-    const from = match && match[1] ? match[1] : ''
+  if (!/^reply-to:[\t ]?/im.test(header)) {
+    match = header.match(/^from:[\t ]?(.*(?:\r?\n\s+.*)*\r?\n)/im)
+    const from = match?.[1] ? match[1] : ''
     if (from) {
       header = `${header}Reply-To: ${from}`
       data.log({
         level: 'info',
         message: `Added Reply-To address of: ${from}`,
       })
-    }
-    else {
+    } else {
       data.log({
         level: 'info',
-        message: 'Reply-To address not added because From address was not '
-          + 'properly extracted.',
+        message: 'Reply-To address not added because From address was not ' + 'properly extracted.',
       })
     }
   }
@@ -253,50 +229,42 @@ exports.processMessage = function (data) {
   // SES does not allow sending messages from an unverified address,
   // so replace the message's "From:" header with the original
   // recipient (which is a verified domain)
-  header = header.replace(
-    /^from:[\t ]?(.*(?:\r?\n\s+.*)*)/mgi,
-    (match, from) => {
-      let fromText
-      if (data.config.fromEmail) {
-        fromText = `From: ${from.replace(/<(.*)>/, '').trim()
-        } <${data.config.fromEmail}>`
-      }
-      else {
-        fromText = `From: ${from.replace('<', 'at ').replace('>', '')
-        } <${data.originalRecipient}>`
-      }
-      return fromText
-    },
-  )
+  header = header.replace(/^from:[\t ]?(.*(?:\r?\n\s+.*)*)/gim, (match, from) => {
+    let fromText
+    if (data.config.fromEmail) {
+      fromText = `From: ${from.replace(/<(.*)>/, '').trim()} <${data.config.fromEmail}>`
+    } else {
+      fromText = `From: ${from.replace('<', 'at ').replace('>', '')} <${data.originalRecipient}>`
+    }
+    return fromText
+  })
 
   // Add a prefix to the Subject
   if (data.config.subjectPrefix) {
-    header = header.replace(
-      /^subject:[\t ]?(.*)/mgi,
-      (match, subject) => {
-        return `Subject: ${data.config.subjectPrefix}${subject}`
-      },
-    )
+    header = header.replace(/^subject:[\t ]?(.*)/gim, (match, subject) => {
+      return `Subject: ${data.config.subjectPrefix}${subject}`
+    })
   }
 
   // Replace original 'To' header with a manually defined one
-  if (data.config.toEmail)
-    header = header.replace(/^to:[\t ]?(.*)/mgi, () => `To: ${data.config.toEmail}`)
+  if (data.config.toEmail) {
+    header = header.replace(/^to:[\t ]?(.*)/gim, () => `To: ${data.config.toEmail}`)
+  }
 
   // Remove the Return-Path header.
-  header = header.replace(/^return-path:[\t ]?(.*)\r?\n/mgi, '')
+  header = header.replace(/^return-path:[\t ]?(.*)\r?\n/gim, '')
 
   // Remove Sender header.
-  header = header.replace(/^sender:[\t ]?(.*)\r?\n/mgi, '')
+  header = header.replace(/^sender:[\t ]?(.*)\r?\n/gim, '')
 
   // Remove Message-ID header.
-  header = header.replace(/^message-id:[\t ]?(.*)\r?\n/mgi, '')
+  header = header.replace(/^message-id:[\t ]?(.*)\r?\n/gim, '')
 
   // Remove all DKIM-Signature headers to prevent triggering an
   // "InvalidParameterValue: Duplicate header 'DKIM-Signature'" error.
   // These signatures will likely be invalid anyways, since the From
   // header was modified.
-  header = header.replace(/^dkim-signature:[\t ]?.*\r?\n(\s+.*\r?\n)*/mgi, '')
+  header = header.replace(/^dkim-signature:[\t ]?.*\r?\n(\s+.*\r?\n)*/gim, '')
 
   data.emailData = header + body
   return Promise.resolve(data)
@@ -309,37 +277,40 @@ exports.processMessage = function (data) {
  *
  * @return {object} - Promise resolved with data.
  */
-exports.sendMessage = function (data) {
+exports.sendMessage = (data) => {
   data.log({
     level: 'info',
-    message: `sendMessage: Sending email via SES. Original recipients: ${
-       data.originalRecipients.join(', ')}. Transformed recipients: ${
-       data.recipients.join(', ')}.`,
+    message: `sendMessage: Sending email via SES. Original recipients: ${data.originalRecipients.join(
+      ', ',
+    )}. Transformed recipients: ${data.recipients.join(', ')}.`,
   })
   return new Promise((resolve, reject) => {
-    data.ses.send(new SendEmailCommand({
-      Content: {
-        Raw: {
-          Data: Buffer.from(data.emailData),
+    data.ses.send(
+      new SendEmailCommand({
+        Content: {
+          Raw: {
+            Data: Buffer.from(data.emailData),
+          },
         },
-      },
-    }), (err, result) => {
-      if (err) {
+      }),
+      (err, result) => {
+        if (err) {
+          data.log({
+            level: 'error',
+            message: 'sendRawEmail() returned error.',
+            error: err,
+            stack: err.stack,
+          })
+          return reject(new Error('Error: Email sending failed.'))
+        }
         data.log({
-          level: 'error',
-          message: 'sendRawEmail() returned error.',
-          error: err,
-          stack: err.stack,
+          level: 'info',
+          message: 'sendRawEmail() successful.',
+          result,
         })
-        return reject(new Error('Error: Email sending failed.'))
-      }
-      data.log({
-        level: 'info',
-        message: 'sendRawEmail() successful.',
-        result,
-      })
-      resolve(data)
-    })
+        resolve(data)
+      },
+    )
   })
 }
 
@@ -353,10 +324,10 @@ exports.sendMessage = function (data) {
  * @param {object} overrides - Overrides for the default data, including the
  * configuration, SES object, and S3 object.
  */
-exports.handler = function (event, context, callback, overrides) {
+exports.handler = (event, context, callback, overrides) => {
   console.log('AWS Lambda SES Forwarder')
 
-  const steps = overrides && overrides.steps
+  const steps = overrides?.steps
     ? overrides.steps
     : [
         exports.parseEvent,
@@ -369,12 +340,10 @@ exports.handler = function (event, context, callback, overrides) {
     event,
     callback,
     context,
-    config: overrides && overrides.config ? overrides.config : defaultConfig,
-    log: overrides && overrides.log ? overrides.log : console.log,
-    ses: overrides && overrides.ses ? overrides.ses : new SESv2Client(),
-    s3: overrides && overrides.s3
-      ? overrides.s3
-      : new S3Client({ signatureVersion: 'v4' }),
+    config: overrides.config ? overrides.config : defaultConfig,
+    log: overrides.log ? overrides.log : console.log,
+    ses: overrides.ses ? overrides.ses : new SESv2Client(),
+    s3: overrides.s3 ? overrides.s3 : new S3Client({ signatureVersion: 'v4' }),
   }
   Promise.series(steps, data)
     .then((data) => {
@@ -395,8 +364,8 @@ exports.handler = function (event, context, callback, overrides) {
     })
 }
 
-Promise.series = function (promises, initValue) {
-  return promises.reduce((chain, promise) => {
+Promise.series = (promises, initValue) =>
+  promises.reduce((chain, promise) => {
     if (typeof promise !== 'function') {
       return chain.then(() => {
         throw new Error(`Error: Invalid promise item: ${promise}`)
@@ -404,4 +373,3 @@ Promise.series = function (promises, initValue) {
     }
     return chain.then(promise)
   }, Promise.resolve(initValue))
-}

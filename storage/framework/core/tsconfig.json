@@ -3,15 +3,12 @@
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "moduleDetection": "force",
     "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-//      "vite": ["../../../node_modules/vite/dist/node"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
@@ -26,6 +23,7 @@
     },
     "resolveJsonModule": true,
     "types": [
+      "bun",
       "vite/client",
       // "vue/ref-macros",
       "vite-plugin-pages/client",
@@ -41,7 +39,7 @@
     "noUnusedLocals": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "outDir": "./dist/types",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -58,6 +56,8 @@
   "include": [
     "../../../*.stx",
     "../../../**/*.stx",
+    "../../../*.vue",
+    "../../../**/*.vue",
     "../../../*.ts",
     "../../../**/*.ts",
     "../../../*.yaml",

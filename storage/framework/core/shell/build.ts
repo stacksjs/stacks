@@ -10,9 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: [
-    'bun',
-  ],
+  external: ['bun'],
 })
 
 await outro({

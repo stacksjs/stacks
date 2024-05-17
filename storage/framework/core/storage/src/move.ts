@@ -20,10 +20,7 @@ export async function move(
         const to = path.resolve(dest, path.basename(file))
         const result = await rename(from, to, options)
 
-        if (result.isErr()) {
-          log.error(result.error)
-          return err(handleError(result.error.message, result.error))
-        }
+        if (result.isErr()) return log.error(result.error)
       })
 
       await Promise.all(operations)
@@ -41,28 +38,28 @@ export async function move(
     }
 
     return ok({ message: 'File moved successfully' })
-  }
-  catch (error: any) {
+  } catch (error: any) {
     return err(handleError(error))
   }
 }
 
-export async function rename(from: string, to: string, options?: MoveOptions): Promise<Result<{ message: string }, Error>> {
+export async function rename(
+  from: string,
+  to: string,
+  options?: MoveOptions,
+): Promise<Result<{ message: string }, Error>> {
   return new Promise((resolve, reject) => {
     try {
       // Check if the "to" directory exists
       const dir = path.dirname(to)
-      if (!fs.existsSync(dir))
-        fs.mkdirSync(dir, { recursive: true })
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 
       // Ensure the "from" file exists
-      if (!fs.existsSync(from))
-        return reject(err(new Error(`File or directory does not exist: ${from}`)))
+      if (!fs.existsSync(from)) return reject(err(new Error(`File or directory does not exist: ${from}`)))
 
       // Ensure the "to" file does not exist
       if (fs.existsSync(to)) {
-        if (!options?.overwrite)
-          return reject(err(new Error(`File or directory already exists: ${to}`)))
+        if (!options?.overwrite) return reject(err(new Error(`File or directory already exists: ${to}`)))
 
         fs.unlinkSync(to)
       }
@@ -71,12 +68,9 @@ export async function rename(from: string, to: string, options?: MoveOptions): P
       fs.renameSync(from, to)
 
       return resolve(ok({ message: 'File moved successfully' }))
-    }
-    catch (error: any) {
-      if (error.code === 'ENOENT')
-        log.error('File or directory does not exist\n\n', error)
-      else
-        log.error(error)
+    } catch (error: any) {
+      if (error.code === 'ENOENT') log.error('File or directory does not exist\n\n', error)
+      else log.error(error)
 
       return reject(err(new Error(error)))
     }

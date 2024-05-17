@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/logging",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,34 +15,20 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "logging",
-    "stacks",
-    "framework",
-    "typescript",
-    "javascript"
-  ],
+  "keywords": ["logging", "stacks", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -60,6 +46,6 @@
     "consola": "^3.2.3"
   },
   "devDependencies": {
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.5"
   }
 }

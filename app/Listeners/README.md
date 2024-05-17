@@ -26,7 +26,6 @@ export default function (cli: CLI) {
 }
 ```
 
-
 ## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.

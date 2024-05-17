@@ -1,17 +1,19 @@
-import { fs } from '@stacksjs/storage'
 import { resolve } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 import { kebabCase } from '@stacksjs/strings'
 import git from './config/git'
 
 const ignore = ['readme-md']
 
-const components = fs.readdirSync(resolve(__dirname, './resources/components'))
-  .map(item => kebabCase(item.replace(/.stx/g, '')))
-  .filter(item => !ignore.includes(item))
+const components = fs
+  .readdirSync(resolve(__dirname, './resources/components'))
+  .map((item) => kebabCase(item.replace(/\.(stx|vue)/g, '')))
+  .filter((item) => !ignore.includes(item))
 
-const functions = fs.readdirSync(resolve(__dirname, './resources/functions'))
-  .map(item => kebabCase(item.replace(/.ts/g, '')))
-  .filter(item => !ignore.includes(item))
+const functions = fs
+  .readdirSync(resolve(__dirname, './resources/functions'))
+  .map((item) => kebabCase(item.replace(/.ts/g, '')))
+  .filter((item) => !ignore.includes(item))
 
 const scopes = [...git.scopes, ...components, ...functions]
 const uniqueScopes = [...new Set(scopes)]
@@ -20,11 +22,7 @@ const uniqueScopes = [...new Set(scopes)]
 export default {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
-    'scope-enum': [
-      2,
-      'always',
-      uniqueScopes,
-    ],
+    'scope-enum': [2, 'always', uniqueScopes],
   },
   prompt: {
     messages: git.messages,

@@ -29,18 +29,13 @@ export const packages: PackageManifest[] = [
     display: 'Components',
     description: 'Renderless components for VueUse',
     author: 'Jacob Clevenger<https://github.com/wheatjs>',
-    external: [
-      '@vueuse/core',
-      '@vueuse/shared',
-    ],
+    external: ['@vueuse/core', '@vueuse/shared'],
   },
   {
     name: 'math',
     display: 'Math',
     description: 'Math functions for VueUse',
-    external: [
-      '@vueuse/shared',
-    ],
+    external: ['@vueuse/shared'],
   },
 ]
 

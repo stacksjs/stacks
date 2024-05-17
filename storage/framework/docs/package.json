@@ -2,9 +2,9 @@
   "name": "stacks-docs",
   "type": "module",
   "scripts": {
-    "dev": "bunx vitepress dev",
-    "build": "npx vitepress build",
-    "preview": "bunx vitepress preview"
+    "dev": "bunx --bun vitepress dev",
+    "build": "bunx --bun vitepress build",
+    "preview": "bunx --bun vitepress preview"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -16,6 +16,6 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/vite-config": "workspace:*",
-    "vitepress": "1.0.0-rc.45"
+    "vitepress": "1.1.4"
   }
 }

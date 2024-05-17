@@ -1,7 +1,7 @@
 import process from 'node:process'
+import { intro, log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ProjectsOptions } from '@stacksjs/types'
-import { intro, log } from '@stacksjs/cli'
 import { findStacksProjects } from '@stacksjs/utils'
 
 export function projects(buddy: CLI) {
@@ -18,14 +18,11 @@ export function projects(buddy: CLI) {
     .action(async (options: ProjectsOptions) => {
       log.debug('Running `buddy projects` ...', options)
 
-      if (!options.quiet)
-        await intro('buddy projects')
+      if (!options.quiet) await intro('buddy projects')
 
       const projects = await findStacksProjects(undefined, options)
 
-      for (const project of projects)
-        // eslint-disable-next-line no-console
-        console.log('   - ', project)
+      for (const project of projects) console.log('   - ', project)
 
       process.exit(ExitCode.Success)
     })
@@ -38,15 +35,12 @@ export function projects(buddy: CLI) {
     .action(async (options: ProjectsOptions) => {
       log.debug('Running `buddy projects` ...', options)
 
-      if (!options.quiet)
-        await intro('buddy projects:list')
+      if (!options.quiet) await intro('buddy projects:list')
 
       // uses os.homedir() as the default path
       const projects = await findStacksProjects(undefined, options)
 
-      for (const project of projects)
-        // eslint-disable-next-line no-console
-        console.log('   - ', project)
+      for (const project of projects) console.log('   - ', project)
 
       process.exit(ExitCode.Success)
     })

@@ -1,70 +1,175 @@
-import { path as p } from '@stacksjs/path'
-import { log } from '@stacksjs/cli'
-import { fs } from '@stacksjs/storage'
+import { dim, italic, log } from '@stacksjs/cli'
+import { database } from '@stacksjs/config'
+import { err, ok } from '@stacksjs/error-handling'
+import { extractFieldsFromModel } from '@stacksjs/orm'
+import { path } from '@stacksjs/path'
+import { fs, glob } from '@stacksjs/storage'
+import type { Attribute, Attributes } from '@stacksjs/types'
+import { $ } from 'bun'
+import { FileMigrationProvider, Migrator } from 'kysely'
+import { generateMysqlMigration, resetMysqlDatabase } from './drivers'
+import { generatePostgresMigration, resetPostgresDatabase } from './drivers'
+import { generateSqliteMigration, resetSqliteDatabase } from './drivers'
+import { db } from './utils'
 
-// import { storage } from '@stacksjs/storage'
-// import type { Model, SchemaOptions } from '@stacksjs/types'
-// import { titleCase } from '@stacksjs/strings'
+const driver = database.default || ''
 
-// const { fs } = storage
+export const migrator = new Migrator({
+  db,
 
-// function readModelsFromFolder(folderPath: string): Promise<Model[]> {
-//   return new Promise((resolve, reject) => {
-//     const models: Model[] = []
+  provider: new FileMigrationProvider({
+    fs,
+    path,
+    // This needs to be an absolute path.
+    migrationFolder: path.userMigrationsPath(),
+  }),
 
-//     fs.readdir(folderPath, (err, files) => {
-//       if (err)
-//         reject(err)
+  migrationTableName: database.migrations,
+  migrationLockTableName: database.migrationLocks,
+})
 
-//       const promises = files
-//         .filter(file => file.endsWith('.ts'))
-//         .map((file) => {
-//           const filePath = `${folderPath}/${file}`
+// const migratorForeign = new Migrator({
+//   db,
 
-//           return import(filePath).then((data) => {
-//             models.push({
-//               name: data.default.name,
-//               fields: data.default.fields,
-//             })
-//           })
-//         })
+//   provider: new FileMigrationProvider({
+//     fs,
+//     path,
+//     // This needs to be an absolute path.
+//     migrationFolder: path.userMigrationsPath('foreign'),
+//   }),
+// })
 
-//       Promise.all(promises)
-//         .then(() => resolve(models))
-//         .catch(err => reject(err))
-//     })
-//   })
-// }
+export async function runDatabaseMigration() {
+  try {
+    log.info('Migrating database...')
 
-// async function migrate(path: string, options: SchemaOptions): Promise<void> {
-//   const models = await readModelsFromFolder(projectPath('app/Models'))
+    const { error, results } = await migrator.migrateToLatest()
 
-//   generatePrismaSchema(models, path, options)
-// }
+    if (error) {
+      log.error(error)
+      return err(error)
+    }
+
+    if (results?.length === 0) {
+      log.success('No new migrations were executed')
+      return ok('No new migrations were executed')
+    }
+
+    if (results) {
+      log.success('Database migrated successfully.')
+      return ok(results)
+    }
+
+    log.success('Database migration completed with no new migrations.')
+    return ok('Database migration completed with no new migrations.')
+  } catch (error) {
+    console.error('Migration failed:', error)
+    return err(error)
+  }
+}
 
 export interface MigrationOptions {
   name: string
   up: string
 }
 
-export function generateMigrationFile(options: MigrationOptions) {
-  const { name, up } = options
+export async function resetDatabase() {
+  if (driver === 'sqlite') return resetSqliteDatabase()
 
-  const timestamp = new Date().getTime().toString()
-  const fileName = `${timestamp}-${name}.ts`
-  const filePath = p.frameworkPath(`database/migrations/${fileName}`)
-  const fileContent = `
-    import { Migration } from '@stacksjs/database'
+  if (driver === 'mysql') return resetMysqlDatabase()
 
-    export default new Migration({
-      name: '${name}',
-      up: \`
-        ${up}
-      \`,
-    })
-  `
-  // TODO: use Bun.write
-  fs.writeFileSync(filePath, fileContent)
+  if (driver === 'postgres') return resetPostgresDatabase()
 
-  log.info(`Created migration file: ${fileName}`)
+  return resetSqliteDatabase()
+}
+
+export async function generateMigrations() {
+  try {
+    log.info('Generating migrations...')
+
+    const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+    for (const file of modelFiles) {
+      log.debug('Generating migration for:', file)
+      await generateMigration(file)
+    }
+
+    log.success('Migrations generated')
+    return ok('Migrations generated')
+  } catch (error) {
+    return err(error)
+  }
+}
+
+export async function generateMigration(modelPath: string) {
+  if (driver === 'sqlite') generateSqliteMigration(modelPath)
+
+  if (driver === 'mysql') generateMysqlMigration(modelPath)
+
+  if (driver === 'postgres') generatePostgresMigration(modelPath)
+}
+
+export async function getExecutedMigrations() {
+  try {
+    // @ts-expect-error the migrations table is not typed yet
+    return await db.selectFrom('migrations').select('name').execute()
+  } catch (error) {
+    return []
+  }
+}
+
+export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {
+  log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
+
+  // const model = await import(modelPath)
+  // const tableName = model.default.table
+  // const lastMigration = await lastMigrationDate()
+
+  // now that we know the date, we need to check the git history for changes to the model file since that date
+  const cmd = ``
+  const gitHistory = await $`${cmd}`.text()
+
+  // if there are updates, then we need to check whether
+  // the updates include the any updates to the model
+  // fields that would require a migration
+
+  return !!gitHistory
+}
+
+export async function lastMigration() {
+  try {
+    // @ts-expect-error the migrations table is not typed yet
+    return await db.selectFrom('migrations').selectAll().orderBy('timestamp', 'desc').limit(1).execute()
+  } catch (error) {
+    console.error('Failed to get last migration:', error)
+    return { error }
+  }
+}
+
+export async function lastMigrationDate(): Promise<string | undefined> {
+  try {
+    // @ts-expect-error the migrations table is not typed yet
+    return (await db.selectFrom('migrations').select('timestamp').orderBy('timestamp', 'desc').limit(1).execute())[0]
+      .timestamp
+  } catch (error) {
+    console.error('Failed to get last migration date:', error)
+    return undefined
+  }
+}
+
+// This is a placeholder function. You need to implement the logic to
+// read the last migration file and extract the fields that were modified.
+export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
+  const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
+  const model = await import(oldModelPath)
+  let fields = {} as Attributes
+
+  if (typeof model.default.attributes === 'object') fields = model.default.attributes
+  else fields = JSON.parse(model.default.attributes) as Attributes
+
+  return fields
+}
+
+export async function getCurrentMigrationFields(modelPath: string): Promise<Attribute | undefined> {
+  return extractFieldsFromModel(modelPath)
 }

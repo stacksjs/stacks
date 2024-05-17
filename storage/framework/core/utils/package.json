@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,14 +37,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -68,9 +62,9 @@
     "@vueuse/math": "^10.9.0",
     "@vueuse/shared": "^10.9.0",
     "bun-plugin-env": "^0.4.1",
-    "bun-plugin-yml": "^0.3.0",
+    "bun-plugin-yml": "^0.3.1",
     "export-size": "^0.7.0",
-    "yaml": "^2.4.1"
+    "yaml": "^2.4.2"
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -88,7 +82,7 @@
     "@vueuse/math": "^10.9.0",
     "@vueuse/shared": "^10.9.0",
     "bun-plugin-env": "^0.4.1",
-    "bun-plugin-yml": "^0.3.0",
+    "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
@@ -100,7 +94,7 @@
     "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
-    "yaml": "^2.4.1"
+    "yaml": "^2.4.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

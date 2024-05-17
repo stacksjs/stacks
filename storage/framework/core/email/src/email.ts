@@ -45,14 +45,12 @@ export class Email {
 
       let returnMsg: { message: string } = { message: 'Email sent' }
 
-      if (this.message.handle)
-        returnMsg = await this.message.handle()
+      if (this.message.handle) returnMsg = await this.message.handle()
 
       await this.onSuccess()
 
       return returnMsg
-    }
-    catch (error) {
+    } catch (error) {
       return this.onError(error as Error)
     }
   }
@@ -60,20 +58,17 @@ export class Email {
   public async onError(error: Error) {
     log.error(error)
 
-    if (!this.message.onError)
-      return
+    if (!this.message.onError) return
 
     return await this.message.onError(error)
   }
 
   public onSuccess() {
     try {
-      if (!this.message.onSuccess)
-        return
+      if (!this.message.onSuccess) return
 
       this.message.onSuccess()
-    }
-    catch (error) {
+    } catch (error) {
       return this.onError(error as Error)
     }
   }

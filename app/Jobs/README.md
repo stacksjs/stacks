@@ -52,7 +52,6 @@ const options: JobOptions = {
 export default new Job(options)
 ```
 
-
 ## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.

@@ -1,10 +1,10 @@
-import process from 'node:process'
 import { watch } from 'node:fs'
 import { readdir } from 'node:fs/promises'
-import { app, ports } from '@stacksjs/config'
-import { serve } from '@stacksjs/router'
-import { join, path } from '@stacksjs/path'
+import process from 'node:process'
 import { italic, log, runCommandSync } from '@stacksjs/cli'
+import { app, ports } from '@stacksjs/config'
+import { path, join } from '@stacksjs/path'
+import { serve } from '@stacksjs/router'
 
 declare global {
   let counter: number
@@ -18,19 +18,21 @@ log.debug(`Reloaded ${globalThis.counter} times`)
 globalThis.counter++
 
 async function watchFolders() {
-  const coreDirectories = await readdir(path.corePath(), { withFileTypes: true })
+  const coreDirectories = await readdir(path.corePath(), {
+    withFileTypes: true,
+  })
   coreDirectories.forEach((dir) => {
-    // Skip the directory named 'bun-create' -> no need to build
-    if (dir.name === 'bun-create')
-      return
+    const ignore = ['dist', 'bun-create', 'lint', 'components']
+
+    // no need to build these directories
+    if (ignore.includes(dir.name)) return
 
     if (dir.isDirectory()) {
       log.debug(`Watching ${dir.name} for changes ...`)
 
       const srcPath = join(path.corePath(), dir.name, 'src')
       watch(srcPath, { recursive: true }, (event: string, filename: string | null) => {
-        if (filename === null)
-          return
+        if (filename === null) return
 
         log.info(`Detected ${event} in ./core/${filename}`)
         log.info(`Rebuilding package ...`)
@@ -44,18 +46,15 @@ async function watchFolders() {
   })
 
   watch(path.routesPath(), (event: string, filename: string | null) => {
-    if (filename === null)
-      return
+    if (filename === null) return
 
     log.info(`Detected ${event} in ./routes/${filename}`)
   })
 }
 
 // @ts-expect-error - somehow type is not recognized
-if (globalThis.counter === 1)
-  watchFolders().catch(log.error)
-else
-  log.debug(`Skipping watching folders`)
+if (globalThis.counter === 1) watchFolders().catch(log.error)
+else log.debug(`Skipping watching folders`)
 
 serve({
   port: ports.api || 3008,
@@ -69,7 +68,6 @@ process.on('SIGINT', () => {
 })
 
 // @ts-expect-error - somehow type is not recognized
-if (globalThis.counter === 1)
-  log.info(`Listening on http://localhost:${ports.api}/api ...`)
-else // @ts-expect-error - somehow type is not recognized
-  log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api}/api ...`)
+if (globalThis.counter === 1) log.info(`Listening on http://localhost:${ports.api}/api ...`)
+// @ts-expect-error - somehow type is not recognized
+else log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api}/api ...`)

@@ -1,8 +1,8 @@
 import process from 'node:process'
-import type { CLI, PrepublishOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
 import { runAction } from '@stacksjs/actions'
+import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
+import type { CLI, PrepublishOptions } from '@stacksjs/types'
 
 export function prepublish(buddy: CLI) {
   const descriptions = {

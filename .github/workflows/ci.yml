@@ -26,28 +26,16 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-
-      - name: Use cached node_modules
-        uses: actions/cache@v4
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lockb') }}
-          restore-keys: |
-            node-modules-
-
-      - name: Install Dependencies
-        run: bun install
-
-      - name: Build ESLint Config
-        run: cd storage/framework/core && bun run build
+          version: 1.7.1 # should be latest but currently fails
 
       - name: Lint
-        run: bun buddy lint
+        run: biome ci .
 
   typecheck:
     runs-on: ${{ matrix.os }}

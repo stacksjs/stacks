@@ -1,4 +1,3 @@
-// /* eslint-disable no-new */
 // import { DateTime } from 'luxon'
 //
 // // @ts-expect-error types aren't there

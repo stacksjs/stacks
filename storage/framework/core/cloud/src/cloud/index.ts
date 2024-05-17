@@ -1,23 +1,23 @@
+import { config } from '@stacksjs/config'
 import { Stack } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from '@stacksjs/config'
 import type { CloudOptions } from '../types'
 import { AiStack } from './ai'
 import { CdnStack } from './cdn'
 import { CliStack } from './cli'
+import { ComputeStack } from './compute'
+import { DeploymentStack } from './deployment'
 import { DnsStack } from './dns'
 import { DocsStack } from './docs'
-import { StorageStack } from './storage'
-import { SecurityStack } from './security'
-import { DeploymentStack } from './deployment'
-import { JumpBoxStack } from './jump-box'
-import { FileSystemStack } from './file-system'
-import { NetworkStack } from './network'
-import { RedirectsStack } from './redirects'
 import { EmailStack } from './email'
+import { FileSystemStack } from './file-system'
+import { JumpBoxStack } from './jump-box'
+import { NetworkStack } from './network'
 import { PermissionsStack } from './permissions'
-import { ComputeStack } from './compute'
 import { QueueStack } from './queue'
+import { RedirectsStack } from './redirects'
+import { SecurityStack } from './security'
+import { StorageStack } from './storage'
 
 // import { DashboardStack } from './dashboard'
 
@@ -92,7 +92,7 @@ export class Cloud extends Stack {
   // we use an async init() method here because we need to wait for the
 
   async init() {
-    if (config.cloud.api?.deploy) {
+    if (config.api?.deploy) {
       const props = this.props
       this.api = new ComputeStack(this, {
         ...props,

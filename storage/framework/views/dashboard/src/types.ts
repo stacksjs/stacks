@@ -1,4 +1,4 @@
-export interface GithubCommit {
+export interface GitHubCommit {
   sha: string
   node_id: string
   commit: {

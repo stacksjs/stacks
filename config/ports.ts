@@ -1,5 +1,5 @@
-import type { Ports } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
+import type { Ports } from '@stacksjs/types'
 
 /**
  * **Stacks Ports**
@@ -19,4 +19,5 @@ export default {
   inspect: env.PORT_INSPECT ?? 3007,
   api: env.PORT_API ?? 3008,
   systemTray: env.PORT_SYSTEM_TRAY ?? 3009,
+  database: 3010,
 } satisfies Ports

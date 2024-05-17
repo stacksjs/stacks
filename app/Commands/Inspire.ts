@@ -13,28 +13,25 @@ interface InspireOptions {
 export default function (cli: CLI) {
   cli
     .command('inspire', 'Inspire yourself with a random quote')
-    .option('--two, -t', 'Inspire yourself with two random quotes', { default: false })
+    .option('--two, -t', 'Inspire yourself with two random quotes', {
+      default: false,
+    })
     .alias('insp')
     .action((options: InspireOptions) => {
-      if (options.two)
-        // @ts-expect-error - this is safe because we hard-coded the quotes
-        quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
-      else
-        log.info(quotes.random())
+      if (options.two) quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
+      else log.info(quotes.random())
 
       log.success('Have a great day!')
       process.exit(ExitCode.Success)
     })
 
-  cli
-    .command('inspire:two', 'Inspire yourself with two random quotes')
-    .action(() => {
-      // @ts-expect-error - this is safe because we hard-coded the quotes
-      quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
+  cli.command('inspire:two', 'Inspire yourself with two random quotes').action(() => {
+    // @ts-expect-error - this is safe because we hard-coded the quotes
+    quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
 
-      log.success('Have a great day!')
-      process.exit(ExitCode.Success)
-    })
+    log.success('Have a great day!')
+    process.exit(ExitCode.Success)
+  })
 
   cli.on('inspire:*', () => {
     log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))

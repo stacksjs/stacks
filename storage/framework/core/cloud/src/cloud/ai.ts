@@ -1,11 +1,9 @@
-/* eslint-disable no-new */
+import { config } from '@stacksjs/config'
 import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from '@stacksjs/config'
 import type { NestedCloudProps } from '../types'
 
-export interface AiStackProps extends NestedCloudProps {
-}
+export interface AiStackProps extends NestedCloudProps {}
 
 export class AiStack {
   askAiUrl: lambda.FunctionUrl
@@ -21,18 +19,13 @@ export class AiStack {
 
     const bedrockAccessPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: [
-        'bedrock:InvokeModel',
-        'bedrock:InvokeModelWithResponseStream',
-      ],
-      resources: config.ai.models?.map(model => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
+      actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
+      resources: config.ai.models?.map((model) => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
     })
 
     const bedrockAccessRole = new iam.Role(scope, 'BedrockAccessRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-      ],
+      managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
     })
 
     bedrockAccessRole.addToPolicy(bedrockAccessPolicy)

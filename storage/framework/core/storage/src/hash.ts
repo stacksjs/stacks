@@ -17,8 +17,7 @@ export function hashFileOrDirectory(path: string, hash: Hash): void {
       const filePath = p.join(path, file)
       hashFileOrDirectory(filePath, hash)
     }
-  }
-  else {
+  } else {
     hash.update(fs.readFileSync(path))
   }
 }
@@ -39,8 +38,7 @@ export function hashPaths(paths: string | string[]): string {
   const hash = createHash('sha256')
   const pathsArray = Array.isArray(paths) ? paths : [paths]
 
-  for (const path of pathsArray)
-    hashFileOrDirectory(path, hash)
+  for (const path of pathsArray) hashFileOrDirectory(path, hash)
 
   return hash.digest('hex')
 }

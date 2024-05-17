@@ -53,7 +53,6 @@
 // watchDebounced(
 //   query,
 //   () => {
-//     // eslint-disable-next-line no-console
 //     console.log('watchDebounced')
 //
 //     if (table === undefined)
@@ -140,7 +139,6 @@
 //   if (table.sort?.includes('desc')) {
 //     table.sort = `${sortKey}:asc`
 //
-//     // eslint-disable-next-line no-console
 //     console.log('sort included asc it is now desc for', sortKey)
 //
 //     return
@@ -149,18 +147,15 @@
 //   if (table.sort?.includes('asc')) {
 //     table.sort = undefined
 //
-//     // eslint-disable-next-line no-console
 //     console.log('sort included desc it is now "" for', sortKey)
 //
 //     return
 //   }
 //
-//   // eslint-disable-next-line no-console
 //   console.log('there was no sort. Setting it now in asc order for', sortKey)
 //
 //   table.sort = `${sortKey}:desc`
 //
-//   // eslint-disable-next-line no-console
 //   console.log('table.sort', table.sort)
 // }
 //

@@ -61,7 +61,6 @@
 //
 // // TODO: needs to be imported to cache package
 // async function set(key: string, value: string | number): Promise<void> {
-//   // eslint-disable-next-line no-console
 //   console.log('set', key, value)
 //   return Promise.resolve()
 //   // const valueAttribute = 'value'

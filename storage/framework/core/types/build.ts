@@ -10,12 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'node',
 
-  external: [
-    '@stacksjs/validation',
-    'consola',
-    'unocss',
-    '@unocss/core',
-  ],
+  external: ['@stacksjs/validation', 'consola', 'unocss', '@unocss/core'],
 })
 
 await outro({

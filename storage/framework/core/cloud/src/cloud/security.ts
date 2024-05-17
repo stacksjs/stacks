@@ -1,7 +1,14 @@
 // waf and encryption
 import { config } from '@stacksjs/config'
 import type { aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, RemovalPolicy, Tags, aws_certificatemanager as acm, aws_kms as kms, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import {
+  Duration,
+  RemovalPolicy,
+  Tags,
+  aws_certificatemanager as acm,
+  aws_kms as kms,
+  aws_wafv2 as wafv2,
+} from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -17,8 +24,7 @@ export class SecurityStack {
   constructor(scope: Construct, props: StorageStackProps) {
     const firewallOptions = config.cloud.firewall
 
-    if (!firewallOptions)
-      throw new Error('No firewall options found in config')
+    if (!firewallOptions) throw new Error('No firewall options found in config')
 
     const options = {
       defaultAction: { allow: {} },
@@ -34,7 +40,9 @@ export class SecurityStack {
     this.firewall = new wafv2.CfnWebACL(scope, 'StacksWebFirewall', options)
     Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
     Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
-    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
+    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', {
+      priority: 300,
+    })
 
     this.kmsKey = new kms.Key(scope, 'EncryptionKey', {
       alias: 'stacks-encryption-key',

@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { findStacksProjects } from '@stacksjs/utils'
-import { log } from '@stacksjs/logging'
 import { parseOptions } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+import { findStacksProjects } from '@stacksjs/utils'
 
 try {
   const options = parseOptions()
@@ -9,13 +9,11 @@ try {
 
   if (projects.length > 0) {
     log.info('Found Projects:')
-    // eslint-disable-next-line no-console
-    projects.forEach(project => console.log(`   - ${project}`))
+    projects.forEach((project) => console.log(`   - ${project}`))
     process.exit()
   }
 
   log.info('No Stacks Projects found.')
-}
-catch (error: any) {
+} catch (error: any) {
   log.error('Error searching for Stacks projects:', error)
 }

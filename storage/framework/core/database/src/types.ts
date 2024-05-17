@@ -1,1 +1,3 @@
-export { Kysely as Migration } from 'kysely'
+export { Kysely as Database } from 'kysely'
+
+export { sql } from 'kysely'

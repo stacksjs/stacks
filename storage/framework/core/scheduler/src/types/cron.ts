@@ -4,10 +4,7 @@ import type { CONSTRAINTS, TIME_UNITS_MAP } from '../constants'
 import type { CronJob } from '../job'
 import type { IntRange } from './utils'
 
-interface BaseCronJobParams<
-  OC extends CronOnCompleteCommand | null = null,
-  C = null,
-> {
+interface BaseCronJobParams<OC extends CronOnCompleteCommand | null = null, C = null> {
   cronTime: string | Date | DateTime
   onTick: CronCommand<C, WithOnComplete<OC>>
   onComplete?: OC
@@ -17,26 +14,23 @@ interface BaseCronJobParams<
   unrefTimeout?: boolean | null
 }
 
-export type CronJobParams<
-  OC extends CronOnCompleteCommand | null = null,
-  C = null,
-> = BaseCronJobParams<OC, C> &
-(
-  | {
-    timeZone?: string | null
-    utcOffset?: never
-  }
-  | {
-    timeZone?: never
-    utcOffset?: number | null
-  }
+export type CronJobParams<OC extends CronOnCompleteCommand | null = null, C = null> = BaseCronJobParams<OC, C> &
+  (
+    | {
+        timeZone?: string | null
+        utcOffset?: never
+      }
+    | {
+        timeZone?: never
+        utcOffset?: number | null
+      }
   )
 
 export type CronContext<C> = C extends null ? CronJob : NonNullable<C>
 
 export type CronCallback<C, WithOnCompleteBool extends boolean = false> = (
   this: CronContext<C>,
-  onComplete: WithOnCompleteBool extends true ? CronOnCompleteCallback : never
+  onComplete: WithOnCompleteBool extends true ? CronOnCompleteCallback : never,
 ) => void | Promise<void>
 
 export type CronOnCompleteCallback = () => void | Promise<void>
@@ -44,10 +38,10 @@ export type CronOnCompleteCallback = () => void | Promise<void>
 export type CronSystemCommand =
   | string
   | {
-    command: string
-    args?: readonly string[] | null
-    options?: SpawnOptions | null
-  }
+      command: string
+      args?: readonly string[] | null
+      options?: SpawnOptions | null
+    }
 
 export type CronCommand<C, WithOnCompleteBool extends boolean = false> =
   | CronCallback<C, WithOnCompleteBool>
@@ -59,9 +53,7 @@ export type WithOnComplete<OC> = OC extends null ? false : true
 
 export type TimeUnit = (typeof TIME_UNITS_MAP)[keyof typeof TIME_UNITS_MAP]
 
-export type TimeUnitField<T extends TimeUnit> = Partial<
-  Record<Ranges[T], boolean>
->
+export type TimeUnitField<T extends TimeUnit> = Partial<Record<Ranges[T], boolean>>
 
 export interface Ranges {
   second: SecondRange
@@ -72,27 +64,9 @@ export interface Ranges {
   dayOfWeek: DayOfWeekRange
 }
 
-export type SecondRange = IntRange<
-  (typeof CONSTRAINTS)['second'][0],
-  (typeof CONSTRAINTS)['second'][1]
->
-export type MinuteRange = IntRange<
-  (typeof CONSTRAINTS)['minute'][0],
-  (typeof CONSTRAINTS)['minute'][1]
->
-export type HourRange = IntRange<
-  (typeof CONSTRAINTS)['hour'][0],
-  (typeof CONSTRAINTS)['hour'][1]
->
-export type DayOfMonthRange = IntRange<
-  (typeof CONSTRAINTS)['dayOfMonth'][0],
-  (typeof CONSTRAINTS)['dayOfMonth'][1]
->
-export type MonthRange = IntRange<
-  (typeof CONSTRAINTS)['month'][0],
-  (typeof CONSTRAINTS)['month'][1]
->
-export type DayOfWeekRange = IntRange<
-  (typeof CONSTRAINTS)['dayOfWeek'][0],
-  (typeof CONSTRAINTS)['dayOfWeek'][1]
->
+export type SecondRange = IntRange<(typeof CONSTRAINTS)['second'][0], (typeof CONSTRAINTS)['second'][1]>
+export type MinuteRange = IntRange<(typeof CONSTRAINTS)['minute'][0], (typeof CONSTRAINTS)['minute'][1]>
+export type HourRange = IntRange<(typeof CONSTRAINTS)['hour'][0], (typeof CONSTRAINTS)['hour'][1]>
+export type DayOfMonthRange = IntRange<(typeof CONSTRAINTS)['dayOfMonth'][0], (typeof CONSTRAINTS)['dayOfMonth'][1]>
+export type MonthRange = IntRange<(typeof CONSTRAINTS)['month'][0], (typeof CONSTRAINTS)['month'][1]>
+export type DayOfWeekRange = IntRange<(typeof CONSTRAINTS)['dayOfWeek'][0], (typeof CONSTRAINTS)['dayOfWeek'][1]>

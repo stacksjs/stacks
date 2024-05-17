@@ -9,15 +9,14 @@
 # https://stacksjs.org/docs/dependency-management
 
 dependencies:
-  bun.sh: ^1.0.29
-  aws.amazon.com/cli: ^2.13.7
+  bun.sh: ^1.1.8
+  aws.amazon.com/cli: ^2.15.30
   dns.lookup.dog: ^0.1.0
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
   httpie.io: ^3.2.2
   mailpit.axllent.org: ^1.10.0
   npmjs.com: ^9.7.2 # can be removed when publishing works without npm
-  redis.io: ^7.0.11
   rust-lang.org: ^1.74.1
   sqlite.org: ^3.42.0
   stedolan.github.io/jq: ^1.7 # can be removed when publishing works without npm

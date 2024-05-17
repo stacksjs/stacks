@@ -12,6 +12,9 @@ const result = await Bun.build({
 
   external: [
     'bun',
+    '@babel/parser',
+    '@babel/traverse',
+    '@babel/generator',
     '@stacksjs/path',
     '@stacksjs/storage',
     '@stacksjs/cli',

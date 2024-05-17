@@ -1,35 +1,22 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
-import { Action, NpmScript } from '@stacksjs/enums'
-import type { GeneratorOptions } from '@stacksjs/types'
 import { runCommand } from '@stacksjs/cli'
-import { runNpmScript } from '@stacksjs/utils'
+import { Action, NpmScript } from '@stacksjs/enums'
+import { log } from '@stacksjs/logging'
 import { frameworkPath, projectPath } from '@stacksjs/path'
+import type { GeneratorOptions } from '@stacksjs/types'
+import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers/utils'
 
 // import { files } from '@stacksjs/storage'
 
 export async function invoke(options?: GeneratorOptions) {
-  if (options?.types)
-    await generateTypes(options)
-
-  else if (options?.entries)
-    await generateLibEntries(options)
-
-  else if (options?.webTypes)
-    await generateWebTypes(options)
-
-  else if (options?.customData)
-    await generateVsCodeCustomData(options)
-
-  else if (options?.ideHelpers)
-    await generateIdeHelpers(options)
-
-  else if (options?.componentMeta)
-    await generateComponentMeta(options)
-
-  else if (options?.coreSymlink)
-    await generateCoreSymlink()
+  if (options?.types) await generateTypes(options)
+  else if (options?.entries) await generateLibEntries(options)
+  else if (options?.webTypes) await generateWebTypes(options)
+  else if (options?.customData) await generateVsCodeCustomData(options)
+  else if (options?.ideHelpers) await generateIdeHelpers(options)
+  else if (options?.componentMeta) await generateComponentMeta(options)
+  else if (options?.coreSymlink) await generateCoreSymlink()
 }
 
 export function generate(options: GeneratorOptions) {
@@ -112,16 +99,6 @@ export async function generateTypes(options?: GeneratorOptions) {
   }
 
   log.success('Types were generated successfully')
-}
-
-export function generateMigrations() {
-  // const path = frameworkPath('database/schema.prisma')
-
-  // await migrate(path, { database: database.driver })
-
-  // await runCommand(`bunx prisma migrate dev --schema=${path}`)
-
-  log.success('Successfully updated migrations')
 }
 
 export function generatePkgxConfig() {

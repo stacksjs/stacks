@@ -61,7 +61,7 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [ESLint](https://github.com/eslint/eslint)
+- [biome](https://github.com/biomejs/biome)
 - [lint-staged](https://github.com/okonet/lint-staged)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { validator } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
+import { schema } from '@stacksjs/validation'
 
 interface Request {
   message: string
@@ -14,20 +14,19 @@ export default new Action({
   // the request object is optional, but if it is provided, it will be used for validation
   fields: {
     message: {
-      rule: validator.string().minLength(3).maxLength(255),
+      rule: schema.string().minLength(3).maxLength(255),
       message: 'The message must be between 3 and 255 characters long.',
     },
 
     level: {
-      rule: validator.enum(['info', 'warn', 'error']),
+      rule: schema.enum(['info', 'warn', 'error']),
       message: 'The log level must be one of "info", "warn", or "error".',
     },
   },
 
   // handle(request: { message: string, level: 'info' | 'warn' | 'error' }) {
   handle(request?: Request) {
-    if (!request)
-      return 'No request was provided.'
+    if (!request) return 'No request was provided.'
 
     // TODO: need to vine validate
     log[request.level](request.message)

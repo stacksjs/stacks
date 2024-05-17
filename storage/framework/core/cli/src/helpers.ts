@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import type { IntroOptions, OutroOptions } from '@stacksjs/types'
@@ -18,14 +16,9 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
       console.log()
     }
 
-    let msg = `Running  ${bgCyan(italic(bold(` ${command} `)))}`
-    if (command === 'buddy deploy')
-      msg = `Running  ${bgCyan(italic(bold(` ${command} `)))}  for ${bold(`${config.app.name}`)} ${italic(`via ${config.app.url}`)}`
+    log.info(`Running  ${bgCyan(italic(bold(` ${command} `)))}`)
 
-    log.info(msg)
-
-    if (options?.showPerformance === false || options?.quiet)
-      return resolve(0)
+    if (options?.showPerformance === false || options?.quiet) return resolve(0)
 
     return resolve(performance.now())
   })
@@ -44,8 +37,7 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
   opts.message = options?.message || text
 
   return new Promise((resolve) => {
-    if (error)
-      return handleError(error)
+    if (error) return handleError(error)
 
     if (opts?.startTime) {
       let time = performance.now() - opts.startTime
@@ -55,24 +47,21 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
         time = Math.round(time * 100) / 100 // https://stackoverflow.com/a/11832950/7811162
       }
 
-      if (opts.quiet === true)
-        return resolve(ExitCode.Success)
+      if (opts.quiet === true) return resolve(ExitCode.Success)
 
-      if (error)
-        log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
+      if (error) log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
       else if (opts.type === 'info')
         log.info(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
       else
-        log.success(`${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(opts.message ?? 'Complete'))}`)
-    }
-
-    else {
-      if (opts?.type === 'info')
-        log.info(text)
-
+        log.success(
+          `${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(
+            green(opts.message ?? 'Complete'),
+          )}`,
+        )
+    } else {
+      if (opts?.type === 'info') log.info(text)
       // the following condition triggers in the case of "Cleaned up" messages
-      else if (opts?.type === 'success' && opts?.quiet !== true)
-        log.success(text)
+      else if (opts?.type === 'success' && opts?.quiet !== true) log.success(text)
     }
 
     return resolve(ExitCode.Success)

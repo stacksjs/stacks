@@ -11,6 +11,7 @@ export const config: StacksOptions = {
 export const {
   ai,
   analytics,
+  api,
   app,
   cache,
   cloud,
@@ -19,6 +20,7 @@ export const {
   dns,
   docs,
   email,
+  errors,
   git,
   hashing,
   library,

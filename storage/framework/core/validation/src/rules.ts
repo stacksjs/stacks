@@ -1,6 +1,6 @@
 import { USD } from '@dinero.js/currencies'
 import { dinero as currency } from 'dinero.js'
-import { validator } from './validate'
+import { schema } from './validate'
 
 /**
  * Thanks to VineJS for the following types:
@@ -95,22 +95,18 @@ export interface ErrorReporterContract {
   report: (message: string, rule: string, field: FieldContext, args?: Record<string, any>) => any
 }
 
-export const isMoney = validator.createRule((value: unknown, _, field: FieldContext) => {
+export const isMoney = schema.createRule((value: unknown, _, field: FieldContext) => {
   /**
    * Convert string representation of a number to a JavaScript
    * Number data type.
    */
-  const numericValue = validator.helpers.asNumber(value)
+  const numericValue = schema.helpers.asNumber(value)
 
   /**
    * Report error, if the value is NaN post-conversion
    */
   if (Number.isNaN(numericValue)) {
-    field.report(
-      'The {{ field }} field value must be a number',
-      'money',
-      field,
-    )
+    field.report('The {{ field }} field value must be a number', 'money', field)
     return
   }
 
@@ -123,4 +119,4 @@ export const isMoney = validator.createRule((value: unknown, _, field: FieldCont
    * Mutate the field's value
    */
   field.mutate(amount, field)
-}) as any
+})

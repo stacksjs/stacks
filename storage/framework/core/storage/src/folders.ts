@@ -7,8 +7,7 @@ import { fs } from './fs'
 export function isFolder(path: string): boolean {
   try {
     return fs.statSync(path).isDirectory()
-  }
-  catch {
+  } catch {
     return false
   }
 }
@@ -28,11 +27,8 @@ export function doesFolderExist(path: string) {
 export function createFolder(dir: string): Promise<void> {
   return new Promise((resolve, reject) => {
     fs.mkdirs(dir, (err: any) => {
-      if (err)
-        reject(err)
-
-      else
-        resolve()
+      if (err) reject(err)
+      else resolve()
     })
   })
 }

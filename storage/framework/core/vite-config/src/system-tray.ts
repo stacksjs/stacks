@@ -1,12 +1,12 @@
-import { path as p } from '@stacksjs/path'
-import { defineConfig } from 'vite'
-import Vue from '@vitejs/plugin-vue'
-import generateSitemap from 'vite-ssg-sitemap'
-import { server } from '@stacksjs/server'
 import { alias } from '@stacksjs/alias'
-import VueMacros from 'unplugin-vue-macros/vite'
 import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
 import { cssEngine, i18n, layouts, router } from '@stacksjs/vite-plugin'
+import Vue from '@vitejs/plugin-vue'
+import VueMacros from 'unplugin-vue-macros/vite'
+import { defineConfig } from 'vite'
+import generateSitemap from 'vite-ssg-sitemap'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
 
@@ -27,10 +27,7 @@ export default defineConfig({
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [
-    p.resourcesPath('assets/*'),
-    p.resourcesPath('assets/**/*'),
-  ],
+  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
@@ -54,11 +51,9 @@ export default defineConfig({
     }),
 
     router({
-      extensions: ['.stx', '.md'],
+      extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/system-tray-router.d.ts'),
-      routesFolder: [
-        p.resourcesPath('views/system-tray'),
-      ],
+      routesFolder: [p.resourcesPath('views/system-tray')],
       logs: config.app.debug || false,
     }),
 

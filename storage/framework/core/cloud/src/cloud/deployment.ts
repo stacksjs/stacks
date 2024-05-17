@@ -1,8 +1,7 @@
-/* eslint-disable no-new */
-import type { aws_cloudfront as cloudfront, aws_s3 as s3 } from 'aws-cdk-lib'
-import { AssetHashType, aws_s3_deployment as s3deploy } from 'aws-cdk-lib'
 import { config } from '@stacksjs/config'
 import { websiteSourceHash } from '@stacksjs/utils'
+import type { aws_cloudfront as cloudfront, aws_s3 as s3 } from 'aws-cdk-lib'
+import { AssetHashType, aws_s3_deployment as s3deploy } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
@@ -24,10 +23,12 @@ export class DeploymentStack {
     this.websiteSource = config.app.docMode === true ? this.docsSource : '../views/dist/'
 
     new s3deploy.BucketDeployment(scope, 'Website', {
-      sources: [s3deploy.Source.asset(this.websiteSource, {
-        assetHash: websiteSourceHash(),
-        assetHashType: AssetHashType.CUSTOM,
-      })],
+      sources: [
+        s3deploy.Source.asset(this.websiteSource, {
+          assetHash: websiteSourceHash(),
+          assetHashType: AssetHashType.CUSTOM,
+        }),
+      ],
       destinationBucket: props.publicBucket,
       distribution: props.cdn,
       distributionPaths: ['/*'],

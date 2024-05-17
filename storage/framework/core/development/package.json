@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/development",
   "type": "module",
-  "version": "0.60.2",
+  "version": "0.60.3",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,12 +36,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -56,9 +52,8 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "bun-plugin-dts-auto": "^0.10.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.2"
+    "bun-plugin-dts-auto": "^0.11.1",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -68,13 +63,11 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@total-typescript/ts-reset": "^0.5.1",
-    "bun-plugin-dts-auto": "^0.10.0",
-    "eslint": "^8.57.0"
+    "bun-plugin-dts-auto": "^0.11.1"
   }
 }

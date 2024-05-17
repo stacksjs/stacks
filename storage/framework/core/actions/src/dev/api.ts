@@ -1,7 +1,7 @@
-import { path as p } from '@stacksjs/path'
 import { log, parseOptions, runCommand } from '@stacksjs/cli'
-import { serve } from '@stacksjs/router'
 import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { serve } from '@stacksjs/router'
 
 const options = parseOptions()
 

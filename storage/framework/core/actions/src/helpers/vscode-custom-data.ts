@@ -13,8 +13,7 @@ export async function generateVsCodeCustomData() {
       data: generateComponentInfoData(),
     })
     log.success('Generated custom-elements.json for IDEs.')
-  }
-  catch (err) {
+  } catch (err) {
     log.error('There was an error generating the custom-elements.json file.', err)
   }
 }

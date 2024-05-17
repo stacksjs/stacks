@@ -35,9 +35,4 @@ export default {
     appId: '',
     apiKey: '',
   },
-
-  supabase: {
-    appId: '',
-    apiKey: '',
-  },
 } satisfies ServicesConfig

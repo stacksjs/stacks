@@ -1,9 +1,10 @@
 {
-  // JavaScript
-  "prettier.enable": false,   // Disable the default formatter, use eslint instead
-  // Silent the stylistic rules in you IDE, but still auto fix them
+  // TODO: temp until biome can handle SFCs
+  "eslint.experimental.useFlatConfig": true,
+    // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
     { "rule": "style/*", "severity": "off" },
+    { "rule": "format/*", "severity": "off" },
     { "rule": "*-indent", "severity": "off" },
     { "rule": "*-spacing", "severity": "off" },
     { "rule": "*-spaces", "severity": "off" },
@@ -11,42 +12,37 @@
     { "rule": "*-dangle", "severity": "off" },
     { "rule": "*-newline", "severity": "off" },
     { "rule": "*quotes", "severity": "off" },
-    { "rule": "*semi", "severity": "off" }
+    { "rule": "*semi", "severity": "off" },
+    { "rule": "no-undef", "severity": "off" }
   ],
+
   // Enable eslint for all supported languages
   "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "vue",
-    "stx",
-    "html",
-    "markdown",
-    "json",
-    "jsonc",
-    "yaml",
-    "toml"
+    "vue"
   ],
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+
+  // JavaScript
+  "prettier.enable": false,   // Disable the default formatter, use eslint instead
+  "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
     "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "never"
+    "source.organizeImports.biome": "explicit"
   },
 
   // TypeScript
   "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
-  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/unocss.config.ts",
+  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
 
   // JSON
   "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
 
   // YAML
   "[yaml]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
 
   // Shell
@@ -59,9 +55,6 @@
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true
   },
-  "markdownlint.ignore": [
-    "CHANGELOG.md"
-  ],
   "markdownlint.config": {
     "default": true,
     "MD033": {
@@ -80,9 +73,8 @@
   // Stacks
   "vue.inlayHints.missingProps": true,
   "typescript.preferGoToSourceDefinition": true,
-  "eslint.experimental.useFlatConfig": true,
   "[stx]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "files.associations": {
     "buddy": "typescript",
@@ -106,7 +98,7 @@
     "**/node_modules": true,
     "**/cdk.out": true,
     "**/dist": true,
-    "**/*out*": true,
+    "**/storage/public": true,
     "CHANGELOG.md": true
   },
   "explorer.confirmDragAndDrop": false,
@@ -136,5 +128,5 @@
   ],
   "grammarly.files.exclude": [
     "**/dictionary.txt"
-  ]
+  ],
 }

@@ -1,11 +1,11 @@
+import { alias } from '@stacksjs/alias'
+import { kolorist as c } from '@stacksjs/cli'
+import { docs } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
+import { withPwa } from '@vite-pwa/vitepress'
 import { defineConfig } from 'vitepress'
 import type { UserConfig } from 'vitepress'
-import { alias } from '@stacksjs/alias'
-import { path as p } from '@stacksjs/path'
-import { docs } from '@stacksjs/config'
-import { server } from '@stacksjs/server'
-import { kolorist as c } from '@stacksjs/cli'
-import { withPwa } from '@vite-pwa/vitepress'
 import { version } from '../package.json'
 import { pwaDocs as pwa } from './scripts/pwa'
 
@@ -38,13 +38,11 @@ export const frameworkDefaults = {
         configureServer(server) {
           // const base = server.config.base || '/'
           // const _print = server.printUrls
-          server.printUrls = () => { // eslint-disable-next-line no-console
+          server.printUrls = () => {
             console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
 
             // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('http://stacks.localhost:3000/docs')}`)
-            // eslint-disable-next-line no-console
             console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.green('https://stacks.localhost/docs')}`)
-            // eslint-disable-next-line no-console
             console.log(`  ${c.green('➜')}  ${c.bold('Temp URL')}: ${c.green('http://stacksjs.test:3000')}`)
           }
         },

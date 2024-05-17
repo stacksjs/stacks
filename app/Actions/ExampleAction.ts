@@ -13,7 +13,7 @@ export default new Action({
   },
 })
 
-function sendEmail({ to, subject, text }: { to: string, subject: string, text: string }) {
+function sendEmail({ to, subject, text }: { to: string; subject: string; text: string }) {
   log.info('Sending email', { to, subject, text })
   return `Welcome email sent to ${email}`
 }

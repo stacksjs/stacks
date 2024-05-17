@@ -1,5 +1,5 @@
-import type { UserShortcuts } from 'unocss'
 import type { UserConfig } from '@unocss/core'
+import type { UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons'

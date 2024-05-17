@@ -1,8 +1,22 @@
 import type { Arrayable, Nullable } from '@stacksjs/types'
-import type { PartitionFilter } from './helpers'
-import { at, clampArrayRange, flatten, last, mergeArrayable, move, partition, remove, sample, shuffle, toArray, uniq, uniqueBy } from './helpers'
-import { average, median, mode, range, sum } from './math'
 import { contains, containsAll, containsAny, containsNone, containsOnly, doesNotContain } from './contains'
+import type { PartitionFilter } from './helpers'
+import {
+  at,
+  clampArrayRange,
+  flatten,
+  last,
+  mergeArrayable,
+  move,
+  partition,
+  remove,
+  sample,
+  shuffle,
+  toArray,
+  uniq,
+  uniqueBy,
+} from './helpers'
+import { average, median, mode, range, sum } from './math'
 
 export const Arr = {
   contains(needle: string, haystack: string[]) {
