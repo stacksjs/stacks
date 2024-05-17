@@ -1,6 +1,6 @@
 import { USD } from '@dinero.js/currencies'
 import { dinero as currency } from 'dinero.js'
-import { schema } from './validate'
+import { schema } from './schema'
 
 /**
  * Thanks to VineJS for the following types:

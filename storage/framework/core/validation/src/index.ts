@@ -1,4 +1,4 @@
 export * from './is'
 export * from './rules'
-export * from './validate'
+export * from './schema'
 export * from './types'

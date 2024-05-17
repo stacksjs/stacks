@@ -1,3 +1,4 @@
+import { log } from '@stacksjs/logging'
 import { schema } from '@stacksjs/validation'
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import env from '~/config/env'
@@ -38,6 +39,43 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
         validatorType = schema.enum(value as string[])
         break
       }
+
+      // check if is on object
+      if (typeof value === 'object') {
+        const schemaNameSymbol = Symbol.for('schema_name')
+        const schemaName = value[schemaNameSymbol]
+        log.debug('value', value)
+        log.debug('schemaName', schemaName)
+
+        if (schemaName === 'vine.string') {
+          validatorType = schema.string()
+          break
+        }
+
+        if (schemaName === 'vine.number') {
+          validatorType = schema.number()
+          break
+        }
+
+        if (schemaName === 'vine.boolean') {
+          validatorType = schema.boolean()
+          break
+        }
+
+        // if (schemaName === 'vine.enum') {
+        //   validatorType = schema.enum(value as string[])
+        //   break
+        // }
+
+        // oddly, enums don't trigger schemaName === 'vine.enum'
+        if (!schemaName) {
+          validatorType = schema.enum(value as string[])
+          break
+        }
+
+        console.error('Unknown env value type', typeof value)
+      }
+
       throw new Error(`Invalid env value for ${key}`)
   }
   const envKey = key as EnvKeys
