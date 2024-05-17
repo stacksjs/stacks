@@ -41,7 +41,7 @@ export default defineConfig(({ command, mode }) => {
       lib: {
         entry: resolve(__dirname, 'packages/index.ts'),
         name: 'StacksNotification',
-        fileName: 'stacks-notification',
+        fileName: 'stacks-calendar',
       },
       outDir: 'lib',
       emptyOutDir: true,
@@ -52,11 +52,11 @@ export default defineConfig(({ command, mode }) => {
         output: [
           // {
           //   format: 'cjs',
-          //   entryFileNames: `stacks-notification.cjs`,
+          //   entryFileNames: `stacks-calendar.cjs`,
           // },
           {
             format: 'es',
-            entryFileNames: `stacks-notification.js`,
+            entryFileNames: `stacks-calendar.js`,
             preserveModules: false,
           },
         ],
