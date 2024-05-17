@@ -3,12 +3,14 @@
     <!-- Static sidebar for desktop -->
     <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
       <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 bg-white px-6 pb-4">
-        <div class="flex h-16 shrink-0 items-center">
+        <div class="flex h-16 shrink-0 items-center justify-between">
           <img
             class="h-12 rounded-lg mt-4 w-auto"
             src="/images/logos/logo.svg"
             alt="Stacks"
           >
+
+          <div class="i-heroicons-ellipsis-horizontal text-gray-700 w-6 h-6 mt-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:hover:bg-blue-gray-100 cursor-pointer" />
         </div>
         <nav class="flex flex-1 flex-col">
           <ul
