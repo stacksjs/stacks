@@ -123,8 +123,8 @@ async function createTableMigration(modelPath: string) {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
   const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
   const fields = model.attributes
-  const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable
-  const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable
+  const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
+  const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
