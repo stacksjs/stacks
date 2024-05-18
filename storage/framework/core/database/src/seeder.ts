@@ -1,5 +1,6 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
@@ -15,7 +16,7 @@ async function seedModel(name: string, model?: Model) {
 
   if (!model) model = (await import(path.userModelsPath(name))) as Model
 
-  const tableName = model.table ?? snakeCase(model.name ?? name.replace('.ts', ''))
+  const tableName = await modelTableName(model)
   const seedCount =
     typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
 

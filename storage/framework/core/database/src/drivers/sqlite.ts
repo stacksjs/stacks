@@ -67,9 +67,9 @@ export async function generateSqliteMigration(modelPath: string) {
     }
   }
 
-  const model = await import(modelPath)
+  const model = await import(modelPath) as Model
   const fileName = path.basename(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
   const fieldsString = JSON.stringify(model.default.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
@@ -237,15 +237,15 @@ async function createPivotTableMigration(model: Model) {
 export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
-  const model = await import(modelPath)
+  const model = (await import(modelPath)).default as Model
   const modelName = path.basename(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.default.attributes as Attributes
+  const currentFields = model.attributes as Attributes
 
   // Determine fields to add and remove
   const fieldsToAdd = Object.keys(currentFields)

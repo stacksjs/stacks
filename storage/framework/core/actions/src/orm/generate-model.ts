@@ -1,10 +1,10 @@
 import { log } from '@stacksjs/logging'
+import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import { modelTableName } from '@stacksjs/orm'
 
 export interface FieldArrayElement {
   entity: string
@@ -160,7 +160,7 @@ async function initiateModelGeneration(): Promise<void> {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
-    const tableName = model.table
+    const tableName = await modelTableName(model)
     const modelName = path.basename(modelFile, '.ts')
 
     await generateApiRoutes(model)
@@ -250,7 +250,7 @@ async function setKyselyTypes() {
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const tableName = model.table
+    const tableName = await modelTableName(model)
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const modelName = model.name
 
@@ -281,7 +281,7 @@ async function setKyselyTypes() {
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const tableName = model.table
+    const tableName = await modelTableName(model)
     const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const pivotTables = await getPivotTables(model)
 

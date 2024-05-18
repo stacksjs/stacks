@@ -1,6 +1,7 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
+import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes } from '@stacksjs/types'
@@ -71,7 +72,7 @@ export async function generatePostgresMigration(modelPath: string) {
 
   const model = await import(modelPath)
   const fileName = path.basename(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
   const fieldsString = JSON.stringify(model.default.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
@@ -115,7 +116,7 @@ async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = await import(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
   await createPivotTableMigration(model)
 
@@ -241,7 +242,7 @@ export async function createAlterTableMigration(modelPath: string) {
 
   const model = await import(modelPath)
   const modelName = path.basename(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
@@ -288,7 +289,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
   for (const modelPath of modelFiles) {
     const model = await import(modelPath)
 
-    const tableName = model.default.table
+    const tableName = await modelTableName(model)
 
     tables.push(tableName)
   }
