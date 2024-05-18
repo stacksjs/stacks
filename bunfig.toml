@@ -1,8 +1,8 @@
 # preload these modules before running bun
-preload = [ "./resources/server/Preloader/main.ts" ]
+preload = [ "./resources/preloader/main.ts" ]
 
 [test]
-preload = [ "./resources/server/Preloader/test.ts" ]
+preload = [ "./resources/preloader/test.ts" ]
 
 [install]
 # To configure Bun's package auto-install behavior.
