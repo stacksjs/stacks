@@ -5,7 +5,7 @@ import { log } from '@stacksjs/logging'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
-import { runAction } from '../helpers/utils'
+import { generateVsCodeCustomData as genVsCodeCustomData, runAction } from '../helpers'
 
 // import { files } from '@stacksjs/storage'
 
@@ -49,17 +49,15 @@ export async function generateWebTypes(options?: GeneratorOptions) {
 }
 
 export async function generateVsCodeCustomData(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, {
-    cwd: frameworkPath(),
-    ...options,
-  })
+  const result = await genVsCodeCustomData()
 
   if (result.isErr()) {
     log.error('There was an error generating the custom-elements.json file.', result.error)
     process.exit()
   }
 
-  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // because the generated json file needs to be linted
+
   log.success('Successfully generated the custom-elements.json file')
 }
 
