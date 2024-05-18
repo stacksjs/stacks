@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
-import { config } from '@stacksjs/config'
+import { config, determineAppEnv } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import { slug as slugify } from '@stacksjs/strings'
 import { ExitCode } from '@stacksjs/types'
@@ -11,17 +11,7 @@ import { getOrCreateTimestamp } from '../core/cloud/src/helpers'
 import type { CloudOptions } from '../core/cloud/src/types'
 
 const app = new App()
-const appEnv =
-  (config.app.env as string) === 'local'
-    ? 'dev'
-    : (config.app.env as string) === 'development'
-      ? 'dev'
-      : (config.app.env as string) === 'staging'
-        ? 'stage'
-        : (config.app.env as string) === 'production'
-          ? 'prod'
-          : config.app.env
-
+const appEnv = determineAppEnv()
 const appKey = config.app.key
 const domain = config.app.url
 const appName = config.app.name?.toLowerCase() ?? 'stacks'

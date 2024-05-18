@@ -40,3 +40,12 @@ export const {
 export { defaults, overrides }
 
 export * from './helpers'
+
+export const determineAppEnv = (): string => {
+  if (app.env === 'local') return 'dev'
+  if (app.env === 'development') return 'dev'
+  if (app.env === 'staging') return 'stage'
+  if (app.env === 'production') return 'prod'
+
+  return app.env
+}
