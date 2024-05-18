@@ -1,8 +1,10 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
+import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import { pluralize, snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
 
@@ -119,14 +121,14 @@ async function getPivotTables(
         const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
         const formattedModelName = model.name.toLowerCase()
-  
+
         pivotTable.push({
           table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
           firstForeignKey: belongsToManyRelation.firstForeignKey,
           secondForeignKey: belongsToManyRelation.secondForeignKey,
         })
       }
-  
+
       return pivotTable
     }
   }
@@ -138,7 +140,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  const tableName = model.table
+  const tableName = await modelTableName(model)
 
   await createPivotTableMigration(model)
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))

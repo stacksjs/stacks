@@ -1,7 +1,7 @@
+import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
-import { collect } from '@stacksjs/collections'
 
 export default {
   name: 'Project', // defaults to the sanitized file name
@@ -33,7 +33,7 @@ export default {
         message: '`description` must be a string',
       },
 
-      factory: () => faker.lorem.sentence({ min: 10, max: 25 }),
+      factory: () => faker.lorem.sentence({ min: 10, max: 10 }),
     },
 
     url: {

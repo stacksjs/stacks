@@ -2,8 +2,9 @@ import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { pascalCase } from '@stacksjs/strings'
-import { isString } from '@stacksjs/validation'
 import type { Model, RelationConfig } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
+import { modelTableName } from '@stacksjs/orm'
 
 export interface FieldArrayElement {
   entity: string
@@ -128,7 +129,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
 async function writeApiRoutes(apiRoute: string, model: Model): Promise<string> {
   let routeString = ``
-  const tableName = model.table
+  const tableName = await modelTableName(model)
   const modelName = model.name
 
   if (apiRoute === 'index') routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
@@ -152,7 +153,7 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
   await writeModelNames()
-  
+
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
@@ -193,7 +194,7 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
 
         const modelRelation = (await import(modelRelationPath)).default
-        
+
         const formattedModelName = model.name?.toLowerCase()
 
         relationships.push({

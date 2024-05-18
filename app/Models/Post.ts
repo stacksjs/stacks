@@ -5,7 +5,7 @@ import User from './User'
 
 export default {
   name: 'Post', // defaults to the sanitized file name
-  table: 'posts', // defaults to the lowercase, plural name of the model
+  table: 'posts', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 

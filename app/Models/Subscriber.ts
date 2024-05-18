@@ -4,7 +4,7 @@ import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'Subscriber', // defaults to the sanitized file name
-  table: 'subscribers', // defaults to the lowercase, plural name of the model
+  table: 'subscribers', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 

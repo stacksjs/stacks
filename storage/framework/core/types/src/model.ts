@@ -36,7 +36,7 @@ type Base = {}
  */
 export interface ModelOptions extends Base {
   name: string // defaults to the file name of the model
-  table: string // defaults to the lowercase, plural name of the model
+  table: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true
   dashboard?: {
@@ -62,21 +62,27 @@ export interface ModelOptions extends Base {
   attributes: Attributes
 
   // relationships
-  hasOne: {
-    model: ModelNames
-    foreignKey?: string
-    relationName?: string
-  }[] | string[]
-  hasMany: {
-    model: ModelNames // should be typed as ModelName
-    foreignKey?: string
-    relationName?: string
-  }[] | string[]
-  belongsTo: {
-    model: ModelNames // should be typed as ModelName
-    foreignKey?: string
-    relationName?: string
-  }[] | string[] // belongsTo: 'User'
+  hasOne:
+    | {
+        model: ModelNames
+        foreignKey?: string
+        relationName?: string
+      }[]
+    | string[]
+  hasMany:
+    | {
+        model: ModelNames // should be typed as ModelName
+        foreignKey?: string
+        relationName?: string
+      }[]
+    | string[]
+  belongsTo:
+    | {
+        model: ModelNames // should be typed as ModelName
+        foreignKey?: string
+        relationName?: string
+      }[]
+    | string[] // belongsTo: 'User'
   belongsToMany: {
     model: ModelNames
     firstForeignKey?: string

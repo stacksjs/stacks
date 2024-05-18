@@ -46,16 +46,7 @@ export default {
           '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
       },
 
-      factory: () =>
-        collect([
-          'read',
-          'write',
-          'admin',
-          'read|write',
-          'read|admin',
-          'write|admin',
-          'read|write|admin',
-        ]).random(),
+      factory: () => collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random(),
     },
   },
 } satisfies Model
