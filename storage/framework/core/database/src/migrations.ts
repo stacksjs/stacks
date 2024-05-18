@@ -80,7 +80,7 @@ export async function resetDatabase() {
 
   if (driver === 'postgres') return resetPostgresDatabase()
 
-  return resetSqliteDatabase()
+  throw new Error('Unsupported database driver in resetDatabase')
 }
 
 export async function generateMigrations() {
