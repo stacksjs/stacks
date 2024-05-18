@@ -36,7 +36,7 @@ export default {
         message: '`token` must be a string',
       },
 
-      factory: () => faker.random.uuid(),
+      factory: () => faker.string.uuid(),
     },
 
     abilities: {

@@ -35,7 +35,7 @@ export default {
         message: '`companyName` must be a string',
       },
 
-      factory: () => faker.company.companyName(),
+      factory: () => faker.company.name(),
     },
 
     email: {
@@ -89,7 +89,7 @@ export default {
         message: '`isPersonal` must be a boolean',
       },
 
-      factory: () => faker.random.boolean(),
+      factory: () => faker.datatype.boolean(),
     },
   },
 } satisfies Model
