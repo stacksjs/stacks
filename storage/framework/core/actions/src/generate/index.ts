@@ -5,7 +5,8 @@ import { log } from '@stacksjs/logging'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
-import { generateVsCodeCustomData as genVsCodeCustomData, runAction } from '../helpers'
+import { runAction } from '../helpers'
+import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 
 // import { files } from '@stacksjs/storage'
 
@@ -74,7 +75,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions) {
 }
 
 export async function generateComponentMeta(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
+  const result = await genVsCodeCustomData()
 
   if (result.isErr()) {
     log.error('There was an error generating your component meta information.', result.error)
