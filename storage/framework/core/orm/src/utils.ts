@@ -12,7 +12,7 @@ export async function modelTableName(model: Model | ModelPath): Promise<string> 
     model = (await import(model)).default as Model
   }
 
-  return model.table ?? snakeCase(plural(model.name ?? modelPath.replace(/.*\/(.*)\.ts$/, '$1')))
+  return model.table ?? snakeCase(plural(model.name))
 }
 
 export async function extractFieldsFromModel(filePath: string) {

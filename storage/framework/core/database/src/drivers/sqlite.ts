@@ -61,17 +61,16 @@ export async function generateSqliteMigration(modelPath: string) {
     if (modelFiles.length) {
       log.debug('No existing model files in framework path...')
 
-      for (const file of modelFiles) {
+      for (const file of modelFiles)
         if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
-      }
     }
   }
 
-  const model = await import(modelPath) as Model
+  const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = await modelTableName(model)
 
-  const fieldsString = JSON.stringify(model.default.attributes, null, 2) // Pretty print the JSON
+  const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
 
   let haveFieldsChanged = false

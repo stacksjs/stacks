@@ -2,8 +2,8 @@ import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { isString } from '@stacksjs/validation'
 import type { Attributes, Model, RelationConfig, VineType } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 export * from './mysql'
 export * from './postgres'
@@ -11,11 +11,11 @@ export * from './sqlite'
 
 export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
-  const model = await import(oldModelPath)
+  const model = (await import(oldModelPath)).default as Model
   let fields = {} as Attributes
 
-  if (typeof model.default.attributes === 'object') fields = model.default.attributes
-  else fields = JSON.parse(model.default.attributes) as Attributes
+  if (typeof model.attributes === 'object') fields = model.attributes
+  else fields = JSON.parse(model.attributes) as Attributes
 
   return fields
 }

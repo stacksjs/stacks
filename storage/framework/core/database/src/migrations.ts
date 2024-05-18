@@ -159,11 +159,11 @@ export async function lastMigrationDate(): Promise<string | undefined> {
 // read the last migration file and extract the fields that were modified.
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
-  const model = await import(oldModelPath)
+  const model = (await import(oldModelPath)).default as Model
   let fields = {} as Attributes
 
-  if (typeof model.default.attributes === 'object') fields = model.default.attributes
-  else fields = JSON.parse(model.default.attributes) as Attributes
+  if (typeof model.attributes === 'object') fields = model.attributes
+  else fields = JSON.parse(model.attributes) as Attributes
 
   return fields
 }
