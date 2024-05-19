@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-// import { Functions } from '@stacksjs/orm'
+// import { Library } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetFunctions',
@@ -7,6 +7,6 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Functions.all()
+    // return Library.functions()
   },
 })
