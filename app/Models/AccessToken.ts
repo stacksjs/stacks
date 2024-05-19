@@ -39,6 +39,15 @@ export default {
       factory: () => faker.string.uuid(),
     },
 
+    plainTextToken: {
+      validator: {
+        rule: schema.string(),
+        message: '`plainTextToken` must be a string',
+      },
+
+      factory: () => faker.string.uuid(),
+    },
+
     abilities: {
       validator: {
         rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),

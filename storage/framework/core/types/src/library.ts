@@ -109,10 +109,18 @@ export interface LibraryBuildOptions {
 
   /**
    * This is where you define the functions/composables that need to be included
-   * in your library. For example, including your `counter` function to be
-   * built would require `../functions/counter.ts` to be present.
+   * in your library. For example, in order for your `counter.ts` file to be
+   * included, you would need to add it to the `files` array.
+   * @default ['*']
+   * @example
+   * ```ts
+   * files: ['counter', 'dark']
+   * // alternatively,
+   * // files: ['*']
+   * // files: ['counter.ts', 'dark.ts']
+   * ```
    */
-  functions?: string[]
+  files?: string[] // TODO: we can narrow this type to only include .ts files
 
   /**
    * This is where you define the components that need to be included in

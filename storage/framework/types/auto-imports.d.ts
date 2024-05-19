@@ -546,6 +546,7 @@ declare global {
   const mitt: typeof import('../core/events/src/index')['mitt']
   const mkdirSync: typeof import('../core/storage/src/fs')['mkdirSync']
   const mock: typeof import('../core/testing/src/index')['mock']
+  const modelTableName: typeof import('../core/orm/src/utils')['modelTableName']
   const modelsPath: typeof import('../core/path/src/paths')['modelsPath']
   const modulesPath: typeof import('../core/path/src/paths')['modulesPath']
   const money: typeof import('../core/utils/src/currency')['money']
@@ -1531,6 +1532,7 @@ declare module 'vue' {
     readonly minimum: UnwrapRef<typeof import('../core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../core/storage/src/fs')['mkdirSync']>
+    readonly modelTableName: UnwrapRef<typeof import('../core/orm/src/utils')['modelTableName']>
     readonly modelsPath: UnwrapRef<typeof import('../core/path/src/paths')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../core/path/src/paths')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../core/utils/src/currency')['money']>
@@ -2474,6 +2476,7 @@ declare module '@vue/runtime-core' {
     readonly minimum: UnwrapRef<typeof import('../core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../core/storage/src/fs')['mkdirSync']>
+    readonly modelTableName: UnwrapRef<typeof import('../core/orm/src/utils')['modelTableName']>
     readonly modelsPath: UnwrapRef<typeof import('../core/path/src/paths')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../core/path/src/paths')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../core/utils/src/currency')['money']>
