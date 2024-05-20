@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Command } from '@stacksjs/orm'
+// import { Command } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetAverageCommandTime',

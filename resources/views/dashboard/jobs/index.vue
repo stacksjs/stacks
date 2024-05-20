@@ -205,7 +205,7 @@ useHead({
       </div>
     </div>
 
-    <div class="px-4 sm:px-6 lg:px-8 pt-12">
+    <div class="px-4 sm:px-6 lg:px-8 pt-20">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base font-semibold leading-6 text-gray-900">
