@@ -90,11 +90,11 @@ declare global {
   const ValidationEnum: typeof import('../core/validation/src/types/index')['ValidationEnum']
   const ValidationNumber: typeof import('../core/validation/src/types/index')['ValidationNumber']
   const ValidationString: typeof import('../core/validation/src/types/index')['ValidationString']
-  const VineBoolean: typeof import('../core/validation/src/validate')['VineBoolean']
-  const VineDate: typeof import('../core/validation/src/validate')['VineDate']
-  const VineEnum: typeof import('../core/validation/src/validate')['VineEnum']
-  const VineNumber: typeof import('../core/validation/src/validate')['VineNumber']
-  const VineString: typeof import('../core/validation/src/validate')['VineString']
+  const VineBoolean: typeof import('../core/validation/src/schema')['VineBoolean']
+  const VineDate: typeof import('../core/validation/src/schema')['VineDate']
+  const VineEnum: typeof import('../core/validation/src/schema')['VineEnum']
+  const VineNumber: typeof import('../core/validation/src/schema')['VineNumber']
+  const VineString: typeof import('../core/validation/src/schema')['VineString']
   const _dirname: typeof import('../core/storage/src/helpers')['_dirname']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const actionsPath: typeof import('../core/path/src/paths')['actionsPath']
@@ -546,6 +546,7 @@ declare global {
   const mitt: typeof import('../core/events/src/index')['mitt']
   const mkdirSync: typeof import('../core/storage/src/fs')['mkdirSync']
   const mock: typeof import('../core/testing/src/index')['mock']
+  const modelTableName: typeof import('../core/orm/src/utils')['modelTableName']
   const modelsPath: typeof import('../core/path/src/paths')['modelsPath']
   const modulesPath: typeof import('../core/path/src/paths')['modulesPath']
   const money: typeof import('../core/utils/src/currency')['money']
@@ -670,7 +671,7 @@ declare global {
   const route: typeof import('../core/router/src/router')['route']
   const routerPath: typeof import('../core/path/src/paths')['routerPath']
   const routesPath: typeof import('../core/path/src/paths')['routesPath']
-  const rule: typeof import('../core/validation/src/validate')['rule']
+  const rule: typeof import('../core/validation/src/schema')['rule']
   const runAction: typeof import('../core/actions/src/helpers/utils')['runAction']
   const runActions: typeof import('../core/actions/src/helpers/utils')['runActions']
   const runAdd: typeof import('../core/actions/src/index')['runAdd']
@@ -694,7 +695,7 @@ declare global {
   const runtimePath: typeof import('../core/path/src/paths')['runtimePath']
   const schedule: typeof import('../core/scheduler/src/schedule')['default']
   const schedulerPath: typeof import('../core/path/src/paths')['schedulerPath']
-  const schema: typeof import('../core/validation/src/validate')['schema']
+  const schema: typeof import('../core/validation/src/schema')['schema']
   const scriptsPath: typeof import('../core/path/src/paths')['scriptsPath']
   const searchEnginePath: typeof import('../core/path/src/paths')['searchEnginePath']
   const searchFilters: typeof import('../core/search-engine/src/index')['searchFilters']
@@ -1001,7 +1002,7 @@ declare global {
   const userModelsPath: typeof import('../core/path/src/paths')['userModelsPath']
   const userNotificationsPath: typeof import('../core/path/src/paths')['userNotificationsPath']
   const utilsPath: typeof import('../core/path/src/paths')['utilsPath']
-  const validate: typeof import('../core/validation/src/validate')['validate']
+  const validate: typeof import('../core/validation/src/schema')['validate']
   const validationPath: typeof import('../core/path/src/paths')['validationPath']
   const validator: typeof import('../core/validation/src/validate')['validator']
   const verifyHash: typeof import('../core/security/src/hash')['verifyHash']
@@ -1105,11 +1106,11 @@ declare module 'vue' {
     readonly ValidationEnum: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationEnum']>
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
     readonly ValidationString: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationString']>
-    readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['VineBoolean']>
-    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/validate')['VineDate']>
-    readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/validate')['VineEnum']>
-    readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/validate')['VineNumber']>
-    readonly VineString: UnwrapRef<typeof import('../core/validation/src/validate')['VineString']>
+    readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/schema')['VineBoolean']>
+    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/schema')['VineDate']>
+    readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/schema')['VineEnum']>
+    readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/schema')['VineNumber']>
+    readonly VineString: UnwrapRef<typeof import('../core/validation/src/schema')['VineString']>
     readonly _dirname: UnwrapRef<typeof import('../core/storage/src/helpers')['_dirname']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly actionsPath: UnwrapRef<typeof import('../core/path/src/paths')['actionsPath']>
@@ -1531,6 +1532,7 @@ declare module 'vue' {
     readonly minimum: UnwrapRef<typeof import('../core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../core/storage/src/fs')['mkdirSync']>
+    readonly modelTableName: UnwrapRef<typeof import('../core/orm/src/utils')['modelTableName']>
     readonly modelsPath: UnwrapRef<typeof import('../core/path/src/paths')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../core/path/src/paths')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../core/utils/src/currency')['money']>
@@ -1648,7 +1650,7 @@ declare module 'vue' {
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../core/path/src/paths')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../core/path/src/paths')['routesPath']>
-    readonly rule: UnwrapRef<typeof import('../core/validation/src/validate')['rule']>
+    readonly rule: UnwrapRef<typeof import('../core/validation/src/schema')['rule']>
     readonly runAction: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runAction']>
     readonly runActions: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runActions']>
     readonly runAdd: UnwrapRef<typeof import('../core/actions/src/index')['runAdd']>
@@ -1668,7 +1670,7 @@ declare module 'vue' {
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/paths')['runtimePath']>
     readonly schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['default']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/paths')['schedulerPath']>
-    readonly schema: UnwrapRef<typeof import('../core/validation/src/validate')['schema']>
+    readonly schema: UnwrapRef<typeof import('../core/validation/src/schema')['schema']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/paths')['scriptsPath']>
     readonly searchEnginePath: UnwrapRef<typeof import('../core/path/src/paths')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('../core/search-engine/src/index')['searchFilters']>
@@ -1961,7 +1963,7 @@ declare module 'vue' {
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
-    readonly validate: UnwrapRef<typeof import('../core/validation/src/validate')['validate']>
+    readonly validate: UnwrapRef<typeof import('../core/validation/src/schema')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
@@ -2048,11 +2050,11 @@ declare module '@vue/runtime-core' {
     readonly ValidationEnum: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationEnum']>
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
     readonly ValidationString: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationString']>
-    readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/validate')['VineBoolean']>
-    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/validate')['VineDate']>
-    readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/validate')['VineEnum']>
-    readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/validate')['VineNumber']>
-    readonly VineString: UnwrapRef<typeof import('../core/validation/src/validate')['VineString']>
+    readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/schema')['VineBoolean']>
+    readonly VineDate: UnwrapRef<typeof import('../core/validation/src/schema')['VineDate']>
+    readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/schema')['VineEnum']>
+    readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/schema')['VineNumber']>
+    readonly VineString: UnwrapRef<typeof import('../core/validation/src/schema')['VineString']>
     readonly _dirname: UnwrapRef<typeof import('../core/storage/src/helpers')['_dirname']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly actionsPath: UnwrapRef<typeof import('../core/path/src/paths')['actionsPath']>
@@ -2474,6 +2476,7 @@ declare module '@vue/runtime-core' {
     readonly minimum: UnwrapRef<typeof import('../core/utils/src/currency')['minimum']>
     readonly mitt: UnwrapRef<typeof import('../core/events/src/index')['mitt']>
     readonly mkdirSync: UnwrapRef<typeof import('../core/storage/src/fs')['mkdirSync']>
+    readonly modelTableName: UnwrapRef<typeof import('../core/orm/src/utils')['modelTableName']>
     readonly modelsPath: UnwrapRef<typeof import('../core/path/src/paths')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../core/path/src/paths')['modulesPath']>
     readonly money: UnwrapRef<typeof import('../core/utils/src/currency')['money']>
@@ -2591,7 +2594,7 @@ declare module '@vue/runtime-core' {
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../core/path/src/paths')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../core/path/src/paths')['routesPath']>
-    readonly rule: UnwrapRef<typeof import('../core/validation/src/validate')['rule']>
+    readonly rule: UnwrapRef<typeof import('../core/validation/src/schema')['rule']>
     readonly runAction: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runAction']>
     readonly runActions: UnwrapRef<typeof import('../core/actions/src/helpers/utils')['runActions']>
     readonly runAdd: UnwrapRef<typeof import('../core/actions/src/index')['runAdd']>
@@ -2611,7 +2614,7 @@ declare module '@vue/runtime-core' {
     readonly runtimePath: UnwrapRef<typeof import('../core/path/src/paths')['runtimePath']>
     readonly schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['default']>
     readonly schedulerPath: UnwrapRef<typeof import('../core/path/src/paths')['schedulerPath']>
-    readonly schema: UnwrapRef<typeof import('../core/validation/src/validate')['schema']>
+    readonly schema: UnwrapRef<typeof import('../core/validation/src/schema')['schema']>
     readonly scriptsPath: UnwrapRef<typeof import('../core/path/src/paths')['scriptsPath']>
     readonly searchEnginePath: UnwrapRef<typeof import('../core/path/src/paths')['searchEnginePath']>
     readonly searchFilters: UnwrapRef<typeof import('../core/search-engine/src/index')['searchFilters']>
@@ -2904,7 +2907,7 @@ declare module '@vue/runtime-core' {
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
-    readonly validate: UnwrapRef<typeof import('../core/validation/src/validate')['validate']>
+    readonly validate: UnwrapRef<typeof import('../core/validation/src/schema')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>

@@ -29,7 +29,6 @@ export enum NpmScript {
   GenerateTypes = 'generate:types',
   GenerateEntries = 'generate:entries',
   GenerateWebTypes = 'generate:web-types',
-  GenerateVsCodeCustomData = 'generate:vscode-custom-data',
   GenerateIdeHelpers = 'generate:ide-helpers',
   GenerateComponentMeta = 'generate:component-meta',
   Release = 'release',

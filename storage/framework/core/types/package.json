@@ -63,11 +63,11 @@
     "vite-plugin-inspect": "^0.8.4",
     "vite-plugin-pwa": "^0.20.0",
     "vite-ssg": "^0.23.7",
-    "vitepress": "1.1.4",
+    "vitepress": "1.2.0",
     "vue": "^3.4.27"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.142.0",
+    "aws-cdk-lib": "^2.142.1",
     "typescript": "^5.4.5"
   }
 }

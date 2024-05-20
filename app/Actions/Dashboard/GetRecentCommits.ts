@@ -7,6 +7,7 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Commit.recent(3)
+    // use git to get the last 3 commits
+    // Commit.recent(3)
   },
 })

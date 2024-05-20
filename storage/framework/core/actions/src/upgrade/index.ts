@@ -2,7 +2,7 @@ import process from 'node:process'
 import { parseArgs } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import { runAction } from '../helpers/utils'
+import { runAction } from '../helpers'
 
 const options: any = parseArgs()
 

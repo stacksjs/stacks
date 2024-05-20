@@ -1,6 +1,7 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
+import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes } from '@stacksjs/types'
@@ -69,11 +70,11 @@ export async function generatePostgresMigration(modelPath: string) {
     }
   }
 
-  const model = await import(modelPath)
+  const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
-  const fieldsString = JSON.stringify(model.default.attributes, null, 2) // Pretty print the JSON
+  const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
 
   let haveFieldsChanged = false
@@ -114,18 +115,16 @@ export async function generatePostgresMigration(modelPath: string) {
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
-  const model = await import(modelPath)
-  const tableName = model.default.table
+  const model = (await import(modelPath)).default as Model
+  const tableName = await modelTableName(model)
 
   await createPivotTableMigration(model)
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
   const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
-
-  const fields = model.default.attributes
-  const useTimestamps = model.default?.traits?.useTimestamps ?? model.default?.traits?.timestampable
-  const useSoftDeletes = model.default?.traits?.useSoftDeletes ?? model.default?.traits?.softDeletable
+  const fields = model.attributes
+  const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
+  const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -239,15 +238,15 @@ async function getPivotTables(
 export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
-  const model = await import(modelPath)
+  const model = (await import(modelPath)).default as Model
   const modelName = path.basename(modelPath)
-  const tableName = model.default.table
+  const tableName = await modelTableName(model)
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.default.attributes as Attributes
+  const currentFields = model.attributes
 
   // Determine fields to add and remove
   const fieldsToAdd = Object.keys(currentFields)
@@ -288,7 +287,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
   for (const modelPath of modelFiles) {
     const model = await import(modelPath)
 
-    const tableName = model.default.table
+    const tableName = await modelTableName(model)
 
     tables.push(tableName)
   }

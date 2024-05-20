@@ -16,6 +16,16 @@ export default {
 
   storage: {},
 
+  api: {
+    prefix: env.API_PREFIX || 'api',
+    // version: 'v1',
+    description: 'My awesome Stacks API',
+    deploy: true,
+    memorySize: 512,
+    prewarm: 10,
+    timeout: 30,
+  },
+
   cdn: {
     compress: true,
 

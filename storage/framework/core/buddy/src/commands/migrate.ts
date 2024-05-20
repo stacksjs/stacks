@@ -52,7 +52,6 @@ export function migrate(buddy: CLI) {
 
       const perf = await intro('buddy migrate:fresh')
       const result = await runAction(Action.MigrateFresh, options)
-      const result2 = await runAction(Action.Migrate, options)
 
       if (result.isErr()) {
         await outro(
@@ -68,21 +67,6 @@ export function migrate(buddy: CLI) {
         useSeconds: true,
       })
 
-      if (result2.isErr()) {
-        await outro(
-          'While running the migrate command, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result2.error,
-        )
-        process.exit()
-      }
-
-      const APP_ENV = process.env.APP_ENV || 'local'
-
-      await outro(`Migrated your ${APP_ENV} database.`, {
-        startTime: perf,
-        useSeconds: true,
-      })
       process.exit(ExitCode.Success)
     })
 

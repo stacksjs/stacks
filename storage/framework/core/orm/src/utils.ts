@@ -1,6 +1,19 @@
 import { generator, parser, traverse } from '@stacksjs/build'
 import { fs } from '@stacksjs/storage'
+import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes } from '@stacksjs/types'
+import type { Model } from '@stacksjs/types'
+
+type ModelPath = string
+
+export async function modelTableName(model: Model | ModelPath): Promise<string> {
+  if (typeof model === 'string') {
+    const modelPath = model
+    model = (await import(model)).default as Model
+  }
+
+  return model.table ?? snakeCase(plural(model.name))
+}
 
 export async function extractFieldsFromModel(filePath: string) {
   // Read the TypeScript file

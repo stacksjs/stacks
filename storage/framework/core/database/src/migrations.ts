@@ -55,10 +55,8 @@ export async function runDatabaseMigration() {
       return ok('No new migrations were executed')
     }
 
-    if (results) {
-      log.success('Database migrated successfully.')
+    if (results)
       return ok(results)
-    }
 
     log.success('Database migration completed with no new migrations.')
     return ok('Database migration completed with no new migrations.')
@@ -80,7 +78,7 @@ export async function resetDatabase() {
 
   if (driver === 'postgres') return resetPostgresDatabase()
 
-  return resetSqliteDatabase()
+  throw new Error('Unsupported database driver in resetDatabase')
 }
 
 export async function generateMigrations() {
@@ -161,11 +159,11 @@ export async function lastMigrationDate(): Promise<string | undefined> {
 // read the last migration file and extract the fields that were modified.
 export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
-  const model = await import(oldModelPath)
+  const model = (await import(oldModelPath)).default as Model
   let fields = {} as Attributes
 
-  if (typeof model.default.attributes === 'object') fields = model.default.attributes
-  else fields = JSON.parse(model.default.attributes) as Attributes
+  if (typeof model.attributes === 'object') fields = model.attributes
+  else fields = JSON.parse(model.attributes) as Attributes
 
   return fields
 }

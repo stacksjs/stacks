@@ -1,0 +1,41 @@
+{
+  "name": "@stacksjs/calendar-api",
+  "type": "module",
+  "version": "0.60.3",
+  "description": "Easily interact with calendar APIs.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/calendar#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/calendar"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": ["calendar", "stacks", "ical", "google calendar", "outlook calendar"],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "typecheck": "bun --bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}

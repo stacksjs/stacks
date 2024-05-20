@@ -1,10 +1,11 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { isString } from '@stacksjs/validation'
 import { snakeCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 import { generateMigrations, resetDatabase, runDatabaseMigration } from './migrations'
 
 async function seedModel(name: string, model?: Model) {
@@ -15,18 +16,20 @@ async function seedModel(name: string, model?: Model) {
 
   if (!model) model = (await import(path.userModelsPath(name))) as Model
 
-  const tableName = model.table ?? snakeCase(model.name ?? name.replace('.ts', ''))
+  const tableName = await modelTableName(model)
   const seedCount =
     typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
-  log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
-  const records = []
 
+    log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
+
+  const records = []
   const otherRelations = await fetchOtherModelRelations(model)
 
   log.debug(otherRelations)
 
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
+
     for (const fieldName in model.attributes) {
       const field = model.attributes[fieldName]
       // Use the factory function if available, otherwise leave the field undefined
@@ -49,19 +52,15 @@ async function seedModel(name: string, model?: Model) {
 }
 
 async function seedModelRelation(modelName: string): Promise<BigInt | number> {
-
   const modelInstance = (await import(path.userModelsPath(modelName))).default
 
   if (! modelInstance) return 1
 
   const record: any = {}
-
   const table = modelInstance.table
 
   for (const fieldName in modelInstance.attributes) {
-    
     const field = modelInstance.attributes[fieldName]
-
     // Use the factory function if available, otherwise leave the field undefined
     record[fieldName] = field?.factory ? field.factory() : undefined
   }
@@ -69,7 +68,7 @@ async function seedModelRelation(modelName: string): Promise<BigInt | number> {
   const data = await db.insertInto(table)
     .values(record)
     .executeTakeFirstOrThrow()
-  
+
   return data.insertId || 1
 }
 
@@ -110,14 +109,11 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
 }
 
 export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
-
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
-
     const modelFile = await import(modelFileElement)
 
     if (model.name === modelFile.default.name) continue
@@ -142,14 +138,16 @@ function hasRelations(obj: any, key: string): boolean {
 export async function seed() {
   // TODO: need to check other databases too
   const dbPath = path.userDatabasePath('stacks.sqlite')
+
   if (!fs.existsSync(dbPath)) {
     log.warn('No database found, configuring it...')
+    // first, ensure the database is reset
     await resetDatabase()
 
-    // generate the migrations
+    // then, generate the migrations
     await generateMigrations()
 
-    // migrate the database
+    // finally, migrate the database
     await runDatabaseMigration()
   } else {
     log.debug('Database configured...')
