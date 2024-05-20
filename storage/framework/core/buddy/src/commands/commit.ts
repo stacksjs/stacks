@@ -12,7 +12,7 @@ export function commit(buddy: CLI) {
 
   buddy
     .command('commit', descriptions.commit)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       log.debug('Running `buddy commit` ...', options)

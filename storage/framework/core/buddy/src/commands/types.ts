@@ -13,7 +13,7 @@ export function types(buddy: CLI) {
 
   buddy
     .command('types:generate', descriptions.generate)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
       log.debug('Running `buddy types:generate` ...', options)
@@ -22,7 +22,7 @@ export function types(buddy: CLI) {
 
   buddy
     .command('types:fix', descriptions.fix)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
       // await fixTypes()

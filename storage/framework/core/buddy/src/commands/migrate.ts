@@ -16,7 +16,7 @@ export function migrate(buddy: CLI) {
   buddy
     .command('migrate', descriptions.migrate)
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       log.debug('Running `buddy migrate` ...', options)
@@ -45,7 +45,7 @@ export function migrate(buddy: CLI) {
   buddy
     .command('migrate:fresh', descriptions.migrate)
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       log.debug('Running `buddy migrate:fresh` ...', options)
@@ -72,7 +72,7 @@ export function migrate(buddy: CLI) {
 
   buddy
     .command('migrate:dns', descriptions.migrate)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       log.debug('Running `buddy migrate:dns` ...', options)

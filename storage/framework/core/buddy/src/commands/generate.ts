@@ -39,7 +39,7 @@ export function generate(buddy: CLI) {
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-p, --pkgx', descriptions.pkgx)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--core-symlink', descriptions.coreSymlink)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
@@ -73,7 +73,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:types', descriptions.types)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('types:generate')
     .action(async (options: GeneratorOptions) => {
@@ -83,7 +83,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:entries', descriptions.entries)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:entries` ...', options)
@@ -92,7 +92,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:web-types', descriptions.webTypes)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:web-types` ...', options)
@@ -101,7 +101,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:vscode-custom-data', descriptions.customData)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:vscode-custom-data` ...', options)
@@ -110,7 +110,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:ide-helpers', descriptions.ideHelpers)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:ide-helpers` ...', options)
@@ -119,7 +119,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:component-meta', descriptions.componentMeta)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:component-meta` ...', options)
@@ -128,7 +128,7 @@ export function generate(buddy: CLI) {
 
   buddy
     .command('generate:pkgx-config', descriptions.pkgx)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: GeneratorOptions) => {
       log.debug('Running `buddy generate:pkgx-config` ...', options)

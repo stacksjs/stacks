@@ -32,7 +32,7 @@ export function cloud(buddy: CLI) {
     .command('cloud', descriptions.cloud)
     .option('--ssh', descriptions.ssh, { default: false })
     .option('--connect', descriptions.ssh, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud` ...', options)
@@ -66,7 +66,7 @@ export function cloud(buddy: CLI) {
   buddy
     .command('cloud:add', descriptions.add)
     .option('--jump-box', 'Remove the jump-box', { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:add` ...', options)
@@ -128,7 +128,7 @@ export function cloud(buddy: CLI) {
     .alias('undeploy')
     .option('--jump-box', 'Remove the jump-box', { default: false })
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: false }) // TODO: implement this
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:remove` ...', options)
@@ -219,7 +219,7 @@ export function cloud(buddy: CLI) {
     .command('cloud:optimize-cost', descriptions.optimizeCost)
     .option('--jump-box', 'Remove the jump-box', { default: true }) // removes the ec2 instance
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: true }) // TODO: implement this - removes the Kinesis Data Stream
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:optimize-cost` ...', options)
@@ -256,7 +256,7 @@ export function cloud(buddy: CLI) {
   buddy
     .command('cloud:cleanup', descriptions.cleanUp)
     .alias('cloud:clean-up')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:cleanup` ...', options)

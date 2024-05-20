@@ -13,7 +13,7 @@ export function key(buddy: CLI) {
 
   buddy
     .command('key:generate', descriptions.command)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
       log.debug('Running `buddy key:generate` ...', options)

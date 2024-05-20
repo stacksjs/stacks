@@ -41,7 +41,7 @@ export function create(buddy: CLI) {
     .option('-d, --database', descriptions.database, { default: true })
     .option('-ca, --cache', descriptions.cache, { default: false })
     .option('-e, --email', descriptions.email, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (options: CreateOptions) => {
