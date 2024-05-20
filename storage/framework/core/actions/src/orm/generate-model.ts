@@ -165,8 +165,7 @@ async function initiateModelGeneration(): Promise<void> {
 
     await generateApiRoutes(model)
 
-    Bun.write(path.projectStoragePath(`framework/orm/src/${modelName}.ts`), '')
-    const file = Bun.file(path.projectStoragePath(`framework/orm/src/${modelName}.ts`))
+    const file = Bun.file(path.projectStoragePath(`framework/orm/src/models/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
     const classString = await generateModelString(tableName, model, fields)
 
@@ -219,7 +218,7 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function deleteExistingModels() {
-  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/*.ts`))
+  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models*.ts`))
 
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
@@ -251,10 +250,13 @@ async function setKyselyTypes() {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const tableName = await modelTableName(model)
-    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const modelName = model.name
 
-    text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
+    const words = tableName.split('_')
+
+    const pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
+
+    text += `import type { ${pivotFormatted}Table } from '../../../../orm/src/models/${modelName}'\n`
   }
 
   text += `import type { Generated } from 'kysely'\n\n`
@@ -282,12 +284,15 @@ async function setKyselyTypes() {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const tableName = await modelTableName(model)
-    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
     const pivotTables = await getPivotTables(model)
 
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
-    text += `  ${tableName}: ${formattedTableName}Table\n`
+    const words = tableName.split('_')
+
+    const formattedTableName = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+
+    text += `  ${tableName}: ${formattedTableName}\n`
   }
 
   text += `}`
@@ -404,10 +409,13 @@ async function getPivotTables(
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = model?.name?.toLowerCase()
 
+      const firstForeignKey = belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
+      const secondForeignKey = belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-        firstForeignKey: belongsToManyRelation.firstForeignKey,
-        secondForeignKey: belongsToManyRelation.secondForeignKey,
+        firstForeignKey: firstForeignKey,
+        secondForeignKey: secondForeignKey,
       })
     }
 
@@ -424,7 +432,7 @@ async function generateModelString(
 ): Promise<string> {
   const modelName = model.name
   const formattedTableName = pascalCase(tableName) // users -> Users
-  const formattedModelName = modelName.toLowerCase() // User -> user
+  const formattedModelName = modelName?.toLowerCase() // User -> user
 
   let fieldString = ''
   let relationMethods = ``

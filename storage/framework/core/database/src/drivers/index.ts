@@ -2,6 +2,7 @@ import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
+import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, RelationConfig, VineType } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
@@ -18,6 +19,14 @@ export async function getLastMigrationFields(modelName: string): Promise<Attribu
   else fields = JSON.parse(model.attributes) as Attributes
 
   return fields
+}
+
+export async function modelTableName(model: Model | string): Promise<string> {
+  if (typeof model === 'string') {
+    model = (await import(model)).default as Model
+  }
+
+  return model.table ?? snakeCase(plural(model?.name || ''))
 }
 
 export async function hasTableBeenMigrated(tableName: string) {
@@ -39,6 +48,8 @@ export async function getExecutedMigrations() {
 
 export function mapFieldTypeToColumnType(rule: VineType): string {
   // Check if the rule is for a string and has specific validations
+
+  console.log(rule)
   if (rule[Symbol.for('schema_name')].includes('string'))
     // Default column type for strings
     return prepareTextColumnType(rule)
@@ -74,8 +85,8 @@ export function prepareTextColumnType(rule: VineType) {
   let columnType = 'varchar(255)'
 
   // Find min and max length validations
-  const minLengthValidation = rule.validations.find((v) => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find((v) => v.options?.max !== undefined)
+  const minLengthValidation = rule.validations.find((v: any) => v.options?.min !== undefined)
+  const maxLengthValidation = rule.validations.find((v: any) => v.options?.max !== undefined)
 
   // If there's a max length validation, adjust the column type accordingly
   if (maxLengthValidation) {
@@ -121,7 +132,7 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name.toLowerCase()
+        const formattedModelName = model.name?.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -135,6 +146,8 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
           throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
         })
+
+       
       }
     }
   }
@@ -163,6 +176,35 @@ export async function fetchOtherModelRelations(model: Model, modelFiles: string[
   }
 
   return modelRelations
+}
+
+export async function getPivotTables(
+  model: Model,
+): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
+  const pivotTable = []
+
+  if (model.belongsToMany && model.name) {
+    if ('belongsToMany' in model) {
+      for (const belongsToManyRelation of model.belongsToMany) {
+        const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
+        const modelRelation = (await import(modelRelationPath)).default
+        const formattedModelName = model.name.toLowerCase()
+
+        const firstForeignKey = belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
+        const secondForeignKey = belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+
+        pivotTable.push({
+          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          firstForeignKey: firstForeignKey,
+          secondForeignKey: secondForeignKey,
+        })
+      }
+
+      return pivotTable
+    }
+  }
+
+  return []
 }
 
 function hasRelations(obj: any, key: string): boolean {

@@ -5,7 +5,7 @@ import type { Model } from '@stacksjs/types'
 
 export default {
   name: 'Deployment',
-
+  table: 'deployments',
   traits: {
     useTimestamps: true,
 
