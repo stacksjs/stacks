@@ -4,7 +4,8 @@ const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
 
 watch(theme, (currentVal) => {
-  if (currentVal === 'light') isDark.value = false
+  if (currentVal === 'light')
+    isDark.value = false
   else isDark.value = true
 
   useToggle(isDark)
