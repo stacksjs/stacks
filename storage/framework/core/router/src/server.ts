@@ -66,7 +66,6 @@ export async function serverResponse(req: Request) {
 
   if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
 
-  // addRouteParamsAndQuery(url, foundRoute)
   await executeMiddleware(foundRoute)
 
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })

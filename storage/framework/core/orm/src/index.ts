@@ -14,4 +14,4 @@
 
 export * from './utils'
 export * from './generated/User'
-export * from './generated/types'
+// export * from './generated/types'

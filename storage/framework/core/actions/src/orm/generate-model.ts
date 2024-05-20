@@ -193,7 +193,7 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
 
-        const modelRelation = (await import(modelRelationPath)).default
+        const modelRelation = (await import(modelRelationPath)).default as Model
 
         const formattedModelName = model.name?.toLowerCase()
 
@@ -398,10 +398,11 @@ async function getPivotTables(
   const pivotTable = []
 
   if ('belongsToMany' in model) {
-    for (const belongsToManyRelation of model.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model.name}.ts`)
+    const belongsToManyArr =  model.belongsToMany || []
+    for (const belongsToManyRelation of belongsToManyArr) {
+      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
       const modelRelation = (await import(modelRelationPath)).default as Model
-      const formattedModelName = model.name.toLowerCase()
+      const formattedModelName = model?.name?.toLowerCase()
 
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
@@ -438,7 +439,7 @@ async function generateModelString(
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
-    const tableRelation = relation.table
+    const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
     const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
@@ -446,9 +447,11 @@ async function generateModelString(
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
+ 
     if (relationType === 'throughType') {
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
+      // const throughRelationModel = 
       const formattedThroughRelation = relation.throughModel.name.toLowerCase()
       const throughTableRelation = throughRelation.table
       const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`

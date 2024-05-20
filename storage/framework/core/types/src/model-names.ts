@@ -1,1 +1,1 @@
-export type ModelNames = 'Subscriber' | 'User' | 'Post'
+export type ModelNames = 'Project' | 'AccessToken' | 'Team' | 'Subscriber' | 'Deployment' | 'User' | 'Post'
