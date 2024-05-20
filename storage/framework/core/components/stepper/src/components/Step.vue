@@ -1,29 +1,3 @@
-<template>
-  <div :class="['v-step', classes]">
-    <input
-      :id="id"
-      class="input"
-      type="radio"
-      v-show="debug"
-      :checked="active"
-      :name="computedName"
-      @change="handleChange"
-    >
-    <label class="label" :for="id">
-      <slot name="index-root" v-bind="scope">
-        <span class="index">
-          <slot name="index" v-bind="scope">
-            {{ scope.displayIndex }}
-          </slot>
-        </span>
-      </slot>
-      <span class="title" v-if="defaultSlot">
-        <slot v-bind="scope"></slot>
-      </span>
-      <span class="divider" v-if="withDivider"></span>
-    </label>
-  </div>
-</template>
 
 <script>
 import Utils from '@/modules/Stepper.Utils'
@@ -107,6 +81,34 @@ export default {
   inheritAttrs: false
 }
 </script>
+
+<template>
+  <div :class="['v-step', classes]">
+    <input
+      :id="id"
+      class="input"
+      type="radio"
+      v-show="debug"
+      :checked="active"
+      :name="computedName"
+      @change="handleChange"
+    >
+    <label class="label" :for="id">
+      <slot name="index-root" v-bind="scope">
+        <span class="index">
+          <slot name="index" v-bind="scope">
+            {{ scope.displayIndex }}
+          </slot>
+        </span>
+      </slot>
+      <span class="title" v-if="defaultSlot">
+        <slot v-bind="scope"></slot>
+      </span>
+      <span class="divider" v-if="withDivider"></span>
+    </label>
+  </div>
+</template>
+
 
 <style lang="scss" scoped>
 

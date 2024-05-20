@@ -1,48 +1,3 @@
-<template>
-  <div class="v-stepper">
-    <component :is="rootComponent">
-      <v-step
-        v-for="(step, $index) in stepsArr"
-        :name="id"
-        :key="$index"
-        :debug="debug"
-        :index="$index"
-        @change="handleChange"
-        :visited="step.visited"
-        :disabled="step.disabled"
-        :with-divider="withDivider"
-        :active="step.index === toIndex(value.value)">
-
-        <!-- Proxy slot ("index-root") -->
-        <template
-          slot="index-root"
-          slot-scope="scope"
-          v-if="withSlot(getSlotName('index-root', scope.displayIndex))">
-          <!-- Lift slot ("index-root") -->
-          <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
-        </template>
-
-        <!-- Proxy slot ("index") -->
-        <template
-          slot="index"
-          slot-scope="scope"
-          v-if="withoutSlot(getSlotName('index-root', scope.displayIndex))">
-          <!-- Lift slot ("index") -->
-          <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
-            {{ scope.displayIndex }}
-          </slot>
-        </template>
-
-        <!-- Proxy slot ("default") -->
-        <template slot-scope="scope">
-          <!-- Lift slot ("default") -->
-          <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope"></slot>
-        </template>
-
-      </v-step>
-    </component>
-  </div>
-</template>
 
 <script>
 import VStep from './Step'
@@ -468,3 +423,49 @@ export default {
   inheritAttrs: false
 }
 </script>
+
+<template>
+  <div class="v-stepper">
+    <component :is="rootComponent">
+      <v-step
+        v-for="(step, $index) in stepsArr"
+        :name="id"
+        :key="$index"
+        :debug="debug"
+        :index="$index"
+        @change="handleChange"
+        :visited="step.visited"
+        :disabled="step.disabled"
+        :with-divider="withDivider"
+        :active="step.index === toIndex(value.value)">
+
+        <!-- Proxy slot ("index-root") -->
+        <template
+          slot="index-root"
+          slot-scope="scope"
+          v-if="withSlot(getSlotName('index-root', scope.displayIndex))">
+          <!-- Lift slot ("index-root") -->
+          <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
+        </template>
+
+        <!-- Proxy slot ("index") -->
+        <template
+          slot="index"
+          slot-scope="scope"
+          v-if="withoutSlot(getSlotName('index-root', scope.displayIndex))">
+          <!-- Lift slot ("index") -->
+          <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
+            {{ scope.displayIndex }}
+          </slot>
+        </template>
+
+        <!-- Proxy slot ("default") -->
+        <template slot-scope="scope">
+          <!-- Lift slot ("default") -->
+          <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope"></slot>
+        </template>
+
+      </v-step>
+    </component>
+  </div>
+</template>

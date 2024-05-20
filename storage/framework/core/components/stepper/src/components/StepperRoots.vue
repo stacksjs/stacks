@@ -1,9 +1,3 @@
-<template>
-	<div class="v-stepper-root">
-    <slot></slot>
-  </div>
-</template>
-
 <script>
 export default {
   name: 'VStepperRoot'
@@ -25,3 +19,9 @@ export default {
   }
 }
 </style>
+
+<template>
+	<div class="v-stepper-root">
+    <slot></slot>
+  </div>
+</template>
