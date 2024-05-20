@@ -1,8 +1,8 @@
 import { Action } from '@stacksjs/actions'
 
 export default new Action({
-  name: 'UpdateAnalyticsConfig',
-  description: 'Updates the analytics config.',
+  name: 'UpdateDatabaseConfig',
+  description: 'Updates the database config.',
   apiResponse: true,
 
   async handle() {
