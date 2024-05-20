@@ -19,6 +19,7 @@ import { ExitCode } from '@stacksjs/types'
 
 export function make(buddy: CLI) {
   const descriptions = {
+    action: 'Create a new action',
     model: 'Create a new model',
     component: 'Create a new component',
     page: 'Create a new page',
@@ -37,6 +38,8 @@ export function make(buddy: CLI) {
 
   buddy
     .command('make', 'The make command')
+    .option('-a, --action', descriptions.action, { default: false })
+    .option('-m, --model', descriptions.model, { default: false })
     .option('-c, --component', descriptions.component, { default: false })
     .option('-p, --page', descriptions.page, { default: false })
     .option('-f, --function', descriptions.function, { default: false })
@@ -91,8 +94,7 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:component', descriptions.component)
-    .option('-n, --name', 'The name of the component')
+    .command('make:component [name]', descriptions.component)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
@@ -111,7 +113,6 @@ export function make(buddy: CLI) {
 
   buddy
     .command('make:database [name]', descriptions.database)
-    .option('-n, --name', 'The name of the database')
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
@@ -137,8 +138,7 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:factory', descriptions.factory)
-    .option('-n, --name', 'The name of the factory')
+    .command('make:factory [name]', descriptions.factory)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
@@ -156,9 +156,8 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:view', descriptions.page)
-    .alias('make:page')
-    .option('-n, --name', 'The name of the page')
+    .command('make:view [name]', descriptions.page)
+    .alias('make:page [name]')
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
@@ -176,8 +175,7 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:function', descriptions.function)
-    .option('-n, --name', 'The name of the function')
+    .command('make:function [name]', descriptions.function)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
@@ -187,8 +185,7 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:lang', descriptions.language)
-    .option('-n, --name', 'The name of the language')
+    .command('make:lang [name]', descriptions.language)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
@@ -206,8 +203,7 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:notification', descriptions.notification)
-    .option('-n, --name', 'The name of the notification')
+    .command('make:notification [name]', descriptions.notification)
     .option('-e, --email', 'Is it an email notification?', { default: true })
     .option('-c, --chat', 'Is it a chat notification?', { default: false })
     .option('-s, --sms', 'Is it a SMS notification?', { default: false })
@@ -244,8 +240,7 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:stack', descriptions.stack)
-    .option('-n, --name', 'The name of the stack')
+    .command('make:stack [name]', descriptions.stack)
     .option('-p, --project', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
@@ -263,8 +258,27 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:model', descriptions.model)
-    .option('-n, --name', 'The name of the model')
+    .command('make:action [name]', descriptions.action)
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:action` ...', options)
+
+      const name = buddy.args[0] || options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit()
+      }
+
+      await makeAction(options)
+    })
+
+  buddy
+    .command('make:model [name]', descriptions.model)
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
       log.debug('Running `buddy make:model` ...', options)
 
@@ -280,11 +294,9 @@ export function make(buddy: CLI) {
     })
 
   buddy
-    .command('make:migration', descriptions.migration)
-    .option('-n, --name', 'The name of the migration')
-    .option('-e, --env', 'The environment to run the migration in', {
-      default: 'dev',
-    })
+    .command('make:migration [name]', descriptions.migration)
+    .option('-p, --project', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
     .action((options: MakeOptions) => {
       log.debug('Running `buddy make:migration` ...', options)
 
