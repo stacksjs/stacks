@@ -3,6 +3,7 @@ import {
   createModel,
   createNotification,
   invoke,
+  makeAction,
   makeComponent,
   makeDatabase,
   makeFunction,
@@ -277,7 +278,7 @@ export function make(buddy: CLI) {
         process.exit()
       }
 
-      // await makeAction(options)
+      await makeAction(options)
     })
 
   buddy

@@ -42,6 +42,18 @@ export function userActionsPath(path?: string) {
   return appPath(`Actions/${path || ''}`)
 }
 
+export function userComponentsPath(path?: string) {
+  return libsPath(`components/${path || ''}`)
+}
+
+export function userViewsPath(path?: string) {
+  return resourcesPath(`views/${path || ''}`)
+}
+
+export function userFunctionsPath(path?: string) {
+  return resourcesPath(`views/${path || ''}`)
+}
+
 /**
  * Returns the path to the user-defined `Jobs` directory.
  *
@@ -1251,6 +1263,9 @@ export function homeDir(path?: string) {
 export const path = {
   actionsPath,
   userActionsPath,
+  userComponentsPath,
+  userViewsPath,
+  userFunctionsPath,
   aiPath,
   assetsPath,
   relativeActionsPath,

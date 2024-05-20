@@ -1,31 +1,38 @@
 import process from 'node:process'
 import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { frameworkPath, projectPath, resolve } from '@stacksjs/path'
+import { frameworkPath, path as p, projectPath, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import type { MakeOptions } from '@stacksjs/types'
 
 export async function invoke(options: MakeOptions) {
   if (options.component) await makeComponent(options)
-
   if (options.database) makeDatabase(options)
-
   if (options.function) await makeFunction(options)
-
   if (options.language) await makeLanguage(options)
 
   // if (options.migration)
   //   await migration(options)
 
   if (options.notification) await makeNotification(options)
-
   if (options.page) await makePage(options)
-
   if (options.stack) makeStack(options)
 }
 
 export async function make(options: MakeOptions) {
   return invoke(options)
+}
+
+export async function makeAction(options: MakeOptions) {
+  try {
+    const name = options.name
+    log.info('Creating your action...')
+    await createAction(options)
+    log.success(`Created ${italic(name)} action`)
+  } catch (error) {
+    log.error('There was an error creating your action', error)
+    process.exit()
+  }
 }
 
 export async function makeComponent(options: MakeOptions) {
@@ -40,10 +47,28 @@ export async function makeComponent(options: MakeOptions) {
   }
 }
 
+export async function createAction(options: MakeOptions) {
+  const name = options.name
+  await writeTextFile({
+    path: p.userActionsPath(`${name}.ts`),
+    data: `import { Action } from '@stacksjs/actions'
+
+export default new Action({
+  name: '${name}',
+  description: '${name} action',
+
+  handle() {
+    return 'Hello World action'
+  },
+})
+`,
+  })
+}
+
 export async function createComponent(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: `./components/${name}.stx`,
+    path: p.userComponentsPath(`${name}.stx`),
     data: `<script setup lang="ts">
 console.log('Hello World component created')
 </script>
@@ -116,7 +141,7 @@ export async function makePage(options: MakeOptions) {
 export async function createPage(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: `./pages/${name}.stx`,
+    path: p.userViewsPath(`${name}.stx`),
     data: `<script setup lang="ts">
 console.log('Hello World page created')
 </script>
@@ -145,7 +170,7 @@ export async function makeFunction(options: MakeOptions) {
 export async function createFunction(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: `./functions/${name}.ts`,
+    path: p.userFunctionsPath(`${name}.ts`),
     data: `// reactive state
 const ${name} = ref(0)
 
@@ -177,7 +202,7 @@ export async function makeLanguage(options: MakeOptions) {
 export async function createLanguage(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: `./lang/${name}.yml`,
+    path: p.resourcesPath(`lang/${name}.yml`),
     data: `button:
   text: Copy
 `,
@@ -211,7 +236,7 @@ export async function createNotification(options: MakeOptions) {
     if (options.sms) importOption = 'SMSOptions'
 
     await writeTextFile({
-      path: `./notifications/${name}.ts`,
+      path: p.userNotificationsPath(`${name}.ts`),
       data: `import type { ${importOption} } from \'@stacksjs/types\'
 
 function content(): string {
@@ -266,7 +291,8 @@ export async function createModel(options: MakeOptions) {
   if (!optionName[0]) throw new Error('options.name is required and cannot be empty')
 
   const name = optionName[0].toUpperCase() + optionName.slice(1)
-  const path = projectPath(`app/Models/${name}.ts`)
+  const path = p.userModelsPath(`${name}.ts`)
+
   try {
     await writeTextFile({
       path: `${path}`,

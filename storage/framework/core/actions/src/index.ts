@@ -9,6 +9,7 @@ export { add as runAdd } from './add'
 // makeFactory,
 export {
   make as runMake,
+  makeAction,
   makeComponent,
   makeDatabase,
   makeFunction,
