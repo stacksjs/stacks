@@ -40,7 +40,7 @@ export function release(buddy: CLI) {
       })
 
       console.log('')
-      console.log(italic('Follow along: https://github.com/stacksjs/stacks/actions'))
+      log.info(`Follow along: ${italic('https://github.com/stacksjs/stacks/actions')}`)
     })
 
   buddy.on('release:*', () => {
