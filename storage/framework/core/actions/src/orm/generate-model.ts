@@ -107,9 +107,9 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
   if (apiRoute === 'update') {
     handleString += `handle() {
-        const id = request.get(id)
+        const id = request.get(req.params.id)
 
-        const model = ${modelName}.find(id)
+        const model = ${modelName}.find(req.params.id)
 
         return model.update(req.all())
       },`

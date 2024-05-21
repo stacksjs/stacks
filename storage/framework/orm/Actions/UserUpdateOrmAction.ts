@@ -8,7 +8,7 @@ export default new Action({
   description: 'User Update ORM Action',
 
   handle() {
-    const id = request.get(id)
+    const id = request.get(req.params.id)
 
     const model = User.find(id)
 
