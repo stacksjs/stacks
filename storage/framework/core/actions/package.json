@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.61.0",
+  "version": "0.61.1",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "license": "MIT",

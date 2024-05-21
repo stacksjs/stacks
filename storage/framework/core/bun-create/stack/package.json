@@ -1,7 +1,7 @@
 {
   "name": "@bun-examples/stack",
   "type": "module",
-  "version": "0.61.0",
+  "version": "0.61.1",
   "description": "Your project description.",
   "author": "your-name <your-email>",
   "license": "MIT",
