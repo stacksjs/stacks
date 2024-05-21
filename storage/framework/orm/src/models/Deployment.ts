@@ -119,7 +119,7 @@ export class DeploymentModel {
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset((options.page! - 1) * (options.limit ?? 10))
+      .offset((options.page - 1) * (options.limit ?? 10))
       .execute()
 
     let nextCursor = null
@@ -129,7 +129,7 @@ export class DeploymentModel {
       data: deploymentsWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page!,
+        page: options.page,
         total_pages: totalPages,
       },
       next_cursor: nextCursor,
