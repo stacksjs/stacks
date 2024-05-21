@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/strings",
   "type": "module",
-  "version": "0.61.3",
+  "version": "0.61.4",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
   "license": "MIT",
