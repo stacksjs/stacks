@@ -1,4 +1,21 @@
-import { AiStack, CdnStack, CliStack, ComputeStack, DeploymentStack, DnsStack, DocsStack, EmailStack, FileSystemStack, JumpBoxStack, NetworkStack, PermissionsStack, QueueStack, RedirectsStack, SecurityStack, StorageStack } from '@stacksjs/cloud'
+import {
+  AiStack,
+  CdnStack,
+  CliStack,
+  ComputeStack,
+  DeploymentStack,
+  DnsStack,
+  DocsStack,
+  EmailStack,
+  FileSystemStack,
+  JumpBoxStack,
+  NetworkStack,
+  PermissionsStack,
+  QueueStack,
+  RedirectsStack,
+  SecurityStack,
+  StorageStack,
+} from '@stacksjs/cloud'
 import { config } from '@stacksjs/config'
 import { Stack } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'

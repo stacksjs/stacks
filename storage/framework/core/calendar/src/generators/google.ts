@@ -12,18 +12,17 @@ function generateGoogle(link: CalendarLink): string {
   const utcEndDateTime = convertTZ(link.to, 'UTC') // set timezone to UTC
   const dateTimeFormat = link.allDay ? dateFormat : timeFormat
 
-  url = `${url}&dates=${useDateFormat(utcStartDateTime, dateTimeFormat).value}/${useDateFormat(utcEndDateTime, dateTimeFormat).value}`
+  url = `${url}&dates=${useDateFormat(utcStartDateTime, dateTimeFormat).value}/${
+    useDateFormat(utcEndDateTime, dateTimeFormat).value
+  }`
 
-  if (link.timezone)
-    url = `${url}&ctz=${link.timezone}`
+  if (link.timezone) url = `${url}&ctz=${link.timezone}`
 
   url = `${url}&text=${encodeURIComponent(link.title)}`
 
-  if (link.description)
-    url = `${url}&details=${encodeURIComponent(link.description)}`
+  if (link.description) url = `${url}&details=${encodeURIComponent(link.description)}`
 
-  if (link.address)
-    url = `${url}&location=${encodeURIComponent(link.address)}`
+  if (link.address) url = `${url}&location=${encodeURIComponent(link.address)}`
 
   return url
 }

@@ -50,7 +50,6 @@ export async function serverResponse(req: Request) {
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
 
-  
   log.info(`URL: ${JSON.stringify(url)}`)
 
   const foundRoute: Route | undefined = routesList.find((route: Route) => {

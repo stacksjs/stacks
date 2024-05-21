@@ -1,7 +1,7 @@
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { db } from '@stacksjs/database'
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
-    import { db } from '@stacksjs/database'
+    import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import User from './User'
 
 
@@ -128,7 +128,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
         let nextCursor = null
         if (deploymentsWithExtra.length > (options.limit ?? 10))
-          nextCursor = deploymentsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+          nextCursor = deploymentsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
         return {
           data: deploymentsWithExtra,
@@ -172,7 +172,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new DeploymentModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator, value: any) {
         let query = db.selectFrom('deployments')
 
         query = query.where(column, operator, value)
@@ -460,7 +460,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit = 10, offset = 0) {
       return await db.selectFrom('deployments')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -511,7 +511,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function where(column: string, operator = '=', value: any) {
+    export async function where(column: string, operator, value: any) {
       let query = db.selectFrom('deployments')
 
       query = query.where(column, operator, value)

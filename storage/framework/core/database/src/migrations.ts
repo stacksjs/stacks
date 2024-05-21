@@ -55,8 +55,7 @@ export async function runDatabaseMigration() {
       return ok('No new migrations were executed')
     }
 
-    if (results)
-      return ok(results)
+    if (results) return ok(results)
 
     log.success('Database migration completed with no new migrations.')
     return ok('Database migration completed with no new migrations.')

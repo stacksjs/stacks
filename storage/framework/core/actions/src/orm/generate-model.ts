@@ -186,7 +186,6 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
-
         let relationModel = relationInstance.model
 
         if (isString(relationInstance)) {
@@ -406,14 +405,16 @@ async function getPivotTables(
   const pivotTable = []
 
   if ('belongsToMany' in model) {
-    const belongsToManyArr =  model.belongsToMany || []
+    const belongsToManyArr = model.belongsToMany || []
     for (const belongsToManyRelation of belongsToManyArr) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = model?.name?.toLowerCase()
 
-      const firstForeignKey = belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
-      const secondForeignKey = belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+      const firstForeignKey =
+        belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
+      const secondForeignKey =
+        belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
@@ -440,22 +441,17 @@ export async function fetchOtherModelRelations(model: Model): Promise<RelationCo
 
     const relations = await getRelations(modelFile.default)
 
-    if (! relations.length) continue
+    if (!relations.length) continue
 
-    const relation = relations.find(relation => relation.model === model.name)
+    const relation = relations.find((relation) => relation.model === model.name)
 
-    if (relation)
-      modelRelations.push(relation)
+    if (relation) modelRelations.push(relation)
   }
 
   return modelRelations
 }
 
-async function generateModelString(
-  tableName: string,
-  model: Model,
-  attributes: ModelElement[],
-): Promise<string> {
+async function generateModelString(tableName: string, model: Model, attributes: ModelElement[]): Promise<string> {
   const modelName = model.name
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName?.toLowerCase() // User -> user
@@ -481,11 +477,10 @@ async function generateModelString(
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
- 
     if (relationType === 'throughType') {
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
-      
+
       const formattedThroughRelation = relation.throughModel.toLowerCase()
       const throughTableRelation = throughRelation
       const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`

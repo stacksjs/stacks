@@ -4,15 +4,14 @@ import User from '../src/User'
 import { request } from '@stacksjs/router'
 
 export default new Action({
-      name: 'User Update',
-      description: 'User Update ORM Action',
+  name: 'User Update',
+  description: 'User Update ORM Action',
 
-      handle() {
-        const id = request.get(id)
+  handle() {
+    const id = request.get(id)
 
-        const model = User.find(id)
+    const model = User.find(id)
 
-        return model.update(req.all())
-      },
-    })
-  
+    return model.update(req.all())
+  },
+})

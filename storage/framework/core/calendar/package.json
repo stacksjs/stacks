@@ -15,7 +15,13 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["calendar", "stacks", "ical", "google calendar", "outlook calendar"],
+  "keywords": [
+    "calendar",
+    "stacks",
+    "ical",
+    "google calendar",
+    "outlook calendar"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",

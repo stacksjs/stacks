@@ -29,7 +29,7 @@ const testimonials = [
   [
     {
       content:
-        'Getting started with Stacks was incredibly easy. The Buddy toolkit has been a game changer for my project. I suggest you guys give it a try today! It\'s probably one of the best decisions you\'ll ever do for yourself this year.',
+        "Getting started with Stacks was incredibly easy. The Buddy toolkit has been a game changer for my project. I suggest you guys give it a try today! It's probably one of the best decisions you'll ever do for yourself this year.",
       author: {
         name: 'Leland Kiehn',
         role: 'Founder of Kiehn and Sons',

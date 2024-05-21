@@ -1,7 +1,7 @@
 import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
-import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
+import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'Deployment',
@@ -58,7 +58,8 @@ export default {
       factory: () => collect(['pending', 'success', 'failure']).random(),
     },
 
-    executionTime: { // in nanoseconds
+    executionTime: {
+      // in nanoseconds
       validator: {
         rule: schema.number(),
         message: '`execution_time` must be a number',

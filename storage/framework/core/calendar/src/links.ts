@@ -1,8 +1,8 @@
-import type { CalendarLink } from './types'
 import generateGoogle from './generators/google'
 import generateIcs from './generators/ics'
 import generateOutlook from './generators/weboutlook'
 import generateYahoo from './generators/yahoo'
+import type { CalendarLink } from './types'
 
 const link: CalendarLink = {
   from: new Date('2022-12-12 01:00:00'),

@@ -4,13 +4,12 @@ import User from '../src/User'
 import { request } from '@stacksjs/router'
 
 export default new Action({
-      name: 'User Store',
-      description: 'User Store ORM Action',
+  name: 'User Store',
+  description: 'User Store ORM Action',
 
-      handle() {
-        const model = User.create(request.all())
+  handle() {
+    const model = User.create(request.all())
 
-        return model
-      },
-    })
-  
+    return model
+  },
+})

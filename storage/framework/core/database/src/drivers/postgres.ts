@@ -5,7 +5,14 @@ import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
-import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, getPivotTables, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import {
+  checkPivotMigration,
+  fetchOtherModelRelations,
+  getLastMigrationFields,
+  getPivotTables,
+  hasTableBeenMigrated,
+  mapFieldTypeToColumnType,
+} from '.'
 
 export async function resetPostgresDatabase() {
   const tables = await fetchMysqlTables()

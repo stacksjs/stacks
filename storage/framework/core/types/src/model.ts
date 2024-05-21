@@ -83,13 +83,15 @@ export interface ModelOptions extends Base {
         relationName?: string
       }[]
     | ModelNames[] // belongsTo: 'User'
-  belongsToMany: {
-    model: ModelNames
-    firstForeignKey?: string
-    secondForeignKey?: string
-    pivotTable?: string
-    relationName?: string
-  } | ModelNames[]
+  belongsToMany:
+    | {
+        model: ModelNames
+        firstForeignKey?: string
+        secondForeignKey?: string
+        pivotTable?: string
+        relationName?: string
+      }
+    | ModelNames[]
   hasOneThrough: {
     model: ModelNames
     through: ModelNames
@@ -130,7 +132,7 @@ export interface RelationConfig {
   model: string
   table?: string
   relationModel?: string
-  relationTable?: string,
+  relationTable?: string
   foreignKey: string
   relationName: string
   throughModel: string

@@ -46,22 +46,23 @@ export async function getExecutedMigrations() {
 }
 
 function hasFunction(rule: VineType, functionName: string): boolean {
-  return typeof rule[functionName] === 'function';
+  return typeof rule[functionName] === 'function'
 }
 
 export function mapFieldTypeToColumnType(rule: VineType): string {
-  if (hasFunction(rule, 'getChoices')) { // Condition checker if an attribute is enum, could not think any conditions atm
+  if (hasFunction(rule, 'getChoices')) {
+    // Condition checker if an attribute is enum, could not think any conditions atm
     const enumChoices = rule.getChoices() as string[]
 
     // Convert each string value to its corresponding string structure
-    const enumStructure = enumChoices.map(value => `'${value}'`).join(', ');
+    const enumStructure = enumChoices.map((value) => `'${value}'`).join(', ')
 
     // Construct the ENUM definition
-    const enumDefinition = `sql\`enum(${enumStructure})\``;
+    const enumDefinition = `sql\`enum(${enumStructure})\``
 
     return enumDefinition
   }
-  
+
   if (rule[Symbol.for('schema_name')].includes('string'))
     // Default column type for strings
     return prepareTextColumnType(rule)
@@ -107,10 +108,10 @@ export function prepareTextColumnType(rule: VineType) {
     columnType = `varchar(${maxLength})`
   }
 
-    // If there's only a min length validation and no max, consider using text
-    // This is a simplistic approach; adjust based on your actual requirements
-    if (minLengthValidation && !maxLengthValidation) columnType = 'text'
- 
+  // If there's only a min length validation and no max, consider using text
+  // This is a simplistic approach; adjust based on your actual requirements
+  if (minLengthValidation && !maxLengthValidation) columnType = 'text'
+
   return `'${columnType}'`
 }
 
@@ -128,7 +129,6 @@ export async function checkPivotMigration(dynamicPart: string): Promise<boolean>
     return pattern.test(migrationFile)
   })
 }
-
 
 export async function getRelations(model: Model): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
@@ -158,7 +158,7 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-        })       
+        })
       }
     }
   }
@@ -180,12 +180,11 @@ export async function fetchOtherModelRelations(model: Model): Promise<RelationCo
 
     const relations = await getRelations(modelFile.default)
 
-    if (! relations.length) continue
+    if (!relations.length) continue
 
-    const relation = relations.find(relation => relation.model === model.name)
+    const relation = relations.find((relation) => relation.model === model.name)
 
-    if (relation)
-      modelRelations.push(relation)
+    if (relation) modelRelations.push(relation)
   }
 
   return modelRelations
@@ -203,8 +202,10 @@ export async function getPivotTables(
         const modelRelation = (await import(modelRelationPath)).default
         const formattedModelName = model.name.toLowerCase()
 
-        const firstForeignKey = belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
-        const secondForeignKey = belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+        const firstForeignKey =
+          belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
+        const secondForeignKey =
+          belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
         pivotTable.push({
           table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
