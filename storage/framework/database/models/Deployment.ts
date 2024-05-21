@@ -24,7 +24,7 @@ export default {
       unique: true,
 
       validator: {
-        rule: schema.string(),
+        rule: schema.string().maxLength(512),
         message: '`commit_sha` must be a string',
       },
 
@@ -64,7 +64,7 @@ export default {
         message: '`execution_time` must be a number',
       },
 
-      factory: () => faker.number.int(),
+      factory: () => faker.number.int({ max: 100 }),
     },
 
     deployScript: {

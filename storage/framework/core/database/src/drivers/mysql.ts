@@ -134,7 +134,7 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
+    migrationContent += `    .addColumn('${fieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions.validator?.rule?.required) {

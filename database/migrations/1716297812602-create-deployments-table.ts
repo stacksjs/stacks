@@ -5,7 +5,7 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('deployments')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('commitSha', 'varchar(255)', col => col.unique())
+    .addColumn('commitSha', 'varchar(512)', col => col.unique())
     .addColumn('commitMessage', 'varchar(255)')
     .addColumn('branch', 'varchar(255)')
     .addColumn('status', 'varchar(255)')
