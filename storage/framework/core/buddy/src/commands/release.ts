@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
@@ -34,10 +34,12 @@ export function release(buddy: CLI) {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Triggered CI/CD Release Workflow', {
+      await outro('Triggered CI/CD Release via GitHub Actions', {
         startTime,
         useSeconds: true,
       })
+      console.log('')
+      console.log(italic('Follow along: https://github.com/stacksjs/stacks/actions'))
     })
 
   buddy.on('release:*', () => {
