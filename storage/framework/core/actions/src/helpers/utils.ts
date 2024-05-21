@@ -3,7 +3,7 @@ import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
-import { storage } from '@stacksjs/storage'
+import { glob, storage } from '@stacksjs/storage'
 import type { ActionOptions } from '@stacksjs/types'
 import { Glob } from 'bun'
 
@@ -57,8 +57,7 @@ export async function runAction(action: Action, options?: ActionOptions) {
  * @returns The result of the command.
  */
 export async function runActions(actions: Action[], options?: ActionOptions) {
-  log.debug('runActions:', actions)
-  log.debug('actions options:', options)
+  log.debug('runActions:', actions, options)
 
   if (!actions.length) return err('No actions were specified')
 
