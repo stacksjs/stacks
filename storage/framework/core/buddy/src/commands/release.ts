@@ -38,6 +38,7 @@ export function release(buddy: CLI) {
         startTime,
         useSeconds: true,
       })
+
       console.log('')
       console.log(italic('Follow along: https://github.com/stacksjs/stacks/actions'))
     })
