@@ -17,6 +17,6 @@
     "dev": "wip: needs to start each dev server (views, api, components, docs, desktop)",
     "build": "bun --filter='core/*' run build",
     "publish:framework": "./scripts/publish",
-    "publish:dummy-libs": "bun --bun ./core/buddy/src/cli.ts generate:entries && bun --filter 'libs/components/vue' --filter 'libs/components/web' --filter 'libs/functions' publish --access public --no-git-checks"
+    "publish:dummy-libs": "bun --bun ./core/buddy/src/cli.ts generate:entries && bun --filter './libs/components/vue' --filter './libs/components/web' --filter './libs/functions' publish --access public --no-git-checks"
   }
 }
