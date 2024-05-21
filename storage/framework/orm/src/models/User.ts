@@ -354,7 +354,7 @@ import Deployment from './Deployment'
         this.user = refreshedModel
       }
 
-      
+
       async post() {
         if (this.user.id === undefined)
           throw new Error('Relation Error!')
@@ -638,5 +638,3 @@ import Deployment from './Deployment'
     }
 
     export default User
-    export default User
-    
