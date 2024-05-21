@@ -118,8 +118,8 @@ async function createTableMigration(modelPath: string) {
 
   await createPivotTableMigration(model)
 
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
+  const otherModelRelations = await fetchOtherModelRelations(model)
+  
   const fields = model.attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false

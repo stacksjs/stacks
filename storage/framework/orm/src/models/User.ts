@@ -19,7 +19,7 @@ import Deployment from './Deployment'
       email: string
       jobTitle: string
       password: string
-     
+      deployment_id: number post_id: number
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -513,12 +513,20 @@ import Deployment from './Deployment'
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('users')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('users')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('users')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, userUpdate: UserUpdate) {
       return await db.updateTable('users')
@@ -624,6 +632,7 @@ import Deployment from './Deployment'
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: UserModel

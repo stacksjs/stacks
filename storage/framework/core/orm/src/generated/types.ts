@@ -8,10 +8,10 @@ import type { PostsTable } from '../../../../orm/src/models/Post'
 import type { Generated } from 'kysely'
 
 export interface TeamAccessTokensTable {
-        id: Generated<number>
-        team_id: number
-        accesstoken_id: number
-      }
+  id: Generated<number>
+  team_id: number
+  accesstoken_id: number
+}
 export interface Database {
   projects: ProjectsTable
   access_tokens: AccessTokensTable

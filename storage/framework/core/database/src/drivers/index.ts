@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs, glob } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, RelationConfig, VineType } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
@@ -155,7 +155,9 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
   return relationships
 }
 
-export async function fetchOtherModelRelations(model: Model, modelFiles: string[]): Promise<RelationConfig[]> {
+export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {

@@ -425,6 +425,29 @@ async function getPivotTables(
   return []
 }
 
+export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelRelations = []
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelFileElement = modelFiles[i] as string
+    const modelFile = await import(modelFileElement)
+
+    if (model.name === modelFile.default.name) continue
+
+    const relations = await getRelations(modelFile.default)
+
+    if (! relations.length) continue
+
+    const relation = relations.find(relation => relation.model === model.name)
+
+    if (relation)
+      modelRelations.push(relation)
+  }
+
+  return modelRelations
+}
+
 async function generateModelString(
   tableName: string,
   model: Model,
@@ -459,9 +482,9 @@ async function generateModelString(
     if (relationType === 'throughType') {
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
-      // const throughRelationModel = 
-      const formattedThroughRelation = relation.throughModel.name.toLowerCase()
-      const throughTableRelation = throughRelation.table
+      
+      const formattedThroughRelation = relation.throughModel.toLowerCase()
+      const throughTableRelation = throughRelation
       const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`
 
       relationMethods += `
@@ -562,6 +585,10 @@ async function generateModelString(
   }
 
   for (const attribute of attributes) fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
+
+  const otherModelRelations = await fetchOtherModelRelations(model)
+
+  for (const otherModelRelation of otherModelRelations) fieldString += ` ${otherModelRelation.foreignKey}: number`
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import type { Result } from '@stacksjs/error-handling'
@@ -1023,12 +1050,20 @@ async function generateModelString(
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('${tableName}')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('${tableName}')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('${tableName}')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, ${formattedModelName}Update: ${modelName}Update) {
       return await db.updateTable('${tableName}')
@@ -1134,6 +1169,7 @@ async function generateModelString(
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: ${modelName}Model

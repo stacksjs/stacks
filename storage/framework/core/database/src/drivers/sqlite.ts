@@ -5,7 +5,7 @@ import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
-import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType, getPivotTables } from '.'
 
 export async function resetSqliteDatabase() {
   const dbPath = path.userDatabasePath('stacks.sqlite')
@@ -108,32 +108,6 @@ export async function generateSqliteMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
-async function getPivotTables(
-  model: Model,
-): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
-  const pivotTable = []
-
-  if (model.belongsToMany && model.name) {
-    if ('belongsToMany' in model) {
-      for (const belongsToManyRelation of model.belongsToMany) {
-        const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
-        const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name.toLowerCase()
-
-        pivotTable.push({
-          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-          firstForeignKey: belongsToManyRelation.firstForeignKey,
-          secondForeignKey: belongsToManyRelation.secondForeignKey,
-        })
-      }
-
-      return pivotTable
-    }
-  }
-
-  return []
-}
-
 async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
@@ -141,8 +115,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const tableName = await modelTableName(model)
 
   await createPivotTableMigration(model)
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
+  const otherModelRelations = await fetchOtherModelRelations(model)
   const fields = model.attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -221,7 +194,7 @@ async function createPivotTableMigration(model: Model) {
     migrationContent += `    }\n`
 
     const timestamp = new Date().getTime().toString()
-    const migrationFileName = `${timestamp}-create-${pivotTable}-table.ts`
+    const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     // Assuming fs.writeFileSync is available or use an equivalent method
