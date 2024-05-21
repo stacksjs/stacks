@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.0",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,12 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["docs", "utilities", "functions", "stacks"],
+  "keywords": [
+    "docs",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -28,8 +33,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
