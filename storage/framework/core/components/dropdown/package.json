@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dropdown",
   "type": "module",
-  "version": "0.61.2",
+  "version": "0.61.3",
   "description": "A dropdown component for all.",
   "author": "Chris Breuer",
   "license": "MIT",
