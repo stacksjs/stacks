@@ -73,7 +73,9 @@
     "storage/framework/docs",
     "storage/framework/email",
     "storage/framework/libs/*",
-    "storage/framework/libs/components/*",
+    "storage/framework/libs/functions",
+    "storage/framework/libs/components/vue",
+    "storage/framework/libs/components/web",
     "storage/framework/views/*"
   ],
   "devDependencies": {

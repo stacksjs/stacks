@@ -521,6 +521,7 @@ declare global {
   const logicOr: typeof import('../core/utils/src/math')['logicOr']
   const logsPath: typeof import('../core/path/src/paths')['logsPath']
   const loop: typeof import('../core/utils/src/base')['loop']
+  const makeAction: typeof import('../core/actions/src/index')['makeAction']
   const makeComponent: typeof import('../core/actions/src/index')['makeComponent']
   const makeDatabase: typeof import('../core/actions/src/index')['makeDatabase']
   const makeDestructurable: typeof import('../core/utils/src/vendors')['makeDestructurable']
@@ -991,8 +992,10 @@ declare global {
   const useWindowScroll: typeof import('../core/utils/src/vendors')['useWindowScroll']
   const useWindowSize: typeof import('../core/utils/src/vendors')['useWindowSize']
   const userActionsPath: typeof import('../core/path/src/paths')['userActionsPath']
+  const userComponentsPath: typeof import('../core/path/src/paths')['userComponentsPath']
   const userDatabasePath: typeof import('../core/path/src/paths')['userDatabasePath']
   const userEventsPath: typeof import('../core/path/src/paths')['userEventsPath']
+  const userFunctionsPath: typeof import('../core/path/src/paths')['userFunctionsPath']
   const userJobsPath: typeof import('../core/path/src/paths')['userJobsPath']
   const userLibsPath: typeof import('../core/path/src/paths')['userLibsPath']
   const userListenersPath: typeof import('../core/path/src/paths')['userListenersPath']
@@ -1001,6 +1004,7 @@ declare global {
   const userModels: typeof import('../core/orm/src/utils')['userModels']
   const userModelsPath: typeof import('../core/path/src/paths')['userModelsPath']
   const userNotificationsPath: typeof import('../core/path/src/paths')['userNotificationsPath']
+  const userViewsPath: typeof import('../core/path/src/paths')['userViewsPath']
   const utilsPath: typeof import('../core/path/src/paths')['utilsPath']
   const validate: typeof import('../core/validation/src/schema')['validate']
   const validationPath: typeof import('../core/path/src/paths')['validationPath']
@@ -1100,8 +1104,6 @@ declare module 'vue' {
     readonly USD: UnwrapRef<typeof import('../core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('../core/ui/src/index')['UiEngine']>
     readonly UnocssConfig: UnwrapRef<typeof import('../core/ui/src/index')['UnocssConfig']>
-    readonly User: UnwrapRef<typeof import('../core/orm/src/generated/User')['default']>
-    readonly UserModel: UnwrapRef<typeof import('../core/orm/src/generated/User')['UserModel']>
     readonly ValidationBoolean: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationBoolean']>
     readonly ValidationEnum: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationEnum']>
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
@@ -1508,6 +1510,7 @@ declare module 'vue' {
     readonly logicOr: UnwrapRef<typeof import('../core/utils/src/math')['logicOr']>
     readonly logsPath: UnwrapRef<typeof import('../core/path/src/paths')['logsPath']>
     readonly loop: UnwrapRef<typeof import('../core/utils/src/base')['loop']>
+    readonly makeAction: UnwrapRef<typeof import('../core/actions/src/index')['makeAction']>
     readonly makeComponent: UnwrapRef<typeof import('../core/actions/src/index')['makeComponent']>
     readonly makeDatabase: UnwrapRef<typeof import('../core/actions/src/index')['makeDatabase']>
     readonly makeDestructurable: UnwrapRef<typeof import('../core/utils/src/vendors')['makeDestructurable']>
@@ -1952,8 +1955,10 @@ declare module 'vue' {
     readonly useWindowScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowSize']>
     readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['userActionsPath']>
+    readonly userComponentsPath: UnwrapRef<typeof import('../core/path/src/paths')['userComponentsPath']>
     readonly userDatabasePath: UnwrapRef<typeof import('../core/path/src/paths')['userDatabasePath']>
     readonly userEventsPath: UnwrapRef<typeof import('../core/path/src/paths')['userEventsPath']>
+    readonly userFunctionsPath: UnwrapRef<typeof import('../core/path/src/paths')['userFunctionsPath']>
     readonly userJobsPath: UnwrapRef<typeof import('../core/path/src/paths')['userJobsPath']>
     readonly userLibsPath: UnwrapRef<typeof import('../core/path/src/paths')['userLibsPath']>
     readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/paths')['userListenersPath']>
@@ -1962,6 +1967,7 @@ declare module 'vue' {
     readonly userModels: UnwrapRef<typeof import('../core/orm/src/utils')['userModels']>
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
+    readonly userViewsPath: UnwrapRef<typeof import('../core/path/src/paths')['userViewsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/schema')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
@@ -2044,8 +2050,6 @@ declare module '@vue/runtime-core' {
     readonly USD: UnwrapRef<typeof import('../core/utils/src/currency')['USD']>
     readonly UiEngine: UnwrapRef<typeof import('../core/ui/src/index')['UiEngine']>
     readonly UnocssConfig: UnwrapRef<typeof import('../core/ui/src/index')['UnocssConfig']>
-    readonly User: UnwrapRef<typeof import('../core/orm/src/generated/User')['default']>
-    readonly UserModel: UnwrapRef<typeof import('../core/orm/src/generated/User')['UserModel']>
     readonly ValidationBoolean: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationBoolean']>
     readonly ValidationEnum: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationEnum']>
     readonly ValidationNumber: UnwrapRef<typeof import('../core/validation/src/types/index')['ValidationNumber']>
@@ -2452,6 +2456,7 @@ declare module '@vue/runtime-core' {
     readonly logicOr: UnwrapRef<typeof import('../core/utils/src/math')['logicOr']>
     readonly logsPath: UnwrapRef<typeof import('../core/path/src/paths')['logsPath']>
     readonly loop: UnwrapRef<typeof import('../core/utils/src/base')['loop']>
+    readonly makeAction: UnwrapRef<typeof import('../core/actions/src/index')['makeAction']>
     readonly makeComponent: UnwrapRef<typeof import('../core/actions/src/index')['makeComponent']>
     readonly makeDatabase: UnwrapRef<typeof import('../core/actions/src/index')['makeDatabase']>
     readonly makeDestructurable: UnwrapRef<typeof import('../core/utils/src/vendors')['makeDestructurable']>
@@ -2896,8 +2901,10 @@ declare module '@vue/runtime-core' {
     readonly useWindowScroll: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('../core/utils/src/vendors')['useWindowSize']>
     readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['userActionsPath']>
+    readonly userComponentsPath: UnwrapRef<typeof import('../core/path/src/paths')['userComponentsPath']>
     readonly userDatabasePath: UnwrapRef<typeof import('../core/path/src/paths')['userDatabasePath']>
     readonly userEventsPath: UnwrapRef<typeof import('../core/path/src/paths')['userEventsPath']>
+    readonly userFunctionsPath: UnwrapRef<typeof import('../core/path/src/paths')['userFunctionsPath']>
     readonly userJobsPath: UnwrapRef<typeof import('../core/path/src/paths')['userJobsPath']>
     readonly userLibsPath: UnwrapRef<typeof import('../core/path/src/paths')['userLibsPath']>
     readonly userListenersPath: UnwrapRef<typeof import('../core/path/src/paths')['userListenersPath']>
@@ -2906,6 +2913,7 @@ declare module '@vue/runtime-core' {
     readonly userModels: UnwrapRef<typeof import('../core/orm/src/utils')['userModels']>
     readonly userModelsPath: UnwrapRef<typeof import('../core/path/src/paths')['userModelsPath']>
     readonly userNotificationsPath: UnwrapRef<typeof import('../core/path/src/paths')['userNotificationsPath']>
+    readonly userViewsPath: UnwrapRef<typeof import('../core/path/src/paths')['userViewsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/schema')['validate']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
