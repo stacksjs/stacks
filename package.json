@@ -65,6 +65,7 @@
     }
   },
   "workspaces": [
+    "storage/framework/",
     "storage/framework/core",
     "storage/framework/core/*",
     "storage/framework/core/bun-create/*",
