@@ -32,8 +32,8 @@
     "vscode": "^2023.8.100"
   },
   "scripts": {
-    "package": "npx vsce package",
-    "release": "vsce publish"
+    "package": "bunx vsce package",
+    "release": "bunx vsce publish"
   },
   "galleryBanner": {
     "color": "#d7e4f5",
