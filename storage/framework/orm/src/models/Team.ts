@@ -399,7 +399,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.team = model
       return new TeamModel(model)
     }
 
@@ -606,5 +605,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       model: TeamModel
     }
 
+    export default Team
     export default Team
     

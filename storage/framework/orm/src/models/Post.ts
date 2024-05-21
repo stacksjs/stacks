@@ -396,7 +396,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.post = model
       return new PostModel(model)
     }
 
@@ -603,5 +602,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       model: PostModel
     }
 
+    export default Post
     export default Post
     

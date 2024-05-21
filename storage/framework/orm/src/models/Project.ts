@@ -380,7 +380,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.project = model
       return new ProjectModel(model)
     }
 
@@ -587,5 +586,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       model: ProjectModel
     }
 
+    export default Project
     export default Project
     

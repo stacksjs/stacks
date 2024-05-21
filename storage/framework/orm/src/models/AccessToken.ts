@@ -398,7 +398,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.accesstoken = model
       return new AccessTokenModel(model)
     }
 
@@ -605,5 +604,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       model: AccessTokenModel
     }
 
+    export default AccessToken
     export default AccessToken
     

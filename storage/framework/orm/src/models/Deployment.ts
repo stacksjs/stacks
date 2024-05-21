@@ -401,7 +401,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.deployment = model
       return new DeploymentModel(model)
     }
 
@@ -608,5 +607,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       model: DeploymentModel
     }
 
+    export default Deployment
     export default Deployment
     

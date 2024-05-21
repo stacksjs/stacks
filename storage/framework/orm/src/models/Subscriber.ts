@@ -377,7 +377,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.subscriber = model
       return new SubscriberModel(model)
     }
 
@@ -584,5 +583,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       model: SubscriberModel
     }
 
+    export default Subscriber
     export default Subscriber
     

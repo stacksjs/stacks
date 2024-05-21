@@ -71,6 +71,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
   let actionString = `import { Action } from '@stacksjs/actions'\n`
   actionString += `import ${modelName} from '../src/${modelName}'\n\n`
+  actionString += `import { request } from '@stacksjs/router'\n\n`
 
   let handleString = ``
 
@@ -98,7 +99,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
   if (apiRoute === 'store') {
     handleString += `handle() {
-        const model = ${modelName}.create({})
+        const model = ${modelName}.create(request.all())
 
         return model
       },`
@@ -106,9 +107,11 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
   if (apiRoute === 'update') {
     handleString += `handle() {
-        const model = ${modelName}.create({})
+        const id = request.get(id)
 
-        return model
+        const model = ${modelName}.find(id)
+
+        return model.update(req.all())
       },`
   }
 
@@ -968,7 +971,6 @@ async function generateModelString(
       if (!model)
         return null
 
-      this.${formattedModelName} = model
       return new ${modelName}Model(model)
     }
 

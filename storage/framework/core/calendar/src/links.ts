@@ -1,4 +1,4 @@
-import type { CalendarLink } from '../types'
+import type { CalendarLink } from './types'
 import generateGoogle from './generators/google'
 import generateIcs from './generators/ics'
 import generateOutlook from './generators/weboutlook'
@@ -15,22 +15,22 @@ const link: CalendarLink = {
 }
 
 // functions that mutate state and trigger updates
-function exportCalendarGoogle() {
+function exportCalendarGoogle(): string {
   return generateGoogle(link)
 }
 
 // functions that mutate state and trigger updates
-function exportCalendarIcs() {
+function exportCalendarIcs(): string {
   return generateIcs(link)
 }
 
 // functions that mutate state and trigger updates
-function exportCalendarOutlook() {
+function exportCalendarOutlook(): string {
   return generateOutlook(link)
 }
 
 // functions that mutate state and trigger updates
-function exportCalendarYahoo() {
+function exportCalendarYahoo(): string {
   return generateYahoo(link)
 }
 

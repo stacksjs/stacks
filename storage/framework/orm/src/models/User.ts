@@ -431,7 +431,6 @@ import Deployment from './Deployment'
       if (!model)
         return null
 
-      this.user = model
       return new UserModel(model)
     }
 
@@ -638,5 +637,6 @@ import Deployment from './Deployment'
       model: UserModel
     }
 
+    export default User
     export default User
     
