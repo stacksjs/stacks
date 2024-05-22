@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/error-handling",
   "type": "module",
-  "version": "0.61.9",
+  "version": "0.61.10",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
   "license": "MIT",

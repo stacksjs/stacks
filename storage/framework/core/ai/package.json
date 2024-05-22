@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ai",
   "type": "module",
-  "version": "0.61.9",
+  "version": "0.61.10",
   "description": "Stacks Artificial Intelligence.",
   "author": "Chris Breuer",
   "license": "MIT",
