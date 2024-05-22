@@ -47,20 +47,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Check npm version and access
-        run: |
-          npm --version
-          npm ping
-
       # temporary workaround until npm publish is replaced with bun publish
-      - name: Install VS Code Extension Dependencies
-        run: cd storage/framework/ide/vscode && npm install && cd ../../../../
+      # - name: Install VS Code Extension Dependencies
+      #   run: cd storage/framework/ide/vscode && npm install && cd ../../../../
 
       # TODO: remove npm once bun publish is available
-      - name: Publish VS Code Extension
-        run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      # - name: Publish VS Code Extension
+      #   run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Create GitHub Release
         run: bunx changelogithub

@@ -4,7 +4,7 @@
 script_dir=$(realpath $(dirname "$0"))
 
 # Get all directories in the core path except for src/bun-create
-dirs=$(find "$script_dir/../libs/components" -type d -maxdepth 1)
+dirs=$(find "$script_dir/../libs/components" "$script_dir/../libs/functions" -type d -maxdepth 1)
 
 # Check if no directories found
 if [ -z "$dirs" ]; then
