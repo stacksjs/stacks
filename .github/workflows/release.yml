@@ -49,7 +49,7 @@ jobs:
 
       # temporary workaround until npm publish is replaced with bun publish
       - name: Install VS Code Extension Dependencies
-        run: cd storage/framework/ide/vscode && bun install && cd ../../../../
+        run: cd storage/framework/ide/vscode && npm install && cd ../../../../
 
       # TODO: remove npm once bun publish is available
       - name: Publish VS Code Extension
