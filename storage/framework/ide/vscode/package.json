@@ -26,7 +26,8 @@
   ],
   "icon": "logo.png",
   "files": [
-    "logo.png"
+    "logo.png",
+    "LICENSE.md"
   ],
   "engines": {
     "vscode": "^2023.8.100"
