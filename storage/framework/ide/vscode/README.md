@@ -7,13 +7,13 @@ _Please note, the Stacks framework auto-configures any extension that needs to b
 ## Extensions Included
 
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Language support
-- [biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) - Linting & formatting
+- [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) - Linting & formatting
 - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) - Markdown linting
-- [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - auto-completes npm modules in import statements
 - [UnoCSS](https://marketplace.visualstudio.com/items?itemName=antfu.unocss) - Atomic CSS framework support
 - [Goto Definition Alias](https://marketplace.visualstudio.com/items?itemName=antfu.goto-definition-alias) - Allows jumping to the definition of an aliased import
+- [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - auto-completes npm modules in import statements
 - [Jumpy](https://marketplace.visualstudio.com/items?itemName=wmaurer.vscode-jumpy) - We lose a lot of time scanning with a mouse, time we can get back by using our keyboard instead. Jumpy provides fast cursor movement by giving you a couple of keys that offer a hook to get to another part of the document.
-- [Spelling Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - A simple source code spell checker for code
+- [Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - Simple source code spell checker for your code
 
 ## Contributing
 
