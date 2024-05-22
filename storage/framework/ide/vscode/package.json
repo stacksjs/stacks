@@ -6,6 +6,9 @@
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
+  "sponsor": {
+    "url": "https://github.com/sponsors/chrisbbreuer"
+  },
   "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks/vscode#readme",
   "repository": {
     "type": "git",
@@ -24,6 +27,7 @@
   "categories": [
     "Extension Packs"
   ],
+  "pricing": "Free",
   "icon": "logo.png",
   "files": [
     "logo.png",
