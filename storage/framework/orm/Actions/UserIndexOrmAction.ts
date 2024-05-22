@@ -8,6 +8,7 @@ export default new Action({
       description: 'User Index ORM Action',
 
       handle() {
+        return request.all()
         return User.all()
       },
     })

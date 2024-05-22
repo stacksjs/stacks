@@ -8,6 +8,7 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
+await route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/api/hello/world
 await route.get('/', () => 'hello world') // $APP_URL/api
 await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 await route.get('/hello-world', () => {

@@ -13,6 +13,8 @@ interface ServeOptions {
   timezone?: string
 }
 
+type DynamicSegments = { [key: string]: string } | null;
+
 export async function serve(options: ServeOptions = {}) {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
@@ -26,6 +28,7 @@ export async function serve(options: ServeOptions = {}) {
     development,
 
     async fetch(req: Request) {
+      console.log(req)
       return await serverResponse(req)
     },
   })
@@ -50,10 +53,11 @@ export async function serverResponse(req: Request) {
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
 
+
   log.info(`URL: ${JSON.stringify(url)}`)
 
   const foundRoute: Route | undefined = routesList.find((route: Route) => {
-    const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
+    const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
 
     return pattern.test(url.pathname)
   })
@@ -65,10 +69,36 @@ export async function serverResponse(req: Request) {
 
   if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
 
+  const dynamicSegments = extractDynamicSegments(foundRoute.uri, url.pathname);
+
   await executeMiddleware(foundRoute)
 
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
+
+function extractDynamicSegments(routePattern: string, path: string): DynamicSegments {
+  // Create regex pattern from the route pattern
+  const regexPattern = new RegExp(`^${routePattern.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
+  const match = path.match(regexPattern);
+
+  if (!match) {
+    return null;
+  }
+
+  // Get dynamic segment names
+  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1]);
+  // Get dynamic segment values
+  const dynamicSegmentValues = match.slice(1); // First match is the whole string, so we slice it off
+
+  // Create an object with the dynamic segments
+  const dynamicSegments: { [key: string]: string } = {};
+  dynamicSegmentNames.forEach((name, index) => {
+    dynamicSegments[name] = dynamicSegmentValues[index];
+  });
+
+  return dynamicSegments;
+}
+
 
 function addRouteParamsAndQuery(url: URL): void {
   if (!isObjectNotEmpty(url.searchParams)) RequestParam.addQuery(url)
