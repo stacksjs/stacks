@@ -1,5 +1,6 @@
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
+import { Action, Job } from '@stacksjs/types'
 import { pascalCase } from '@stacksjs/strings'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
@@ -62,9 +63,8 @@ export class Router implements RouterInterface {
   public async email(path: Route['url']): Promise<this> {
     path = pascalCase(path)
 
-    const emailModule = await import(p.userNotificationsPath(`${path}.ts`))
-    const callback = emailModule.default.handle
-
+    const emailModule = (await import(p.userNotificationsPath(`${path}.ts`))).default as Action
+    const callback = emailModule.handle
     const uri = this.prepareUri(path)
     this.addRoute('GET', uri, callback, 200)
 
@@ -72,10 +72,9 @@ export class Router implements RouterInterface {
   }
 
   public async health(): Promise<this> {
-    const healthModule = await import(p.userActionsPath('HealthAction.ts'))
-    const callback = healthModule.default.handle
-
-    const path = healthModule.default.path ?? `${this.apiPrefix}/health`
+    const healthModule = (await import(p.userActionsPath('HealthAction.ts'))).default as Action
+    const callback = healthModule.handle
+    const path = healthModule.path ?? `${this.apiPrefix}/health`
 
     this.addRoute('GET', path, callback, 200)
 
@@ -86,8 +85,8 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
-    const callback = jobModule.default.handle
+    const jobModule = (await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))).default as Job
+    const callback = jobModule.handle
 
     path = this.prepareUri(path)
     this.addRoute('GET', path, callback, 200)
@@ -101,12 +100,12 @@ export class Router implements RouterInterface {
     let callback: Route['callback']
     try {
       // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-      const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
-      callback = actionModule.default.handle
+      const actionModule = (await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))).default as Action
+      callback = actionModule.handle
     } catch (error) {
       try {
-        const actionModule = await import(p.userActionsPath(`${path}.ts`.replace(/ActionAction/, 'Action')))
-        callback = actionModule.default.handle
+        const actionModule = (await import(p.userActionsPath(`${path}.ts`.replace(/ActionAction/, 'Action')))).default as Action
+        callback = actionModule.handle
       } catch (error) {
         log.error(`Could not find action module for path: ${path}`)
         return this
@@ -140,16 +139,19 @@ export class Router implements RouterInterface {
 
   public delete(path: Route['url'], callback: Route['callback']): this {
     this.addRoute('DELETE', path, callback, 204)
+
     return this
   }
 
   public patch(path: Route['url'], callback: Route['callback']): this {
     this.addRoute('PATCH', path, callback, 202)
+
     return this
   }
 
   public put(path: Route['url'], callback: Route['callback']): this {
     this.addRoute('PUT', path, callback, 202)
+
     return this
   }
 
@@ -261,7 +263,7 @@ export class Router implements RouterInterface {
     if (typeof callback === 'string') return await this.importCallbackFromPath(callback, this.path)
 
     // in this case, the callback ends up being a function
-    return await callback
+    return callback
   }
 
   private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
