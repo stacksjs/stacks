@@ -15,15 +15,8 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "env",
-    "utilities",
-    "functions",
-    "stacks"
-  ],
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "keywords": ["env", "utilities", "functions", "stacks"],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "exports": {
     ".": {
       "import": "./dist/index.js"
@@ -33,11 +26,7 @@
       "import": "./dist/*"
     }
   },
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
