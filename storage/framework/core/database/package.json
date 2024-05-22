@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/database",
   "type": "module",
-  "version": "0.61.12",
+  "version": "0.61.13",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "license": "MIT",

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/tinker",
   "type": "module",
-  "version": "0.61.12",
+  "version": "0.61.13",
   "description": "All you need to tinker.",
   "author": "Chris Breuer",
   "license": "MIT",
