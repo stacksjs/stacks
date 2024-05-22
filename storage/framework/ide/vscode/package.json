@@ -33,7 +33,7 @@
   },
   "scripts": {
     "package": "npx vsce package",
-    "release": "npx vsce publish"
+    "release": "vsce publish"
   },
   "galleryBanner": {
     "color": "#d7e4f5",
