@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/router",
   "type": "module",
-  "version": "0.61.13",
+  "version": "0.61.14",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "license": "MIT",

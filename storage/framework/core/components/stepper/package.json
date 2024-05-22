@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/stepper",
   "type": "module",
-  "version": "0.61.13",
+  "version": "0.61.14",
   "description": "A modern stepper component.",
   "author": "Chris Breuer",
   "license": "MIT",
