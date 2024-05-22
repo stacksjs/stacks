@@ -1,18 +1,16 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { Stepper } from '.';
 
-import type { Position, Theme } from './types'
+let step = ref(1);
+let steps = ref(5);
 
-
-const theme = ref<Theme>('light')
-const position = ref<Position>('top-right')
 </script>
 
 <template>
-
-  <div class="bg-neutral-100/66 dark:bg-neutral-900 px-4">
-
-
-
+  <div class="bg-neutral-100/66 dark:bg-neutral-900 px-4 ">
+    <div class="container mx-auto max-w-full sm:max-w-2xl relative">
+      <Stepper :steps="steps" v-model="step"/>
+    </div>
   </div>
 </template>

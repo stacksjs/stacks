@@ -13,6 +13,7 @@ declare module 'vue' {
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     Step: typeof import('./src/components/Step.vue')['default']
     Stepper: typeof import('./src/components/Stepper.vue')['default']
+    StepperRoot: typeof import('./src/components/StepperRoot.vue')['default']
     StepperRoots: typeof import('./src/components/StepperRoots.vue')['default']
   }
 }

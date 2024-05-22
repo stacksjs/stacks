@@ -1,84 +1,60 @@
 
-<script>
+<script setup lang="ts">
+import { computed, defineProps, defineEmits, useSlots, defineOptions  } from 'vue'
 import Utils from '@/modules/Stepper.Utils'
 
-export default {
-  name: 'VStep',
-  props: {
-    index: {
-      type: Number,
-      default: 0
-    },
-    name: {
-      type: String,
-      default: ''
-    },
-    active: {
-      type: Boolean,
-      default: false
-    },
-    visited: {
-      type: Boolean,
-      default: false
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    withDivider: {
-      type: Boolean,
-      default: false
-    },
-    debug: {
-      type: Boolean,
-      default: false
-    }
-  },
-  data: () => ({
-    namespace: { kebab: 'v-step', capitalize: 'V-Step' }
-  }),
-  computed: {
-    id() {
-      return `${this.namespace.kebab}-${this._uid}-${this.index}`
-    },
-    displayIndex() {
-      return this.index + 1
-    },
-    computedName() {
-      return this.name || this.id
-    },
-    defaultSlot() {
-      return this.$slots.default || this.$scopedSlots.default
-    },
-    scope() {
-      const { index, displayIndex, defaultSlot, flags } = this
-      return { index, displayIndex, defaultSlot, flags }
-    },
-    flags() {
-      return {
-        isActive: this.active,
-        isVisited: this.visited,
-        isDisabled: this.disabled
-      }
-    },
-    classes() {
-      return {
-        'is-active': this.active,
-        'is-visited': this.visited,
-        'is-disabled': this.disabled
-      }
-    }
-  },
-  methods: {
-    /**
-     * Lift index (a la v-model).
-     * @returns {void}
-     */
-    handleChange() {
-      this.$emit('change', this.index)
-    }
-  },
-  inheritAttrs: false
+
+defineOptions({
+  name: 'Step',
+})
+
+interface Props {
+  index: number
+  name: string
+  active: boolean
+  visited: boolean
+  disabled: boolean
+  withDivider: boolean
+  debug: boolean
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'change', index: number): void
+}>()
+
+const namespace = { kebab: 'v-step', capitalize: 'V-Step' }
+
+const id = computed(() => `${namespace.kebab}-${props.index}`)
+const displayIndex = computed(() => props.index + 1)
+const computedName = computed(() => props.name || id.value)
+
+const slots = useSlots()
+
+const defaultSlot = computed(() => slots.default ? slots.default() : undefined)
+
+const flags = computed(() => ({
+  isActive: props.active,
+  isVisited: props.visited,
+  isDisabled: props.disabled
+}))
+
+const scope = computed(() => ({
+  index: props.index,
+  displayIndex: displayIndex.value,
+  defaultSlot: defaultSlot.value,
+  flags: flags.value
+}))
+
+const classes = computed(() => ({
+  'is-active': props.active,
+  'is-visited': props.visited,
+  'is-disabled': props.disabled
+}))
+
+function handleChange() {
+  emit('change', props.index)
 }
 </script>
 
@@ -109,94 +85,72 @@ export default {
   </div>
 </template>
 
+<style scoped>
+  .v-step {
+    @apply flex-1 opacity-55 box-border transition-opacity duration-700;
 
-<style lang="scss" scoped>
-
-.v-step {
-  flex: 1;
-  opacity: 0.55;
-  box-sizing: border-box;
-  transition: opacity 0.7s;
-
-  &:hover:not(.is-disabled) {
-    opacity: 0.85;
-  }
-
-  *,
-  *::before,
-  *::after {
-    box-sizing: inherit;
-  }
-
-  &.is-active,
-  &.is-visited {
-    .label {
-      cursor: pointer;
+    &:hover:not(.is-disabled) {
+      @apply opacity-85;
     }
 
-    .index {
-      color: #999999;
-    }
-  }
-
-  &.is-active {
-    opacity: 1;
-
-    .title {
-      color: lighten(#12525e, 30%);
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit;
     }
 
-    .label {
+    &.is-active,
+    &.is-visited {
+      .label {
+        @apply cursor-pointer;
+      }
+
       .index {
-        border-color: rgba(#f4f4f4, 0.2);
-        background-color: lighten(#12525e, 0%);
+        @apply text-gray-600; /* Use a close color from UnoCSS color palette */
+      }
+    }
+
+    &.is-active {
+      @apply opacity-100;
+
+      .title {
+        color: #1e6b73; /* Custom color as lighten(#12525e, 30%) */
+      }
+
+      .label {
+        .index {
+          border-color: rgba(244, 244, 244, 0.2);
+          background-color: #12525e;
+        }
+      }
+    }
+
+    &.is-visited {
+      .index {
+        @apply bg-white;
+      }
+    }
+
+    @screen sm {
+      &:not(:last-child) {
+        @apply mr-2;
       }
     }
   }
 
-  &.is-visited {
-    .index {
-      background-color: #ffffff;
-    }
+  .label {
+    @apply flex flex-row items-center;
   }
 
-  @media (max-width: 575px) {
-    &:not(:last-child) {
-      // Bootstrap "xs"
-      margin-right: 0.5rem;
-    }
+  .index {
+    @apply w-14 h-14 flex flex-shrink-0 text-xl rounded-full mr-2 text-white items-center justify-center bg-transparent border border-gray-200;
   }
-}
 
-.label {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
+  .title {
+    @apply text-white;
+  }
 
-.index {
-  width: 3.5rem;
-  height: 3.5rem;
-  display: flex;
-  flex-shrink: 0;
-  font-size: 1.5rem;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-  color: #ffffff;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  border: 1px solid #f4f4f4;
-}
-
-.title {
-  color: #ffffff;
-}
-
-.divider {
-  width: 100%;
-  margin-left: 0.5rem;
-  border-bottom: 1px solid #ffffff;
-  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
-}
+  .divider {
+    @apply w-full ml-2 border-b border-white shadow-md;
+  }
 </style>

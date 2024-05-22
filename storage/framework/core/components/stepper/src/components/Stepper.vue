@@ -1,429 +1,224 @@
-
-<script>
-import VStep from './Step'
-import VStepperRoot from './StepperRoot'
-
+<script setup lang="ts">
+import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults  } from 'vue'
 import Utils from '@/modules/Utils'
 import $Utils from '@/modules/Stepper.Utils'
+import Step from './Step.vue'
+import StepperRoot from './StepperRoot.vue'
 
-export default {
-  name: 'VStepper',
+defineOptions({
+  name: 'Stepper',
+})
 
-  components: {
-    VStep
+interface Value {
+  value: number
+  id?: string
+}
+
+interface Props {
+  value?: Value
+  steps?: number
+  linear?: boolean
+  persist?: boolean
+  storekeeper?: string
+  withDivider?: boolean
+  rootComponent: object
+  debug?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+   value: {
+    value: 1,
+    id: undefined
   },
+  steps: 0,
+  linear: true,
+  persist: false,
+  storekeeper: 'localStorage',
+  withDivider: true,
+  rootComponent: () => StepperRoot,
+  debug: false,
+})
 
-  props: {
-    /**
-     * Contains the current step value. Very similar to a
-     * `value` attribute on an input. In most cases, you'll want
-     * to set this as a two-way binding, using the `v-model` directive.
-     * @type {Number||undefined||null}
-     */
-    value: {
-      type: Object,
-      default: () => ({
-        value: 1,
-        id: undefined
-      }),
-      validator: ({ id, value }) => {
-        const tests = []
+const emit = defineEmits<{
+  (e: 'input', value: Value): void
+  (e: 'reset'): void
+}>()
 
-        tests.push({
-          name: 'id',
-          type: [undefined, String.name],
-          value: id === undefined || typeof id === 'string'
-        })
+const namespace = { kebab: 'v-stepper', capitalize: 'V-Stepper' }
+const stepsArr = ref(getStepsArr())
+const index = ref(toIndex(props.value))
 
-        tests.push({
-          name: 'value',
-          type: [Number.name],
-          value: Utils.isNumber(value)
-        })
+const slots = useSlots()
 
-        return tests.every(({ name, type, value }) => {
-          if (value) {
-            return true
-          }
-          console.error(
-            `[${
-              this.namespace.capitalize
-            } error]: Property "${name}" must be of type ${[]
-              .concat(type)
-              .map(type => String(type))
-              .join(' or ')}.`
-          )
-          return false
-        })
-      }
-    },
+const id = computed(() => `${namespace.kebab}-${Math.random().toString(36).substr(2, 9)}`)
+const lastIndex = computed(() => stepsArr.value.length - 1)
+const random = computed(() => props.linear === false)
 
-    /**
-     * Contains the steps count.
-     * @type {Number}
-     */
-    steps: {
-      type: Number,
-      default: 0
-    },
+const queries = computed(() => {
+  const { steps } = props
+  return Array.from(Array(steps)).reduce((queries, step, $index) => {
+    const query = `isStep${$index + 1}`
+    queries[query] = index.value === $index
+    return queries
+  }, {} as Record<string, boolean>)
+})
 
-    /**
-     * Sets up the Stepper in either
-     * linear or random mode.
-     * @type {Boolean}
-     */
-    linear: {
-      type: Boolean,
-      default: true
-    },
+const scope = computed(() => ({
+  index: index.value,
+  displayIndex: index.value + 1,
+  defaultSlot: slots.default ? slots.default() : undefined,
+  flags: {
+    isActive: true,
+    isVisited: false,
+    isDisabled: false,
+  },
+}))
 
-    /**
-     * Sync state with storage?
-     * @type {Boolean}
-     */
-    persist: {
-      type: Boolean,
-      default: false
-    },
+const classes = computed(() => ({
+  'is-active': true,
+  'is-visited': false,
+  'is-disabled': false,
+}))
 
-    /**
-     * Which Storage API to use.
-     * Should be used with `persist` prop.
-     * @type {String}
-     */
-    storekeeper: {
-      type: String,
-      default: 'localStorage',
-      validator(value) {
-        return ['localStorage', 'sessionStorage'].includes(value)
-      }
-    },
-
-    /**
-     * Adds/Removes a divider to/from each Step component.
-     * @type {Boolean}
-     */
-    withDivider: {
-      type: Boolean,
-      default: true
-    },
-
-    /**
-     * Steps wrapper component.
-     * @type {Object}
-     */
-    rootComponent: {
-      type: Object,
-      default: () => VStepperRoot
-    },
-
-    /**
-     * Sets up debug mode, which reveals
-     * the actual radio-button behind each step.
-     * @type {Boolean}
-     */
-    debug: {
-      type: Boolean,
-      default: false
+watch(
+  () => props,
+  ({ value }) => {
+    index.value = toIndex(value)
+    if (props.persist) {
+      setStorage()
     }
   },
+  { immediate: true }
+)
 
-  data() {
-    const { value: { value } } = this
-    return {
-      namespace: { kebab: 'v-stepper', capitalize: 'V-Stepper' },
-      stepsArr: this.getStepsArr(),
-      index: this.toIndex(value)
-    }
+watch(
+  props.value,
+  (index) => {
+    emitValue(toValue(index))
   },
+  { immediate: true }
+)
 
-  watch: {
-    /**
-     * When `value` prop changes, update storage.
-     */
-    value: {
-      handler({ value }) {
-        this.index = this.toIndex(value)
-        if (this.persist) {
-          this.setStorage()
+onMounted(() => {
+  if (props.persist) {
+    const storage = getStorage()
+    if (storage) {
+      stepsArr.value = storage.stepsArr
+      index.value = storage.index
+    } else {
+      setStorage()
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  if (props.persist) {
+    window[props.storekeeper].removeItem(id.value)
+  }
+})
+
+function toValue(index: number) {
+  return index + 1
+}
+
+function toIndex(value: number = 0) {
+  return value - 1
+}
+
+function doesStepExist(index: number) {
+  return !!stepsArr.value[index]
+}
+
+function handleChange() {
+  changeStep.apply(this, arguments)
+}
+
+function changeStep(index: number) {
+  const value = getValue()
+  const isNext = index === index.value + 1
+  const isPrevious = index === index.value - 1
+  const oldIndex = toIndex(value)
+
+  if (props.linear) {
+    if (isNext || isPrevious) {
+      setStep(index, 'active', true)
+      setStep(index, 'visited', false)
+      setStep(index, 'disabled', false)
+      setStep(oldIndex, 'active', false)
+      setStep(oldIndex, 'visited', true)
+
+      stepsArr.value.forEach(step => {
+        if (step.index > index) {
+          setStep(step.index, 'disabled', true)
         }
-      }
-    },
-
-    /**
-     * When internal property `index` changes,
-     * convert to value and update v-model.
-     */
-    index: {
-      handler(index) {
-        this.emitValue(this.toValue(index))
-      },
-      immediate: true
-    }
-  },
-
-  created() {
-    /**
-     * Update from Storage if persistable.
-     */
-    if (this.persist) {
-      const storage = this.getStorage()
-      if (storage) {
-        this.stepsArr = storage.stepsArr
-        this.index = storage.index
-      } else {
-        this.setStorage()
-      }
-    }
-  },
-
-  destroyed() {
-    /**
-     * Remove from Storage if persistable.
-     */
-    if (this.persist) {
-      window[this.storekeeper].removeItem(this.id)
-    }
-  },
-
-  computed: {
-    /**
-     * @returns {String}
-     */
-    id() {
-      return `${this.namespace.kebab}-${this._uid}`
-    },
-
-    /**
-     * @returns {Number}
-     */
-    lastIndex() {
-      return this.stepsArr.length - 1
-    },
-
-    /**
-     * @returns {Boolean}
-     */
-    random() {
-      return this.linear === false
-    },
-
-    /**
-     * Creates queries for ease of composition.
-     * @returns {Object}
-     */
-    queries() {
-      const { steps, index } = this
-      return Array.from(Array(steps)).reduce((queries, step, $index) => {
-        const query = `isStep${$index + 1}`
-        queries[query] = index === $index
-        return queries
-      }, {})
-    }
-  },
-
-  methods: {
-    /**
-     * Converts index to value.
-     * @returns {Number}
-     */
-    toValue(index) {
-      return index + 1
-    },
-
-    /**
-     * Converts value to index.
-     * @returns {Number}
-     */
-    toIndex(value = 0) {
-      return value - 1
-    },
-
-    /**
-     * Whether a step
-     * exists or not.
-     * @returns {Boolean}
-     */
-    doesStepExist(index) {
-      return !!this.stepsArr[index]
-    },
-
-    /**
-     * @returns {Boolean}
-     */
-    isIntermediateIndex(index) {
-      return index > 0 && index < this.lastIndex
-    },
-
-    /**
-     * Handle `change` event and
-     * programmatic changes.
-     * @returns {void}
-     */
-    handleChange() {
-      this.changeStep.apply(this, arguments)
-    },
-
-    /**
-     * Changes step by index.
-     * @returns {void}
-     */
-    changeStep(index) {
-      const value = this.getValue()
-      const isNext = index === this.index + 1
-      const isPrevious = index === this.index - 1
-      const oldIndex = this.toIndex(value)
-
-      if (this.linear) {
-        if (isNext || isPrevious) {
-          this.setStep(index, 'active', true)
-          this.setStep(index, 'visited', false)
-          this.setStep(index, 'disabled', false)
-          this.setStep(oldIndex, 'active', false)
-          this.setStep(oldIndex, 'visited', true)
-
-          this.stepsArr.forEach(step => {
-            if (step.index > index) {
-              this.setStep(step.index, 'disabled', true)
-            }
-          })
-
-          this.emitValue(this.toValue(index))
-        }
-      } else {
-        this.setStep(oldIndex, 'visited', true)
-
-        this.emitValue(this.toValue(index))
-      }
-    },
-
-    /**
-     * Value getter
-     * @returns {Number}
-     */
-    getValue() {
-      return this.value.value
-    },
-
-    /**
-     * Constructs steps array
-     * from `steps` prop.
-     * @returns {Array}
-     */
-    getStepsArr() {
-      return Array.from(Array(this.steps), (step, index) => {
-        const isFirst = index === 0
-        const isNext = index - 1 === 0
-        let disabled = false
-        if (this.linear) {
-          if (isFirst || isNext) {
-            // Leave Step enabled.
-          } else {
-            disabled = true
-          }
-        }
-        const visited = false
-        const value = this.toValue(index)
-        return { index, value, visited, disabled }
       })
-    },
 
-    /**
-     * Offsets stepper {n} steps.
-     * @returns {void}
-     */
-    offset(offset) {
-      const index = this.index + offset
-      if (this.doesStepExist(index)) {
-        this.handleChange(index)
+      emitValue(toValue(index))
+    }
+  } else {
+    setStep(oldIndex, 'visited', true)
+    emitValue(toValue(index))
+  }
+}
+
+function getValue() {
+  return props.value
+}
+
+function getStepsArr() {
+  return Array.from(Array(props.steps), (step, index) => {
+    const isFirst = index === 0
+    const isNext = index - 1 === 0
+    let disabled = false
+    if (props.linear) {
+      if (!isFirst && !isNext) {
+        disabled = true
       }
-    },
+    }
+    const visited = false
+    const value = toValue(index)
+    return { index, value, visited, disabled }
+  })
+}
 
-    /**
-     * Goes to next step.
-     * @returns {void}
-     */
-    next() {
-      this.offset(1)
-    },
+function offset(offset: number) {
+  const index = index.value + offset
+  if (doesStepExist(index)) {
+    handleChange(index)
+  }
+}
 
-    /**
-     * Goes to previous step.
-     * @returns {void}
-     */
-    previous() {
-      this.offset(-1)
-    },
+function next() {
+  offset(1)
+}
 
-    /**
-     * Resets the stepper.
-     * @returns {void}
-     */
-    reset() {
-      this.stepsArr = this.getStepsArr()
-      this.index = 0
-      this.$emit('reset')
-    },
+function previous() {
+  offset(-1)
+}
 
-    /**
-     * Sets a step property.
-     * @returns {void}
-     */
-    setStep(index, prop, value) {
-      this.$set(this.stepsArr[index], prop, value)
-    },
+function reset() {
+  stepsArr.value = getStepsArr()
+  index.value = 0
+  emit('reset')
+}
 
-    /**
-     * Storage setter.
-     * @returns {void}
-     */
-    setStorage() {
-      const { index, stepsArr } = this
-      window[this.storekeeper].setItem(
-        this.id,
-        JSON.stringify({ index, stepsArr })
-      )
-    },
+function setStep(index: number, prop: string, value: any) {
+  stepsArr.value[index][prop] = value
+}
 
-    /**
-     * Storage getter.
-     * @returns {Object}
-     */
-    getStorage() {
-      return JSON.parse(window[this.storekeeper].getItem(this.id))
-    },
+function setStorage() {
+  const { index, stepsArr } = this
+  window[props.storekeeper].setItem(id.value, JSON.stringify({ index: index.value, stepsArr: stepsArr.value }))
+}
 
-    /**
-     * Constructs a step slot name.
-     * @returns {String}
-     */
-    getSlotName: $Utils.getSlotName,
+function getStorage() {
+  return JSON.parse(window[props.storekeeper].getItem(id.value) || 'null')
+}
 
-    /**
-     * Update v-model.
-     * @returns {void}
-     */
-    emitValue(value) {
-      const { id, queries } = this
-      this.$emit('input', { id, value, queries })
-    },
-
-    /**
-     * Returns whether step slot was passed.
-     * @returns {Boolean}
-     */
-    withSlot: $Utils.withSlot,
-
-    /**
-     * Returns whether step slot was not passed.
-     * @returns {Boolean}
-     */
-    withoutSlot: $Utils.withoutSlot
-  },
-  inheritAttrs: false
+function emitValue(value: number) {
+  emit('input', { id: id.value, value, queries: queries.value })
 }
 </script>
-
 <template>
   <div class="v-stepper">
     <component :is="rootComponent">
@@ -439,20 +234,18 @@ export default {
         :with-divider="withDivider"
         :active="step.index === toIndex(value.value)">
 
-        <!-- Proxy slot ("index-root") -->
+        Proxy slot ("index-root")
         <template
-          slot="index-root"
-          slot-scope="scope"
-          v-if="withSlot(getSlotName('index-root', scope.displayIndex))">
+          v-if="withSlot(getSlotName('index-root', $index + 1))"
+          v-slot:index-root="scope">
           <!-- Lift slot ("index-root") -->
           <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
         </template>
 
         <!-- Proxy slot ("index") -->
         <template
-          slot="index"
-          slot-scope="scope"
-          v-if="withoutSlot(getSlotName('index-root', scope.displayIndex))">
+          v-if="withoutSlot(getSlotName('index-root', $index + 1))"
+          v-slot:index="scope">
           <!-- Lift slot ("index") -->
           <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
             {{ scope.displayIndex }}
@@ -460,11 +253,10 @@ export default {
         </template>
 
         <!-- Proxy slot ("default") -->
-        <template slot-scope="scope">
+        <template v-slot="scope">
           <!-- Lift slot ("default") -->
           <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope"></slot>
         </template>
-
       </v-step>
     </component>
   </div>
