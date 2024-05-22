@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd ../../..
+
+# run linter and formatter
+biome check --apply .
+
+# generate changelog
+buddy changelog --quiet

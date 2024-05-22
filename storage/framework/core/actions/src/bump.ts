@@ -9,8 +9,8 @@ const changelogCommand = options?.dryRun ? 'buddy changelog --quiet --dry-run' :
 // })
 
 const bumpCommand = options?.dryRun
-  ? `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --no-push --execute "biome check --apply ../../.. && ${changelogCommand}"`
-  : `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --all --execute "biome check --apply ../../..  && ${changelogCommand}"`
+  ? `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --no-push --execute "../scripts/generate-changelog-and-lint"`
+  : `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --all --execute "../scripts/generate-changelog-and-lint"`
 
 console.log(`Running: ${bumpCommand}`)
 console.log(`In frameworkPath: ${p.frameworkPath()}`)
