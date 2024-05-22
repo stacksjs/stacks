@@ -54,7 +54,7 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "ace-builds": "^1.33.2",
+    "ace-builds": "^1.33.3",
     "resize-observer-polyfill": "^1.5.1",
     "stacks": "workspace:*",
     "vue3-ace-editor": "^2.2.4"
