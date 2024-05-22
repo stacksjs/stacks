@@ -9,7 +9,7 @@
   "sponsor": {
     "url": "https://github.com/sponsors/chrisbbreuer"
   },
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks/vscode#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/ide/vscode",
   "repository": {
     "type": "git",
     "url": "https://github.com/stacksjs/stacks.git",
@@ -27,7 +27,6 @@
   "categories": [
     "Extension Packs"
   ],
-  "pricing": "Free",
   "icon": "logo.png",
   "files": [
     "logo.png",
