@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/stepper",
   "type": "module",
-  "version": "0.61.10",
+  "version": "0.61.11",
   "description": "A modern stepper component.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,12 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["steppers", "components", "library", "stacks"],
+  "keywords": [
+    "steppers",
+    "components",
+    "library",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,8 +32,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "bun build.ts",
     "build": "bun build.ts",

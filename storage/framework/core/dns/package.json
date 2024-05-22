@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dns",
   "type": "module",
-  "version": "0.61.10",
+  "version": "0.61.11",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,8 +37,14 @@
       "import": "./dist/*"
     }
   },
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
