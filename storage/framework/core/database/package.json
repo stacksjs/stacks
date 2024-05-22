@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/database",
   "type": "module",
-  "version": "0.61.16",
+  "version": "0.61.17",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,14 +36,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

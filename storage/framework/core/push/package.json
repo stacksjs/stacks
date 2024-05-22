@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/push",
   "type": "module",
-  "version": "0.61.16",
+  "version": "0.61.17",
   "description": "The Stacks Push integration",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,11 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "push",
-    "aws",
-    "stacks"
-  ],
+  "keywords": ["push", "aws", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -32,14 +28,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

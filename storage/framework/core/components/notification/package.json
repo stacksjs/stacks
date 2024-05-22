@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/notification",
   "type": "module",
-  "version": "0.61.16",
+  "version": "0.61.17",
   "description": "An opinionated notification component for Stacks.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -12,9 +12,7 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/notification"
   },
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
       "types": "./lib/stacks-notification.d.ts",
@@ -26,15 +24,8 @@
   },
   "module": "dist/stacks-notification.js",
   "types": "dist/stacks-notification.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "lib",
-    "src",
-    "volar.d.ts"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "lib", "src", "volar.d.ts"],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",

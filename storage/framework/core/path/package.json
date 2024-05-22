@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/path",
   "type": "module",
-  "version": "0.61.16",
+  "version": "0.61.17",
   "description": "The Stacks path.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,14 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "path",
-    "paths",
-    "utilities",
-    "functions",
-    "bun",
-    "stacks"
-  ],
+  "keywords": ["path", "paths", "utilities", "functions", "bun", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -31,14 +24,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
