@@ -1,7 +1,7 @@
 {
   "name": "@bun-examples/buddy",
   "type": "module",
-  "version": "0.61.11",
+  "version": "0.61.12",
   "description": "Your project description.",
   "author": "your-name <your-email>",
   "license": "MIT",
