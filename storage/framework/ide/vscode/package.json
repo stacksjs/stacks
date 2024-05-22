@@ -30,7 +30,7 @@
     "LICENSE.md"
   ],
   "engines": {
-    "vscode": "^2023.8.100"
+    "vscode": "^1.89.1"
   },
   "scripts": {
     "package": "npx vsce package",
