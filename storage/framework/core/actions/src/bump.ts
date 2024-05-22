@@ -9,13 +9,18 @@ const changelogCommand = options?.dryRun ? 'buddy changelog --quiet --dry-run' :
 // })
 
 const bumpCommand = options?.dryRun
-  ? `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --no-push --execute "../scripts/generate-changelog-and-lint"`
-  : `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --all --execute "../scripts/generate-changelog-and-lint"`
+  ? `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --no-push --execute "../scripts/lint"`
+  : `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --all --execute "../scripts/lint"`
 
 console.log(`Running: ${bumpCommand}`)
 console.log(`In frameworkPath: ${p.frameworkPath()}`)
 
 await runCommand(bumpCommand, {
   cwd: p.frameworkPath('core'),
+  stdin: 'inherit',
+})
+
+await runCommand(changelogCommand, {
+  cwd: p.projectPath(),
   stdin: 'inherit',
 })
