@@ -70,7 +70,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../src/${modelName}'\n\n`
+  actionString += `import ${modelName} from '../src/models/${modelName}'\n\n`
   actionString += `import { request } from '@stacksjs/router'\n\n`
 
   let handleString = ``
@@ -586,7 +586,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
 
   const otherModelRelations = await fetchOtherModelRelations(model)
 
-  for (const otherModelRelation of otherModelRelations) fieldString += ` ${otherModelRelation.foreignKey}: number`
+  for (const otherModelRelation of otherModelRelations) fieldString += ` ${otherModelRelation.foreignKey}: number \n`
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import type { Result } from '@stacksjs/error-handling'

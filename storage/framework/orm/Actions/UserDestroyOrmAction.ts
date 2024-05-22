@@ -1,17 +1,18 @@
 import { Action } from '@stacksjs/actions'
-import User from '../src/User'
+import User from '../src/models/User'
 
 import { request } from '@stacksjs/router'
 
 export default new Action({
-  name: 'User Destroy',
-  description: 'User Destroy ORM Action',
+      name: 'User Destroy',
+      description: 'User Destroy ORM Action',
 
-  handle() {
-    const model = User.find(1)
+      handle() {
+        const model = User.find(1)
 
-    model.delete()
+        model.delete()
 
-    return 'Model deleted!'
-  },
-})
+        return 'Model deleted!'
+      },
+    })
+  
