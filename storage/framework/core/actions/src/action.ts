@@ -29,12 +29,12 @@ interface ActionOptions {
 export class Action {
   name?: string
   description?: string
-  rate?: JobOptions['rate']
-  tries?: JobOptions['tries']
-  backoff?: JobOptions['backoff']
-  enabled?: boolean
+  rate?: ActionOptions['rate']
+  tries?: ActionOptions['tries']
+  backoff?: ActionOptions['backoff']
+  enabled?: ActionOptions['enabled']
+  path?: ActionOptions['path']
   validations?: Record<ValidationKey, ValidationValue>
-  path?: string
   handle: (request?: Request) => Promise<any> | object | string
 
   constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path }: ActionOptions) {

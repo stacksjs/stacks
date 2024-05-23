@@ -89,9 +89,9 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = (await import(p.userJobsPath(`${path}.ts`))).default as Job
+    const job = (await import(p.userJobsPath(`${path}.ts`))).default as Job
 
-    return this.addRoute('GET', this.prepareUri(path), jobModule.handle, 200)
+    return this.addRoute('GET', this.prepareUri(path), job.handle, 200)
   }
 
   public async action(path: ActionPath | Route['path']): Promise<this> {
@@ -99,7 +99,7 @@ export class Router implements RouterInterface {
     if (path?.endsWith('.ts')) { // if it ends with .ts, we treat it as an Action path
       // if it is, return and await the action
       const action = (await import(p.userActionsPath(path))).default as Action
-      path = action.path ?? kebabCase(path)
+      path = action.path ?? kebabCase(path as string)
       return this.addRoute('GET', path, action.handle, 200)
     }
 
