@@ -1,9 +1,11 @@
+import type { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
-import { Job } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
-import { pascalCase } from '@stacksjs/strings'
+import { kebabCase, pascalCase } from '@stacksjs/strings'
+import type { Job } from '@stacksjs/types'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+
+type ActionPath = string // TODO: narrow this by automating its generation
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
@@ -44,6 +46,7 @@ export class Router implements RouterInterface {
       pattern,
       statusCode,
       paramNames: [],
+      // middleware: [],
     })
 
     return this
@@ -87,73 +90,62 @@ export class Router implements RouterInterface {
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
     const jobModule = (await import(p.userJobsPath(`${path}.ts`))).default as Job
-    const callback = jobModule.handle
 
-    path = this.prepareUri(path)
-    this.addRoute('GET', path, callback, 200)
-
-    return this
+    return this.addRoute('GET', this.prepareUri(path), jobModule.handle, 200)
   }
 
-  public async action(path: Route['url']): Promise<this> {
-    path = pascalCase(path) // actions are PascalCase
+  public async action(path: ActionPath | Route['path']): Promise<this> {
+    // check if action is a file anywhere in ./app/Actions/**/*.ts
+    if (path?.endsWith('.ts')) { // if it ends with .ts, we treat it as an Action path
+      // if it is, return and await the action
+      const action = (await import(p.userActionsPath(path))).default as Action
+      path = action.path ?? kebabCase(path)
+      return this.addRoute('GET', path, action.handle, 200)
+    }
 
-    let callback: Route['callback']
+    path = pascalCase(path) // actions are PascalCase
+    const userActionsPath = p.userActionsPath(`${path}.ts`)
+
     try {
       // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-      const actionModule = (await import(p.userActionsPath(`${path}.ts`))).default as Action
-      callback = actionModule.handle
+      const actionModule = (await import(userActionsPath)).default as Action
+
+      return this.addRoute('GET', this.prepareUri(path), actionModule.handle, 200)
     } catch (error) {
       try {
-        const actionModule = (await import(p.userActionsPath(`${path}.ts`.replace(/ActionAction/, 'Action')))).default as Action
-        callback = actionModule.handle
+        const actionModule = (await import(p.userActionsPath(`${path}.ts`))).default as Action
+
+        return this.addRoute('GET', this.prepareUri(path), actionModule.handle, 200)
       } catch (error) {
-        log.error(`Could not find action module for path: ${path}`)
+        log.error(`Could not find Action for path: ${path}`)
+
         return this
       }
     }
-
-    path = this.prepareUri(path)
-    this.addRoute('GET', path, callback, 200)
-
-    return this
   }
 
   public post(path: Route['url'], callback: Route['callback']): this {
-    path = this.prepareUri(path)
-    this.addRoute('POST', path, callback, 201)
-
-    return this
+    return this.addRoute('POST', this.prepareUri(path), callback, 201)
   }
 
   public view(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('GET', path, callback, 200)
-
-    return this
+    return this.addRoute('GET', path, callback, 200)
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
-    this.addRoute('GET', path, callback, 302)
-
-    return this
+    return this.addRoute('GET', path, callback, 302)
   }
 
   public delete(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('DELETE', path, callback, 204)
-
-    return this
+    return this.addRoute('DELETE', path, callback, 204)
   }
 
   public patch(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('PATCH', path, callback, 202)
-
-    return this
+    return this.addRoute('PATCH', path, callback, 202)
   }
 
   public put(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('PUT', path, callback, 202)
-
-    return this
+    return this.addRoute('PUT', path, callback, 202)
   }
 
   public group(options: string | RouteGroupOptions, callback?: () => void): this {

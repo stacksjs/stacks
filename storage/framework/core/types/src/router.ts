@@ -1,36 +1,6 @@
 import type { Action } from '@stacksjs/actions'
-import type { ActionPath } from '~/storage/framework/types/actions'
 
-export interface NitroEventHandler {
-  /**
-   * Path prefix or route
-   *
-   * If an empty string used, will be used as a middleware
-   */
-  route?: string
-
-  /**
-   * Specifies this is a middleware handler.
-   * Middleware are called on every route and should normally return nothing to pass to the next handlers
-   */
-  middleware?: boolean
-
-  /**
-   * Use lazy loading to import handler
-   */
-  lazy?: boolean
-
-  /**
-   * Path to event handler
-   *
-   */
-  handler: string
-
-  /**
-   * Router method matcher
-   */
-  method?: string
-}
+type ActionPath = string // TODO: narrow this by automating its generation
 
 // need to refactor before, after, view to be a part of some other type
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
@@ -41,8 +11,8 @@ export interface Route {
   name: string
   uri: string
   url: string // used synonymously with uri, TODO: narrow this type by ensuring it's generated
-  path: string
-  prefix: string
+  path?: string
+  prefix?: string
   method: HttpMethod
   pattern: RegExp
   callback: RouteCallback | ActionPath | Action | Promise<any> // we may be able to improve the `Promise<any>` if we could narrow this type `import('../app/Actions/BuddyAction')`
