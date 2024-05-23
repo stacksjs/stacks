@@ -40,7 +40,9 @@ export type RouteCallback = (params?: Record<string, any>) => any | string | obj
 export interface Route {
   name: string
   uri: string
-  url: string // used synonymously with uri
+  url: string // used synonymously with uri, TODO: narrow this type by ensuring it's generated
+  path: string
+  prefix: string
   method: HttpMethod
   pattern: RegExp
   callback: RouteCallback | ActionPath | Action | Promise<any> // we may be able to improve the `Promise<any>` if we could narrow this type `import('../app/Actions/BuddyAction')`

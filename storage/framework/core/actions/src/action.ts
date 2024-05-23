@@ -34,9 +34,10 @@ export class Action {
   backoff?: JobOptions['backoff']
   enabled?: boolean
   validations?: Record<ValidationKey, ValidationValue>
+  path?: string
   handle: (request?: Request) => Promise<any> | object | string
 
-  constructor({ name, description, validations, handle, rate, tries, backoff, enabled }: ActionOptions) {
+  constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access
 
     this.name = name
@@ -46,6 +47,7 @@ export class Action {
     this.tries = tries
     this.backoff = backoff
     this.enabled = enabled
+    this.path = path
     this.handle = handle
   }
 }

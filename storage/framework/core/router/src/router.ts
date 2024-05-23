@@ -1,6 +1,7 @@
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
-import { Action, Job } from '@stacksjs/types'
+import { Job } from '@stacksjs/types'
+import { Action } from '@stacksjs/actions'
 import { pascalCase } from '@stacksjs/strings'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
@@ -85,7 +86,7 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = (await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))).default as Job
+    const jobModule = (await import(p.userJobsPath(`${path}.ts`))).default as Job
     const callback = jobModule.handle
 
     path = this.prepareUri(path)
@@ -100,7 +101,7 @@ export class Router implements RouterInterface {
     let callback: Route['callback']
     try {
       // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-      const actionModule = (await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))).default as Action
+      const actionModule = (await import(p.userActionsPath(`${path}.ts`))).default as Action
       callback = actionModule.handle
     } catch (error) {
       try {
@@ -213,7 +214,6 @@ export class Router implements RouterInterface {
   }
 
   public prefix(prefix: string): this {
-    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].prefix = prefix
 
     return this
