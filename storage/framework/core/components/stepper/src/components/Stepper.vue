@@ -1,32 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults  } from 'vue'
-import Utils from '@/modules/Utils'
-import $Utils from '@/modules/Stepper.Utils'
-import Step from './Step.vue'
+import type { StepperProps, StepperValue, OptionParams } from '../types'
+import { Utils } from '../utils'
 import StepperRoot from './StepperRoot.vue'
+import Step from './Step.vue';
 
 defineOptions({
   name: 'Stepper',
 })
 
-interface Value {
-  value: number
-  id?: string
-}
+const rootComponent: any = ref('StepperRoot')
 
-interface Props {
-  value?: Value
-  steps?: number
-  linear?: boolean
-  persist?: boolean
-  storekeeper?: string
-  withDivider?: boolean
-  rootComponent: object
-  debug?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-   value: {
+const props = withDefaults(defineProps<StepperProps>(), {
+  value: {
     value: 1,
     id: undefined
   },
@@ -35,21 +21,18 @@ const props = withDefaults(defineProps<Props>(), {
   persist: false,
   storekeeper: 'localStorage',
   withDivider: true,
-  rootComponent: () => StepperRoot,
   debug: false,
 })
 
 const emit = defineEmits<{
-  (e: 'input', value: Value): void
+  (e: 'input', value: StepperValue): void
   (e: 'reset'): void
 }>()
 
-const namespace = { kebab: 'v-stepper', capitalize: 'V-Stepper' }
+const namespace = { kebab: 'stepper', capitalize: 'Stepper' }
 const stepsArr = ref(getStepsArr())
-const index = ref(toIndex(props.value))
-
+const index = ref(toIndex(props.value.value))
 const slots = useSlots()
-
 const id = computed(() => `${namespace.kebab}-${Math.random().toString(36).substr(2, 9)}`)
 const lastIndex = computed(() => stepsArr.value.length - 1)
 const random = computed(() => props.linear === false)
@@ -62,6 +45,19 @@ const queries = computed(() => {
     return queries
   }, {} as Record<string, boolean>)
 })
+
+
+watch(() => props.value, (newValue) => {
+  index.value = toIndex(newValue.value);
+  if (props.persist) {
+    setStorage();
+  }
+});
+
+watch(index, (newValue) => {
+  emitValue(toValue(newValue));
+}, { immediate: true });
+
 
 const scope = computed(() => ({
   index: index.value,
@@ -79,25 +75,6 @@ const classes = computed(() => ({
   'is-visited': false,
   'is-disabled': false,
 }))
-
-watch(
-  () => props,
-  ({ value }) => {
-    index.value = toIndex(value)
-    if (props.persist) {
-      setStorage()
-    }
-  },
-  { immediate: true }
-)
-
-watch(
-  props.value,
-  (index) => {
-    emitValue(toValue(index))
-  },
-  { immediate: true }
-)
 
 onMounted(() => {
   if (props.persist) {
@@ -117,6 +94,37 @@ onBeforeUnmount(() => {
   }
 })
 
+function getSlotName(suffix = '', displayIndex: string, options: Partial<OptionParams> = {}) {
+  const defaults: OptionParams = { prefix: 'step' }
+  options = Object.assign({}, defaults, options)
+  const { prefix } = options
+  const name = []
+
+  if (Utils.isNan(displayIndex)) {
+    throw new Error(`[Stepper.Utils.getSlotName warn]: Cannot generate name without a "displayIndex".`)
+  }
+  if (prefix) {
+    name.push(prefix)
+  }
+  if (displayIndex) {
+    name.push(displayIndex)
+  }
+  if (suffix) {
+    name.push(suffix)
+  }
+  return name.join('-')
+}
+
+function withSlot(name: string) {
+  return !withoutSlot(name);
+}
+
+function withoutSlot(name: string): boolean {
+  const noSlot = !slots[name] || (slots[name] && !slots[name].length);
+  const noScopedSlot = slots.noScopedSlot && !slots.noScopedSlot[name];
+  return noSlot && noScopedSlot;
+}
+
 function toValue(index: number) {
   return index + 1
 }
@@ -130,14 +138,17 @@ function doesStepExist(index: number) {
 }
 
 function handleChange() {
+  console.log("handleChanged: ");
   changeStep.apply(this, arguments)
 }
 
 function changeStep(index: number) {
-  const value = getValue()
+
+  const value = props.value.value
   const isNext = index === index.value + 1
   const isPrevious = index === index.value - 1
-  const oldIndex = toIndex(value)
+
+  console.log("props.linear: ", props.linear);
 
   if (props.linear) {
     if (isNext || isPrevious) {
@@ -160,11 +171,6 @@ function changeStep(index: number) {
     emitValue(toValue(index))
   }
 }
-
-function getValue() {
-  return props.value
-}
-
 function getStepsArr() {
   return Array.from(Array(props.steps), (step, index) => {
     const isFirst = index === 0
@@ -207,7 +213,6 @@ function setStep(index: number, prop: string, value: any) {
 }
 
 function setStorage() {
-  const { index, stepsArr } = this
   window[props.storekeeper].setItem(id.value, JSON.stringify({ index: index.value, stepsArr: stepsArr.value }))
 }
 
@@ -218,46 +223,43 @@ function getStorage() {
 function emitValue(value: number) {
   emit('input', { id: id.value, value, queries: queries.value })
 }
+
 </script>
 <template>
   <div class="v-stepper">
-    <component :is="rootComponent">
-      <v-step
+    <component :is="rootComponent" >
+      <step
         v-for="(step, $index) in stepsArr"
         :name="id"
         :key="$index"
-        :debug="debug"
+        :debug="props.debug"
         :index="$index"
         @change="handleChange"
         :visited="step.visited"
         :disabled="step.disabled"
-        :with-divider="withDivider"
-        :active="step.index === toIndex(value.value)">
-
-        Proxy slot ("index-root")
-        <template
+        :with-divider="props.withDivider"
+        :active="step.index === toIndex(props.value.value)"
+      >
+         <template
+          v-slot:index-root="scope"
           v-if="withSlot(getSlotName('index-root', $index + 1))"
-          v-slot:index-root="scope">
-          <!-- Lift slot ("index-root") -->
+          >
           <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
         </template>
 
-        <!-- Proxy slot ("index") -->
         <template
           v-if="withoutSlot(getSlotName('index-root', $index + 1))"
           v-slot:index="scope">
-          <!-- Lift slot ("index") -->
           <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
             {{ scope.displayIndex }}
           </slot>
         </template>
 
-        <!-- Proxy slot ("default") -->
-        <template v-slot="scope">
-          <!-- Lift slot ("default") -->
-          <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope"></slot>
+         <template v-slot:defaultSlot="scope" >
+          <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope">2</slot>
         </template>
-      </v-step>
+
+      </step>
     </component>
   </div>
 </template>

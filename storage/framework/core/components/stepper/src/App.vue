@@ -10,7 +10,7 @@ let steps = ref(5);
 <template>
   <div class="bg-neutral-100/66 dark:bg-neutral-900 px-4 ">
     <div class="container mx-auto max-w-full sm:max-w-2xl relative">
-      <Stepper :steps="steps" v-model="step"/>
+      <Stepper ref='stepper' :steps="steps" v-model="step"/>
     </div>
   </div>
 </template>

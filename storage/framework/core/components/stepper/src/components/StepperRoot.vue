@@ -1,8 +1,12 @@
 <script lang="ts" setup>
-import { defineOptions } from 'vue';
+import { defineOptions, onMounted } from 'vue';
 
 defineOptions({
   name: 'StepperRoot',
+})
+
+onMounted(() => {
+  console.log('Stepped Root Mounted');
 })
 
 </script>
@@ -15,7 +19,7 @@ defineOptions({
 
 <style scoped>
   .v-stepper-root {
-    @apply flex w-full select-none box-border justify-between;
+    @apply flex w-full select-none box-border justify-between ;
   }
   .v-stepper-root *,
   .v-stepper-root *::before,

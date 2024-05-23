@@ -1,8 +1,6 @@
 
 <script setup lang="ts">
-import { computed, defineProps, defineEmits, useSlots, defineOptions  } from 'vue'
-import Utils from '@/modules/Stepper.Utils'
-
+import { computed, defineProps, defineEmits, useSlots, defineOptions, onMounted  } from 'vue'
 
 defineOptions({
   name: 'Step',
@@ -24,7 +22,11 @@ const emit = defineEmits<{
   (e: 'change', index: number): void
 }>()
 
-const namespace = { kebab: 'v-step', capitalize: 'V-Step' }
+onMounted(() => {
+  console.log('Steps Mounted: ')
+})
+
+const namespace = { kebab: 'step', capitalize: 'Step' }
 
 const id = computed(() => `${namespace.kebab}-${props.index}`)
 const displayIndex = computed(() => props.index + 1)
@@ -59,7 +61,7 @@ function handleChange() {
 </script>
 
 <template>
-  <div :class="['v-step', classes]">
+  <div :class="['step', classes]">
     <input
       :id="id"
       class="input"
@@ -86,8 +88,8 @@ function handleChange() {
 </template>
 
 <style scoped>
-  .v-step {
-    @apply flex-1 opacity-55 box-border transition-opacity duration-700;
+  .step {
+    @apply flex-1 opacity-55 box-border transition-opacity duration-700 bg-green;
 
     &:hover:not(.is-disabled) {
       @apply opacity-85;
@@ -114,7 +116,7 @@ function handleChange() {
       @apply opacity-100;
 
       .title {
-        color: #1e6b73; /* Custom color as lighten(#12525e, 30%) */
+        color: #1e6b73;
       }
 
       .label {
