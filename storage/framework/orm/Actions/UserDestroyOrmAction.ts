@@ -8,7 +8,9 @@ export default new Action({
       description: 'User Destroy ORM Action',
 
       handle() {
-        const model = User.find(1)
+        const id = request.getParam('id')
+
+        const model = User.find(id)
 
         model.delete()
 

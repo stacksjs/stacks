@@ -83,13 +83,17 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
   if (apiRoute === 'show') {
     handleString += `handle() {
-        return ${modelName}.find(1)
+        const id = request.getParam('id')
+
+        return ${modelName}.find(id)
       },`
   }
 
   if (apiRoute === 'destroy') {
     handleString += `handle() {
-        const model = ${modelName}.find(1)
+        const id = request.getParam('id')
+
+        const model = ${modelName}.find(id)
 
         model.delete()
 
@@ -107,9 +111,9 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
   if (apiRoute === 'update') {
     handleString += `handle() {
-        const id = request.get(req.params.id)
+        const id = request.getParam('id')
 
-        const model = ${modelName}.find(req.params.id)
+        const model = ${modelName}.find(id)
 
         return model.update(req.all())
       },`
