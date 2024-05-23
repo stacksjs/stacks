@@ -8,7 +8,9 @@ export default new Action({
       description: 'User Show ORM Action',
 
       handle() {
-        return User.find(1)
+        const id = request.getParam('id')
+
+        return User.find(id)
       },
     })
   

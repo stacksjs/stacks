@@ -23,14 +23,14 @@ export class Router implements RouterInterface {
       })}$`,
     )
 
-    let routeCallback: Route['callback']
+    // let routeCallback: Route['callback']
 
-    if (typeof callback === 'string' || typeof callback === 'object') {
-      // Convert string or object to RouteCallback
-      routeCallback = () => callback
-    } else {
-      routeCallback = callback
-    }
+    // if (typeof callback === 'string' || typeof callback === 'object') {
+    //   // Convert string or object to RouteCallback
+    //   routeCallback = () => callback
+    // } else {
+    //   routeCallback = callback
+    // }
 
     log.debug(`Adding route: ${method} ${uri} with name ${name}`)
 
@@ -39,7 +39,7 @@ export class Router implements RouterInterface {
       method,
       url: uri,
       uri,
-      callback: routeCallback,
+      callback,
       pattern,
       statusCode,
       paramNames: [],
@@ -52,7 +52,7 @@ export class Router implements RouterInterface {
     this.path = this.normalizePath(path)
     log.debug(`Normalized Path: ${this.path}`)
 
-    callback = await this.resolveCallback(callback)
+    // callback = await this.resolveCallback(callback)
 
     const uri = this.prepareUri(this.path)
     log.debug(`Prepared URI: ${uri}`)
@@ -254,7 +254,7 @@ export class Router implements RouterInterface {
     return
   }
 
-  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
+  public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
     if (callback instanceof Promise) {
       const actionModule = await callback
       return actionModule.default
@@ -266,7 +266,7 @@ export class Router implements RouterInterface {
     return callback
   }
 
-  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
+  public async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
     let modulePath = callbackPath
     let importPathFunction = p.appPath // Default import path function
 
