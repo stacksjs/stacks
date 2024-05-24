@@ -135,15 +135,15 @@ export class Router implements RouterInterface {
   }
 
   public delete(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('DELETE', path, callback, 204)
+    return this.addRoute('DELETE', this.prepareUri(path), callback, 204)
   }
 
   public patch(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('PATCH', path, callback, 202)
+    return this.addRoute('PATCH', this.prepareUri(path), callback, 202)
   }
 
   public put(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('PUT', path, callback, 202)
+    return this.addRoute('PUT', this.prepareUri(path), callback, 202)
   }
 
   public group(options: string | RouteGroupOptions, callback?: () => void): this {

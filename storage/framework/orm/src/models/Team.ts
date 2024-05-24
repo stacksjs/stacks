@@ -80,6 +80,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new TeamModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof TeamType)[]) {
+        let query = db.selectFrom('teams').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new TeamModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof TeamType)[]) {
         let query = db.selectFrom('teams').where('id', 'in', ids)
 
@@ -154,16 +170,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a team
-      static async update(id: number, teamUpdate: TeamUpdate): Promise<TeamModel> {
-        const model = await db.updateTable('teams')
-          .set(teamUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new TeamModel(model)
       }
 
       // Method to remove a team
@@ -303,8 +309,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!updatedModel)
           return err(handleError('Team not found'))
 
-        this.team = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -398,6 +402,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       if (!model)
         return null
+
+      return new TeamModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof TeamType)[]) {
+      let query = db.selectFrom('teams').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new TeamModel(model)
     }
@@ -589,6 +609,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Team = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

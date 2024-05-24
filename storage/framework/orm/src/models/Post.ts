@@ -74,6 +74,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof PostType)[]) {
+        let query = db.selectFrom('posts').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new PostModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof PostType)[]) {
         let query = db.selectFrom('posts').where('id', 'in', ids)
 
@@ -148,16 +164,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a post
-      static async update(id: number, postUpdate: PostUpdate): Promise<PostModel> {
-        const model = await db.updateTable('posts')
-          .set(postUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new PostModel(model)
       }
 
       // Method to remove a post
@@ -297,8 +303,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!updatedModel)
           return err(handleError('Post not found'))
 
-        this.post = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -395,6 +399,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       if (!model)
         return null
+
+      return new PostModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof PostType)[]) {
+      let query = db.selectFrom('posts').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new PostModel(model)
     }
@@ -586,6 +606,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Post = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

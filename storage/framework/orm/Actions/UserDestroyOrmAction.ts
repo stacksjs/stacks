@@ -7,10 +7,10 @@ export default new Action({
       name: 'User Destroy',
       description: 'User Destroy ORM Action',
       method: 'DELETE',
-      handle() {
+      async handle() {
         const id = request.getParam('id')
 
-        const model = User.find(id)
+        const model = await User.findOrFail(Number(id))
 
         model.delete()
 

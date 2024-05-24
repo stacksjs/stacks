@@ -76,28 +76,28 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   let handleString = ``
 
   if (apiRoute === 'index') {
-    handleString += `handle() {
-        return ${modelName}.all()
+    handleString += `async handle() {
+        return await ${modelName}.all()
       },`
       
       method = 'GET'
   }
 
   if (apiRoute === 'show') {
-    handleString += `handle() {
-        const id = request.getParam('id')
+    handleString += `async handle() {
+        const id = await request.getParam('id')
 
-        return ${modelName}.find(id)
+        return ${modelName}.findOrFail(Number(id))
       },`
       
       method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
-    handleString += `handle() {
+    handleString += `async handle() {
         const id = request.getParam('id')
 
-        const model = ${modelName}.find(id)
+        const model = await ${modelName}.findOrFail(Number(id))
 
         model.delete()
 
@@ -108,8 +108,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   }
 
   if (apiRoute === 'store') {
-    handleString += `handle() {
-        const model = ${modelName}.create(request.all())
+    handleString += `async handle() {
+        const model = await ${modelName}.create(request.all())
 
         return model
       },`
@@ -118,12 +118,12 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   }
 
   if (apiRoute === 'update') {
-    handleString += `handle() {
+    handleString += `async handle() {
         const id = request.getParam('id')
 
-        const model = ${modelName}.find(id)
+        const model = await ${modelName}.findOrFail(Number(id))
 
-        return model.update(req.all())
+        return model.update(request.all())
       },`
 
       method = 'PATCH'
@@ -673,6 +673,22 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return new ${modelName}Model(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
+        let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(\`No model results found for \${id}\ \`)
+
+        return new ${modelName}Model(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]) {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
@@ -747,16 +763,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a ${formattedModelName}
-      static async update(id: number, ${formattedModelName}Update: ${modelName}Update): Promise<${modelName}Model> {
-        const model = await db.updateTable('${tableName}')
-          .set(${formattedModelName}Update)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new ${modelName}Model(model)
       }
 
       // Method to remove a ${formattedModelName}
@@ -896,8 +902,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         if (!updatedModel)
           return err(handleError('${modelName} not found'))
 
-        this.${formattedModelName} = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -911,7 +915,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
           const newModel = await db.insertInto('${tableName}')
             .values(this.${formattedModelName} as New${modelName})
             .executeTakeFirstOrThrow()
-          this.${formattedModelName} = newModel
         }
         else {
           // Update existing ${formattedModelName}
@@ -978,6 +981,22 @@ async function generateModelString(tableName: string, model: Model, attributes: 
 
       if (!model)
         return null
+
+      return new ${modelName}Model(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
+      let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(\`No model results found for \${id}\ \`)
 
       return new ${modelName}Model(model)
     }
@@ -1169,6 +1188,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
 
     export const ${modelName} = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

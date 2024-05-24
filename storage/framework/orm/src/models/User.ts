@@ -81,6 +81,22 @@ import Deployment from './Deployment'
         return new UserModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof UserType)[]) {
+        let query = db.selectFrom('users').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new UserModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof UserType)[]) {
         let query = db.selectFrom('users').where('id', 'in', ids)
 
@@ -155,16 +171,6 @@ import Deployment from './Deployment'
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a user
-      static async update(id: number, userUpdate: UserUpdate): Promise<UserModel> {
-        const model = await db.updateTable('users')
-          .set(userUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new UserModel(model)
       }
 
       // Method to remove a user
@@ -304,8 +310,6 @@ import Deployment from './Deployment'
         if (!updatedModel)
           return err(handleError('User not found'))
 
-        this.user = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -431,6 +435,22 @@ import Deployment from './Deployment'
 
       if (!model)
         return null
+
+      return new UserModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof UserType)[]) {
+      let query = db.selectFrom('users').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new UserModel(model)
     }
@@ -622,6 +642,7 @@ import Deployment from './Deployment'
 
     export const User = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

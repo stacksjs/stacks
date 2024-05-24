@@ -76,6 +76,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new AccessTokenModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
+        let query = db.selectFrom('access_tokens').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new AccessTokenModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]) {
         let query = db.selectFrom('access_tokens').where('id', 'in', ids)
 
@@ -150,16 +166,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a accesstoken
-      static async update(id: number, accesstokenUpdate: AccessTokenUpdate): Promise<AccessTokenModel> {
-        const model = await db.updateTable('access_tokens')
-          .set(accesstokenUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new AccessTokenModel(model)
       }
 
       // Method to remove a accesstoken
@@ -299,8 +305,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!updatedModel)
           return err(handleError('AccessToken not found'))
 
-        this.accesstoken = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -397,6 +401,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       if (!model)
         return null
+
+      return new AccessTokenModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
+      let query = db.selectFrom('access_tokens').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new AccessTokenModel(model)
     }
@@ -588,6 +608,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const AccessToken = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

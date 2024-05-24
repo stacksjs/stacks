@@ -71,6 +71,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new SubscriberModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof SubscriberType)[]) {
+        let query = db.selectFrom('subscribers').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new SubscriberModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof SubscriberType)[]) {
         let query = db.selectFrom('subscribers').where('id', 'in', ids)
 
@@ -145,16 +161,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a subscriber
-      static async update(id: number, subscriberUpdate: SubscriberUpdate): Promise<SubscriberModel> {
-        const model = await db.updateTable('subscribers')
-          .set(subscriberUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new SubscriberModel(model)
       }
 
       // Method to remove a subscriber
@@ -294,8 +300,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!updatedModel)
           return err(handleError('Subscriber not found'))
 
-        this.subscriber = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -376,6 +380,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       if (!model)
         return null
+
+      return new SubscriberModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof SubscriberType)[]) {
+      let query = db.selectFrom('subscribers').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new SubscriberModel(model)
     }
@@ -567,6 +587,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Subscriber = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

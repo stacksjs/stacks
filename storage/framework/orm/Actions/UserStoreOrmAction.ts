@@ -7,8 +7,8 @@ export default new Action({
       name: 'User Store',
       description: 'User Store ORM Action',
       method: 'POST',
-      handle() {
-        const model = User.create(request.all())
+      async handle() {
+        const model = await User.create(request.all())
 
         return model
       },

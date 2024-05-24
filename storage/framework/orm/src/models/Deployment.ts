@@ -79,6 +79,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new DeploymentModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof DeploymentType)[]) {
+        let query = db.selectFrom('deployments').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new DeploymentModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof DeploymentType)[]) {
         let query = db.selectFrom('deployments').where('id', 'in', ids)
 
@@ -153,16 +169,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a deployment
-      static async update(id: number, deploymentUpdate: DeploymentUpdate): Promise<DeploymentModel> {
-        const model = await db.updateTable('deployments')
-          .set(deploymentUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new DeploymentModel(model)
       }
 
       // Method to remove a deployment
@@ -302,8 +308,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!updatedModel)
           return err(handleError('Deployment not found'))
 
-        this.deployment = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -400,6 +404,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       if (!model)
         return null
+
+      return new DeploymentModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof DeploymentType)[]) {
+      let query = db.selectFrom('deployments').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new DeploymentModel(model)
     }
@@ -591,6 +611,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Deployment = {
       find,
+      findOrFail,
       findMany,
       get,
       count,

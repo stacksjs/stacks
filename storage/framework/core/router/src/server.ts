@@ -54,14 +54,13 @@ export async function serverResponse(req: Request) {
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
 
-
   log.info(`URL: ${JSON.stringify(url)}`)
 
   const foundRoute: Route | undefined = routesList.filter((route: Route) => {
     const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
 
     return pattern.test(url.pathname)
-  }).find((route: Route) => route.method ===  req.method)
+  }).find((route: Route) =>  route.method ===  req.method)
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
   // if (url.pathname === '/favicon.ico')

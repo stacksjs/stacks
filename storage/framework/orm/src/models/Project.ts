@@ -73,6 +73,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new ProjectModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof ProjectType)[]) {
+        let query = db.selectFrom('projects').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new ProjectModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof ProjectType)[]) {
         let query = db.selectFrom('projects').where('id', 'in', ids)
 
@@ -147,16 +163,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .executeTakeFirstOrThrow()
   
         return await find(Number(result.insertId))
-      }
-
-      // Method to update a project
-      static async update(id: number, projectUpdate: ProjectUpdate): Promise<ProjectModel> {
-        const model = await db.updateTable('projects')
-          .set(projectUpdate)
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new ProjectModel(model)
       }
 
       // Method to remove a project
@@ -296,8 +302,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!updatedModel)
           return err(handleError('Project not found'))
 
-        this.project = updatedModel
-
         return ok(updatedModel)
       }
 
@@ -378,6 +382,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       if (!model)
         return null
+
+      return new ProjectModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof ProjectType)[]) {
+      let query = db.selectFrom('projects').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
 
       return new ProjectModel(model)
     }
@@ -569,6 +589,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Project = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
