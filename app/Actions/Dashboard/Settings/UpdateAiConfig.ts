@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'UpdateAiConfig',

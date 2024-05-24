@@ -19,7 +19,7 @@ interface ActionOptions {
   apiResponse?: boolean
   validations?: Record<ValidationKey, ValidationValue>
   path?: string
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   rate?: JobOptions['rate']
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
