@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults  } from 'vue'
-import type { StepperProps, StepperValue, OptionParams } from '../types'
-import { Utils } from '../utils'
-import StepperRoot from './StepperRoot.vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults, defineExpose  } from 'vue'
+import type { StepperProps, OptionParams, StepperEmitValue, StepperValue } from '../types'
 import Step from './Step.vue';
 
 defineOptions({
   name: 'Stepper',
+  inheritAttrs: false
 })
-
-const rootComponent: any = ref('StepperRoot')
 
 const props = withDefaults(defineProps<StepperProps>(), {
   value: {
-    value: 1,
+    value: 2,
     id: undefined
   },
   steps: 0,
@@ -24,10 +21,7 @@ const props = withDefaults(defineProps<StepperProps>(), {
   debug: false,
 })
 
-const emit = defineEmits<{
-  (e: 'input', value: StepperValue): void
-  (e: 'reset'): void
-}>()
+const emit = defineEmits(['input', 'reset'])
 
 const namespace = { kebab: 'stepper', capitalize: 'Stepper' }
 const stepsArr = ref(getStepsArr())
@@ -39,6 +33,7 @@ const random = computed(() => props.linear === false)
 
 const queries = computed(() => {
   const { steps } = props
+
   return Array.from(Array(steps)).reduce((queries, step, $index) => {
     const query = `isStep${$index + 1}`
     queries[query] = index.value === $index
@@ -100,7 +95,7 @@ function getSlotName(suffix = '', displayIndex: string, options: Partial<OptionP
   const { prefix } = options
   const name = []
 
-  if (Utils.isNan(displayIndex)) {
+  if (Number.isNaN(displayIndex)) {
     throw new Error(`[Stepper.Utils.getSlotName warn]: Cannot generate name without a "displayIndex".`)
   }
   if (prefix) {
@@ -137,38 +132,30 @@ function doesStepExist(index: number) {
   return !!stepsArr.value[index]
 }
 
-function handleChange() {
-  console.log("handleChanged: ");
-  changeStep.apply(this, arguments)
-}
-
-function changeStep(index: number) {
-
-  const value = props.value.value
-  const isNext = index === index.value + 1
-  const isPrevious = index === index.value - 1
-
-  console.log("props.linear: ", props.linear);
+function handleChange(stepIndex: number) {
+  const isNext = stepIndex === index.value + 1
+  const isPrevious = stepIndex === index.value - 1
+  const oldIndex = toIndex(props.value.value)
 
   if (props.linear) {
     if (isNext || isPrevious) {
-      setStep(index, 'active', true)
-      setStep(index, 'visited', false)
-      setStep(index, 'disabled', false)
+      setStep(stepIndex, 'active', true)
+      setStep(stepIndex, 'visited', false)
+      setStep(stepIndex, 'disabled', false)
       setStep(oldIndex, 'active', false)
       setStep(oldIndex, 'visited', true)
 
-      stepsArr.value.forEach(step => {
-        if (step.index > index) {
+      stepsArr.value.forEach((step) => {
+        if (step.index > stepIndex) {
           setStep(step.index, 'disabled', true)
         }
       })
 
-      emitValue(toValue(index))
+      emitValue(toValue(stepIndex))
     }
   } else {
     setStep(oldIndex, 'visited', true)
-    emitValue(toValue(index))
+    emitValue(toValue(stepIndex))
   }
 }
 function getStepsArr() {
@@ -188,9 +175,9 @@ function getStepsArr() {
 }
 
 function offset(offset: number) {
-  const index = index.value + offset
-  if (doesStepExist(index)) {
-    handleChange(index)
+  const stepIndex = index.value + offset
+  if (doesStepExist(stepIndex)) {
+    handleChange(stepIndex)
   }
 }
 
@@ -208,8 +195,8 @@ function reset() {
   emit('reset')
 }
 
-function setStep(index: number, prop: string, value: any) {
-  stepsArr.value[index][prop] = value
+function setStep(stepIndex: number, prop: string, value: any) {
+  stepsArr.value[stepIndex][prop] = value
 }
 
 function setStorage() {
@@ -224,21 +211,27 @@ function emitValue(value: number) {
   emit('input', { id: id.value, value, queries: queries.value })
 }
 
+defineExpose({
+  next,
+  previous,
+  reset
+})
+
 </script>
 <template>
   <div class="v-stepper">
-    <component :is="rootComponent" >
+    <stepper-root>
       <step
         v-for="(step, $index) in stepsArr"
         :name="id"
         :key="$index"
-        :debug="props.debug"
+        :debug="debug"
         :index="$index"
         @change="handleChange"
         :visited="step.visited"
         :disabled="step.disabled"
-        :with-divider="props.withDivider"
-        :active="step.index === toIndex(props.value.value)"
+        :with-divider="withDivider"
+        :active="step.index === toIndex(value.value)"
       >
          <template
           v-slot:index-root="scope"
@@ -260,6 +253,6 @@ function emitValue(value: number) {
         </template>
 
       </step>
-    </component>
+    </stepper-root>
   </div>
 </template>

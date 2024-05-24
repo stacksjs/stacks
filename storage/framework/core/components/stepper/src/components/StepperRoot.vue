@@ -12,18 +12,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="v-stepper-root">
+  <div class="flex w-full select-none box-border justify-between v-stepper-root bg-black">
     <slot></slot>
   </div>
 </template>
 
 <style scoped>
-  .v-stepper-root {
-    @apply flex w-full select-none box-border justify-between ;
-  }
-  .v-stepper-root *,
-  .v-stepper-root *::before,
-  .v-stepper-root *::after {
-    box-sizing: inherit;
-  }
+
+.v-stepper-root *::before,
+.v-stepper-root *::after {
+  box-sizing: inherit;
+}
+
 </style>

@@ -3,7 +3,13 @@ export type Theme = 'light' | 'dark' | 'system'
 
 export interface StepperValue {
   value: number
-  id?: string
+  id?: string,
+}
+
+export interface StepperEmitValue {
+  value: number
+  id?: string,
+  queries: Record<string, boolean>
 }
 
 export interface OptionParams {

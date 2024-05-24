@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 onMounted(() => {
-  console.log('Steps Mounted: ')
+
 })
 
 const namespace = { kebab: 'step', capitalize: 'Step' }
@@ -56,12 +56,13 @@ const classes = computed(() => ({
 }))
 
 function handleChange() {
+  console.log('step handle changed');
   emit('change', props.index)
 }
 </script>
 
 <template>
-  <div :class="['step', classes]">
+  <div :class="['step flex-1 opacity-55 box-border transition-opacity duration-700', classes]">
     <input
       :id="id"
       class="input"
@@ -71,88 +72,70 @@ function handleChange() {
       :name="computedName"
       @change="handleChange"
     >
-    <label class="label" :for="id">
+    <label class="label flex flex-row items-center" :for="id">
       <slot name="index-root" v-bind="scope">
-        <span class="index">
+        <span class="index w-14 h-14 flex flex-shrink-0 text-xl rounded-full mr-2 text-white items-center justify-center bg-transparent border border-gray-200">
           <slot name="index" v-bind="scope">
             {{ scope.displayIndex }}
           </slot>
         </span>
       </slot>
-      <span class="title" v-if="defaultSlot">
+      <span class="title text-white" v-if="defaultSlot">
         <slot v-bind="scope"></slot>
       </span>
-      <span class="divider" v-if="withDivider"></span>
+      <span class="w-full ml-2 border-b border-white shadow-md" v-if="withDivider"></span>
     </label>
   </div>
 </template>
 
 <style scoped>
-  .step {
-    @apply flex-1 opacity-55 box-border transition-opacity duration-700 bg-green;
 
-    &:hover:not(.is-disabled) {
-      @apply opacity-85;
-    }
+.step:hover:not(.is-disabled) {
+  opacity: 0.85;
+}
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: inherit;
-    }
+.step *,
+.step *::before,
+.step *::after {
+  box-sizing: inherit;
+}
 
-    &.is-active,
-    &.is-visited {
-      .label {
-        @apply cursor-pointer;
-      }
+.step.is-active,
+.step.is-visited {
+  cursor: pointer;
+}
 
-      .index {
-        @apply text-gray-600; /* Use a close color from UnoCSS color palette */
-      }
-    }
+.step.is-active .label {
+  cursor: pointer;
+}
 
-    &.is-active {
-      @apply opacity-100;
+.step.is-active .index {
+  color: #4b5563;
+}
 
-      .title {
-        color: #1e6b73;
-      }
+.step.is-active {
+  opacity: 1;
+}
 
-      .label {
-        .index {
-          border-color: rgba(244, 244, 244, 0.2);
-          background-color: #12525e;
-        }
-      }
-    }
+.step.is-active .title {
+  color: #1e6b73;
+}
 
-    &.is-visited {
-      .index {
-        @apply bg-white;
-      }
-    }
+.step.is-active .label .index {
+  border-color: rgba(244, 244, 244, 0.2);
+  background-color: #12525e;
+}
 
-    @screen sm {
-      &:not(:last-child) {
-        @apply mr-2;
-      }
-    }
+.step.is-visited .index {
+  background-color: #ffffff;
+}
+
+/* Media query for small screens */
+@media (min-width: 640px) {
+  .step:not(:last-child) {
+    margin-right: 0.5rem; /* Assuming mr-2 maps to 0.5rem */
   }
+}
 
-  .label {
-    @apply flex flex-row items-center;
-  }
 
-  .index {
-    @apply w-14 h-14 flex flex-shrink-0 text-xl rounded-full mr-2 text-white items-center justify-center bg-transparent border border-gray-200;
-  }
-
-  .title {
-    @apply text-white;
-  }
-
-  .divider {
-    @apply w-full ml-2 border-b border-white shadow-md;
-  }
 </style>
