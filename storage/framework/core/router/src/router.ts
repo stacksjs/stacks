@@ -96,26 +96,24 @@ export class Router implements RouterInterface {
 
   public async action(path: ActionPath | Route['path']): Promise<this> {
     // check if action is a file anywhere in ./app/Actions/**/*.ts
-    if (path?.endsWith('.ts')) { // if it ends with .ts, we treat it as an Action path
-      // if it is, return and await the action
+    if (path?.endsWith('.ts')) { // given it ends with .ts, we treat it as an Actions path
       const action = (await import(p.userActionsPath(path))).default as Action
       path = action.path ?? kebabCase(path as string)
-      return this.addRoute('GET', path, action.handle, 200)
+      return this.addRoute(action.method ?? 'GET', path, action.handle, 200)
     }
 
     path = pascalCase(path) // actions are PascalCase
     const userActionsPath = p.userActionsPath(`${path}.ts`)
 
     try {
-      // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-      const actionModule = (await import(userActionsPath)).default as Action
+      const action = (await import(userActionsPath)).default as Action
 
-      return this.addRoute('GET', this.prepareUri(path), actionModule.handle, 200)
+      return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
     } catch (error) {
       try {
-        const actionModule = (await import(p.userActionsPath(`${path}.ts`))).default as Action
+        const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
 
-        return this.addRoute('GET', this.prepareUri(path), actionModule.handle, 200)
+        return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
       } catch (error) {
         log.error(`Could not find Action for path: ${path}`)
 

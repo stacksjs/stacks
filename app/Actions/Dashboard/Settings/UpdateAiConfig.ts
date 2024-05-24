@@ -4,6 +4,7 @@ export default new Action({
   name: 'UpdateAiConfig',
   description: 'Updates the AI config.',
   path: '/api/dashboard/settings/ai',
+  method: 'POST',
 
   validations: {
     'default': {

@@ -19,6 +19,7 @@ interface ActionOptions {
   apiResponse?: boolean
   validations?: Record<ValidationKey, ValidationValue>
   path?: string
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   rate?: JobOptions['rate']
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
@@ -34,10 +35,11 @@ export class Action {
   backoff?: ActionOptions['backoff']
   enabled?: ActionOptions['enabled']
   path?: ActionOptions['path']
+  method?: ActionOptions['method']
   validations?: Record<ValidationKey, ValidationValue>
   handle: (request?: Request) => Promise<any> | object | string
 
-  constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path }: ActionOptions) {
+  constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path, method }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access
 
     this.name = name
@@ -48,6 +50,7 @@ export class Action {
     this.backoff = backoff
     this.enabled = enabled
     this.path = path
+    this.method = method
     this.handle = handle
   }
 }
