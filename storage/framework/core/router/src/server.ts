@@ -57,11 +57,11 @@ export async function serverResponse(req: Request) {
 
   log.info(`URL: ${JSON.stringify(url)}`)
 
-  const foundRoute: Route | undefined = routesList.find((route: Route) => {
+  const foundRoute: Route | undefined = routesList.filter((route: Route) => {
     const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
 
     return pattern.test(url.pathname)
-  })
+  }).find((route: Route) => route.method ===  req.method)
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
   // if (url.pathname === '/favicon.ico')
@@ -128,6 +128,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
+    
     return await new Response(JSON.stringify(result))
   }
 

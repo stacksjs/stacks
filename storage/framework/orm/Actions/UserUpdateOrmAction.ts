@@ -6,7 +6,7 @@ import { request } from '@stacksjs/router'
 export default new Action({
       name: 'User Update',
       description: 'User Update ORM Action',
-
+      method: 'PATCH',
       handle() {
         const id = request.getParam('id')
 

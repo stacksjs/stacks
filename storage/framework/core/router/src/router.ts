@@ -212,7 +212,7 @@ export class Router implements RouterInterface {
   public async getRoutes(): Promise<Route[]> {
     await import(routesPath('api.ts'))
     await import(projectStoragePath('framework/orm/routes.ts'))
-
+    
     return this.routes
   }
 

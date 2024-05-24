@@ -147,10 +147,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newTeam: NewTeam): Promise<TeamModel> {
         const model = await db.insertInto('teams')
           .values(newTeam)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new TeamModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a team
@@ -158,7 +161,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const model = await db.updateTable('teams')
           .set(teamUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new TeamModel(model)
@@ -168,7 +170,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async remove(id: number): Promise<TeamModel> {
         const model = await db.deleteFrom('teams')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new TeamModel(model)
@@ -297,7 +298,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('teams')
           .set(team)
           .where('id', '=', this.team.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -317,7 +317,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new team
           const newModel = await db.insertInto('teams')
             .values(this.team as NewTeam)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.team = newModel
         }
@@ -469,10 +468,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newTeam: NewTeam) {
-      return await db.insertInto('teams')
-        .values(newTeam)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -506,7 +506,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('teams')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

@@ -141,10 +141,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newPost: NewPost): Promise<PostModel> {
         const model = await db.insertInto('posts')
           .values(newPost)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new PostModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a post
@@ -152,7 +155,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const model = await db.updateTable('posts')
           .set(postUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new PostModel(model)
@@ -162,7 +164,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async remove(id: number): Promise<PostModel> {
         const model = await db.deleteFrom('posts')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new PostModel(model)
@@ -291,7 +292,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('posts')
           .set(post)
           .where('id', '=', this.post.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -311,7 +311,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new post
           const newModel = await db.insertInto('posts')
             .values(this.post as NewPost)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.post = newModel
         }
@@ -466,10 +465,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newPost: NewPost) {
-      return await db.insertInto('posts')
-        .values(newPost)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -503,7 +503,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('posts')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

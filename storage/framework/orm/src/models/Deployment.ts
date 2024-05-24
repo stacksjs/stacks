@@ -146,10 +146,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
         const model = await db.insertInto('deployments')
           .values(newDeployment)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new DeploymentModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a deployment
@@ -157,7 +160,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const model = await db.updateTable('deployments')
           .set(deploymentUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new DeploymentModel(model)
@@ -167,7 +169,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async remove(id: number): Promise<DeploymentModel> {
         const model = await db.deleteFrom('deployments')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new DeploymentModel(model)
@@ -296,7 +297,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('deployments')
           .set(deployment)
           .where('id', '=', this.deployment.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -316,7 +316,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new deployment
           const newModel = await db.insertInto('deployments')
             .values(this.deployment as NewDeployment)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.deployment = newModel
         }
@@ -471,10 +470,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newDeployment: NewDeployment) {
-      return await db.insertInto('deployments')
-        .values(newDeployment)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -508,7 +508,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('deployments')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

@@ -138,10 +138,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
         const model = await db.insertInto('subscribers')
           .values(newSubscriber)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new SubscriberModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a subscriber
@@ -149,7 +152,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const model = await db.updateTable('subscribers')
           .set(subscriberUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new SubscriberModel(model)
@@ -159,7 +161,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async remove(id: number): Promise<SubscriberModel> {
         const model = await db.deleteFrom('subscribers')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new SubscriberModel(model)
@@ -288,7 +289,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('subscribers')
           .set(subscriber)
           .where('id', '=', this.subscriber.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -308,7 +308,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new subscriber
           const newModel = await db.insertInto('subscribers')
             .values(this.subscriber as NewSubscriber)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.subscriber = newModel
         }
@@ -447,10 +446,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newSubscriber: NewSubscriber) {
-      return await db.insertInto('subscribers')
-        .values(newSubscriber)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -484,7 +484,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('subscribers')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

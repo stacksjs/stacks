@@ -148,10 +148,13 @@ import Deployment from './Deployment'
       static async create(newUser: NewUser): Promise<UserModel> {
         const model = await db.insertInto('users')
           .values(newUser)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new UserModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a user
@@ -159,7 +162,6 @@ import Deployment from './Deployment'
         const model = await db.updateTable('users')
           .set(userUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new UserModel(model)
@@ -169,7 +171,6 @@ import Deployment from './Deployment'
       static async remove(id: number): Promise<UserModel> {
         const model = await db.deleteFrom('users')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new UserModel(model)
@@ -298,7 +299,6 @@ import Deployment from './Deployment'
         const updatedModel = await db.updateTable('users')
           .set(user)
           .where('id', '=', this.user.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -318,7 +318,6 @@ import Deployment from './Deployment'
           // Insert new user
           const newModel = await db.insertInto('users')
             .values(this.user as NewUser)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.user = newModel
         }
@@ -502,10 +501,11 @@ import Deployment from './Deployment'
     }
 
     export async function create(newUser: NewUser) {
-      return await db.insertInto('users')
-        .values(newUser)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -539,7 +539,6 @@ import Deployment from './Deployment'
     export async function remove(id: number) {
       return await db.deleteFrom('users')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

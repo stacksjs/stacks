@@ -68,7 +68,7 @@ async function writeModelNames() {
 async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
-
+  let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
   actionString += `import ${modelName} from '../src/models/${modelName}'\n\n`
   actionString += `import { request } from '@stacksjs/router'\n\n`
@@ -79,6 +79,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
     handleString += `handle() {
         return ${modelName}.all()
       },`
+      
+      method = 'GET'
   }
 
   if (apiRoute === 'show') {
@@ -87,6 +89,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return ${modelName}.find(id)
       },`
+      
+      method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
@@ -99,6 +103,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return 'Model deleted!'
       },`
+      
+      method = 'DELETE'
   }
 
   if (apiRoute === 'store') {
@@ -107,6 +113,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return model
       },`
+
+      method = 'POST'
   }
 
   if (apiRoute === 'update') {
@@ -117,12 +125,14 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return model.update(req.all())
       },`
+
+      method = 'PATCH'
   }
 
   actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
       description: '${modelName} ${formattedApiRoute} ORM Action',
-
+      method: '${method}',
       ${handleString}
     })
   `
@@ -224,7 +234,7 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function deleteExistingModels() {
-  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models*.ts`))
+  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models/*.ts`))
 
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
@@ -730,10 +740,13 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const model = await db.insertInto('${tableName}')
           .values(new${modelName})
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new ${modelName}Model(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a ${formattedModelName}
@@ -741,7 +754,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         const model = await db.updateTable('${tableName}')
           .set(${formattedModelName}Update)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ${modelName}Model(model)
@@ -751,7 +763,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       static async remove(id: number): Promise<${modelName}Model> {
         const model = await db.deleteFrom('${tableName}')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ${modelName}Model(model)
@@ -880,7 +891,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         const updatedModel = await db.updateTable('${tableName}')
           .set(${formattedModelName})
           .where('id', '=', this.${formattedModelName}.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -900,7 +910,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
           // Insert new ${formattedModelName}
           const newModel = await db.insertInto('${tableName}')
             .values(this.${formattedModelName} as New${modelName})
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.${formattedModelName} = newModel
         }
@@ -1039,10 +1048,11 @@ async function generateModelString(tableName: string, model: Model, attributes: 
     }
 
     export async function create(new${modelName}: New${modelName}) {
-      return await db.insertInto('${tableName}')
-        .values(new${modelName})
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -1076,7 +1086,6 @@ async function generateModelString(tableName: string, model: Model, attributes: 
     export async function remove(id: number) {
       return await db.deleteFrom('${tableName}')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

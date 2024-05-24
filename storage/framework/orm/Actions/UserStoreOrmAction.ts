@@ -6,7 +6,7 @@ import { request } from '@stacksjs/router'
 export default new Action({
       name: 'User Store',
       description: 'User Store ORM Action',
-
+      method: 'POST',
       handle() {
         const model = User.create(request.all())
 

@@ -6,7 +6,7 @@ import { request } from '@stacksjs/router'
 export default new Action({
       name: 'User Index',
       description: 'User Index ORM Action',
-
+      method: 'GET',
       handle() {
         return User.all()
       },

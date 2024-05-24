@@ -143,10 +143,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
         const model = await db.insertInto('access_tokens')
           .values(newAccessToken)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new AccessTokenModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a accesstoken
@@ -154,7 +157,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const model = await db.updateTable('access_tokens')
           .set(accesstokenUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new AccessTokenModel(model)
@@ -164,7 +166,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async remove(id: number): Promise<AccessTokenModel> {
         const model = await db.deleteFrom('access_tokens')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new AccessTokenModel(model)
@@ -293,7 +294,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('access_tokens')
           .set(accesstoken)
           .where('id', '=', this.accesstoken.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -313,7 +313,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new accesstoken
           const newModel = await db.insertInto('access_tokens')
             .values(this.accesstoken as NewAccessToken)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.accesstoken = newModel
         }
@@ -468,10 +467,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newAccessToken: NewAccessToken) {
-      return await db.insertInto('access_tokens')
-        .values(newAccessToken)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -505,7 +505,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('access_tokens')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 

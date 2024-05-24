@@ -140,10 +140,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newProject: NewProject): Promise<ProjectModel> {
         const model = await db.insertInto('projects')
           .values(newProject)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new ProjectModel(model)
+          const result = await db.insertInto('users')
+          .values(newUser)
+          .executeTakeFirstOrThrow()
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to update a project
@@ -151,7 +154,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const model = await db.updateTable('projects')
           .set(projectUpdate)
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ProjectModel(model)
@@ -161,7 +163,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async remove(id: number): Promise<ProjectModel> {
         const model = await db.deleteFrom('projects')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ProjectModel(model)
@@ -290,7 +291,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('projects')
           .set(project)
           .where('id', '=', this.project.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
@@ -310,7 +310,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new project
           const newModel = await db.insertInto('projects')
             .values(this.project as NewProject)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.project = newModel
         }
@@ -449,10 +448,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newProject: NewProject) {
-      return await db.insertInto('projects')
-        .values(newProject)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -486,7 +486,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('projects')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
