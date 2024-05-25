@@ -29,7 +29,7 @@ export function upgrade(buddy: CLI) {
     .option('-a, --all', descriptions.all, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('--framework', descriptions.framework, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-s, --shell', descriptions.shell, { default: false })
     .option('-b, --binary', descriptions.binary, { default: false })
     // .option('--canary', descriptions.canary, { default: false })
@@ -80,7 +80,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:framework', descriptions.framework)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:framework --verbose')
     .action(async (options: UpgradeOptions) => {
@@ -92,7 +92,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:dependencies', descriptions.dependencies)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('upgrade:deps')
     .example('buddy upgrade:dependencies --verbose')
@@ -103,7 +103,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:bun', descriptions.bun)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       log.debug('Running `buddy upgrade:bun` ...', options)
@@ -124,7 +124,7 @@ export function upgrade(buddy: CLI) {
 
   buddy
     .command('upgrade:all', descriptions.all)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: UpgradeOptions) => {
       log.debug('Running `buddy upgrade:all` ...', options)

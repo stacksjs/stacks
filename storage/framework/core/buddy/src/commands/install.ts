@@ -12,7 +12,7 @@ export function install(buddy: CLI) {
 
   buddy
     .command('install', descriptions.install)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-v, --verbose', descriptions.verbose, { default: false })
     .action(async (options: InstallOptions) => {
       log.debug('Running `buddy install` ...', options)

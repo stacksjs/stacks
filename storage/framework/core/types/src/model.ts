@@ -75,24 +75,24 @@ export interface ModelOptions extends Base {
         foreignKey?: string
         relationName?: string
       }[]
-    | string[]
+    | ModelNames[]
   belongsTo:
     | {
         model: ModelNames // should be typed as ModelName
         foreignKey?: string
         relationName?: string
       }[]
-    | string[] // belongsTo: 'User'
+    | ModelNames[] // belongsTo: 'User'
   belongsToMany: {
     model: ModelNames
     firstForeignKey?: string
     secondForeignKey?: string
     pivotTable?: string
     relationName?: string
-  }[]
+  } | ModelNames[]
   hasOneThrough: {
     model: ModelNames
-    through: ModelType
+    through: ModelNames
     foreignKey?: string
     throughForeignKey?: string
     relationName?: string
@@ -128,7 +128,7 @@ export type Model = Partial<ModelOptions>
 export interface RelationConfig {
   relationship: string
   model: string
-  table: string
+  table?: string
   relationModel?: string
   relationTable?: string,
   foreignKey: string

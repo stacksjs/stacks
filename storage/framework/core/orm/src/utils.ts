@@ -8,11 +8,10 @@ type ModelPath = string
 
 export async function modelTableName(model: Model | ModelPath): Promise<string> {
   if (typeof model === 'string') {
-    const modelPath = model
     model = (await import(model)).default as Model
   }
 
-  return model.table ?? snakeCase(plural(model.name))
+  return model.table ?? snakeCase(plural(model?.name || ''))
 }
 
 export async function extractFieldsFromModel(filePath: string) {

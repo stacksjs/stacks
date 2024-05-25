@@ -123,7 +123,7 @@ export function domains(buddy: CLI) {
       default: c?.privacyRegistrant || c?.privacy || true,
     })
     .option('--contact-type <type>', 'Contact type', { default: 'person' })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string, options: DomainsOptions) => {
       log.debug('Running `buddy domains:purchase <domain>` ...', options)

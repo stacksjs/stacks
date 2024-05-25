@@ -19,7 +19,7 @@ export function changelog(buddy: CLI) {
     .command('changelog', descriptions.changelog)
     .option('-q, --quiet', descriptions.quiet, { default: false })
     .option('-d, --dry-run', descriptions.dryRun, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       log.debug('Running `buddy changelog` ...', options)

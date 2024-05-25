@@ -1,4 +1,4 @@
-import type { Action } from '@stacksjs/actions'
+import type { Action as ActionType } from '@stacksjs/actions'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -7,6 +7,10 @@ import { storage } from '@stacksjs/storage'
 import type { ActionOptions } from '@stacksjs/types'
 import { Glob } from 'bun'
 
+type ActionPath = string // TODO: narrow this by automating its generation
+type ActionName = string // TODO: narrow this by automating its generation
+type Action = ActionPath | ActionName | string
+
 /**
  * Run an Action the Stacks way.
  *
@@ -14,7 +18,7 @@ import { Glob } from 'bun'
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: string, options?: ActionOptions) {
+export async function runAction(action: Action, options?: ActionOptions) {
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
   const glob = new Glob('**/*.ts')
@@ -23,7 +27,7 @@ export async function runAction(action: string, options?: ActionOptions) {
   for await (const file of glob.scan(scanOptions)) {
     log.debug('file', file)
     if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
-      return ((await import(p.userActionsPath(file))).default as Action).handle()
+      return ((await import(p.userActionsPath(file))).default as ActionType).handle()
 
     // if a custom model name is used, we need to check for it
     const a = await import(p.userActionsPath(file))
@@ -52,7 +56,7 @@ export async function runAction(action: string, options?: ActionOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: string[], options?: ActionOptions) {
+export async function runActions(actions: Action[], options?: ActionOptions) {
   log.debug('runActions:', actions)
   log.debug('actions options:', options)
 
@@ -77,6 +81,30 @@ export async function runActions(actions: string[], options?: ActionOptions) {
   return await runCommands(commands, o)
 }
 
-export function hasAction(action: string) {
-  return storage.isFile(p.actionsPath(`src/${action}.ts`))
+// looks in most common locations
+export function hasAction(action: Action) {
+  // Define patterns specifically for user actions
+  const userActionPatterns = [
+    `${action}.ts`,
+    `${action}`,
+    `Dashboard/${action}.ts`,
+    `Dashboard/${action}`,
+    `Buddy/${action}.ts`,
+    `Buddy/${action}`,
+  ]
+
+  // Define patterns specifically for core actions
+  const actionPatterns = [`src/${action}.ts`, `src/${action}`, `${action}.ts`, `${action}`]
+
+  // Check user actions path with its specific patterns
+  const userActionFiles = glob.sync(userActionPatterns.map((pattern) => p.userActionsPath(pattern)))
+
+  // Check actions path with its specific patterns
+  const actionFiles = glob.sync(actionPatterns.map((pattern) => p.actionsPath(pattern)))
+
+  return userActionFiles.length > 0 || actionFiles.length > 0
+
+  // TODO: need to loop through all user actions and check whether the name is a valid action name match
+
+  // return false
 }

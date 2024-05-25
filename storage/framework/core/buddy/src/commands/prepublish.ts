@@ -13,7 +13,7 @@ export function prepublish(buddy: CLI) {
 
   buddy
     .command('prepublish', descriptions.command)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: PrepublishOptions) => {
       log.debug('Running `buddy prepublish` ...', options)

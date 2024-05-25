@@ -21,7 +21,7 @@ export function test(buddy: CLI) {
   buddy
     .command('test', descriptions.command)
     .option('--ui', descriptions.ui, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: true })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test')

@@ -16,7 +16,7 @@ export function configure(buddy: CLI) {
   buddy
     .command('configure', descriptions.configure)
     .option('--aws', descriptions.aws, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
       log.debug('Running `buddy configure` ...', options)
@@ -32,7 +32,7 @@ export function configure(buddy: CLI) {
 
   buddy
     .command('configure:aws', descriptions.aws)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--profile', descriptions.profile, {
       default: process.env.AWS_PROFILE,
     })
