@@ -4,9 +4,10 @@ import { Action } from '@stacksjs/actions'
 export default new Action({
   name: 'GetProjects',
   description: 'Gets your local Stacks projects.',
-  apiResponse: true,
+  path: '/api/projects',
 
   async handle() {
+    console.log('GetProjects called from Action')
     // return Project.take(3) // reuse the buddy list:projects command
   },
 })

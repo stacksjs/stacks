@@ -1,5 +1,521 @@
 # Stacks Changelog
 
+## v0.61.17...v0.61.18
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.17...v0.61.18)
+
+### 🏡 Chore
+
+- Wip ([a3545fc7c](https://github.com/stacksjs/stacks/commit/a3545fc7c))
+- Release v0.61.18 ([5e8389c47](https://github.com/stacksjs/stacks/commit/5e8389c47))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.16...v0.61.16-4-g5da107688
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.16...v0.61.16-4-g5da107688)
+
+### 🏡 Chore
+
+- Wip ([0870ceaf6](https://github.com/stacksjs/stacks/commit/0870ceaf6))
+- Wip ([38ac08af5](https://github.com/stacksjs/stacks/commit/38ac08af5))
+- Wip ([5da107688](https://github.com/stacksjs/stacks/commit/5da107688))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.15...v0.61.15-4-gf3365cf2f
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.15...v0.61.15-4-gf3365cf2f)
+
+### 🏡 Chore
+
+- Wip ([8e393de82](https://github.com/stacksjs/stacks/commit/8e393de82))
+- Wip ([45632eb4a](https://github.com/stacksjs/stacks/commit/45632eb4a))
+- Wip ([0202671be](https://github.com/stacksjs/stacks/commit/0202671be))
+- Wip ([f3365cf2f](https://github.com/stacksjs/stacks/commit/f3365cf2f))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.14...v0.61.14-2-g4d624c43c
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.14...v0.61.14-2-g4d624c43c)
+
+### 🏡 Chore
+
+- Wip ([8a0907dfa](https://github.com/stacksjs/stacks/commit/8a0907dfa))
+- Wip ([4d624c43c](https://github.com/stacksjs/stacks/commit/4d624c43c))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.13...v0.61.13-2-ge6e42811e
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.13...v0.61.13-2-ge6e42811e)
+
+### 🏡 Chore
+
+- Wip ([f5a2468cc](https://github.com/stacksjs/stacks/commit/f5a2468cc))
+- Wip ([e6e42811e](https://github.com/stacksjs/stacks/commit/e6e42811e))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.12...v0.61.12-2-g625ca05f7
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.12...v0.61.12-2-g625ca05f7)
+
+### 🏡 Chore
+
+- Wip ([625ca05f7](https://github.com/stacksjs/stacks/commit/625ca05f7))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.11...v0.61.11-1-g16220e7b2
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.11...v0.61.11-1-g16220e7b2)
+
+### 🏡 Chore
+
+- Wip ([16220e7b2](https://github.com/stacksjs/stacks/commit/16220e7b2))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.10...v0.61.10-1-g202ced58b
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.10...v0.61.10-1-g202ced58b)
+
+### 🏡 Chore
+
+- Wip ([202ced58b](https://github.com/stacksjs/stacks/commit/202ced58b))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.9...v0.61.9-1-g5f0c743a1
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.9...v0.61.9-1-g5f0c743a1)
+
+### 🏡 Chore
+
+- Wip ([5f0c743a1](https://github.com/stacksjs/stacks/commit/5f0c743a1))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.8...v0.61.8-1-g0bfcb1075
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.8...v0.61.8-1-g0bfcb1075)
+
+### 🏡 Chore
+
+- Wip ([0bfcb1075](https://github.com/stacksjs/stacks/commit/0bfcb1075))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.7...v0.61.7-1-g46928dbef
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.7...v0.61.7-1-g46928dbef)
+
+### 🏡 Chore
+
+- Wip ([46928dbef](https://github.com/stacksjs/stacks/commit/46928dbef))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.6...v0.61.6-1-g13b4e4049
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.6...v0.61.6-1-g13b4e4049)
+
+### 🏡 Chore
+
+- Wip ([13b4e4049](https://github.com/stacksjs/stacks/commit/13b4e4049))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.5...v0.61.5-1-g6e11a8c8a
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.5...v0.61.5-1-g6e11a8c8a)
+
+### 🏡 Chore
+
+- Wip ([6e11a8c8a](https://github.com/stacksjs/stacks/commit/6e11a8c8a))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.4...v0.61.4-2-g5175c0180
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.4...v0.61.4-2-g5175c0180)
+
+### 🏡 Chore
+
+- Wip ([867121ae1](https://github.com/stacksjs/stacks/commit/867121ae1))
+- Wip ([5175c0180](https://github.com/stacksjs/stacks/commit/5175c0180))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.3...v0.61.3-2-g3bff7afa3
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.3...v0.61.3-2-g3bff7afa3)
+
+### 🏡 Chore
+
+- Wip ([40256407c](https://github.com/stacksjs/stacks/commit/40256407c))
+- Wip ([3bff7afa3](https://github.com/stacksjs/stacks/commit/3bff7afa3))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.2...v0.61.2-2-gd8aef77ac
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.2...v0.61.2-2-gd8aef77ac)
+
+### 🏡 Chore
+
+- Wip ([ddf2e8897](https://github.com/stacksjs/stacks/commit/ddf2e8897))
+- Wip ([d8aef77ac](https://github.com/stacksjs/stacks/commit/d8aef77ac))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.1...v0.61.1-1-g014763933
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.1...v0.61.1-1-g014763933)
+
+### 🏡 Chore
+
+- Wip ([014763933](https://github.com/stacksjs/stacks/commit/014763933))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.61.0...v0.61.0-1-gaf2a2804b
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.0...v0.61.0-1-gaf2a2804b)
+
+### 🏡 Chore
+
+- Wip ([af2a2804b](https://github.com/stacksjs/stacks/commit/af2a2804b))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+## v0.60.3...v0.60.3-352-g05c620f69
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.60.3...v0.60.3-352-g05c620f69)
+
+### 🏡 Chore
+
+- Wip ([e194925c8](https://github.com/stacksjs/stacks/commit/e194925c8))
+- Wip ([c56a48555](https://github.com/stacksjs/stacks/commit/c56a48555))
+- Wip ([5d7b3023d](https://github.com/stacksjs/stacks/commit/5d7b3023d))
+- Wip ([ae109e774](https://github.com/stacksjs/stacks/commit/ae109e774))
+- Wip ([fa2609ef4](https://github.com/stacksjs/stacks/commit/fa2609ef4))
+- Wip ([c1768cc3c](https://github.com/stacksjs/stacks/commit/c1768cc3c))
+- Wip ([af9df0c82](https://github.com/stacksjs/stacks/commit/af9df0c82))
+- Wip ([d890b80b5](https://github.com/stacksjs/stacks/commit/d890b80b5))
+- Wip ([69c0f830f](https://github.com/stacksjs/stacks/commit/69c0f830f))
+- Wip ([95f59070e](https://github.com/stacksjs/stacks/commit/95f59070e))
+- Wip ([5d94f6fc7](https://github.com/stacksjs/stacks/commit/5d94f6fc7))
+- Wip ([6ca268e21](https://github.com/stacksjs/stacks/commit/6ca268e21))
+- Wip ([c9157c20a](https://github.com/stacksjs/stacks/commit/c9157c20a))
+- Wip ([4346f8c9a](https://github.com/stacksjs/stacks/commit/4346f8c9a))
+- Wip ([44e7a1a12](https://github.com/stacksjs/stacks/commit/44e7a1a12))
+- Wip ([9fce6d61d](https://github.com/stacksjs/stacks/commit/9fce6d61d))
+- Wip ([206ee17cf](https://github.com/stacksjs/stacks/commit/206ee17cf))
+- Wip ([40c8766a8](https://github.com/stacksjs/stacks/commit/40c8766a8))
+- Wip ([c5f6c1685](https://github.com/stacksjs/stacks/commit/c5f6c1685))
+- Wip ([b7d9b9871](https://github.com/stacksjs/stacks/commit/b7d9b9871))
+- Wip ([f491cc90d](https://github.com/stacksjs/stacks/commit/f491cc90d))
+- Wip ([b02b070e8](https://github.com/stacksjs/stacks/commit/b02b070e8))
+- Wip ([1c6b71e72](https://github.com/stacksjs/stacks/commit/1c6b71e72))
+- Wip ([38f4ef072](https://github.com/stacksjs/stacks/commit/38f4ef072))
+- Wip ([3da284a10](https://github.com/stacksjs/stacks/commit/3da284a10))
+- Wip ([1086a596a](https://github.com/stacksjs/stacks/commit/1086a596a))
+- Wip ([99a62cc18](https://github.com/stacksjs/stacks/commit/99a62cc18))
+- Wip ([1ee8b1e03](https://github.com/stacksjs/stacks/commit/1ee8b1e03))
+- Wip ([894fa4b45](https://github.com/stacksjs/stacks/commit/894fa4b45))
+- Wip ([d58c02f1f](https://github.com/stacksjs/stacks/commit/d58c02f1f))
+- Wip ([fbd7316c5](https://github.com/stacksjs/stacks/commit/fbd7316c5))
+- Wip ([016e820e3](https://github.com/stacksjs/stacks/commit/016e820e3))
+- Wip ([bda2ec091](https://github.com/stacksjs/stacks/commit/bda2ec091))
+- Wip ([b0b7cc36e](https://github.com/stacksjs/stacks/commit/b0b7cc36e))
+- Wip ([1ce1b8c11](https://github.com/stacksjs/stacks/commit/1ce1b8c11))
+- Wip ([671d55b6a](https://github.com/stacksjs/stacks/commit/671d55b6a))
+- Wip ([b885c1fc3](https://github.com/stacksjs/stacks/commit/b885c1fc3))
+- Wip ([be76bf429](https://github.com/stacksjs/stacks/commit/be76bf429))
+- Wip ([ac6b4b1d5](https://github.com/stacksjs/stacks/commit/ac6b4b1d5))
+- Wip ([2871d2e58](https://github.com/stacksjs/stacks/commit/2871d2e58))
+- Wip ([abeeebfa1](https://github.com/stacksjs/stacks/commit/abeeebfa1))
+- Wip ([fb3ee1350](https://github.com/stacksjs/stacks/commit/fb3ee1350))
+- Wip ([393e688cd](https://github.com/stacksjs/stacks/commit/393e688cd))
+- Wip ([b19b08045](https://github.com/stacksjs/stacks/commit/b19b08045))
+- Wip ([39bcebc96](https://github.com/stacksjs/stacks/commit/39bcebc96))
+- Wip ([f9cfd6649](https://github.com/stacksjs/stacks/commit/f9cfd6649))
+- Wip ([7ebfae003](https://github.com/stacksjs/stacks/commit/7ebfae003))
+- Wip ([52c0606ce](https://github.com/stacksjs/stacks/commit/52c0606ce))
+- Wip ([ffc1f69f8](https://github.com/stacksjs/stacks/commit/ffc1f69f8))
+- Wip ([2897763f8](https://github.com/stacksjs/stacks/commit/2897763f8))
+- Wip ([a28e825d5](https://github.com/stacksjs/stacks/commit/a28e825d5))
+- Wip ([a3ea67cc1](https://github.com/stacksjs/stacks/commit/a3ea67cc1))
+- Wip ([56df7c681](https://github.com/stacksjs/stacks/commit/56df7c681))
+- Wip ([1bea30454](https://github.com/stacksjs/stacks/commit/1bea30454))
+- Wip ([a00b20ddd](https://github.com/stacksjs/stacks/commit/a00b20ddd))
+- Wip ([b6d58c9f8](https://github.com/stacksjs/stacks/commit/b6d58c9f8))
+- Wip ([16e64736b](https://github.com/stacksjs/stacks/commit/16e64736b))
+- Wip ([172a476d0](https://github.com/stacksjs/stacks/commit/172a476d0))
+- Wip ([a9513f772](https://github.com/stacksjs/stacks/commit/a9513f772))
+- Wip ([f409a28e7](https://github.com/stacksjs/stacks/commit/f409a28e7))
+- Wip ([d945322a5](https://github.com/stacksjs/stacks/commit/d945322a5))
+- Wip ([9c276d618](https://github.com/stacksjs/stacks/commit/9c276d618))
+- Wip ([fea9c5bef](https://github.com/stacksjs/stacks/commit/fea9c5bef))
+- Wip ([bedd76894](https://github.com/stacksjs/stacks/commit/bedd76894))
+- Wip ([88f97cf78](https://github.com/stacksjs/stacks/commit/88f97cf78))
+- Wip ([57b8bac46](https://github.com/stacksjs/stacks/commit/57b8bac46))
+- Wip ([83f3cad10](https://github.com/stacksjs/stacks/commit/83f3cad10))
+- Wip ([0bc706986](https://github.com/stacksjs/stacks/commit/0bc706986))
+- Wip ([02a4c8252](https://github.com/stacksjs/stacks/commit/02a4c8252))
+- Wip ([308439060](https://github.com/stacksjs/stacks/commit/308439060))
+- Wip ([882ac0efd](https://github.com/stacksjs/stacks/commit/882ac0efd))
+- Wip ([7188c2d0b](https://github.com/stacksjs/stacks/commit/7188c2d0b))
+- Wip ([fd622bfd8](https://github.com/stacksjs/stacks/commit/fd622bfd8))
+- Wip ([19520c854](https://github.com/stacksjs/stacks/commit/19520c854))
+- Wip ([34a94217f](https://github.com/stacksjs/stacks/commit/34a94217f))
+- Wip ([eadc89ab0](https://github.com/stacksjs/stacks/commit/eadc89ab0))
+- Wip ([a0a17cfef](https://github.com/stacksjs/stacks/commit/a0a17cfef))
+- Wip ([a388098bf](https://github.com/stacksjs/stacks/commit/a388098bf))
+- Wip ([23830fec7](https://github.com/stacksjs/stacks/commit/23830fec7))
+- Wip ([2354e5efe](https://github.com/stacksjs/stacks/commit/2354e5efe))
+- Wip ([317b37078](https://github.com/stacksjs/stacks/commit/317b37078))
+- Wip ([743e7e2b4](https://github.com/stacksjs/stacks/commit/743e7e2b4))
+- Wip ([81a99d824](https://github.com/stacksjs/stacks/commit/81a99d824))
+- Wip ([54edf727c](https://github.com/stacksjs/stacks/commit/54edf727c))
+- Wip ([97e88a128](https://github.com/stacksjs/stacks/commit/97e88a128))
+- Wip ([52ba7a533](https://github.com/stacksjs/stacks/commit/52ba7a533))
+- Wip ([a01ad0035](https://github.com/stacksjs/stacks/commit/a01ad0035))
+- Wip ([43969d652](https://github.com/stacksjs/stacks/commit/43969d652))
+- Wip ([6327be4e1](https://github.com/stacksjs/stacks/commit/6327be4e1))
+- Wip ([41cb74fe6](https://github.com/stacksjs/stacks/commit/41cb74fe6))
+- Wip ([811bc996f](https://github.com/stacksjs/stacks/commit/811bc996f))
+- Wip ([ddad5c07e](https://github.com/stacksjs/stacks/commit/ddad5c07e))
+- Wip ([7b7f55a42](https://github.com/stacksjs/stacks/commit/7b7f55a42))
+- Wip ([40e322510](https://github.com/stacksjs/stacks/commit/40e322510))
+- Wip ([a7a55b7f5](https://github.com/stacksjs/stacks/commit/a7a55b7f5))
+- Wip ([f4efba472](https://github.com/stacksjs/stacks/commit/f4efba472))
+- Wip ([acbf046ed](https://github.com/stacksjs/stacks/commit/acbf046ed))
+- Wip ([3fc5b5283](https://github.com/stacksjs/stacks/commit/3fc5b5283))
+- Wip ([fce4effa9](https://github.com/stacksjs/stacks/commit/fce4effa9))
+- Wip ([c2c8cbf3b](https://github.com/stacksjs/stacks/commit/c2c8cbf3b))
+- Wip ([70902b615](https://github.com/stacksjs/stacks/commit/70902b615))
+- Wip ([fd43e915f](https://github.com/stacksjs/stacks/commit/fd43e915f))
+- Wip ([739960218](https://github.com/stacksjs/stacks/commit/739960218))
+- Wip ([d9c4e87bd](https://github.com/stacksjs/stacks/commit/d9c4e87bd))
+- Wip ([ae8556616](https://github.com/stacksjs/stacks/commit/ae8556616))
+- Wip ([7ab347dfa](https://github.com/stacksjs/stacks/commit/7ab347dfa))
+- Wip ([439e05a43](https://github.com/stacksjs/stacks/commit/439e05a43))
+- Wip ([495c1947b](https://github.com/stacksjs/stacks/commit/495c1947b))
+- Wip ([d1d74ef60](https://github.com/stacksjs/stacks/commit/d1d74ef60))
+- Wip ([294f3b79e](https://github.com/stacksjs/stacks/commit/294f3b79e))
+- Wip ([28ab7ec32](https://github.com/stacksjs/stacks/commit/28ab7ec32))
+- Wip ([9b8049196](https://github.com/stacksjs/stacks/commit/9b8049196))
+- Wip ([b8570990f](https://github.com/stacksjs/stacks/commit/b8570990f))
+- Wip ([b79cc395e](https://github.com/stacksjs/stacks/commit/b79cc395e))
+- Wip ([f4f52dfad](https://github.com/stacksjs/stacks/commit/f4f52dfad))
+- Wip ([b986541c8](https://github.com/stacksjs/stacks/commit/b986541c8))
+- Wip ([6fea57b78](https://github.com/stacksjs/stacks/commit/6fea57b78))
+- Wip ([3315b1c70](https://github.com/stacksjs/stacks/commit/3315b1c70))
+- Wip ([57e06eeff](https://github.com/stacksjs/stacks/commit/57e06eeff))
+- Wip ([46d7cdf06](https://github.com/stacksjs/stacks/commit/46d7cdf06))
+- Wip ([68965e800](https://github.com/stacksjs/stacks/commit/68965e800))
+- Wip ([ce79f72f2](https://github.com/stacksjs/stacks/commit/ce79f72f2))
+- Wip ([8d48c8908](https://github.com/stacksjs/stacks/commit/8d48c8908))
+- Wip ([232c17789](https://github.com/stacksjs/stacks/commit/232c17789))
+- Wip ([c51c6f4b9](https://github.com/stacksjs/stacks/commit/c51c6f4b9))
+- Wip ([3b806093c](https://github.com/stacksjs/stacks/commit/3b806093c))
+- Wip ([b30c6402d](https://github.com/stacksjs/stacks/commit/b30c6402d))
+- Wip ([8c88ec757](https://github.com/stacksjs/stacks/commit/8c88ec757))
+- Wip ([0433e73e9](https://github.com/stacksjs/stacks/commit/0433e73e9))
+- Wip ([c694695f7](https://github.com/stacksjs/stacks/commit/c694695f7))
+- Wip ([4d739db7b](https://github.com/stacksjs/stacks/commit/4d739db7b))
+- Wip ([636249b53](https://github.com/stacksjs/stacks/commit/636249b53))
+- Wip ([08f9975e8](https://github.com/stacksjs/stacks/commit/08f9975e8))
+- Wip ([f53dc67d6](https://github.com/stacksjs/stacks/commit/f53dc67d6))
+- Wip ([090dc939f](https://github.com/stacksjs/stacks/commit/090dc939f))
+- Wip ([304723fa5](https://github.com/stacksjs/stacks/commit/304723fa5))
+- Wip ([09fc0e995](https://github.com/stacksjs/stacks/commit/09fc0e995))
+- Wip ([6464e1e82](https://github.com/stacksjs/stacks/commit/6464e1e82))
+- Wip ([3b36461b8](https://github.com/stacksjs/stacks/commit/3b36461b8))
+- Wip ([798593e17](https://github.com/stacksjs/stacks/commit/798593e17))
+- Wip ([00104b0d1](https://github.com/stacksjs/stacks/commit/00104b0d1))
+- Wip ([64cf6f5a3](https://github.com/stacksjs/stacks/commit/64cf6f5a3))
+- Wip ([68f583285](https://github.com/stacksjs/stacks/commit/68f583285))
+- Wip ([16a5b6ed8](https://github.com/stacksjs/stacks/commit/16a5b6ed8))
+- Wip ([6986addd5](https://github.com/stacksjs/stacks/commit/6986addd5))
+- Wip ([8fa3c1baf](https://github.com/stacksjs/stacks/commit/8fa3c1baf))
+- Wip ([36287f537](https://github.com/stacksjs/stacks/commit/36287f537))
+- Wip ([896449fce](https://github.com/stacksjs/stacks/commit/896449fce))
+- Wip ([06a2575da](https://github.com/stacksjs/stacks/commit/06a2575da))
+- Wip ([d6ceb2cad](https://github.com/stacksjs/stacks/commit/d6ceb2cad))
+- Wip ([ac5aeaea2](https://github.com/stacksjs/stacks/commit/ac5aeaea2))
+- Wip ([6b8225ed1](https://github.com/stacksjs/stacks/commit/6b8225ed1))
+- Wip ([a8dcd2ad5](https://github.com/stacksjs/stacks/commit/a8dcd2ad5))
+- Wip ([a9e5a1162](https://github.com/stacksjs/stacks/commit/a9e5a1162))
+- Wip ([d05daa7da](https://github.com/stacksjs/stacks/commit/d05daa7da))
+- Wip ([a6f26fb16](https://github.com/stacksjs/stacks/commit/a6f26fb16))
+- Wip ([1e84a8909](https://github.com/stacksjs/stacks/commit/1e84a8909))
+- Wip ([bdd191bd6](https://github.com/stacksjs/stacks/commit/bdd191bd6))
+- Wip ([a9e9b709f](https://github.com/stacksjs/stacks/commit/a9e9b709f))
+- Wip ([c3dd04fe3](https://github.com/stacksjs/stacks/commit/c3dd04fe3))
+- Wip ([ba2de23d9](https://github.com/stacksjs/stacks/commit/ba2de23d9))
+- Wip ([263d5115b](https://github.com/stacksjs/stacks/commit/263d5115b))
+- Wip ([6532b629d](https://github.com/stacksjs/stacks/commit/6532b629d))
+- Wip ([17b0a95ee](https://github.com/stacksjs/stacks/commit/17b0a95ee))
+- Wip ([2e5e65306](https://github.com/stacksjs/stacks/commit/2e5e65306))
+- Wip ([23ef57406](https://github.com/stacksjs/stacks/commit/23ef57406))
+- Wip ([05e007226](https://github.com/stacksjs/stacks/commit/05e007226))
+- Wip ([cbca2acac](https://github.com/stacksjs/stacks/commit/cbca2acac))
+- Wip ([5e7084a0a](https://github.com/stacksjs/stacks/commit/5e7084a0a))
+- Wip ([79cecbbff](https://github.com/stacksjs/stacks/commit/79cecbbff))
+- Wip ([55c65f16f](https://github.com/stacksjs/stacks/commit/55c65f16f))
+- Wip ([4fe109813](https://github.com/stacksjs/stacks/commit/4fe109813))
+- Wip ([e4612b4b7](https://github.com/stacksjs/stacks/commit/e4612b4b7))
+- Wip ([07b303a5e](https://github.com/stacksjs/stacks/commit/07b303a5e))
+- Wip ([1d72a0b6a](https://github.com/stacksjs/stacks/commit/1d72a0b6a))
+- Wip ([630e587c3](https://github.com/stacksjs/stacks/commit/630e587c3))
+- Wip ([cedccba63](https://github.com/stacksjs/stacks/commit/cedccba63))
+- Wip ([6638f067b](https://github.com/stacksjs/stacks/commit/6638f067b))
+- Wip ([54e2a35d1](https://github.com/stacksjs/stacks/commit/54e2a35d1))
+- Wip ([d985ce409](https://github.com/stacksjs/stacks/commit/d985ce409))
+- Remove model default ([4b1983704](https://github.com/stacksjs/stacks/commit/4b1983704))
+- Wip ([8bfe40dcb](https://github.com/stacksjs/stacks/commit/8bfe40dcb))
+- Wip ([749b44182](https://github.com/stacksjs/stacks/commit/749b44182))
+- Wip ([01dc5d7b0](https://github.com/stacksjs/stacks/commit/01dc5d7b0))
+- Wip ([d94581ffc](https://github.com/stacksjs/stacks/commit/d94581ffc))
+- Wip ([6cb308d02](https://github.com/stacksjs/stacks/commit/6cb308d02))
+- Wip ([617feaa61](https://github.com/stacksjs/stacks/commit/617feaa61))
+- Wip ([6a7c0fe62](https://github.com/stacksjs/stacks/commit/6a7c0fe62))
+- Wip ([c31eb1183](https://github.com/stacksjs/stacks/commit/c31eb1183))
+- Wip ([05a5adda8](https://github.com/stacksjs/stacks/commit/05a5adda8))
+- Wip ([d1baec273](https://github.com/stacksjs/stacks/commit/d1baec273))
+- Wip ([79ff7be12](https://github.com/stacksjs/stacks/commit/79ff7be12))
+- Wip ([25a3d4e48](https://github.com/stacksjs/stacks/commit/25a3d4e48))
+- Wip ([3d7ac29b5](https://github.com/stacksjs/stacks/commit/3d7ac29b5))
+- Wip ([fe41a53cb](https://github.com/stacksjs/stacks/commit/fe41a53cb))
+- Wip ([0f5e30540](https://github.com/stacksjs/stacks/commit/0f5e30540))
+- Wip ([ccc346ebb](https://github.com/stacksjs/stacks/commit/ccc346ebb))
+- Wip ([3fd1b2774](https://github.com/stacksjs/stacks/commit/3fd1b2774))
+- Wip ([0567fb77a](https://github.com/stacksjs/stacks/commit/0567fb77a))
+- Wip ([5eb4cef2d](https://github.com/stacksjs/stacks/commit/5eb4cef2d))
+- Wip ([d3afdef01](https://github.com/stacksjs/stacks/commit/d3afdef01))
+- Wip ([29787d0e4](https://github.com/stacksjs/stacks/commit/29787d0e4))
+- Wip ([d110fa540](https://github.com/stacksjs/stacks/commit/d110fa540))
+- Wip ([169d3675f](https://github.com/stacksjs/stacks/commit/169d3675f))
+- Wip ([fda8f4d80](https://github.com/stacksjs/stacks/commit/fda8f4d80))
+- Wip ([99ae4e260](https://github.com/stacksjs/stacks/commit/99ae4e260))
+- Wip ([ab64266f7](https://github.com/stacksjs/stacks/commit/ab64266f7))
+- Wip ([c2d3e42e0](https://github.com/stacksjs/stacks/commit/c2d3e42e0))
+- Wip ([970bd55b9](https://github.com/stacksjs/stacks/commit/970bd55b9))
+- Wip ([a47cc7ed1](https://github.com/stacksjs/stacks/commit/a47cc7ed1))
+- Wip ([623a0b534](https://github.com/stacksjs/stacks/commit/623a0b534))
+- Wip ([15abefcb4](https://github.com/stacksjs/stacks/commit/15abefcb4))
+- Wip ([aa0447db6](https://github.com/stacksjs/stacks/commit/aa0447db6))
+- Wip ([ed60c73bb](https://github.com/stacksjs/stacks/commit/ed60c73bb))
+- Wip ([fe732e25d](https://github.com/stacksjs/stacks/commit/fe732e25d))
+- Wip ([4fab55db8](https://github.com/stacksjs/stacks/commit/4fab55db8))
+- Wip ([80de967bb](https://github.com/stacksjs/stacks/commit/80de967bb))
+- Wip ([297450cef](https://github.com/stacksjs/stacks/commit/297450cef))
+- Wip ([da1c0b1d4](https://github.com/stacksjs/stacks/commit/da1c0b1d4))
+- Wip ([bb1858a1e](https://github.com/stacksjs/stacks/commit/bb1858a1e))
+- Wip ([dfa4c93fb](https://github.com/stacksjs/stacks/commit/dfa4c93fb))
+- Wip ([e52bd9701](https://github.com/stacksjs/stacks/commit/e52bd9701))
+- Wip ([fabbd492d](https://github.com/stacksjs/stacks/commit/fabbd492d))
+- Wip ([7630852b9](https://github.com/stacksjs/stacks/commit/7630852b9))
+- Wip ([89812415c](https://github.com/stacksjs/stacks/commit/89812415c))
+- Wip ([3b955ef1c](https://github.com/stacksjs/stacks/commit/3b955ef1c))
+- Wip ([7d20ddd01](https://github.com/stacksjs/stacks/commit/7d20ddd01))
+- Wip ([b690b8c1b](https://github.com/stacksjs/stacks/commit/b690b8c1b))
+- Wip ([a0c8afa9a](https://github.com/stacksjs/stacks/commit/a0c8afa9a))
+- Wip ([a9a650d15](https://github.com/stacksjs/stacks/commit/a9a650d15))
+- Wip ([05ae57a32](https://github.com/stacksjs/stacks/commit/05ae57a32))
+- Wip ([13fb396e1](https://github.com/stacksjs/stacks/commit/13fb396e1))
+- Wip ([32913cf3f](https://github.com/stacksjs/stacks/commit/32913cf3f))
+- Wip ([eb544d0f1](https://github.com/stacksjs/stacks/commit/eb544d0f1))
+- Wip ([0af70a053](https://github.com/stacksjs/stacks/commit/0af70a053))
+- Wip ([cb9eb7f1f](https://github.com/stacksjs/stacks/commit/cb9eb7f1f))
+- Wip ([c5e9b948d](https://github.com/stacksjs/stacks/commit/c5e9b948d))
+- Wip ([ff49b33cc](https://github.com/stacksjs/stacks/commit/ff49b33cc))
+- Wip ([5703dfc9b](https://github.com/stacksjs/stacks/commit/5703dfc9b))
+- Wip ([1a85577e8](https://github.com/stacksjs/stacks/commit/1a85577e8))
+- Wip ([e37303d76](https://github.com/stacksjs/stacks/commit/e37303d76))
+- Wip ([a2c425e2e](https://github.com/stacksjs/stacks/commit/a2c425e2e))
+- Wip ([679050a10](https://github.com/stacksjs/stacks/commit/679050a10))
+- Wip ([e0fb5bb5f](https://github.com/stacksjs/stacks/commit/e0fb5bb5f))
+- Wip ([1b6fb5011](https://github.com/stacksjs/stacks/commit/1b6fb5011))
+- Wip ([384808e9d](https://github.com/stacksjs/stacks/commit/384808e9d))
+- Wip ([113b244a7](https://github.com/stacksjs/stacks/commit/113b244a7))
+- Wip ([2057b90f9](https://github.com/stacksjs/stacks/commit/2057b90f9))
+- Wip ([7d5a0973b](https://github.com/stacksjs/stacks/commit/7d5a0973b))
+- Wip ([c3e1b95f4](https://github.com/stacksjs/stacks/commit/c3e1b95f4))
+- Wip ([bf7aa2801](https://github.com/stacksjs/stacks/commit/bf7aa2801))
+- Wip ([92af5f3c2](https://github.com/stacksjs/stacks/commit/92af5f3c2))
+- Wip ([8c173610b](https://github.com/stacksjs/stacks/commit/8c173610b))
+- Wip ([1a1a583fe](https://github.com/stacksjs/stacks/commit/1a1a583fe))
+- Wip ([9f790a5c6](https://github.com/stacksjs/stacks/commit/9f790a5c6))
+- Wip ([bc59163b6](https://github.com/stacksjs/stacks/commit/bc59163b6))
+- Wip ([1b656f190](https://github.com/stacksjs/stacks/commit/1b656f190))
+- Wip ([3d27665be](https://github.com/stacksjs/stacks/commit/3d27665be))
+- Wip ([9cd244a8d](https://github.com/stacksjs/stacks/commit/9cd244a8d))
+- Wip ([687b47004](https://github.com/stacksjs/stacks/commit/687b47004))
+- Wip ([981374536](https://github.com/stacksjs/stacks/commit/981374536))
+- Wip ([531c4426f](https://github.com/stacksjs/stacks/commit/531c4426f))
+- Wip ([9ab849ff0](https://github.com/stacksjs/stacks/commit/9ab849ff0))
+- Wip ([ad288c373](https://github.com/stacksjs/stacks/commit/ad288c373))
+- Wip ([453c75e03](https://github.com/stacksjs/stacks/commit/453c75e03))
+- Wip ([3d43bc6bc](https://github.com/stacksjs/stacks/commit/3d43bc6bc))
+- Wip ([36b027f54](https://github.com/stacksjs/stacks/commit/36b027f54))
+- Wip ([503c27c2c](https://github.com/stacksjs/stacks/commit/503c27c2c))
+- Wip ([66f9419cf](https://github.com/stacksjs/stacks/commit/66f9419cf))
+- Wip ([22c3a9fd2](https://github.com/stacksjs/stacks/commit/22c3a9fd2))
+- Wip ([902954794](https://github.com/stacksjs/stacks/commit/902954794))
+- Wip ([dfc04b2e6](https://github.com/stacksjs/stacks/commit/dfc04b2e6))
+- Wip ([cbc9bd9ec](https://github.com/stacksjs/stacks/commit/cbc9bd9ec))
+- Wip ([e762a5d34](https://github.com/stacksjs/stacks/commit/e762a5d34))
+- Wip ([bedda50ba](https://github.com/stacksjs/stacks/commit/bedda50ba))
+- Wip ([60dc9522b](https://github.com/stacksjs/stacks/commit/60dc9522b))
+- Wip ([05c620f69](https://github.com/stacksjs/stacks/commit/05c620f69))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Glennmichael123 ([@glennmichael123](http://github.com/glennmichael123))
+
 ## v0.60.1...v0.60.1-25-g3ba016bfc
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.60.1...v0.60.1-25-g3ba016bfc)

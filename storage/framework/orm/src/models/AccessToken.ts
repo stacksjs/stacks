@@ -15,7 +15,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       token: string
       plainTextToken: string
       abilities: enum
-     
+      team_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -75,6 +76,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new AccessTokenModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
+        let query = db.selectFrom('access_tokens').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new AccessTokenModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]) {
         let query = db.selectFrom('access_tokens').where('id', 'in', ids)
 
@@ -120,7 +137,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -131,7 +148,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           data: access_tokensWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -142,28 +159,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
         const model = await db.insertInto('access_tokens')
           .values(newAccessToken)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new AccessTokenModel(model)
-      }
-
-      // Method to update a accesstoken
-      static async update(id: number, accesstokenUpdate: AccessTokenUpdate): Promise<AccessTokenModel> {
-        const model = await db.updateTable('access_tokens')
-          .set(accesstokenUpdate)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new AccessTokenModel(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a accesstoken
       static async remove(id: number): Promise<AccessTokenModel> {
         const model = await db.deleteFrom('access_tokens')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new AccessTokenModel(model)
@@ -292,13 +300,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('access_tokens')
           .set(accesstoken)
           .where('id', '=', this.accesstoken.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('AccessToken not found'))
-
-        this.accesstoken = updatedModel
 
         return ok(updatedModel)
       }
@@ -312,7 +317,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new accesstoken
           const newModel = await db.insertInto('access_tokens')
             .values(this.accesstoken as NewAccessToken)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.accesstoken = newModel
         }
@@ -398,7 +402,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.accesstoken = model
+      return new AccessTokenModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
+      let query = db.selectFrom('access_tokens').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new AccessTokenModel(model)
     }
 
@@ -468,10 +487,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newAccessToken: NewAccessToken) {
-      return await db.insertInto('access_tokens')
-        .values(newAccessToken)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -480,12 +500,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('access_tokens')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('access_tokens')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('access_tokens')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, accesstokenUpdate: AccessTokenUpdate) {
       return await db.updateTable('access_tokens')
@@ -497,7 +525,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('access_tokens')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -581,6 +608,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const AccessToken = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -591,6 +619,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: AccessTokenModel

@@ -1,3 +1,5 @@
+import { RouteParam } from "@stacksjs/types"
+
 interface RequestData {
   [key: string]: string
 }
@@ -5,21 +7,24 @@ interface RequestData {
 type RouteParams = { [key: string]: string } | null
 
 export class Request {
-  private static instance: Request;
+  private static instance: Request
   private query: RequestData = {}
   private params: RouteParams = null
 
   // An attempt to singleston instance, might be needed at some point
   public static getInstance(): Request {
     if (!Request.instance) {
-      Request.instance = new Request();
+      Request.instance = new Request()
     }
-    return Request.instance;
+    return Request.instance
   }
-
 
   public addQuery(url: URL): void {
     this.query = Object.fromEntries(url.searchParams)
+  }
+
+  public addParam(param: RouteParam): void {
+    this.params = param
   }
 
   public get(element: string): string | number | undefined {
@@ -45,8 +50,12 @@ export class Request {
     if (match?.groups) this.params = match.groups
   }
 
-  public getParams(key: string): number | string | null {
+  public getParam(key: string): number | string | null {
     return this.params ? this.params[key] || null : null
+  }
+
+  public getParams(): RouteParams {
+    return this.params
   }
 
   public getParamAsInt(key: string): number | null {

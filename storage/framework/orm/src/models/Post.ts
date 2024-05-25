@@ -13,7 +13,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       id: Generated<number>
       title: string
       body: string
-     
+      user_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -73,6 +74,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof PostType)[]) {
+        let query = db.selectFrom('posts').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new PostModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof PostType)[]) {
         let query = db.selectFrom('posts').where('id', 'in', ids)
 
@@ -118,7 +135,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -129,7 +146,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           data: postsWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -140,28 +157,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newPost: NewPost): Promise<PostModel> {
         const model = await db.insertInto('posts')
           .values(newPost)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new PostModel(model)
-      }
-
-      // Method to update a post
-      static async update(id: number, postUpdate: PostUpdate): Promise<PostModel> {
-        const model = await db.updateTable('posts')
-          .set(postUpdate)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new PostModel(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a post
       static async remove(id: number): Promise<PostModel> {
         const model = await db.deleteFrom('posts')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new PostModel(model)
@@ -290,13 +298,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('posts')
           .set(post)
           .where('id', '=', this.post.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('Post not found'))
-
-        this.post = updatedModel
 
         return ok(updatedModel)
       }
@@ -310,7 +315,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new post
           const newModel = await db.insertInto('posts')
             .values(this.post as NewPost)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.post = newModel
         }
@@ -396,7 +400,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.post = model
+      return new PostModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof PostType)[]) {
+      let query = db.selectFrom('posts').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new PostModel(model)
     }
 
@@ -466,10 +485,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newPost: NewPost) {
-      return await db.insertInto('posts')
-        .values(newPost)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -478,12 +498,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('posts')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('posts')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('posts')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, postUpdate: PostUpdate) {
       return await db.updateTable('posts')
@@ -495,7 +523,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('posts')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -579,6 +606,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Post = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -589,6 +617,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: PostModel

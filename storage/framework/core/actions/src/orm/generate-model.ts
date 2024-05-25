@@ -68,54 +68,71 @@ async function writeModelNames() {
 async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
-
+  let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../src/${modelName}'\n\n`
+  actionString += `import ${modelName} from '../src/models/${modelName}'\n\n`
+  actionString += `import { request } from '@stacksjs/router'\n\n`
 
   let handleString = ``
 
   if (apiRoute === 'index') {
-    handleString += `handle() {
-        return ${modelName}.all()
+    handleString += `async handle() {
+        return await ${modelName}.all()
       },`
+      
+      method = 'GET'
   }
 
   if (apiRoute === 'show') {
-    handleString += `handle() {
-        return ${modelName}.find(1)
+    handleString += `async handle() {
+        const id = await request.getParam('id')
+
+        return ${modelName}.findOrFail(Number(id))
       },`
+      
+      method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
-    handleString += `handle() {
-        const model = ${modelName}.find(1)
+    handleString += `async handle() {
+        const id = request.getParam('id')
+
+        const model = await ${modelName}.findOrFail(Number(id))
 
         model.delete()
 
         return 'Model deleted!'
       },`
+      
+      method = 'DELETE'
   }
 
   if (apiRoute === 'store') {
-    handleString += `handle() {
-        const model = ${modelName}.create({})
+    handleString += `async handle() {
+        const model = await ${modelName}.create(request.all())
 
         return model
       },`
+
+      method = 'POST'
   }
 
   if (apiRoute === 'update') {
-    handleString += `handle() {
-        const model = ${modelName}.create({})
+    handleString += `async handle() {
+        const id = request.getParam('id')
 
-        return model
+        const model = await ${modelName}.findOrFail(Number(id))
+
+        return model.update(request.all())
       },`
+
+      method = 'PATCH'
   }
 
   actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
       description: '${modelName} ${formattedApiRoute} ORM Action',
-
+      method: '${method}',
       ${handleString}
     })
   `
@@ -183,7 +200,6 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
-
         let relationModel = relationInstance.model
 
         if (isString(relationInstance)) {
@@ -218,7 +234,7 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function deleteExistingModels() {
-  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models*.ts`))
+  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models/*.ts`))
 
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
@@ -403,14 +419,16 @@ async function getPivotTables(
   const pivotTable = []
 
   if ('belongsToMany' in model) {
-    const belongsToManyArr =  model.belongsToMany || []
+    const belongsToManyArr = model.belongsToMany || []
     for (const belongsToManyRelation of belongsToManyArr) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = model?.name?.toLowerCase()
 
-      const firstForeignKey = belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
-      const secondForeignKey = belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+      const firstForeignKey =
+        belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
+      const secondForeignKey =
+        belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
@@ -425,11 +443,29 @@ async function getPivotTables(
   return []
 }
 
-async function generateModelString(
-  tableName: string,
-  model: Model,
-  attributes: ModelElement[],
-): Promise<string> {
+export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelRelations = []
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelFileElement = modelFiles[i] as string
+    const modelFile = await import(modelFileElement)
+
+    if (model.name === modelFile.default.name) continue
+
+    const relations = await getRelations(modelFile.default)
+
+    if (!relations.length) continue
+
+    const relation = relations.find((relation) => relation.model === model.name)
+
+    if (relation) modelRelations.push(relation)
+  }
+
+  return modelRelations
+}
+
+async function generateModelString(tableName: string, model: Model, attributes: ModelElement[]): Promise<string> {
   const modelName = model.name
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName?.toLowerCase() // User -> user
@@ -455,13 +491,12 @@ async function generateModelString(
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
- 
     if (relationType === 'throughType') {
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
-      // const throughRelationModel = 
-      const formattedThroughRelation = relation.throughModel.name.toLowerCase()
-      const throughTableRelation = throughRelation.table
+
+      const formattedThroughRelation = relation.throughModel.toLowerCase()
+      const throughTableRelation = throughRelation
       const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`
 
       relationMethods += `
@@ -563,6 +598,10 @@ async function generateModelString(
 
   for (const attribute of attributes) fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
 
+  const otherModelRelations = await fetchOtherModelRelations(model)
+
+  for (const otherModelRelation of otherModelRelations) fieldString += ` ${otherModelRelation.foreignKey}: number \n`
+
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
@@ -634,6 +673,22 @@ async function generateModelString(
         return new ${modelName}Model(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
+        let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(\`No model results found for \${id}\ \`)
+
+        return new ${modelName}Model(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]) {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
@@ -679,7 +734,7 @@ async function generateModelString(
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -690,7 +745,7 @@ async function generateModelString(
           data: ${tableName}WithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -701,28 +756,19 @@ async function generateModelString(
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const model = await db.insertInto('${tableName}')
           .values(new${modelName})
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new ${modelName}Model(model)
-      }
-
-      // Method to update a ${formattedModelName}
-      static async update(id: number, ${formattedModelName}Update: ${modelName}Update): Promise<${modelName}Model> {
-        const model = await db.updateTable('${tableName}')
-          .set(${formattedModelName}Update)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new ${modelName}Model(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a ${formattedModelName}
       static async remove(id: number): Promise<${modelName}Model> {
         const model = await db.deleteFrom('${tableName}')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ${modelName}Model(model)
@@ -851,13 +897,10 @@ async function generateModelString(
         const updatedModel = await db.updateTable('${tableName}')
           .set(${formattedModelName})
           .where('id', '=', this.${formattedModelName}.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('${modelName} not found'))
-
-        this.${formattedModelName} = updatedModel
 
         return ok(updatedModel)
       }
@@ -871,9 +914,7 @@ async function generateModelString(
           // Insert new ${formattedModelName}
           const newModel = await db.insertInto('${tableName}')
             .values(this.${formattedModelName} as New${modelName})
-            .returningAll()
             .executeTakeFirstOrThrow()
-          this.${formattedModelName} = newModel
         }
         else {
           // Update existing ${formattedModelName}
@@ -941,7 +982,22 @@ async function generateModelString(
       if (!model)
         return null
 
-      this.${formattedModelName} = model
+      return new ${modelName}Model(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
+      let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(\`No model results found for \${id}\ \`)
+
       return new ${modelName}Model(model)
     }
 
@@ -1011,10 +1067,11 @@ async function generateModelString(
     }
 
     export async function create(new${modelName}: New${modelName}) {
-      return await db.insertInto('${tableName}')
-        .values(new${modelName})
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -1023,12 +1080,20 @@ async function generateModelString(
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('${tableName}')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('${tableName}')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('${tableName}')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, ${formattedModelName}Update: ${modelName}Update) {
       return await db.updateTable('${tableName}')
@@ -1040,7 +1105,6 @@ async function generateModelString(
     export async function remove(id: number) {
       return await db.deleteFrom('${tableName}')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -1124,6 +1188,7 @@ async function generateModelString(
 
     export const ${modelName} = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -1134,6 +1199,7 @@ async function generateModelString(
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: ${modelName}Model

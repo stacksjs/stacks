@@ -19,7 +19,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       description: string
       path: string
       isPersonal: boolean
-     
+      accesstoken_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -79,6 +80,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new TeamModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof TeamType)[]) {
+        let query = db.selectFrom('teams').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new TeamModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof TeamType)[]) {
         let query = db.selectFrom('teams').where('id', 'in', ids)
 
@@ -124,7 +141,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -135,7 +152,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           data: teamsWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -146,28 +163,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newTeam: NewTeam): Promise<TeamModel> {
         const model = await db.insertInto('teams')
           .values(newTeam)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new TeamModel(model)
-      }
-
-      // Method to update a team
-      static async update(id: number, teamUpdate: TeamUpdate): Promise<TeamModel> {
-        const model = await db.updateTable('teams')
-          .set(teamUpdate)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new TeamModel(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a team
       static async remove(id: number): Promise<TeamModel> {
         const model = await db.deleteFrom('teams')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new TeamModel(model)
@@ -296,13 +304,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('teams')
           .set(team)
           .where('id', '=', this.team.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('Team not found'))
-
-        this.team = updatedModel
 
         return ok(updatedModel)
       }
@@ -316,7 +321,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new team
           const newModel = await db.insertInto('teams')
             .values(this.team as NewTeam)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.team = newModel
         }
@@ -399,7 +403,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.team = model
+      return new TeamModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof TeamType)[]) {
+      let query = db.selectFrom('teams').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new TeamModel(model)
     }
 
@@ -469,10 +488,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newTeam: NewTeam) {
-      return await db.insertInto('teams')
-        .values(newTeam)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -481,12 +501,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('teams')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('teams')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('teams')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, teamUpdate: TeamUpdate) {
       return await db.updateTable('teams')
@@ -498,7 +526,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('teams')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -582,6 +609,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Team = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -592,6 +620,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: TeamModel

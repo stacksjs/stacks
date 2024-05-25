@@ -4,8 +4,15 @@ import { ok } from '@stacksjs/error-handling'
 import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Attribute, Attributes } from '@stacksjs/types'
-import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import type { Attribute, Attributes, Model } from '@stacksjs/types'
+import {
+  checkPivotMigration,
+  fetchOtherModelRelations,
+  getLastMigrationFields,
+  getPivotTables,
+  hasTableBeenMigrated,
+  mapFieldTypeToColumnType,
+} from '.'
 
 export async function resetPostgresDatabase() {
   const tables = await fetchMysqlTables()
@@ -120,8 +127,7 @@ async function createTableMigration(modelPath: string) {
 
   await createPivotTableMigration(model)
 
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
+  const otherModelRelations = await fetchOtherModelRelations(model)
   const fields = model.attributes
   const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
   const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
@@ -192,7 +198,7 @@ async function createPivotTableMigration(model: any) {
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await db.schema\n`
-    migrationContent += `    .createTable('${pivotTable}')\n`
+    migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
     migrationContent += `    .addColumn('user_id', 'integer')\n`
     migrationContent += `    .addColumn('subscriber_id', 'integer')\n`
@@ -200,7 +206,7 @@ async function createPivotTableMigration(model: any) {
     migrationContent += `    }\n`
 
     const timestamp = new Date().getTime().toString()
-    const migrationFileName = `${timestamp}-create-${pivotTable}-table.ts`
+    const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     // Assuming fs.writeFileSync is available or use an equivalent method
@@ -208,31 +214,6 @@ async function createPivotTableMigration(model: any) {
 
     log.success(`Created migration: ${italic(migrationFileName)}`)
   }
-}
-
-async function getPivotTables(
-  model: any,
-): Promise<{ table: string; firstForeignKey: string; secondForeignKey: string }[]> {
-  const pivotTable = []
-
-  if ('belongsToMany' in model.default) {
-    for (const belongsToManyRelation of model.default.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
-      const modelRelation = await import(modelRelationPath)
-
-      const formattedModelName = model.default.name.toLowerCase()
-
-      pivotTable.push({
-        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.default.table}`,
-        firstForeignKey: belongsToManyRelation.firstForeignKey,
-        secondForeignKey: belongsToManyRelation.secondForeignKey,
-      })
-    }
-
-    return pivotTable
-  }
-
-  return []
 }
 
 export async function createAlterTableMigration(modelPath: string) {

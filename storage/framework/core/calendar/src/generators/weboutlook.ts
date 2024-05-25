@@ -14,19 +14,20 @@ function generateOutlook(link: CalendarLink): string {
   const utcEndDateTime = convertTZ(link.to, 'UTC') // set timezone to UTC
   const dateTimeFormat = link.allDay ? dateFormat : timeFormat
 
-  url = link.allDay ? `${url}&startdt=${useDateFormat(utcStartDateTime, dateTimeFormat).value}` : `${url}&startdt=${useDateFormat(utcStartDateTime, dateTimeFormat).value}Z`
-  url = link.allDay ? `${url}&enddt=${useDateFormat(utcEndDateTime, dateTimeFormat).value}` : `${url}&enddt=${useDateFormat(utcEndDateTime, dateTimeFormat).value}Z`
+  url = link.allDay
+    ? `${url}&startdt=${useDateFormat(utcStartDateTime, dateTimeFormat).value}`
+    : `${url}&startdt=${useDateFormat(utcStartDateTime, dateTimeFormat).value}Z`
+  url = link.allDay
+    ? `${url}&enddt=${useDateFormat(utcEndDateTime, dateTimeFormat).value}`
+    : `${url}&enddt=${useDateFormat(utcEndDateTime, dateTimeFormat).value}Z`
 
-  if (link.allDay)
-    url = `${url}&allday=true`
+  if (link.allDay) url = `${url}&allday=true`
 
   url = `${url}&subject=${encodeURIComponent(link.title)}`
 
-  if (link.description)
-    url = `${url}&body=${encodeURIComponent(link.description)}`
+  if (link.description) url = `${url}&body=${encodeURIComponent(link.description)}`
 
-  if (link.address)
-    url = `${url}&location=${encodeURIComponent(link.address)}`
+  if (link.address) url = `${url}&location=${encodeURIComponent(link.address)}`
 
   return url
 }

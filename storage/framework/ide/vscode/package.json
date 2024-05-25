@@ -2,11 +2,14 @@
   "publisher": "Stacks",
   "name": "vscode-stacks",
   "displayName": "Stacks",
-  "version": "0.60.3",
+  "version": "0.61.18",
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks/vscode#readme",
+  "sponsor": {
+    "url": "https://github.com/sponsors/chrisbbreuer"
+  },
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/ide/vscode",
   "repository": {
     "type": "git",
     "url": "https://github.com/stacksjs/stacks.git",
@@ -23,9 +26,9 @@
   ],
   "categories": ["Extension Packs"],
   "icon": "logo.png",
-  "files": ["logo.png"],
+  "files": ["logo.png", "LICENSE.md"],
   "engines": {
-    "vscode": "^2023.8.100"
+    "vscode": "^1.89.1"
   },
   "scripts": {
     "package": "npx vsce package",

@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { extname } from '@stacksjs/path'
-import type { Route, StatusCode } from '@stacksjs/types'
+import type { Route, RouteParam, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
@@ -11,6 +11,11 @@ interface ServeOptions {
   port?: number
   debug?: boolean
   timezone?: string
+}
+
+
+interface Options {
+  statusCode?: StatusCode
 }
 
 export async function serve(options: ServeOptions = {}) {
@@ -45,36 +50,109 @@ export async function serverResponse(req: Request) {
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
 
   const url = new URL(trimmedUrl)
-  addRouteParamsAndQuery(url)
 
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
 
-  
   log.info(`URL: ${JSON.stringify(url)}`)
 
-  const foundRoute: Route | undefined = routesList.find((route: Route) => {
-    const pattern = new RegExp(`^${route.uri.replace(/:\w+/g, '\\w+')}$`)
+  const foundRoute: Route | undefined = routesList.filter((route: Route) => {
+    const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
 
     return pattern.test(url.pathname)
-  })
+  }).find((route: Route) =>  route.method ===  req.method)
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
-
   // if (url.pathname === '/favicon.ico')
   //   return new Response('')
 
   if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
+
+  const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname);
+
+  addRouteQuery(url)
+  addRouteParam(routeParams)
 
   await executeMiddleware(foundRoute)
 
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
 
-function addRouteParamsAndQuery(url: URL): void {
+function extractDynamicSegments(routePattern: string, path: string): RouteParam {
+  const regexPattern = new RegExp(`^${routePattern.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
+  const match = path.match(regexPattern);
+
+  if (!match) {
+    return null;
+  }
+  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1]);
+  const dynamicSegmentValues = match.slice(1); // First match is the whole string, so we slice it off
+
+  const dynamicSegments: { [key: string]: string } = {};
+  dynamicSegmentNames.forEach((name, index) => {
+    dynamicSegments[name] = dynamicSegmentValues[index];
+  });
+
+  return dynamicSegments;
+}
+
+async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
+  const foundCallback = await route.resolveCallback(foundRoute.callback)
+
+  if (!statusCode) statusCode = 200
+
+  if (foundRoute?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
+    const callback = String(foundCallback)
+    const response = Response.redirect(callback, statusCode)
+
+    return await noCache(response)
+  }
+
+  if (foundRoute?.method !== req.method) return new Response('Method not allowed', { status: 405 })
+
+  // Check if it's a path to an HTML file
+  if (isString(foundCallback) && extname(foundCallback) === '.html') {
+    try {
+      const fileContent = Bun.file(foundCallback)
+
+      return await new Response(fileContent, {
+        headers: { 'Content-Type': 'text/html' },
+      })
+    } catch (error) {
+      return await new Response('Error reading the HTML file', { status: 500 })
+    }
+  }
+
+  if (isString(foundCallback)) return await new Response(foundCallback)
+
+  if (isFunction(foundCallback)) {
+    const result = foundCallback()
+    
+    return await new Response(JSON.stringify(result))
+  }
+
+  if (isObject(foundCallback)) return await new Response(JSON.stringify(foundCallback))
+
+  // If no known type matched, return a generic error.
+  return await new Response('Unknown callback type.', { status: 500 })
+}
+
+function noCache(response: Response) {
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+
+  return response
+}
+
+function addRouteQuery(url: URL): void {
   if (!isObjectNotEmpty(url.searchParams)) RequestParam.addQuery(url)
 
   // requestInstance.extractParamsFromRoute(route.uri, url.pathname)
+}
+
+function addRouteParam(param: RouteParam): void {
+  RequestParam.addParam(param)
 }
 
 function executeMiddleware(route: Route): void {
@@ -102,57 +180,6 @@ function executeMiddleware(route: Route): void {
     }
   }
 }
-
-interface Options {
-  statusCode?: StatusCode
-}
-
-async function execute(route: Route, req: Request, { statusCode }: Options) {
-  if (!statusCode) statusCode = 200
-
-  if (route?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
-    const callback = String(route.callback)
-    const response = Response.redirect(callback, statusCode)
-
-    return await noCache(response)
-  }
-
-  if (route?.method !== req.method) return new Response('Method not allowed', { status: 405 })
-
-  // Check if it's a path to an HTML file
-  if (isString(route.callback) && extname(route.callback) === '.html') {
-    try {
-      const fileContent = Bun.file(route.callback)
-
-      return await new Response(fileContent, {
-        headers: { 'Content-Type': 'text/html' },
-      })
-    } catch (error) {
-      return await new Response('Error reading the HTML file', { status: 500 })
-    }
-  }
-
-  if (isString(route.callback)) return await new Response(route.callback)
-
-  if (isFunction(route.callback)) {
-    const result = route.callback()
-    return await new Response(JSON.stringify(result))
-  }
-
-  if (isObject(route.callback)) return await new Response(JSON.stringify(route.callback))
-
-  // If no known type matched, return a generic error.
-  return await new Response('Unknown callback type.', { status: 500 })
-}
-
-function noCache(response: Response) {
-  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-  response.headers.set('Pragma', 'no-cache')
-  response.headers.set('Expires', '0')
-
-  return response
-}
-
 function isString(val: unknown): val is string {
   return typeof val === 'string'
 }
@@ -166,5 +193,5 @@ function isFunction(val: unknown): val is Function {
 }
 
 function isObject(val: unknown): val is object {
-  return val !== null && typeof val === 'object' && !Array.isArray(val)
+  return typeof val === 'object'
 }

@@ -73,6 +73,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new ProjectModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof ProjectType)[]) {
+        let query = db.selectFrom('projects').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new ProjectModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof ProjectType)[]) {
         let query = db.selectFrom('projects').where('id', 'in', ids)
 
@@ -118,7 +134,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -129,7 +145,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           data: projectsWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -140,28 +156,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newProject: NewProject): Promise<ProjectModel> {
         const model = await db.insertInto('projects')
           .values(newProject)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new ProjectModel(model)
-      }
-
-      // Method to update a project
-      static async update(id: number, projectUpdate: ProjectUpdate): Promise<ProjectModel> {
-        const model = await db.updateTable('projects')
-          .set(projectUpdate)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new ProjectModel(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a project
       static async remove(id: number): Promise<ProjectModel> {
         const model = await db.deleteFrom('projects')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ProjectModel(model)
@@ -290,13 +297,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('projects')
           .set(project)
           .where('id', '=', this.project.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('Project not found'))
-
-        this.project = updatedModel
 
         return ok(updatedModel)
       }
@@ -310,7 +314,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new project
           const newModel = await db.insertInto('projects')
             .values(this.project as NewProject)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.project = newModel
         }
@@ -380,7 +383,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.project = model
+      return new ProjectModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof ProjectType)[]) {
+      let query = db.selectFrom('projects').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new ProjectModel(model)
     }
 
@@ -450,10 +468,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newProject: NewProject) {
-      return await db.insertInto('projects')
-        .values(newProject)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -462,12 +481,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('projects')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('projects')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('projects')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, projectUpdate: ProjectUpdate) {
       return await db.updateTable('projects')
@@ -479,7 +506,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('projects')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -563,6 +589,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Project = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -573,6 +600,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: ProjectModel

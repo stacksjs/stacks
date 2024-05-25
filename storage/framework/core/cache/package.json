@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cache",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.18",
   "description": "Caching the Stacks way.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -43,11 +43,11 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.577.0",
+    "@aws-sdk/client-dynamodb": "^3.583.0",
     "@stacksjs/config": "workspace:*"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.577.0",
+    "@aws-sdk/client-dynamodb": "^3.583.0",
     "@stacksjs/config": "workspace:*"
   },
   "devDependencies": {

@@ -12,7 +12,7 @@ export default new Action({
   description: 'This action is used to demo how to POST to a server and upon success, log a message.',
 
   // the request object is optional, but if it is provided, it will be used for validation
-  fields: {
+  validations: {
     message: {
       rule: schema.string().minLength(3).maxLength(255),
       message: 'The message must be between 3 and 255 characters long.',

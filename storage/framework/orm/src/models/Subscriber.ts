@@ -10,7 +10,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export interface SubscribersTable {
       id: Generated<number>
       subscribed: boolean
-     
+      user_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -70,6 +71,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new SubscriberModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof SubscriberType)[]) {
+        let query = db.selectFrom('subscribers').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new SubscriberModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof SubscriberType)[]) {
         let query = db.selectFrom('subscribers').where('id', 'in', ids)
 
@@ -115,7 +132,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -126,7 +143,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           data: subscribersWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -137,28 +154,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
         const model = await db.insertInto('subscribers')
           .values(newSubscriber)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new SubscriberModel(model)
-      }
-
-      // Method to update a subscriber
-      static async update(id: number, subscriberUpdate: SubscriberUpdate): Promise<SubscriberModel> {
-        const model = await db.updateTable('subscribers')
-          .set(subscriberUpdate)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new SubscriberModel(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a subscriber
       static async remove(id: number): Promise<SubscriberModel> {
         const model = await db.deleteFrom('subscribers')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new SubscriberModel(model)
@@ -287,13 +295,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('subscribers')
           .set(subscriber)
           .where('id', '=', this.subscriber.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('Subscriber not found'))
-
-        this.subscriber = updatedModel
 
         return ok(updatedModel)
       }
@@ -307,7 +312,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new subscriber
           const newModel = await db.insertInto('subscribers')
             .values(this.subscriber as NewSubscriber)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.subscriber = newModel
         }
@@ -377,7 +381,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.subscriber = model
+      return new SubscriberModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof SubscriberType)[]) {
+      let query = db.selectFrom('subscribers').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new SubscriberModel(model)
     }
 
@@ -447,10 +466,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newSubscriber: NewSubscriber) {
-      return await db.insertInto('subscribers')
-        .values(newSubscriber)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -459,12 +479,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('subscribers')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('subscribers')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('subscribers')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, subscriberUpdate: SubscriberUpdate) {
       return await db.updateTable('subscribers')
@@ -476,7 +504,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('subscribers')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -560,6 +587,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Subscriber = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -570,6 +598,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: SubscriberModel

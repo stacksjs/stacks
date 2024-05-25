@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.18",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -40,7 +40,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "vitepress": "1.2.0",
+    "vitepress": "1.2.2",
     "vitepress-plugin-twoslash": "^0.10.2"
   },
   "dependencies": {
@@ -48,7 +48,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "vitepress": "1.2.0",
+    "vitepress": "1.2.2",
     "vitepress-plugin-twoslash": "^0.10.2"
   },
   "devDependencies": {

@@ -4,7 +4,15 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
-import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, getPivotTables, hasTableBeenMigrated, mapFieldTypeToColumnType, modelTableName } from '.'
+import {
+  checkPivotMigration,
+  fetchOtherModelRelations,
+  getLastMigrationFields,
+  getPivotTables,
+  hasTableBeenMigrated,
+  mapFieldTypeToColumnType,
+  modelTableName,
+} from '.'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()
@@ -118,8 +126,8 @@ async function createTableMigration(modelPath: string) {
 
   await createPivotTableMigration(model)
 
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
+  const otherModelRelations = await fetchOtherModelRelations(model)
+
   const fields = model.attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -134,7 +142,7 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
     const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
+    migrationContent += `    .addColumn('${fieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions.validator?.rule?.required) {
@@ -184,9 +192,9 @@ async function createPivotTableMigration(model: Model) {
 
   for (const pivotTable of pivotTables) {
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
-    
+
     if (hasBeenMigrated) return
-    
+
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await db.schema\n`
@@ -252,7 +260,6 @@ export async function createAlterTableMigration(modelPath: string) {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
-
 
 export async function fetchMysqlTables(): Promise<string[]> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))

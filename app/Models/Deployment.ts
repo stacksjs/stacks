@@ -1,7 +1,7 @@
 import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
-import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
+import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'Deployment',
@@ -24,7 +24,7 @@ export default {
       unique: true,
 
       validator: {
-        rule: schema.string(),
+        rule: schema.string().maxLength(512),
         message: '`commit_sha` must be a string',
       },
 
@@ -58,13 +58,14 @@ export default {
       factory: () => collect(['pending', 'success', 'failure']).random(),
     },
 
-    executionTime: { // in nanoseconds
+    executionTime: {
+      // in nanoseconds
       validator: {
         rule: schema.number(),
         message: '`execution_time` must be a number',
       },
 
-      factory: () => faker.number.int(),
+      factory: () => faker.number.int({ max: 100 }),
     },
 
     deployScript: {

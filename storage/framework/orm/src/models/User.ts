@@ -19,7 +19,9 @@ import Deployment from './Deployment'
       email: string
       jobTitle: string
       password: string
-     
+      deployment_id: number 
+ post_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -79,6 +81,22 @@ import Deployment from './Deployment'
         return new UserModel(model)
       }
 
+      static async findOrFail(id: number, fields?: (keyof UserType)[]) {
+        let query = db.selectFrom('users').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new UserModel(model)
+      }
+
       static async findMany(ids: number[], fields?: (keyof UserType)[]) {
         let query = db.selectFrom('users').where('id', 'in', ids)
 
@@ -124,7 +142,7 @@ import Deployment from './Deployment'
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -135,7 +153,7 @@ import Deployment from './Deployment'
           data: usersWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -146,28 +164,19 @@ import Deployment from './Deployment'
       static async create(newUser: NewUser): Promise<UserModel> {
         const model = await db.insertInto('users')
           .values(newUser)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new UserModel(model)
-      }
-
-      // Method to update a user
-      static async update(id: number, userUpdate: UserUpdate): Promise<UserModel> {
-        const model = await db.updateTable('users')
-          .set(userUpdate)
-          .where('id', '=', id)
-          .returningAll()
+          const result = await db.insertInto('users')
+          .values(newUser)
           .executeTakeFirstOrThrow()
-
-        return new UserModel(model)
+  
+        return await find(Number(result.insertId))
       }
 
       // Method to remove a user
       static async remove(id: number): Promise<UserModel> {
         const model = await db.deleteFrom('users')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new UserModel(model)
@@ -296,13 +305,10 @@ import Deployment from './Deployment'
         const updatedModel = await db.updateTable('users')
           .set(user)
           .where('id', '=', this.user.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('User not found'))
-
-        this.user = updatedModel
 
         return ok(updatedModel)
       }
@@ -316,7 +322,6 @@ import Deployment from './Deployment'
           // Insert new user
           const newModel = await db.insertInto('users')
             .values(this.user as NewUser)
-            .returningAll()
             .executeTakeFirstOrThrow()
           this.user = newModel
         }
@@ -431,7 +436,22 @@ import Deployment from './Deployment'
       if (!model)
         return null
 
-      this.user = model
+      return new UserModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof UserType)[]) {
+      let query = db.selectFrom('users').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new UserModel(model)
     }
 
@@ -501,10 +521,11 @@ import Deployment from './Deployment'
     }
 
     export async function create(newUser: NewUser) {
-      return await db.insertInto('users')
-        .values(newUser)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
     export async function first() {
@@ -513,12 +534,20 @@ import Deployment from './Deployment'
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('users')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number) {
+      return await db.selectFrom('users')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number) {
+      return await db.selectFrom('users')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, userUpdate: UserUpdate) {
       return await db.updateTable('users')
@@ -530,7 +559,6 @@ import Deployment from './Deployment'
     export async function remove(id: number) {
       return await db.deleteFrom('users')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
@@ -614,6 +642,7 @@ import Deployment from './Deployment'
 
     export const User = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -624,6 +653,7 @@ import Deployment from './Deployment'
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: UserModel

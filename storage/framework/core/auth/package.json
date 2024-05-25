@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/auth",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.18",
   "description": "A more simplistic way to authenticate.",
   "author": "Chris Breuer",
   "license": "MIT",

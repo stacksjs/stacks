@@ -1,7 +1,7 @@
+import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
-import { collect } from '@stacksjs/collections'
 
 export default {
   name: 'Project', // defaults to the sanitized file name

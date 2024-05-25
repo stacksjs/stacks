@@ -32,7 +32,7 @@ export default {
     token: {
       unique: true,
       validator: {
-        rule: schema.string(),
+        rule: schema.string().maxLength(512),
         message: '`token` must be a string',
       },
 
@@ -41,7 +41,7 @@ export default {
 
     plainTextToken: {
       validator: {
-        rule: schema.string(),
+        rule: schema.string().maxLength(512),
         message: '`plainTextToken` must be a string',
       },
 
@@ -56,15 +56,7 @@ export default {
       },
 
       factory: () =>
-        collect([
-          'read',
-          'write',
-          'admin',
-          'read|write',
-          'read|admin',
-          'write|admin',
-          'read|write|admin',
-        ]).random(),
+        collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random(),
     },
   },
 } satisfies Model
