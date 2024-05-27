@@ -216,6 +216,7 @@ export class Router implements RouterInterface {
     return this.routes
   }
 
+
   private setGroupPrefix(prefix: string, options: RouteGroupOptions = {}) {
     if (prefix !== '') {
       prefix = `/${this.groupPrefix}/${prefix}`.replace(/\/\//g, '/') // remove double slashes in case there are any
@@ -291,8 +292,6 @@ export class Router implements RouterInterface {
     if (path.startsWith('/')) path = path.slice(1)
 
     path = `${this.apiPrefix}${this.groupPrefix}/${path}`
-
-    console.log(path)
 
     // if path ends in "/", then remove it
     // e.g. triggered when route is "/"

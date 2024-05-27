@@ -64,6 +64,7 @@ async function main() {
   cmd.make(buddy)
   cmd.migrate(buddy)
   cmd.release(buddy)
+  cmd.route(buddy)
   cmd.seed(buddy)
   cmd.setup(buddy)
   cmd.test(buddy)
