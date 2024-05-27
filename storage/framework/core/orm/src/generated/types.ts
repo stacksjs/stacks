@@ -1,4 +1,5 @@
 import type { ProjectsTable } from '../../../../orm/src/models/Project'
+import type { SubscriberEmailsTable } from '../../../../orm/src/models/SubscriberEmail'
 import type { AccessTokensTable } from '../../../../orm/src/models/AccessToken'
 import type { TeamsTable } from '../../../../orm/src/models/Team'
 import type { SubscribersTable } from '../../../../orm/src/models/Subscriber'
@@ -14,6 +15,7 @@ export interface TeamAccessTokensTable {
       }
 export interface Database {
   projects: ProjectsTable
+  subscriber_emails: SubscriberEmailsTable
   access_tokens: AccessTokensTable
   team_access_tokens: TeamAccessTokensTable
   teams: TeamsTable

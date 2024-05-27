@@ -22,23 +22,57 @@ export interface ModelElement {
 await initiateModelGeneration()
 await setKyselyTypes()
 
-async function generateApiRoutes(model: Model) {
-  if (model.traits?.useApi) {
-    let routeString = `import { route } from '@stacksjs/router'\n\n\n`
-    const apiRoutes = model.traits?.useApi?.routes
+async function generateApiRoutes(modelFiles: string[]) {
+  const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
+  const writer = file.writer()
+  let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
-    if (apiRoutes?.length) {
-      for (const apiRoute of apiRoutes) {
-        await writeOrmActions(apiRoute, model)
-        routeString += await writeApiRoutes(apiRoute, model)
+  for (const modelFile of modelFiles) {
+    log.debug(`Processing model file: ${modelFile}`)
+
+    const model = (await import(modelFile)).default as Model
+    
+    if (model.traits?.useApi) {
+      const apiRoutes = model.traits?.useApi?.routes
+      const middlewares = model.traits.useApi?.middleware
+      let middlewareString = `.middleware([`
+
+      if (middlewares.length) {
+        for (let i = 0; i < middlewares.length; i++) {
+          middlewareString += `'${middlewares[i]}'`
+
+          if (i < middlewares.length - 1) {
+            middlewareString += ','
+          }
+        }
+         
+      }
+       
+      middlewareString += `])`
+
+      if (apiRoutes?.length) {
+        for (const apiRoute of apiRoutes) {
+          await writeOrmActions(apiRoute, model)
+  
+          if (apiRoute === 'index') routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
+  
+          if (apiRoute === 'store') routeString += `await route.post('${model.table}', 'Actions/${model.name}StoreOrmAction')${middlewareString}\n\n`
+        
+          if (apiRoute === 'update')
+            routeString += `await route.patch('${model.table}/{id}', 'Actions/${model.name}UpdateOrmAction')${middlewareString}\n\n`
+        
+          if (apiRoute === 'show')
+            routeString += `await route.get('${model.table}/{id}', 'Actions/${model.name}ShowOrmAction')${middlewareString}\n\n`
+        
+          if (apiRoute === 'destroy')
+            routeString += `await route.delete('${model.table}/{id}', 'Actions/${model.name}DestroyOrmAction')${middlewareString}\n\n`
+        }
       }
     }
-
-    const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
-    const writer = file.writer()
-    writer.write(routeString)
-    await writer.end()
   }
+
+  writer.write(routeString)
+  await writer.end()
 }
 
 async function writeModelNames() {
@@ -173,14 +207,14 @@ async function initiateModelGeneration(): Promise<void> {
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
+  await generateApiRoutes(modelFiles)
+
   for (const modelFile of modelFiles) {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
     const tableName = await modelTableName(model)
     const modelName = path.basename(modelFile, '.ts')
-
-    await generateApiRoutes(model)
 
     const file = Bun.file(path.projectStoragePath(`framework/orm/src/models/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
@@ -247,10 +281,13 @@ async function deleteExistingModels() {
 
 async function deleteExistingOrmActions() {
   const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
+  const routes = path.projectStoragePath(`framework/orm/routes`)
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
   }
+
+  if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 }
 
 async function deleteExistingModelNameTypes() {
@@ -657,7 +694,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       }
 
       // Method to find a ${formattedModelName} by ID
-      static async find(id: number, fields?: (keyof ${modelName}Type)[]) {
+      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         if (fields)
@@ -673,7 +710,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return new ${modelName}Model(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
+      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         if (fields)
@@ -689,7 +726,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return new ${modelName}Model(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]) {
+      static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
         if (fields)
@@ -754,15 +791,11 @@ async function generateModelString(tableName: string, model: Model, attributes: 
 
       // Method to create a new ${formattedModelName}
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-        const model = await db.insertInto('${tableName}')
+        const result = await db.insertInto('${tableName}')
           .values(new${modelName})
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as ${modelName}Model
       }
 
       // Method to remove a ${formattedModelName}
@@ -774,7 +807,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return new ${modelName}Model(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<${modelName}Type[]> {
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, operator, value)
@@ -826,7 +859,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}): Promise<${modelName}Type[]> {
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, 'in', values)
@@ -845,34 +878,34 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<${modelName}Type> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<${modelName}Type> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc') {
+      async orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): Promise<${modelName}Type[]> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof ${modelName}Type) {
+      async orderByDesc(column: keyof ${modelName}Type): Promise<${modelName}Type[]> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof ${modelName}Type) {
+      async orderByAsc(column: keyof ${modelName}Type): Promise<${modelName}Type[]> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy(column, 'asc')
@@ -880,7 +913,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       }
 
       // Method to get the ${formattedModelName} instance itself
-      self() {
+      self(): ${modelName}Model {
         return this
       }
 
@@ -1014,7 +1047,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       return model.map(modelItem => new ${modelName}Model(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('${tableName}')
         .selectAll()
         .execute()
@@ -1057,7 +1090,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<${modelName}Type[]> {
       return await db.selectFrom('${tableName}')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -1066,28 +1099,28 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         .execute()
     }
 
-    export async function create(new${modelName}: New${modelName}) {
-      const result = await db.insertInto('users')
-      .values(newUser)
+    export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+      const result = await db.insertInto('${tableName}')
+      .values(new${modelName})
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<${modelName}Model> {
      return await db.selectFrom('${tableName}')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<${modelName}Model[]> {
       return await db.selectFrom('${tableName}')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<${modelName}Type> {
       return await db.selectFrom('${tableName}')
          .selectAll()
          .orderBy('id', 'desc')

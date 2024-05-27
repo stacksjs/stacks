@@ -64,7 +64,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a team by ID
-      static async find(id: number, fields?: (keyof TeamType)[]) {
+      static async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
         let query = db.selectFrom('teams').where('id', '=', id)
 
         if (fields)
@@ -80,7 +80,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new TeamModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof TeamType)[]) {
+      static async findOrFail(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
         let query = db.selectFrom('teams').where('id', '=', id)
 
         if (fields)
@@ -96,7 +96,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new TeamModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof TeamType)[]) {
+      static async findMany(ids: number[], fields?: (keyof TeamType)[]): Promise<TeamModel[]> {
         let query = db.selectFrom('teams').where('id', 'in', ids)
 
         if (fields)
@@ -161,15 +161,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new team
       static async create(newTeam: NewTeam): Promise<TeamModel> {
-        const model = await db.insertInto('teams')
+        const result = await db.insertInto('teams')
           .values(newTeam)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as TeamModel
       }
 
       // Method to remove a team
@@ -181,7 +177,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new TeamModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<TeamType[]> {
         let query = db.selectFrom('teams')
 
         query = query.where(column, operator, value)
@@ -233,7 +229,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof TeamType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof TeamType, values: any[], options: QueryOptions = {}): Promise<TeamType[]> {
         let query = db.selectFrom('teams')
 
         query = query.where(column, 'in', values)
@@ -252,34 +248,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<TeamType> {
         return await db.selectFrom('teams')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<TeamType> {
         return await db.selectFrom('teams')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof TeamType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof TeamType, order: 'asc' | 'desc'): Promise<TeamType[]> {
         return await db.selectFrom('teams')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof TeamType) {
+      async orderByDesc(column: keyof TeamType): Promise<TeamType[]> {
         return await db.selectFrom('teams')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof TeamType) {
+      async orderByAsc(column: keyof TeamType): Promise<TeamType[]> {
         return await db.selectFrom('teams')
           .selectAll()
           .orderBy(column, 'asc')
@@ -287,7 +283,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the team instance itself
-      self() {
+      self(): TeamModel {
         return this
       }
 
@@ -322,7 +318,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           const newModel = await db.insertInto('teams')
             .values(this.team as NewTeam)
             .executeTakeFirstOrThrow()
-          this.team = newModel
         }
         else {
           // Update existing team
@@ -435,7 +430,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new TeamModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('teams')
         .selectAll()
         .execute()
@@ -478,7 +473,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<TeamType[]> {
       return await db.selectFrom('teams')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -487,28 +482,28 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newTeam: NewTeam) {
-      const result = await db.insertInto('users')
-      .values(newUser)
+    export async function create(newTeam: NewTeam): Promise<TeamModel> {
+      const result = await db.insertInto('teams')
+      .values(newTeam)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<TeamModel> {
      return await db.selectFrom('teams')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<TeamModel[]> {
       return await db.selectFrom('teams')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<TeamType> {
       return await db.selectFrom('teams')
          .selectAll()
          .orderBy('id', 'desc')

@@ -49,7 +49,7 @@ export interface RouteGroupOptions {
 type Prefix = string
 
 export interface RouterInterface {
-  get: (url: Route['url'], callback: Route['callback']) => Promise<this>
+  get: (url: Route['url'], callback: Route['callback']) => this
   post: (url: Route['url'], callback: Route['callback']) => this
   view: (url: Route['url'], callback: Route['callback']) => this
   redirect: (url: Route['url'], callback: Route['callback'], status?: RedirectCode) => this

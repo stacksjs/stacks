@@ -508,6 +508,7 @@ declare global {
   const linefeed: typeof import('../core/utils/src/regex')['linefeed']
   const lintPath: typeof import('../core/path/src/paths')['lintPath']
   const listFoundationModels: typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']
+  const listRoutes: typeof import('../core/router/src/utils')['listRoutes']
   const listen: typeof import('../core/events/src/index')['listen']
   const listenersPath: typeof import('../core/path/src/paths')['listenersPath']
   const loadYaml: typeof import('../core/utils/src/helpers')['loadYaml']
@@ -1498,6 +1499,7 @@ declare module 'vue' {
     readonly linefeed: UnwrapRef<typeof import('../core/utils/src/regex')['linefeed']>
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/paths')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']>
+    readonly listRoutes: UnwrapRef<typeof import('../core/router/src/utils')['listRoutes']>
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
     readonly listenersPath: UnwrapRef<typeof import('../core/path/src/paths')['listenersPath']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>
@@ -2444,6 +2446,7 @@ declare module '@vue/runtime-core' {
     readonly linefeed: UnwrapRef<typeof import('../core/utils/src/regex')['linefeed']>
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/paths')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']>
+    readonly listRoutes: UnwrapRef<typeof import('../core/router/src/utils')['listRoutes']>
     readonly listen: UnwrapRef<typeof import('../core/events/src/index')['listen']>
     readonly listenersPath: UnwrapRef<typeof import('../core/path/src/paths')['listenersPath']>
     readonly loadYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['loadYaml']>

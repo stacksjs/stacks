@@ -85,6 +85,7 @@ export enum Action {
   LintFix = 'lint/fix',
   Prepublish = 'prepublish',
   Release = 'release', // ✅
+  RouteList = 'route/list', // ✅
   ShowFeatureTestReport = 'show-feature-test-report',
   Test = 'test',
   TestUi = 'test-ui',
