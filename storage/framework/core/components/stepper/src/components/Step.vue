@@ -14,6 +14,7 @@ interface Props {
   disabled: boolean
   withDivider: boolean
   debug: boolean
+  isLastStep: boolean
 }
 
 const props = defineProps<Props>()
@@ -50,13 +51,22 @@ const scope = computed(() => ({
 }))
 
 const classes = computed(() => ({
-  'is-active': props.active,
-  'is-visited': props.visited,
-  'is-disabled': props.disabled
+    'is-active': props.active,
+    'is-visited': props.visited,
+    'is-disabled': props.disabled
 }))
 
+const indexClasses = computed(() => {
+
+  const defaultClass = ' '
+  const additionalClass = props.active  ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
+
+  return defaultClass + additionalClass
+})
+
+
+
 function handleChange() {
-  console.log('step handle changed');
   emit('change', props.index)
 }
 </script>
@@ -74,7 +84,10 @@ function handleChange() {
     >
     <label class="label flex flex-row items-center" :for="id">
       <slot name="index-root" v-bind="scope">
-        <span class="index w-14 h-14 flex flex-shrink-0 text-xl rounded-full mr-2 text-white items-center justify-center bg-transparent border border-gray-200">
+        <span :class="[
+            'w-14 h-14 flex flex-shrink-0 text-xl rounded-full mr-2 text-white items-center justify-center border border-gray-200',
+            props.active  ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
+          ]">
           <slot name="index" v-bind="scope">
             {{ scope.displayIndex }}
           </slot>
@@ -83,7 +96,7 @@ function handleChange() {
       <span class="title text-white" v-if="defaultSlot">
         <slot v-bind="scope"></slot>
       </span>
-      <span class="w-full ml-2 border-b border-white shadow-md" v-if="withDivider"></span>
+      <span class="w-full ml-2 border-b border-gray shadow-md" v-if="withDivider && !isLastStep"></span>
     </label>
   </div>
 </template>
@@ -109,16 +122,8 @@ function handleChange() {
   cursor: pointer;
 }
 
-.step.is-active .index {
-  color: #4b5563;
-}
-
 .step.is-active {
   opacity: 1;
-}
-
-.step.is-active .title {
-  color: #1e6b73;
 }
 
 .step.is-active .label .index {

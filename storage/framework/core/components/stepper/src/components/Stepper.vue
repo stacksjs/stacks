@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults, defineExpose  } from 'vue'
-import type { StepperProps, OptionParams, StepperEmitValue, StepperValue } from '../types'
+import type { StepperProps, OptionParams } from '../types'
 import Step from './Step.vue';
 
 defineOptions({
@@ -9,10 +9,7 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<StepperProps>(), {
-  value: {
-    value: 2,
-    id: undefined
-  },
+  stepperId: undefined,
   steps: 0,
   linear: true,
   persist: false,
@@ -21,62 +18,34 @@ const props = withDefaults(defineProps<StepperProps>(), {
   debug: false,
 })
 
-const emit = defineEmits(['input', 'reset'])
+const modelValue =  defineModel()
+
+const emit = defineEmits(['reset'])
 
 const namespace = { kebab: 'stepper', capitalize: 'Stepper' }
 const stepsArr = ref(getStepsArr())
-const index = ref(toIndex(props.value.value))
+const currentIndex = ref(toIndex(modelValue.value))
+
 const slots = useSlots()
-const id = computed(() => `${namespace.kebab}-${Math.random().toString(36).substr(2, 9)}`)
-const lastIndex = computed(() => stepsArr.value.length - 1)
-const random = computed(() => props.linear === false)
+const id = computed(() => `${namespace.kebab}-${Math.random().toString(36).substring(2, 9)}`)
 
-const queries = computed(() => {
-  const { steps } = props
-
-  return Array.from(Array(steps)).reduce((queries, step, $index) => {
-    const query = `isStep${$index + 1}`
-    queries[query] = index.value === $index
-    return queries
-  }, {} as Record<string, boolean>)
-})
-
-
-watch(() => props.value, (newValue) => {
-  index.value = toIndex(newValue.value);
+watch(() => modelValue.value, (step) => {
+  currentIndex.value = toIndex(step)
   if (props.persist) {
     setStorage();
   }
 });
 
-watch(index, (newValue) => {
-  emitValue(toValue(newValue));
+watch(currentIndex, (stepIndex) => {
+  emitValue(toValue(stepIndex));
 }, { immediate: true });
-
-
-const scope = computed(() => ({
-  index: index.value,
-  displayIndex: index.value + 1,
-  defaultSlot: slots.default ? slots.default() : undefined,
-  flags: {
-    isActive: true,
-    isVisited: false,
-    isDisabled: false,
-  },
-}))
-
-const classes = computed(() => ({
-  'is-active': true,
-  'is-visited': false,
-  'is-disabled': false,
-}))
 
 onMounted(() => {
   if (props.persist) {
     const storage = getStorage()
     if (storage) {
       stepsArr.value = storage.stepsArr
-      index.value = storage.index
+      currentIndex.value = storage.index
     } else {
       setStorage()
     }
@@ -133,9 +102,9 @@ function doesStepExist(index: number) {
 }
 
 function handleChange(stepIndex: number) {
-  const isNext = stepIndex === index.value + 1
-  const isPrevious = stepIndex === index.value - 1
-  const oldIndex = toIndex(props.value.value)
+  const isNext = stepIndex === currentIndex.value + 1
+  const isPrevious = stepIndex === currentIndex.value - 1
+  const oldIndex = toIndex(modelValue.value)
 
   if (props.linear) {
     if (isNext || isPrevious) {
@@ -175,7 +144,7 @@ function getStepsArr() {
 }
 
 function offset(offset: number) {
-  const stepIndex = index.value + offset
+  const stepIndex = currentIndex.value + offset
   if (doesStepExist(stepIndex)) {
     handleChange(stepIndex)
   }
@@ -191,7 +160,7 @@ function previous() {
 
 function reset() {
   stepsArr.value = getStepsArr()
-  index.value = 0
+  currentIndex.value = 0
   emit('reset')
 }
 
@@ -200,7 +169,7 @@ function setStep(stepIndex: number, prop: string, value: any) {
 }
 
 function setStorage() {
-  window[props.storekeeper].setItem(id.value, JSON.stringify({ index: index.value, stepsArr: stepsArr.value }))
+  window[props.storekeeper].setItem(id.value, JSON.stringify({ index: currentIndex.value, stepsArr: stepsArr.value }))
 }
 
 function getStorage() {
@@ -208,7 +177,7 @@ function getStorage() {
 }
 
 function emitValue(value: number) {
-  emit('input', { id: id.value, value, queries: queries.value })
+  modelValue.value = value
 }
 
 defineExpose({
@@ -219,40 +188,39 @@ defineExpose({
 
 </script>
 <template>
-  <div class="v-stepper">
-    <stepper-root>
-      <step
-        v-for="(step, $index) in stepsArr"
-        :name="id"
-        :key="$index"
-        :debug="debug"
-        :index="$index"
-        @change="handleChange"
-        :visited="step.visited"
-        :disabled="step.disabled"
-        :with-divider="withDivider"
-        :active="step.index === toIndex(value.value)"
-      >
-         <template
-          v-slot:index-root="scope"
-          v-if="withSlot(getSlotName('index-root', $index + 1))"
-          >
-          <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
-        </template>
-
+  <div class="flex w-full select-none box-border justify-between ">
+    <step
+      v-for="(step, $index) in stepsArr"
+      :name="id"
+      :key="$index"
+      :debug="debug"
+      :index="$index"
+      @change="handleChange"
+      :visited="step.visited"
+      :disabled="step.disabled"
+      :with-divider="withDivider"
+      :active="step.index === toIndex(modelValue)"
+      :isLastStep="steps === ($index + 1)"
+    >
         <template
-          v-if="withoutSlot(getSlotName('index-root', $index + 1))"
-          v-slot:index="scope">
-          <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
-            {{ scope.displayIndex }}
-          </slot>
-        </template>
+        v-slot:index-root="scope"
+        v-if="withSlot(getSlotName('index-root', $index + 1))"
+        >
+        <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
+      </template>
 
-         <template v-slot:defaultSlot="scope" >
-          <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope">2</slot>
-        </template>
+      <template
+        v-if="withoutSlot(getSlotName('index-root', $index + 1))"
+        v-slot:index="scope">
+        <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
+          {{ scope.displayIndex }}
+        </slot>
+      </template>
 
-      </step>
-    </stepper-root>
+        <template v-slot:defaultSlot="scope" >
+        <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope">2</slot>
+      </template>
+
+    </step>
   </div>
 </template>
