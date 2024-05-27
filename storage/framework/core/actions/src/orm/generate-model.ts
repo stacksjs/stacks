@@ -22,23 +22,57 @@ export interface ModelElement {
 await initiateModelGeneration()
 await setKyselyTypes()
 
-async function generateApiRoutes(model: Model) {
-  if (model.traits?.useApi) {
-    let routeString = `import { route } from '@stacksjs/router'\n\n\n`
-    const apiRoutes = model.traits?.useApi?.routes
+async function generateApiRoutes(modelFiles: string[]) {
+  const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
+  const writer = file.writer()
+  let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
-    if (apiRoutes?.length) {
-      for (const apiRoute of apiRoutes) {
-        await writeOrmActions(apiRoute, model)
-        routeString += await writeApiRoutes(apiRoute, model)
+  for (const modelFile of modelFiles) {
+    log.debug(`Processing model file: ${modelFile}`)
+
+    const model = (await import(modelFile)).default as Model
+    
+    if (model.traits?.useApi) {
+      const apiRoutes = model.traits?.useApi?.routes
+      const middlewares = model.traits.useApi?.middleware
+      let middlewareString = `.middleware([`
+
+      if (middlewares.length) {
+        for (let i = 0; i < middlewares.length; i++) {
+          middlewareString += `'${middlewares[i]}'`
+
+          if (i < middlewares.length - 1) {
+            middlewareString += ','
+          }
+        }
+         
+      }
+       
+      middlewareString += `])`
+
+      if (apiRoutes?.length) {
+        for (const apiRoute of apiRoutes) {
+          await writeOrmActions(apiRoute, model)
+  
+          if (apiRoute === 'index') routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
+  
+          if (apiRoute === 'store') routeString += `await route.post('${model.table}', 'Actions/${model.name}StoreOrmAction')${middlewareString}\n\n`
+        
+          if (apiRoute === 'update')
+            routeString += `await route.patch('${model.table}/{id}', 'Actions/${model.name}UpdateOrmAction')${middlewareString}\n\n`
+        
+          if (apiRoute === 'show')
+            routeString += `await route.get('${model.table}/{id}', 'Actions/${model.name}ShowOrmAction')${middlewareString}\n\n`
+        
+          if (apiRoute === 'destroy')
+            routeString += `await route.delete('${model.table}/{id}', 'Actions/${model.name}DestroyOrmAction')${middlewareString}\n\n`
+        }
       }
     }
-
-    const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
-    const writer = file.writer()
-    writer.write(routeString)
-    await writer.end()
   }
+
+  writer.write(routeString)
+  await writer.end()
 }
 
 async function writeModelNames() {
@@ -173,14 +207,14 @@ async function initiateModelGeneration(): Promise<void> {
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
+  await generateApiRoutes(modelFiles)
+
   for (const modelFile of modelFiles) {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
     const tableName = await modelTableName(model)
     const modelName = path.basename(modelFile, '.ts')
-
-    await generateApiRoutes(model)
 
     const file = Bun.file(path.projectStoragePath(`framework/orm/src/models/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
@@ -247,10 +281,13 @@ async function deleteExistingModels() {
 
 async function deleteExistingOrmActions() {
   const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
+  const routes = path.projectStoragePath(`framework/orm/routes`)
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
   }
+
+  if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 }
 
 async function deleteExistingModelNameTypes() {

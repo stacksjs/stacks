@@ -52,11 +52,9 @@ export class Router implements RouterInterface {
     return this
   }
 
-  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
+  public get(path: Route['url'], callback: Route['callback']): this {
     this.path = this.normalizePath(path)
     log.debug(`Normalized Path: ${this.path}`)
-
-    // callback = await this.resolveCallback(callback)
 
     const uri = this.prepareUri(this.path)
     log.debug(`Prepared URI: ${uri}`)
@@ -123,11 +121,19 @@ export class Router implements RouterInterface {
   }
 
   public post(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('POST', this.prepareUri(path), callback, 201)
+    this.path = this.normalizePath(path)
+
+    const uri = this.prepareUri(this.path)
+
+    return this.addRoute('POST', uri, callback, 201)
   }
 
   public view(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('GET', path, callback, 200)
+    this.path = this.normalizePath(path)
+
+    const uri = this.prepareUri(this.path)
+
+    return this.addRoute('GET', uri, callback, 200)
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
@@ -139,11 +145,21 @@ export class Router implements RouterInterface {
   }
 
   public patch(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('PATCH', this.prepareUri(path), callback, 202)
+    this.path = this.normalizePath(path)
+    log.debug(`Normalized Path: ${this.path}`)
+
+    const uri = this.prepareUri(this.path)
+    log.debug(`Prepared URI: ${uri}`)
+
+    return this.addRoute('PATCH', uri, callback, 202)
   }
 
   public put(path: Route['url'], callback: Route['callback']): this {
-    return this.addRoute('PUT', this.prepareUri(path), callback, 202)
+    this.path = this.normalizePath(path)
+
+    const uri = this.prepareUri(this.path)
+
+    return this.addRoute('PUT', uri, callback, 202)
   }
 
   public group(options: string | RouteGroupOptions, callback?: () => void): this {

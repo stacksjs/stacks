@@ -14,6 +14,12 @@ export default {
       // defaults to a count of 10
       count: 10,
     },
+
+    useApi: {
+      uri: 'subscribers', // your-url.com/api/users
+      middleware: ['auth'], // defaults to `[]`
+      routes: ['index', 'update', 'store', 'destroy', 'show'],
+    },
   },
 
   attributes: {
