@@ -1100,8 +1100,8 @@ async function generateModelString(tableName: string, model: Model, attributes: 
     }
 
     export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-      const result = await db.insertInto('users')
-      .values(newUser)
+      const result = await db.insertInto('${tableName}')
+      .values(new${modelName})
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))

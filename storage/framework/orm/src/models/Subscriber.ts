@@ -461,8 +461,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-      const result = await db.insertInto('users')
-      .values(newUser)
+      const result = await db.insertInto('subscribers')
+      .values(newSubscriber)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))

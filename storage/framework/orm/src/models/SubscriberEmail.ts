@@ -2,28 +2,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
-    import Team from './Team'
-
-
+    
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
 
     // TODO: we need an action that auto-generates these table interfaces
-    export interface AccessTokensTable {
+    export interface SubscriberEmailsTable {
       id: Generated<number>
-      name: string
-      token: string
-      plainTextToken: string
-      abilities: enum
-      team_id: number 
-
+      email: string
+     
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
     }
 
-    interface AccessTokenResponse {
-      data: AccessTokens
+    interface SubscriberEmailResponse {
+      data: SubscriberEmails
       paging: {
         total_records: number
         page: number
@@ -32,16 +26,16 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       next_cursor: number | null
     }
 
-    export type AccessTokenType = Selectable<AccessTokensTable>
-    export type NewAccessToken = Insertable<AccessTokensTable>
-    export type AccessTokenUpdate = Updateable<AccessTokensTable>
-    export type AccessTokens = AccessTokenType[]
+    export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
+    export type NewSubscriberEmail = Insertable<SubscriberEmailsTable>
+    export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
+    export type SubscriberEmails = SubscriberEmailType[]
 
-    export type AccessTokenColumn = AccessTokens
-    export type AccessTokenColumns = Array<keyof AccessTokens>
+    export type SubscriberEmailColumn = SubscriberEmails
+    export type SubscriberEmailColumns = Array<keyof SubscriberEmails>
 
     type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: AccessTokenType, order: SortDirection }
+    interface SortOptions { column: SubscriberEmailType, order: SortDirection }
     // Define a type for the options parameter
     interface QueryOptions {
       sort?: SortOptions
@@ -50,18 +44,18 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       page?: number
     }
 
-    export class AccessTokenModel {
-      private accesstoken: Partial<AccessTokenType>
-      private results: Partial<AccessTokenType>[]
+    export class SubscriberEmailModel {
+      private subscriberemail: Partial<SubscriberEmailType>
+      private results: Partial<SubscriberEmailType>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
 
-      constructor(accesstoken: Partial<AccessTokenType>) {
-        this.accesstoken = accesstoken
+      constructor(subscriberemail: Partial<SubscriberEmailType>) {
+        this.subscriberemail = subscriberemail
       }
 
-      // Method to find a accesstoken by ID
-      static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
-        let query = db.selectFrom('access_tokens').where('id', '=', id)
+      // Method to find a subscriberemail by ID
+      static async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel> {
+        let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
         if (fields)
           query = query.select(fields)
@@ -73,11 +67,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!model)
           return null
 
-        return new AccessTokenModel(model)
+        return new SubscriberEmailModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
-        let query = db.selectFrom('access_tokens').where('id', '=', id)
+      static async findOrFail(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel> {
+        let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
         if (fields)
           query = query.select(fields)
@@ -89,11 +83,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         if (!model)
           throw(`No model results found for ${id} `)
 
-        return new AccessTokenModel(model)
+        return new SubscriberEmailModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
-        let query = db.selectFrom('access_tokens').where('id', 'in', ids)
+      static async findMany(ids: number[], fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel[]> {
+        let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
 
         if (fields)
           query = query.select(fields)
@@ -102,12 +96,12 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
         const model = await query.execute()
 
-        return model.map(modelItem => new AccessTokenModel(modelItem))
+        return model.map(modelItem => new SubscriberEmailModel(modelItem))
       }
 
-      // Method to get a accesstoken by criteria
-      static async get(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<AccessTokenModel[]> {
-        let query = db.selectFrom('access_tokens')
+      // Method to get a subscriberemail by criteria
+      static async get(criteria: Partial<SubscriberEmailType>, options: QueryOptions = {}): Promise<SubscriberEmailModel[]> {
+        let query = db.selectFrom('subscriber_emails')
 
         // Apply sorting from options
         if (options.sort)
@@ -121,19 +115,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           query = query.offset(options.offset)
 
         const model = await query.selectAll().execute()
-        return model.map(modelItem => new AccessTokenModel(modelItem))
+        return model.map(modelItem => new SubscriberEmailModel(modelItem))
       }
 
-      // Method to get all access_tokens
-      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
-        const totalRecordsResult = await db.selectFrom('access_tokens')
+      // Method to get all subscriber_emails
+      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
+        const totalRecordsResult = await db.selectFrom('subscriber_emails')
           .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
           .executeTakeFirst()
 
         const totalRecords = Number(totalRecordsResult?.total) || 0
         const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-        const access_tokensWithExtra = await db.selectFrom('access_tokens')
+        const subscriber_emailsWithExtra = await db.selectFrom('subscriber_emails')
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -141,11 +135,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .execute()
 
         let nextCursor = null
-        if (access_tokensWithExtra.length > (options.limit ?? 10))
-          nextCursor = access_tokensWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+        if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
+          nextCursor = subscriber_emailsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
         return {
-          data: access_tokensWithExtra,
+          data: subscriber_emailsWithExtra,
           paging: {
             total_records: totalRecords,
             page: options.page,
@@ -155,34 +149,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         }
       }
 
-      // Method to create a new accesstoken
-      static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-        const result = await db.insertInto('access_tokens')
-          .values(newAccessToken)
+      // Method to create a new subscriberemail
+      static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+        const result = await db.insertInto('subscriber_emails')
+          .values(newSubscriberEmail)
           .executeTakeFirstOrThrow()
 
-        return await find(Number(result.insertId)) as AccessTokenModel
+        return await find(Number(result.insertId)) as SubscriberEmailModel
       }
 
-      // Method to remove a accesstoken
-      static async remove(id: number): Promise<AccessTokenModel> {
-        const model = await db.deleteFrom('access_tokens')
+      // Method to remove a subscriberemail
+      static async remove(id: number): Promise<SubscriberEmailModel> {
+        const model = await db.deleteFrom('subscriber_emails')
           .where('id', '=', id)
           .executeTakeFirstOrThrow()
 
-        return new AccessTokenModel(model)
+        return new SubscriberEmailModel(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<AccessTokenType[]> {
-        let query = db.selectFrom('access_tokens')
+      async where(column: string, operator = '=', value: any): Promise<SubscriberEmailType[]> {
+        let query = db.selectFrom('subscriber_emails')
 
         query = query.where(column, operator, value)
 
         return await query.selectAll().execute()
       }
 
-      async whereIs(criteria: Partial<AccessTokenType>, options: QueryOptions = {}) {
-        let query = db.selectFrom('access_tokens')
+      async whereIs(criteria: Partial<SubscriberEmailType>, options: QueryOptions = {}) {
+        let query = db.selectFrom('subscriber_emails')
 
         // Existing criteria checks
         if (criteria.id)
@@ -225,8 +219,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof AccessTokenType, values: any[], options: QueryOptions = {}): Promise<AccessTokenType[]> {
-        let query = db.selectFrom('access_tokens')
+      async whereIn(column: keyof SubscriberEmailType, values: any[], options: QueryOptions = {}): Promise<SubscriberEmailType[]> {
+        let query = db.selectFrom('subscriber_emails')
 
         query = query.where(column, 'in', values)
 
@@ -244,148 +238,132 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first(): Promise<AccessTokenType> {
-        return await db.selectFrom('access_tokens')
+      async first(): Promise<SubscriberEmailType> {
+        return await db.selectFrom('subscriber_emails')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last(): Promise<AccessTokenType> {
-        return await db.selectFrom('access_tokens')
+      async last(): Promise<SubscriberEmailType> {
+        return await db.selectFrom('subscriber_emails')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): Promise<AccessTokenType[]> {
-        return await db.selectFrom('access_tokens')
+      async orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): Promise<SubscriberEmailType[]> {
+        return await db.selectFrom('subscriber_emails')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof AccessTokenType): Promise<AccessTokenType[]> {
-        return await db.selectFrom('access_tokens')
+      async orderByDesc(column: keyof SubscriberEmailType): Promise<SubscriberEmailType[]> {
+        return await db.selectFrom('subscriber_emails')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof AccessTokenType): Promise<AccessTokenType[]> {
-        return await db.selectFrom('access_tokens')
+      async orderByAsc(column: keyof SubscriberEmailType): Promise<SubscriberEmailType[]> {
+        return await db.selectFrom('subscriber_emails')
           .selectAll()
           .orderBy(column, 'asc')
           .execute()
       }
 
-      // Method to get the accesstoken instance itself
-      self(): AccessTokenModel {
+      // Method to get the subscriberemail instance itself
+      self(): SubscriberEmailModel {
         return this
       }
 
-      // Method to get the accesstoken instance data
+      // Method to get the subscriberemail instance data
       get() {
-        return this.accesstoken
+        return this.subscriberemail
       }
 
-      // Method to update the accesstoken instance
-      async update(accesstoken: AccessTokenUpdate): Promise<Result<AccessTokenType, Error>> {
-        if (this.accesstoken.id === undefined)
-          return err(handleError('AccessToken ID is undefined'))
+      // Method to update the subscriberemail instance
+      async update(subscriberemail: SubscriberEmailUpdate): Promise<Result<SubscriberEmailType, Error>> {
+        if (this.subscriberemail.id === undefined)
+          return err(handleError('SubscriberEmail ID is undefined'))
 
-        const updatedModel = await db.updateTable('access_tokens')
-          .set(accesstoken)
-          .where('id', '=', this.accesstoken.id)
+        const updatedModel = await db.updateTable('subscriber_emails')
+          .set(subscriberemail)
+          .where('id', '=', this.subscriberemail.id)
           .executeTakeFirst()
 
         if (!updatedModel)
-          return err(handleError('AccessToken not found'))
+          return err(handleError('SubscriberEmail not found'))
 
         return ok(updatedModel)
       }
 
-      // Method to save (insert or update) the accesstoken instance
+      // Method to save (insert or update) the subscriberemail instance
       async save(): Promise<void> {
-        if (!this.accesstoken)
-          throw new Error('AccessToken data is undefined')
+        if (!this.subscriberemail)
+          throw new Error('SubscriberEmail data is undefined')
 
-        if (this.accesstoken.id === undefined) {
-          // Insert new accesstoken
-          const newModel = await db.insertInto('access_tokens')
-            .values(this.accesstoken as NewAccessToken)
+        if (this.subscriberemail.id === undefined) {
+          // Insert new subscriberemail
+          const newModel = await db.insertInto('subscriber_emails')
+            .values(this.subscriberemail as NewSubscriberEmail)
             .executeTakeFirstOrThrow()
         }
         else {
-          // Update existing accesstoken
-          await this.update(this.accesstoken)
+          // Update existing subscriberemail
+          await this.update(this.subscriberemail)
         }
       }
 
-      // Method to delete the accesstoken instance
+      // Method to delete the subscriberemail instance
       async delete(): Promise<void> {
-        if (this.accesstoken.id === undefined)
-          throw new Error('AccessToken ID is undefined')
+        if (this.subscriberemail.id === undefined)
+          throw new Error('SubscriberEmail ID is undefined')
 
-        await db.deleteFrom('access_tokens')
-          .where('id', '=', this.accesstoken.id)
+        await db.deleteFrom('subscriber_emails')
+          .where('id', '=', this.subscriberemail.id)
           .execute()
 
-        this.accesstoken = {}
+        this.subscriberemail = {}
       }
 
-      // Method to refresh the accesstoken instance data from the database
+      // Method to refresh the subscriberemail instance data from the database
       async refresh(): Promise<void> {
-        if (this.accesstoken.id === undefined)
-          throw new Error('AccessToken ID is undefined')
+        if (this.subscriberemail.id === undefined)
+          throw new Error('SubscriberEmail ID is undefined')
 
-        const refreshedModel = await db.selectFrom('access_tokens')
-          .where('id', '=', this.accesstoken.id)
+        const refreshedModel = await db.selectFrom('subscriber_emails')
+          .where('id', '=', this.subscriberemail.id)
           .selectAll()
           .executeTakeFirst()
 
         if (!refreshedModel)
-          throw new Error('AccessToken not found')
+          throw new Error('SubscriberEmail not found')
 
-        this.accesstoken = refreshedModel
+        this.subscriberemail = refreshedModel
       }
 
       
-      async team() {
-        if (this.accesstoken.id === undefined)
-          throw new Error('Relation Error!')
-
-        const model = await db.selectFrom('teams')
-        .where('accesstoken_id', '=', this.accesstoken.id)
-        .selectAll()
-        .executeTakeFirst()
-
-        if (! model)
-          throw new Error('Model Relation Not Found!')
-
-        return new Team.modelInstance(model)
-      }
-
-
 
       toJSON() {
-        const output: Partial<AccessTokenType> = { ...this.accesstoken }
+        const output: Partial<SubscriberEmailType> = { ...this.subscriberemail }
 
         this.hidden.forEach((attr) => {
           if (attr in output)
-            delete output[attr as keyof Partial<AccessTokenType>]
+            delete output[attr as keyof Partial<SubscriberEmailType>]
         })
 
-        type AccessToken = Omit<AccessTokenType, 'password'>
+        type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
 
-        return output as AccessToken
+        return output as SubscriberEmail
       }
     }
 
-    const Model = AccessTokenModel
+    const Model = SubscriberEmailModel
 
     // starting here, ORM functions
-    export async function find(id: number, fields?: (keyof AccessTokenType)[]) {
-      let query = db.selectFrom('access_tokens').where('id', '=', id)
+    export async function find(id: number, fields?: (keyof SubscriberEmailType)[]) {
+      let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
       if (fields)
         query = query.select(fields)
@@ -397,11 +375,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      return new AccessTokenModel(model)
+      return new SubscriberEmailModel(model)
     }
 
-    export async function findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
-      let query = db.selectFrom('access_tokens').where('id', '=', id)
+    export async function findOrFail(id: number, fields?: (keyof SubscriberEmailType)[]) {
+      let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
       if (fields)
         query = query.select(fields)
@@ -413,11 +391,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         throw(`No model results found for ${id} `)
 
-      return new AccessTokenModel(model)
+      return new SubscriberEmailModel(model)
     }
 
-    export async function findMany(ids: number[], fields?: (keyof AccessTokenType)[]) {
-      let query = db.selectFrom('access_tokens').where('id', 'in', ids)
+    export async function findMany(ids: number[], fields?: (keyof SubscriberEmailType)[]) {
+      let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
 
       if (fields)
         query = query.select(fields)
@@ -426,19 +404,19 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       const model = await query.execute()
 
-      return model.map(modelItem => new AccessTokenModel(modelItem))
+      return model.map(modelItem => new SubscriberEmailModel(modelItem))
     }
 
     export async function count(): Number {
-      const results = await db.selectFrom('access_tokens')
+      const results = await db.selectFrom('subscriber_emails')
         .selectAll()
         .execute()
 
       return results.length
     }
 
-    export async function get(criteria: Partial<AccessTokenType>, sort: { column: keyof AccessTokenType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
-      let query = db.selectFrom('access_tokens')
+    export async function get(criteria: Partial<SubscriberEmailType>, sort: { column: keyof SubscriberEmailType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+      let query = db.selectFrom('subscriber_emails')
 
       if (criteria.id)
         query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
@@ -472,8 +450,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0): Promise<AccessTokenType[]> {
-      return await db.selectFrom('access_tokens')
+    export async function all(limit: number = 10, offset: number = 0): Promise<SubscriberEmailType[]> {
+      return await db.selectFrom('subscriber_emails')
         .selectAll()
         .orderBy('created_at', 'desc')
         .limit(limit)
@@ -481,50 +459,50 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-      const result = await db.insertInto('access_tokens')
-      .values(newAccessToken)
+    export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+      const result = await db.insertInto('subscriber_emails')
+      .values(newSubscriberEmail)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))
     }
 
-    export async function first(): Promise<AccessTokenModel> {
-     return await db.selectFrom('access_tokens')
+    export async function first(): Promise<SubscriberEmailModel> {
+     return await db.selectFrom('subscriber_emails')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number): Promise<AccessTokenModel[]> {
-      return await db.selectFrom('access_tokens')
+    export async function recent(limit: number): Promise<SubscriberEmailModel[]> {
+      return await db.selectFrom('subscriber_emails')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number): Promise<AccessTokenType> {
-      return await db.selectFrom('access_tokens')
+     export async function last(limit: number): Promise<SubscriberEmailType> {
+      return await db.selectFrom('subscriber_emails')
          .selectAll()
          .orderBy('id', 'desc')
          .limit(limit)
          .execute()
      }
 
-    export async function update(id: number, accesstokenUpdate: AccessTokenUpdate) {
-      return await db.updateTable('access_tokens')
-        .set(accesstokenUpdate)
+    export async function update(id: number, subscriberemailUpdate: SubscriberEmailUpdate) {
+      return await db.updateTable('subscriber_emails')
+        .set(subscriberemailUpdate)
         .where('id', '=', id)
         .execute()
     }
 
     export async function remove(id: number) {
-      return await db.deleteFrom('access_tokens')
+      return await db.deleteFrom('subscriber_emails')
         .where('id', '=', id)
         .executeTakeFirst()
     }
 
     export async function where(column: string, operator = '=', value: any) {
-      let query = db.selectFrom('access_tokens')
+      let query = db.selectFrom('subscriber_emails')
 
       query = query.where(column, operator, value)
 
@@ -532,10 +510,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function whereIs(
-      criteria: Partial<AccessTokenType>,
+      criteria: Partial<SubscriberEmailType>,
       options: QueryOptions = {},
     ) {
-      let query = db.selectFrom('access_tokens')
+      let query = db.selectFrom('subscriber_emails')
 
       // Apply criteria
       if (criteria.id)
@@ -579,11 +557,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function whereIn(
-      column: keyof AccessTokenType,
+      column: keyof SubscriberEmailType,
       values: any[],
       options: QueryOptions = {},
     ) {
-      let query = db.selectFrom('access_tokens')
+      let query = db.selectFrom('subscriber_emails')
 
       query = query.where(column, 'in', values)
 
@@ -601,7 +579,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export const AccessToken = {
+    export const SubscriberEmail = {
       find,
       findOrFail,
       findMany,
@@ -617,8 +595,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       recent,
       where,
       whereIn,
-      model: AccessTokenModel
+      model: SubscriberEmailModel
     }
 
-    export default AccessToken
+    export default SubscriberEmail
     

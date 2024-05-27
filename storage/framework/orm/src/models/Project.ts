@@ -463,8 +463,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newProject: NewProject): Promise<ProjectModel> {
-      const result = await db.insertInto('users')
-      .values(newUser)
+      const result = await db.insertInto('projects')
+      .values(newProject)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))

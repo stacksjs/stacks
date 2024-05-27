@@ -485,8 +485,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-      const result = await db.insertInto('users')
-      .values(newUser)
+      const result = await db.insertInto('deployments')
+      .values(newDeployment)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))

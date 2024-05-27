@@ -11,13 +11,8 @@ import { route } from '@stacksjs/router'
 await route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/api/hello/world
 await route.get('/', () => 'hello world') // $APP_URL/api
 await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
-await route.get('/hello-world', () => {
-  // $APP_URL/api/welcome
-  return {
-    // you may return an object as well
-    data: 'hello world, friend',
-  }
-})
+
+await route.post('/email/subscribe', 'Actions/EmailSubscribeAction')
 
 await route.email('/welcome')
 await route.health() // adds an `/api/health` route

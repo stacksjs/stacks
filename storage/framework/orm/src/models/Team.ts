@@ -483,8 +483,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newTeam: NewTeam): Promise<TeamModel> {
-      const result = await db.insertInto('users')
-      .values(newUser)
+      const result = await db.insertInto('teams')
+      .values(newTeam)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))

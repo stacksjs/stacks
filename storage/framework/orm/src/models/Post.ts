@@ -480,8 +480,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     }
 
     export async function create(newPost: NewPost): Promise<PostModel> {
-      const result = await db.insertInto('users')
-      .values(newUser)
+      const result = await db.insertInto('posts')
+      .values(newPost)
       .executeTakeFirstOrThrow()
 
       return await find(Number(result.insertId))
