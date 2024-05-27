@@ -63,7 +63,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a deployment by ID
-      static async find(id: number, fields?: (keyof DeploymentType)[]) {
+      static async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel> {
         let query = db.selectFrom('deployments').where('id', '=', id)
 
         if (fields)
@@ -79,7 +79,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new DeploymentModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof DeploymentType)[]) {
+      static async findOrFail(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel> {
         let query = db.selectFrom('deployments').where('id', '=', id)
 
         if (fields)
@@ -95,7 +95,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new DeploymentModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof DeploymentType)[]) {
+      static async findMany(ids: number[], fields?: (keyof DeploymentType)[]): Promise<DeploymentModel[]> {
         let query = db.selectFrom('deployments').where('id', 'in', ids)
 
         if (fields)
@@ -160,15 +160,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new deployment
       static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-        const model = await db.insertInto('deployments')
+        const result = await db.insertInto('deployments')
           .values(newDeployment)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as DeploymentModel
       }
 
       // Method to remove a deployment
@@ -180,7 +176,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new DeploymentModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<DeploymentType[]> {
         let query = db.selectFrom('deployments')
 
         query = query.where(column, operator, value)
@@ -232,7 +228,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof DeploymentType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof DeploymentType, values: any[], options: QueryOptions = {}): Promise<DeploymentType[]> {
         let query = db.selectFrom('deployments')
 
         query = query.where(column, 'in', values)
@@ -251,34 +247,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<DeploymentType> {
         return await db.selectFrom('deployments')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<DeploymentType> {
         return await db.selectFrom('deployments')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof DeploymentType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): Promise<DeploymentType[]> {
         return await db.selectFrom('deployments')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof DeploymentType) {
+      async orderByDesc(column: keyof DeploymentType): Promise<DeploymentType[]> {
         return await db.selectFrom('deployments')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof DeploymentType) {
+      async orderByAsc(column: keyof DeploymentType): Promise<DeploymentType[]> {
         return await db.selectFrom('deployments')
           .selectAll()
           .orderBy(column, 'asc')
@@ -286,7 +282,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the deployment instance itself
-      self() {
+      self(): DeploymentModel {
         return this
       }
 
@@ -321,7 +317,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           const newModel = await db.insertInto('deployments')
             .values(this.deployment as NewDeployment)
             .executeTakeFirstOrThrow()
-          this.deployment = newModel
         }
         else {
           // Update existing deployment
@@ -437,7 +432,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new DeploymentModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('deployments')
         .selectAll()
         .execute()
@@ -480,7 +475,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<DeploymentType[]> {
       return await db.selectFrom('deployments')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -489,7 +484,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newDeployment: NewDeployment) {
+    export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
       const result = await db.insertInto('users')
       .values(newUser)
       .executeTakeFirstOrThrow()
@@ -497,20 +492,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<DeploymentModel> {
      return await db.selectFrom('deployments')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<DeploymentModel[]> {
       return await db.selectFrom('deployments')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<DeploymentType> {
       return await db.selectFrom('deployments')
          .selectAll()
          .orderBy('id', 'desc')

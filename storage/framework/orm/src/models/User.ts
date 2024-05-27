@@ -65,7 +65,7 @@ import Deployment from './Deployment'
       }
 
       // Method to find a user by ID
-      static async find(id: number, fields?: (keyof UserType)[]) {
+      static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
         let query = db.selectFrom('users').where('id', '=', id)
 
         if (fields)
@@ -81,7 +81,7 @@ import Deployment from './Deployment'
         return new UserModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof UserType)[]) {
+      static async findOrFail(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
         let query = db.selectFrom('users').where('id', '=', id)
 
         if (fields)
@@ -97,7 +97,7 @@ import Deployment from './Deployment'
         return new UserModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof UserType)[]) {
+      static async findMany(ids: number[], fields?: (keyof UserType)[]): Promise<UserModel[]> {
         let query = db.selectFrom('users').where('id', 'in', ids)
 
         if (fields)
@@ -162,15 +162,11 @@ import Deployment from './Deployment'
 
       // Method to create a new user
       static async create(newUser: NewUser): Promise<UserModel> {
-        const model = await db.insertInto('users')
+        const result = await db.insertInto('users')
           .values(newUser)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as UserModel
       }
 
       // Method to remove a user
@@ -182,7 +178,7 @@ import Deployment from './Deployment'
         return new UserModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<UserType[]> {
         let query = db.selectFrom('users')
 
         query = query.where(column, operator, value)
@@ -234,7 +230,7 @@ import Deployment from './Deployment'
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}): Promise<UserType[]> {
         let query = db.selectFrom('users')
 
         query = query.where(column, 'in', values)
@@ -253,34 +249,34 @@ import Deployment from './Deployment'
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<UserType> {
         return await db.selectFrom('users')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<UserType> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof UserType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof UserType, order: 'asc' | 'desc'): Promise<UserType[]> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof UserType) {
+      async orderByDesc(column: keyof UserType): Promise<UserType[]> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof UserType) {
+      async orderByAsc(column: keyof UserType): Promise<UserType[]> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, 'asc')
@@ -288,7 +284,7 @@ import Deployment from './Deployment'
       }
 
       // Method to get the user instance itself
-      self() {
+      self(): UserModel {
         return this
       }
 
@@ -323,7 +319,6 @@ import Deployment from './Deployment'
           const newModel = await db.insertInto('users')
             .values(this.user as NewUser)
             .executeTakeFirstOrThrow()
-          this.user = newModel
         }
         else {
           // Update existing user
@@ -468,7 +463,7 @@ import Deployment from './Deployment'
       return model.map(modelItem => new UserModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('users')
         .selectAll()
         .execute()
@@ -511,7 +506,7 @@ import Deployment from './Deployment'
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<UserType[]> {
       return await db.selectFrom('users')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -520,7 +515,7 @@ import Deployment from './Deployment'
         .execute()
     }
 
-    export async function create(newUser: NewUser) {
+    export async function create(newUser: NewUser): Promise<UserModel> {
       const result = await db.insertInto('users')
       .values(newUser)
       .executeTakeFirstOrThrow()
@@ -528,20 +523,20 @@ import Deployment from './Deployment'
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<UserModel> {
      return await db.selectFrom('users')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<UserModel[]> {
       return await db.selectFrom('users')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<UserType> {
       return await db.selectFrom('users')
          .selectAll()
          .orderBy('id', 'desc')

@@ -57,7 +57,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a project by ID
-      static async find(id: number, fields?: (keyof ProjectType)[]) {
+      static async find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel> {
         let query = db.selectFrom('projects').where('id', '=', id)
 
         if (fields)
@@ -73,7 +73,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new ProjectModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof ProjectType)[]) {
+      static async findOrFail(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel> {
         let query = db.selectFrom('projects').where('id', '=', id)
 
         if (fields)
@@ -89,7 +89,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new ProjectModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof ProjectType)[]) {
+      static async findMany(ids: number[], fields?: (keyof ProjectType)[]): Promise<ProjectModel[]> {
         let query = db.selectFrom('projects').where('id', 'in', ids)
 
         if (fields)
@@ -154,15 +154,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new project
       static async create(newProject: NewProject): Promise<ProjectModel> {
-        const model = await db.insertInto('projects')
+        const result = await db.insertInto('projects')
           .values(newProject)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as ProjectModel
       }
 
       // Method to remove a project
@@ -174,7 +170,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new ProjectModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<ProjectType[]> {
         let query = db.selectFrom('projects')
 
         query = query.where(column, operator, value)
@@ -226,7 +222,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof ProjectType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof ProjectType, values: any[], options: QueryOptions = {}): Promise<ProjectType[]> {
         let query = db.selectFrom('projects')
 
         query = query.where(column, 'in', values)
@@ -245,34 +241,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<ProjectType> {
         return await db.selectFrom('projects')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<ProjectType> {
         return await db.selectFrom('projects')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof ProjectType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): Promise<ProjectType[]> {
         return await db.selectFrom('projects')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof ProjectType) {
+      async orderByDesc(column: keyof ProjectType): Promise<ProjectType[]> {
         return await db.selectFrom('projects')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof ProjectType) {
+      async orderByAsc(column: keyof ProjectType): Promise<ProjectType[]> {
         return await db.selectFrom('projects')
           .selectAll()
           .orderBy(column, 'asc')
@@ -280,7 +276,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the project instance itself
-      self() {
+      self(): ProjectModel {
         return this
       }
 
@@ -315,7 +311,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           const newModel = await db.insertInto('projects')
             .values(this.project as NewProject)
             .executeTakeFirstOrThrow()
-          this.project = newModel
         }
         else {
           // Update existing project
@@ -415,7 +410,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new ProjectModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('projects')
         .selectAll()
         .execute()
@@ -458,7 +453,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<ProjectType[]> {
       return await db.selectFrom('projects')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -467,7 +462,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newProject: NewProject) {
+    export async function create(newProject: NewProject): Promise<ProjectModel> {
       const result = await db.insertInto('users')
       .values(newUser)
       .executeTakeFirstOrThrow()
@@ -475,20 +470,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<ProjectModel> {
      return await db.selectFrom('projects')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<ProjectModel[]> {
       return await db.selectFrom('projects')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<ProjectType> {
       return await db.selectFrom('projects')
          .selectAll()
          .orderBy('id', 'desc')

@@ -58,7 +58,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a post by ID
-      static async find(id: number, fields?: (keyof PostType)[]) {
+      static async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel> {
         let query = db.selectFrom('posts').where('id', '=', id)
 
         if (fields)
@@ -74,7 +74,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof PostType)[]) {
+      static async findOrFail(id: number, fields?: (keyof PostType)[]): Promise<PostModel> {
         let query = db.selectFrom('posts').where('id', '=', id)
 
         if (fields)
@@ -90,7 +90,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof PostType)[]) {
+      static async findMany(ids: number[], fields?: (keyof PostType)[]): Promise<PostModel[]> {
         let query = db.selectFrom('posts').where('id', 'in', ids)
 
         if (fields)
@@ -155,15 +155,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new post
       static async create(newPost: NewPost): Promise<PostModel> {
-        const model = await db.insertInto('posts')
+        const result = await db.insertInto('posts')
           .values(newPost)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as PostModel
       }
 
       // Method to remove a post
@@ -175,7 +171,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<PostType[]> {
         let query = db.selectFrom('posts')
 
         query = query.where(column, operator, value)
@@ -227,7 +223,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof PostType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof PostType, values: any[], options: QueryOptions = {}): Promise<PostType[]> {
         let query = db.selectFrom('posts')
 
         query = query.where(column, 'in', values)
@@ -246,34 +242,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<PostType> {
         return await db.selectFrom('posts')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<PostType> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof PostType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof PostType, order: 'asc' | 'desc'): Promise<PostType[]> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof PostType) {
+      async orderByDesc(column: keyof PostType): Promise<PostType[]> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof PostType) {
+      async orderByAsc(column: keyof PostType): Promise<PostType[]> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy(column, 'asc')
@@ -281,7 +277,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the post instance itself
-      self() {
+      self(): PostModel {
         return this
       }
 
@@ -316,7 +312,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           const newModel = await db.insertInto('posts')
             .values(this.post as NewPost)
             .executeTakeFirstOrThrow()
-          this.post = newModel
         }
         else {
           // Update existing post
@@ -432,7 +427,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new PostModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('posts')
         .selectAll()
         .execute()
@@ -475,7 +470,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<PostType[]> {
       return await db.selectFrom('posts')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -484,7 +479,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newPost: NewPost) {
+    export async function create(newPost: NewPost): Promise<PostModel> {
       const result = await db.insertInto('users')
       .values(newUser)
       .executeTakeFirstOrThrow()
@@ -492,20 +487,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<PostModel> {
      return await db.selectFrom('posts')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<PostModel[]> {
       return await db.selectFrom('posts')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<PostType> {
       return await db.selectFrom('posts')
          .selectAll()
          .orderBy('id', 'desc')

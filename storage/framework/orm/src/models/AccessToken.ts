@@ -60,7 +60,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a accesstoken by ID
-      static async find(id: number, fields?: (keyof AccessTokenType)[]) {
+      static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
         let query = db.selectFrom('access_tokens').where('id', '=', id)
 
         if (fields)
@@ -76,7 +76,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new AccessTokenModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
+      static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
         let query = db.selectFrom('access_tokens').where('id', '=', id)
 
         if (fields)
@@ -92,7 +92,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new AccessTokenModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]) {
+      static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
         let query = db.selectFrom('access_tokens').where('id', 'in', ids)
 
         if (fields)
@@ -157,15 +157,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new accesstoken
       static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-        const model = await db.insertInto('access_tokens')
+        const result = await db.insertInto('access_tokens')
           .values(newAccessToken)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as AccessTokenModel
       }
 
       // Method to remove a accesstoken
@@ -177,7 +173,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new AccessTokenModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<AccessTokenType[]> {
         let query = db.selectFrom('access_tokens')
 
         query = query.where(column, operator, value)
@@ -229,7 +225,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof AccessTokenType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof AccessTokenType, values: any[], options: QueryOptions = {}): Promise<AccessTokenType[]> {
         let query = db.selectFrom('access_tokens')
 
         query = query.where(column, 'in', values)
@@ -248,34 +244,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<AccessTokenType> {
         return await db.selectFrom('access_tokens')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<AccessTokenType> {
         return await db.selectFrom('access_tokens')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): Promise<AccessTokenType[]> {
         return await db.selectFrom('access_tokens')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof AccessTokenType) {
+      async orderByDesc(column: keyof AccessTokenType): Promise<AccessTokenType[]> {
         return await db.selectFrom('access_tokens')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof AccessTokenType) {
+      async orderByAsc(column: keyof AccessTokenType): Promise<AccessTokenType[]> {
         return await db.selectFrom('access_tokens')
           .selectAll()
           .orderBy(column, 'asc')
@@ -283,7 +279,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the accesstoken instance itself
-      self() {
+      self(): AccessTokenModel {
         return this
       }
 
@@ -318,7 +314,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           const newModel = await db.insertInto('access_tokens')
             .values(this.accesstoken as NewAccessToken)
             .executeTakeFirstOrThrow()
-          this.accesstoken = newModel
         }
         else {
           // Update existing accesstoken
@@ -434,7 +429,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new AccessTokenModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('access_tokens')
         .selectAll()
         .execute()
@@ -477,7 +472,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<AccessTokenType[]> {
       return await db.selectFrom('access_tokens')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -486,7 +481,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newAccessToken: NewAccessToken) {
+    export async function create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
       const result = await db.insertInto('users')
       .values(newUser)
       .executeTakeFirstOrThrow()
@@ -494,20 +489,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<AccessTokenModel> {
      return await db.selectFrom('access_tokens')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<AccessTokenModel[]> {
       return await db.selectFrom('access_tokens')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<AccessTokenType> {
       return await db.selectFrom('access_tokens')
          .selectAll()
          .orderBy('id', 'desc')

@@ -55,7 +55,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a subscriber by ID
-      static async find(id: number, fields?: (keyof SubscriberType)[]) {
+      static async find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel> {
         let query = db.selectFrom('subscribers').where('id', '=', id)
 
         if (fields)
@@ -71,7 +71,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new SubscriberModel(model)
       }
 
-      static async findOrFail(id: number, fields?: (keyof SubscriberType)[]) {
+      static async findOrFail(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel> {
         let query = db.selectFrom('subscribers').where('id', '=', id)
 
         if (fields)
@@ -87,7 +87,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new SubscriberModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof SubscriberType)[]) {
+      static async findMany(ids: number[], fields?: (keyof SubscriberType)[]): Promise<SubscriberModel[]> {
         let query = db.selectFrom('subscribers').where('id', 'in', ids)
 
         if (fields)
@@ -152,15 +152,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new subscriber
       static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-        const model = await db.insertInto('subscribers')
+        const result = await db.insertInto('subscribers')
           .values(newSubscriber)
           .executeTakeFirstOrThrow()
 
-          const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
-  
-        return await find(Number(result.insertId))
+        return await find(Number(result.insertId)) as SubscriberModel
       }
 
       // Method to remove a subscriber
@@ -172,7 +168,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new SubscriberModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(column: string, operator = '=', value: any): Promise<SubscriberType[]> {
         let query = db.selectFrom('subscribers')
 
         query = query.where(column, operator, value)
@@ -224,7 +220,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof SubscriberType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof SubscriberType, values: any[], options: QueryOptions = {}): Promise<SubscriberType[]> {
         let query = db.selectFrom('subscribers')
 
         query = query.where(column, 'in', values)
@@ -243,34 +239,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<SubscriberType> {
         return await db.selectFrom('subscribers')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<SubscriberType> {
         return await db.selectFrom('subscribers')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof SubscriberType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): Promise<SubscriberType[]> {
         return await db.selectFrom('subscribers')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof SubscriberType) {
+      async orderByDesc(column: keyof SubscriberType): Promise<SubscriberType[]> {
         return await db.selectFrom('subscribers')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof SubscriberType) {
+      async orderByAsc(column: keyof SubscriberType): Promise<SubscriberType[]> {
         return await db.selectFrom('subscribers')
           .selectAll()
           .orderBy(column, 'asc')
@@ -278,7 +274,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the subscriber instance itself
-      self() {
+      self(): SubscriberModel {
         return this
       }
 
@@ -313,7 +309,6 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           const newModel = await db.insertInto('subscribers')
             .values(this.subscriber as NewSubscriber)
             .executeTakeFirstOrThrow()
-          this.subscriber = newModel
         }
         else {
           // Update existing subscriber
@@ -413,7 +408,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new SubscriberModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('subscribers')
         .selectAll()
         .execute()
@@ -456,7 +451,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<SubscriberType[]> {
       return await db.selectFrom('subscribers')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -465,7 +460,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newSubscriber: NewSubscriber) {
+    export async function create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
       const result = await db.insertInto('users')
       .values(newUser)
       .executeTakeFirstOrThrow()
@@ -473,20 +468,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<SubscriberModel> {
      return await db.selectFrom('subscribers')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function recent(limit: number) {
+    export async function recent(limit: number): Promise<SubscriberModel[]> {
       return await db.selectFrom('subscribers')
          .selectAll()
          .limit(limit)
          .execute()
      }
 
-     export async function last(limit: number) {
+     export async function last(limit: number): Promise<SubscriberType> {
       return await db.selectFrom('subscribers')
          .selectAll()
          .orderBy('id', 'desc')
