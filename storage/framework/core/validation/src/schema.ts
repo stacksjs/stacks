@@ -1,8 +1,9 @@
 import schema, { Vine } from '@vinejs/vine'
+import { SimpleMessagesProvider, errors as VineError } from '@vinejs/vine'
 import rule from 'validator'
 import { MoneyValidator } from './types/money'
 
-export { schema, rule }
+export { schema, rule, SimpleMessagesProvider, VineError }
 
 // @ts-expect-error - investigate why this is not working
 Vine.macro('money', () => new MoneyValidator())

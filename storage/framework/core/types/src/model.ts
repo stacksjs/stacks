@@ -25,6 +25,10 @@ export interface TimestampOptions {
   deletedAt?: string
 }
 
+interface ValidatorMessage {
+  [key: string]: string
+}
+
 export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
@@ -116,7 +120,7 @@ export interface Attribute {
   factory?: () => any
   validator?: {
     rule: VineType
-    message: string
+    message: ValidatorMessage
   }
   // validation?: String | Number | Boolean | Date
 }
