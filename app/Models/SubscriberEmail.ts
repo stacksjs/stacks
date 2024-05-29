@@ -35,5 +35,5 @@ export default {
       factory: () => faker.internet.email(),
     },
   },
-  
+
 } satisfies Model

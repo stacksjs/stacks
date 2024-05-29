@@ -228,7 +228,7 @@ export class Router implements RouterInterface {
   public async getRoutes(): Promise<Route[]> {
     await import(routesPath('api.ts'))
     await import(projectStoragePath('framework/orm/routes.ts'))
-    
+
     return this.routes
   }
 
@@ -296,7 +296,18 @@ export class Router implements RouterInterface {
     const newPath = actionModule.default.path ?? originalPath
     this.updatePathIfNeeded(newPath, originalPath)
 
-    return await actionModule.default.handle()
+    // we need to make sure the validation happens here
+    // to do so, we need to:
+    // find the ./app/Models/* file
+    // then check via a regex which model attributes validations to utilize by checking what's in between t
+    // then validate
+    // if succeeds, run the handle
+    // if fails, return validation error
+
+    if (condition)
+      return await actionModule.default.handle()
+
+    return await actionModule.default.handle(request)
   }
 
   private normalizePath(path: string): string {
