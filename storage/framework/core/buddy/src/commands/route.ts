@@ -8,10 +8,12 @@ import type { CLI, MigrateOptions } from '@stacksjs/types'
 export function route(buddy: CLI) {
   const descriptions = {
     route: 'Lists your routes',
+    verbose: 'Enable verbose output',
   }
 
   buddy
     .command('route:list', descriptions.route)
+    .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions) => {
       const perf = await intro('buddy route:list')
       const result = await runAction(Action.RouteList, options)
@@ -29,5 +31,10 @@ export function route(buddy: CLI) {
       await outro(`Successfully listed routes`)
 
       process.exit(ExitCode.Success)
+    })
+
+    buddy.on('route:*', () => {
+      console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+      process.exit(1)
     })
 }

@@ -1,4 +1,3 @@
-import { ok } from '@stacksjs/error-handling'
 import { route } from './router'
 
 export async function listRoutes() {
@@ -6,5 +5,5 @@ export async function listRoutes() {
 
     console.table(routeLists)
 
-    return ok('')
+    return ok('Successfully listed routes!')
 }
