@@ -126,11 +126,6 @@ function handleChange() {
   opacity: 1;
 }
 
-.step.is-active .label .index {
-  border-color: rgba(244, 244, 244, 0.2);
-  background-color: #12525e;
-}
-
 .step.is-visited .index {
   background-color: #ffffff;
 }
