@@ -43,8 +43,8 @@
   ],
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "bunx --bun vite build",
-    "build:lib": "vite build --mode lib && bun run build:types",
+    "build": "bunx --bun vite build --mode lib",
+    "build:demo": "bunx --bun vite build",
     "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
     "preview": "bunx --bun vite preview"
   },
