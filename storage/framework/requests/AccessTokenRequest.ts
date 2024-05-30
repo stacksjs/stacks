@@ -12,3 +12,6 @@ export class AccessTokenRequest extends Request implements AccessTokenRequestTyp
         validateField('AccessToken', this.all())
       }
     }
+    
+    export const accessTokenRequest = new AccessTokenRequest()
+     

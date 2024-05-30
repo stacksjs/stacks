@@ -12,3 +12,6 @@ export class DeploymentRequest extends Request implements DeploymentRequestType 
         validateField('Deployment', this.all())
       }
     }
+    
+    export const deploymentRequest = new DeploymentRequest()
+    

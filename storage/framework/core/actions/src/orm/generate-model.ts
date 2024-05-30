@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { pascalCase } from '@stacksjs/strings'
+import { camelCase, pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
@@ -29,29 +29,30 @@ async function generateApiRoutes(modelFiles: string[]) {
 
   for (const modelFile of modelFiles) {
     log.debug(`Processing model file: ${modelFile}`)
-
+    let middlewareString = ''
     const model = (await import(modelFile)).default as Model
 
     if (model.traits?.useApi) {
       const apiRoutes = model.traits?.useApi?.routes
       const middlewares = model.traits.useApi?.middleware
-      let middlewareString = `.middleware([`
-
-      if (middlewares.length) {
-        for (let i = 0; i < middlewares.length; i++) {
-          middlewareString += `'${middlewares[i]}'`
-
-          if (i < middlewares.length - 1) {
-            middlewareString += ','
+      if (middlewares) {
+        middlewareString = `.middleware([`
+        if (middlewares.length) {
+          for (let i = 0; i < middlewares.length; i++) {
+            middlewareString += `'${middlewares[i]}'`
+  
+            if (i < middlewares.length - 1) {
+              middlewareString += ','
+            }
           }
         }
-      }
 
-      middlewareString += `])`
+        middlewareString += `])`
+      }
 
       if (apiRoutes?.length) {
         for (const apiRoute of apiRoutes) {
-          await writeOrmActions(apiRoute, model)
+          await writeOrmActions(apiRoute as string, model)
 
           if (apiRoute === 'index')
             routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
@@ -109,19 +110,25 @@ async function writeModelRequests() {
     const modeFileElement = modelFiles[i] as string
 
     const model = (await import(modeFileElement)).default as Model
+    const modelName = model.name as string
 
-    const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${model.name}Request.ts`))
+    const modelLowerCase = camelCase(modelName)
 
-    fileString += `export interface ${model.name}RequestType extends RequestInstance{
+    const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
+
+    fileString += `export interface ${modelName}RequestType extends RequestInstance{
       validate(params: any): void
     }\n\n`
     
-    fileString += `export class ${model.name}Request extends Request implements ${model.name}RequestType  {
+    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
       
       public validate(params: any): void {
-        validateField('${model.name}', this.all())
+        validateField('${modelName}', this.all())
       }
-    }`
+    }
+    
+    export const ${modelLowerCase}Request = new ${modelName}Request()
+    `
 
     const writer = requestFile.writer()
 
@@ -206,27 +213,6 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const writer = file.writer()
 
   writer.write(actionString)
-}
-
-async function writeApiRoutes(apiRoute: string, model: Model): Promise<string> {
-  let routeString = ``
-  const tableName = await modelTableName(model)
-  const modelName = model.name
-
-  if (apiRoute === 'index') routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
-
-  if (apiRoute === 'store') routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')\n\n`
-
-  if (apiRoute === 'update')
-    routeString += `await route.patch('${tableName}/{id}', 'Actions/${modelName}UpdateOrmAction')\n\n`
-
-  if (apiRoute === 'show')
-    routeString += `await route.get('${tableName}/{id}', 'Actions/${modelName}ShowOrmAction')\n\n`
-
-  if (apiRoute === 'destroy')
-    routeString += `await route.delete('${tableName}/{id}', 'Actions/${modelName}DestroyOrmAction')\n\n`
-
-  return routeString
 }
 
 async function initiateModelGeneration(): Promise<void> {

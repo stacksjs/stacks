@@ -12,3 +12,6 @@ export class TeamRequest extends Request implements TeamRequestType  {
         validateField('Team', this.all())
       }
     }
+    
+    export const teamRequest = new TeamRequest()
+    

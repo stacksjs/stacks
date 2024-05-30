@@ -12,3 +12,6 @@ export class ProjectRequest extends Request implements ProjectRequestType  {
         validateField('Project', this.all())
       }
     }
+    
+    export const projectRequest = new ProjectRequest()
+    

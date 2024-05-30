@@ -12,3 +12,6 @@ export class UserRequest extends Request implements UserRequestType  {
         validateField('User', this.all())
       }
     }
+    
+    export const userRequest = new UserRequest()
+    

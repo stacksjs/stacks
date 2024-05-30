@@ -12,3 +12,6 @@ export class SubscriberRequest extends Request implements SubscriberRequestType 
         validateField('Subscriber', this.all())
       }
     }
+    
+    export const subscriberRequest = new SubscriberRequest()
+    

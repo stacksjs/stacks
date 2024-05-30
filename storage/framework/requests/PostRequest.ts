@@ -12,3 +12,6 @@ export class PostRequest extends Request implements PostRequestType  {
         validateField('Post', this.all())
       }
     }
+    
+    export const postRequest = new PostRequest()
+    
