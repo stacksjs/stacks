@@ -1,17 +1,29 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults, defineExpose  } from 'vue'
-import type { StepperProps, OptionParams, StepperEmitValue, StepperValue } from '../types'
-import Step from './Step.vue';
+import {
+  computed,
+  defineEmits,
+  defineExpose,
+  defineOptions,
+  defineProps,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useSlots,
+  watch,
+  withDefaults,
+} from 'vue'
+import type { OptionParams, StepperEmitValue, StepperProps, StepperValue } from '../types'
+import Step from './Step.vue'
 
 defineOptions({
   name: 'Stepper',
-  inheritAttrs: false
+  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<StepperProps>(), {
   value: {
     value: 2,
-    id: undefined
+    id: undefined,
   },
   steps: 0,
   linear: true,
@@ -34,25 +46,33 @@ const random = computed(() => props.linear === false)
 const queries = computed(() => {
   const { steps } = props
 
-  return Array.from(Array(steps)).reduce((queries, step, $index) => {
-    const query = `isStep${$index + 1}`
-    queries[query] = index.value === $index
-    return queries
-  }, {} as Record<string, boolean>)
+  return Array.from(Array(steps)).reduce(
+    (queries, step, $index) => {
+      const query = `isStep${$index + 1}`
+      queries[query] = index.value === $index
+      return queries
+    },
+    {} as Record<string, boolean>,
+  )
 })
 
+watch(
+  () => props.value,
+  (newValue) => {
+    index.value = toIndex(newValue.value)
+    if (props.persist) {
+      setStorage()
+    }
+  },
+)
 
-watch(() => props.value, (newValue) => {
-  index.value = toIndex(newValue.value);
-  if (props.persist) {
-    setStorage();
-  }
-});
-
-watch(index, (newValue) => {
-  emitValue(toValue(newValue));
-}, { immediate: true });
-
+watch(
+  index,
+  (newValue) => {
+    emitValue(toValue(newValue))
+  },
+  { immediate: true },
+)
 
 const scope = computed(() => ({
   index: index.value,
@@ -111,20 +131,20 @@ function getSlotName(suffix = '', displayIndex: string, options: Partial<OptionP
 }
 
 function withSlot(name: string) {
-  return !withoutSlot(name);
+  return !withoutSlot(name)
 }
 
 function withoutSlot(name: string): boolean {
-  const noSlot = !slots[name] || (slots[name] && !slots[name].length);
-  const noScopedSlot = slots.noScopedSlot && !slots.noScopedSlot[name];
-  return noSlot && noScopedSlot;
+  const noSlot = !slots[name] || (slots[name] && !slots[name].length)
+  const noScopedSlot = slots.noScopedSlot && !slots.noScopedSlot[name]
+  return noSlot && noScopedSlot
 }
 
 function toValue(index: number) {
   return index + 1
 }
 
-function toIndex(value: number = 0) {
+function toIndex(value = 0) {
   return value - 1
 }
 
@@ -214,9 +234,8 @@ function emitValue(value: number) {
 defineExpose({
   next,
   previous,
-  reset
+  reset,
 })
-
 </script>
 <template>
   <div class="v-stepper">

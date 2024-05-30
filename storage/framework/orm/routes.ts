@@ -1,6 +1,5 @@
 import { route } from '@stacksjs/router'
 
-
 await route.get('subscribers', 'Actions/SubscriberIndexOrmAction').middleware(['auth'])
 
 await route.patch('subscribers/{id}', 'Actions/SubscriberUpdateOrmAction').middleware(['auth'])
@@ -32,4 +31,3 @@ await route.post('users', 'Actions/UserStoreOrmAction').middleware(['auth'])
 await route.delete('users/{id}', 'Actions/UserDestroyOrmAction').middleware(['auth'])
 
 await route.get('users/{id}', 'Actions/UserShowOrmAction').middleware(['auth'])
-

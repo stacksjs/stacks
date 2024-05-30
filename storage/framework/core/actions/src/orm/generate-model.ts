@@ -31,7 +31,7 @@ async function generateApiRoutes(modelFiles: string[]) {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
-    
+
     if (model.traits?.useApi) {
       const apiRoutes = model.traits?.useApi?.routes
       const middlewares = model.traits.useApi?.middleware
@@ -45,25 +45,26 @@ async function generateApiRoutes(modelFiles: string[]) {
             middlewareString += ','
           }
         }
-         
       }
-       
+
       middlewareString += `])`
 
       if (apiRoutes?.length) {
         for (const apiRoute of apiRoutes) {
           await writeOrmActions(apiRoute, model)
-  
-          if (apiRoute === 'index') routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
-  
-          if (apiRoute === 'store') routeString += `await route.post('${model.table}', 'Actions/${model.name}StoreOrmAction')${middlewareString}\n\n`
-        
+
+          if (apiRoute === 'index')
+            routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
+
+          if (apiRoute === 'store')
+            routeString += `await route.post('${model.table}', 'Actions/${model.name}StoreOrmAction')${middlewareString}\n\n`
+
           if (apiRoute === 'update')
             routeString += `await route.patch('${model.table}/{id}', 'Actions/${model.name}UpdateOrmAction')${middlewareString}\n\n`
-        
+
           if (apiRoute === 'show')
             routeString += `await route.get('${model.table}/{id}', 'Actions/${model.name}ShowOrmAction')${middlewareString}\n\n`
-        
+
           if (apiRoute === 'destroy')
             routeString += `await route.delete('${model.table}/{id}', 'Actions/${model.name}DestroyOrmAction')${middlewareString}\n\n`
         }
@@ -113,8 +114,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
     handleString += `async handle() {
         return await ${modelName}.all()
       },`
-      
-      method = 'GET'
+
+    method = 'GET'
   }
 
   if (apiRoute === 'show') {
@@ -123,8 +124,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return ${modelName}.findOrFail(Number(id))
       },`
-      
-      method = 'GET'
+
+    method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
@@ -137,8 +138,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return 'Model deleted!'
       },`
-      
-      method = 'DELETE'
+
+    method = 'DELETE'
   }
 
   if (apiRoute === 'store') {
@@ -148,7 +149,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
         return model
       },`
 
-      method = 'POST'
+    method = 'POST'
   }
 
   if (apiRoute === 'update') {
@@ -160,7 +161,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
         return model.update(request.all())
       },`
 
-      method = 'PATCH'
+    method = 'PATCH'
   }
 
   actionString += `export default new Action({

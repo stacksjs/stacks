@@ -3,12 +3,12 @@ export type Theme = 'light' | 'dark' | 'system'
 
 export interface StepperValue {
   value: number
-  id?: string,
+  id?: string
 }
 
 export interface StepperEmitValue {
   value: number
-  id?: string,
+  id?: string
   queries: Record<string, boolean>
 }
 
@@ -17,8 +17,7 @@ export interface OptionParams {
 }
 
 export interface StepperUtils {
-  getSlotName: (suffix: string | undefined, displayIndex: string, options?: Partial<OptionParams>) => string;
-
+  getSlotName: (suffix: string | undefined, displayIndex: string, options?: Partial<OptionParams>) => string
 }
 
 export interface StepperProps {

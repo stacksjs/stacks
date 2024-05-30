@@ -1,658 +1,520 @@
+import { db } from '@stacksjs/database'
+import type { Result } from '@stacksjs/error-handling'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import type { Result } from '@stacksjs/error-handling'
-    import { err, handleError, ok } from '@stacksjs/error-handling'
-    import { db } from '@stacksjs/database'
-    import Post from './Post'
+import Post from './Post'
 
 import Subscriber from './Subscriber'
 
 import Deployment from './Deployment'
 
+// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+// import { Pool } from 'pg'
 
-    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-    // import { Pool } from 'pg'
+// TODO: we need an action that auto-generates these table interfaces
+export interface UsersTable {
+  id: Generated<number>
+  name: string
+  email: string
+  jobTitle: string
+  password: string
+  deployment_id: number
+  post_id: number
 
-    // TODO: we need an action that auto-generates these table interfaces
-    export interface UsersTable {
-      id: Generated<number>
-      name: string
-      email: string
-      jobTitle: string
-      password: string
-      deployment_id: number 
- post_id: number 
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
+  deleted_at: ColumnType<Date, string | undefined, never>
+}
 
-      created_at: ColumnType<Date, string | undefined, never>
-      updated_at: ColumnType<Date, string | undefined, never>
-      deleted_at: ColumnType<Date, string | undefined, never>
-    }
+interface UserResponse {
+  data: Users
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
 
-    interface UserResponse {
-      data: Users
+export type UserType = Selectable<UsersTable>
+export type NewUser = Insertable<UsersTable>
+export type UserUpdate = Updateable<UsersTable>
+export type Users = UserType[]
+
+export type UserColumn = Users
+export type UserColumns = Array<keyof Users>
+
+type SortDirection = 'asc' | 'desc'
+interface SortOptions {
+  column: UserType
+  order: SortDirection
+}
+// Define a type for the options parameter
+interface QueryOptions {
+  sort?: SortOptions
+  limit?: number
+  offset?: number
+  page?: number
+}
+
+export class UserModel {
+  private user: Partial<UserType>
+  private results: Partial<UserType>[]
+  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+
+  constructor(user: Partial<UserType>) {
+    this.user = user
+  }
+
+  // Method to find a user by ID
+  static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
+    let query = db.selectFrom('users').where('id', '=', id)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return null
+
+    return new UserModel(model)
+  }
+
+  static async findOrFail(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
+    let query = db.selectFrom('users').where('id', '=', id)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) throw `No model results found for ${id} `
+
+    return new UserModel(model)
+  }
+
+  static async findMany(ids: number[], fields?: (keyof UserType)[]): Promise<UserModel[]> {
+    let query = db.selectFrom('users').where('id', 'in', ids)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.execute()
+
+    return model.map((modelItem) => new UserModel(modelItem))
+  }
+
+  // Method to get a user by criteria
+  static async get(criteria: Partial<UserType>, options: QueryOptions = {}): Promise<UserModel[]> {
+    let query = db.selectFrom('users')
+
+    // Apply sorting from options
+    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply limit and offset from options
+    if (options.limit !== undefined) query = query.limit(options.limit)
+
+    if (options.offset !== undefined) query = query.offset(options.offset)
+
+    const model = await query.selectAll().execute()
+    return model.map((modelItem) => new UserModel(modelItem))
+  }
+
+  // Method to get all users
+  static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
+    const totalRecordsResult = await db
+      .selectFrom('users')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    const usersWithExtra = await db
+      .selectFrom('users')
+      .selectAll()
+      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+      .limit((options.limit ?? 10) + 1) // Fetch one extra record
+      .offset((options.page - 1) * (options.limit ?? 10))
+      .execute()
+
+    let nextCursor = null
+    if (usersWithExtra.length > (options.limit ?? 10)) nextCursor = usersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+
+    return {
+      data: usersWithExtra,
       paging: {
-        total_records: number
-        page: number
-        total_pages: number
-      }
-      next_cursor: number | null
+        total_records: totalRecords,
+        page: options.page,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
+  // Method to create a new user
+  static async create(newUser: NewUser): Promise<UserModel> {
+    const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
+
+    return (await find(Number(result.insertId))) as UserModel
+  }
+
+  // Method to remove a user
+  static async remove(id: number): Promise<UserModel> {
+    const model = await db.deleteFrom('users').where('id', '=', id).executeTakeFirstOrThrow()
+
+    return new UserModel(model)
+  }
+
+  async where(column: string, operator = '=', value: any): Promise<UserType[]> {
+    let query = db.selectFrom('users')
+
+    query = query.where(column, operator, value)
+
+    return await query.selectAll().execute()
+  }
+
+  async whereIs(criteria: Partial<UserType>, options: QueryOptions = {}) {
+    let query = db.selectFrom('users')
+
+    // Existing criteria checks
+    if (criteria.id) query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
+
+    if (criteria.email) query = query.where('email', '=', criteria.email)
+
+    if (criteria.name !== undefined) {
+      query = query.where('name', criteria.name === null ? 'is' : '=', criteria.name)
     }
 
-    export type UserType = Selectable<UsersTable>
-    export type NewUser = Insertable<UsersTable>
-    export type UserUpdate = Updateable<UsersTable>
-    export type Users = UserType[]
+    if (criteria.password) query = query.where('password', '=', criteria.password)
 
-    export type UserColumn = Users
-    export type UserColumns = Array<keyof Users>
+    if (criteria.created_at) query = query.where('created_at', '=', criteria.created_at)
 
-    type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: UserType, order: SortDirection }
-    // Define a type for the options parameter
-    interface QueryOptions {
-      sort?: SortOptions
-      limit?: number
-      offset?: number
-      page?: number
+    if (criteria.updated_at) query = query.where('updated_at', '=', criteria.updated_at)
+
+    if (criteria.deleted_at) query = query.where('deleted_at', '=', criteria.deleted_at)
+
+    // Apply sorting from options
+    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply pagination from options
+    if (options.limit !== undefined) query = query.limit(options.limit)
+
+    if (options.offset !== undefined) query = query.offset(options.offset)
+
+    return await query.selectAll().execute()
+  }
+
+  async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}): Promise<UserType[]> {
+    let query = db.selectFrom('users')
+
+    query = query.where(column, 'in', values)
+
+    // Apply sorting from options
+    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply pagination from options
+    if (options.limit !== undefined) query = query.limit(options.limit)
+
+    if (options.offset !== undefined) query = query.offset(options.offset)
+
+    return await query.selectAll().execute()
+  }
+
+  async first(): Promise<UserType> {
+    return await db.selectFrom('users').selectAll().executeTakeFirst()
+  }
+
+  async last(): Promise<UserType> {
+    return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
+  async orderBy(column: keyof UserType, order: 'asc' | 'desc'): Promise<UserType[]> {
+    return await db.selectFrom('users').selectAll().orderBy(column, order).execute()
+  }
+
+  async orderByDesc(column: keyof UserType): Promise<UserType[]> {
+    return await db.selectFrom('users').selectAll().orderBy(column, 'desc').execute()
+  }
+
+  async orderByAsc(column: keyof UserType): Promise<UserType[]> {
+    return await db.selectFrom('users').selectAll().orderBy(column, 'asc').execute()
+  }
+
+  // Method to get the user instance itself
+  self(): UserModel {
+    return this
+  }
+
+  // Method to get the user instance data
+  get() {
+    return this.user
+  }
+
+  // Method to update the user instance
+  async update(user: UserUpdate): Promise<Result<UserType, Error>> {
+    if (this.user.id === undefined) return err(handleError('User ID is undefined'))
+
+    const updatedModel = await db.updateTable('users').set(user).where('id', '=', this.user.id).executeTakeFirst()
+
+    if (!updatedModel) return err(handleError('User not found'))
+
+    return ok(updatedModel)
+  }
+
+  // Method to save (insert or update) the user instance
+  async save(): Promise<void> {
+    if (!this.user) throw new Error('User data is undefined')
+
+    if (this.user.id === undefined) {
+      // Insert new user
+      const newModel = await db
+        .insertInto('users')
+        .values(this.user as NewUser)
+        .executeTakeFirstOrThrow()
+    } else {
+      // Update existing user
+      await this.update(this.user)
     }
+  }
 
-    export class UserModel {
-      private user: Partial<UserType>
-      private results: Partial<UserType>[]
-      private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
-
-      constructor(user: Partial<UserType>) {
-        this.user = user
-      }
-
-      // Method to find a user by ID
-      static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
-        let query = db.selectFrom('users').where('id', '=', id)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
-
-        if (!model)
-          return null
-
-        return new UserModel(model)
-      }
-
-      static async findOrFail(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
-        let query = db.selectFrom('users').where('id', '=', id)
+  // Method to delete the user instance
+  async delete(): Promise<void> {
+    if (this.user.id === undefined) throw new Error('User ID is undefined')
 
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
+    await db.deleteFrom('users').where('id', '=', this.user.id).execute()
 
-        const model = await query.executeTakeFirst()
+    this.user = {}
+  }
 
-        if (!model)
-          throw(`No model results found for ${id} `)
+  // Method to refresh the user instance data from the database
+  async refresh(): Promise<void> {
+    if (this.user.id === undefined) throw new Error('User ID is undefined')
 
-        return new UserModel(model)
-      }
+    const refreshedModel = await db.selectFrom('users').where('id', '=', this.user.id).selectAll().executeTakeFirst()
 
-      static async findMany(ids: number[], fields?: (keyof UserType)[]): Promise<UserModel[]> {
-        let query = db.selectFrom('users').where('id', 'in', ids)
+    if (!refreshedModel) throw new Error('User not found')
 
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
+    this.user = refreshedModel
+  }
 
-        const model = await query.execute()
+  async post() {
+    if (this.user.id === undefined) throw new Error('Relation Error!')
 
-        return model.map(modelItem => new UserModel(modelItem))
-      }
+    const model = await db.selectFrom('posts').where('user_id', '=', this.user.id).selectAll().executeTakeFirst()
 
-      // Method to get a user by criteria
-      static async get(criteria: Partial<UserType>, options: QueryOptions = {}): Promise<UserModel[]> {
-        let query = db.selectFrom('users')
+    if (!model) throw new Error('Model Relation Not Found!')
 
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
+    return new Post.modelInstance(model)
+  }
 
-        // Apply limit and offset from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
+  async subscriber() {
+    if (this.user.id === undefined) throw new Error('Relation Error!')
 
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
+    const model = await db.selectFrom('subscribers').where('user_id', '=', this.user.id).selectAll().executeTakeFirst()
 
-        const model = await query.selectAll().execute()
-        return model.map(modelItem => new UserModel(modelItem))
-      }
+    if (!model) throw new Error('Model Relation Not Found!')
 
-      // Method to get all users
-      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
-        const totalRecordsResult = await db.selectFrom('users')
-          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-          .executeTakeFirst()
+    return new Subscriber.modelInstance(model)
+  }
 
-        const totalRecords = Number(totalRecordsResult?.total) || 0
-        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+  async deployments() {
+    if (this.user.id === undefined) throw new Error('Relation Error!')
 
-        const usersWithExtra = await db.selectFrom('users')
-          .selectAll()
-          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-          .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page - 1) * (options.limit ?? 10))
-          .execute()
+    const results = await db.selectFrom('deployments').where('user_id', '=', this.user.id).selectAll().execute()
 
-        let nextCursor = null
-        if (usersWithExtra.length > (options.limit ?? 10))
-          nextCursor = usersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    return results
+  }
 
-        return {
-          data: usersWithExtra,
-          paging: {
-            total_records: totalRecords,
-            page: options.page,
-            total_pages: totalPages,
-          },
-          next_cursor: nextCursor,
-        }
-      }
+  toJSON() {
+    const output: Partial<UserType> = { ...this.user }
 
-      // Method to create a new user
-      static async create(newUser: NewUser): Promise<UserModel> {
-        const result = await db.insertInto('users')
-          .values(newUser)
-          .executeTakeFirstOrThrow()
+    this.hidden.forEach((attr) => {
+      if (attr in output) delete output[attr as keyof Partial<UserType>]
+    })
 
-        return await find(Number(result.insertId)) as UserModel
-      }
-
-      // Method to remove a user
-      static async remove(id: number): Promise<UserModel> {
-        const model = await db.deleteFrom('users')
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new UserModel(model)
-      }
-
-      async where(column: string, operator = '=', value: any): Promise<UserType[]> {
-        let query = db.selectFrom('users')
-
-        query = query.where(column, operator, value)
-
-        return await query.selectAll().execute()
-      }
-
-      async whereIs(criteria: Partial<UserType>, options: QueryOptions = {}) {
-        let query = db.selectFrom('users')
-
-        // Existing criteria checks
-        if (criteria.id)
-          query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-        if (criteria.email)
-          query = query.where('email', '=', criteria.email)
-
-        if (criteria.name !== undefined) {
-          query = query.where(
-            'name',
-            criteria.name === null ? 'is' : '=',
-            criteria.name,
-          )
-        }
-
-        if (criteria.password)
-          query = query.where('password', '=', criteria.password)
-
-        if (criteria.created_at)
-          query = query.where('created_at', '=', criteria.created_at)
-
-        if (criteria.updated_at)
-          query = query.where('updated_at', '=', criteria.updated_at)
-
-        if (criteria.deleted_at)
-          query = query.where('deleted_at', '=', criteria.deleted_at)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
-      }
-
-      async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}): Promise<UserType[]> {
-        let query = db.selectFrom('users')
-
-        query = query.where(column, 'in', values)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
-      }
-
-      async first(): Promise<UserType> {
-        return await db.selectFrom('users')
-          .selectAll()
-          .executeTakeFirst()
-      }
-
-      async last(): Promise<UserType> {
-        return await db.selectFrom('users')
-          .selectAll()
-          .orderBy('id', 'desc')
-          .executeTakeFirst()
-      }
-
-      async orderBy(column: keyof UserType, order: 'asc' | 'desc'): Promise<UserType[]> {
-        return await db.selectFrom('users')
-          .selectAll()
-          .orderBy(column, order)
-          .execute()
-      }
-
-      async orderByDesc(column: keyof UserType): Promise<UserType[]> {
-        return await db.selectFrom('users')
-          .selectAll()
-          .orderBy(column, 'desc')
-          .execute()
-      }
-
-      async orderByAsc(column: keyof UserType): Promise<UserType[]> {
-        return await db.selectFrom('users')
-          .selectAll()
-          .orderBy(column, 'asc')
-          .execute()
-      }
-
-      // Method to get the user instance itself
-      self(): UserModel {
-        return this
-      }
-
-      // Method to get the user instance data
-      get() {
-        return this.user
-      }
-
-      // Method to update the user instance
-      async update(user: UserUpdate): Promise<Result<UserType, Error>> {
-        if (this.user.id === undefined)
-          return err(handleError('User ID is undefined'))
-
-        const updatedModel = await db.updateTable('users')
-          .set(user)
-          .where('id', '=', this.user.id)
-          .executeTakeFirst()
-
-        if (!updatedModel)
-          return err(handleError('User not found'))
-
-        return ok(updatedModel)
-      }
-
-      // Method to save (insert or update) the user instance
-      async save(): Promise<void> {
-        if (!this.user)
-          throw new Error('User data is undefined')
-
-        if (this.user.id === undefined) {
-          // Insert new user
-          const newModel = await db.insertInto('users')
-            .values(this.user as NewUser)
-            .executeTakeFirstOrThrow()
-        }
-        else {
-          // Update existing user
-          await this.update(this.user)
-        }
-      }
-
-      // Method to delete the user instance
-      async delete(): Promise<void> {
-        if (this.user.id === undefined)
-          throw new Error('User ID is undefined')
+    type User = Omit<UserType, 'password'>
 
-        await db.deleteFrom('users')
-          .where('id', '=', this.user.id)
-          .execute()
+    return output as User
+  }
+}
 
-        this.user = {}
-      }
+const Model = UserModel
 
-      // Method to refresh the user instance data from the database
-      async refresh(): Promise<void> {
-        if (this.user.id === undefined)
-          throw new Error('User ID is undefined')
+// starting here, ORM functions
+export async function find(id: number, fields?: (keyof UserType)[]) {
+  let query = db.selectFrom('users').where('id', '=', id)
 
-        const refreshedModel = await db.selectFrom('users')
-          .where('id', '=', this.user.id)
-          .selectAll()
-          .executeTakeFirst()
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
 
-        if (!refreshedModel)
-          throw new Error('User not found')
+  const model = await query.executeTakeFirst()
 
-        this.user = refreshedModel
-      }
+  if (!model) return null
 
-      
-      async post() {
-        if (this.user.id === undefined)
-          throw new Error('Relation Error!')
+  return new UserModel(model)
+}
 
-        const model = await db.selectFrom('posts')
-        .where('user_id', '=', this.user.id)
-        .selectAll()
-        .executeTakeFirst()
+export async function findOrFail(id: number, fields?: (keyof UserType)[]) {
+  let query = db.selectFrom('users').where('id', '=', id)
 
-        if (! model)
-          throw new Error('Model Relation Not Found!')
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
 
-        return new Post.modelInstance(model)
-      }
+  const model = await query.executeTakeFirst()
 
+  if (!model) throw `No model results found for ${id} `
 
-      async subscriber() {
-        if (this.user.id === undefined)
-          throw new Error('Relation Error!')
+  return new UserModel(model)
+}
 
-        const model = await db.selectFrom('subscribers')
-        .where('user_id', '=', this.user.id)
-        .selectAll()
-        .executeTakeFirst()
+export async function findMany(ids: number[], fields?: (keyof UserType)[]) {
+  let query = db.selectFrom('users').where('id', 'in', ids)
 
-        if (! model)
-          throw new Error('Model Relation Not Found!')
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
 
-        return new Subscriber.modelInstance(model)
-      }
+  const model = await query.execute()
 
+  return model.map((modelItem) => new UserModel(modelItem))
+}
 
-      async deployments() {
-        if (this.user.id === undefined)
-          throw new Error('Relation Error!')
+export async function count(): Number {
+  const results = await db.selectFrom('users').selectAll().execute()
 
-        const results = await db.selectFrom('deployments')
-          .where('user_id', '=', this.user.id)
-          .selectAll()
-          .execute()
+  return results.length
+}
 
-          return results
-      }
+export async function get(
+  criteria: Partial<UserType>,
+  sort: { column: keyof UserType; order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' },
+) {
+  let query = db.selectFrom('users')
 
+  if (criteria.id) query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
 
+  if (criteria.email) query = query.where('email', '=', criteria.email)
 
-      toJSON() {
-        const output: Partial<UserType> = { ...this.user }
+  if (criteria.name !== undefined) {
+    query = query.where('name', criteria.name === null ? 'is' : '=', criteria.name)
+  }
 
-        this.hidden.forEach((attr) => {
-          if (attr in output)
-            delete output[attr as keyof Partial<UserType>]
-        })
+  if (criteria.password) query = query.where('password', '=', criteria.password)
 
-        type User = Omit<UserType, 'password'>
+  if (criteria.created_at) query = query.where('created_at', '=', criteria.created_at)
 
-        return output as User
-      }
-    }
+  if (criteria.updated_at) query = query.where('updated_at', '=', criteria.updated_at)
 
-    const Model = UserModel
+  if (criteria.deleted_at) query = query.where('deleted_at', '=', criteria.deleted_at)
 
-    // starting here, ORM functions
-    export async function find(id: number, fields?: (keyof UserType)[]) {
-      let query = db.selectFrom('users').where('id', '=', id)
+  // Apply sorting based on the 'sort' parameter
+  query = query.orderBy(sort.column, sort.order)
 
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
+  return await query.selectAll().execute()
+}
 
-      const model = await query.executeTakeFirst()
+export async function all(limit = 10, offset = 0): Promise<UserType[]> {
+  return await db.selectFrom('users').selectAll().orderBy('created_at', 'desc').limit(limit).offset(offset).execute()
+}
 
-      if (!model)
-        return null
+export async function create(newUser: NewUser): Promise<UserModel> {
+  const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
 
-      return new UserModel(model)
-    }
+  return await find(Number(result.insertId))
+}
 
-    export async function findOrFail(id: number, fields?: (keyof UserType)[]) {
-      let query = db.selectFrom('users').where('id', '=', id)
+export async function first(): Promise<UserModel> {
+  return await db.selectFrom('users').selectAll().executeTakeFirst()
+}
 
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
+export async function recent(limit: number): Promise<UserModel[]> {
+  return await db.selectFrom('users').selectAll().limit(limit).execute()
+}
 
-      const model = await query.executeTakeFirst()
-
-      if (!model)
-        throw(`No model results found for ${id} `)
+export async function last(limit: number): Promise<UserType> {
+  return await db.selectFrom('users').selectAll().orderBy('id', 'desc').limit(limit).execute()
+}
 
-      return new UserModel(model)
-    }
-
-    export async function findMany(ids: number[], fields?: (keyof UserType)[]) {
-      let query = db.selectFrom('users').where('id', 'in', ids)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.execute()
-
-      return model.map(modelItem => new UserModel(modelItem))
-    }
+export async function update(id: number, userUpdate: UserUpdate) {
+  return await db.updateTable('users').set(userUpdate).where('id', '=', id).execute()
+}
 
-    export async function count(): Number {
-      const results = await db.selectFrom('users')
-        .selectAll()
-        .execute()
-
-      return results.length
-    }
-
-    export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
-      let query = db.selectFrom('users')
-
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
-
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
-
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
-
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
-
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
-
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
-
-      // Apply sorting based on the 'sort' parameter
-      query = query.orderBy(sort.column, sort.order)
+export async function remove(id: number) {
+  return await db.deleteFrom('users').where('id', '=', id).executeTakeFirst()
+}
 
-      return await query.selectAll().execute()
-    }
-
-    export async function all(limit: number = 10, offset: number = 0): Promise<UserType[]> {
-      return await db.selectFrom('users')
-        .selectAll()
-        .orderBy('created_at', 'desc')
-        .limit(limit)
-        .offset(offset)
-        .execute()
-    }
+export async function where(column: string, operator = '=', value: any) {
+  let query = db.selectFrom('users')
 
-    export async function create(newUser: NewUser): Promise<UserModel> {
-      const result = await db.insertInto('users')
-      .values(newUser)
-      .executeTakeFirstOrThrow()
-
-      return await find(Number(result.insertId))
-    }
+  query = query.where(column, operator, value)
 
-    export async function first(): Promise<UserModel> {
-     return await db.selectFrom('users')
-        .selectAll()
-        .executeTakeFirst()
-    }
-
-    export async function recent(limit: number): Promise<UserModel[]> {
-      return await db.selectFrom('users')
-         .selectAll()
-         .limit(limit)
-         .execute()
-     }
+  return await query.selectAll().execute()
+}
 
-     export async function last(limit: number): Promise<UserType> {
-      return await db.selectFrom('users')
-         .selectAll()
-         .orderBy('id', 'desc')
-         .limit(limit)
-         .execute()
-     }
-
-    export async function update(id: number, userUpdate: UserUpdate) {
-      return await db.updateTable('users')
-        .set(userUpdate)
-        .where('id', '=', id)
-        .execute()
-    }
-
-    export async function remove(id: number) {
-      return await db.deleteFrom('users')
-        .where('id', '=', id)
-        .executeTakeFirst()
-    }
-
-    export async function where(column: string, operator = '=', value: any) {
-      let query = db.selectFrom('users')
-
-      query = query.where(column, operator, value)
-
-      return await query.selectAll().execute()
-    }
-
-    export async function whereIs(
-      criteria: Partial<UserType>,
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('users')
-
-      // Apply criteria
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id)
-
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
-
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
-
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
-
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
-
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
-
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
-
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
-
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
-
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
-
-      return await query.selectAll().execute()
-    }
-
-    export async function whereIn(
-      column: keyof UserType,
-      values: any[],
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('users')
-
-      query = query.where(column, 'in', values)
-
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
-
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
-
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
-
-      return await query.selectAll().execute()
-    }
-
-    export const User = {
-      find,
-      findOrFail,
-      findMany,
-      get,
-      count,
-      all,
-      create,
-      update,
-      remove,
-      Model,
-      first,
-      last,
-      recent,
-      where,
-      whereIn,
-      model: UserModel
-    }
-
-    export default User
-    
+export async function whereIs(criteria: Partial<UserType>, options: QueryOptions = {}) {
+  let query = db.selectFrom('users')
+
+  // Apply criteria
+  if (criteria.id) query = query.where('id', '=', criteria.id)
+
+  if (criteria.email) query = query.where('email', '=', criteria.email)
+
+  if (criteria.name !== undefined) {
+    query = query.where('name', criteria.name === null ? 'is' : '=', criteria.name)
+  }
+
+  if (criteria.password) query = query.where('password', '=', criteria.password)
+
+  if (criteria.created_at) query = query.where('created_at', '=', criteria.created_at)
+
+  if (criteria.updated_at) query = query.where('updated_at', '=', criteria.updated_at)
+
+  if (criteria.deleted_at) query = query.where('deleted_at', '=', criteria.deleted_at)
+
+  // Apply sorting from options
+  if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+  // Apply pagination from options
+  if (options.limit !== undefined) query = query.limit(options.limit)
+
+  if (options.offset !== undefined) query = query.offset(options.offset)
+
+  return await query.selectAll().execute()
+}
+
+export async function whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}) {
+  let query = db.selectFrom('users')
+
+  query = query.where(column, 'in', values)
+
+  // Apply sorting from options
+  if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+  // Apply pagination from options
+  if (options.limit !== undefined) query = query.limit(options.limit)
+
+  if (options.offset !== undefined) query = query.offset(options.offset)
+
+  return await query.selectAll().execute()
+}
+
+export const User = {
+  find,
+  findOrFail,
+  findMany,
+  get,
+  count,
+  all,
+  create,
+  update,
+  remove,
+  Model,
+  first,
+  last,
+  recent,
+  where,
+  whereIn,
+  model: UserModel,
+}
+
+export default User

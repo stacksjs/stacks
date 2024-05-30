@@ -8,14 +8,16 @@ export default new Action({
   method: 'POST',
 
   validations: {
-    'default': {
+    default: {
       rule: schema.enum(['meta.llama2-70b-chat-v1', 'meta.llama2-70b-chat-v2']),
-      message: '`default` must refer to a valid AI model. Choose from `meta.llama2-70b-chat-v1` or `meta.llama2-70b-chat-v2`.',
+      message:
+        '`default` must refer to a valid AI model. Choose from `meta.llama2-70b-chat-v1` or `meta.llama2-70b-chat-v2`.',
     },
 
     models: {
       rule: schema.enum(['meta.llama2-70b-chat-v1', 'meta.llama2-70b-chat-v2']),
-      message: '`models` must refer to a valid AI model. Choose from `meta.llama2-70b-chat-v1` or `meta.llama2-70b-chat-v2`.',
+      message:
+        '`models` must refer to a valid AI model. Choose from `meta.llama2-70b-chat-v1` or `meta.llama2-70b-chat-v2`.',
     },
   },
 

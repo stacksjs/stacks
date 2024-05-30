@@ -94,7 +94,8 @@ export class Router implements RouterInterface {
 
   public async action(path: ActionPath | Route['path']): Promise<this> {
     // check if action is a file anywhere in ./app/Actions/**/*.ts
-    if (path?.endsWith('.ts')) { // given it ends with .ts, we treat it as an Actions path
+    if (path?.endsWith('.ts')) {
+      // given it ends with .ts, we treat it as an Actions path
       const action = (await import(p.userActionsPath(path))).default as Action
       path = action.path ?? kebabCase(path as string)
       return this.addRoute(action.method ?? 'GET', path, action.handle, 200)
@@ -232,7 +233,6 @@ export class Router implements RouterInterface {
     return this.routes
   }
 
-
   private setGroupPrefix(prefix: string, options: RouteGroupOptions = {}) {
     if (prefix !== '') {
       prefix = `/${this.groupPrefix}/${prefix}`.replace(/\/\//g, '/') // remove double slashes in case there are any
@@ -304,8 +304,7 @@ export class Router implements RouterInterface {
     // if succeeds, run the handle
     // if fails, return validation error
 
-    if (condition)
-      return await actionModule.default.handle()
+    if (condition) return await actionModule.default.handle()
 
     return await actionModule.default.handle(request)
   }

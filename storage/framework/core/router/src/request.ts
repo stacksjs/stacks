@@ -1,4 +1,4 @@
-import { RouteParam } from "@stacksjs/types"
+import type { RouteParam } from '@stacksjs/types'
 
 interface RequestData {
   [key: string]: string

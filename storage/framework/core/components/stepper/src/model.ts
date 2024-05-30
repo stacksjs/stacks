@@ -1,6 +1,6 @@
 class Model {
   id?: number
-  value: number = 1
+  value = 1
   queries: Object = {}
 
   constructor() {
