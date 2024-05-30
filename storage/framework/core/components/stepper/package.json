@@ -26,11 +26,11 @@
   ],
   "exports": {
     ".": {
-      "types": "./lib/stacks-stepper.d.ts",
-      "import": "./lib/stacks-stepper.js"
+      "types": "./dist/stacks-stepper.d.ts",
+      "import": "./dist/stacks-stepper.js"
     },
     "./*": {
-      "import": "./lib/*"
+      "import": "./dist/*"
     }
   },
   "contributors": [
