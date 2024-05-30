@@ -248,7 +248,15 @@ const sidebar = {
           collapsed: true,
           items: [
             { text: 'Authentication', link: '/guide/auth' },
-            { text: 'Cache', link: '/packages/cache' },
+            {
+              text: 'Cache',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Drivers', link: '/guide/cache/drivers' },
+                { text: 'Build a Custom Driver', link: '/guide/cache/build-custom-driver' },
+              ],
+            },
             { text: 'Database', link: '/packages/database' },
             { text: 'Error Handling', link: '/packages/error-handling' },
             { text: 'Events', link: '/packages/events' },
@@ -272,8 +280,24 @@ const sidebar = {
             { text: 'Realtime', link: '/packages/realtime' },
             { text: 'Router', link: '/packages/router' },
             { text: 'Scheduler', link: '/packages/scheduler' },
-            { text: 'Search Engine', link: '/packages/search-engine' },
-            { text: 'Storage', link: '/packages/storage' },
+            {
+              text: 'Search Engine',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Drivers', link: '/guide/search-engine/drivers' },
+                { text: 'Build a Custom Driver', link: '/guide/search-engine/build-custom-driver' },
+              ],
+            },
+            {
+              text: 'Storage',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Drivers', link: '/guide/storage/drivers' },
+                { text: 'Build a Custom Driver', link: '/guide/storage/build-custom-driver' },
+              ],
+            },
             { text: 'Validation', link: '/packages/validation' },
           ],
         },
