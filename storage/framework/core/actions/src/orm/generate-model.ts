@@ -100,6 +100,35 @@ async function writeModelNames() {
   }
 }
 
+async function writeModelRequests() {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
+
+    const modeFileElement = modelFiles[i] as string
+
+    const model = (await import(modeFileElement)).default as Model
+
+    const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${model.name}Request.ts`))
+
+    fileString += `export interface ${model.name}RequestType extends RequestInstance{
+      validate(params: any): void
+    }\n\n`
+    
+    fileString += `export class ${model.name}Request extends Request implements ${model.name}RequestType  {
+      
+      public validate(params: any): void {
+        validateField('${model.name}', this.all())
+      }
+    }`
+
+    const writer = requestFile.writer()
+
+    writer.write(fileString)
+  }
+}
+
 async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
@@ -205,6 +234,7 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
   await writeModelNames()
+  await writeModelRequests()
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 

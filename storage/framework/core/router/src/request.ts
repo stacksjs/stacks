@@ -1,4 +1,4 @@
-import type { RouteParam } from '@stacksjs/types'
+import type { RequestInstance, RouteParam } from "@stacksjs/types"
 
 interface RequestData {
   [key: string]: string
@@ -6,7 +6,7 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string } | null
 
-export class Request {
+export class Request implements RequestInstance{
   private static instance: Request
   private query: RequestData = {}
   private params: RouteParams = null
@@ -62,6 +62,6 @@ export class Request {
     const value = this.params ? this.params[key] || null : null
     return value ? Number.parseInt(value) : null
   }
-}
+} 
 
 export const request = new Request()
