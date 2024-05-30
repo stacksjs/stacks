@@ -838,7 +838,20 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return new ${modelName}Model(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<${modelName}Type[]> {
+      async where(...args: (string | number)[]): Promise<${modelName}Type[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, operator, value)
@@ -891,6 +904,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       }
 
       async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}): Promise<${modelName}Type[]> {
+
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, 'in', values)
