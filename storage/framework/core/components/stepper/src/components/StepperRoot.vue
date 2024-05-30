@@ -1,14 +1,13 @@
 <script lang="ts" setup>
-import { defineOptions, onMounted } from 'vue';
+import { defineOptions, onMounted } from 'vue'
 
 defineOptions({
   name: 'StepperRoot',
 })
 
 onMounted(() => {
-  console.log('Stepped Root Mounted');
+  console.log('Stepped Root Mounted')
 })
-
 </script>
 
 <template>

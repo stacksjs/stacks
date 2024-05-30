@@ -178,7 +178,20 @@ import Deployment from './Deployment'
         return new UserModel(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<UserType[]> {
+      async where(...args: (string | number)[]): Promise<UserType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('users')
 
         query = query.where(column, operator, value)
@@ -231,6 +244,7 @@ import Deployment from './Deployment'
       }
 
       async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}): Promise<UserType[]> {
+
         let query = db.selectFrom('users')
 
         query = query.where(column, 'in', values)

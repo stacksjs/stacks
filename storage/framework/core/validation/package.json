@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/validation",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "The Stacks Validation ways.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,13 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["vinejs", "validation", "utilities", "functions", "stacks"],
+  "keywords": [
+    "vinejs",
+    "validation",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -28,8 +34,14 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

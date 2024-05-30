@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/objects",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "The Stacks objects.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,12 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["objects", "utilities", "functions", "stacks"],
+  "keywords": [
+    "objects",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -28,8 +33,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

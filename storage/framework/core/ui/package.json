@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,15 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["css", "atomic", "ui", "engine", "styles", "stacks", "unocss"],
+  "keywords": [
+    "css",
+    "atomic",
+    "ui",
+    "engine",
+    "styles",
+    "stacks",
+    "unocss"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -36,8 +44,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -59,7 +73,7 @@
     "@iconify-json/heroicons": "^1.1.21",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.213",
+    "@iconify/json": "^2.2.215",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",

@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onBeforeUnmount, defineProps, defineEmits, useSlots, defineOptions, withDefaults, defineExpose  } from 'vue'
+import {
+  computed,
+  defineEmits,
+  defineExpose,
+  defineOptions,
+  defineProps,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useSlots,
+  watch,
+  withDefaults,
+} from 'vue'
 import type { StepperProps, OptionParams } from '../types'
-import Step from './Step.vue';
+import Step from './Step.vue'
 
 defineOptions({
   name: 'Stepper',
-  inheritAttrs: false
+  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<StepperProps>(), {
@@ -80,20 +92,20 @@ function getSlotName(suffix = '', displayIndex: string, options: Partial<OptionP
 }
 
 function withSlot(name: string) {
-  return !withoutSlot(name);
+  return !withoutSlot(name)
 }
 
 function withoutSlot(name: string): boolean {
-  const noSlot = !slots[name] || (slots[name] && !slots[name].length);
-  const noScopedSlot = slots.noScopedSlot && !slots.noScopedSlot[name];
-  return noSlot && noScopedSlot;
+  const noSlot = !slots[name] || (slots[name] && !slots[name].length)
+  const noScopedSlot = slots.noScopedSlot && !slots.noScopedSlot[name]
+  return noSlot && noScopedSlot
 }
 
 function toValue(index: number) {
   return index + 1
 }
 
-function toIndex(value: number = 0) {
+function toIndex(value = 0) {
   return value - 1
 }
 
@@ -183,9 +195,8 @@ function emitValue(value: number) {
 defineExpose({
   next,
   previous,
-  reset
+  reset,
 })
-
 </script>
 <template>
   <div class="flex w-full select-none box-border justify-between ">

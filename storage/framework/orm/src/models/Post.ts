@@ -171,7 +171,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<PostType[]> {
+      async where(...args: (string | number)[]): Promise<PostType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('posts')
 
         query = query.where(column, operator, value)
@@ -224,6 +237,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       async whereIn(column: keyof PostType, values: any[], options: QueryOptions = {}): Promise<PostType[]> {
+
         let query = db.selectFrom('posts')
 
         query = query.where(column, 'in', values)

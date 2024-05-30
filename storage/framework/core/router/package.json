@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/router",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,13 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["router", "stacks", "framework", "typescript", "javascript"],
+  "keywords": [
+    "router",
+    "stacks",
+    "framework",
+    "typescript",
+    "javascript"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -28,8 +34,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -37,13 +49,13 @@
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.8.8",
+    "unplugin-vue-router": "^0.9.0",
     "vue-router": "^4.3.2"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "unplugin-vue-router": "^0.8.8",
+    "unplugin-vue-router": "^0.9.0",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {

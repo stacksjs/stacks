@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dropdown",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "A dropdown component for all.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -12,7 +12,9 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/dropdown"
   },
-  "sideEffects": ["**/*.css"],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "types": "./lib/stacks-dropdown.d.ts",
@@ -24,8 +26,15 @@
   },
   "module": "dist/stacks-dropdown.js",
   "types": "dist/stacks-dropdown.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "lib", "src", "volar.d.ts"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "lib",
+    "src",
+    "volar.d.ts"
+  ],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",
@@ -40,7 +49,7 @@
     "vue-sonner": "^1.1.2"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.44.0",
+    "@microsoft/api-extractor": "^7.46.2",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",

@@ -168,7 +168,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new SubscriberModel(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<SubscriberType[]> {
+      async where(...args: (string | number)[]): Promise<SubscriberType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('subscribers')
 
         query = query.where(column, operator, value)
@@ -221,6 +234,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       async whereIn(column: keyof SubscriberType, values: any[], options: QueryOptions = {}): Promise<SubscriberType[]> {
+
         let query = db.selectFrom('subscribers')
 
         query = query.where(column, 'in', values)

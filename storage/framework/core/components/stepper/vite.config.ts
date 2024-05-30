@@ -9,16 +9,13 @@ import Components from 'unplugin-vue-components/vite'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 
-const cleanCssInstance = new CleanCSS({})
 function minify(code: string) {
+  const cleanCssInstance = new CleanCSS({})
   return cleanCssInstance.minify(code).styles
 }
 
-let cssCodeStr = ''
-
 export default defineConfig(({ command, mode }) => {
   const userConfig: UserConfig = {}
-
   const commonPlugins = [
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
@@ -35,18 +32,22 @@ export default defineConfig(({ command, mode }) => {
     }),
     Icons(),
   ]
+  let cssCodeStr = ''
+
 
   if (mode === 'lib') {
     userConfig.build = {
       lib: {
-        entry: resolve(__dirname, 'packages/index.ts'),
+        entry: resolve(__dirname, 'src/index.ts'),
         name: 'StacksStepper',
         fileName: 'stacks-stepper',
       },
-      outDir: 'lib',
-      emptyOutDir: true,
+
+      outDir: 'dist',
+      emptyOutDir: false,
       cssCodeSplit: false,
       sourcemap: true,
+
       rollupOptions: {
         external: ['vue'],
         output: [
@@ -62,6 +63,7 @@ export default defineConfig(({ command, mode }) => {
         ],
       },
     }
+
     userConfig.plugins = [
       ...commonPlugins,
       {
@@ -77,6 +79,7 @@ export default defineConfig(({ command, mode }) => {
             map: { mappings: '' },
           }
         },
+
         renderChunk(code, { isEntry }) {
           if (!isEntry) return
 
@@ -103,6 +106,7 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias,
     },
+
     plugins: [...commonPlugins],
     ...userConfig,
   }

@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { computed, defineProps, defineEmits, useSlots, defineOptions, onMounted  } from 'vue'
+import { computed, defineEmits, defineOptions, defineProps, onMounted, useSlots } from 'vue'
 
 defineOptions({
   name: 'Step',
@@ -19,13 +19,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const emit = defineEmits<{
-  (e: 'change', index: number): void
-}>()
+const emit = defineEmits<(e: 'change', index: number) => void>()
 
-onMounted(() => {
-
-})
+onMounted(() => {})
 
 const namespace = { kebab: 'step', capitalize: 'Step' }
 
@@ -35,19 +31,19 @@ const computedName = computed(() => props.name || id.value)
 
 const slots = useSlots()
 
-const defaultSlot = computed(() => slots.default ? slots.default() : undefined)
+const defaultSlot = computed(() => (slots.default ? slots.default() : undefined))
 
 const flags = computed(() => ({
   isActive: props.active,
   isVisited: props.visited,
-  isDisabled: props.disabled
+  isDisabled: props.disabled,
 }))
 
 const scope = computed(() => ({
   index: props.index,
   displayIndex: displayIndex.value,
   defaultSlot: defaultSlot.value,
-  flags: flags.value
+  flags: flags.value,
 }))
 
 const classes = computed(() => ({

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dns",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,8 +37,14 @@
       "import": "./dist/*"
     }
   },
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -52,7 +58,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.143.0"
+    "aws-cdk-lib": "^2.143.1"
   },
   "dependencies": {
     "@aws-sdk/client-route-53": "^3.583.0",
@@ -62,10 +68,10 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.143.0"
+    "aws-cdk-lib": "^2.143.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.143.0"
+    "aws-cdk-lib": "^2.143.1"
   }
 }

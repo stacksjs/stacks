@@ -176,7 +176,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new DeploymentModel(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<DeploymentType[]> {
+      async where(...args: (string | number)[]): Promise<DeploymentType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('deployments')
 
         query = query.where(column, operator, value)
@@ -229,6 +242,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       async whereIn(column: keyof DeploymentType, values: any[], options: QueryOptions = {}): Promise<DeploymentType[]> {
+
         let query = db.selectFrom('deployments')
 
         query = query.where(column, 'in', values)

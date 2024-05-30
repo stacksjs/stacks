@@ -1,19 +1,19 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { Stepper } from '.';
+import { Stepper } from '.'
 
-let step = ref(1);
-let steps = ref(5);
-const stepperRef = ref(null);
+const step = ref(1)
+const steps = ref(5)
+const stepperRef = ref(null)
 
 const next = () => {
-  if(stepperRef.value) {
+  if (stepperRef.value) {
     stepperRef.value.next()
   }
 }
 
 const reset = () => {
-  if(stepperRef.value) {
+  if (stepperRef.value) {
     stepperRef.value.reset()
   }
 }

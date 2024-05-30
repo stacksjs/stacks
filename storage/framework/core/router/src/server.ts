@@ -13,7 +13,6 @@ interface ServeOptions {
   timezone?: string
 }
 
-
 interface Options {
   statusCode?: StatusCode
 }
@@ -56,11 +55,13 @@ export async function serverResponse(req: Request) {
 
   log.info(`URL: ${JSON.stringify(url)}`)
 
-  const foundRoute: Route | undefined = routesList.filter((route: Route) => {
-    const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
+  const foundRoute: Route | undefined = routesList
+    .filter((route: Route) => {
+      const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
 
-    return pattern.test(url.pathname)
-  }).find((route: Route) =>  route.method ===  req.method)
+      return pattern.test(url.pathname)
+    })
+    .find((route: Route) => route.method === req.method)
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
   // if (url.pathname === '/favicon.ico')
@@ -68,7 +69,7 @@ export async function serverResponse(req: Request) {
 
   if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
 
-  const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname);
+  const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname)
 
   addRouteQuery(url)
   addRouteParam(routeParams)
@@ -79,21 +80,21 @@ export async function serverResponse(req: Request) {
 }
 
 function extractDynamicSegments(routePattern: string, path: string): RouteParam {
-  const regexPattern = new RegExp(`^${routePattern.replace(/\{(\w+)\}/g, '(\\w+)')}$`);
-  const match = path.match(regexPattern);
+  const regexPattern = new RegExp(`^${routePattern.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
+  const match = path.match(regexPattern)
 
   if (!match) {
-    return null;
+    return null
   }
-  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1]);
-  const dynamicSegmentValues = match.slice(1); // First match is the whole string, so we slice it off
+  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map((m) => m[1])
+  const dynamicSegmentValues = match.slice(1) // First match is the whole string, so we slice it off
 
-  const dynamicSegments: { [key: string]: string } = {};
+  const dynamicSegments: { [key: string]: string } = {}
   dynamicSegmentNames.forEach((name, index) => {
-    dynamicSegments[name] = dynamicSegmentValues[index];
-  });
+    dynamicSegments[name] = dynamicSegmentValues[index]
+  })
 
-  return dynamicSegments;
+  return dynamicSegments
 }
 
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
@@ -127,7 +128,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
-    
+
     return await new Response(JSON.stringify(result))
   }
 

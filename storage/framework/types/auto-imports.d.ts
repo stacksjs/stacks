@@ -70,6 +70,7 @@ declare global {
   const Schedule: typeof import('../core/scheduler/src/schedule')['Schedule']
   const ScheduleImpl: typeof import('../core/scheduler/src/index')['ScheduleImpl']
   const Schema: typeof import('../core/database/src/schema')['Schema']
+  const SimpleMessagesProvider: typeof import('../core/validation/src/schema')['SimpleMessagesProvider']
   const SocialLinkIcon: typeof import('../core/types/src/docs')['SocialLinkIcon']
   const StacksError: typeof import('../core/error-handling/src/handler')['StacksError']
   const Store: typeof import('../core/ui/src/index')['Store']
@@ -93,6 +94,7 @@ declare global {
   const VineBoolean: typeof import('../core/validation/src/schema')['VineBoolean']
   const VineDate: typeof import('../core/validation/src/schema')['VineDate']
   const VineEnum: typeof import('../core/validation/src/schema')['VineEnum']
+  const VineError: typeof import('../core/validation/src/schema')['VineError']
   const VineNumber: typeof import('../core/validation/src/schema')['VineNumber']
   const VineString: typeof import('../core/validation/src/schema')['VineString']
   const _dirname: typeof import('../core/storage/src/helpers')['_dirname']
@@ -382,6 +384,7 @@ declare global {
   const getCurrentMigrationFields: typeof import('../core/database/src/migrations')['getCurrentMigrationFields']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getDialect: typeof import('../core/database/src/utils')['getDialect']
+  const getErrors: typeof import('../core/validation/src/reporter')['getErrors']
   const getExecutedMigrations: typeof import('../core/database/src/migrations')['getExecutedMigrations']
   const getExportsSize: typeof import('../core/utils/src/export-size')['getExportsSize']
   const getFiles: typeof import('../core/storage/src/files')['getFiles']
@@ -659,6 +662,7 @@ declare global {
   const remove: typeof import('../core/orm/src/generated/User')['remove']
   const renderHeadToString: typeof import('../core/utils/src/vendors')['renderHeadToString']
   const replPath: typeof import('../core/path/src/paths')['replPath']
+  const reportError: typeof import('../core/validation/src/reporter')['reportError']
   const request: typeof import('../core/router/src/request')['request']
   const resetDatabase: typeof import('../core/database/src/migrations')['resetDatabase']
   const resolve: typeof import('../core/path/src/paths')['resolve']
@@ -1008,6 +1012,7 @@ declare global {
   const userViewsPath: typeof import('../core/path/src/paths')['userViewsPath']
   const utilsPath: typeof import('../core/path/src/paths')['utilsPath']
   const validate: typeof import('../core/validation/src/schema')['validate']
+  const validateField: typeof import('../core/validation/src/validator')['validateField']
   const validationPath: typeof import('../core/path/src/paths')['validationPath']
   const validator: typeof import('../core/validation/src/validate')['validator']
   const verifyHash: typeof import('../core/security/src/hash')['verifyHash']
@@ -1099,6 +1104,7 @@ declare module 'vue' {
     readonly Router: UnwrapRef<typeof import('../core/router/src/router')['Router']>
     readonly Schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['Schedule']>
     readonly Schema: UnwrapRef<typeof import('../core/database/src/schema')['Schema']>
+    readonly SimpleMessagesProvider: UnwrapRef<typeof import('../core/validation/src/schema')['SimpleMessagesProvider']>
     readonly SocialLinkIcon: UnwrapRef<typeof import('../core/types/src/docs')['SocialLinkIcon']>
     readonly StacksError: UnwrapRef<typeof import('../core/error-handling/src/handler')['StacksError']>
     readonly Store: UnwrapRef<typeof import('../core/ui/src/index')['Store']>
@@ -1112,6 +1118,7 @@ declare module 'vue' {
     readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/schema')['VineBoolean']>
     readonly VineDate: UnwrapRef<typeof import('../core/validation/src/schema')['VineDate']>
     readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/schema')['VineEnum']>
+    readonly VineError: UnwrapRef<typeof import('../core/validation/src/schema')['VineError']>
     readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/schema')['VineNumber']>
     readonly VineString: UnwrapRef<typeof import('../core/validation/src/schema')['VineString']>
     readonly _dirname: UnwrapRef<typeof import('../core/storage/src/helpers')['_dirname']>
@@ -1377,6 +1384,7 @@ declare module 'vue' {
     readonly getCurrentMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getCurrentMigrationFields']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getDialect: UnwrapRef<typeof import('../core/database/src/utils')['getDialect']>
+    readonly getErrors: UnwrapRef<typeof import('../core/validation/src/reporter')['getErrors']>
     readonly getExecutedMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['getExecutedMigrations']>
     readonly getExportsSize: UnwrapRef<typeof import('../core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
@@ -1643,6 +1651,7 @@ declare module 'vue' {
     readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['relativeActionsPath']>
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
+    readonly reportError: UnwrapRef<typeof import('../core/validation/src/reporter')['reportError']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
     readonly resetDatabase: UnwrapRef<typeof import('../core/database/src/migrations')['resetDatabase']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/paths')['resolve']>
@@ -1972,6 +1981,7 @@ declare module 'vue' {
     readonly userViewsPath: UnwrapRef<typeof import('../core/path/src/paths')['userViewsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/schema')['validate']>
+    readonly validateField: UnwrapRef<typeof import('../core/validation/src/validator')['validateField']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
@@ -2046,6 +2056,7 @@ declare module '@vue/runtime-core' {
     readonly Router: UnwrapRef<typeof import('../core/router/src/router')['Router']>
     readonly Schedule: UnwrapRef<typeof import('../core/scheduler/src/schedule')['Schedule']>
     readonly Schema: UnwrapRef<typeof import('../core/database/src/schema')['Schema']>
+    readonly SimpleMessagesProvider: UnwrapRef<typeof import('../core/validation/src/schema')['SimpleMessagesProvider']>
     readonly SocialLinkIcon: UnwrapRef<typeof import('../core/types/src/docs')['SocialLinkIcon']>
     readonly StacksError: UnwrapRef<typeof import('../core/error-handling/src/handler')['StacksError']>
     readonly Store: UnwrapRef<typeof import('../core/ui/src/index')['Store']>
@@ -2059,6 +2070,7 @@ declare module '@vue/runtime-core' {
     readonly VineBoolean: UnwrapRef<typeof import('../core/validation/src/schema')['VineBoolean']>
     readonly VineDate: UnwrapRef<typeof import('../core/validation/src/schema')['VineDate']>
     readonly VineEnum: UnwrapRef<typeof import('../core/validation/src/schema')['VineEnum']>
+    readonly VineError: UnwrapRef<typeof import('../core/validation/src/schema')['VineError']>
     readonly VineNumber: UnwrapRef<typeof import('../core/validation/src/schema')['VineNumber']>
     readonly VineString: UnwrapRef<typeof import('../core/validation/src/schema')['VineString']>
     readonly _dirname: UnwrapRef<typeof import('../core/storage/src/helpers')['_dirname']>
@@ -2324,6 +2336,7 @@ declare module '@vue/runtime-core' {
     readonly getCurrentMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getCurrentMigrationFields']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getDialect: UnwrapRef<typeof import('../core/database/src/utils')['getDialect']>
+    readonly getErrors: UnwrapRef<typeof import('../core/validation/src/reporter')['getErrors']>
     readonly getExecutedMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['getExecutedMigrations']>
     readonly getExportsSize: UnwrapRef<typeof import('../core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
@@ -2590,6 +2603,7 @@ declare module '@vue/runtime-core' {
     readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/paths')['relativeActionsPath']>
     readonly renderHeadToString: UnwrapRef<typeof import('../core/utils/src/vendors')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/paths')['replPath']>
+    readonly reportError: UnwrapRef<typeof import('../core/validation/src/reporter')['reportError']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
     readonly resetDatabase: UnwrapRef<typeof import('../core/database/src/migrations')['resetDatabase']>
     readonly resolve: UnwrapRef<typeof import('../core/path/src/paths')['resolve']>
@@ -2919,6 +2933,7 @@ declare module '@vue/runtime-core' {
     readonly userViewsPath: UnwrapRef<typeof import('../core/path/src/paths')['userViewsPath']>
     readonly utilsPath: UnwrapRef<typeof import('../core/path/src/paths')['utilsPath']>
     readonly validate: UnwrapRef<typeof import('../core/validation/src/schema')['validate']>
+    readonly validateField: UnwrapRef<typeof import('../core/validation/src/validator')['validateField']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>

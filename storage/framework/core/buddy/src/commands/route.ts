@@ -27,14 +27,13 @@ export function route(buddy: CLI) {
         process.exit()
       }
 
-
       await outro(`Successfully listed routes`)
 
       process.exit(ExitCode.Success)
     })
 
-    buddy.on('route:*', () => {
-      console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-      process.exit(1)
-    })
+  buddy.on('route:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

@@ -177,7 +177,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new TeamModel(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<TeamType[]> {
+      async where(...args: (string | number)[]): Promise<TeamType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('teams')
 
         query = query.where(column, operator, value)
@@ -230,6 +243,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       async whereIn(column: keyof TeamType, values: any[], options: QueryOptions = {}): Promise<TeamType[]> {
+
         let query = db.selectFrom('teams')
 
         query = query.where(column, 'in', values)

@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { listRoutes } from '@stacksjs/router'
 import { log } from '@stacksjs/logging'
+import { listRoutes } from '@stacksjs/router'
 
 // first, reset the database, if it exists
 const result = await listRoutes()

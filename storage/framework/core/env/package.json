@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/env",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.20",
   "description": "Stacks env helper methods.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,8 +15,15 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["env", "utilities", "functions", "stacks"],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "keywords": [
+    "env",
+    "utilities",
+    "functions",
+    "stacks"
+  ],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js"
@@ -26,7 +33,11 @@
       "import": "./dist/*"
     }
   },
-  "files": ["README.md", "dist", "src"],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

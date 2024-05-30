@@ -31,7 +31,7 @@ async function generateApiRoutes(modelFiles: string[]) {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
-    
+
     if (model.traits?.useApi) {
       const apiRoutes = model.traits?.useApi?.routes
       const middlewares = model.traits.useApi?.middleware
@@ -45,25 +45,26 @@ async function generateApiRoutes(modelFiles: string[]) {
             middlewareString += ','
           }
         }
-         
       }
-       
+
       middlewareString += `])`
 
       if (apiRoutes?.length) {
         for (const apiRoute of apiRoutes) {
           await writeOrmActions(apiRoute, model)
-  
-          if (apiRoute === 'index') routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
-  
-          if (apiRoute === 'store') routeString += `await route.post('${model.table}', 'Actions/${model.name}StoreOrmAction')${middlewareString}\n\n`
-        
+
+          if (apiRoute === 'index')
+            routeString += `await route.get('${model.table}', 'Actions/${model.name}IndexOrmAction')${middlewareString}\n\n`
+
+          if (apiRoute === 'store')
+            routeString += `await route.post('${model.table}', 'Actions/${model.name}StoreOrmAction')${middlewareString}\n\n`
+
           if (apiRoute === 'update')
             routeString += `await route.patch('${model.table}/{id}', 'Actions/${model.name}UpdateOrmAction')${middlewareString}\n\n`
-        
+
           if (apiRoute === 'show')
             routeString += `await route.get('${model.table}/{id}', 'Actions/${model.name}ShowOrmAction')${middlewareString}\n\n`
-        
+
           if (apiRoute === 'destroy')
             routeString += `await route.delete('${model.table}/{id}', 'Actions/${model.name}DestroyOrmAction')${middlewareString}\n\n`
         }
@@ -99,6 +100,35 @@ async function writeModelNames() {
   }
 }
 
+async function writeModelRequests() {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
+
+    const modeFileElement = modelFiles[i] as string
+
+    const model = (await import(modeFileElement)).default as Model
+
+    const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${model.name}Request.ts`))
+
+    fileString += `export interface ${model.name}RequestType extends RequestInstance{
+      validate(params: any): void
+    }\n\n`
+    
+    fileString += `export class ${model.name}Request extends Request implements ${model.name}RequestType  {
+      
+      public validate(params: any): void {
+        validateField('${model.name}', this.all())
+      }
+    }`
+
+    const writer = requestFile.writer()
+
+    writer.write(fileString)
+  }
+}
+
 async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   const modelName = model.name
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
@@ -113,8 +143,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
     handleString += `async handle() {
         return await ${modelName}.all()
       },`
-      
-      method = 'GET'
+
+    method = 'GET'
   }
 
   if (apiRoute === 'show') {
@@ -123,8 +153,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return ${modelName}.findOrFail(Number(id))
       },`
-      
-      method = 'GET'
+
+    method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
@@ -137,8 +167,8 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
 
         return 'Model deleted!'
       },`
-      
-      method = 'DELETE'
+
+    method = 'DELETE'
   }
 
   if (apiRoute === 'store') {
@@ -148,7 +178,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
         return model
       },`
 
-      method = 'POST'
+    method = 'POST'
   }
 
   if (apiRoute === 'update') {
@@ -160,7 +190,7 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
         return model.update(request.all())
       },`
 
-      method = 'PATCH'
+    method = 'PATCH'
   }
 
   actionString += `export default new Action({
@@ -204,6 +234,7 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
   await writeModelNames()
+  await writeModelRequests()
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
@@ -807,7 +838,20 @@ async function generateModelString(tableName: string, model: Model, attributes: 
         return new ${modelName}Model(model)
       }
 
-      async where(column: string, operator = '=', value: any): Promise<${modelName}Type[]> {
+      async where(...args: (string | number)[]): Promise<${modelName}Type[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, operator, value)
@@ -860,6 +904,7 @@ async function generateModelString(tableName: string, model: Model, attributes: 
       }
 
       async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}): Promise<${modelName}Type[]> {
+
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, 'in', values)

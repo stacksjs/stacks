@@ -29,11 +29,10 @@ export default {
         message: {
           email: 'Email must be valid',
           required: 'Email is required',
-        }
+        },
       },
 
       factory: () => faker.internet.email(),
     },
   },
-  
 } satisfies Model
