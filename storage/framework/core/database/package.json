@@ -71,7 +71,7 @@
     "kysely-bun-worker": "^0.6.1"
   },
   "optionalDependencies": {
-    "mysql2": "^3.9.7"
+    "mysql2": "^3.9.9"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
@@ -79,6 +79,6 @@
     "debug": "^4.3.4",
     "mkdirp": "^3.0.1",
     "q": "^1.5.1",
-    "tar": "^7.1.0"
+    "tar": "^7.2.0"
   }
 }

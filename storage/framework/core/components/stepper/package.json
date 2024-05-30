@@ -54,7 +54,7 @@
     "vue": "^3.4.27"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.43.7",
+    "@microsoft/api-extractor": "^7.46.2",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",
