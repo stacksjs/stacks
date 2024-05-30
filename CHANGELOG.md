@@ -1,5 +1,50 @@
 # Stacks Changelog
 
+## v0.61.18...v0.61.19
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.18...v0.61.19)
+
+### 🚀 Enhancements
+
+- Adds stepper component ([#972](https://github.com/stacksjs/stacks/pull/972))
+
+### 🏡 Chore
+
+- Wip ([397934c09](https://github.com/stacksjs/stacks/commit/397934c09))
+- Wip ([16c9da365](https://github.com/stacksjs/stacks/commit/16c9da365))
+- Wip ([3379129a4](https://github.com/stacksjs/stacks/commit/3379129a4))
+- Wip ([f33a52974](https://github.com/stacksjs/stacks/commit/f33a52974))
+- Wip ([acf999391](https://github.com/stacksjs/stacks/commit/acf999391))
+- Wip ([77d0c79b5](https://github.com/stacksjs/stacks/commit/77d0c79b5))
+- Wip ([16d92cdd1](https://github.com/stacksjs/stacks/commit/16d92cdd1))
+- Wip ([cf901b9dc](https://github.com/stacksjs/stacks/commit/cf901b9dc))
+- Wip ([2af45853f](https://github.com/stacksjs/stacks/commit/2af45853f))
+- Wip ([93eaf85fe](https://github.com/stacksjs/stacks/commit/93eaf85fe))
+- Wip ([f6c63f06d](https://github.com/stacksjs/stacks/commit/f6c63f06d))
+- Wip ([4dd46cbda](https://github.com/stacksjs/stacks/commit/4dd46cbda))
+- Wip ([0e22d5c33](https://github.com/stacksjs/stacks/commit/0e22d5c33))
+- Wip ([c837db92d](https://github.com/stacksjs/stacks/commit/c837db92d))
+- Wip ([10f41e83c](https://github.com/stacksjs/stacks/commit/10f41e83c))
+- Wip ([8751ddda2](https://github.com/stacksjs/stacks/commit/8751ddda2))
+- Wip ([cbeccde32](https://github.com/stacksjs/stacks/commit/cbeccde32))
+- Wip ([a052ead32](https://github.com/stacksjs/stacks/commit/a052ead32))
+- Wip ([402aa52ce](https://github.com/stacksjs/stacks/commit/402aa52ce))
+- Wip ([affa6eba3](https://github.com/stacksjs/stacks/commit/affa6eba3))
+- Wip ([928842bc9](https://github.com/stacksjs/stacks/commit/928842bc9))
+- Wip ([42ed99f48](https://github.com/stacksjs/stacks/commit/42ed99f48))
+- Wip ([1280a81e2](https://github.com/stacksjs/stacks/commit/1280a81e2))
+- Wip ([c6de8098a](https://github.com/stacksjs/stacks/commit/c6de8098a))
+- Wip ([806eab56c](https://github.com/stacksjs/stacks/commit/806eab56c))
+- Lint ([4bfba8c29](https://github.com/stacksjs/stacks/commit/4bfba8c29))
+- Temp disable ([620a2754a](https://github.com/stacksjs/stacks/commit/620a2754a))
+- Release v0.61.19 ([7615e1bf7](https://github.com/stacksjs/stacks/commit/7615e1bf7))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Glennmichael123 ([@glennmichael123](http://github.com/glennmichael123))
+- Nino Orendain ([@jawogamay](http://github.com/jawogamay))
+
 ## v0.61.17...v0.61.18
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.61.17...v0.61.18)
