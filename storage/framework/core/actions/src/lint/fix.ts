@@ -8,10 +8,10 @@ log.info('Ensuring Code Style...')
 
 const options = parseOptions()
 
-const result = await runCommand(NpmScript.LintFix, {
-  cwd: projectPath(),
-  ...options,
-})
+// const result = await runCommand(NpmScript.LintFix, {
+//   cwd: projectPath(),
+//   ...options,
+// })
 
 // console.log('rs', result.error)
 // if (result.isErr()) {

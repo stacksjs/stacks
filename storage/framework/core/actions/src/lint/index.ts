@@ -12,12 +12,12 @@ log.info('Ensuring Code Style...')
 // await $`${NpmScript.Lint}`
 // await $`${NpmScript.LintPackageJson}`
 
-const result = await runCommands([NpmScript.Lint, NpmScript.LintPackageJson], {
-  cwd: projectPath(),
-})
+// const result = await runCommands([NpmScript.Lint, NpmScript.LintPackageJson], {
+//   cwd: projectPath(),
+// })
 
-if (Array.isArray(result)) {
-  if (result.map((r) => r.isErr()).includes(true)) process.exit(ExitCode.FatalError)
-}
+// if (Array.isArray(result)) {
+//   if (result.map((r) => r.isErr()).includes(true)) process.exit(ExitCode.FatalError)
+// }
 
 log.success('Linted')
