@@ -93,6 +93,8 @@ export class Router implements RouterInterface {
   }
 
   public async action(path: ActionPath | Route['path']): Promise<this> {
+    if (!path) return this
+
     // check if action is a file anywhere in ./app/Actions/**/*.ts
     if (path?.endsWith('.ts')) {
       // given it ends with .ts, we treat it as an Actions path
@@ -102,22 +104,15 @@ export class Router implements RouterInterface {
     }
 
     path = pascalCase(path) // actions are PascalCase
-    const userActionsPath = p.userActionsPath(`${path}.ts`)
 
     try {
-      const action = (await import(userActionsPath)).default as Action
+      const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
 
       return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
     } catch (error) {
-      try {
-        const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
+      log.error(`Could not find Action for path: ${path}`)
 
-        return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
-      } catch (error) {
-        log.error(`Could not find Action for path: ${path}`)
-
-        return this
-      }
+      return this
     }
   }
 
