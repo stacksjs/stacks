@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "wip: needs to start each dev server (views, api, components, docs, desktop)",
-    "build": "bun --filter='./core/*' run build",
+    "build": "bun --filter='./core/*' run build && bun --filter='./core/components/stepper' run build",
     "publish:framework": "./scripts/publish",
     "publish:dummy-libs": "./scripts/publish-dummy-libs"
   }
