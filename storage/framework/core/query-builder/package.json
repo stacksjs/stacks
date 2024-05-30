@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/query-builder",
   "type": "module",
-  "version": "0.61.18",
+  "version": "0.61.19",
   "description": "The Stacks Query Builder integration",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,10 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["stacks", "kysely"],
+  "keywords": [
+    "stacks",
+    "kysely"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -28,8 +31,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

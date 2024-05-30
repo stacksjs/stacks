@@ -2,7 +2,7 @@
   "publisher": "Stacks",
   "name": "vscode-stacks",
   "displayName": "Stacks",
-  "version": "0.61.18",
+  "version": "0.61.19",
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
@@ -24,9 +24,14 @@
     "extension pack",
     "stacks extension collection"
   ],
-  "categories": ["Extension Packs"],
+  "categories": [
+    "Extension Packs"
+  ],
   "icon": "logo.png",
-  "files": ["logo.png", "LICENSE.md"],
+  "files": [
+    "logo.png",
+    "LICENSE.md"
+  ],
   "engines": {
     "vscode": "^1.89.1"
   },
