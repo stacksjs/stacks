@@ -537,7 +537,20 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function where(column: string, operator = '=', value: any) {
+    export async function where(...args: (string | number)[]) {
+      let column: any
+      let operator: any
+      let value: any
+
+      if (args.length === 2) {
+        [column, value] = args
+        operator = '='
+      } else if (args.length === 3) {
+          [column, operator, value] = args
+      } else {
+          throw new Error("Invalid number of arguments")
+      }
+
       let query = db.selectFrom('access_tokens')
 
       query = query.where(column, operator, value)

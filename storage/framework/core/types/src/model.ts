@@ -60,7 +60,7 @@ export interface ModelOptions extends Base {
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchOptions // defaults to false
     searchable?: boolean | SearchOptions // useSearch alias
-    useApi?: ApiOptions
+    useApi?: ApiOptions | boolean
   }
 
   attributes: Attributes
