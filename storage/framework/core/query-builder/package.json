@@ -54,7 +54,7 @@
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.27.3",
     "kysely-bun-worker": "^0.6.1",
-    "mysql2": "^3.9.9",
+    "mysql2": "^3.10.0",
     "pg": "^8.11.5"
   },
   "devDependencies": {
