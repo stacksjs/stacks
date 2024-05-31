@@ -1,3 +1,4 @@
+import { ok } from '@stacksjs/error-handling'
 import { route } from './router'
 
 export async function listRoutes() {

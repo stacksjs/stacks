@@ -5,5 +5,3 @@ export { default as Project } from './models/Project'
 export { default as Subscriber } from './models/Subscriber'
 export { default as Team } from './models/Team'
 export { default as User } from './models/User'
-
-export * from './utils'
