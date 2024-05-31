@@ -1,5 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
@@ -130,7 +131,7 @@ export async function checkPivotMigration(dynamicPart: string): Promise<boolean>
   })
 }
 
-export async function getRelations(model: Model): Promise<RelationConfig[]> {
+export async function getRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
@@ -145,19 +146,25 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name?.toLowerCase()
+
+
+        const modelName = getModelName(model, modelPath)
+        const formattedModelName = modelName.toLowerCase()
+        const tableName = getTableName(model, modelPath)
+
+        const modelRelationTable = getModelName(modelRelation, modelRelationPath)
 
         relationships.push({
           relationship: relation,
           model: relationModel,
-          table: modelRelation.table,
-          relationModel: model.name,
-          relationTable: model.table,
+          table: modelRelationTable,
+          relationModel: modelName,
+          relationTable: tableName,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelationTable}`,
         })
       }
     }
@@ -166,7 +173,7 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
   return relationships
 }
 
-export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
+export async function fetchOtherModelRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   const modelRelations = []
@@ -174,15 +181,20 @@ export async function fetchOtherModelRelations(model: Model): Promise<RelationCo
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
 
-    const modelFile = await import(modelFileElement)
+    const modelFile = (await import(modelFileElement)).default as Model
 
-    if (model.name === modelFile.default.name) continue
+    const tableName = getTableName(model, modelPath)
+    const modelName = getModelName(model, modelPath)
 
-    const relations = await getRelations(modelFile.default)
+    const modelFileName = getTableName(modelFile, modelFileElement)
+
+    if (tableName === modelFileName) continue
+
+    const relations = await getRelations(modelFile, modelFileElement)
 
     if (!relations.length) continue
 
-    const relation = relations.find((relation) => relation.model === model.name)
+    const relation = relations.find((relation) => relation.model === modelName)
 
     if (relation) modelRelations.push(relation)
   }
@@ -192,23 +204,29 @@ export async function fetchOtherModelRelations(model: Model): Promise<RelationCo
 
 export async function getPivotTables(
   model: Model,
+  modelPath: string
 ): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
   const pivotTable = []
 
-  if (model.belongsToMany && model.name) {
+  const modelName = getTableName(model, modelPath)
+
+  if (model.belongsToMany) {
     if ('belongsToMany' in model) {
       for (const belongsToManyRelation of model.belongsToMany) {
         const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name.toLowerCase()
+        const formattedModelName = modelName.toLowerCase()
+
+        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+        const modelRelationModelName = getModelName(modelRelation, modelRelationPath)
 
         const firstForeignKey =
-          belongsToManyRelation.firstForeignKey || `${model.name?.toLowerCase()}_${model.primaryKey}`
+          belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
         const secondForeignKey =
-          belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+          belongsToManyRelation.secondForeignKey || `${modelRelationModelName.toLowerCase()}_${model.primaryKey}`
 
         pivotTable.push({
-          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelationTable}`,
           firstForeignKey: firstForeignKey,
           secondForeignKey: secondForeignKey,
         })

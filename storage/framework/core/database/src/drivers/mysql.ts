@@ -11,8 +11,8 @@ import {
   getPivotTables,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
-  modelTableName,
 } from '.'
+import { getModelName, getTableName } from '@stacksjs/orm'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()
@@ -29,7 +29,7 @@ export async function resetMysqlDatabase() {
 
   for (const userModel of userModelFiles) {
     const model = (await import(userModel)).default as Model
-    const pivotTables = await getPivotTables(model)
+    const pivotTables = await getPivotTables(model, userModel)
 
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
   }
@@ -78,7 +78,7 @@ export async function generateMysqlMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
-  const tableName = await modelTableName(model)
+  const tableName = await getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
@@ -122,11 +122,11 @@ async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  const tableName = await modelTableName(model)
+  const tableName = await getTableName(model, modelPath)
 
-  await createPivotTableMigration(model)
+  await createPivotTableMigration(model, modelPath)
 
-  const otherModelRelations = await fetchOtherModelRelations(model)
+  const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
 
   const fields = model.attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
@@ -185,8 +185,8 @@ async function createTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-async function createPivotTableMigration(model: Model) {
-  const pivotTables = await getPivotTables(model)
+async function createPivotTableMigration(model: Model, modelPath: string) {
+  const pivotTables = await getPivotTables(model, modelPath)
 
   if (!pivotTables.length) return
 
@@ -220,8 +220,8 @@ export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
   const model = (await import(modelPath)).default as Model
-  const modelName = path.basename(modelPath)
-  const tableName = await modelTableName(model)
+  const modelName = getModelName(model, modelPath)
+  const tableName = await getTableName(model, modelPath)
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
@@ -267,7 +267,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
 
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default as Model
-    const tableName = await modelTableName(model)
+    const tableName = await getTableName(model, modelPath)
 
     tables.push(tableName)
   }

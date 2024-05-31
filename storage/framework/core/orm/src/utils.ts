@@ -6,17 +6,17 @@ import type { Attributes } from '@stacksjs/types'
 import type { Model } from '@stacksjs/types'
 
 export function getModelName(model: Model, modelPath: string): string {
-    if (model.name) 
-        return model.name
+  if (model.name) 
+    return model.name
 
-    const baseName =  path.basename(modelPath)
+  const baseName =  path.basename(modelPath)
 
-    return baseName.replace(/\.ts$/, '');
+  return baseName.replace(/\.ts$/, '');
 }
 
 export function getTableName(model: Model, modelPath: string): string {
     if (model.table) 
-        return model.table
+      return model.table
     
     return snakeCase(plural(getModelName(model, modelPath)))
 }
