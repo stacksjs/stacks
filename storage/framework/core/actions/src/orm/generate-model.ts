@@ -1,12 +1,10 @@
 import { log } from '@stacksjs/logging'
-import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { camelCase, pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import { getModelName, getTableName } from './base'
-
+import { getModelName, getTableName} from '@stacksjs/orm'
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -233,7 +231,7 @@ async function initiateModelGeneration(): Promise<void> {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
-    const tableName = await modelTableName(model)
+    const tableName = await getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
 
     const file = Bun.file(path.projectStoragePath(`framework/orm/src/models/${modelName}.ts`))
@@ -322,7 +320,7 @@ async function setKyselyTypes() {
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const tableName = await modelTableName(model)
+    const tableName = await getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
 
     const words = tableName.split('_')
@@ -358,7 +356,7 @@ async function setKyselyTypes() {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
-    const tableName = await modelTableName(model)
+    const tableName = await getTableName(model, modelFile)
     const pivotTables = await getPivotTables(model, modelName)
 
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
