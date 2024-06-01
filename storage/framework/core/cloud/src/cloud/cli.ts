@@ -1,10 +1,8 @@
-/* eslint-disable no-new */
 import { Duration, CfnOutput as Output, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
-export interface CliStackProps extends NestedCloudProps {
-}
+export interface CliStackProps extends NestedCloudProps {}
 
 export class CliStack {
   cliSetupUrl: lambda.FunctionUrl
@@ -15,7 +13,7 @@ export class CliStack {
       description: 'Lambda function that triggers setup script for a Stacks project',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('src/cloud/lambda/cli-setup'), // path relative to the cloud root package dir
+      code: lambda.Code.fromAsset('../core/cloud/src/cloud/lambda/cli-setup'), // path relative to the cloud root package dir
       timeout: Duration.seconds(30),
     })
 

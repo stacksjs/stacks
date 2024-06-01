@@ -1,4 +1,5 @@
-type AiModel = 'amazon.titan-embed-text-v1'
+type AiModel =
+  | 'amazon.titan-embed-text-v1'
   | 'amazon.titan-text-lite-v1'
   | 'amazon.titan-text-express-v1'
   | 'amazon.titan-embed-image-v1'
@@ -20,6 +21,7 @@ type AiModel = 'amazon.titan-embed-text-v1'
 export interface AiOptions {
   default: AiModel
   models: AiModel[]
+  deploy: boolean
 }
 
 export type AiConfig = Partial<AiOptions>

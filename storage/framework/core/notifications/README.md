@@ -262,7 +262,6 @@ For casual chit-chat with others using this package:
 Many thanks to the following core technologies & people who have contributed to this package:
 
 - [Chris Breuer](https://github.com/chrisbbreuer)
-- [Novu](https://novu.co/)
 - [All Contributors](../../contributors)
 
 ## 📄 License

@@ -1,12 +1,17 @@
 import { log } from '@stacksjs/logging'
-import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
+import { writeTextFile } from '@stacksjs/storage'
 import library from '~/config/library'
 
 type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
 
 export async function generatePackageJson(type: PackageJsonType) {
-  let name, description, directory, keywords, config, prettyName
+  let name
+  let description
+  let directory
+  let keywords
+  let config
+  let prettyName
 
   if (type === 'vue-components') {
     name = library.vueComponents?.name
@@ -14,17 +19,13 @@ export async function generatePackageJson(type: PackageJsonType) {
     directory = 'components'
     keywords = library.vueComponents?.keywords
     config = 'vue-components'
-  }
-
-  else if (type === 'web-components') {
+  } else if (type === 'web-components') {
     name = library.webComponents?.name
     description = library.webComponents?.description
     directory = 'components'
     keywords = library.webComponents?.keywords
     config = 'web-components'
-  }
-
-  else if (type === 'functions') {
+  } else if (type === 'functions') {
     name = library.functions?.name
     description = library.functions?.description
     directory = 'functions'
@@ -72,7 +73,7 @@ export async function generatePackageJson(type: PackageJsonType) {
   ],
   "scripts": {
     "build": "vite build -c ../build/${config}.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"
@@ -81,16 +82,12 @@ export async function generatePackageJson(type: PackageJsonType) {
 `,
     })
 
-    if (type === 'vue-components')
-      prettyName = 'Vue Component library'
-    else if (type === 'web-components')
-      prettyName = 'Web Component library'
-    else if (type === 'functions')
-      prettyName = 'Function Library'
+    if (type === 'vue-components') prettyName = 'Vue Component library'
+    else if (type === 'web-components') prettyName = 'Web Component library'
+    else if (type === 'functions') prettyName = 'Function Library'
 
     log.success(`Created ${prettyName} package.json file`)
-  }
-  catch (err) {
+  } catch (err) {
     log.error(`There was an error creating the ${prettyName} package.json`, err)
   }
 }

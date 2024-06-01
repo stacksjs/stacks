@@ -1,8 +1,18 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { intro, outro } from '../build/src'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-if (result.isErr())
-  log.error(result.error)
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+
+  outdir: './dist',
+  format: 'esm',
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

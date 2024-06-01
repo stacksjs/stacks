@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/validation",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks Validation ways.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,20 +45,19 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^1.7.1"
+    "@vinejs/vine": "^2.0.0"
   },
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^1.7.1"
+    "@vinejs/vine": "^2.0.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/vite": "workspace:*"
+    "@stacksjs/development": "workspace:*"
   }
 }

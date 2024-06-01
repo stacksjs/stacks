@@ -1,16 +1,4 @@
-export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod'
-
-interface Ports {
-  frontend: number
-  backend: number // proxies api
-  api: number // the Bun server
-  admin: number
-  library: number
-  desktop: number
-  email: number
-  docs: number
-  inspect: number
-}
+export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod' | string
 
 /**
  * **Application Options**
@@ -103,15 +91,6 @@ export interface AppOptions {
    * not be safe. Please do this before deploying an application!
    */
   key: string
-
-  /**
-   * **Application Ports**
-   *
-   * This port is used by the Stacks servers when running your application, library, email services,
-   * and other services. You may change this port to any other port that is free
-   * on your machine, as long as the following 6 ports are also available.
-   */
-  ports: Ports
 
   /**
    * **Application Timezone**

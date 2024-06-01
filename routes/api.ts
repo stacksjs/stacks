@@ -1,23 +1,26 @@
 import { route } from '@stacksjs/router'
 
-route.get('/api', () => 'hello world 1') // stacksjs.org/api
-route.get('/api/', () => 'hello world 2') // stacksjs.org/api/
-route.get('/api/welcome', () => 'hello world 3') // stacksjs.org/api/welcome
-route.get('/api/welcome/', () => 'hello world 4') // stacksjs.org/api/welcome/
-route.get('/api/health', () => 'healthy')
+/**
+ * This file is the entry point for your application's API routes.
+ * The routes defined here are automatically registered. Last but
+ * not least, you may also create any other `routes/*.ts` files.
+ *
+ * @see https://stacksjs.org/docs/routing
+ */
 
-// route.group({ prefix: '/users' }, () => {
-//   route.before(async (params) => {
-//     console.log(`[${now()}] ${params.method} ${params.url}`)
-//   })
+await route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/api/hello/world
+await route.get('/', () => 'hello world') // $APP_URL/api
+await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 
-//   route.get('/:id', ({ id }) => {
-//     // Retrieve user from database
-//     return `User with ID ${id}`
-//   })
+await route.post('/email/subscribe', 'Actions/EmailSubscribeAction')
 
-//   route.post('/', ({ name, email }) => {
-//     // Save user to database
-//     return `User ${name} (${email}) created`
-//   })
-// })
+await route.email('/welcome')
+await route.health() // adds an `/api/health` route
+
+// await route.group('/some-path', async () => {...})
+// await route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
+
+// await route.action('Dashboard/GetProjects')
+// await route.action('Dashboard/Settings/UpdateAiConfig')
+
+// await route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`

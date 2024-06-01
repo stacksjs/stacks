@@ -1,5 +1,5 @@
-import type { ZlibCompressionOptions } from 'bun'
 import { runCommand } from '@stacksjs/cli'
+import type { ZlibCompressionOptions } from 'bun'
 
 interface ZipOptions {
   cwd?: string
@@ -9,15 +9,13 @@ export async function zip(from: string | string[], to?: string, options?: ZipOpt
   const toPath = to || 'archive.zip'
   const fromPath = Array.isArray(from) ? from.join(' ') : from
 
-  if (Array.isArray(from))
-    return runCommand(`zip -r ${toPath} ${fromPath}`, options)
+  if (Array.isArray(from)) return runCommand(`zip -r ${toPath} ${fromPath}`, options)
 
   return runCommand(`zip -r ${to} ${from}`, options)
 }
 
 export async function unzip(paths: string | string[]) {
-  if (Array.isArray(paths))
-    return runCommand(`unzip ${paths.join(' ')}`)
+  if (Array.isArray(paths)) return runCommand(`unzip ${paths.join(' ')}`)
 
   return runCommand(`unzip ${paths}`)
 }

@@ -1,8 +1,33 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { intro, outro } from '../build/src'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/types --external @stacksjs/tunnel --external @stacksjs/env --external @stacksjs/path --external @stacksjs/validation --external @stacksjs/path --external @vinejs/compiler --external pluralize --external @stacksjs/strings --external dinero.js --external @dinero.js/currencies --external validator --external @vinejs/vine --external @stacksjs/validation --target bun', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-if (result.isErr())
-  log.error(result.error)
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: [
+    '@stacksjs/types',
+    '@stacksjs/tunnel',
+    '@stacksjs/env',
+    '@stacksjs/path',
+    '@stacksjs/validation',
+    '@vinejs/compiler',
+    'pluralize',
+    '@stacksjs/strings',
+    'dinero.js',
+    '@dinero.js/currencies',
+    'validator',
+    '@vinejs/vine',
+  ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

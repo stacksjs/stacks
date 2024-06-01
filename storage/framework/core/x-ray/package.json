@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/x-ray",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -40,7 +40,7 @@
     "build": "echo 'wip'",
     "serve": "vite --config ../build/src/desktop.ts",
     "serve:tauri": "vite",
-    "prepublishOnly": "bun --bun run build",
+    "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {

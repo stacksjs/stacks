@@ -1,5 +1,5 @@
-import type { AppConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
+import type { AppConfig } from '@stacksjs/types'
 
 /**
  * **Application Configuration**
@@ -11,7 +11,7 @@ import { env } from '@stacksjs/env'
 export default {
   name: env.APP_NAME || 'Stacks',
   description: 'Stacks is a full-stack framework for building modern web applications.',
-  env: env.APP_ENV || 'development',
+  env: env.APP_ENV || 'local',
   url: env.APP_URL || 'stacks.localhost',
   redirectUrls: ['stacksjs.com'],
   debug: env.DEBUG || false,
@@ -20,20 +20,8 @@ export default {
   maintenanceMode: env.APP_MAINTENANCE || false,
   docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
 
-  timezone: 'UTC',
+  timezone: 'America/Los_Angeles',
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
-
-  ports: {
-    frontend: env.APP_PORT || 3333,
-    backend: env.APP_PORT + 1 || 3334,
-    admin: env.APP_PORT + 2 || 3335,
-    library: env.APP_PORT + 3 || 3336,
-    desktop: env.APP_PORT + 4 || 3337,
-    email: env.APP_PORT + 5 || 3338,
-    docs: env.APP_PORT + 6 || 3339,
-    inspect: env.APP_PORT + 7 || 3340,
-    api: 3999,
-  },
 } satisfies AppConfig

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -55,37 +55,37 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@headlessui/vue": "^1.7.18",
+    "@headlessui/vue": "^1.7.22",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "pinia": "^2.1.7",
-    "unocss": "^0.58.5",
+    "unocss": "^0.60.4",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.15",
-    "vue-tsc": "^1.8.27"
+    "vue": "^3.4.27",
+    "vue-tsc": "^2.0.19"
   },
   "dependencies": {
-    "@headlessui/vue": "^1.7.18",
-    "@iconify-json/heroicons": "^1.1.19",
+    "@headlessui/vue": "^1.7.22",
+    "@iconify-json/heroicons": "^1.1.21",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.180",
+    "@iconify/json": "^2.2.215",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@unhead/vue": "^1.8.10",
+    "@unhead/vue": "^1.9.11",
     "pinia": "^2.1.7",
-    "unhead": "^1.8.10",
-    "unocss": "^0.58.5",
+    "unhead": "^1.9.11",
+    "unocss": "^0.60.4",
     "unocss-preset-primitives": "0.0.2-beta.0",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.15",
-    "vue-tsc": "^1.8.27"
+    "vue": "^3.4.27",
+    "vue-tsc": "^2.0.19"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

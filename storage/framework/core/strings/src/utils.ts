@@ -36,8 +36,7 @@ export function slash(str: string) {
  * ensurePrefix('https://', 'http://google.com') => 'https://google.com'
  */
 export function ensurePrefix(prefix: string, str: string) {
-  if (!str.startsWith(prefix))
-    return prefix + str
+  if (!str.startsWith(prefix)) return prefix + str
   return str
 }
 
@@ -76,8 +75,7 @@ export function template(str: string, ...args: any[]): string {
 }
 
 export function truncate(str: string, length: number, end = '...') {
-  if (str.length <= length)
-    return str
+  if (str.length <= length) return str
 
   return str.slice(0, length - end.length) + end
 }
@@ -90,8 +88,7 @@ export function random(size = 16, dict = urlAlphabet) {
   let id = ''
   let i = size
   const len = dict.length
-  while (i--)
-    id += dict[(Math.random() * len) | 0]
+  while (i--) id += dict[(Math.random() * len) | 0]
   return id
 }
 
@@ -104,8 +101,7 @@ export function random(size = 16, dict = urlAlphabet) {
  * ```
  */
 export function slug(str: string, options?: SlugOptions): string {
-  if (options)
-    return slugify(str, options)
+  if (options) return slugify(str, options)
 
   return slugify(str, {
     lower: true,

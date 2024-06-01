@@ -1,0 +1,60 @@
+{
+  "name": "@stacksjs/dropdown",
+  "type": "module",
+  "version": "0.61.20",
+  "description": "A dropdown component for all.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/components/dropdown"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/stacks-dropdown.d.ts",
+      "import": "./lib/stacks-dropdown.js"
+    },
+    "./*": {
+      "import": "./lib/*"
+    }
+  },
+  "module": "dist/stacks-dropdown.js",
+  "types": "dist/stacks-dropdown.d.ts",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "lib",
+    "src",
+    "volar.d.ts"
+  ],
+  "scripts": {
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build",
+    "build:lib": "vite build --mode lib && bun run build:types",
+    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "preview": "bunx --bun vite preview"
+  },
+  "dependencies": {
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.9.0",
+    "vue": "^3.4.27",
+    "vue-sonner": "^1.1.2"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.46.2",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
+    "@vue/tsconfig": "^0.5.1",
+    "clean-css": "^5.3.3",
+    "unplugin-icons": "^0.19.0"
+  }
+}

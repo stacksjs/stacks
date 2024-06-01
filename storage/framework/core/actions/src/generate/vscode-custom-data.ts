@@ -11,9 +11,7 @@ import { generateVsCodeCustomData } from '../helpers/vscode-custom-data'
 
 log.info('Generating VS Code custom data...')
 
-if (hasComponents())
-  await generateVsCodeCustomData()
-
+if (hasComponents()) await generateVsCodeCustomData()
 else log.info('No components found. Skipping VS Code custom data generation.')
 
 log.success('Generated VS Code custom data.')

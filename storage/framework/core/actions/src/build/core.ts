@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { glob } from '@stacksjs/storage'
 import { dim, italic, log } from '@stacksjs/cli'
 import { corePath } from '@stacksjs/path'
+import { glob } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { $ } from 'bun'
 
@@ -21,7 +21,6 @@ for (const folder of dirs) {
   await $`bun run build`
   log.success(`${italic(dim(folder))} built`)
 
-  // eslint-disable-next-line no-console
   console.log(``)
 }
 

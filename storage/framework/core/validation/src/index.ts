@@ -1,4 +1,6 @@
 export * from './is'
+export * from './reporter'
 export * from './rules'
-export * from './validate'
+export * from './schema'
 export * from './types'
+export * from './validator'

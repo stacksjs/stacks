@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/objects",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks objects.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -44,7 +44,7 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/collections": "workspace:*",

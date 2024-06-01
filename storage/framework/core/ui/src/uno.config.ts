@@ -1,3 +1,5 @@
+import { presetForms } from '@julr/unocss-preset-forms'
+import { ui } from '@stacksjs/config'
 import {
   defineConfig,
   presetAttributify,
@@ -10,17 +12,13 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
-import { ui } from '@stacksjs/config'
-import { presetForms } from '@julr/unocss-preset-forms'
 
 export default defineConfig({
   shortcuts: ui.shortcuts,
 
   content: {
     pipeline: {
-      include: [
-        /\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/,
-      ],
+      include: [/\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/],
       // exclude files
       // exclude: []
     },
@@ -37,7 +35,7 @@ export default defineConfig({
       warn: true,
       // collections: ui.icons,
       extraProperties: {
-        'display': 'inline-block',
+        display: 'inline-block',
         'vertical-align': 'middle',
       },
     }),
@@ -47,10 +45,9 @@ export default defineConfig({
       fonts: {
         sans: 'Inter',
         serif: 'Inter',
-        mono: 'Inter',
+        // mono: 'Inter',
       },
     }),
-
   ],
 
   transformers: [

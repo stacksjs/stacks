@@ -22,17 +22,20 @@ export function useGitHub() {
       // If less than 60 seconds, return seconds only
       return `${secondsDifference}s`
     }
-    else if (minutesDifference < 60) {
+
+    if (minutesDifference < 60) {
       // If less than 60 minutes, return minutes and remaining seconds
       const remainingSeconds = secondsDifference % 60
       return `${minutesDifference}m ${remainingSeconds}s`
     }
-    else if (hoursDifference < 24) {
+
+    if (hoursDifference < 24) {
       // If less than 24 hours, return hours and remaining minutes
       const remainingMinutes = minutesDifference % 60
       return `${hoursDifference}h ${remainingMinutes}m`
     }
-    else if (weeksDifference < 7) {
+
+    if (weeksDifference < 7) {
       const remainingHours: number = hoursDifference % 24
 
       return `${daysDifference}d ${remainingHours}h`
@@ -45,8 +48,7 @@ export function useGitHub() {
     const minutes = Math.floor(durationInSeconds / 60)
     const seconds = durationInSeconds % 60
 
-    if (minutes > 1)
-      return `${minutes}m ${seconds}s`
+    if (minutes > 1) return `${minutes}m ${seconds}s`
 
     return `${seconds}s`
   }

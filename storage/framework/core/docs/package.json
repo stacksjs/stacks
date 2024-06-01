@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -44,27 +44,26 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.41"
+    "vitepress": "1.2.2",
+    "vitepress-plugin-twoslash": "^0.10.2"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.41",
+    "vitepress": "1.2.2",
     "vitepress-plugin-twoslash": "^0.10.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@vite-pwa/vitepress": "^0.3.1"
+    "@vite-pwa/vitepress": "^0.5.0"
   }
 }

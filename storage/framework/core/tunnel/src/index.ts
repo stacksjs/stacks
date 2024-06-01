@@ -1,6 +1,7 @@
-import localtunnel from 'localtunnel'
+import { localTunnel } from './tunnel'
 
 export async function createLocalTunnel(port: number) {
-  const tunnel = await localtunnel({ port })
-  return tunnel.url
+  return await localTunnel({ port })
 }
+
+export { localTunnel }

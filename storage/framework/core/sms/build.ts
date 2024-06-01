@@ -1,9 +1,20 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { intro, outro } from '../build/src'
 
-const command: string = 'bun build ./src/index.ts --outdir dist --external @stacksjs/cli --external @stacksjs/config --external @novu/gupshup --external @stacksjs/types --external @stacksjs/error-handling --external @novu/nexmo --external @novu/plivo --external @novu/sms77 --external @novu/sns --external @novu/telnyx --external @novu/termii --external @novu/twilio --format esm'
-const result = await runCommand(command, {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-if (result.isErr())
-  log.error(result.error)
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: ['@stacksjs/cli', '@stacksjs/config', '@stacksjs/env', '@stacksjs/error-handling', '@stacksjs/types'],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

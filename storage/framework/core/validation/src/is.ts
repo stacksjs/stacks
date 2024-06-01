@@ -71,7 +71,14 @@ export function isArray(v: any) {
 
 export function isPrimitive(v: any) {
   const type = getTypeName(v)
-  return type === 'null' || type === 'undefined' || type === 'string' || type === 'number' || type === 'boolean' || type === 'symbol'
+  return (
+    type === 'null' ||
+    type === 'undefined' ||
+    type === 'string' ||
+    type === 'number' ||
+    type === 'boolean' ||
+    type === 'symbol'
+  )
 }
 
 export function isInteger(v: any) {

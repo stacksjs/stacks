@@ -28,5 +28,4 @@ export const preconnectHomeLinks = [googleapis, gstatic]
 /* PWA runtime caching urlPattern regular expressions */
 export const pwaFontsRegex = new RegExp(`^${googleapis}/.*`, 'i')
 export const pwaFontStylesRegex = new RegExp(`^${gstatic}/.*`, 'i')
-// eslint-disable-next-line prefer-regex-literals
-export const githubusercontentRegex = new RegExp('^https://((i.ibb.co)|((raw|user-images).githubusercontent.com))/.*', 'i')
+export const githubusercontentRegex = /^https:\/\/((i.ibb.co)|((raw|user-images).githubusercontent.com))\/.*/i

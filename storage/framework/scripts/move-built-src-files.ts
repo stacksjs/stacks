@@ -5,9 +5,7 @@ import { ExitCode } from '@stacksjs/types'
 
 log.info('Moving built src files to right path in the dist folder...')
 
-const files = await glob([
-  '../src/**/dist/src/**',
-])
+const files = await glob(['../src/**/dist/src/**'])
 
 if (files.length === 0) {
   log.info('No files to move')

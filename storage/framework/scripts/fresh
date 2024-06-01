@@ -4,8 +4,8 @@
 rm ../../bun.lock
 
 # delete all node_modules and dist folders
-rimraf ../../**/dist
-rimraf ../../**/node_modules # ensure this runs last or else rimraf will delete itself
+bunx rimraf ../../**/dist
+bunx rimraf ../../**/node_modules # ensure this runs last or else rimraf will delete itself
 
 # install dependencies via Bun
 bun install

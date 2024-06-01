@@ -18,5 +18,5 @@ destinations.forEach(([src, dest]) => {
   // const srcPath = resolve(__filename, '..', src)
   // const destPath = resolve(__filename, '..', dest)
 
-  copyFolder(src, dest)
+  copyFolder(src as string, dest as string)
 })

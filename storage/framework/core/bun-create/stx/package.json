@@ -1,7 +1,7 @@
 {
   "name": "@bun-examples/stx",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Your project description.",
   "author": "your-name <your-email>",
   "license": "MIT",
@@ -122,7 +122,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "eslint --fix"
+    "*": "bunx biome check --apply ."
   },
   "config": {
     "commitizen": {

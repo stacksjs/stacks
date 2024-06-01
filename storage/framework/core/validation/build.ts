@@ -1,5 +1,20 @@
-import { runCommand } from '@stacksjs/cli'
+import { intro, outro } from '../build/src'
 
-await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @vinejs/vine --external @stacksjs/vite --external @stacksjs/strings --external @stacksjs/types --external @dinero.js/currencies --external dinero.js --target bun', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+
+  external: ['@vinejs/vine', '@stacksjs/strings', '@stacksjs/types', '@dinero.js/currencies', 'dinero.js'],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

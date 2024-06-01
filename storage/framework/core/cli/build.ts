@@ -1,8 +1,34 @@
-import { log, runCommand } from './src'
+import { intro, outro } from '../build/src'
 
-const result = await runCommand('bun --bun build ./src/index.ts --outdir dist --external vite --external @antfu/install-pkg --external @stacksjs/config --external @stacksjs/types --external @stacksjs/tunnel --external @stacksjs/logging --external prompts --external @stacksjs/utils --external @stacksjs/validation --external @stacksjs/error-handling --external ora --external kolorist --external cac --target bun', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-if (result.isErr())
-  log.error(result.error)
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  target: 'bun',
+
+  external: [
+    'vite',
+    '@antfu/install-pkg',
+    '@stacksjs/config',
+    '@stacksjs/types',
+    '@stacksjs/tunnel',
+    '@stacksjs/logging',
+    'prompts',
+    '@stacksjs/utils',
+    '@stacksjs/validation',
+    '@stacksjs/error-handling',
+    'ora',
+    'kolorist',
+    'cac',
+    '@stacksjs/collections',
+  ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

@@ -2,7 +2,7 @@
 
 # loop over every directory in ./storage/framework/core/*
 for dir in ../src/*/; do
-  # -d checks if it's a directory
+  # -d checks if it’s a directory
   if [[ -d "$dir" ]]; then
     # navigate into directory
     cd "$dir"

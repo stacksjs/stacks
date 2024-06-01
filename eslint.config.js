@@ -1,16 +1,32 @@
-import stacks from '@stacksjs/eslint-config'
+// eslint.config.js
+import antfu from '@antfu/eslint-config'
 
-export default stacks({
+export default antfu({
+  // Enable stylistic formatting rules
+  // stylistic: true,
+
+  // Or customize the stylistic rules
   stylistic: {
     indent: 2, // 4, or 'tab'
     quotes: 'single', // or 'double'
   },
 
-  stacks: true,
-  typescript: true,
+  // TypeScript and Vue are auto-detected, you can also explicitly enable them:
+  typescript: false,
+  vue: true,
 
-  // Enable jsonc, yaml, toml support
-  jsonc: true,
-  yaml: false,
-  toml: true,
+  // Disable jsonc and yaml support
+  // jsonc: false,
+  // yaml: false,
+
+  // `.eslintignore` is no longer supported in Flat config, use `ignores` instead
+  ignores: [
+    '**/fixtures',
+    '**/test',
+    '**/tests',
+    '**/framework',
+    // '**/core/env/src/index.js',
+    '**/README.md',
+    // ...globs
+  ],
 })

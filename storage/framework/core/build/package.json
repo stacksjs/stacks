@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/build",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -48,17 +48,22 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stacksjs/vite": "workspace:*",
+    "bun-plugin-dts-auto": "^0.11.1",
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
-    "@stacksjs/vite": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "bun-plugin-dts-auto": "^0.11.1",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__traverse": "^7.20.6"
   }
 }

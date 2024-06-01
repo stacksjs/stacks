@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dns",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -48,30 +48,30 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-route-53": "^3.507.0",
-    "@aws-sdk/client-route-53-domains": "^3.507.0",
+    "@aws-sdk/client-route-53": "^3.588.0",
+    "@aws-sdk/client-route-53-domains": "^3.588.0",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.126.0"
+    "aws-cdk-lib": "^2.144.0"
   },
   "dependencies": {
-    "@aws-sdk/client-route-53": "^3.507.0",
+    "@aws-sdk/client-route-53": "^3.588.0",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.126.0"
+    "aws-cdk-lib": "^2.144.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.126.0"
+    "aws-cdk-lib": "^2.144.0"
   }
 }

@@ -1,28 +1,17 @@
+import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
-import { runNpmScript } from '@stacksjs/utils'
 import type { BuildOptions } from '@stacksjs/types'
-import { NpmScript } from '@stacksjs/enums'
+import { runNpmScript } from '@stacksjs/utils'
 import { generateTypes } from './generate'
 
 export async function invoke(options: BuildOptions) {
-  if (options.components)
-    await componentLibraries(options)
-
-  else if (options.vueComponents)
-    await vueComponentLibrary(options)
-
-  else if (options.webComponents || options.elements)
-    await webComponentLibrary(options)
-
-  else if (options.functions)
-    await functionsLibrary(options)
-
-  else if (options.docs)
-    await docs(options)
-
-  else if (options.stacks)
-    await stacks(options)
+  if (options.components) await componentLibraries(options)
+  else if (options.vueComponents) await vueComponentLibrary(options)
+  else if (options.webComponents || options.elements) await webComponentLibrary(options)
+  else if (options.functions) await functionsLibrary(options)
+  else if (options.docs) await docs(options)
+  else if (options.stacks) await stacks(options)
 
   await generateTypes()
 }
@@ -42,8 +31,7 @@ export async function vueComponentLibrary(options: BuildOptions) {
     log.info('Building your component library...')
     await runNpmScript(NpmScript.BuildComponents, options)
     log.success('Your component library was built successfully')
-  }
-  else {
+  } else {
     // todo: throw custom error here
     log.warn('No components found.')
     log.info('Before you can build components,')
@@ -57,8 +45,7 @@ export async function webComponentLibrary(options: BuildOptions) {
   if (hasComponents()) {
     await runNpmScript(NpmScript.BuildWebComponents, options)
     log.success('Your Web Component library was built successfully')
-  }
-  else {
+  } else {
     // todo: throw custom error here
     log.info('No components found.')
   }
@@ -82,8 +69,7 @@ export async function functionsLibrary(options: BuildOptions) {
     log.info('Production usages include: manual npm distribution and/or CDN distribution')
     await runNpmScript(NpmScript.BuildFunctions, options)
     log.success('Functions library built successfully')
-  }
-  else {
+  } else {
     log.info('No functions found')
   }
 }

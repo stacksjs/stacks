@@ -1,12 +1,18 @@
 {
-  "name": "stacks-cloud",
+  "name": "stacks-server",
   "type": "module",
-  "version": "0.58.28",
+  "version": "0.58.56",
   "scripts": {
+    "dev": "./dev local",
     "build": "bun build.ts"
   },
   "dependencies": {
-    "@stacksjs/router": "^0.58.51",
-    "aws4fetch": "^1.0.17"
-  }
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/queue": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "aws4fetch": "^1.0.18"
+  },
+  "workspaces": ["core/*"]
 }

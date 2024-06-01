@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/security",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks framework security.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -44,7 +44,7 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
@@ -56,9 +56,8 @@
     "@stacksjs/env": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bcryptjs": "^2.4.3",
     "crypto-js": "^4.2.0",
-    "js-base64": "^3.7.6"
+    "js-base64": "^3.7.7"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

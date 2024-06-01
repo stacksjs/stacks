@@ -1,11 +1,11 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { kebabCase } from '@stacksjs/strings'
 import type { LibraryType } from '@stacksjs/path'
 import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
-import { determineResetPreset } from '@stacksjs/utils'
+import { kebabCase } from '@stacksjs/strings'
 import { ExitCode } from '@stacksjs/types'
+import { determineResetPreset } from '@stacksjs/utils'
 import library from '~/config/library'
 
 /**
@@ -19,18 +19,15 @@ export async function generateLibEntry(type: LibraryType) {
 }
 
 export async function createLibraryEntryPoint(type: LibraryType) {
-  if (type === 'vue-components')
-    await createVueLibraryEntryPoint()
+  if (type === 'vue-components') await createVueLibraryEntryPoint()
 
-  if (type === 'web-components')
-    await createWebComponentLibraryEntryPoint()
+  if (type === 'web-components') await createWebComponentLibraryEntryPoint()
 
-  if (type === 'functions')
-    await createFunctionLibraryEntryPoint()
+  if (type === 'functions') await createFunctionLibraryEntryPoint()
 }
 
 export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
-  log.info('Creating Vue Component Library Entry Point...')
+  log.info('Ensuring Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
@@ -44,7 +41,7 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
 }
 
 export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
-  log.info('Creating Web Component Library Entry Point...')
+  log.info('Ensuring Web Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
@@ -58,7 +55,7 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
 }
 
 export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
-  log.info('Creating Function Library Entry Point...')
+  log.info('Ensuring Function Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
@@ -75,16 +72,18 @@ export function generateEntryPointData(type: LibraryType): string {
   let arr = []
 
   if (type === 'functions') {
-    if (!library.functions?.functions) {
-      log.error(new Error('There are no functions defined to be built. Please check your config/library.ts file for potential adjustments'))
+    if (!library.functions?.files) {
+      log.error(
+        new Error(
+          'There are no functions defined to be built. Please check your config/library.ts file for potential adjustments',
+        ),
+      )
       process.exit()
     }
 
-    for (const fx of library.functions?.functions) {
-      if (Array.isArray(fx))
-        arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
-      else
-        arr.push(`export * from '${functionsPath(fx)}'`)
+    for (const fx of library.functions.files) {
+      if (Array.isArray(fx)) arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
+      else arr.push(`export * from '${functionsPath(fx)}'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -93,17 +92,20 @@ export function generateEntryPointData(type: LibraryType): string {
 
   if (type === 'vue-components') {
     if (!library.vueComponents?.tags) {
-      log.error(new Error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments'))
+      log.error(
+        new Error(
+          'There are no components defined to be built. Please check your config/library.ts file for potential adjustments',
+        ),
+      )
       process.exit()
     }
 
     arr = determineResetPreset()
 
-    for (const component of library.vueComponents?.tags.map(tag => tag.name)) {
+    for (const component of library.vueComponents.tags.map((tag) => tag.name)) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.stx'`)
-      else
-        arr.push(`export { default as ${component} } from '${componentsPath(component)}.stx'`)
+      else arr.push(`export { default as ${component} } from '${componentsPath(component)}.stx'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -112,22 +114,25 @@ export function generateEntryPointData(type: LibraryType): string {
 
   // at this point, we know it is a Web Component we are building
   arr = determineResetPreset()
-  const imports = [...arr, 'import { defineCustomElement } from \'vue\'']
+  const imports = [...arr, "import { defineCustomElement } from 'vue'"]
   const declarations = []
   const definitions = []
 
   if (!library.webComponents?.tags) {
-    log.error(new Error('There are no components defined to be built. Please check your config/library.ts file for potential adjustments'))
+    log.error(
+      new Error(
+        'There are no components defined to be built. Please check your config/library.ts file for potential adjustments',
+      ),
+    )
     process.exit()
   }
 
-  for (const component of library.webComponents?.tags.map(tag => tag.name)) {
+  for (const component of library.webComponents.tags.map((tag) => tag.name)) {
     if (Array.isArray(component)) {
       imports.push(`import ${component[1]} from '${componentsPath(component[0])}.stx'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
-      definitions.push(`customElements.define('${kebabCase(component[1])}', ${component[1]}CustomElement)`)
-    }
-    else {
+      definitions.push(`customElements.define('${kebabCase(component[1] as string)}', ${component[1]}CustomElement)`)
+    } else {
       imports.push(`import ${component} from '${componentsPath(component)}.stx'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)

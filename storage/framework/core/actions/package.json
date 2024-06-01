@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -27,10 +27,12 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
       "bun": "./src/*",
+      "types": "./dist/*.d.ts",
       "import": "./dist/*"
     }
   },
@@ -47,7 +49,7 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -64,8 +66,9 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "markdown-it": "^14.0.0",
-    "vue-component-meta": "^1.8.27"
+    "@stacksjs/validation": "workspace:*",
+    "markdown-it": "^14.1.0",
+    "vue-component-meta": "^2.0.19"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -81,8 +84,9 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "markdown-it": "^14.0.0",
-    "vue-component-meta": "^1.8.27"
+    "@stacksjs/validation": "workspace:*",
+    "markdown-it": "^14.1.0",
+    "vue-component-meta": "^2.0.19"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

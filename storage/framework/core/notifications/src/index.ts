@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { err } from '@stacksjs/error-handling'
-import { notification as config } from '@stacksjs/config'
 import { log } from '@stacksjs/cli'
+import { notification as config } from '@stacksjs/config'
+import { err } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { chat, email, sms } from './drivers'
 
@@ -42,10 +42,4 @@ function notification() {
   return useNotification()
 }
 
-export {
-  useEmail,
-  useChat,
-  useSMS,
-  useNotification,
-  notification,
-}
+export { useEmail, useChat, useSMS, useNotification, notification }

@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3, aws_route53_targets as targets } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'

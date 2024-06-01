@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/enums",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Stacks enums.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -36,12 +36,13 @@
   },
   "files": [
     "README.md",
+    "dist",
     "src"
   ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

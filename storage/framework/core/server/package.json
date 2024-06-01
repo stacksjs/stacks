@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/server",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -47,7 +47,7 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
@@ -60,7 +60,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "vite": "^5.0.12"
+    "vite": "^5.2.12"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

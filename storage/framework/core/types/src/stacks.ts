@@ -1,6 +1,7 @@
 import type {
   AiConfig,
   AnalyticsConfig,
+  ApiConfig,
   AppConfig,
   BinaryConfig,
   CacheConfig,
@@ -9,11 +10,14 @@ import type {
   DnsConfig,
   DocsConfig,
   EmailConfig,
+  ErrorConfig,
   GitConfig,
   HashingConfig,
   LibraryConfig,
+  LoggerConfig,
   NotificationConfig,
   PaymentConfig,
+  Ports,
   QueueConfig,
   SearchEngineConfig,
   SecurityConfig,
@@ -115,6 +119,15 @@ export interface StacksOptions {
   email: EmailConfig
 
   /**
+   * **Errors Options**
+   *
+   * This configuration defines all of your Errors options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  errors: ErrorConfig
+
+  /**
    * **Git Options**
    *
    * This configuration defines all of your Git options. Because Stacks is fully-typed, you
@@ -142,6 +155,15 @@ export interface StacksOptions {
   library: LibraryConfig
 
   /**
+   * **Logger Options**
+   *
+   * This configuration defines all of your Logger options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  logger: LoggerConfig
+
+  /**
    * **Notification Options**
    *
    * This configuration defines all of your Notification options. Because Stacks is fully-typed,
@@ -158,6 +180,15 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   payment: PaymentConfig
+
+  /**
+   * **Ports**
+   *
+   * This configuration defines all of your Ports options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case you
+   * have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  ports: Ports
 
   /**
    * **Queue Options**

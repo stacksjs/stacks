@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/path",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks path.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -17,7 +17,6 @@
   },
   "keywords": [
     "path",
-    "pathe",
     "paths",
     "utilities",
     "functions",
@@ -43,11 +42,11 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/validation": "workspace:*",
-    "pathe": "^1.1.2"
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -1,5 +1,5 @@
-import type { CloudConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
+import type { CloudConfig } from '@stacksjs/types'
 import security from './security'
 
 /**
@@ -10,10 +10,22 @@ import security from './security'
  * any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  type: 'serverless',
   driver: 'aws',
   firewall: security.firewall,
+  environments: ['production', 'staging', 'development'],
 
   storage: {},
+
+  api: {
+    prefix: env.API_PREFIX || 'api',
+    // version: 'v1',
+    description: 'My awesome Stacks API',
+    deploy: true,
+    memorySize: 512,
+    prewarm: 10,
+    timeout: 30,
+  },
 
   cdn: {
     compress: true,
@@ -38,18 +50,6 @@ export default {
     },
   },
 
-  api: {
-    deploy: true,
-    prefix: env.API_PREFIX || 'api',
-    description: 'Stacks API',
-    memorySize: 512,
-    prewarm: 10,
-    timeout: 30,
-  },
-
-  ai: true, // deploys AI endpoints
-  cli: true, // deploys CLI setup endpoint (./bootstrap)
-  docs: true, // deploys documentation
   fileSystem: true, // enables file system
 
   // compute: {},

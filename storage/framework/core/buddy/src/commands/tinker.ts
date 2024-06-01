@@ -1,9 +1,7 @@
 import process from 'node:process'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, TinkerOptions } from '@stacksjs/types'
-import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
 
 export function tinker(buddy: CLI) {
   const descriptions = {
@@ -14,14 +12,22 @@ export function tinker(buddy: CLI) {
 
   buddy
     .command('tinker', descriptions.tinker)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TinkerOptions) => {
+      log.debug('Running `buddy tinker` ...', options)
+
       const perf = await intro('buddy tinker')
-      const result = await runAction(Action.Tinker, options)
+      const result = await runCommand('bun repl', {
+        stdin: 'inherit',
+      })
 
       if (result.isErr()) {
-        await outro('While running the tinker command, there was an issue', { startTime: perf, useSeconds: true }, result.error || undefined)
+        await outro(
+          'While running the tinker command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error || undefined,
+        )
         process.exit()
       }
 

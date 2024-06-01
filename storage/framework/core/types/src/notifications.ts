@@ -2,7 +2,17 @@ export interface NotificationOptions {
   default: 'email' | 'sms' | 'chat' | string
 
   email: {
-    default: 'emailjs' | 'mailgun' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'sendgrid' | 'ses' | string
+    default:
+      | 'emailjs'
+      | 'mailgun'
+      | 'mailjet'
+      | 'mandrill'
+      | 'netcore'
+      | 'nodemailer'
+      | 'postmark'
+      | 'sendgrid'
+      | 'ses'
+      | string
 
     from: {
       name: string

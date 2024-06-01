@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import type { aws_efs as efs } from 'aws-cdk-lib'
 import { CfnOutput as Output, aws_ec2 as ec2, aws_iam as iam } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'

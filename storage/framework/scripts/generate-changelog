@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd ../../..
+
+# generate changelog
+buddy changelog --quiet

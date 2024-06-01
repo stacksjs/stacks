@@ -15,7 +15,7 @@ Now, you can use it in your project:
 ```js
 import { createLocalTunnel } from '@stacksjs/tunnel'
 
-const url = await createLocalTunnel(3333)
+const url = await createLocalTunnel(3000)
 
 console.log('publicly sharable URL of your localhost', url)
 ```

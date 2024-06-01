@@ -4,9 +4,11 @@
 
 import type { Hits, SearchResponse } from 'meilisearch'
 
-// export function isString(val: unknown): val is string {
-//   return typeof val === 'string'
-// }
+// import { isString } from '@stacksjs/validation'
+
+export function isString(val: unknown): val is string {
+  return typeof val === 'string'
+}
 
 // this interface is primarily used to persist data to localStorage, in a unified way
 export interface SearchEngineStore {
@@ -125,10 +127,10 @@ export interface SearchEngineStore {
 export function determineState(): SearchEngineStore {
   const ls = localStorage.getItem('search-engine')
 
-  if (isString(ls))
-    return JSON.parse(ls) as SearchEngineStore
+  if (isString(ls)) return JSON.parse(ls) as SearchEngineStore
 
-  return { // default state
+  return {
+    // default state
     source: 'http://127.0.0.1:7700',
     index: '',
     perPage: 20,

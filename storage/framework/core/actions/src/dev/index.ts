@@ -1,6 +1,6 @@
+import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import type { DevOptions } from '@stacksjs/types'
-import { Action } from '@stacksjs/enums'
 import { runAction } from '../helpers'
 
 export async function runDevServer(options: DevOptions) {

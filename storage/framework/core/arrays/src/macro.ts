@@ -1,8 +1,22 @@
 import type { Arrayable, Nullable } from '@stacksjs/types'
-import type { PartitionFilter } from './helpers'
-import { at, clampArrayRange, flatten, last, mergeArrayable, move, partition, remove, sample, shuffle, toArray, uniq, uniqueBy } from './helpers'
-import { average, median, mode, range, sum } from './math'
 import { contains, containsAll, containsAny, containsNone, containsOnly, doesNotContain } from './contains'
+import type { PartitionFilter } from './helpers'
+import {
+  at,
+  clampArrayRange,
+  flatten,
+  last,
+  mergeArrayable,
+  move,
+  partition,
+  remove,
+  sample,
+  shuffle,
+  toArray,
+  uniq,
+  uniqueBy,
+} from './helpers'
+import { average, median, mode, range, sum } from './math'
 
 export const Arr = {
   contains(needle: string, haystack: string[]) {
@@ -49,14 +63,18 @@ export const Arr = {
    * Returns a random item/s from the array
    */
   random<T>(arr: T[], count = 1): T[] {
-    return sample(arr, count)
+    return sample(arr, count).filter((item): item is T => item != null)
   },
 
   /**
    * Returns random item/s from the array
    */
   sample<T>(arr: T[], count = 1): T[] {
-    return sample(arr, count)
+    // Get the sample array (may contain undefined values)
+    const sampleArr = sample(arr, count)
+
+    // Filter out any undefined values
+    return sampleArr.filter((item): item is T => item !== undefined)
   },
 
   unique<T>(arr: T[]): T[] {

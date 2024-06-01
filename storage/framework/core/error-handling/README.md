@@ -55,7 +55,7 @@ result.isErr() // false
 ### Example #2
 
 ```js
-const command = 'rimraf ./bun.lockb ./node_modules ./core/**/dist'
+const command = 'bunx rimraf ./bun.lockb ./node_modules ./core/**/dist'
 const result = await runCommand(command, options)
 
 if (result.isOk()) {

@@ -1,31 +1,23 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
+import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
+import { log } from '@stacksjs/logging'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
-import { frameworkPath, projectPath } from '@stacksjs/path'
 import { runAction } from '../helpers'
+import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 
 // import { files } from '@stacksjs/storage'
 
 export async function invoke(options?: GeneratorOptions) {
-  if (options?.types)
-    await generateTypes(options)
-
-  else if (options?.entries)
-    await generateLibEntries(options)
-
-  else if (options?.webTypes)
-    await generateWebTypes(options)
-
-  else if (options?.customData)
-    await generateVsCodeCustomData(options)
-
-  else if (options?.ideHelpers)
-    await generateIdeHelpers(options)
-
-  else if (options?.componentMeta)
-    await generateComponentMeta(options)
+  if (options?.types) await generateTypes(options)
+  else if (options?.entries) await generateLibEntries(options)
+  else if (options?.webTypes) await generateWebTypes(options)
+  else if (options?.customData) await generateVsCodeCustomData(options)
+  else if (options?.ideHelpers) await generateIdeHelpers(options)
+  else if (options?.componentMeta) await generateComponentMeta(options)
+  else if (options?.coreSymlink) await generateCoreSymlink()
 }
 
 export function generate(options: GeneratorOptions) {
@@ -58,17 +50,15 @@ export async function generateWebTypes(options?: GeneratorOptions) {
 }
 
 export async function generateVsCodeCustomData(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateVsCodeCustomData, {
-    cwd: frameworkPath(),
-    ...options,
-  })
+  const result = await genVsCodeCustomData()
 
   if (result.isErr()) {
     log.error('There was an error generating the custom-elements.json file.', result.error)
     process.exit()
   }
 
-  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true }) // because the generated json file needs to be linted
+
   log.success('Successfully generated the custom-elements.json file')
 }
 
@@ -85,7 +75,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions) {
 }
 
 export async function generateComponentMeta(options?: GeneratorOptions) {
-  const result = await runNpmScript(NpmScript.GenerateComponentMeta, options)
+  const result = await genVsCodeCustomData()
 
   if (result.isErr()) {
     log.error('There was an error generating your component meta information.', result.error)
@@ -110,23 +100,17 @@ export async function generateTypes(options?: GeneratorOptions) {
   log.success('Types were generated successfully')
 }
 
-export function generateMigrations() {
-  // const path = frameworkPath('database/schema.prisma')
-
-  // await migrate(path, { database: database.driver })
-
-  // await runCommand(`bunx prisma migrate dev --schema=${path}`)
-
-  log.success('Successfully updated migrations')
-}
-
 export function generatePkgxConfig() {
   // write the yaml string to a file in your project root
   // files.put(projectPath('./pkgx.yaml'), yamlStr)
 
-  log.success('Successfully generated `./pkgx.yaml` based on your configs')
+  log.success('Successfully generated `./pkgx.yaml` based on your config')
 }
 
 export async function generateSeeder() {
   // await seed()
+}
+
+export async function generateCoreSymlink() {
+  await runCommand(`ln -s ${frameworkPath()} ${projectPath('.stacks')}`)
 }

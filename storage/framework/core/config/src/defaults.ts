@@ -1,10 +1,11 @@
-import { path as p } from '@stacksjs/path'
+import { commandsPath, userDatabasePath } from '@stacksjs/path'
 import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
 
 export default {
   ai: {
+    deploy: false,
     models: [
       'amazon.titan-embed-text-v1',
       'amazon.titan-text-express-v1',
@@ -24,12 +25,16 @@ export default {
   },
 
   api: {
-    prefix: 'api',
-    description: 'Stacks API',
-    prewarm: true,
-    memorySize: 512,
-    timeout: 30,
     // version: 'v1',
+    prefix: 'api',
+    middleware: ['auth'],
+    routes: {
+      index: true,
+      show: true,
+      store: true,
+      update: true,
+      destroy: true,
+    },
   },
 
   app: {
@@ -46,24 +51,14 @@ export default {
     docMode: false,
     redirectUrls: [],
     maintenanceMode: false,
-    ports: {
-      frontend: 3333,
-      backend: 3334,
-      admin: 3335,
-      library: 3336,
-      desktop: 3337,
-      email: 3338,
-      docs: 3339,
-      inspect: 3340,
-      api: 3999,
-    },
   },
 
   cli: {
     name: 'My Custom CLI',
     command: 'my-custom-cli',
     description: 'Stacks is a full-stack framework for TypeScript.',
-    source: p.appPath('commands'),
+    source: commandsPath(),
+    deploy: false,
   },
 
   cache: {
@@ -76,14 +71,20 @@ export default {
         connection: 'default',
         host: 'localhost',
         port: 6379,
+        username: '',
+        password: '',
       },
     },
   },
 
   cloud: {
+    type: 'serverless',
+
     driver: 'aws',
 
     storage: {},
+
+    environments: ['production', 'staging', 'development'],
 
     firewall: {
       enabled: true,
@@ -112,25 +113,27 @@ export default {
         headers: [],
         queryStrings: [],
       },
+      realtimeLogs: {
+        enabled: true,
+        samplingRate: 2,
+      },
     },
 
-    ai: true,
-    docs: true,
-    api: true,
-    fileSystem: true,
+    fileSystem: false,
   },
 
   database: {
     default: 'sqlite',
 
-    name: 'stacks',
-
     connections: {
       sqlite: {
-        database: p.projectStoragePath('framework/database/stacks.sqlite'),
+        database: userDatabasePath('stacks.sqlite'),
         prefix: '',
       },
     },
+
+    migrations: 'migrations',
+    migrationLocks: 'migration_locks',
   },
 
   dns: {
@@ -147,6 +150,7 @@ export default {
     title: 'Stacks',
     description: 'Rapid application, cloud & library framework.',
     lastUpdated: true,
+    deploy: false,
 
     themeConfig: {
       editLink: {
@@ -174,9 +178,101 @@ export default {
       address: 'no-reply@stacksjs.org',
     },
 
+    mailboxes: [],
+
     server: {
       scan: true,
-      mailboxes: [],
+    },
+  },
+
+  errors: {
+    messages: {
+      string: 'The {{ field }} field must be a string',
+      email: 'The {{ field }} field must be a valid email address',
+      regex: 'The {{ field }} field format is invalid',
+      url: 'The {{ field }} field must be a valid URL',
+      activeUrl: 'The {{ field }} field must be a valid URL',
+      alpha: 'The {{ field }} field must contain only letters',
+      alphaNumeric: 'The {{ field }} field must contain only letters and numbers',
+      minLength: 'The {{ field }} field must have at least {{ min }} characters',
+      maxLength: 'The {{ field }} field must not be greater than {{ max }} characters',
+      fixedLength: 'The {{ field }} field must be {{ size }} characters long',
+      confirmed: 'The {{ field }} field and {{ otherField }} field must be the same',
+      endsWith: 'The {{ field }} field must end with {{ substring }}',
+      startsWith: 'The {{ field }} field must start with {{ substring }}',
+      sameAs: 'The {{ field }} field and {{ otherField }} field must be the same',
+      notSameAs: 'The {{ field }} field and {{ otherField }} field must be different',
+      in: 'The selected {{ field }} is invalid',
+      notIn: 'The selected {{ field }} is invalid',
+      ipAddress: 'The {{ field }} field must be a valid IP address',
+      uuid: 'The {{ field }} field must be a valid UUID',
+      ascii: 'The {{ field }} field must only contain ASCII characters',
+      creditCard: 'The {{ field }} field must be a valid {{ providersList }} card number',
+      hexCode: 'The {{ field }} field must be a valid hex color code',
+      iban: 'The {{ field }} field must be a valid IBAN number',
+      jwt: 'The {{ field }} field must be a valid JWT token',
+      coordinates: 'The {{ field }} field must contain latitude and longitude coordinates',
+      mobile: 'The {{ field }} field must be a valid mobile phone number',
+      passport: 'The {{ field }} field must be a valid passport number',
+      postalCode: 'The {{ field }} field must be a valid postal code',
+
+      // boolean
+      boolean: 'The value must be a boolean',
+
+      // number
+      number: 'The {{ field }} field must be a number',
+      min: 'The {{ field }} field must be at least {{ min }}',
+      max: 'The {{ field }} field must not be greater than {{ max }}',
+      range: 'The {{ field }} field must be between {{ min }} and {{ max }}',
+      positive: 'The {{ field }} field must be positive',
+      negative: 'The {{ field }} field must be negative',
+      decimal: 'The {{ field }} field must have {{ digits }} decimal places',
+      withoutDecimals: 'The {{ field }} field must not have decimal places',
+
+      // date
+      date: 'The {{ field }} field must be a datetime value',
+      'date.equals': 'The {{ field }} field must be a date equal to {{ expectedValue }}',
+      'date.after': 'The {{ field }} field must be a date after {{ expectedValue }}',
+      'date.before': 'The {{ field }} field must be a date before {{ expectedValue }}',
+      'date.afterOrEqual': 'The {{ field }} field must be a date after or equal to {{ expectedValue }}',
+      'date.beforeOrEqual': 'The {{ field }} field must be a date before or equal to {{ expectedValue }}',
+      'date.sameAs': 'The {{ field }} field and {{ otherField }} field must be the same',
+      'date.notSameAs': 'The {{ field }} field and {{ otherField }} field must be different',
+      'date.afterField': 'The {{ field }} field must be a date after {{ otherField }}',
+
+      // accepted
+      accepted: 'The {{ field }} field must be accepted',
+
+      // enum
+      enum: 'The selected {{ field }} is invalid',
+
+      // literal
+      literal: 'The {{ field }} field must be {{ expectedValue }}',
+
+      // object
+      object: 'The {{ field }} field must be an object',
+
+      // record
+      record: 'The {{ field }} field must be an object',
+      'record.minLength': 'The {{ field }} field must have at least {{ min }} items',
+      'record.maxLength': 'The {{ field }} field must not have more than {{ max }} items',
+      'record.fixedLength': 'The {{ field }} field must contain {{ size }} items',
+
+      // array
+      array: 'The {{ field }} field must be an array',
+      'array.minLength': 'The {{ field }} field must have at least {{ min }} items',
+      'array.maxLength': 'The {{ field }} field must not have more than {{ max }} items',
+      'array.fixedLength': 'The {{ field }} field must contain {{ size }} items',
+      notEmpty: 'The {{ field }} field must not be empty',
+      distinct: 'The {{ field }} field has duplicate values',
+
+      // tuple
+      tuple: 'The {{ field }} field must be an array',
+
+      // union
+      union: 'Invalid value provided for {{ field }} field',
+      unionGroup: 'Invalid value provided for {{ field }} field',
+      unionOfTypes: 'Invalid value provided for {{ field }} field',
     },
   },
 
@@ -241,17 +337,57 @@ export default {
     },
 
     types: [
-      { value: 'feat', name: 'feat:     ✨  A new feature', emoji: ':sparkles:' },
+      {
+        value: 'feat',
+        name: 'feat:     ✨  A new feature',
+        emoji: ':sparkles:',
+      },
       { value: 'fix', name: 'fix:      🐛  A bug fix', emoji: ':bug:' },
-      { value: 'docs', name: 'docs:     📝  Documentation only changes', emoji: ':memo:' },
-      { value: 'style', name: 'style:    💄  Changes that do not affect the meaning of the code', emoji: ':lipstick:' },
-      { value: 'refactor', name: 'refactor: ♻️   A code change that neither fixes a bug nor adds a feature', emoji: ':recycle:' },
-      { value: 'perf', name: 'perf:     ⚡️  A code change that improves performance', emoji: ':zap:' },
-      { value: 'test', name: 'test:     ✅  Adding missing tests or adjusting existing tests', emoji: ':white_check_mark:' },
-      { value: 'build', name: 'build:    📦️  Changes that affect the build system or external dependencies', emoji: ':package:' },
-      { value: 'ci', name: 'ci:       🎡  Changes to our CI configuration files and scripts', emoji: ':ferris_wheel:' },
-      { value: 'chore', name: 'chore:    🔨  Other changes that don’t modify src or test files', emoji: ':hammer:' },
-      { value: 'revert', name: 'revert:   ⏪️  Reverts a previous commit', emoji: ':rewind:' },
+      {
+        value: 'docs',
+        name: 'docs:     📝  Documentation only changes',
+        emoji: ':memo:',
+      },
+      {
+        value: 'style',
+        name: 'style:    💄  Changes that do not affect the meaning of the code',
+        emoji: ':lipstick:',
+      },
+      {
+        value: 'refactor',
+        name: 'refactor: ♻️   A code change that neither fixes a bug nor adds a feature',
+        emoji: ':recycle:',
+      },
+      {
+        value: 'perf',
+        name: 'perf:     ⚡️  A code change that improves performance',
+        emoji: ':zap:',
+      },
+      {
+        value: 'test',
+        name: 'test:     ✅  Adding missing tests or adjusting existing tests',
+        emoji: ':white_check_mark:',
+      },
+      {
+        value: 'build',
+        name: 'build:    📦️  Changes that affect the build system or external dependencies',
+        emoji: ':package:',
+      },
+      {
+        value: 'ci',
+        name: 'ci:       🎡  Changes to our CI configuration files and scripts',
+        emoji: ':ferris_wheel:',
+      },
+      {
+        value: 'chore',
+        name: 'chore:    🔨  Other changes that don’t modify src or test files',
+        emoji: ':hammer:',
+      },
+      {
+        value: 'revert',
+        name: 'revert:   ⏪️  Reverts a previous commit',
+        emoji: ':rewind:',
+      },
     ],
   },
 
@@ -265,7 +401,7 @@ export default {
 
     argon2: {
       memory: 65536, // memory usage in kibibytes
-      threads: 1,
+      // threads: 1,
       time: 1, // the number of iterations
     },
   },
@@ -283,28 +419,36 @@ export default {
       name: 'hello-world-vue',
       description: 'Your Vue component library description',
       keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
-      tags: [{
-        name: ['HelloWorld', 'AppHelloWorld'],
-        description: 'The Hello World custom element, built via this framework.',
-        attributes: [{
-          name: 'greeting',
-          description: 'The greeting.',
-        }],
-      }],
+      tags: [
+        {
+          name: ['HelloWorld', 'AppHelloWorld'],
+          description: 'The Hello World custom element, built via this framework.',
+          attributes: [
+            {
+              name: 'greeting',
+              description: 'The greeting.',
+            },
+          ],
+        },
+      ],
     },
 
     webComponents: {
       name: 'hello-world-elements',
       description: 'Your framework agnostic web component library description.',
       keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-      tags: [{
-        name: ['HelloWorld', 'AppHelloWorld'],
-        description: 'The Hello World custom element, built via this framework.',
-        attributes: [{
-          name: 'greeting',
-          description: 'The greeting.',
-        }],
-      }],
+      tags: [
+        {
+          name: ['HelloWorld', 'AppHelloWorld'],
+          description: 'The Hello World custom element, built via this framework.',
+          attributes: [
+            {
+              name: 'greeting',
+              description: 'The greeting.',
+            },
+          ],
+        },
+      ],
     },
 
     functions: {
@@ -312,11 +456,14 @@ export default {
       description: 'Your function library description.',
       keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
       shouldGenerateSourcemap: false,
-      functions: [
-        'counter',
-        'dark',
-      ],
+      functions: ['counter', 'dark'],
     },
+  },
+
+  logger: {
+    level: 3,
+    logFilePath: 'storage/logs/console.log',
+    errorsPath: 'storage/logs/errors.log',
   },
 
   notification: {
@@ -325,6 +472,21 @@ export default {
 
   payment: {
     driver: 'stripe',
+  },
+
+  ports: {
+    frontend: 3000,
+    backend: 3001,
+    admin: 3002,
+    library: 3003,
+    desktop: 3004,
+    email: 3005,
+    docs: 3006,
+    inspect: 3007,
+    api: 3008,
+    systemTray: 3009,
+    database: 3010,
+    // mobile: 3010,
   },
 
   queue: {
@@ -362,7 +524,7 @@ export default {
   },
 
   searchEngine: {
-    driver: 'meilisearch',
+    driver: 'opensearch',
   },
 
   security: {
@@ -401,16 +563,6 @@ export default {
       appId: '',
       apiKey: '',
     },
-
-    planetscale: {
-      appId: '',
-      apiKey: '',
-    },
-
-    supabase: {
-      appId: '',
-      apiKey: '',
-    },
   },
 
   storage: {
@@ -419,16 +571,21 @@ export default {
 
   team: {
     name: 'Stacks',
-    members: [{
+    members: {
       'Chris Breuer': 'chris@stacksjs.org',
-    }],
+    },
   },
 
   ui: {
     shortcuts: [
-      ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
+      [
+        'btn',
+        'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer',
+      ],
     ],
+
     safelist: 'prose prose-sm m-auto text-left',
+
     trigger: ':stx:',
     classPrefix: 'stx-',
     reset: 'tailwind',

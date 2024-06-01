@@ -1,13 +1,13 @@
-/* eslint-disable no-new */
 import { log } from '@stacksjs/cli'
 import type { DateTime } from 'luxon'
+import { CronJob } from './job'
 import { CronTime } from './time'
 
 export class Schedule {
-  private cronPattern: string = ''
-  private timezone: string = 'America/Los_Angeles'
-  private task: () => void
-  private cmd?: string
+  private cronPattern = ''
+  private timezone = 'America/Los_Angeles'
+  private readonly task: () => void
+  // private cmd?: string
 
   constructor(task: () => void) {
     this.task = task
@@ -20,6 +20,11 @@ export class Schedule {
 
   everyMinute() {
     this.cronPattern = '0 * * * * *'
+    return this
+  }
+
+  everyTwoMinutes() {
+    this.cronPattern = '*/2 * * * * *'
     return this
   }
 
@@ -93,9 +98,20 @@ export class Schedule {
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
   }
 
+  // job and action methods need to be added and they accept a path string param
+  job(path: string) {
+    log.info(`Scheduling job: ${path}`)
+    return this
+  }
+
+  action(path: string) {
+    log.info(`Scheduling action: ${path}`)
+    return this
+  }
+
   static command(cmd: string) {
-    // log.info(`Executing command: ${cmd}`)
-    this.cmd = cmd
+    log.info(`Executing command: ${cmd}`)
+    // this.cmd = cmd
     return this
   }
 }
@@ -107,5 +123,7 @@ export function sendAt(cronTime: string | Date | DateTime): DateTime {
 export function timeout(cronTime: string | Date | DateTime): number {
   return new CronTime(cronTime).getTimeout()
 }
+
+export type Scheduler = typeof Schedule
 
 export default Schedule

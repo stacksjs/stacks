@@ -1,6 +1,6 @@
 import { Schedule } from './schedule'
 
-export { CronJob } from './job'
+export { CronJob as BunCronJob } from './job'
 export { CronTime } from './time'
 
 export type {
@@ -13,6 +13,7 @@ export type {
   Ranges,
   TimeUnit,
 } from './types/cron'
+export * from './types/utils'
 
 export * from './schedule'
 

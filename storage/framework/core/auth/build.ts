@@ -1,8 +1,6 @@
-import { log, runCommand } from '@stacksjs/cli'
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm', {
-  cwd: import.meta.dir,
+  outdir: './dist',
+  format: 'esm',
 })
-
-if (result.isErr())
-  log.error(result.error)

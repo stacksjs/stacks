@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/git",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,23 +45,23 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "bumpp": "^9.3.0",
+    "bumpp": "^9.4.1",
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
-    "cz-git": "^1.8.0",
-    "giget": "^1.2.1",
-    "simple-git-hooks": "^2.9.0"
+    "cz-git": "^1.9.2",
+    "giget": "^1.2.3",
+    "simple-git-hooks": "^2.11.1"
   },
   "dependencies": {
-    "bumpp": "^9.3.0",
+    "bumpp": "^9.4.1",
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
-    "cz-git": "^1.8.0",
-    "giget": "^1.2.1",
-    "simple-git-hooks": "^2.9.0"
+    "cz-git": "^1.9.2",
+    "giget": "^1.2.3",
+    "simple-git-hooks": "^2.11.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -9,8 +9,12 @@ import type { UiConfig } from '@stacksjs/types'
  */
 export default {
   shortcuts: [
-    ['btn', 'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer'],
+    [
+      'btn',
+      'inline-flex items-center px-4 py-2 ml-2 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer',
+    ],
   ],
+
   safelist: 'prose prose-sm m-auto text-left',
   trigger: ':stx:',
   classPrefix: 'stx-',
@@ -37,6 +41,16 @@ export default {
     web: {
       title: 'Mona',
       text: 'Hubot',
+    },
+  },
+
+  theme: {
+    // ...
+    colors: {
+      veryCool: '#0000ff', // class="text-very-cool"
+      brand: {
+        primary: 'hsl(var(--hue, 217) 78% 51%)', // class="bg-brand-primary"
+      },
     },
   },
 } satisfies UiConfig

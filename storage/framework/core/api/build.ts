@@ -1,7 +1,7 @@
-import { runCommand } from '@stacksjs/cli'
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
 
-const command: string = 'bun build ./src/index.ts --outdir dist --format esm --target bun'
-
-await runCommand(command, {
-  cwd: import.meta.dir,
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
 })

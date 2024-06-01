@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/database",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -21,7 +21,6 @@
     "sqlite",
     "mysql",
     "postgres",
-    "planetscale",
     "bun",
     "stacks"
   ],
@@ -48,7 +47,7 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
@@ -58,9 +57,10 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.5.6"
+    "kysely-bun-worker": "^0.6.1"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -68,12 +68,17 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.5.6"
+    "kysely-bun-worker": "^0.6.1"
   },
   "optionalDependencies": {
-    "mysql2": "^3.9.1"
+    "mysql2": "^3.10.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/tar": "^6.1.13",
+    "debug": "^4.3.5",
+    "mkdirp": "^3.0.1",
+    "q": "^1.5.1",
+    "tar": "^7.2.0"
   }
 }

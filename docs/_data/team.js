@@ -19,9 +19,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://github.com/blakeayer' },
-    ],
+    links: [{ icon: 'github', link: 'https://github.com/blakeayer' }],
     sponsor: 'https://github.com/sponsors/blakeayer',
   },
   {
@@ -31,9 +29,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://github.com/konkonam' },
-    ],
+    links: [{ icon: 'github', link: 'https://github.com/konkonam' }],
     sponsor: 'https://github.com/sponsors/konkonam',
   },
   {
@@ -43,9 +39,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://www.averyahill.com/' },
-    ],
+    links: [{ icon: 'github', link: 'https://www.averyahill.com/' }],
   },
   {
     avatar: 'https://avatars.githubusercontent.com/u/10015302',
@@ -54,9 +48,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://github.com/harlekoy' },
-    ],
+    links: [{ icon: 'github', link: 'https://github.com/harlekoy' }],
     sponsor: 'https://github.com/sponsors/harlekoy',
   },
   {
@@ -66,9 +58,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://github.com/germikee' },
-    ],
+    links: [{ icon: 'github', link: 'https://github.com/germikee' }],
     sponsor: 'https://github.com/sponsors/germikee',
   },
   {
@@ -78,9 +68,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://github.com/freb97' },
-    ],
+    links: [{ icon: 'github', link: 'https://github.com/freb97' }],
     sponsor: 'https://github.com/sponsors/freb97',
   },
   {
@@ -103,9 +91,7 @@ export const core = [
     org: 'Stacks',
     orgLink: 'https://stacksjs.org/',
     desc: 'Core team member of Stacks.',
-    links: [
-      { icon: 'github', link: 'https://github.com/glennmichael123' },
-    ],
+    links: [{ icon: 'github', link: 'https://github.com/glennmichael123' }],
     sponsor: 'https://github.com/sponsors/glennmichael123',
   },
 ]

@@ -1,8 +1,7 @@
 import process from 'node:process'
-import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import { config } from '@stacksjs/config'
+import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export function configure(buddy: CLI) {
@@ -10,29 +9,20 @@ export function configure(buddy: CLI) {
     configure: 'Configure options',
     aws: 'Configure the AWS connection',
     project: 'Target a specific project',
+    profile: 'The AWS profile to use',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('configure', descriptions.configure)
     .option('--aws', descriptions.aws, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options?: ConfigureOptions) => {
+      log.debug('Running `buddy configure` ...', options)
+
       if (options?.aws) {
-        const startTime = performance.now()
-        const result = await runCommand('aws configure', {
-          ...options,
-          cwd: p.projectPath(),
-          stdin: 'inherit',
-        })
-
-        if (result.isErr()) {
-          await outro('While running the configure command, there was an issue', { startTime, useSeconds: true }, result.error)
-          process.exit(ExitCode.FatalError)
-        }
-
-        await outro('Exited', { startTime, useSeconds: true })
+        await configureAws(options)
         process.exit(ExitCode.Success)
       }
 
@@ -42,22 +32,19 @@ export function configure(buddy: CLI) {
 
   buddy
     .command('configure:aws', descriptions.aws)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--profile', descriptions.profile, {
+      default: process.env.AWS_PROFILE,
+    })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--access-key-id', 'The AWS access key')
+    .option('--secret-access-key', 'The AWS secret access key')
+    .option('--region', 'The AWS region')
+    .option('--output', 'The AWS output format')
+    .option('--quiet', 'Suppress output')
     .action(async (options?: ConfigureOptions) => {
-      const startTime = performance.now()
-      const result = await runCommand(`aws configure --profile ${config.app.url}`, {
-        ...options,
-        cwd: p.cloudPath(),
-        stdin: 'inherit',
-      })
-
-      if (result.isErr()) {
-        await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
-        process.exit(ExitCode.FatalError)
-      }
-
-      await outro('Exited', { startTime, useSeconds: true })
+      log.debug('Running `buddy configure:aws` ...', options)
+      await configureAws(options)
       process.exit(ExitCode.Success)
     })
 
@@ -65,4 +52,31 @@ export function configure(buddy: CLI) {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(ExitCode.FatalError)
   })
+}
+
+async function configureAws(options?: ConfigureOptions) {
+  const startTime = performance.now()
+
+  const awsAccessKeyId = options?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID
+  const awsSecretAccessKey = options?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY
+  const defaultRegion = 'us-east-1' // we only support `us-east-1` for now
+  const defaultOutputFormat = options?.output ?? 'json'
+
+  const command = `aws configure --profile ${options?.profile ?? process.env.AWS_PROFILE}`
+  const input = `${awsAccessKeyId}\n${awsSecretAccessKey}\n${defaultRegion}\n${defaultOutputFormat}\n`
+
+  const result = await runCommand(command, {
+    cwd: p.projectPath(),
+    stdin: 'pipe', // set stdin mode to 'pipe' to write to it
+    input, // the actual input to write
+  })
+
+  if (result.isErr()) {
+    await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  if (options?.quiet) return
+
+  await outro('Exited', { startTime, useSeconds: true })
 }

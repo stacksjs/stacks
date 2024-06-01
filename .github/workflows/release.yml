@@ -1,4 +1,4 @@
-name: Release
+name: CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    # name: Release
     runs-on: ubuntu-latest
 
     steps:
@@ -20,13 +20,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
-          registry-url: "https://registry.npmjs.org"
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: Use cached node_modules
+      - name: Use Cached node_modules
         uses: actions/cache@v4
         with:
           path: node_modules
@@ -37,33 +37,27 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Set Application Key
-        run: bun buddy key:generate
-
-      - name: Prepublish # these packages are required for the "Publish framework" step
-        run: bunx pnpm --filter='./storage/framework' build
-
-      - name: Publish framework
+      - name: Publish Framework
         run: ./storage/framework/scripts/publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish dummy libraries
-        run: bunx pnpm --filter='./storage/framework' publish:dummy-libs
+      - name: Publish Dummy Libraries
+        run: bun --filter='./storage/framework' run publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       # temporary workaround until npm publish is replaced with bun publish
-      - name: Install VS Code Extension Dependencies
-        run: cd storage/framework/ide/vscode && bun install && cd ../../../../
+      # - name: Install VS Code Extension Dependencies
+      #   run: cd storage/framework/ide/vscode && npm install && cd ../../../../
 
       # TODO: remove npm once bun publish is available
-      - name: Publish VS Code Extension
-        run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      # - name: Publish VS Code Extension
+      #   run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
-      - name: Create GitHub release
+      - name: Create GitHub Release
         run: bunx changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

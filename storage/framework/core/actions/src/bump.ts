@@ -1,11 +1,21 @@
-import { runCommand } from '@stacksjs/cli'
+import { parseOptions, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 
-await runCommand('buddy changelog --quiet', {
-  cwd: p.projectPath(),
+const options = parseOptions()
+const changelogCommand = options?.dryRun ? 'buddy changelog --quiet --dry-run' : 'buddy changelog --quiet'
+const bumpCommand = options?.dryRun
+  ? `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --no-push --execute "../scripts/lint"`
+  : `bunx bumpp ./package.json ./**/package.json ../ide/vscode/package.json --all --execute "../scripts/lint"`
+
+console.log(`Running: ${bumpCommand}`)
+console.log(`In frameworkPath: ${p.frameworkPath()}`)
+
+await runCommand(bumpCommand, {
+  cwd: p.frameworkPath('core'),
+  stdin: 'inherit',
 })
 
-await runCommand(
-  'bunx bumpp ./package.json ./core/**/package.json ./ide/vscode/package.json --all',
-  { cwd: p.frameworkPath(), stdin: 'inherit' },
-)
+await runCommand(changelogCommand, {
+  cwd: p.projectPath(),
+  stdin: 'inherit',
+})

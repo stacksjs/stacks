@@ -6,15 +6,15 @@
 declare module 'bun' {
   namespace env {
     const APP_NAME: string
-    const APP_ENV: 'local' | 'dev' | 'development' | 'staging' | 'prod' | 'production'
+    const APP_ENV: 'local' | 'dev' | 'stage' | 'prod'
     const APP_KEY: string
-    const APP_PORT: number
+    const PORT: number
     const APP_MAINTENANCE: boolean
     const APP_URL: string
     const API_PREFIX: string
     const DOCS_PREFIX: string
     const DEBUG: boolean
-    const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'planetscale'
+    const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'dynamodb'
     const DB_HOST: string
     const DB_PORT: number
     const DB_DATABASE: string

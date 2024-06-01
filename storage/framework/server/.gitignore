@@ -1,4 +1,11 @@
 bootstrap
 *bun-build
-routes
+Actions
+app
 config
+core
+docs
+routes
+server
+storage
+env.ts

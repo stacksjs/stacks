@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/faker",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Faker functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,14 +45,14 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*"
   },
   "dependencies": {
-    "@faker-js/faker": "^8.4.0",
+    "@faker-js/faker": "^8.4.1",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*"
   },

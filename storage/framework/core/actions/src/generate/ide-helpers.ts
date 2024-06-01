@@ -12,7 +12,6 @@ import { generateVsCodeCustomData, generateWebTypes } from '../helpers/vscode-cu
 if (hasComponents()) {
   await generateWebTypes()
   await generateVsCodeCustomData()
-}
-else {
+} else {
   log.info('No components found. Skipping IDE helper generation.')
 }

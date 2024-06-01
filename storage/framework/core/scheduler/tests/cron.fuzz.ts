@@ -1,5 +1,5 @@
 import { fc, test } from '@fast-check/jest'
-import { CronJob } from '../src'
+import { BunCronJob as CronJob } from '../src'
 import { CronError } from '../src/errors'
 
 /**
@@ -33,17 +33,13 @@ function testCronJob(
   try {
     const job = new CronJob(
       cronTime,
-      () => { },
+      () => {},
       null,
       start,
-      (tzOrOffset ? timeZone : null) as typeof tzOrOffset extends true
-        ? string
-        : null,
+      (tzOrOffset ? timeZone : null) as typeof tzOrOffset extends true ? string : null,
       null,
       runOnInit,
-      (tzOrOffset ? null : utcOffset) as typeof tzOrOffset extends true
-        ? null
-        : number,
+      (tzOrOffset ? null : utcOffset) as typeof tzOrOffset extends true ? null : number,
       unrefTimeout,
     )
 
@@ -52,14 +48,11 @@ function testCronJob(
     expect(job.running).toBe(false)
 
     expect(job.cronTime.source).toBe(cronTime)
-  }
-  catch (error) {
+  } catch (error) {
     const isOk = checkError(error)
     if (!isOk) {
       console.error(error)
-      console.error(
-        'Make sure the relevant code is using an instance of CronError (or derived) when throwing.',
-      )
+      console.error('Make sure the relevant code is using an instance of CronError (or derived) when throwing.')
     }
     expect(isOk).toBe(true)
   }
@@ -78,9 +71,8 @@ test.prop(
     tzOrOffset: fc.boolean(),
   },
   { numRuns: 100_000 },
-)(
-  'CronJob should behave as expected and not error unexpectedly (with matching inputs)',
-  params => testCronJob(params, err => err instanceof CronError),
+)('CronJob should behave as expected and not error unexpectedly (with matching inputs)', (params) =>
+  testCronJob(params, (err) => err instanceof CronError),
 )
 
 test.prop(
@@ -94,9 +86,8 @@ test.prop(
     tzOrOffset: fc.boolean(),
   },
   { numRuns: 100_000 },
-)(
-  'CronJob should behave as expected and not error unexpectedly (with random inputs)',
-  params => testCronJob(params, err => err instanceof CronError),
+)('CronJob should behave as expected and not error unexpectedly (with random inputs)', (params) =>
+  testCronJob(params, (err) => err instanceof CronError),
 )
 
 test.prop(
@@ -110,11 +101,6 @@ test.prop(
     tzOrOffset: fc.boolean(),
   },
   { numRuns: 100_000 },
-)(
-  'CronJob should behave as expected and not error unexpectedly (with anything inputs)',
-  params =>
-    testCronJob(
-      params as any,
-      err => err instanceof CronError || err instanceof TypeError,
-    ),
+)('CronJob should behave as expected and not error unexpectedly (with anything inputs)', (params) =>
+  testCronJob(params as any, (err) => err instanceof CronError || err instanceof TypeError),
 )

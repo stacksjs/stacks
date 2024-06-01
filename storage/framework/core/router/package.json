@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/router",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -49,13 +49,14 @@
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.7.0",
-    "vue-router": "^4.2.5"
+    "unplugin-vue-router": "^0.9.0",
+    "vue-router": "^4.3.2"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.7.0",
-    "vue-router": "^4.2.5"
+    "@stacksjs/logging": "workspace:*",
+    "unplugin-vue-router": "^0.9.0",
+    "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

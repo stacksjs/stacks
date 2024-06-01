@@ -1,22 +1,10 @@
 {
-  "vue.inlayHints.missingProps": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.preferGoToSourceDefinition": true,
+  // TODO: temp until biome can handle SFCs
   "eslint.experimental.useFlatConfig": true,
-  // Disable the default formatter, use eslint instead
-  "prettier.enable": false,
-  "editor.formatOnSave": false,
-
-  // Auto fix
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "never"
-  },
-
-  // Silent the stylistic rules in you IDE, but still auto fix them
-  // Silent the stylistic rules in you IDE, but still auto fix them
+    // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
     { "rule": "style/*", "severity": "off" },
+    { "rule": "format/*", "severity": "off" },
     { "rule": "*-indent", "severity": "off" },
     { "rule": "*-spacing", "severity": "off" },
     { "rule": "*-spaces", "severity": "off" },
@@ -24,65 +12,49 @@
     { "rule": "*-dangle", "severity": "off" },
     { "rule": "*-newline", "severity": "off" },
     { "rule": "*quotes", "severity": "off" },
-    { "rule": "*semi", "severity": "off" }
+    { "rule": "*semi", "severity": "off" },
+    { "rule": "no-undef", "severity": "off" }
   ],
 
   // Enable eslint for all supported languages
   "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "vue",
-    "stx",
-    "html",
-    "markdown",
-    "json",
-    "jsonc",
-    "yaml",
-    "toml"
+    "vue"
   ],
 
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "[stx]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // JavaScript
+  "prettier.enable": false,   // Disable the default formatter, use eslint instead
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports.biome": "explicit"
   },
+
+  // TypeScript
+  "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
+  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
+
+  // JSON
   "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
+
+  // YAML
   "[yaml]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "biomejs.biome"
   },
-  "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
-    "editor.formatOnSave": true
-  },
+
+  // Shell
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
 
-  "editor.quickSuggestions": {
-    "strings": true
+  // Markdown
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true
   },
-  "files.associations": {
-    "buddy": "typescript",
-    "*.stx": "vue"
-  },
-  "vsicons.associations.files": [
-    {
-      "icon": "public/favicon",
-      "extensions": ["stx"],
-      "format": "svg"
-    }
-  ],
-  "git.enableSmartCommit": true,
-  "npm.enableRunFromFolder": true,
-  "npm.packageManager": "bun",
-  "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./storage/framework/core/ui/src/unocss.config.ts",
-  "markdownlint.ignore": [
-    "CHANGELOG.md"
-  ],
   "markdownlint.config": {
     "default": true,
     "MD033": {
@@ -97,8 +69,36 @@
     },
     "MD041": false
   },
+
+  // Stacks
+  "vue.inlayHints.missingProps": true,
+  "typescript.preferGoToSourceDefinition": true,
+  "[stx]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "files.associations": {
+    "buddy": "typescript",
+    "*.stx": "vue"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "vsicons.associations.files": [
+    {
+      "icon": "${workspaceFolder}/public/favicon.svg",
+      "extensions": ["stx"],
+      "format": "svg"
+    }
+  ],
+  "git.enableSmartCommit": true,
+  "npm.enableRunFromFolder": true,
+  "npm.packageManager": "bun",
+  "editor.gotoLocation.multipleDefinitions": "goto",
   "search.exclude": {
     "**/node_modules": true,
+    "**/cdk.out": true,
+    "**/dist": true,
+    "**/storage/public": true,
     "CHANGELOG.md": true
   },
   "explorer.confirmDragAndDrop": false,
@@ -128,5 +128,5 @@
   ],
   "grammarly.files.exclude": [
     "**/dictionary.txt"
-  ]
+  ],
 }

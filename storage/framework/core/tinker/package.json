@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/tinker",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "All you need to tinker.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "build": "echo 'wip'",
-    "prepublishOnly": "bun --bun run build",
+    "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "peerDependencies": {

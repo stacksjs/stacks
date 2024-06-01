@@ -1,14 +1,15 @@
+import type { UserConfig } from '@unocss/core'
 import type { UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
+export type Shortcuts = UserShortcuts
 
 export interface FontInfo {
   title: string
   text: string
 }
-export type FontFor = 'email' | 'desktop' | 'mobile' | 'web'
 
 export interface WebFontMeta {
   name: string
@@ -134,29 +135,10 @@ export interface UiOptions {
    * for several local font providers. You may set this value to
    * `null` if you prefer not utilize any local fonts.
    *
-   * @see https://stacks.ow3.org/fonts
-   * @example applies the same font for all platforms _(web, email, desktop, and mobile)_
-   * ```ts
-   * fonts: {
-   *   title: 'Mona',
-   *   text: 'Hubot'
-   * }
-   * ```
-   * @example
-   * ```ts
-   * fonts: {
-   *   web: {
-   *     title: 'Inter',
-   *     text: 'Mona'
-   *   },
-   *   desktop: {
-   *     title: 'Mona',
-   *     text: 'Inter'
-   *   },
-   * }
+   * @see https://stacksjs.org/docs/fonts
    * ```
    */
-  fonts?: Record<FontFor, FontInfo> | { [key in FontFor]: FontInfo }
+  fonts?: any
 
   useWebFonts?: boolean | WebFontsProviders
 
@@ -180,11 +162,21 @@ export interface UiOptions {
    */
   icons: Icon | Icon[]
   // icons: Record<string, () => Promise<any>>
+
+  theme: UserConfig['theme']
+  // plugins: UserConfig['plugins']
+  // corePlugins: UserConfig['corePlugins']
+  variants: UserConfig['variants']
+  layers: UserConfig['layers']
+  // darkMode: UserConfig['darkMode']
+  // extend: UserConfig['extend']
+  // screens: UserConfig['screens']
+  // spacing: UserConfig['spacing']
+  // backgroundColor: UserConfig['backgroundColor']
+  // backgroundImage: UserConfig['backgroundImage']
 }
 
 export type UiConfig = Partial<UiOptions>
-
-export type Shortcuts = UserShortcuts
 
 /**
  * **Style Reset — Preset**

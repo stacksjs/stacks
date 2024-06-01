@@ -3,6 +3,10 @@ import type { DocsConfig } from '@stacksjs/types'
 
 const nav = [
   {
+    text: 'Docs',
+    link: '/guide/intro',
+  },
+  {
     text: 'Changelog',
     link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
   },
@@ -31,6 +35,16 @@ const nav = [
 const sidebar = {
   '/guide/': [
     {
+      text: 'Prologue',
+      collapsible: true,
+      items: [
+        { text: 'Release Notes', link: '/release-notes' },
+        { text: 'Upgrade Guide', link: '/upgrade-guide' },
+        { text: 'Contribution Guide', link: '/contribution-guide' },
+      ],
+    },
+
+    {
       text: 'Getting Started',
       collapsible: true,
       items: [
@@ -46,8 +60,11 @@ const sidebar = {
       items: [
         { text: 'Routing', link: '/basics/routing' },
         { text: 'Middleware', link: '/basics/middleware' },
-        { text: 'Actions', link: '/basics/actions' },
+        { text: 'Models', link: '/basics/models' },
         { text: 'Views', link: '/basics/views' },
+        { text: 'Actions', link: '/basics/actions' },
+        { text: 'Commands', link: '/basics/commands' },
+        { text: 'Jobs', link: '/basics/jobs' },
         { text: 'Components', link: '/basics/components' },
         { text: 'Functions', link: '/basics/functions' },
         { text: 'Validation', link: '/basics/validation' },
@@ -75,8 +92,14 @@ const sidebar = {
               collapsible: true,
               collapsed: true,
               items: [
-                { text: 'Component Library', link: '/bootcamp/library/components' },
-                { text: 'Function Library', link: '/bootcamp/library/functions' },
+                {
+                  text: 'Component Library',
+                  link: '/bootcamp/library/components',
+                },
+                {
+                  text: 'Function Library',
+                  link: '/bootcamp/library/functions',
+                },
               ],
             },
             { text: 'Build a CLI', link: '/bootcamp/cli' },
@@ -85,13 +108,25 @@ const sidebar = {
               collapsible: true,
               collapsed: true,
               items: [
-                { text: 'Team Management', link: '/bootcamp/saas/team-management' },
+                {
+                  text: 'Team Management',
+                  link: '/bootcamp/saas/team-management',
+                },
                 { text: 'Payments', link: '/bootcamp/saas/payments' },
                 { text: 'Subscriptions', link: '/bootcamp/saas/subscriptions' },
-                { text: 'License Key Management', link: '/bootcamp/saas/license-key-management' },
-                { text: 'Digital Downloads', link: '/bootcamp/saas/digital-downloads' },
+                {
+                  text: 'License Key Management',
+                  link: '/bootcamp/saas/license-key-management',
+                },
+                {
+                  text: 'Digital Downloads',
+                  link: '/bootcamp/saas/digital-downloads',
+                },
                 { text: 'Checkout Form', link: '/bootcamp/saas/checkout-form' },
-                { text: 'Affiliates Program', link: '/bootcamp/saas/affiliates-program' },
+                {
+                  text: 'Affiliates Program',
+                  link: '/bootcamp/saas/affiliates-program',
+                },
               ],
             },
             { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
@@ -104,16 +139,32 @@ const sidebar = {
           collapsed: true,
           items: [
             { text: 'Authentication', link: '/bootcamp/how-to/authentication' },
-            { text: 'Create a Mailbox', link: '/bootcamp/how-to/create-mailbox' },
-            { text: 'Define env & config values', link: '/bootcamp/how-to/env-config' },
+            {
+              text: 'Create a Mailbox',
+              link: '/bootcamp/how-to/create-mailbox',
+            },
+            {
+              text: 'Define env & config values',
+              link: '/bootcamp/how-to/env-config',
+            },
             { text: 'Error Handling', link: '/bootcamp/how-to/error-handling' },
             { text: 'Extend the Cloud', link: '/bootcamp/how-to/extend-cloud' },
-            { text: 'Extend the Dashboard', link: '/bootcamp/how-to/extend-dashboard' },
+            {
+              text: 'Extend the Dashboard',
+              link: '/bootcamp/how-to/extend-dashboard',
+            },
             { text: 'How to deploy?', link: '/bootcamp/how-to/deploy' },
             { text: 'IDE Setup', link: '/bootcamp/how-to/ide-setup' },
             { text: 'Manage a Team', link: '/bootcamp/how-to/manage-team' },
-            { text: 'Publish Components & Functions', link: '/bootcamp/how-to/publish' },
+            {
+              text: 'Publish Components & Functions',
+              link: '/bootcamp/how-to/publish',
+            },
             { text: 'Unit & Feature Tests', link: '/bootcamp/how-to/testing' },
+            {
+              text: 'Review bun.lockb Diff',
+              link: '/bootcamp/how-to/bun-lockb',
+            },
           ],
         },
         {
@@ -121,13 +172,25 @@ const sidebar = {
           collapsible: true,
           collapsed: true,
           items: [
-            { text: 'Cost Optimization', link: '/bootcamp/tips/cost-optimization' },
-            { text: 'Email, SMS, Social & Push Notifications', link: '/bootcamp/tips/notifications' },
+            {
+              text: 'Cost Optimization',
+              link: '/bootcamp/tips/cost-optimization',
+            },
+            {
+              text: 'Email, SMS, Social & Push Notifications',
+              link: '/bootcamp/tips/notifications',
+            },
             { text: 'Jump Box', link: '/bootcamp/tips/jump-box' },
             { text: 'Limitations', link: '/bootcamp/tips/limitations' },
-            { text: 'Payment sending, receiving & management', link: '/bootcamp/tips/payments' },
+            {
+              text: 'Payment sending, receiving & management',
+              link: '/bootcamp/tips/payments',
+            },
             { text: 'Remove your Cloud', link: '/bootcamp/tips/undeploy' },
-            { text: 'Semantic Commits', link: '/bootcamp/tips/semantic-commits' },
+            {
+              text: 'Semantic Commits',
+              link: '/bootcamp/tips/semantic-commits',
+            },
             { text: 'Ship your ORM', link: '/bootcamp/tips/orm-usage' },
             { text: 'System Tray App', link: '/bootcamp/tips/system-tray' },
             { text: 'Oh My Zsh', link: '/bootcamp/tips/oh-my-zsh' },
@@ -142,10 +205,141 @@ const sidebar = {
       collapsible: true,
       collapsed: true,
       items: [
-        { text: 'APIs', link: '/guide/apis' },
-        { text: 'Apps', link: '/guide/apps' },
-        { text: 'Authentication', link: '/guide/auth' },
-        { text: 'Bootstrap', link: '/guide/bootstrap' },
+        {
+          text: 'Frontend Development',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            // { text: 'Component Library', link: '/guide/libraries/components' },
+            { text: 'Custom Directives', link: '/guide/custom-directives' },
+            {
+              text: 'Built-in Components',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Auth', link: '/guide/components/auth' },
+                { text: 'Modal', link: '/guide/components/modal' },
+                { text: 'Notification', link: '/guide/components/notification' },
+                { text: 'KeepAlive', link: '/guide/components/keep-alive' },
+                { text: 'Stepper', link: '/guide/components/stepper' },
+                { text: 'Suspense', link: '/guide/components/suspense' },
+                { text: 'Table', link: '/guide/components/table' },
+                { text: 'Teleport', link: '/guide/components/teleport' },
+                { text: 'Transition', link: '/guide/components/transition' },
+                {
+                  text: 'TransitionGroup',
+                  link: '/guide/components/transition-group',
+                },
+                // { text: 'Audio', link: '/guide/components/audio' },
+                // { text: 'Calendar', link: '/guide/components/calendar' },
+                // { text: 'CommandPalette', link: '/guide/components/command-palette' },
+                // { text: 'Audio', link: '/guide/components/date-picker' },
+                // { text: 'FileManager', link: '/guide/components/file-manager' },
+                // { text: 'Image', link: '/guide/components/image' },
+                // { text: 'Video', link: '/guide/components/video' },
+              ],
+            },
+          ],
+        },
+
+        {
+          text: 'Backend Development',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Authentication', link: '/guide/auth' },
+            {
+              text: 'Cache',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Drivers', link: '/guide/cache/drivers' },
+                { text: 'Build a Custom Driver', link: '/guide/cache/build-custom-driver' },
+              ],
+            },
+            { text: 'Database', link: '/packages/database' },
+            { text: 'Error Handling', link: '/packages/error-handling' },
+            { text: 'Events', link: '/packages/events' },
+            { text: 'Logging', link: '/packages/logging' },
+            { text: 'Middleware', link: '/guide/middleware' },
+            {
+              text: 'Notifications',
+              link: '/packages/notifications',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Chat', link: '/packages/chat' },
+                { text: 'Email', link: '/packages/email' },
+                { text: 'SMS', link: '/packages/sms' },
+                { text: 'Push', link: '/packages/push' },
+              ],
+            },
+            { text: 'Payments', link: '/packages/payments' },
+            { text: 'Permissions', link: '/packages/permissions' },
+            { text: 'Queue', link: '/packages/queue' },
+            { text: 'Realtime', link: '/packages/realtime' },
+            { text: 'Router', link: '/packages/router' },
+            { text: 'Scheduler', link: '/packages/scheduler' },
+            {
+              text: 'Search Engine',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Drivers', link: '/guide/search-engine/drivers' },
+                { text: 'Build a Custom Driver', link: '/guide/search-engine/build-custom-driver' },
+              ],
+            },
+            {
+              text: 'Storage',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Drivers', link: '/guide/storage/drivers' },
+                { text: 'Build a Custom Driver', link: '/guide/storage/build-custom-driver' },
+              ],
+            },
+            { text: 'Validation', link: '/packages/validation' },
+          ],
+        },
+
+        {
+          text: 'Cloud Development',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Deploy', link: '/guide/cloud/deployment' },
+            { text: 'Extend Cloud', link: '/guide/cloud/extend' },
+          ],
+        },
+
+        {
+          text: 'Library Development',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Component Library', link: '/guide/libraries/components' },
+            { text: 'Function Library', link: '/guide/libraries/functions' },
+            { text: 'Composability', link: '/guide/libraries/composability' },
+            { text: 'Publishing', link: '/guide/libraries/publishing' },
+            { text: 'Versioning', link: '/guide/libraries/versioning' },
+            { text: 'Testing', link: '/guide/libraries/testing' },
+          ],
+        },
+
+        {
+          text: 'CLI Development',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Commands', link: '/guide/cli/commands' },
+            { text: 'Binaries', link: '/guide/cli/binaries' },
+            { text: 'Listeners', link: '/guide/cli/listeners' },
+            { text: 'Logging', link: '/guide/cli/logs' },
+            { text: 'Prompts', link: '/guide/cli/prompts' },
+            { text: 'Testing', link: '/guide/cli/testing' },
+          ],
+        },
+
         {
           text: 'Buddy',
           collapsible: true,
@@ -161,7 +355,7 @@ const sidebar = {
             { text: 'Migrate', link: '/guide/buddy/migrate' },
             { text: 'Seed', link: '/guide/buddy/seed' },
             { text: 'Cloud', link: '/guide/buddy/cloud' },
-            { text: 'Deploy', link: '/guide/buddy/Deploy' },
+            { text: 'Deploy', link: '/guide/buddy/deploy' },
             { text: 'Commit', link: '/guide/buddy/commit' },
             { text: 'Lint', link: '/guide/buddy/make' },
             { text: 'Release', link: '/guide/buddy/release' },
@@ -177,61 +371,65 @@ const sidebar = {
             { text: 'Version', link: '/guide/buddy/version' },
           ],
         },
-        {
-          text: 'Built-in Components',
-          collapsible: true,
-          collapsed: true,
-          items: [
-            { text: 'KeepAlive', link: '/guide/components/keep-alive' },
-            { text: 'Suspense', link: '/guide/components/suspense' },
-            { text: 'Table', link: '/guide/components/table' },
-            { text: 'Teleport', link: '/guide/components/teleport' },
-            { text: 'Transition', link: '/guide/components/transition' },
-            { text: 'TransitionGroup', link: '/guide/components/transition-group' },
-            // { text: 'Audio', link: '/guide/components/audio' },
-            // { text: 'Calendar', link: '/guide/components/calendar' },
-            // { text: 'CommandPalette', link: '/guide/components/command-palette' },
-            // { text: 'Audio', link: '/guide/components/date-picker' },
-            // { text: 'FileManager', link: '/guide/components/file-manager' },
-            // { text: 'Image', link: '/guide/components/image' },
-            // { text: 'Video', link: '/guide/components/video' },
-          ],
-        },
+
+        { text: 'Bootstrap', link: '/guide/bootstrap' },
         { text: 'CI / CD', link: '/guide/ci' },
-        { text: 'Cloud', link: '/guide/cloud' },
-        { text: 'Custom Directives', link: '/guide/custom-directives' },
         { text: 'Dashboard', link: '/guide/dashboard' },
-        {
-          text: 'Libraries',
-          collapsible: true,
-          collapsed: true,
-          items: [
-            { text: 'Component Library', link: '/guide/libraries/components' },
-            { text: 'Function Library', link: '/guide/libraries/functions' },
-            { text: 'Composability', link: '/guide/libraries/composability' },
-          ],
-        },
         { text: 'Model-View-Action', link: '/guide/model-view-action' },
+
         {
           text: 'Package Manager',
           link: '/guide/package-manager',
           collapsible: true,
           collapsed: true,
           items: [
-            { text: '`buddy install`', link: '/guide/package-manager/buddy-install' },
+            {
+              text: '`buddy install`',
+              link: '/guide/package-manager/buddy-install',
+            },
             { text: '`buddy add`', link: '/guide/package-manager/buddy-add' },
             { text: '`buddy remove`', link: '/guide/package-manager/remove' },
-            { text: '`buddy upgrade -pm`', link: '/guide/package-manager/upgrade' },
+            {
+              text: '`buddy upgrade -pm`',
+              link: '/guide/package-manager/upgrade',
+            },
             { text: '`buddy link`', link: '/guide/package-manager/link' },
-            { text: 'Global Cache', link: '/guide/package-manager/global-cache' },
+            {
+              text: 'Global Cache',
+              link: '/guide/package-manager/global-cache',
+            },
             { text: 'Workspaces', link: '/guide/package-manager/workspaces' },
-            { text: 'Lifecycle Scripts', link: '/guide/package-manager/lifecycle-scripts' },
+            {
+              text: 'Lifecycle Scripts',
+              link: '/guide/package-manager/lifecycle-scripts',
+            },
             { text: 'Lockfile', link: '/guide/package-manager/lockfile' },
-            { text: 'Overrides & Resolutions', link: '/guide/package-manager/overrides-resolutions' },
+            {
+              text: 'Overrides & Resolutions',
+              link: '/guide/package-manager/overrides-resolutions',
+            },
           ],
         },
+
         { text: 'Plugins', link: '/guide/plugins' },
+        { text: 'System Tray', link: '/guide/system-tray' },
         { text: '$ Shell', link: '/guide/$-shell' },
+      ],
+    },
+
+    {
+      text: 'Components',
+      collapsible: true,
+      collapsed: true,
+      items: [
+        { text: 'Calendar', link: '/components/calendar' },
+        { text: 'Command Palette', link: '/components/command-palette' },
+        { text: 'Dropdown', link: '/components/dropdown' },
+        { text: 'Form', link: '/components/form' },
+        { text: 'Modal', link: '/components/modal' },
+        { text: 'Notification', link: '/components/notification' },
+        { text: 'Stepper', link: '/components/stepper' },
+        { text: 'Table', link: '/components/table' },
       ],
     },
 
@@ -261,7 +459,6 @@ const sidebar = {
         { text: 'Docs', link: '/packages/docs' },
         { text: 'Env', link: '/packages/env' },
         { text: 'Error Handling', link: '/packages/error-handling' },
-        { text: 'ESlint Config', link: '/packages/error-handling' },
         { text: 'Events', link: '/packages/events' },
         { text: 'Faker', link: '/packages/faker' },
         { text: 'Git', link: '/packages/git' },
@@ -288,7 +485,22 @@ const sidebar = {
         { text: 'Path', link: '/packages/path' },
         { text: 'Payments', link: '/packages/payments' },
         { text: 'Permissions', link: '/packages/permissions' },
-        { text: 'Query Builder', link: '/packages/query-builder' },
+        {
+          text: 'Query Builder',
+          link: '/packages/query-builder',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Select', link: '/packages/query-builder/select' },
+            { text: 'Where', link: '/packages/query-builder/where' },
+            { text: 'Join', link: '/packages/query-builder/join' },
+            { text: 'Insert', link: '/packages/insert' },
+            { text: 'Update', link: '/packages/update' },
+            { text: 'Delete', link: '/packages/delete' },
+            { text: 'Transactions', link: '/packages/transcations' },
+            { text: 'Recipes', link: '/packages/recipes' },
+          ],
+        },
         { text: 'Queue', link: '/packages/queue' },
         { text: 'Realtime', link: '/packages/realtime' },
         { text: 'REPL', link: '/packages/repl' },
@@ -331,7 +543,8 @@ const sidebar = {
 
     {
       text: 'Project',
-      // collapsible: true,
+      collapsible: true,
+      collapsed: true,
       items: [
         { text: 'Roadmap', link: '/project/roadmap' },
         { text: 'Contributing', link: '/project/contributing' },
@@ -354,6 +567,7 @@ export default {
   title: 'Stacks',
   description: 'Rapid application, cloud & library development framework.',
   lastUpdated: true,
+  deploy: true,
 
   themeConfig: {
     logo: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',
@@ -373,7 +587,10 @@ export default {
 
     socialLinks: [
       { icon: SocialLinkIcon.Twitter, link: 'https://twitter.com/stacksjs' },
-      { icon: SocialLinkIcon.GitHub, link: 'https://github.com/stacksjs/stacks' },
+      {
+        icon: SocialLinkIcon.GitHub,
+        link: 'https://github.com/stacksjs/stacks',
+      },
       { icon: SocialLinkIcon.Discord, link: 'https://discord.gg/stacksjs' },
     ],
 

@@ -13,6 +13,8 @@ Easily work with file paths.
 
 ```bash
 bun install -d @stacksjs/path
+# if stacks is installed, you can also use:
+# import path from 'stacks/path'
 ```
 
 Now, you can easily access it in your project:
@@ -53,7 +55,6 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [pathe](https://github.com/unjs/pathe)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

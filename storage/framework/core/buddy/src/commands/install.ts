@@ -1,7 +1,7 @@
 import process from 'node:process'
-import type { CLI, InstallOptions } from '@stacksjs/types'
-import { runCommand } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import type { CLI, InstallOptions } from '@stacksjs/types'
 
 export function install(buddy: CLI) {
   const descriptions = {
@@ -12,9 +12,11 @@ export function install(buddy: CLI) {
 
   buddy
     .command('install', descriptions.install)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-v, --verbose', descriptions.verbose, { default: false })
     .action(async (options: InstallOptions) => {
+      log.debug('Running `buddy install` ...', options)
+
       await runCommand('bun install', {
         ...options,
         cwd: p.projectPath(),

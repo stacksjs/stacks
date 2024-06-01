@@ -37,14 +37,14 @@ import type {
   _DefineLoaderOptions,
 } from 'unplugin-vue-router/types'
 
-declare module 'vue-router/auto/routes' {
+declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
   }
 }
 
 declare module 'vue-router/auto' {
-  import type { RouteNamedMap } from 'vue-router/auto/routes'
+  import type { RouteNamedMap } from 'vue-router/auto-routes'
 
   export type RouterTyped = _RouterTyped<RouteNamedMap>
 
@@ -127,7 +127,7 @@ declare module 'vue-router/auto' {
 }
 
 declare module 'vue-router' {
-  import type { RouteNamedMap } from 'vue-router/auto/routes'
+  import type { RouteNamedMap } from 'vue-router/auto-routes'
 
   export interface TypesConfig {
     beforeRouteUpdate: NavigationGuard<RouteNamedMap>

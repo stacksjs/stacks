@@ -79,7 +79,6 @@ buddy make:model Car # bootstraps a Car model
 buddy make:database cars # creates a cars database
 buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
-buddy make:seed cars # creates a Car seed file
 buddy make:table cars # bootstraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file

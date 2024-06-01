@@ -28,7 +28,7 @@ export interface TableStore {
   sorts?: string | string[] // optional: the specific type of sorts to be applied to the table (defaults: [])
   filterable?: string | boolean // optional: determines whether the table displays the filters component (defaults: true)
   filters?: string | string[] // optional: the specific type of filters to be displayed/utilized in the table (defaults: [])
-  filterValue?: any[]// optional: the specific type of filters to be displayed/utilized in the table (defaults: [])
+  filterValue?: any[] // optional: the specific type of filters to be displayed/utilized in the table (defaults: [])
   actionable?: string | boolean // optional: determines whether the table displays any "action items" (defaults: true)
   actions?: string | string[] // optional: the specific type of actions to be displayed/utilized in the table (defaults: 'Edit, Delete')
   perPage: number // optional: the number of rows (items) to be displayed per page (defaults: 10)

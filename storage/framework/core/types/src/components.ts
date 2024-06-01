@@ -42,7 +42,7 @@ export interface TagOption {
   /**
    * **Tag Attributes**
    *
-   * These are your component's attributes. While it's an optional field, you should aim
+   * These are your component's attributes. While it’s an optional field, you should aim
    * to define all of your component attributes here, to provide as much context
    * to your IDEs as possible, when actually using the library as an end-user.
    *

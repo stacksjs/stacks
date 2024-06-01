@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/desktop",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -26,9 +26,7 @@
     "slack",
     "discord",
     "webhooks",
-    "stacks",
-    "Maizzle",
-    "maizzle"
+    "stacks"
   ],
   "exports": {
     ".": {
@@ -51,31 +49,31 @@
     "src"
   ],
   "scripts": {
-    "dev": "bunx vite ../../dashboard -c ../vite/src/desktop.ts",
+    "dev": "bunx vite ../../dashboard -c ../vite-config/src/desktop.ts",
     "dev:app": "tauri dev",
     "build": "bun --bun build.ts",
-    "build:app": "bunx vite build ../../dashboard -c ../vite/src/desktop.ts",
+    "build:app": "bunx vite build ../../dashboard -c ../vite-config/src/desktop.ts",
     "tauri:build": "tauri build",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.3",
-    "@tauri-apps/cli": "1.5.9",
-    "unified-network": "0.6.4",
-    "unstorage": "^1.10.1",
-    "vue": "3.4.15"
+    "@tauri-apps/api": "^1.5.6",
+    "@tauri-apps/cli": "^1.5.14",
+    "unified-network": "^0.6.4",
+    "unstorage": "^1.10.2",
+    "vue": "^3.4.27"
   },
   "dependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "1.5.3",
-    "@tauri-apps/cli": "1.5.9",
-    "unified-network": "0.6.4",
-    "unstorage": "^1.10.1",
-    "vue": "3.4.15"
+    "@tauri-apps/api": "^1.5.6",
+    "@tauri-apps/cli": "^1.5.14",
+    "unified-network": "^0.6.4",
+    "unstorage": "^1.10.2",
+    "vue": "^3.4.27"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

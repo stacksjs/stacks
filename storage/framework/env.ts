@@ -8,7 +8,16 @@ export const envKeys = [
   'APP_ENV',
   'APP_KEY',
   'APP_URL',
-  'APP_PORT',
+  'PORT',
+  'PORT_BACKEND',
+  'PORT_ADMIN',
+  'PORT_LIBRARY',
+  'PORT_DESKTOP',
+  'PORT_EMAIL',
+  'PORT_DOCS',
+  'PORT_INSPECT',
+  'PORT_API',
+  'PORT_SYSTEM_TRAY',
   'APP_MAINTENANCE',
   'API_PREFIX',
   'DOCS_PREFIX',
@@ -39,4 +48,4 @@ export const envKeys = [
   'FRONTEND_APP_URL',
 ] as const
 
-export type EnvKey = typeof envKeys[number]
+export type EnvKey = (typeof envKeys)[number]

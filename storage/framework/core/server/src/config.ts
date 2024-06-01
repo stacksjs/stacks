@@ -1,5 +1,17 @@
+import { ports } from '@stacksjs/config'
+
 interface ServerOptions {
-  type?: 'frontend' | 'api' | 'library' | 'desktop' | 'docs' | 'example' | 'dashboard' | 'system-tray'
+  type?:
+    | 'frontend'
+    | 'backend'
+    | 'api'
+    | 'library'
+    | 'desktop'
+    | 'docs'
+    | 'email'
+    | 'admin'
+    | 'system-tray'
+    | 'database'
   host?: string
   port?: number
   open?: boolean
@@ -7,48 +19,69 @@ interface ServerOptions {
 
 export function config(options: ServerOptions) {
   const serversMap = {
-    'frontend': {
+    frontend: {
       host: 'localhost',
-      port: 3333,
+      port: ports.frontend,
     },
 
-    'api': {
+    backend: {
       host: 'localhost',
-      port: 3334,
+      port: ports.backend,
     },
 
-    'dashboard': {
+    api: {
       host: 'localhost',
-      port: 3335,
+      port: ports.api,
     },
 
-    'library': { // component library
+    admin: {
       host: 'localhost',
-      port: 3336,
+      port: ports.admin,
     },
 
-    'desktop': {
+    library: {
+      // component library
       host: 'localhost',
-      port: 3337,
+      port: ports.library,
     },
 
-    'docs': {
+    desktop: {
       host: 'localhost',
-      port: 3338,
+      port: ports.desktop,
     },
 
-    'example': {
+    docs: {
       host: 'localhost',
-      port: 3339,
+      port: ports.docs,
+    },
+
+    email: {
+      host: 'localhost',
+      port: ports.email,
+    },
+
+    inspect: {
+      host: 'localhost',
+      port: ports.inspect,
     },
 
     'system-tray': {
       host: 'localhost',
-      port: 3340,
+      port: ports.systemTray,
+    },
+
+    database: {
+      host: 'localhost',
+      port: ports.database,
     },
   }
 
-  if (options.type && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray'].includes(options.type)) {
+  if (
+    options.type &&
+    ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(
+      options.type,
+    )
+  ) {
     return {
       host: serversMap[options.type].host,
       port: serversMap[options.type].port,
@@ -58,7 +91,7 @@ export function config(options: ServerOptions) {
 
   return {
     host: options.host || 'stacks.localhost',
-    port: options.port || 3333,
+    port: options.port || 3000,
     open: options.open || false,
   }
 }

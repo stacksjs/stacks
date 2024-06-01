@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/tunnel",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Local development tunnel.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -17,7 +17,8 @@
   },
   "keywords": [
     "tunnel",
-    "localtunnel",
+    "local",
+    "bun",
     "stacks"
   ],
   "exports": {
@@ -43,16 +44,9 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "localtunnel": "^2.0.2"
-  },
-  "dependencies": {
-    "localtunnel": "^2.0.2"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@types/localtunnel": "^2.0.4"
+    "@stacksjs/development": "workspace:*"
   }
 }

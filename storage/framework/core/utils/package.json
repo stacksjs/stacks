@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -48,8 +48,8 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build",
-    "size": "tsx scripts/export-size.ts"
+    "prepublishOnly": "bun run build",
+    "size": "bun scripts/export-size.ts"
   },
   "peerDependencies": {
     "@stacksjs/actions": "workspace:*",
@@ -63,14 +63,14 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@vueuse/core": "^10.7.2",
+    "@vueuse/core": "^10.10.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^10.7.2",
-    "@vueuse/shared": "^10.7.2",
+    "@vueuse/math": "^10.10.0",
+    "@vueuse/shared": "^10.10.0",
+    "bun-plugin-env": "^0.4.1",
+    "bun-plugin-yml": "^0.3.1",
     "export-size": "^0.7.0",
-    "js-yaml": "^4.1.0",
-    "rimraf": "^5.0.5",
-    "yaml": "^2.3.4"
+    "yaml": "^2.4.2"
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -83,10 +83,12 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^10.7.2",
+    "@vueuse/core": "^10.10.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^10.7.2",
-    "@vueuse/shared": "^10.7.2",
+    "@vueuse/math": "^10.10.0",
+    "@vueuse/shared": "^10.10.0",
+    "bun-plugin-env": "^0.4.1",
+    "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
@@ -95,12 +97,10 @@
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
-    "magic-regexp": "^0.7.0",
-    "p-limit": "^5.0.0",
+    "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
-    "rimraf": "^5.0.5",
-    "yaml": "^2.3.4"
+    "yaml": "^2.4.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

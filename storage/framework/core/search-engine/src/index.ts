@@ -1,13 +1,13 @@
-import { searchEngine } from '@stacksjs/config'
 import type { UiEngine } from '@stacksjs/ui'
 import { useStorage } from '@stacksjs/utils'
+import { computed, ref } from 'vue'
 
 // import { client as meilisearch } from './drivers/meilisearch'
 import { determineState } from './helpers'
 
 // import type { Ref } from '@stacksjs/types'
 
-const table = (useStorage('table', determineState()).value)
+const table = useStorage('table', determineState()).value
 const totalHits = table.results?.estimatedTotalHits ?? 1
 
 // state
@@ -33,8 +33,9 @@ export const sort = computed(() => table.sort)
 export const sorts = computed(() => table.sorts)
 
 export function client() {
-  if (searchEngine.driver === 'meilisearch')
-    return meilisearch
+  // if (searchEngine.driver === 'meilisearch')
+  //   return meilisearch
+  return 'wip-search-me'
 }
 
 export function useSearchEngine() {
@@ -42,25 +43,21 @@ export function useSearchEngine() {
 }
 
 export function calculatePagination() {
-  if (table.perPage)
-    totalPages.value = Math.ceil(totalHits / table.perPage)
+  if (table.perPage) totalPages.value = Math.ceil(totalHits / table.perPage)
 
-  const hitPages = [...Array(totalPages.value).keys()].map(i => i + 1)
+  const hitPages = [...Array(totalPages.value).keys()].map((i) => i + 1)
   const offset = 2
   const currentPage = table.currentPage ?? 1
   const lastPage = hitPages[hitPages.length - 1]
 
   let from = currentPage - offset
-  if (from < 1)
-    from = 1
+  if (from < 1) from = 1
 
   let to = from + offset * 2
-  if (to >= lastPage)
-    to = lastPage
+  if (to >= (lastPage as number)) to = lastPage as number
 
   const allPages = []
-  for (let page = from; page <= to; page++)
-    allPages.push(page)
+  for (let page = from; page <= to; page++) allPages.push(page)
 
   pages.value = allPages
 }

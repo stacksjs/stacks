@@ -14,7 +14,14 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["custom-elements", "web-components", "library", "framework-agnostic", "typescript", "javascript"],
+  "keywords": [
+    "custom-elements",
+    "web-components",
+    "library",
+    "framework-agnostic",
+    "typescript",
+    "javascript"
+  ],
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "exports": {
     ".": {
@@ -26,14 +33,10 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "vite build -c ../build/web-components.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

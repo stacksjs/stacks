@@ -1,4 +1,4 @@
-export {}
+export type {}
 
 // import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 // import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'

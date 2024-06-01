@@ -28,7 +28,7 @@ In concept, you can characterize a "composable library" as a collection of compo
 
 >Think of Lodash for "functions," and minimal HTML for the "components."
 
-## How do I know if it's right for me?
+## How do I know if it’s right for me?
 
 When wanting to adapt the "Composability-First Design" pattern, you will want to ask the following questions to identify whether or not this design pattern is a fit for you:
 

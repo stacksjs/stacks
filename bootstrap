@@ -14,7 +14,7 @@ if [ -n "$1" ]; then
       git clone https://github.com/stacksjs/stacks.git $1
       cd "$1" || exit 1
 
-      # Run the pkgx-install script (in case it's already installed, it will be updated to the latest version)
+      # Run the pkgx-install script (in case it’s already installed, it will be updated to the latest version)
       "./storage/framework/scripts/pkgx-install"
 
       echo "Project $1 has been created. Please open a new terminal, run 'bun run dev' to start the server."
@@ -54,13 +54,13 @@ case "$*" in
 esac
 
 # Create a named pipe
-mkfifo /tmp/mypipe
+mkfifo /tmp/pipe
 
 # Run the command, send output to both the console and the pipe
-bun --bun "$CLI_PATH" setup | tee /tmp/mypipe &
+bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
 
 # Read from the pipe, add timestamps, and append to the file
-while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> "$LOG_PATH"
+while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/pipe >> "$LOG_PATH"
 
 # Remove the named pipe
-rm /tmp/mypipe
+rm /tmp/pipe

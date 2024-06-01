@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/whois",
   "type": "module",
-  "version": "0.58.53",
+  "version": "0.61.20",
   "description": "Easily get whois info.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -45,15 +45,15 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "node-fetch": "^3.3.2",
-    "socks": "^2.7.1"
+    "socks": "^2.8.3"
   },
   "dependencies": {
     "node-fetch": "^3.3.2",
-    "socks": "^2.7.1"
+    "socks": "^2.8.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
