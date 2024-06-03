@@ -31,8 +31,6 @@
     "@raycast/utils": "^1.12.4"
   },
   "devDependencies": {
-    "@types/node": "^20.11.16",
-    "eslint": "^8.56.0",
-    "typescript": "^5.3.3"
+    "@stacksjs/development": "workspace:*"
   }
 }
