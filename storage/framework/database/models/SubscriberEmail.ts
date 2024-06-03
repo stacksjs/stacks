@@ -26,7 +26,10 @@ export default {
       unique: true,
       validator: {
         rule: schema.string().email(),
-        message: 'Email must be a valid email address',
+        message: {
+          email: 'Email must be valid',
+          required: 'Email is required',
+        },
       },
 
       factory: () => faker.internet.email(),

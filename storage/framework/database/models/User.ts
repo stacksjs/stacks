@@ -1,9 +1,9 @@
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
-import type { UserType as User } from '@stacksjs/orm'
 import { capitalize } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
+import type { User } from 'actions/src/orm/user'
 
 export default {
   name: 'User', // defaults to the sanitized file name
@@ -45,7 +45,10 @@ export default {
     name: {
       validator: {
         rule: schema.string().minLength(3).maxLength(255),
-        message: 'Name must be between 3 and 255 characters',
+        message: {
+          minLength: 'Name must have a minimum of 3 characters',
+          maxLength: 'Name must have a maximum of 255 characters',
+        },
       },
 
       factory: () => faker.person.fullName(),
@@ -55,7 +58,9 @@ export default {
       unique: true,
       validator: {
         rule: schema.string().email(),
-        message: 'Email must be a valid email address',
+        message: {
+          email: 'Email must be a valid email address',
+        },
       },
 
       factory: () => faker.internet.email(),
@@ -64,7 +69,10 @@ export default {
     jobTitle: {
       validator: {
         rule: schema.string().minLength(3).maxLength(255),
-        message: 'Job title must be between 3 and 255 characters',
+        message: {
+          minLength: 'Job title must have a minimum of 3 characters',
+          maxLength: 'Job title must have a maximum of 255 characters',
+        },
       },
 
       factory: () => faker.person.jobTitle(),
@@ -73,7 +81,10 @@ export default {
     password: {
       validator: {
         rule: schema.string().minLength(6).maxLength(255),
-        message: 'Password must be between 6 and 255 characters',
+        message: {
+          minLength: 'Password must have a minimum of 6 characters',
+          maxLength: 'Password must have a maximum of 255 characters',
+        },
       },
 
       factory: () => faker.internet.password(),

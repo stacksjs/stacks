@@ -43,7 +43,7 @@ export default {
 
   attributes: {
     name: {
-      validator: {
+      validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
           minLength: 'Name must have a minimum of 3 characters',
@@ -56,7 +56,7 @@ export default {
 
     email: {
       unique: true,
-      validator: {
+      validation: {
         rule: schema.string().email(),
         message: {
           email: 'Email must be a valid email address',
@@ -67,7 +67,7 @@ export default {
     },
 
     jobTitle: {
-      validator: {
+      validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
           minLength: 'Job title must have a minimum of 3 characters',
@@ -79,7 +79,7 @@ export default {
     },
 
     password: {
-      validator: {
+      validation: {
         rule: schema.string().minLength(6).maxLength(255),
         message: {
           minLength: 'Password must have a minimum of 6 characters',

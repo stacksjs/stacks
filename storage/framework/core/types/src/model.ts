@@ -118,7 +118,7 @@ export interface Attribute {
   unique?: boolean
   required?: boolean
   factory?: () => any
-  validator?: {
+  validation?: {
     rule: VineType
     message: ValidatorMessage
   }

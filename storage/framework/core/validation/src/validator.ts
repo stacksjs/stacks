@@ -1,5 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
+import { Model } from '@stacksjs/types'
 import { SimpleMessagesProvider, VineError, reportError, schema } from '@stacksjs/validation'
 import type { SchemaTypes } from '@vinejs/vine/types'
 
