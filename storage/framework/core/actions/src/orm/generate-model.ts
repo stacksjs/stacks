@@ -3,7 +3,7 @@ import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { camelCase, pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
+import { isString, isBoolean } from '@stacksjs/validation'
 import { getModelName, getTableName} from '@stacksjs/orm'
 export interface FieldArrayElement {
   entity: string
@@ -107,6 +107,8 @@ async function writeModelRequests() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (let i = 0; i < modelFiles.length; i++) {
+    let fieldString = ``
+    let fieldStringInt = ``
     let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
 
     const modeFileElement = modelFiles[i] as string
@@ -114,17 +116,34 @@ async function writeModelRequests() {
     const model = (await import(modeFileElement)).default as Model
     const modelName = getModelName(model, modeFileElement)
 
+    const attributes = await extractFields(model, modeFileElement)
+  
+    for (const attribute of attributes) {
+      let defaultValue: any = `''`
+
+      if (attribute.fieldArray?.entity === 'boolean')
+        defaultValue = false
+
+      if (attribute.fieldArray?.entity === 'number')
+        defaultValue = 0
+
+      fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
+
+      fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
+    } 
+
     const modelLowerCase = camelCase(modelName)
 
     const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
 
     fileString += `export interface ${modelName}RequestType extends RequestInstance{
-      validate(params: any): void
+      validate(): void
+      ${fieldString}
     }\n\n`
     
     fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
-      
-      public validate(params: any): void {
+      ${fieldStringInt}
+      public validate(): void {
         validateField('${modelName}', this.all())
       }
     }
@@ -220,6 +239,8 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
+  await deleteExistingModelRequests()
+
   await writeModelNames()
   await writeModelRequests()
 
@@ -312,6 +333,14 @@ async function deleteExistingModelNameTypes() {
   const typeFile = path.projectStoragePath(`framework/core/types/src/model-names.ts`)
 
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
+}
+
+async function deleteExistingModelRequests() {
+  const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
+
+  for (const requestFile of requestFiles) {
+    if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
+  }
 }
 
 async function setKyselyTypes() {

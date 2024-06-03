@@ -3,15 +3,18 @@ import { validateField } from '@stacksjs/validation'
 import type { RequestInstance } from '@stacksjs/types'
 
 export interface SubscriberEmailRequestType extends RequestInstance{
-      validate(params: any): void
+      validate(): void
+       email: string
+     
     }
 
 export class SubscriberEmailRequest extends Request implements SubscriberEmailRequestType  {
-      
-      public validate(params: any): void {
+      public email = ''
+
+      public validate(): void {
         validateField('SubscriberEmail', this.all())
       }
     }
     
     export const subscriberEmailRequest = new SubscriberEmailRequest()
-     
+    

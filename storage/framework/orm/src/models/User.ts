@@ -20,7 +20,8 @@ import Deployment from './Deployment'
       jobTitle: string
       password: string
       deployment_id: number 
-      post_id: number 
+ post_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -682,7 +683,3 @@ import Deployment from './Deployment'
 
     export default User
     
-
-    const user = await User.find(1)
-
-    console.log(user)
