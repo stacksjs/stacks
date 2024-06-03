@@ -20,9 +20,11 @@ Stacks is a rapid development framework, where the goal is to _help you_ create 
 - Framework-agnostic Component & Function Libraries
 - Deployment & Release Manager _(CI & CD)_
 
-In other words, Stacks helps you, as a developer, every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what & why_ of your project, all while enabling you to always stay in control & ownership of your _(& your user’s)_ data.
+## Convention Over Configuration
 
-> “Convention over configuration” is the Stacks mantra. _- Chris_
+As a developer, Stacks helps you every step along the way—in beginner & expert-friendly ways, allowing you to focus on the _what & why_ of your project, all while enabling you to stay in control & ownership of your _(& your users’)_ data.
+
+> “It is the framework’s responsibility to remove patterns that lead to boilerplate code. And Stacks is really good at that.” _- Chris_
 
 <!-- ![Atomic UI & FX Design](./docs/assets/diagram.png) -->
 
