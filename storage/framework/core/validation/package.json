@@ -50,12 +50,12 @@
   "peerDependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^2.0.0"
+    "@vinejs/vine": "^2.1.0"
   },
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^2.0.0"
+    "@vinejs/vine": "^2.1.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
