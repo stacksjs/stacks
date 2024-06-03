@@ -130,7 +130,8 @@ const sidebar = {
               ],
             },
             { text: 'Build a Desktop App', link: '/bootcamp/desktop' },
-            // { text: 'Build a Mobile App', link: '/bootcamp/mobile' }, 👀
+            { text: 'Build a System Tray App', link: '/bootcamp/system-tray' },
+            { text: 'Build a Mobile App', link: '/bootcamp/mobile' },
           ],
         },
         {
@@ -206,7 +207,7 @@ const sidebar = {
       collapsed: true,
       items: [
         {
-          text: 'Frontend Development',
+          text: 'Frontend',
           collapsible: true,
           collapsed: true,
           items: [
@@ -243,7 +244,7 @@ const sidebar = {
         },
 
         {
-          text: 'Backend Development',
+          text: 'Backend',
           collapsible: true,
           collapsed: true,
           items: [
@@ -303,7 +304,7 @@ const sidebar = {
         },
 
         {
-          text: 'Cloud Development',
+          text: 'Cloud',
           collapsible: true,
           collapsed: true,
           items: [
@@ -313,7 +314,7 @@ const sidebar = {
         },
 
         {
-          text: 'Library Development',
+          text: 'Library',
           collapsible: true,
           collapsed: true,
           items: [
@@ -327,7 +328,7 @@ const sidebar = {
         },
 
         {
-          text: 'CLI Development',
+          text: 'CLI',
           collapsible: true,
           collapsed: true,
           items: [
