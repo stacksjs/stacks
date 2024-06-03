@@ -3,7 +3,10 @@ import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
+import { request } from '@stacksjs/router'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+
+import { extractModelRequest } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 
@@ -299,9 +302,11 @@ export class Router implements RouterInterface {
     // if succeeds, run the handle
     // if fails, return validation error
 
-    if (condition) return await actionModule.default.handle()
+    const requestInstance = await extractModelRequest(modulePath)
 
-    return await actionModule.default.handle(request)
+    console.log(requestInstance)
+
+    return await actionModule.default.handle(requestInstance)
   }
 
   private normalizePath(path: string): string {

@@ -120,6 +120,7 @@ async function writeModelRequests() {
   
     for (const attribute of attributes) {
       let defaultValue: any = `''`
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
 
       if (attribute.fieldArray?.entity === 'boolean')
         defaultValue = false
@@ -127,7 +128,7 @@ async function writeModelRequests() {
       if (attribute.fieldArray?.entity === 'number')
         defaultValue = 0
 
-      fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
+      fieldString += ` ${attribute.field}: ${entity}\n     `
 
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
     } 
@@ -162,12 +163,11 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
   actionString += `import ${modelName} from '../src/models/${modelName}'\n\n`
-  actionString += `import { request } from '@stacksjs/router'\n\n`
 
   let handleString = ``
 
   if (apiRoute === 'index') {
-    handleString += `async handle() {
+    handleString += `async handle(request: any) {
         return await ${modelName}.all()
       },`
 
@@ -175,7 +175,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'show') {
-    handleString += `async handle() {
+    handleString += `async handle(request: any) {
         const id = await request.getParam('id')
 
         return ${modelName}.findOrFail(Number(id))
@@ -185,7 +185,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'destroy') {
-    handleString += `async handle() {
+    handleString += `async handle(request: any) {
         const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(Number(id))
@@ -199,7 +199,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'store') {
-    handleString += `async handle() {
+    handleString += `async handle(request: any) {
         const model = await ${modelName}.create(request.all())
 
         return model
@@ -209,7 +209,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'update') {
-    handleString += `async handle() {
+    handleString += `async handle(request: any) {
         const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(Number(id))

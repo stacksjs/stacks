@@ -7,7 +7,7 @@ export interface AccessTokenRequestType extends RequestInstance{
        name: string
       token: string
       plainTextToken: string
-      abilities: enum
+      abilities: string
      
     }
 
