@@ -203,6 +203,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   if (apiRoute === 'store') {
     handleString += `async handle(request: ${modelName}RequestType) {
+        request.validate()
         const model = await ${modelName}.create(request.all())
 
         return model
@@ -213,6 +214,8 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   if (apiRoute === 'update') {
     handleString += `async handle(request: ${modelName}RequestType) {
+        request.validate()
+        
         const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(Number(id))

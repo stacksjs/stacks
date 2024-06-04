@@ -9,8 +9,9 @@ interface RequestData {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<void> {
-  const model = (await import(path.userModelsPath(modelFile))).default
 
+  console.log(params)
+  const model = (await import(path.userModelsPath(modelFile))).default
   const attributes = model.attributes
 
   const ruleObject: Record<string, SchemaTypes> = {}
@@ -19,20 +20,21 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   for (const key in attributes) {
     // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
     if (attributes.hasOwnProperty(key)) {
-      ruleObject[key] = model.attributes[key].validator.rule
+      ruleObject[key] = attributes[key].validator.rule
 
-      const validatorMessages = model.attributes[key].validator.message
+      const validatorMessages = attributes[key].validator.message
 
       for (const validatorMessageKey in validatorMessages) {
         const validatorMessageString = `${key}.${validatorMessageKey}`
 
-        messageObject[validatorMessageString] = model.attributes[key].validator.message[validatorMessageKey]
+        messageObject[validatorMessageString] = attributes[key].validator.message[validatorMessageKey]
       }
     }
   }
 
   schema.messagesProvider = new SimpleMessagesProvider(messageObject)
 
+  console.log(ruleObject)
   try {
     const vineSchema = schema.object(ruleObject)
     const validator = schema.compile(vineSchema)

@@ -7,6 +7,7 @@ export default new Action({
       description: 'User Store ORM Action',
       method: 'POST',
       async handle(request: UserRequestType) {
+        request.validate()
         const model = await User.create(request.all())
 
         return model
