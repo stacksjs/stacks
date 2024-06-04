@@ -162,12 +162,15 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
   let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../src/models/${modelName}'\n\n`
+  actionString += `import ${modelName} from '../src/models/${modelName}'\n`
 
   let handleString = ``
 
+
+  actionString += ` import type { ${modelName}RequestType } from '../../requests/${modelName}Request'\n\n`
+
   if (apiRoute === 'index') {
-    handleString += `async handle(request: any) {
+    handleString += `async handle(request: ${modelName}RequestType) {
         return await ${modelName}.all()
       },`
 
@@ -175,7 +178,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'show') {
-    handleString += `async handle(request: any) {
+    handleString += `async handle(request: ${modelName}RequestType) {
         const id = await request.getParam('id')
 
         return ${modelName}.findOrFail(Number(id))
@@ -185,7 +188,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'destroy') {
-    handleString += `async handle(request: any) {
+    handleString += `async handle(request: ${modelName}RequestType) {
         const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(Number(id))
@@ -199,7 +202,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'store') {
-    handleString += `async handle(request: any) {
+    handleString += `async handle(request: ${modelName}RequestType) {
         const model = await ${modelName}.create(request.all())
 
         return model
@@ -209,7 +212,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   }
 
   if (apiRoute === 'update') {
-    handleString += `async handle(request: any) {
+    handleString += `async handle(request: ${modelName}RequestType) {
         const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(Number(id))

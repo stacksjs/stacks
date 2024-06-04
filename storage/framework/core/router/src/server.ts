@@ -2,7 +2,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { extname, path } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
-import type { Route, RouteParam, StatusCode } from '@stacksjs/types'
+import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
@@ -174,7 +174,7 @@ async function addRouteParam(param: RouteParam): Promise<void> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'));
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default;
+    const model = (await import(modelFile)).default as Model;
     const modelName = getModelName(model, modelFile);
     const modelNameLower = `${lowercase(modelName)}Request`;
     const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
