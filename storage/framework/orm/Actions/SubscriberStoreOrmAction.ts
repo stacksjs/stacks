@@ -7,6 +7,7 @@ export default new Action({
       description: 'Subscriber Store ORM Action',
       method: 'POST',
       async handle(request: SubscriberRequestType) {
+        request.validate()
         const model = await Subscriber.create(request.all())
 
         return model
