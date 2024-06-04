@@ -3,4 +3,4 @@
 cd ../../..
 
 # run linter and formatter
-#biome check --apply .
+#biome check --fix .

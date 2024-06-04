@@ -121,7 +121,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx biome check --apply ."
+    "*": "bunx biome check --fix"
   },
   "config": {
     "commitizen": {
