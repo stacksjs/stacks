@@ -1,10 +1,13 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { extname } from '@stacksjs/path'
+import { extname, path } from '@stacksjs/path'
+import { glob } from '@stacksjs/storage'
 import type { Route, RouteParam, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
+import { getModelName } from '@stacksjs/orm'
+import { lowercase } from '@stacksjs/strings'
 
 interface ServeOptions {
   host?: string
@@ -71,8 +74,8 @@ export async function serverResponse(req: Request) {
 
   const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname)
 
-  addRouteQuery(url)
-  addRouteParam(routeParams)
+  await addRouteQuery(url)
+  await addRouteParam(routeParams)
 
   await executeMiddleware(foundRoute)
 
@@ -146,13 +149,43 @@ function noCache(response: Response) {
   return response
 }
 
-function addRouteQuery(url: URL): void {
-  if (!isObjectNotEmpty(url.searchParams)) RequestParam.addQuery(url)
+async function addRouteQuery(url: URL) {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
 
-  // requestInstance.extractParamsFromRoute(route.uri, url.pathname)
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default;
+    const modelName = getModelName(model, modelFile);
+    const modelNameLower = `${lowercase(modelName)}Request`;
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
+    const requestImport = await import(requestPath);
+    const requestInstance = requestImport[modelNameLower];
+
+    if (requestInstance && !isObjectNotEmpty(url.searchParams)) {
+      requestInstance.addQuery(url);
+    }
+  }
+
+  if (!isObjectNotEmpty(url.searchParams)) {
+    RequestParam.addQuery(url);
+  }
 }
 
-function addRouteParam(param: RouteParam): void {
+async function addRouteParam(param: RouteParam): Promise<void> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
+
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default;
+    const modelName = getModelName(model, modelFile);
+    const modelNameLower = `${lowercase(modelName)}Request`;
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
+    const requestImport = await import(requestPath);
+    const requestInstance = requestImport[modelNameLower];
+
+    if (requestInstance) {
+      requestInstance.addParam(param);
+    }
+  }
+
   RequestParam.addParam(param)
 }
 

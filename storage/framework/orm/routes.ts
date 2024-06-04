@@ -21,14 +21,3 @@ await route.delete('users/{id}', 'Actions/UserDestroyOrmAction').middleware(['au
 
 await route.get('users/{id}', 'Actions/UserShowOrmAction').middleware(['auth'])
 
-wait route.get('subscribers/{id}', 'Actions/SubscriberShowOrmAction').middleware(['auth'])
-
-await route.get('users', 'Actions/UserIndexOrmAction').middleware(['auth'])
-
-await route.patch('users/{id}', 'Actions/UserUpdateOrmAction').middleware(['auth'])
-
-await route.post('users', 'Actions/UserStoreOrmAction').middleware(['auth'])
-
-await route.delete('users/{id}', 'Actions/UserDestroyOrmAction').middleware(['auth'])
-
-await route.get('users/{id}', 'Actions/UserShowOrmAction').middleware(['auth'])

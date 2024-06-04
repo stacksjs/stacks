@@ -48,7 +48,7 @@ export class ErrorHandler {
 
   static writeErrorToConsole(err: string | Error | unknown): void {
     if (
-      err === 'Failed to execute command: bunx biome check --apply .' ||
+      err === 'Failed to execute command: bunx biome check --fix' ||
       err === 'Failed to execute command: bun --bun storage/framework/core/actions/src/lint/fix.ts'
     )
       // To trigger this, run `buddy release` with a lint error in your codebase

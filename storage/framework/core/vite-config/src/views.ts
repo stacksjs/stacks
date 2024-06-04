@@ -56,6 +56,7 @@ export default defineConfig({
       '~/config/cloud': p.projectConfigPath('cloud.ts'),
       '~/config/database': p.projectConfigPath('database.ts'),
       '~/config/env': p.projectConfigPath('env.ts'),
+      '~/config/errors': p.projectConfigPath('errors.ts'),
       '~/config/dns': p.projectConfigPath('dns.ts'),
       '~/config/docs': p.projectConfigPath('docs.ts'),
       '~/config/email': p.projectConfigPath('email.ts'),

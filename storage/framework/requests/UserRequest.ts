@@ -3,12 +3,24 @@ import { validateField } from '@stacksjs/validation'
 import type { RequestInstance } from '@stacksjs/types'
 
 export interface UserRequestType extends RequestInstance{
-      validate(params: any): void
+      validate(): void
+       name: string
+      email: string
+      jobTitle: string
+      password: string
+     
     }
 
 export class UserRequest extends Request implements UserRequestType  {
-      
-      public validate(params: any): void {
+      public name = ''
+public email = ''
+public jobTitle = ''
+public password = ''
+
+      public validate(): void {
         validateField('User', this.all())
       }
     }
+    
+    export const userRequest = new UserRequest()
+    

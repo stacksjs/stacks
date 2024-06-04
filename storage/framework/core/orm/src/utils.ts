@@ -1,5 +1,6 @@
 import { generator, parser, traverse } from '@stacksjs/build'
 import { fs } from '@stacksjs/storage'
+import { path } from '@stacksjs/path'
 import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes } from '@stacksjs/types'
 import type { Model } from '@stacksjs/types'
@@ -12,6 +13,22 @@ export async function modelTableName(model: Model | ModelPath): Promise<string> 
   }
 
   return model.table ?? snakeCase(plural(model?.name || ''))
+}
+
+export function getModelName(model: Model, modelPath: string): string {
+  if (model.name) 
+    return model.name
+
+  const baseName =  path.basename(modelPath)
+
+  return baseName.replace(/\.ts$/, '');
+}
+
+export function getTableName(model: Model, modelPath: string): string {
+    if (model.table) 
+      return model.table
+    
+    return snakeCase(plural(getModelName(model, modelPath)))
 }
 
 export async function extractFieldsFromModel(filePath: string) {

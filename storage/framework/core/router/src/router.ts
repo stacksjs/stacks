@@ -3,7 +3,10 @@ import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
+import { request } from '@stacksjs/router'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+
+import { extractModelRequest } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 
@@ -93,6 +96,8 @@ export class Router implements RouterInterface {
   }
 
   public async action(path: ActionPath | Route['path']): Promise<this> {
+    if (!path) return this
+
     // check if action is a file anywhere in ./app/Actions/**/*.ts
     if (path?.endsWith('.ts')) {
       // given it ends with .ts, we treat it as an Actions path
@@ -102,22 +107,15 @@ export class Router implements RouterInterface {
     }
 
     path = pascalCase(path) // actions are PascalCase
-    const userActionsPath = p.userActionsPath(`${path}.ts`)
 
     try {
-      const action = (await import(userActionsPath)).default as Action
+      const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
 
       return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
     } catch (error) {
-      try {
-        const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
+      log.error(`Could not find Action for path: ${path}`)
 
-        return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
-      } catch (error) {
-        log.error(`Could not find Action for path: ${path}`)
-
-        return this
-      }
+      return this
     }
   }
 
@@ -304,9 +302,9 @@ export class Router implements RouterInterface {
     // if succeeds, run the handle
     // if fails, return validation error
 
-    if (condition) return await actionModule.default.handle()
-
-    return await actionModule.default.handle(request)
+    const requestInstance = await extractModelRequest(modulePath)
+    
+    return await actionModule.default.handle(requestInstance)
   }
 
   private normalizePath(path: string): string {

@@ -10,6 +10,10 @@ export function capitalize(str: string): string {
   return str[0] ? str[0].toUpperCase() + str.slice(1).toLowerCase() : ''
 }
 
+export function lowercase(str: string): string {
+  return str.toLowerCase()
+}
+
 export {
   camelCase,
   capitalCase,
