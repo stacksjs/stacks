@@ -11,7 +11,6 @@ export const config: StacksOptions = {
 export const {
   ai,
   analytics,
-  api,
   app,
   cache,
   cloud,
@@ -46,6 +45,8 @@ export const determineAppEnv = (): string => {
   if (app.env === 'development') return 'dev'
   if (app.env === 'staging') return 'stage'
   if (app.env === 'production') return 'prod'
+
+  if (!app.env) throw new Error("Couldn't determine app environment")
 
   return app.env
 }

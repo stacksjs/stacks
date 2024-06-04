@@ -334,6 +334,8 @@ declare global {
   const extendRef: typeof import('../core/utils/src/vendors')['extendRef']
   const extname: typeof import('../core/path/src/paths')['extname']
   const extractFieldsFromModel: typeof import('../core/orm/src/utils')['extractFieldsFromModel']
+  const extractModelFromAction: typeof import('../core/router/src/utils')['extractModelFromAction']
+  const extractModelRequest: typeof import('../core/router/src/utils')['extractModelRequest']
   const faker: typeof import('../core/faker/src/index')['faker']
   const fakerPath: typeof import('../core/path/src/paths')['fakerPath']
   const fathomWip: typeof import('../core/analytics/src/drivers/fathom')['fathomWip']
@@ -391,9 +393,11 @@ declare global {
   const getFolders: typeof import('../core/storage/src/folders')['getFolders']
   const getLastMigrationFields: typeof import('../core/database/src/migrations')['getLastMigrationFields']
   const getModelCustomizationJob: typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']
+  const getModelName: typeof import('../core/orm/src/utils')['getModelName']
   const getNameservers: typeof import('../core/dns/src/drivers/aws')['getNameservers']
   const getRelations: typeof import('../core/database/src/seeder')['getRelations']
   const getSSRHandler: typeof import('../core/utils/src/vendors')['getSSRHandler']
+  const getTableName: typeof import('../core/orm/src/utils')['getTableName']
   const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
   const gitPath: typeof import('../core/path/src/paths')['gitPath']
   const glob: typeof import('../core/storage/src/glob')['glob']
@@ -1341,6 +1345,8 @@ declare module 'vue' {
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
     readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
+    readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
+    readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
     readonly faker: UnwrapRef<typeof import('../core/faker/src/index')['faker']>
     readonly fakerPath: UnwrapRef<typeof import('../core/path/src/paths')['fakerPath']>
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
@@ -1391,9 +1397,11 @@ declare module 'vue' {
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
     readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
+    readonly getModelName: UnwrapRef<typeof import('../core/orm/src/utils')['getModelName']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
     readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
+    readonly getTableName: UnwrapRef<typeof import('../core/orm/src/utils')['getTableName']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/paths')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../core/storage/src/glob')['glob']>
@@ -2293,6 +2301,8 @@ declare module '@vue/runtime-core' {
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
     readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
+    readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
+    readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
     readonly faker: UnwrapRef<typeof import('../core/faker/src/index')['faker']>
     readonly fakerPath: UnwrapRef<typeof import('../core/path/src/paths')['fakerPath']>
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
@@ -2343,9 +2353,11 @@ declare module '@vue/runtime-core' {
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
     readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
+    readonly getModelName: UnwrapRef<typeof import('../core/orm/src/utils')['getModelName']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
     readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
+    readonly getTableName: UnwrapRef<typeof import('../core/orm/src/utils')['getTableName']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/paths')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../core/storage/src/glob')['glob']>
