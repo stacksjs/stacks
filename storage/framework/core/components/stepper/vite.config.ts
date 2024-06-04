@@ -40,7 +40,7 @@ export default defineConfig(({ command, mode }) => {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
         name: 'StacksStepper',
-        fileName: 'stacks-stepper',
+        fileName: 'index',
       },
 
       outDir: 'dist',
@@ -57,7 +57,7 @@ export default defineConfig(({ command, mode }) => {
           // },
           {
             format: 'es',
-            entryFileNames: `stacks-stepper.js`,
+            entryFileNames: `index.js`,
             preserveModules: false,
           },
         ],
