@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/desktop",
   "type": "module",
-  "version": "0.61.22",
+  "version": "0.61.23",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
   "license": "MIT",
