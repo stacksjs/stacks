@@ -303,9 +303,7 @@ export class Router implements RouterInterface {
     // if fails, return validation error
 
     const requestInstance = await extractModelRequest(modulePath)
-
-    console.log(requestInstance)
-
+    
     return await actionModule.default.handle(requestInstance)
   }
 

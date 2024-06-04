@@ -22,5 +22,5 @@ public password = ''
       }
     }
     
-export const userRequest = new UserRequest()
+    export const userRequest = new UserRequest()
     
