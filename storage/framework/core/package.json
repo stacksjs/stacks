@@ -282,6 +282,11 @@
       "types": "./sms/dist/index.d.ts",
       "import": "./sms/dist/index.js"
     },
+    "./stepper": {
+      "bun": "./components/stepper/src/index.ts",
+      "types": "./components/stepper/dist/index.d.ts",
+      "import": "./components/stepper/dist/index.js"
+    },
     "./storage": {
       "bun": "./storage/src/index.ts",
       "types": "./storage/dist/index.d.ts",

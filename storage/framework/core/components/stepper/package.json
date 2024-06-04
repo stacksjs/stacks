@@ -26,8 +26,8 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/stacks-stepper.d.ts",
-      "import": "./dist/stacks-stepper.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
       "import": "./dist/*"

@@ -1,5 +1,47 @@
 # Stacks Changelog
 
+## v0.61.20...v0.61.21
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.61.20...v0.61.21)
+
+### 🚀 Enhancements
+
+- Add raycast extension ([ae6160602](https://github.com/stacksjs/stacks/commit/ae6160602))
+
+### 🏡 Chore
+
+- Wip ([ec9e11ca4](https://github.com/stacksjs/stacks/commit/ec9e11ca4))
+- Wip ([2f51fa7a2](https://github.com/stacksjs/stacks/commit/2f51fa7a2))
+- Wip ([2bea4415f](https://github.com/stacksjs/stacks/commit/2bea4415f))
+- Wip ([6d2f0ecf5](https://github.com/stacksjs/stacks/commit/6d2f0ecf5))
+- Wip ([c17fe79d8](https://github.com/stacksjs/stacks/commit/c17fe79d8))
+- Wip ([4cc7899df](https://github.com/stacksjs/stacks/commit/4cc7899df))
+- Wip ([f51b6d78a](https://github.com/stacksjs/stacks/commit/f51b6d78a))
+- Wip ([5310d93a3](https://github.com/stacksjs/stacks/commit/5310d93a3))
+- Wip ([9b533d755](https://github.com/stacksjs/stacks/commit/9b533d755))
+- Wip ([38738c6b8](https://github.com/stacksjs/stacks/commit/38738c6b8))
+- Wip ([2fe8c11f9](https://github.com/stacksjs/stacks/commit/2fe8c11f9))
+- Wip ([7097cef09](https://github.com/stacksjs/stacks/commit/7097cef09))
+- Wip ([4e36655ba](https://github.com/stacksjs/stacks/commit/4e36655ba))
+- Wip ([3f48b30a4](https://github.com/stacksjs/stacks/commit/3f48b30a4))
+- Wip ([c48a9fbb6](https://github.com/stacksjs/stacks/commit/c48a9fbb6))
+- Wip ([fcb8f4946](https://github.com/stacksjs/stacks/commit/fcb8f4946))
+- Wip ([bf7030cb8](https://github.com/stacksjs/stacks/commit/bf7030cb8))
+- Wip ([107ef7bb8](https://github.com/stacksjs/stacks/commit/107ef7bb8))
+- Wip ([9ec1220cc](https://github.com/stacksjs/stacks/commit/9ec1220cc))
+- Wip ([be3a1e62d](https://github.com/stacksjs/stacks/commit/be3a1e62d))
+- Wip ([2b0edcdd4](https://github.com/stacksjs/stacks/commit/2b0edcdd4))
+- Wip ([1e180c4f2](https://github.com/stacksjs/stacks/commit/1e180c4f2))
+- Wip ([218c673fe](https://github.com/stacksjs/stacks/commit/218c673fe))
+- Release v0.61.21 ([f8c92ebb8](https://github.com/stacksjs/stacks/commit/f8c92ebb8))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Glennmichael123 ([@glennmichael123](http://github.com/glennmichael123))
+- Janrey Maligro ([@fingersandmind](http://github.com/fingersandmind))
+- Michael Vincent Caballero ([@cab-mikee](http://github.com/cab-mikee))
+
 ## v0.61.19...v0.61.20
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.61.19...v0.61.20)
