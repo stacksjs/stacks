@@ -49,7 +49,7 @@
     "vue-sonner": "^1.1.2"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.46.2",
+    "@microsoft/api-extractor": "^7.47.0",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",
