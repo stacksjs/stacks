@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/x-ray",
   "type": "module",
-  "version": "0.61.20",
+  "version": "0.61.21",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "license": "MIT",
