@@ -7,7 +7,7 @@ import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
 import { getModelName } from '@stacksjs/orm'
-import { lowercase } from '@stacksjs/strings'
+import { camelCase, lowercase } from '@stacksjs/strings'
 
 interface ServeOptions {
   host?: string
@@ -155,7 +155,7 @@ async function addRouteQuery(url: URL) {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default;
     const modelName = getModelName(model, modelFile);
-    const modelNameLower = `${lowercase(modelName)}Request`;
+    const modelNameLower = `${camelCase(modelName)}Request`;
     const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
     const requestImport = await import(requestPath);
     const requestInstance = requestImport[modelNameLower];

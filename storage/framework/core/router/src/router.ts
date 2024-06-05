@@ -6,7 +6,7 @@ import type { Job } from '@stacksjs/types'
 import { request } from '@stacksjs/router'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
-import { extractModelRequest } from './utils'
+import { extractModelRequest, extractDynamicRequest } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 
@@ -307,8 +307,9 @@ export class Router implements RouterInterface {
     if (modulePath.includes('OrmAction'))
      requestInstance = await extractModelRequest(modulePath)
     else
-      requestInstance = request
+      requestInstance = await extractDynamicRequest(modulePath)
 
+      console.log(requestInstance)
     return await actionModule.default.handle(requestInstance)
   }
 
