@@ -25,8 +25,8 @@ public description = ''
 public path = ''
 public isPersonal = false
 
-      public validate(): void {
-        validateField('Team', this.all())
+      public async validate(): Promise<void> {
+        await validateField('Team', this.all())
       }
     }
     

@@ -17,8 +17,8 @@ public description = ''
 public url = ''
 public status = ''
 
-      public validate(): void {
-        validateField('Project', this.all())
+      public async validate(): Promise<void> {
+        await validateField('Project', this.all())
       }
     }
     

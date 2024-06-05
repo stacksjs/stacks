@@ -23,8 +23,8 @@ public executionTime = 0
 public deployScript = ''
 public terminalOutput = ''
 
-      public validate(): void {
-        validateField('Deployment', this.all())
+      public async validate(): Promise<void> {
+        await validateField('Deployment', this.all())
       }
     }
     

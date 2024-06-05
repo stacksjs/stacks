@@ -144,8 +144,8 @@ async function writeModelRequests() {
     
     fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
       ${fieldStringInt}
-      public validate(): void {
-        validateField('${modelName}', this.all())
+      public async validate(): Promise<void> {
+        await validateField('${modelName}', this.all())
       }
     }
     
@@ -203,7 +203,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   if (apiRoute === 'store') {
     handleString += `async handle(request: ${modelName}RequestType) {
-        request.validate()
+        await request.validate()
         const model = await ${modelName}.create(request.all())
 
         return model
@@ -214,7 +214,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   if (apiRoute === 'update') {
     handleString += `async handle(request: ${modelName}RequestType) {
-        request.validate()
+        await request.validate()
         
         const id = request.getParam('id')
 

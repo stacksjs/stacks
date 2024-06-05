@@ -17,8 +17,8 @@ public email = ''
 public jobTitle = ''
 public password = ''
 
-      public validate(): void {
-        validateField('User', this.all())
+      public async validate(): Promise<void> {
+        await validateField('User', this.all())
       }
     }
     

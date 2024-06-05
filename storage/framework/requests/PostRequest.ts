@@ -13,8 +13,8 @@ export class PostRequest extends Request implements PostRequestType  {
       public title = ''
 public body = ''
 
-      public validate(): void {
-        validateField('Post', this.all())
+      public async validate(): Promise<void> {
+        await validateField('Post', this.all())
       }
     }
     

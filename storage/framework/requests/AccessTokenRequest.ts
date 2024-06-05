@@ -17,8 +17,8 @@ public token = ''
 public plainTextToken = ''
 public abilities = ''
 
-      public validate(): void {
-        validateField('AccessToken', this.all())
+      public async validate(): Promise<void> {
+        await validateField('AccessToken', this.all())
       }
     }
     

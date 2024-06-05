@@ -11,8 +11,8 @@ export interface SubscriberEmailRequestType extends RequestInstance{
 export class SubscriberEmailRequest extends Request implements SubscriberEmailRequestType  {
       public email = ''
 
-      public validate(): void {
-        validateField('SubscriberEmail', this.all())
+      public async validate(): Promise<void> {
+        await validateField('SubscriberEmail', this.all())
       }
     }
     

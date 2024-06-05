@@ -21,72 +21,96 @@ export default {
 
   attributes: {
     name: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`name` must be a string',
+        message: {
+          string: 'name must be a string',
+          required: 'name is required',
+        },
       },
 
       factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     companyName: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`companyName` must be a string',
+        message: {
+          string: 'companyName must be a string',
+          required: 'companyName is required',
+        },
       },
 
       factory: () => faker.company.name(),
     },
 
     email: {
-      validator: {
+      validation: {
         rule: schema.string().email(),
-        message: '`email` must be a string',
+        message: {
+          email: 'email must be valid',
+          required: 'email is required',
+        },
       },
 
       factory: () => faker.internet.email(),
     },
 
     billingEmail: {
-      validator: {
+      validation: {
         rule: schema.string().email(),
-        message: '`billingEmail` must be a string',
+        message: {
+          email: 'billingEmail must be a valid email',
+          required: 'billingEmail is required',
+        },
       },
 
       factory: () => faker.internet.email(),
     },
 
     status: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`status` must be a string',
+        message: {
+          string: 'status must be a string',
+          required: 'status is required',
+        },
       },
 
       factory: () => collect(['deployed', 'inactive']).random(),
     },
 
     description: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`description` must be a string',
+        message: {
+          string: 'description must be a string',
+          required: 'description is required',
+        },
       },
 
       factory: () => faker.lorem.sentence({ min: 10, max: 30 }),
     },
 
     path: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`path` must be a string',
+        message: {
+          string: 'path must be a string',
+          required: 'path is required',
+        },
       },
 
       factory: () => `/Users/chrisbreuer/Code/${faker.lorem.words().toLowerCase().replace(/\s+/g, '-')}`,
     },
 
     isPersonal: {
-      validator: {
+      validation: {
         rule: schema.boolean(),
-        message: '`isPersonal` must be a boolean',
+        message: {
+          boolean: 'isPersonal must be a boolean',
+          required: 'isPersonal is required',
+        },
       },
 
       factory: () => faker.datatype.boolean(),

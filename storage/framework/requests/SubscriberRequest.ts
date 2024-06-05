@@ -11,8 +11,8 @@ export interface SubscriberRequestType extends RequestInstance{
 export class SubscriberRequest extends Request implements SubscriberRequestType  {
       public subscribed = false
 
-      public validate(): void {
-        validateField('Subscriber', this.all())
+      public async validate(): Promise<void> {
+        await validateField('Subscriber', this.all())
       }
     }
     

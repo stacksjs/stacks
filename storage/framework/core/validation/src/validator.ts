@@ -9,8 +9,7 @@ interface RequestData {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<void> {
-  console.log(params)
-  const model = (await import(/* @vite-ignore */path.userModelsPath(modelFile))).default as Model
+  const model = (await import(/* @vite-ignore */path.userModelsPath(`${modelFile}.ts`))).default as Model
   const attributes = model.attributes
 
   const ruleObject: Record<string, SchemaTypes> = {}
@@ -30,7 +29,6 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
   schema.messagesProvider = new SimpleMessagesProvider(messageObject)
 
-  console.log(ruleObject)
   try {
     const vineSchema = schema.object(ruleObject)
     const validator = schema.compile(vineSchema)

@@ -7,7 +7,7 @@ export default new Action({
       description: 'User Update ORM Action',
       method: 'PATCH',
       async handle(request: UserRequestType) {
-        request.validate()
+        await request.validate()
         
         const id = request.getParam('id')
 

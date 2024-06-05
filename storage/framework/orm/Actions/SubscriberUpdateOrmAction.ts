@@ -7,7 +7,7 @@ export default new Action({
       description: 'Subscriber Update ORM Action',
       method: 'PATCH',
       async handle(request: SubscriberRequestType) {
-        request.validate()
+        await request.validate()
         
         const id = request.getParam('id')
 

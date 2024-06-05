@@ -125,7 +125,6 @@ async function createTableMigration(modelPath: string) {
   const tableName = await getTableName(model, modelPath)
 
   await createPivotTableMigration(model, modelPath)
-
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
 
   const fields = model.attributes
@@ -141,14 +140,15 @@ async function createTableMigration(modelPath: string) {
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
+
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validator?.rule?.required) {
+    if (fieldOptions.unique || fieldOptions?.required) {
       migrationContent += `, col => col`
       if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions.validator?.rule?.required) migrationContent += `.notNull()`
+      if (fieldOptions?.required) migrationContent += `.notNull()`
       migrationContent += ``
     }
 
@@ -241,7 +241,7 @@ export async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validator?.rule)
+    const columnType = mapFieldTypeToColumnType(options.validation?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
   }
 
