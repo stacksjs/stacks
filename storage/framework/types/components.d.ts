@@ -46,6 +46,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryFeatures: typeof import('./../../../libs/components/Marketing/SecondaryFeatures.vue')['default']
     SettingsHeader: typeof import('./../../../libs/components/Dashboard/SettingsHeader.vue')['default']
+    SettingsSidebar: typeof import('./../../../libs/components/Dashboard/SettingsSidebar.vue')['default']
     Sidebar: typeof import('./../../../libs/components/Dashboard/Sidebar.vue')['default']
     SlimLayout: typeof import('./../../../libs/components/Marketing/SlimLayout.vue')['default']
     Starport: typeof import('vue-starport')['Starport']
