@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import {SettingsMenuOption} from "stacks/types";
+
+const props = defineProps<{ menuOptions?: SettingsMenuOption[] }>()
+
+const menuOptions = computed(() => props.menuOptions || [])
+</script>
+
 <template>
   <header class="lg:w-64 border-b border-gray-200 dark:border-gray-600 p-4 sm:p-6 lg:p-8">
 
@@ -128,6 +136,21 @@
     </nav>
 
     <nav class="flex flex-1 flex-col">
+      <ul
+        role="list"
+        class="-mx-2 mt-2 space-y-1"
+      >
+        <li v-for="(menu, index) in menuOptions" :key="index">
+          <RouterLink
+            :to="menu.path"
+            class="sidebar-links group"
+          >
+            <div class="i-heroicons-rocket-launch text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+            {{menu.label}}
+          </RouterLink>
+        </li>
+      </ul>
+
       <ul
         role="list"
         class="flex flex-1 flex-col gap-y-8"
@@ -413,5 +436,3 @@
   @apply text-blue-600 text-sm rounded-md !important
 }
 </style>
-<script setup lang="ts">
-</script>

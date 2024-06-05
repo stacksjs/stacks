@@ -333,6 +333,8 @@ declare global {
   const expo: typeof import('../core/push/src/drivers/index')['expo']
   const extendRef: typeof import('../core/utils/src/vendors')['extendRef']
   const extname: typeof import('../core/path/src/paths')['extname']
+  const extractDynamicAction: typeof import('../core/router/src/utils')['extractDynamicAction']
+  const extractDynamicRequest: typeof import('../core/router/src/utils')['extractDynamicRequest']
   const extractFieldsFromModel: typeof import('../core/orm/src/utils')['extractFieldsFromModel']
   const extractModelFromAction: typeof import('../core/router/src/utils')['extractModelFromAction']
   const extractModelRequest: typeof import('../core/router/src/utils')['extractModelRequest']
@@ -1344,6 +1346,8 @@ declare module 'vue' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
+    readonly extractDynamicAction: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicAction']>
+    readonly extractDynamicRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicRequest']>
     readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
     readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
     readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
@@ -2300,6 +2304,8 @@ declare module '@vue/runtime-core' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
+    readonly extractDynamicAction: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicAction']>
+    readonly extractDynamicRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicRequest']>
     readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
     readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
     readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
