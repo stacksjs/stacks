@@ -49,11 +49,11 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.588.0",
+    "@aws-sdk/client-dynamodb": "^3.590.0",
     "@stacksjs/config": "workspace:*"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.588.0",
+    "@aws-sdk/client-dynamodb": "^3.590.0",
     "@stacksjs/config": "workspace:*"
   },
   "devDependencies": {
