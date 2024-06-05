@@ -1,7 +1,7 @@
 {
   "name": "stacks",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.24",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -282,6 +282,11 @@
       "types": "./sms/dist/index.d.ts",
       "import": "./sms/dist/index.js"
     },
+    "./stepper": {
+      "bun": "./components/stepper/src/index.ts",
+      "types": "./components/stepper/dist/index.d.ts",
+      "import": "./components/stepper/dist/index.js"
+    },
     "./storage": {
       "bun": "./storage/src/index.ts",
       "types": "./storage/dist/index.d.ts",
@@ -329,8 +334,17 @@
     }
   },
   "types": "./types/dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["buddy", "core", "ide", "package.json", "stubs", "vcs"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "buddy",
+    "core",
+    "ide",
+    "package.json",
+    "stubs",
+    "vcs"
+  ],
   "scripts": {
     "buddy": "bun --bun run ./buddy/src/cli.ts",
     "build": "cd config && bun run build && cd ../env && bun run build && cd ../storage && bun run build && cd .. && bun ./build.ts",

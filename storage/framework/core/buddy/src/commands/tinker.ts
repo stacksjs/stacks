@@ -12,7 +12,7 @@ export function tinker(buddy: CLI) {
 
   buddy
     .command('tinker', descriptions.tinker)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TinkerOptions) => {
       log.debug('Running `buddy tinker` ...', options)

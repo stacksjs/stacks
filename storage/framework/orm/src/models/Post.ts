@@ -13,7 +13,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       id: Generated<number>
       title: string
       body: string
-     
+      user_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -57,7 +58,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to find a post by ID
-      static async find(id: number, fields?: (keyof PostType)[]) {
+      static async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel> {
         let query = db.selectFrom('posts').where('id', '=', id)
 
         if (fields)
@@ -73,7 +74,23 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new PostModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof PostType)[]) {
+      static async findOrFail(id: number, fields?: (keyof PostType)[]): Promise<PostModel> {
+        let query = db.selectFrom('posts').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new PostModel(model)
+      }
+
+      static async findMany(ids: number[], fields?: (keyof PostType)[]): Promise<PostModel[]> {
         let query = db.selectFrom('posts').where('id', 'in', ids)
 
         if (fields)
@@ -118,7 +135,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -129,7 +146,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           data: postsWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -138,36 +155,36 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       // Method to create a new post
       static async create(newPost: NewPost): Promise<PostModel> {
-        const model = await db.insertInto('posts')
+        const result = await db.insertInto('posts')
           .values(newPost)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new PostModel(model)
-      }
-
-      // Method to update a post
-      static async update(id: number, postUpdate: PostUpdate): Promise<PostModel> {
-        const model = await db.updateTable('posts')
-          .set(postUpdate)
-          .where('id', '=', id)
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        return new PostModel(model)
+        return await find(Number(result.insertId)) as PostModel
       }
 
       // Method to remove a post
       static async remove(id: number): Promise<PostModel> {
         const model = await db.deleteFrom('posts')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new PostModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(...args: (string | number)[]): Promise<PostType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('posts')
 
         query = query.where(column, operator, value)
@@ -219,7 +236,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof PostType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof PostType, values: any[], options: QueryOptions = {}): Promise<PostType[]> {
+
         let query = db.selectFrom('posts')
 
         query = query.where(column, 'in', values)
@@ -238,34 +256,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<PostType> {
         return await db.selectFrom('posts')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<PostType> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof PostType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof PostType, order: 'asc' | 'desc'): Promise<PostType[]> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof PostType) {
+      async orderByDesc(column: keyof PostType): Promise<PostType[]> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof PostType) {
+      async orderByAsc(column: keyof PostType): Promise<PostType[]> {
         return await db.selectFrom('posts')
           .selectAll()
           .orderBy(column, 'asc')
@@ -273,7 +291,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
 
       // Method to get the post instance itself
-      self() {
+      self(): PostModel {
         return this
       }
 
@@ -290,13 +308,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         const updatedModel = await db.updateTable('posts')
           .set(post)
           .where('id', '=', this.post.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('Post not found'))
-
-        this.post = updatedModel
 
         return ok(updatedModel)
       }
@@ -310,9 +325,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           // Insert new post
           const newModel = await db.insertInto('posts')
             .values(this.post as NewPost)
-            .returningAll()
             .executeTakeFirstOrThrow()
-          this.post = newModel
         }
         else {
           // Update existing post
@@ -396,7 +409,22 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       if (!model)
         return null
 
-      this.post = model
+      return new PostModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof PostType)[]) {
+      let query = db.selectFrom('posts').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new PostModel(model)
     }
 
@@ -413,7 +441,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return model.map(modelItem => new PostModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('posts')
         .selectAll()
         .execute()
@@ -456,7 +484,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<PostType[]> {
       return await db.selectFrom('posts')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -465,25 +493,34 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .execute()
     }
 
-    export async function create(newPost: NewPost) {
-      return await db.insertInto('posts')
-        .values(newPost)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+    export async function create(newPost: NewPost): Promise<PostModel> {
+      const result = await db.insertInto('posts')
+      .values(newPost)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<PostModel> {
      return await db.selectFrom('posts')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('posts')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number): Promise<PostModel[]> {
+      return await db.selectFrom('posts')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number): Promise<PostType> {
+      return await db.selectFrom('posts')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, postUpdate: PostUpdate) {
       return await db.updateTable('posts')
@@ -495,11 +532,23 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
     export async function remove(id: number) {
       return await db.deleteFrom('posts')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
-    export async function where(column: string, operator = '=', value: any) {
+    export async function where(...args: (string | number)[]) {
+      let column: any
+      let operator: any
+      let value: any
+
+      if (args.length === 2) {
+        [column, value] = args
+        operator = '='
+      } else if (args.length === 3) {
+          [column, operator, value] = args
+      } else {
+          throw new Error("Invalid number of arguments")
+      }
+
       let query = db.selectFrom('posts')
 
       query = query.where(column, operator, value)
@@ -579,6 +628,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     export const Post = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -589,6 +639,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: PostModel

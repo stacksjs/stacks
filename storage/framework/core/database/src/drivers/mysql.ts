@@ -4,7 +4,15 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
-import { checkPivotMigration, fetchOtherModelRelations, getLastMigrationFields, hasTableBeenMigrated, mapFieldTypeToColumnType } from '.'
+import {
+  checkPivotMigration,
+  fetchOtherModelRelations,
+  getLastMigrationFields,
+  getPivotTables,
+  hasTableBeenMigrated,
+  mapFieldTypeToColumnType,
+} from '.'
+import { getModelName, getTableName } from '@stacksjs/orm'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()
@@ -21,7 +29,7 @@ export async function resetMysqlDatabase() {
 
   for (const userModel of userModelFiles) {
     const model = (await import(userModel)).default as Model
-    const pivotTables = await getPivotTables(model)
+    const pivotTables = await getPivotTables(model, userModel)
 
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
   }
@@ -70,7 +78,7 @@ export async function generateMysqlMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
-  const tableName = await modelTableName(model)
+  const tableName = await getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
@@ -110,42 +118,15 @@ export async function generateMysqlMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
-async function getPivotTables(
-  model: Model,
-): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
-  const pivotTable = []
-
-  if (model.belongsToMany && model.name) {
-    if ('belongsToMany' in model) {
-      for (const belongsToManyRelation of model.belongsToMany) {
-        const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
-        const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name.toLowerCase()
-
-        pivotTable.push({
-          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-          firstForeignKey: belongsToManyRelation.firstForeignKey,
-          secondForeignKey: belongsToManyRelation.secondForeignKey,
-        })
-      }
-
-      return pivotTable
-    }
-  }
-
-  return []
-}
-
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  const tableName = await modelTableName(model)
+  const tableName = await getTableName(model, modelPath)
 
-  await createPivotTableMigration(model)
+  await createPivotTableMigration(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
 
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const otherModelRelations = await fetchOtherModelRelations(model, modelFiles)
   const fields = model.attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -159,14 +140,15 @@ async function createTableMigration(modelPath: string) {
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
+
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
+    migrationContent += `    .addColumn('${fieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validator?.rule?.required) {
+    if (fieldOptions.unique || fieldOptions?.required) {
       migrationContent += `, col => col`
       if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions.validator?.rule?.required) migrationContent += `.notNull()`
+      if (fieldOptions?.required) migrationContent += `.notNull()`
       migrationContent += ``
     }
 
@@ -203,8 +185,8 @@ async function createTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-async function createPivotTableMigration(model: Model) {
-  const pivotTables = await getPivotTables(model)
+async function createPivotTableMigration(model: Model, modelPath: string) {
+  const pivotTables = await getPivotTables(model, modelPath)
 
   if (!pivotTables.length) return
 
@@ -224,7 +206,7 @@ async function createPivotTableMigration(model: Model) {
     migrationContent += `    }\n`
 
     const timestamp = new Date().getTime().toString()
-    const migrationFileName = `${timestamp}-create-${pivotTable}-table.ts`
+    const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     // Assuming fs.writeFileSync is available or use an equivalent method
@@ -238,8 +220,8 @@ export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
   const model = (await import(modelPath)).default as Model
-  const modelName = path.basename(modelPath)
-  const tableName = await modelTableName(model)
+  const modelName = getModelName(model, modelPath)
+  const tableName = await getTableName(model, modelPath)
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
@@ -259,7 +241,7 @@ export async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validator?.rule)
+    const columnType = mapFieldTypeToColumnType(options.validation?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
   }
 
@@ -279,14 +261,13 @@ export async function createAlterTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-
 export async function fetchMysqlTables(): Promise<string[]> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default as Model
-    const tableName = await modelTableName(model)
+    const tableName = await getTableName(model, modelPath)
 
     tables.push(tableName)
   }

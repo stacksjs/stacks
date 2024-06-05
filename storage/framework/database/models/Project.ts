@@ -1,7 +1,7 @@
+import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
-import { collect } from '@stacksjs/collections'
 
 export default {
   name: 'Project', // defaults to the sanitized file name
@@ -19,36 +19,48 @@ export default {
 
   attributes: {
     name: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`name` must be a string',
+        message: {
+          string: 'name must be a string',
+          required: 'name is required',
+        },
       },
 
       factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     description: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`description` must be a string',
+        message: {
+          string: 'description must be a string',
+          required: 'description is required',
+        },
       },
 
       factory: () => faker.lorem.sentence({ min: 10, max: 25 }),
     },
 
     url: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`url` must be a string',
+        message: {
+          string: 'url must be a string',
+          required: 'url is required',
+        },
       },
 
       factory: () => faker.internet.url(),
     },
 
     status: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`status` must be a string',
+        message: {
+          string: 'status must be a string',
+          required: 'status is required',
+        },
       },
 
       factory: () => collect(['active', 'inactive']).random(),

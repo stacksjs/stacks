@@ -20,7 +20,7 @@ export function setup(buddy: CLI) {
   buddy
     .command('setup', descriptions.setup)
     .alias('ensure')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
       log.debug('Running `buddy setup` ...', options)

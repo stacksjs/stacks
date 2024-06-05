@@ -28,19 +28,16 @@ function generateIcs(link: CalendarLink): string {
   if (link.allDay) {
     url.push(`DTSTAMP;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DTSTART:${useDateFormat(link.from, dateTimeFormat).value}`)
-    url.push(`DURATION:P${(useMax(1, dateDiffInDays(link.from, link.to)).value)}D`)
-  }
-  else {
+    url.push(`DURATION:P${useMax(1, dateDiffInDays(link.from, link.to)).value}D`)
+  } else {
     url.push(`DTSTAMP;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DTSTART;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DTEND;TZID=${useDateFormat(link.to, dateTimeFormat).value}`)
   }
 
-  if (link.description)
-    url.push(`X-ALT-DESC;FMTTYPE=text/html:${link.description}`)
+  if (link.description) url.push(`X-ALT-DESC;FMTTYPE=text/html:${link.description}`)
 
-  if (link.address)
-    url.push(`LOCATION:${link.address}`)
+  if (link.address) url.push(`LOCATION:${link.address}`)
 
   url.push('END:VEVENT')
   url.push('END:VCALENDAR')

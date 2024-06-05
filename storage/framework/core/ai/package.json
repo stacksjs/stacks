@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ai",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.24",
   "description": "Stacks Artificial Intelligence.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -35,18 +35,24 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.577.0"
+    "@aws-sdk/client-bedrock-runtime": "^3.588.0"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.577.0"
+    "@aws-sdk/client-bedrock-runtime": "^3.588.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

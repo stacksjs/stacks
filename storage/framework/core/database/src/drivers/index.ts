@@ -1,7 +1,9 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs, glob } from '@stacksjs/storage'
+import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, RelationConfig, VineType } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
@@ -20,6 +22,14 @@ export async function getLastMigrationFields(modelName: string): Promise<Attribu
   return fields
 }
 
+export async function modelTableName(model: Model | string): Promise<string> {
+  if (typeof model === 'string') {
+    model = (await import(model)).default as Model
+  }
+
+  return model.table ?? snakeCase(plural(model?.name || ''))
+}
+
 export async function hasTableBeenMigrated(tableName: string) {
   log.debug(`hasTableBeenMigrated for table: ${tableName}`)
 
@@ -30,43 +40,58 @@ export async function hasTableBeenMigrated(tableName: string) {
 
 export async function getExecutedMigrations() {
   try {
-    // @ts-expect-error the migrations table is not typed yet
     return await db.selectFrom('migrations').select('name').execute()
   } catch (error) {
     return []
   }
 }
 
+function hasFunction(rule: VineType, functionName: string): boolean {
+  return typeof rule[functionName] === 'function'
+}
+
 export function mapFieldTypeToColumnType(rule: VineType): string {
-  // Check if the rule is for a string and has specific validations
+  if (hasFunction(rule, 'getChoices')) {
+    // Condition checker if an attribute is enum, could not think any conditions atm
+    const enumChoices = rule.getChoices() as string[]
+
+    // Convert each string value to its corresponding string structure
+    const enumStructure = enumChoices.map((value) => `'${value}'`).join(', ')
+
+    // Construct the ENUM definition
+    const enumDefinition = `sql\`enum(${enumStructure})\``
+
+    return enumDefinition
+  }
+
   if (rule[Symbol.for('schema_name')].includes('string'))
     // Default column type for strings
     return prepareTextColumnType(rule)
 
-  if (rule[Symbol.for('schema_name')].includes('number')) return 'integer'
+  if (rule[Symbol.for('schema_name')].includes('number')) return `'integer'`
 
-  if (rule[Symbol.for('schema_name')].includes('boolean')) return 'boolean'
+  if (rule[Symbol.for('schema_name')].includes('boolean')) return `'boolean'`
 
-  if (rule[Symbol.for('schema_name')].includes('date')) return 'date'
+  if (rule[Symbol.for('schema_name')].includes('date')) return `'date'`
 
   // need to now handle all other types
 
   // Add cases for other types as needed, similar to the original function
   switch (rule) {
     case 'integer':
-      return 'int'
+      return `'int'`
     case 'boolean':
-      return 'boolean'
+      return `'boolean'`
     case 'date':
-      return 'date'
+      return `'date'`
     case 'datetime':
-      return 'timestamp'
+      return `'timestamp'`
     case 'float':
-      return 'float'
+      return `'float'`
     case 'decimal':
-      return 'decimal'
+      return `'decimal'`
     default:
-      return 'text' // Fallback for unknown types
+      return `'text'` // Fallback for unknown types
   }
 }
 
@@ -74,12 +99,13 @@ export function prepareTextColumnType(rule: VineType) {
   let columnType = 'varchar(255)'
 
   // Find min and max length validations
-  const minLengthValidation = rule.validations.find((v) => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find((v) => v.options?.max !== undefined)
+  const minLengthValidation = rule.validations.find((v: any) => v.options?.min !== undefined)
+  const maxLengthValidation = rule.validations.find((v: any) => v.options?.max !== undefined)
 
   // If there's a max length validation, adjust the column type accordingly
   if (maxLengthValidation) {
     const maxLength = maxLengthValidation.options.max
+
     columnType = `varchar(${maxLength})`
   }
 
@@ -87,7 +113,7 @@ export function prepareTextColumnType(rule: VineType) {
   // This is a simplistic approach; adjust based on your actual requirements
   if (minLengthValidation && !maxLengthValidation) columnType = 'text'
 
-  return columnType
+  return `'${columnType}'`
 }
 
 export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
@@ -105,8 +131,7 @@ export async function checkPivotMigration(dynamicPart: string): Promise<boolean>
   })
 }
 
-
-export async function getRelations(model: Model): Promise<RelationConfig[]> {
+export async function getRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
@@ -121,19 +146,25 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name.toLowerCase()
+
+
+        const modelName = getModelName(model, modelPath)
+        const formattedModelName = modelName.toLowerCase()
+        const tableName = getTableName(model, modelPath)
+
+        const modelRelationTable = getModelName(modelRelation, modelRelationPath)
 
         relationships.push({
           relationship: relation,
           model: relationModel,
-          table: modelRelation.table,
-          relationModel: model.name,
-          relationTable: model.table,
+          table: modelRelationTable,
+          relationModel: modelName,
+          relationTable: tableName,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelationTable}`,
         })
       }
     }
@@ -142,27 +173,70 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
   return relationships
 }
 
-export async function fetchOtherModelRelations(model: Model, modelFiles: string[]): Promise<RelationConfig[]> {
+export async function fetchOtherModelRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
 
-    const modelFile = await import(modelFileElement)
+    const modelFile = (await import(modelFileElement)).default as Model
 
-    if (model.name === modelFile.default.name) continue
+    const tableName = getTableName(model, modelPath)
+    const modelName = getModelName(model, modelPath)
 
-    const relations = await getRelations(modelFile.default)
+    const modelFileName = getTableName(modelFile, modelFileElement)
 
-    if (! relations.length) continue
+    if (tableName === modelFileName) continue
 
-    const relation = relations.find(relation => relation.model === model.name)
+    const relations = await getRelations(modelFile, modelFileElement)
 
-    if (relation)
-      modelRelations.push(relation)
+    if (!relations.length) continue
+
+    const relation = relations.find((relation) => relation.model === modelName)
+
+    if (relation) modelRelations.push(relation)
   }
 
   return modelRelations
+}
+
+export async function getPivotTables(
+  model: Model,
+  modelPath: string
+): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
+  const pivotTable = []
+
+  const modelName = getTableName(model, modelPath)
+
+  if (model.belongsToMany) {
+    if ('belongsToMany' in model) {
+      for (const belongsToManyRelation of model.belongsToMany) {
+        const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
+        const modelRelation = (await import(modelRelationPath)).default
+        const formattedModelName = modelName.toLowerCase()
+
+        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+        const modelRelationModelName = getModelName(modelRelation, modelRelationPath)
+
+        const firstForeignKey =
+          belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
+        const secondForeignKey =
+          belongsToManyRelation.secondForeignKey || `${modelRelationModelName.toLowerCase()}_${model.primaryKey}`
+
+        pivotTable.push({
+          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelationTable}`,
+          firstForeignKey: firstForeignKey,
+          secondForeignKey: secondForeignKey,
+        })
+      }
+
+      return pivotTable
+    }
+  }
+
+  return []
 }
 
 function hasRelations(obj: any, key: string): boolean {

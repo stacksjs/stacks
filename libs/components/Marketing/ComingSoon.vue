@@ -36,13 +36,20 @@ function submitEmail() {
             </span>
           </a>
         </div>
+
         <h1 class="mt-10 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
           Develop modern apps, clouds & libraries.
           Faster.
         </h1>
+
         <p class="mt-6 text-lg leading-8 text-gray-600">
-          Stacks is a type-safe full-stack framework for Artisans. Rapid development, for the best full-stack teams, and individuals. Enter your email below to get informed about our upcoming releases.
+          Stacks is a type-safe full-stack framework for Web Artisans. Rapid development, for the best full-stack teams, and individuals.
         </p>
+
+        <p class="mt-3 leading-8 text-gray-600 italic">
+          Enter your email below to stay in the loop.
+        </p>
+
         <div class="mt-10 flex items-center gap-x-6">
           <!-- <a href="#" class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Get started</a> -->
           <div>

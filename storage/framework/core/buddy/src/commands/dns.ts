@@ -56,7 +56,7 @@ export function dns(buddy: CLI) {
     .option('-1, --short', descriptions.short, { default: false })
     .option('-J, --json', descriptions.json, { default: false })
     .option('-p, --pretty', descriptions.pretty, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: DnsOptions) => {
       log.debug('Running `buddy dns [domain]` ...', options)

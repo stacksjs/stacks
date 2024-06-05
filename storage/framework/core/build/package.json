@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/build",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.24",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,8 +37,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -58,6 +64,6 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/babel__generator": "^7.6.8",
-    "@types/babel__traverse": "^7.20.5"
+    "@types/babel__traverse": "^7.20.6"
   }
 }

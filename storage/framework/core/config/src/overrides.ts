@@ -1,7 +1,6 @@
 import type { StacksConfig } from '@stacksjs/types'
 import ai from '~/config/ai'
 import analytics from '~/config/analytics'
-import api from '~/config/api'
 import app from '~/config/app'
 import cache from '~/config/cache'
 import cli from '~/config/cli'
@@ -30,7 +29,6 @@ import ui from '~/config/ui'
 export default {
   ai,
   analytics,
-  api,
   app,
   cache,
   cli,

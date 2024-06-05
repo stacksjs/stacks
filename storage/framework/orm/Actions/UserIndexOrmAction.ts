@@ -1,14 +1,13 @@
 import { Action } from '@stacksjs/actions'
-import User from '../src/User'
-import { request } from '@stacksjs/router'
+import User from '../src/models/User'
+ import type { UserRequestType } from '../../requests/UserRequest'
 
 export default new Action({
       name: 'User Index',
       description: 'User Index ORM Action',
-
-      handle() {
-        
-        return request.all()
+      method: 'GET',
+      async handle(request: UserRequestType) {
+        return await User.all()
       },
     })
   

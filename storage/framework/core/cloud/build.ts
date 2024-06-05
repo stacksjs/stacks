@@ -20,6 +20,7 @@ const result = await Bun.build({
     '@aws-sdk/client-route-53-domains',
     '@aws-sdk/client-s3',
     '@stacksjs/cli',
+    '@stacksjs/cloud',
     '@stacksjs/config',
     '@stacksjs/error-handling',
     '@stacksjs/logging',

@@ -16,7 +16,7 @@ process.on('uncaughtException', (error: Error) => {
 })
 
 process.on('unhandledRejection', (error: Error) => {
-  log.debug('unhandledRejection')
+  log.debug('unhandledRejection', error)
   log.error(error)
   process.exit(1)
 })
@@ -64,6 +64,7 @@ async function main() {
   cmd.make(buddy)
   cmd.migrate(buddy)
   cmd.release(buddy)
+  cmd.route(buddy)
   cmd.seed(buddy)
   cmd.setup(buddy)
   cmd.test(buddy)

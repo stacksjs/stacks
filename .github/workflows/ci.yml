@@ -31,11 +31,9 @@ jobs:
 
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
-        with:
-          version: 1.7.1 # should be latest but currently fails
 
       - name: Lint
-        run: biome ci .
+        run: biome ci --reporter github
 
   typecheck:
     runs-on: ${{ matrix.os }}

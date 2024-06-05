@@ -1,3 +1,4 @@
+import type { ApiConfig } from './api'
 import type { FirewallConfig } from './security'
 
 export type CountryCode =
@@ -257,6 +258,8 @@ export interface CloudOptions {
   type: 'serverless' // | 'server' coming soon
 
   driver: 'aws'
+
+  api: ApiConfig
 
   storage: {}
 

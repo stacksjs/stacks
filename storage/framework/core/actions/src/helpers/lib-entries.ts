@@ -72,7 +72,7 @@ export function generateEntryPointData(type: LibraryType): string {
   let arr = []
 
   if (type === 'functions') {
-    if (!library.functions?.functions) {
+    if (!library.functions?.files) {
       log.error(
         new Error(
           'There are no functions defined to be built. Please check your config/library.ts file for potential adjustments',
@@ -81,7 +81,7 @@ export function generateEntryPointData(type: LibraryType): string {
       process.exit()
     }
 
-    for (const fx of library.functions.functions) {
+    for (const fx of library.functions.files) {
       if (Array.isArray(fx)) arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
       else arr.push(`export * from '${functionsPath(fx)}'`)
     }

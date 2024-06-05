@@ -456,7 +456,7 @@ export default {
       description: 'Your function library description.',
       keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
       shouldGenerateSourcemap: false,
-      functions: ['counter', 'dark'],
+      files: ['counter', 'dark'],
     },
   },
 

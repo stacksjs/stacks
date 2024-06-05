@@ -5,37 +5,37 @@ interface Params {
 }
 
 interface FetchRequestHeaders {
-  'Content-Type'?: string;
-  'Authorization'?: string;
-  'Accept'?: string;
-  'User-Agent'?: string;
-  'Referer'?: string;
-  'Origin'?: string;
-  'Cache-Control'?: string;
-  'Pragma'?: string;
-  'Cookie'?: string;
-  'If-Modified-Since'?: string;
-  'If-None-Match'?: string;
-  'X-Requested-With'?: string;
-  'Accept-Encoding'?: string;
-  'Accept-Language'?: string;
-  [key: string]: string | undefined; // To allow additional headers
+  'Content-Type'?: string
+  Authorization?: string
+  Accept?: string
+  'User-Agent'?: string
+  Referer?: string
+  Origin?: string
+  'Cache-Control'?: string
+  Pragma?: string
+  Cookie?: string
+  'If-Modified-Since'?: string
+  'If-None-Match'?: string
+  'X-Requested-With'?: string
+  'Accept-Encoding'?: string
+  'Accept-Language'?: string
+  [key: string]: string | undefined // To allow additional headers
 }
 
 interface FetchRequestParams {
-  headers?: FetchRequestHeaders;
-  method?: string;
-  baseURL?: string;
-  body?: any; // Optional, for request bodies like in POST or PUT requests
-  mode?: RequestMode; // Optional, e.g., 'cors', 'no-cors', 'same-origin'
-  credentials?: RequestCredentials; // Optional, e.g., 'include', 'same-origin', 'omit'
-  cache?: RequestCache; // Optional, e.g., 'default', 'no-store', 'reload'
-  redirect?: RequestRedirect; // Optional, e.g., 'follow', 'manual', 'error'
-  referrerPolicy?: ReferrerPolicy; // Optional, e.g., 'no-referrer', 'origin'
-  integrity?: string; // Optional, for subresource integrity
-  keepalive?: boolean; // Optional, for whether the request should outlive the page
-  signal?: AbortSignal; // Optional, to abort the request
-  [key: string]: any; // To allow additional parameters
+  headers?: FetchRequestHeaders
+  method?: string
+  baseURL?: string
+  body?: any // Optional, for request bodies like in POST or PUT requests
+  mode?: RequestMode // Optional, e.g., 'cors', 'no-cors', 'same-origin'
+  credentials?: RequestCredentials // Optional, e.g., 'include', 'same-origin', 'omit'
+  cache?: RequestCache // Optional, e.g., 'default', 'no-store', 'reload'
+  redirect?: RequestRedirect // Optional, e.g., 'follow', 'manual', 'error'
+  referrerPolicy?: ReferrerPolicy // Optional, e.g., 'no-referrer', 'origin'
+  integrity?: string // Optional, for subresource integrity
+  keepalive?: boolean // Optional, for whether the request should outlive the page
+  signal?: AbortSignal // Optional, to abort the request
+  [key: string]: any // To allow additional parameters
 }
 
 type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array>
@@ -145,5 +145,5 @@ export const Fetch = {
   baseURL,
   loading,
   token,
-  setToken
+  setToken,
 }

@@ -1,7 +1,14 @@
+import type { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
-import { pascalCase } from '@stacksjs/strings'
+import { kebabCase, pascalCase } from '@stacksjs/strings'
+import type { Job } from '@stacksjs/types'
+import { request } from '@stacksjs/router'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+
+import { extractModelRequest, extractDynamicRequest } from './utils'
+
+type ActionPath = string // TODO: narrow this by automating its generation
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
@@ -22,14 +29,14 @@ export class Router implements RouterInterface {
       })}$`,
     )
 
-    let routeCallback: Route['callback']
+    // let routeCallback: Route['callback']
 
-    if (typeof callback === 'string' || typeof callback === 'object') {
-      // Convert string or object to RouteCallback
-      routeCallback = () => callback
-    } else {
-      routeCallback = callback
-    }
+    // if (typeof callback === 'string' || typeof callback === 'object') {
+    //   // Convert string or object to RouteCallback
+    //   routeCallback = () => callback
+    // } else {
+    //   routeCallback = callback
+    // }
 
     log.debug(`Adding route: ${method} ${uri} with name ${name}`)
 
@@ -38,20 +45,19 @@ export class Router implements RouterInterface {
       method,
       url: uri,
       uri,
-      callback: routeCallback,
+      callback,
       pattern,
       statusCode,
       paramNames: [],
+      // middleware: [],
     })
 
     return this
   }
 
-  public async get(path: Route['url'], callback: Route['callback']): Promise<this> {
+  public get(path: Route['url'], callback: Route['callback']): this {
     this.path = this.normalizePath(path)
     log.debug(`Normalized Path: ${this.path}`)
-
-    callback = await this.resolveCallback(callback)
 
     const uri = this.prepareUri(this.path)
     log.debug(`Prepared URI: ${uri}`)
@@ -62,9 +68,8 @@ export class Router implements RouterInterface {
   public async email(path: Route['url']): Promise<this> {
     path = pascalCase(path)
 
-    const emailModule = await import(p.userNotificationsPath(`${path}.ts`))
-    const callback = emailModule.default.handle
-
+    const emailModule = (await import(p.userNotificationsPath(`${path}.ts`))).default as Action
+    const callback = emailModule.handle
     const uri = this.prepareUri(path)
     this.addRoute('GET', uri, callback, 200)
 
@@ -72,10 +77,9 @@ export class Router implements RouterInterface {
   }
 
   public async health(): Promise<this> {
-    const healthModule = await import(p.userActionsPath('HealthAction.ts'))
-    const callback = healthModule.default.handle
-
-    const path = healthModule.default.path ?? `${this.apiPrefix}/health`
+    const healthModule = (await import(p.userActionsPath('HealthAction.ts'))).default as Action
+    const callback = healthModule.handle
+    const path = healthModule.path ?? `${this.apiPrefix}/health`
 
     this.addRoute('GET', path, callback, 200)
 
@@ -86,71 +90,75 @@ export class Router implements RouterInterface {
     path = pascalCase(path)
 
     // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
-    const jobModule = await import(p.userJobsPath(`${path}Job.ts`.replace(/JobJob/, 'Job')))
-    const callback = jobModule.default.handle
+    const job = (await import(p.userJobsPath(`${path}.ts`))).default as Job
 
-    path = this.prepareUri(path)
-    this.addRoute('GET', path, callback, 200)
-
-    return this
+    return this.addRoute('GET', this.prepareUri(path), job.handle, 200)
   }
 
-  public async action(path: Route['url']): Promise<this> {
-    path = pascalCase(path) // actions are PascalCase
+  public async action(path: ActionPath | Route['path']): Promise<this> {
+    if (!path) return this
 
-    let callback: Route['callback']
-    try {
-      // removes the potential `ActionAction` suffix in case the user does not choose to use the Job suffix in their file name
-      const actionModule = await import(p.userActionsPath(`${path}Action.ts`.replace(/ActionAction/, 'Action')))
-      callback = actionModule.default.handle
-    } catch (error) {
-      try {
-        const actionModule = await import(p.userActionsPath(`${path}.ts`.replace(/ActionAction/, 'Action')))
-        callback = actionModule.default.handle
-      } catch (error) {
-        log.error(`Could not find action module for path: ${path}`)
-        return this
-      }
+    // check if action is a file anywhere in ./app/Actions/**/*.ts
+    if (path?.endsWith('.ts')) {
+      // given it ends with .ts, we treat it as an Actions path
+      const action = (await import(p.userActionsPath(path))).default as Action
+      path = action.path ?? kebabCase(path as string)
+      return this.addRoute(action.method ?? 'GET', path, action.handle, 200)
     }
 
-    path = this.prepareUri(path)
-    this.addRoute('GET', path, callback, 200)
+    path = pascalCase(path) // actions are PascalCase
 
-    return this
+    try {
+      const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
+
+      return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
+    } catch (error) {
+      log.error(`Could not find Action for path: ${path}`)
+
+      return this
+    }
   }
 
   public post(path: Route['url'], callback: Route['callback']): this {
-    path = this.prepareUri(path)
-    this.addRoute('POST', path, callback, 201)
+    this.path = this.normalizePath(path)
 
-    return this
+    const uri = this.prepareUri(this.path)
+
+    return this.addRoute('POST', uri, callback, 201)
   }
 
   public view(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('GET', path, callback, 200)
+    this.path = this.normalizePath(path)
 
-    return this
+    const uri = this.prepareUri(this.path)
+
+    return this.addRoute('GET', uri, callback, 200)
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
-    this.addRoute('GET', path, callback, 302)
-
-    return this
+    return this.addRoute('GET', path, callback, 302)
   }
 
   public delete(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('DELETE', path, callback, 204)
-    return this
+    return this.addRoute('DELETE', this.prepareUri(path), callback, 204)
   }
 
   public patch(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('PATCH', path, callback, 202)
-    return this
+    this.path = this.normalizePath(path)
+    log.debug(`Normalized Path: ${this.path}`)
+
+    const uri = this.prepareUri(this.path)
+    log.debug(`Prepared URI: ${uri}`)
+
+    return this.addRoute('PATCH', uri, callback, 202)
   }
 
   public put(path: Route['url'], callback: Route['callback']): this {
-    this.addRoute('PUT', path, callback, 202)
-    return this
+    this.path = this.normalizePath(path)
+
+    const uri = this.prepareUri(this.path)
+
+    return this.addRoute('PUT', uri, callback, 202)
   }
 
   public group(options: string | RouteGroupOptions, callback?: () => void): this {
@@ -211,7 +219,6 @@ export class Router implements RouterInterface {
   }
 
   public prefix(prefix: string): this {
-    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].prefix = prefix
 
     return this
@@ -252,7 +259,7 @@ export class Router implements RouterInterface {
     return
   }
 
-  private async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
+  public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
     if (callback instanceof Promise) {
       const actionModule = await callback
       return actionModule.default
@@ -261,10 +268,10 @@ export class Router implements RouterInterface {
     if (typeof callback === 'string') return await this.importCallbackFromPath(callback, this.path)
 
     // in this case, the callback ends up being a function
-    return await callback
+    return callback
   }
 
-  private async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
+  public async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
     let modulePath = callbackPath
     let importPathFunction = p.appPath // Default import path function
 
@@ -272,22 +279,38 @@ export class Router implements RouterInterface {
 
     if (modulePath.includes('OrmAction')) importPathFunction = p.projectStoragePath
 
+   
+
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
     let actionModule = null
 
-    if (modulePath.includes('OrmAction')) {
+    if (modulePath.includes('OrmAction'))
       actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
-    } else {
+    else
       actionModule = await import(importPathFunction(`${modulePath}.ts`))
-    }
 
     // Use custom path from action module if available
     const newPath = actionModule.default.path ?? originalPath
     this.updatePathIfNeeded(newPath, originalPath)
 
-    return await actionModule.default.handle()
+    // we need to make sure the validation happens here
+    // to do so, we need to:
+    // find the ./app/Models/* file
+    // then check via a regex which model attributes validations to utilize by checking what's in between t
+    // then validate
+    // if succeeds, run the handle
+    // if fails, return validation error
+    let requestInstance
+
+    if (modulePath.includes('OrmAction'))
+     requestInstance = await extractModelRequest(modulePath)
+    else
+      requestInstance = await extractDynamicRequest(modulePath)
+
+      console.log(requestInstance)
+    return await actionModule.default.handle(requestInstance)
   }
 
   private normalizePath(path: string): string {
@@ -299,8 +322,6 @@ export class Router implements RouterInterface {
     if (path.startsWith('/')) path = path.slice(1)
 
     path = `${this.apiPrefix}${this.groupPrefix}/${path}`
-
-    console.log(path)
 
     // if path ends in "/", then remove it
     // e.g. triggered when route is "/"

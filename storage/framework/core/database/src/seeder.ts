@@ -20,7 +20,7 @@ async function seedModel(name: string, model?: Model) {
   const seedCount =
     typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
 
-    log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
+  log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
 
   const records = []
   const otherRelations = await fetchOtherModelRelations(model)
@@ -54,7 +54,7 @@ async function seedModel(name: string, model?: Model) {
 async function seedModelRelation(modelName: string): Promise<BigInt | number> {
   const modelInstance = (await import(path.userModelsPath(modelName))).default
 
-  if (! modelInstance) return 1
+  if (!modelInstance) return 1
 
   const record: any = {}
   const table = modelInstance.table
@@ -65,9 +65,7 @@ async function seedModelRelation(modelName: string): Promise<BigInt | number> {
     record[fieldName] = field?.factory ? field.factory() : undefined
   }
 
-  const data = await db.insertInto(table)
-    .values(record)
-    .executeTakeFirstOrThrow()
+  const data = await db.insertInto(table).values(record).executeTakeFirstOrThrow()
 
   return data.insertId || 1
 }
@@ -120,12 +118,11 @@ export async function fetchOtherModelRelations(model: Model): Promise<RelationCo
 
     const relations = await getRelations(modelFile.default)
 
-    if (! relations.length) continue
+    if (!relations.length) continue
 
-    const relation = relations.find(relation => relation.model === model.name)
+    const relation = relations.find((relation) => relation.model === model.name)
 
-    if (relation)
-      modelRelations.push(relation)
+    if (relation) modelRelations.push(relation)
   }
 
   return modelRelations

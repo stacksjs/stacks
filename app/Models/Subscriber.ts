@@ -14,13 +14,22 @@ export default {
       // defaults to a count of 10
       count: 10,
     },
+
+    useApi: {
+      uri: 'subscribers', // your-url.com/api/users
+      middleware: ['auth'], // defaults to `[]`
+      routes: ['index', 'update', 'store', 'destroy', 'show'],
+    },
   },
 
   attributes: {
     subscribed: {
-      validator: {
+      validation: {
         rule: schema.boolean(),
-        message: '`subscribed` must be a boolean',
+        message: {
+          boolean: 'subscribed must be a boolean',
+          required: 'subscribed is required',
+        },
       },
 
       factory: () => faker.datatype.boolean(),

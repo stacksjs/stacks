@@ -14,7 +14,7 @@ export function fresh(buddy: CLI) {
 
   buddy
     .command('fresh', descriptions.fresh)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: FreshOptions) => {
       log.debug('Running `buddy fresh` ...', options)

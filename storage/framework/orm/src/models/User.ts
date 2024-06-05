@@ -6,6 +6,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
 import Subscriber from './Subscriber'
 
+import Deployment from './Deployment'
+
 
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
@@ -17,7 +19,9 @@ import Subscriber from './Subscriber'
       email: string
       jobTitle: string
       password: string
-     
+      deployment_id: number 
+ post_id: number 
+
       created_at: ColumnType<Date, string | undefined, never>
       updated_at: ColumnType<Date, string | undefined, never>
       deleted_at: ColumnType<Date, string | undefined, never>
@@ -61,7 +65,7 @@ import Subscriber from './Subscriber'
       }
 
       // Method to find a user by ID
-      static async find(id: number, fields?: (keyof UserType)[]) {
+      static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
         let query = db.selectFrom('users').where('id', '=', id)
 
         if (fields)
@@ -77,7 +81,23 @@ import Subscriber from './Subscriber'
         return new UserModel(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof UserType)[]) {
+      static async findOrFail(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
+        let query = db.selectFrom('users').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(`No model results found for ${id} `)
+
+        return new UserModel(model)
+      }
+
+      static async findMany(ids: number[], fields?: (keyof UserType)[]): Promise<UserModel[]> {
         let query = db.selectFrom('users').where('id', 'in', ids)
 
         if (fields)
@@ -122,7 +142,7 @@ import Subscriber from './Subscriber'
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -133,7 +153,7 @@ import Subscriber from './Subscriber'
           data: usersWithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -142,36 +162,36 @@ import Subscriber from './Subscriber'
 
       // Method to create a new user
       static async create(newUser: NewUser): Promise<UserModel> {
-        const model = await db.insertInto('users')
+        const result = await db.insertInto('users')
           .values(newUser)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new UserModel(model)
-      }
-
-      // Method to update a user
-      static async update(id: number, userUpdate: UserUpdate): Promise<UserModel> {
-        const model = await db.updateTable('users')
-          .set(userUpdate)
-          .where('id', '=', id)
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        return new UserModel(model)
+        return await find(Number(result.insertId)) as UserModel
       }
 
       // Method to remove a user
       static async remove(id: number): Promise<UserModel> {
         const model = await db.deleteFrom('users')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new UserModel(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(...args: (string | number)[]): Promise<UserType[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('users')
 
         query = query.where(column, operator, value)
@@ -223,7 +243,8 @@ import Subscriber from './Subscriber'
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof UserType, values: any[], options: QueryOptions = {}): Promise<UserType[]> {
+
         let query = db.selectFrom('users')
 
         query = query.where(column, 'in', values)
@@ -242,34 +263,34 @@ import Subscriber from './Subscriber'
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<UserType> {
         return await db.selectFrom('users')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<UserType> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof UserType, order: 'asc' | 'desc') {
+      async orderBy(column: keyof UserType, order: 'asc' | 'desc'): Promise<UserType[]> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof UserType) {
+      async orderByDesc(column: keyof UserType): Promise<UserType[]> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof UserType) {
+      async orderByAsc(column: keyof UserType): Promise<UserType[]> {
         return await db.selectFrom('users')
           .selectAll()
           .orderBy(column, 'asc')
@@ -277,7 +298,7 @@ import Subscriber from './Subscriber'
       }
 
       // Method to get the user instance itself
-      self() {
+      self(): UserModel {
         return this
       }
 
@@ -294,13 +315,10 @@ import Subscriber from './Subscriber'
         const updatedModel = await db.updateTable('users')
           .set(user)
           .where('id', '=', this.user.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('User not found'))
-
-        this.user = updatedModel
 
         return ok(updatedModel)
       }
@@ -314,9 +332,7 @@ import Subscriber from './Subscriber'
           // Insert new user
           const newModel = await db.insertInto('users')
             .values(this.user as NewUser)
-            .returningAll()
             .executeTakeFirstOrThrow()
-          this.user = newModel
         }
         else {
           // Update existing user
@@ -385,6 +401,19 @@ import Subscriber from './Subscriber'
       }
 
 
+      async deployments() {
+        if (this.user.id === undefined)
+          throw new Error('Relation Error!')
+
+        const results = await db.selectFrom('deployments')
+          .where('user_id', '=', this.user.id)
+          .selectAll()
+          .execute()
+
+          return results
+      }
+
+
 
       toJSON() {
         const output: Partial<UserType> = { ...this.user }
@@ -416,7 +445,22 @@ import Subscriber from './Subscriber'
       if (!model)
         return null
 
-      this.user = model
+      return new UserModel(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof UserType)[]) {
+      let query = db.selectFrom('users').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(`No model results found for ${id} `)
+
       return new UserModel(model)
     }
 
@@ -433,7 +477,7 @@ import Subscriber from './Subscriber'
       return model.map(modelItem => new UserModel(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('users')
         .selectAll()
         .execute()
@@ -476,7 +520,7 @@ import Subscriber from './Subscriber'
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<UserType[]> {
       return await db.selectFrom('users')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -485,25 +529,34 @@ import Subscriber from './Subscriber'
         .execute()
     }
 
-    export async function create(newUser: NewUser) {
-      return await db.insertInto('users')
-        .values(newUser)
-        .returningAll()
-        .executeTakeFirstOrThrow()
+    export async function create(newUser: NewUser): Promise<UserModel> {
+      const result = await db.insertInto('users')
+      .values(newUser)
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<UserModel> {
      return await db.selectFrom('users')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('users')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number): Promise<UserModel[]> {
+      return await db.selectFrom('users')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number): Promise<UserType> {
+      return await db.selectFrom('users')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, userUpdate: UserUpdate) {
       return await db.updateTable('users')
@@ -515,11 +568,23 @@ import Subscriber from './Subscriber'
     export async function remove(id: number) {
       return await db.deleteFrom('users')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
-    export async function where(column: string, operator = '=', value: any) {
+    export async function where(...args: (string | number)[]) {
+      let column: any
+      let operator: any
+      let value: any
+
+      if (args.length === 2) {
+        [column, value] = args
+        operator = '='
+      } else if (args.length === 3) {
+          [column, operator, value] = args
+      } else {
+          throw new Error("Invalid number of arguments")
+      }
+
       let query = db.selectFrom('users')
 
       query = query.where(column, operator, value)
@@ -599,6 +664,7 @@ import Subscriber from './Subscriber'
 
     export const User = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -609,6 +675,7 @@ import Subscriber from './Subscriber'
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: UserModel

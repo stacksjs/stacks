@@ -15,8 +15,8 @@ export enum NpmScript {
   DevDesktop = 'dev:desktop',
   DevFunctions = 'dev:functions',
   Fresh = 'fresh',
-  Lint = 'bunx biome ci .',
-  LintFix = 'bunx biome check --apply .',
+  Lint = 'bunx biome check',
+  LintFix = 'bunx biome check --fix',
   LintPackageJson = 'publint',
   MakeStack = 'make:stack',
   Test = 'bun test',
@@ -85,6 +85,7 @@ export enum Action {
   LintFix = 'lint/fix',
   Prepublish = 'prepublish',
   Release = 'release', // ✅
+  RouteList = 'route/list', // ✅
   ShowFeatureTestReport = 'show-feature-test-report',
   Test = 'test',
   TestUi = 'test-ui',

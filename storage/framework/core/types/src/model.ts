@@ -25,6 +25,10 @@ export interface TimestampOptions {
   deletedAt?: string
 }
 
+interface ValidatorMessage {
+  [key: string]: string
+}
+
 export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
@@ -56,7 +60,7 @@ export interface ModelOptions extends Base {
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchOptions // defaults to false
     searchable?: boolean | SearchOptions // useSearch alias
-    useApi?: boolean | ApiOptions
+    useApi?: ApiOptions | boolean
   }
 
   attributes: Attributes
@@ -75,24 +79,26 @@ export interface ModelOptions extends Base {
         foreignKey?: string
         relationName?: string
       }[]
-    | string[]
+    | ModelNames[]
   belongsTo:
     | {
         model: ModelNames // should be typed as ModelName
         foreignKey?: string
         relationName?: string
       }[]
-    | string[] // belongsTo: 'User'
-  belongsToMany: {
-    model: ModelNames
-    firstForeignKey?: string
-    secondForeignKey?: string
-    pivotTable?: string
-    relationName?: string
-  }[]
+    | ModelNames[] // belongsTo: 'User'
+  belongsToMany:
+    | {
+        model: ModelNames
+        firstForeignKey?: string
+        secondForeignKey?: string
+        pivotTable?: string
+        relationName?: string
+      }
+    | ModelNames[]
   hasOneThrough: {
     model: ModelNames
-    through: ModelType
+    through: ModelNames
     foreignKey?: string
     throughForeignKey?: string
     relationName?: string
@@ -112,9 +118,9 @@ export interface Attribute {
   unique?: boolean
   required?: boolean
   factory?: () => any
-  validator?: {
+  validation?: {
     rule: VineType
-    message: string
+    message: ValidatorMessage
   }
   // validation?: String | Number | Boolean | Date
 }
@@ -128,9 +134,9 @@ export type Model = Partial<ModelOptions>
 export interface RelationConfig {
   relationship: string
   model: string
-  table: string
+  table?: string
   relationModel?: string
-  relationTable?: string,
+  relationTable?: string
   foreignKey: string
   relationName: string
   throughModel: string

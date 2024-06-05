@@ -1,4 +1,3 @@
-import { env } from '@stacksjs/env'
 import type { ErrorConfig } from '@stacksjs/types'
 
 /**

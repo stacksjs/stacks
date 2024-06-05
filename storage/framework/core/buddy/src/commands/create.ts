@@ -10,6 +10,7 @@ import { useOnline } from '@stacksjs/utils'
 
 export function create(buddy: CLI) {
   const descriptions = {
+    name: 'The name of the project',
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
     components: 'Are you building UI components?',
@@ -27,13 +28,12 @@ export function create(buddy: CLI) {
   }
 
   buddy
-    .command('new <name>', descriptions.command)
-    .alias('create <name>')
+    .command('new [name]', descriptions.command)
+    .alias('create [name]')
+    .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
-    .option('-w, --web-components', descriptions.webComponents, {
-      default: true,
-    })
+    .option('-w, --web-components', descriptions.webComponents, { default: true })
     .option('-v, --vue', descriptions.vue, { default: true })
     .option('-p, --views', descriptions.views, { default: true }) // i.e. `buddy dev`
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
@@ -41,18 +41,20 @@ export function create(buddy: CLI) {
     .option('-d, --database', descriptions.database, { default: true })
     .option('-ca, --cache', descriptions.cache, { default: false })
     .option('-e, --email', descriptions.email, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-    .action(async (options: CreateOptions) => {
+    .action(async (name, options: CreateOptions) => {
       log.debug('Running `buddy new <name>` ...', options)
 
       const startTime = await intro('stacks new')
-      const name = options.name
+
+      name = name ?? options.name
       const path = resolve(process.cwd(), name)
 
       isFolderCheck(path)
       onlineCheck()
+
       const result = await download(name, path, options)
 
       if (result.isErr()) {

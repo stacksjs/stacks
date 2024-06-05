@@ -6,7 +6,7 @@ export default new Email({
   // or Sms or Push or Webhook or Chat
   name: 'welcome', // optional, defaults to the file name
   subject: 'Welcome to Stacks', // optional, but recommended
-  to: 'some@email.com', // required
+  to: 'some@email.com', // optional, has to be defined here or set when sending
   from: config.email.from, // optional, defaults to the config value
   template: 'Welcome', // resources/emails/Welcome.stx
 

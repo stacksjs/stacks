@@ -47,7 +47,7 @@ export function dev(buddy: CLI) {
     .option('-l, --with-localhost', descriptions.withLocalhost, {
       default: false,
     })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
       log.debug('Running `buddy dev [server]` ...', options)
@@ -135,7 +135,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:components', descriptions.components)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:components` ...', options)
@@ -164,7 +164,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:docs', descriptions.docs)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:docs` ...', options)
@@ -188,7 +188,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:desktop', descriptions.desktop)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:desktop` ...', options)
@@ -212,7 +212,7 @@ export function dev(buddy: CLI) {
 
   buddy
     .command('dev:api', descriptions.api)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:api` ...', options)
@@ -222,7 +222,7 @@ export function dev(buddy: CLI) {
 
   // buddy
   //   .command('dev:functions', descriptions.api)
-  //   .option('-p, --project', descriptions.project, { default: false })//
+  //   .option('-p, --project [project]', descriptions.project, { default: false })//
   //   .option('--verbose', descriptions.verbose, { default: false })
   //   .action(async (options: DevOptions) => {
   //     await runFunctionsDevServer(options)
@@ -232,7 +232,7 @@ export function dev(buddy: CLI) {
     .command('dev:frontend', descriptions.frontend)
     .alias('dev:pages')
     .alias('dev:views')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:frontend` ...', options)
@@ -242,7 +242,7 @@ export function dev(buddy: CLI) {
   buddy
     .command('dev:dashboard', descriptions.dashboard)
     .alias('dev:admin')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:dashboard` ...', options)
@@ -252,7 +252,7 @@ export function dev(buddy: CLI) {
   buddy
     .command('dev:system-tray', descriptions.systemTray)
     .alias('dev:tray')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
       log.debug('Running `buddy dev:system-tray` ...', options)

@@ -1,11 +1,11 @@
 import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
-import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
+import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'Deployment',
-
+  table: 'deployments',
   traits: {
     useTimestamps: true,
 
@@ -23,63 +23,86 @@ export default {
     commitSha: {
       unique: true,
 
-      validator: {
-        rule: schema.string(),
-        message: '`commit_sha` must be a string',
+      validation: {
+        rule: schema.string().maxLength(512),
+        message: {
+          string: 'commit_sha must be a string',
+          required: 'commit_sha is required',
+          maxLength: 'commit_sha must have a maximum of 512 characters',
+        },
       },
 
       factory: () => faker.git.commitSha(),
     },
 
     commitMessage: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`commit_message` must be a string',
+        message: {
+          string: 'commit_message must be a string',
+          required: 'commit_message is required',
+        },
       },
 
       factory: () => faker.git.commitMessage(),
     },
 
     branch: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`branch` must be a string',
+        message: {
+          string: 'branch must be a string',
+          required: 'branch is required',
+        },
       },
 
       factory: () => faker.git.branch(),
     },
 
     status: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`status` must be a string',
+        message: {
+          string: 'status must be a string',
+          required: 'status is required',
+        },
       },
 
       factory: () => collect(['pending', 'success', 'failure']).random(),
     },
 
-    executionTime: { // in nanoseconds
-      validator: {
+    executionTime: {
+      // in nanoseconds
+      validation: {
         rule: schema.number(),
-        message: '`execution_time` must be a number',
+        message: {
+          number: 'execution_time must be a number',
+          required: 'execution_time is required',
+        },
       },
 
-      factory: () => faker.number.int(),
+      factory: () => faker.number.int({ max: 100 }),
     },
 
     deployScript: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`deploy_script` must be a string',
+        message: {
+          string: 'deploy_script must be a string',
+          required: 'deploy_script is required',
+        },
       },
 
       factory: () => faker.lorem.sentence(),
     },
 
     terminalOutput: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`terminal_output` must be a string',
+        message: {
+          string: 'terminal_output must be a string',
+          required: 'terminal_output is required',
+        },
       },
 
       factory: () => faker.lorem.sentence(),

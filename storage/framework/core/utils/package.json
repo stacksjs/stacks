@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.24",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -37,8 +37,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -57,14 +63,14 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@vueuse/core": "^10.9.0",
+    "@vueuse/core": "^10.10.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^10.9.0",
-    "@vueuse/shared": "^10.9.0",
+    "@vueuse/math": "^10.10.0",
+    "@vueuse/shared": "^10.10.0",
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
     "export-size": "^0.7.0",
-    "yaml": "^2.4.2"
+    "yaml": "^2.4.3"
   },
   "dependencies": {
     "@dinero.js/currencies": "2.0.0-alpha.14",
@@ -77,10 +83,10 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^10.9.0",
+    "@vueuse/core": "^10.10.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^10.9.0",
-    "@vueuse/shared": "^10.9.0",
+    "@vueuse/math": "^10.10.0",
+    "@vueuse/shared": "^10.10.0",
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
@@ -94,7 +100,7 @@
     "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
-    "yaml": "^2.4.2"
+    "yaml": "^2.4.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

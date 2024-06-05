@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/stepper",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.24",
   "description": "A modern stepper component.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,15 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["steppers", "components", "library", "stacks"],
+  "keywords": [
+    "steppers",
+    "components",
+    "library",
+    "stacks"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -25,20 +33,34 @@
       "import": "./dist/*"
     }
   },
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "dev": "bun build.ts",
-    "build": "bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build --mode lib",
+    "build:demo": "bunx --bun vite build",
+    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "preview": "bunx --bun vite preview",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ui": "workspace:*"
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.9.0",
+    "vue": "^3.4.27"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@microsoft/api-extractor": "^7.47.0",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
+    "@vue/tsconfig": "^0.5.1",
+    "clean-css": "^5.3.3",
+    "unplugin-icons": "^0.19.0"
   }
 }

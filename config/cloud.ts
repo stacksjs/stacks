@@ -1,3 +1,4 @@
+import { env } from '@stacksjs/env'
 import type { CloudConfig } from '@stacksjs/types'
 import security from './security'
 
@@ -15,6 +16,16 @@ export default {
   environments: ['production', 'staging', 'development'],
 
   storage: {},
+
+  api: {
+    prefix: env.API_PREFIX || 'api',
+    // version: 'v1',
+    description: 'My awesome Stacks API',
+    deploy: true,
+    memorySize: 512,
+    prewarm: 10,
+    timeout: 30,
+  },
 
   cdn: {
     compress: true,

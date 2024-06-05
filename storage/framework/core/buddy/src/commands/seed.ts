@@ -14,7 +14,7 @@ export function seed(buddy: CLI) {
 
   buddy
     .command('seed', descriptions.seed)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SeedOptions) => {
       log.debug('Running `buddy seed` ...', options)

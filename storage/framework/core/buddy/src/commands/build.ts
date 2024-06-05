@@ -37,7 +37,7 @@ export function build(buddy: CLI) {
     .option('-d, --docs', descriptions.docs)
     .option('-b, --buddy', descriptions.buddy, { default: false })
     .option('-s, --stacks', descriptions.framework, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--server', descriptions.server, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: BuildOptions) => {
@@ -111,7 +111,7 @@ export function build(buddy: CLI) {
     .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .alias('prod:components')
     .option('-c, --components', descriptions.components, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:components` ...', options)
@@ -122,7 +122,7 @@ export function build(buddy: CLI) {
     .command('build:cli', descriptions.cli)
     .alias('prod:cli')
     .option('-b, --buddy', descriptions.buddy, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:cli` ...', options)
@@ -133,7 +133,7 @@ export function build(buddy: CLI) {
     .command('build:server', descriptions.server)
     .alias('prod:server')
     .alias('build:docker')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:server` ...', options)
@@ -143,7 +143,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .option('-f, --functions', descriptions.functions, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy `build:functions` ...', options)
@@ -158,7 +158,7 @@ export function build(buddy: CLI) {
     .option('-v, --vue-components', descriptions.vueComponents, {
       default: true,
     })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('build:vue')
     .action(async (options: BuildOptions) => {
@@ -174,7 +174,7 @@ export function build(buddy: CLI) {
     .option('-w, --web-components', descriptions.webComponents, {
       default: true,
     })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:web-components` ...', options)
@@ -187,7 +187,7 @@ export function build(buddy: CLI) {
     .alias('build:documentation')
     .alias('prod:documentation')
     .option('-d, --docs', descriptions.docs, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:docs` ...', options)
@@ -196,7 +196,7 @@ export function build(buddy: CLI) {
 
   buddy
     .command('build:core', 'Automagically build the Stacks core.')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:core` ...', options)
@@ -218,7 +218,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:desktop', descriptions.desktop)
     .alias('prod:desktop')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:desktop` ...', options)
@@ -243,7 +243,7 @@ export function build(buddy: CLI) {
   buddy
     .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.framework, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:stacks` ...', options)

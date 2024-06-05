@@ -1,11 +1,10 @@
 import { log } from '@stacksjs/logging'
-import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { pascalCase } from '@stacksjs/strings'
+import { camelCase, pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
-
+import { isString, isBoolean } from '@stacksjs/validation'
+import { getModelName, getTableName} from '@stacksjs/orm'
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -22,23 +21,61 @@ export interface ModelElement {
 await initiateModelGeneration()
 await setKyselyTypes()
 
-async function generateApiRoutes(model: Model) {
-  if (model.traits?.useApi) {
-    let routeString = `import { route } from '@stacksjs/router'\n\n\n`
-    const apiRoutes = model.traits?.useApi?.routes
+async function generateApiRoutes(modelFiles: string[]) {
+  const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
+  const writer = file.writer()
+  let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
-    if (apiRoutes?.length) {
-      for (const apiRoute of apiRoutes) {
-        await writeOrmActions(apiRoute, model)
-        routeString += await writeApiRoutes(apiRoute, model)
+  for (const modelFile of modelFiles) {
+    log.debug(`Processing model file: ${modelFile}`)
+    let middlewareString = ''
+    const model = (await import(modelFile)).default as Model
+    const modelName = getModelName(model, modelFile)
+    const tableName = getTableName(model, modelFile)
+
+    if (model.traits?.useApi) {
+      const apiRoutes = model.traits?.useApi?.routes
+      const middlewares = model.traits.useApi?.middleware
+      if (middlewares) {
+        middlewareString = `.middleware([`
+        if (middlewares.length) {
+          for (let i = 0; i < middlewares.length; i++) {
+            middlewareString += `'${middlewares[i]}'`
+  
+            if (i < middlewares.length - 1) {
+              middlewareString += ','
+            }
+          }
+        }
+
+        middlewareString += `])`
+      }
+
+      if (apiRoutes?.length) {
+        for (const apiRoute of apiRoutes) {
+          await writeOrmActions(apiRoute as string, modelName)
+
+          if (apiRoute === 'index')
+            routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')${middlewareString}\n\n`
+
+          if (apiRoute === 'store')
+            routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')${middlewareString}\n\n`
+
+          if (apiRoute === 'update')
+            routeString += `await route.patch('${tableName}/{id}', 'Actions/${modelName}UpdateOrmAction')${middlewareString}\n\n`
+
+          if (apiRoute === 'show')
+            routeString += `await route.get('${tableName}/{id}', 'Actions/${modelName}ShowOrmAction')${middlewareString}\n\n`
+
+          if (apiRoute === 'destroy')
+            routeString += `await route.delete('${tableName}/{id}', 'Actions/${modelName}DestroyOrmAction')${middlewareString}\n\n`
+        }
       }
     }
-
-    const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
-    const writer = file.writer()
-    writer.write(routeString)
-    await writer.end()
   }
+
+  writer.write(routeString)
+  await writer.end()
 }
 
 async function writeModelNames() {
@@ -50,10 +87,11 @@ async function writeModelNames() {
     const modeFileElement = modelFiles[i] as string
 
     const model = (await import(modeFileElement)).default as Model
+    const modelName = getModelName(model, modeFileElement)
 
     const typeFile = Bun.file(path.projectStoragePath(`framework/core/types/src/model-names.ts`))
 
-    fileString += `'${model.name}'`
+    fileString += `'${modelName}'`
 
     if (i < modelFiles.length - 1) {
       fileString += ' | '
@@ -65,57 +103,133 @@ async function writeModelNames() {
   }
 }
 
-async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
-  const modelName = model.name
-  const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
+async function writeModelRequests() {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
+  for (let i = 0; i < modelFiles.length; i++) {
+    let fieldString = ``
+    let fieldStringInt = ``
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
+
+    const modeFileElement = modelFiles[i] as string
+
+    const model = (await import(modeFileElement)).default as Model
+    const modelName = getModelName(model, modeFileElement)
+
+    const attributes = await extractFields(model, modeFileElement)
+  
+    for (const attribute of attributes) {
+      let defaultValue: any = `''`
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
+
+      if (attribute.fieldArray?.entity === 'boolean')
+        defaultValue = false
+
+      if (attribute.fieldArray?.entity === 'number')
+        defaultValue = 0
+
+      fieldString += ` ${attribute.field}: ${entity}\n     `
+
+      fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
+    } 
+
+    const modelLowerCase = camelCase(modelName)
+
+    const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
+
+    fileString += `export interface ${modelName}RequestType extends RequestInstance{
+      validate(): void
+      ${fieldString}
+    }\n\n`
+    
+    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
+      ${fieldStringInt}
+      public async validate(): Promise<void> {
+        await validateField('${modelName}', this.all())
+      }
+    }
+    
+    export const ${modelLowerCase}Request = new ${modelName}Request()
+    `
+
+    const writer = requestFile.writer()
+
+    writer.write(fileString)
+  }
+}
+
+async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
+  const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
+  let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../src/${modelName}'\n\n`
+  actionString += `import ${modelName} from '../src/models/${modelName}'\n`
 
   let handleString = ``
 
+
+  actionString += ` import type { ${modelName}RequestType } from '../../requests/${modelName}Request'\n\n`
+
   if (apiRoute === 'index') {
-    handleString += `handle() {
-        return ${modelName}.all()
+    handleString += `async handle(request: ${modelName}RequestType) {
+        return await ${modelName}.all()
       },`
+
+    method = 'GET'
   }
 
   if (apiRoute === 'show') {
-    handleString += `handle() {
-        return ${modelName}.find(1)
+    handleString += `async handle(request: ${modelName}RequestType) {
+        const id = await request.getParam('id')
+
+        return ${modelName}.findOrFail(Number(id))
       },`
+
+    method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
-    handleString += `handle() {
-        const model = ${modelName}.find(1)
+    handleString += `async handle(request: ${modelName}RequestType) {
+        const id = request.getParam('id')
+
+        const model = await ${modelName}.findOrFail(Number(id))
 
         model.delete()
 
         return 'Model deleted!'
       },`
+
+    method = 'DELETE'
   }
 
   if (apiRoute === 'store') {
-    handleString += `handle() {
-        const model = ${modelName}.create({})
+    handleString += `async handle(request: ${modelName}RequestType) {
+        await request.validate()
+        const model = await ${modelName}.create(request.all())
 
         return model
       },`
+
+    method = 'POST'
   }
 
   if (apiRoute === 'update') {
-    handleString += `handle() {
-        const model = ${modelName}.create({})
+    handleString += `async handle(request: ${modelName}RequestType) {
+        await request.validate()
+        
+        const id = request.getParam('id')
 
-        return model
+        const model = await ${modelName}.findOrFail(Number(id))
+
+        return model.update(request.all())
       },`
+
+    method = 'PATCH'
   }
 
   actionString += `export default new Action({
       name: '${modelName} ${formattedApiRoute}',
       description: '${modelName} ${formattedApiRoute} ORM Action',
-
+      method: '${method}',
       ${handleString}
     })
   `
@@ -127,48 +241,29 @@ async function writeOrmActions(apiRoute: string, model: Model): Promise<void> {
   writer.write(actionString)
 }
 
-async function writeApiRoutes(apiRoute: string, model: Model): Promise<string> {
-  let routeString = ``
-  const tableName = await modelTableName(model)
-  const modelName = model.name
-
-  if (apiRoute === 'index') routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')\n\n`
-
-  if (apiRoute === 'store') routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')\n\n`
-
-  if (apiRoute === 'update')
-    routeString += `await route.patch('${tableName}/{id}', 'Actions/${modelName}UpdateOrmAction')\n\n`
-
-  if (apiRoute === 'show')
-    routeString += `await route.get('${tableName}/{id}', 'Actions/${modelName}ShowOrmAction')\n\n`
-
-  if (apiRoute === 'destroy')
-    routeString += `await route.delete('${tableName}/{id}', 'Actions/${modelName}DestroyOrmAction')\n\n`
-
-  return routeString
-}
-
 async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
+  await deleteExistingModelRequests()
+
   await writeModelNames()
+  await writeModelRequests()
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  await generateApiRoutes(modelFiles)
 
   for (const modelFile of modelFiles) {
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
-    const tableName = await modelTableName(model)
-    const modelName = path.basename(modelFile, '.ts')
+    const tableName = await getTableName(model, modelFile)
+    const modelName = getModelName(model, modelFile)
 
-    await generateApiRoutes(model)
-
-    Bun.write(path.projectStoragePath(`framework/orm/src/${modelName}.ts`), '')
-    const file = Bun.file(path.projectStoragePath(`framework/orm/src/${modelName}.ts`))
+    const file = Bun.file(path.projectStoragePath(`framework/orm/src/models/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
-    const classString = await generateModelString(tableName, model, fields)
+    const classString = await generateModelString(tableName, modelName, model, fields)
 
     const writer = file.writer()
     writer.write(classString)
@@ -176,7 +271,7 @@ async function initiateModelGeneration(): Promise<void> {
   }
 }
 
-async function getRelations(model: Model): Promise<RelationConfig[]> {
+async function getRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
 
   const relationships = []
@@ -184,7 +279,6 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of model[relation]) {
-
         let relationModel = relationInstance.model
 
         if (isString(relationInstance)) {
@@ -193,9 +287,9 @@ async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
 
-        const modelRelation = (await import(modelRelationPath)).default
+        const modelRelation = (await import(modelRelationPath)).default as Model
 
-        const formattedModelName = model.name?.toLowerCase()
+        const formattedModelName = modelName.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -219,7 +313,7 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function deleteExistingModels() {
-  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/*.ts`))
+  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models/*.ts`))
 
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
@@ -232,10 +326,13 @@ async function deleteExistingModels() {
 
 async function deleteExistingOrmActions() {
   const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
+  const routes = path.projectStoragePath(`framework/orm/routes`)
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
   }
+
+  if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 }
 
 async function deleteExistingModelNameTypes() {
@@ -244,17 +341,28 @@ async function deleteExistingModelNameTypes() {
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
+async function deleteExistingModelRequests() {
+  const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
+
+  for (const requestFile of requestFiles) {
+    if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
+  }
+}
+
 async function setKyselyTypes() {
   let text = ``
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const tableName = await modelTableName(model)
-    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
-    const modelName = model.name
+    const tableName = await getTableName(model, modelFile)
+    const modelName = getModelName(model, modelFile)
 
-    text += `import type { ${formattedTableName}Table } from '../../../../orm/${modelName}'\n`
+    const words = tableName.split('_')
+
+    const pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
+
+    text += `import type { ${pivotFormatted}Table } from '../../../../orm/src/models/${modelName}'\n`
   }
 
   text += `import type { Generated } from 'kysely'\n\n`
@@ -262,8 +370,9 @@ async function setKyselyTypes() {
   let pivotFormatted = ''
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const pivotTables = await getPivotTables(model)
-
+    const modelName = getModelName(model, modelFile)
+    const pivotTables = await getPivotTables(model, modelName)
+    
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
 
@@ -281,13 +390,17 @@ async function setKyselyTypes() {
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const tableName = await modelTableName(model)
-    const formattedTableName = tableName.charAt(0).toUpperCase() + tableName.slice(1)
-    const pivotTables = await getPivotTables(model)
+    const modelName = getModelName(model, modelFile)
+    const tableName = await getTableName(model, modelFile)
+    const pivotTables = await getPivotTables(model, modelName)
 
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
-    text += `  ${tableName}: ${formattedTableName}Table\n`
+    const words = tableName.split('_')
+
+    const formattedTableName = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+
+    text += `  ${tableName}: ${formattedTableName}\n`
   }
 
   text += `}`
@@ -394,19 +507,26 @@ function getRelationCount(relation: string): string {
 
 async function getPivotTables(
   model: Model,
+  modelName: string
 ): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
   if ('belongsToMany' in model) {
-    for (const belongsToManyRelation of model.belongsToMany) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model.name}.ts`)
+    const belongsToManyArr = model.belongsToMany || []
+    for (const belongsToManyRelation of belongsToManyArr) {
+      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
       const modelRelation = (await import(modelRelationPath)).default as Model
-      const formattedModelName = model.name.toLowerCase()
+      const formattedModelName = modelName.toLowerCase()
+
+      const firstForeignKey =
+        belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
+      const secondForeignKey =
+        belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
       pivotTable.push({
         table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-        firstForeignKey: belongsToManyRelation.firstForeignKey,
-        secondForeignKey: belongsToManyRelation.secondForeignKey,
+        firstForeignKey: firstForeignKey,
+        secondForeignKey: secondForeignKey,
       })
     }
 
@@ -416,12 +536,31 @@ async function getPivotTables(
   return []
 }
 
-async function generateModelString(
-  tableName: string,
-  model: Model,
-  attributes: ModelElement[],
-): Promise<string> {
-  const modelName = model.name
+export async function fetchOtherModelRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelRelations = []
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelFileElement = modelFiles[i] as string
+    const modelFile = await import(modelFileElement)
+      
+    if (modelName === modelFile.default.name) continue
+
+    const otherModelName = getModelName(modelFile, modelFileElement)
+
+    const relations = await getRelations(modelFile.default, otherModelName)
+
+    if (!relations.length) continue
+
+    const relation = relations.find((relation) => relation.model === modelName)
+
+    if (relation) modelRelations.push(relation)
+  }
+
+  return modelRelations
+}
+
+async function generateModelString(tableName: string, modelName: string, model: Model, attributes: ModelElement[]): Promise<string> {
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
@@ -429,7 +568,7 @@ async function generateModelString(
   let relationMethods = ``
   let relationImports = ``
 
-  const relations = await getRelations(model)
+  const relations = await getRelations(model, modelName)
 
   for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
@@ -438,7 +577,7 @@ async function generateModelString(
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
-    const tableRelation = relation.table
+    const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
     const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
@@ -449,8 +588,9 @@ async function generateModelString(
     if (relationType === 'throughType') {
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
-      const formattedThroughRelation = relation.throughModel.name.toLowerCase()
-      const throughTableRelation = throughRelation.table
+
+      const formattedThroughRelation = relation.throughModel.toLowerCase()
+      const throughTableRelation = throughRelation
       const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`
 
       relationMethods += `
@@ -552,6 +692,10 @@ async function generateModelString(
 
   for (const attribute of attributes) fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
 
+  const otherModelRelations = await fetchOtherModelRelations(model, modelName)
+
+  for (const otherModelRelation of otherModelRelations) fieldString += ` ${otherModelRelation.foreignKey}: number \n`
+
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import type { Result } from '@stacksjs/error-handling'
     import { err, handleError, ok } from '@stacksjs/error-handling'
@@ -607,7 +751,7 @@ async function generateModelString(
       }
 
       // Method to find a ${formattedModelName} by ID
-      static async find(id: number, fields?: (keyof ${modelName}Type)[]) {
+      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         if (fields)
@@ -623,7 +767,23 @@ async function generateModelString(
         return new ${modelName}Model(model)
       }
 
-      static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]) {
+      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
+        let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+
+        if (!model)
+          throw(\`No model results found for \${id}\ \`)
+
+        return new ${modelName}Model(model)
+      }
+
+      static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
         if (fields)
@@ -668,7 +828,7 @@ async function generateModelString(
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page! - 1) * (options.limit ?? 10))
+          .offset((options.page - 1) * (options.limit ?? 10))
           .execute()
 
         let nextCursor = null
@@ -679,7 +839,7 @@ async function generateModelString(
           data: ${tableName}WithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page!,
+            page: options.page,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -688,36 +848,36 @@ async function generateModelString(
 
       // Method to create a new ${formattedModelName}
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-        const model = await db.insertInto('${tableName}')
+        const result = await db.insertInto('${tableName}')
           .values(new${modelName})
-          .returningAll()
           .executeTakeFirstOrThrow()
 
-        return new ${modelName}Model(model)
-      }
-
-      // Method to update a ${formattedModelName}
-      static async update(id: number, ${formattedModelName}Update: ${modelName}Update): Promise<${modelName}Model> {
-        const model = await db.updateTable('${tableName}')
-          .set(${formattedModelName}Update)
-          .where('id', '=', id)
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        return new ${modelName}Model(model)
+        return await find(Number(result.insertId)) as ${modelName}Model
       }
 
       // Method to remove a ${formattedModelName}
       static async remove(id: number): Promise<${modelName}Model> {
         const model = await db.deleteFrom('${tableName}')
           .where('id', '=', id)
-          .returningAll()
           .executeTakeFirstOrThrow()
 
         return new ${modelName}Model(model)
       }
 
-      async where(column: string, operator = '=', value: any) {
+      async where(...args: (string | number)[]): Promise<${modelName}Type[]> {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, operator, value)
@@ -769,7 +929,8 @@ async function generateModelString(
         return await query.selectAll().execute()
       }
 
-      async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}) {
+      async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}): Promise<${modelName}Type[]> {
+
         let query = db.selectFrom('${tableName}')
 
         query = query.where(column, 'in', values)
@@ -788,34 +949,34 @@ async function generateModelString(
         return await query.selectAll().execute()
       }
 
-      async first() {
+      async first(): Promise<${modelName}Type> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last() {
+      async last(): Promise<${modelName}Type> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc') {
+      async orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): Promise<${modelName}Type[]> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy(column, order)
           .execute()
       }
 
-      async orderByDesc(column: keyof ${modelName}Type) {
+      async orderByDesc(column: keyof ${modelName}Type): Promise<${modelName}Type[]> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy(column, 'desc')
           .execute()
       }
 
-      async orderByAsc(column: keyof ${modelName}Type) {
+      async orderByAsc(column: keyof ${modelName}Type): Promise<${modelName}Type[]> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy(column, 'asc')
@@ -823,7 +984,7 @@ async function generateModelString(
       }
 
       // Method to get the ${formattedModelName} instance itself
-      self() {
+      self(): ${modelName}Model {
         return this
       }
 
@@ -840,13 +1001,10 @@ async function generateModelString(
         const updatedModel = await db.updateTable('${tableName}')
           .set(${formattedModelName})
           .where('id', '=', this.${formattedModelName}.id)
-          .returningAll()
           .executeTakeFirst()
 
         if (!updatedModel)
           return err(handleError('${modelName} not found'))
-
-        this.${formattedModelName} = updatedModel
 
         return ok(updatedModel)
       }
@@ -860,9 +1018,7 @@ async function generateModelString(
           // Insert new ${formattedModelName}
           const newModel = await db.insertInto('${tableName}')
             .values(this.${formattedModelName} as New${modelName})
-            .returningAll()
             .executeTakeFirstOrThrow()
-          this.${formattedModelName} = newModel
         }
         else {
           // Update existing ${formattedModelName}
@@ -930,7 +1086,22 @@ async function generateModelString(
       if (!model)
         return null
 
-      this.${formattedModelName} = model
+      return new ${modelName}Model(model)
+    }
+
+    export async function findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
+      let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+      if (fields)
+        query = query.select(fields)
+      else
+        query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model)
+        throw(\`No model results found for \${id}\ \`)
+
       return new ${modelName}Model(model)
     }
 
@@ -947,7 +1118,7 @@ async function generateModelString(
       return model.map(modelItem => new ${modelName}Model(modelItem))
     }
 
-    export async function count() {
+    export async function count(): Number {
       const results = await db.selectFrom('${tableName}')
         .selectAll()
         .execute()
@@ -990,7 +1161,7 @@ async function generateModelString(
       return await query.selectAll().execute()
     }
 
-    export async function all(limit: number = 10, offset: number = 0) {
+    export async function all(limit: number = 10, offset: number = 0): Promise<${modelName}Type[]> {
       return await db.selectFrom('${tableName}')
         .selectAll()
         .orderBy('created_at', 'desc')
@@ -999,25 +1170,34 @@ async function generateModelString(
         .execute()
     }
 
-    export async function create(new${modelName}: New${modelName}) {
-      return await db.insertInto('${tableName}')
-        .values(new${modelName})
-        .returningAll()
-        .executeTakeFirstOrThrow()
+    export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+      const result = await db.insertInto('${tableName}')
+      .values(new${modelName})
+      .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId))
     }
 
-    export async function first() {
+    export async function first(): Promise<${modelName}Model> {
      return await db.selectFrom('${tableName}')
         .selectAll()
         .executeTakeFirst()
     }
 
-    export async function last() {
-     return await db.selectFrom('${tableName}')
-        .selectAll()
-        .orderBy('id', 'desc')
-        .executeTakeFirst()
-    }
+    export async function recent(limit: number): Promise<${modelName}Model[]> {
+      return await db.selectFrom('${tableName}')
+         .selectAll()
+         .limit(limit)
+         .execute()
+     }
+
+     export async function last(limit: number): Promise<${modelName}Type> {
+      return await db.selectFrom('${tableName}')
+         .selectAll()
+         .orderBy('id', 'desc')
+         .limit(limit)
+         .execute()
+     }
 
     export async function update(id: number, ${formattedModelName}Update: ${modelName}Update) {
       return await db.updateTable('${tableName}')
@@ -1029,11 +1209,23 @@ async function generateModelString(
     export async function remove(id: number) {
       return await db.deleteFrom('${tableName}')
         .where('id', '=', id)
-        .returningAll()
         .executeTakeFirst()
     }
 
-    export async function where(column: string, operator = '=', value: any) {
+    export async function where(...args: (string | number)[]) {
+      let column: any
+      let operator: any
+      let value: any
+
+      if (args.length === 2) {
+        [column, value] = args
+        operator = '='
+      } else if (args.length === 3) {
+          [column, operator, value] = args
+      } else {
+          throw new Error("Invalid number of arguments")
+      }
+
       let query = db.selectFrom('${tableName}')
 
       query = query.where(column, operator, value)
@@ -1113,6 +1305,7 @@ async function generateModelString(
 
     export const ${modelName} = {
       find,
+      findOrFail,
       findMany,
       get,
       count,
@@ -1123,6 +1316,7 @@ async function generateModelString(
       Model,
       first,
       last,
+      recent,
       where,
       whereIn,
       model: ${modelName}Model

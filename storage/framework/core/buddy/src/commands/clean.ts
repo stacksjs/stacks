@@ -14,7 +14,7 @@ export function clean(buddy: CLI) {
 
   buddy
     .command('clean', descriptions.clean)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CleanOptions) => {
       log.debug('Running `buddy clean` ...', options)

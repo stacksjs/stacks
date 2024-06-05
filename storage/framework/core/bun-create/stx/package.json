@@ -1,7 +1,7 @@
 {
   "name": "@bun-examples/stx",
   "type": "module",
-  "version": "0.60.3",
+  "version": "0.61.24",
   "description": "Your project description.",
   "author": "your-name <your-email>",
   "license": "MIT",
@@ -14,7 +14,10 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["project-starter", "stacks"],
+  "keywords": [
+    "project-starter",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -27,8 +30,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
@@ -113,7 +122,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx biome check --apply ."
+    "*": "bunx biome check --fix"
   },
   "config": {
     "commitizen": {

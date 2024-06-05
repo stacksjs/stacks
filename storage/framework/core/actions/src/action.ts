@@ -1,12 +1,10 @@
 import type { JobOptions, Nullable } from '@stacksjs/types'
 import type { ValidationBoolean, ValidationNumber, ValidationString } from '@stacksjs/validation'
 
-type FieldKey = string
-interface FieldValue {
+type ValidationKey = string
+interface ValidationValue {
   rule: ValidationString | ValidationNumber | ValidationBoolean | Date | Nullable<any>
   message: string
-  factory?: any
-  unique?: boolean
 }
 
 // TODO: this is temporary and will get auto generated based on ./app/Actions/*
@@ -19,8 +17,9 @@ interface ActionOptions {
   name?: string
   description?: string
   apiResponse?: boolean
-  fields?: Record<FieldKey, FieldValue>
+  validations?: Record<ValidationKey, ValidationValue>
   path?: string
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   rate?: JobOptions['rate']
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
@@ -31,23 +30,27 @@ interface ActionOptions {
 export class Action {
   name?: string
   description?: string
-  fields?: Record<FieldKey, FieldValue>
-  rate?: JobOptions['rate']
-  tries?: JobOptions['tries']
-  backoff?: JobOptions['backoff']
-  enabled?: boolean
+  rate?: ActionOptions['rate']
+  tries?: ActionOptions['tries']
+  backoff?: ActionOptions['backoff']
+  enabled?: ActionOptions['enabled']
+  path?: ActionOptions['path']
+  method?: ActionOptions['method']
+  validations?: Record<ValidationKey, ValidationValue>
   handle: (request?: Request) => Promise<any> | object | string
 
-  constructor({ name, description, fields, handle, rate, tries, backoff, enabled }: ActionOptions) {
+  constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path, method }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access
 
     this.name = name
     this.description = description
-    this.fields = fields
+    this.validations = validations
     this.rate = rate
     this.tries = tries
     this.backoff = backoff
     this.enabled = enabled
+    this.path = path
+    this.method = method
     this.handle = handle
   }
 }

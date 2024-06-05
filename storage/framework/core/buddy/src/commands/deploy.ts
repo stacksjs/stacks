@@ -17,7 +17,7 @@ export function deploy(buddy: CLI) {
   buddy
     .command('deploy', descriptions.deploy)
     .option('--domain', 'Specify a domain to deploy to', { default: undefined })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
