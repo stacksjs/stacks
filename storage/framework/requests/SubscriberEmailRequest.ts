@@ -2,7 +2,7 @@ import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
 import type { RequestInstance } from '@stacksjs/types'
 
-export interface SubscriberEmailRequestType extends RequestInstance{
+export interface SubscriberEmailRequestType extends RequestInstance {
       validate(): void
        email: string
      
