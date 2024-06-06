@@ -5,6 +5,10 @@ interface RequestData {
 type RouteParams = { [key: string]: string } | null
 
 export interface RequestInstance {
+    query: RequestData
+
+    params: RouteParams
+    
     addQuery(url: URL): void;
 
     addParam(param: RouteParams): void;

@@ -4,15 +4,23 @@ import type { RequestInstance } from '@stacksjs/types'
 
 export interface PostRequestType extends RequestInstance{
       validate(): void
-       title: string
+      getParam(key: 'id' |'title' |'body'): number | string | null
+       id: number
+ title: string
       body: string
-     
+     created_at: Date
+      updated_at: Date
+      deleted_at: Date
     }
 
 export class PostRequest extends Request implements PostRequestType  {
-      public title = ''
+      public id = 1
+public title = ''
 public body = ''
-
+public created_at = new Date()
+      public updated_at = new Date()
+      public deleted_at = new Date()
+      
       public async validate(): Promise<void> {
         await validateField('Post', this.all())
       }

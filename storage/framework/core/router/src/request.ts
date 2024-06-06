@@ -6,10 +6,10 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string } | null
 
-export class Request implements RequestInstance{
-  private static instance: Request
-  private query: RequestData = {}
-  private params: RouteParams = null
+export class Request implements RequestInstance {
+  public static instance: Request
+  public query: RequestData = {}
+  public params: RouteParams = null
 
   // An attempt to singleston instance, might be needed at some point
   public static getInstance(): Request {

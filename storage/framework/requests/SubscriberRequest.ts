@@ -4,13 +4,21 @@ import type { RequestInstance } from '@stacksjs/types'
 
 export interface SubscriberRequestType extends RequestInstance{
       validate(): void
-       subscribed: boolean
-     
+      getParam(key: 'id' |'subscribed'): number | string | null
+       id: number
+ subscribed: boolean
+     created_at: Date
+      updated_at: Date
+      deleted_at: Date
     }
 
 export class SubscriberRequest extends Request implements SubscriberRequestType  {
-      public subscribed = false
-
+      public id = 1
+public subscribed = false
+public created_at = new Date()
+      public updated_at = new Date()
+      public deleted_at = new Date()
+      
       public async validate(): Promise<void> {
         await validateField('Subscriber', this.all())
       }

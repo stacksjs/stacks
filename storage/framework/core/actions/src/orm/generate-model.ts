@@ -107,6 +107,7 @@ async function writeModelRequests() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (let i = 0; i < modelFiles.length; i++) {
+    let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
     let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
@@ -117,7 +118,12 @@ async function writeModelRequests() {
     const modelName = getModelName(model, modeFileElement)
 
     const attributes = await extractFields(model, modeFileElement)
-  
+    
+    fieldString += ` id: number\n`
+    fieldStringInt += `public id = 1\n`
+    fieldStringType += `'id' |`
+    let keyCounter = 0
+
     for (const attribute of attributes) {
       let defaultValue: any = `''`
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
@@ -130,8 +136,23 @@ async function writeModelRequests() {
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
 
+      fieldStringType += `'${attribute.field}'`
+      if (keyCounter < attributes.length - 1)
+        fieldStringType += ' |'
+
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
-    } 
+
+      keyCounter++
+    }
+
+    fieldStringInt += `public created_at = new Date()
+      public updated_at = new Date()
+      public deleted_at = new Date()
+      `
+
+    fieldString += `created_at: Date
+      updated_at: Date
+      deleted_at: Date`
 
     const modelLowerCase = camelCase(modelName)
 
@@ -139,6 +160,7 @@ async function writeModelRequests() {
 
     fileString += `export interface ${modelName}RequestType extends RequestInstance{
       validate(): void
+      getParam(key: ${fieldStringType}): number | string | null
       ${fieldString}
     }\n\n`
     
