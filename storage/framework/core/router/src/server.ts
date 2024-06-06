@@ -101,6 +101,8 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 }
 
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
+  const errorStatuses = [422, 401, 403, 500]
+
   const foundCallback = await route.resolveCallback(foundRoute.callback)
 
   if (!statusCode) statusCode = 200
@@ -136,6 +138,14 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     const result = foundCallback()
 
     return await new Response(JSON.stringify(result), { status: 200 })
+  }
+
+  if (isObject(foundCallback) && foundCallback.status) {
+    if (errorStatuses.includes(foundCallback.status)) {
+      delete foundCallback.status
+      return await new Response(JSON.stringify(foundCallback),
+      { headers: { 'Content-Type': 'json' }, status: 422 })
+    }
   }
 
   if (isObject(foundCallback))

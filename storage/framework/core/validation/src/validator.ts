@@ -8,7 +8,7 @@ interface RequestData {
   [key: string]: string | number | null | undefined | boolean
 }
 
-export async function validateField(modelFile: string, params: RequestData): Promise<void> {
+export async function validateField(modelFile: string, params: RequestData): Promise<any> {
   const model = (await import(/* @vite-ignore */path.userModelsPath(`${modelFile}.ts`))).default as Model
   const attributes = model.attributes
 
@@ -22,7 +22,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
       for (const validatorMessageKey in validatorMessages) {
         const validatorMessageString = `${key}.${validatorMessageKey}`
-        messageObject[validatorMessageString] = attributes[key]?.validation?.message[validatorMessageKey]
+        messageObject[validatorMessageString] = attributes[key]?.validation?.message[validatorMessageKey] || ''
       }
     }
   }
@@ -36,7 +36,6 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   } catch (error: any) {
     if (error instanceof VineError.E_VALIDATION_ERROR) reportError(error.messages)
 
-    log.info(error.message)
-    throw error
+      throw { status: 422, errors: error.messages };
   }
 }

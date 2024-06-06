@@ -309,8 +309,12 @@ export class Router implements RouterInterface {
     else
       requestInstance = await extractDynamicRequest(modulePath)
 
-      console.log(requestInstance)
-    return await actionModule.default.handle(requestInstance)
+    try {
+      return await actionModule.default.handle(requestInstance)
+    } catch (error: any) {
+       return { status: error.status, errors: error.errors }
+    }
+   
   }
 
   private normalizePath(path: string): string {
