@@ -128,19 +128,19 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isString(foundCallback)) return await new Response(foundCallback, { 
-      headers: { 'Accept': 'application/json', 'Content-Type': 'json' }
+      headers: { 'Content-Type': 'json', }, status: 200
     }
   )
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
 
-    return await new Response(JSON.stringify(result))
+    return await new Response(JSON.stringify(result), { status: 200 })
   }
 
-  if (isObject(foundCallback)) return await new Response(JSON.stringify(foundCallback), {
-    headers: { 'Accept': 'application/json', 'Content-Type': 'json' }
-  })
+  if (isObject(foundCallback))
+    return await new Response(JSON.stringify(foundCallback),
+      { headers: { 'Content-Type': 'json' }, status: 200 })
 
   // If no known type matched, return a generic error.
   return await new Response('Unknown callback type.', { status: 500 })

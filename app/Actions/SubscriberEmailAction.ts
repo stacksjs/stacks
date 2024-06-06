@@ -8,7 +8,8 @@ export default new Action({
   description: 'Save emails from subscribe page',
   method: 'POST',
   async handle(request: SubscriberEmailRequestType) {
-    
+    const email = request.get('email')
+
     const model = await SubscriberEmail.create({ email })
 
     return model
