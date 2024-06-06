@@ -5,15 +5,15 @@ interface RequestData {
 type RouteParams = { [key: string]: string } | null
 
 export interface RequestInstance {
-    query: RequestData
-
-    params: RouteParams
-    
     addQuery(url: URL): void;
 
     addParam(param: RouteParams): void;
 
     get(element: string): string | number | undefined;
+
+    header(element: string): string
+
+    Header(element: string): string
 
     all(): RequestData;
 

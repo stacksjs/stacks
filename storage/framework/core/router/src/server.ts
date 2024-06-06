@@ -76,6 +76,7 @@ export async function serverResponse(req: Request) {
 
   await addRouteQuery(url)
   await addRouteParam(routeParams)
+  await addHeaders(req.headers)
 
   await executeMiddleware(foundRoute)
 
@@ -216,6 +217,25 @@ async function addRouteParam(param: RouteParam): Promise<void> {
   }
 
   RequestParam.addParam(param)
+}
+
+async function addHeaders(headers: Headers): Promise<void> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
+
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default as Model;
+    const modelName = getModelName(model, modelFile);
+    const modelNameLower = `${lowercase(modelName)}Request`;
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
+    const requestImport = await import(requestPath);
+    const requestInstance = requestImport[modelNameLower];
+
+    if (requestInstance) {
+      requestInstance.addHeaders(headers);
+    }
+  }
+
+  RequestParam.addHeaders(headers)
 }
 
 function executeMiddleware(route: Route): void {
