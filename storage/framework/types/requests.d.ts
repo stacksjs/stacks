@@ -1,6 +1,6 @@
 export interface ProjectRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'name' |'description' |'url' |'status'): number | string | null
+      get(key: 'id' |'name' |'description' |'url' |'status'): string | number | undefined;
        id: number
  name: string
       description: string
@@ -13,7 +13,7 @@ export interface ProjectRequestType extends RequestInstance {
 
 export interface SubscriberEmailRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'email'): number | string | null
+      get(key: 'id' |'email'): string | number | undefined;
        id: number
  email: string
      created_at: Date
@@ -23,7 +23,7 @@ export interface SubscriberEmailRequestType extends RequestInstance {
 
 export interface AccessTokenRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'name' |'token' |'plainTextToken' |'abilities'): number | string | null
+      get(key: 'id' |'name' |'token' |'plainTextToken' |'abilities'): string | number | undefined;
        id: number
  name: string
       token: string
@@ -36,7 +36,7 @@ export interface AccessTokenRequestType extends RequestInstance {
 
 export interface TeamRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal'): number | string | null
+      get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal'): string | number | undefined;
        id: number
  name: string
       companyName: string
@@ -53,7 +53,7 @@ export interface TeamRequestType extends RequestInstance {
 
 export interface SubscriberRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'subscribed'): number | string | null
+      get(key: 'id' |'subscribed'): string | number | undefined;
        id: number
  subscribed: boolean
      created_at: Date
@@ -63,7 +63,7 @@ export interface SubscriberRequestType extends RequestInstance {
 
 export interface DeploymentRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput'): number | string | null
+      get(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput'): string | number | undefined;
        id: number
  commitSha: string
       commitMessage: string
@@ -79,7 +79,7 @@ export interface DeploymentRequestType extends RequestInstance {
 
 export interface UserRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'name' |'email' |'jobTitle' |'password'): number | string | null
+      get(key: 'id' |'name' |'email' |'jobTitle' |'password'): string | number | undefined;
        id: number
  name: string
       email: string
@@ -92,7 +92,7 @@ export interface UserRequestType extends RequestInstance {
 
 export interface PostRequestType extends RequestInstance {
       validate(): void
-      getParam(key: 'id' |'title' |'body'): number | string | null
+      get(key: 'id' |'title' |'body'): string | number | undefined;
        id: number
  title: string
       body: string
@@ -101,3 +101,4 @@ export interface PostRequestType extends RequestInstance {
       deleted_at: Date
     }
 
+export type ModelRequests = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | UserRequestType | PostRequestTypequestType | UserRequestType | PostRequestType

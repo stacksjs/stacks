@@ -105,6 +105,10 @@ async function writeModelNames() {
 
 async function writeModelRequests() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+  let importTypes = ``
+  let importTypesString = ``
   let typeString = ``
   for (let i = 0; i < modelFiles.length; i++) {
     
@@ -159,13 +163,17 @@ async function writeModelRequests() {
 
     const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
 
-    const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+    importTypes = `${modelName}RequestType`
+    importTypesString += `${importTypes}`
 
-    fileString += `import { ${modelName}RequestType } from '../types/requests'\n\n`
+    if (i < modelFiles.length - 1)
+      importTypesString += ` | `
+
+    fileString += `import { ${importTypes} } from '../types/requests'\n\n`
 
     const types = `export interface ${modelName}RequestType extends RequestInstance {
       validate(): void
-      getParam(key: ${fieldStringType}): number | string | null
+      get(key: ${fieldStringType}): string | number | undefined;
       ${fieldString}
     }\n\n`
     
@@ -180,14 +188,17 @@ async function writeModelRequests() {
     
     export const ${modelLowerCase}Request = new ${modelName}Request()
     `
-    const requestWrite = requestD.writer()
 
     const writer = requestFile.writer()
 
     writer.write(fileString)
-    
-    requestWrite.write(typeString)
   }
+
+  typeString += `export type ModelRequests = ${importTypesString}`
+
+  const requestWrite = requestD.writer()
+
+  requestWrite.write(typeString)
 }
 
 async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
