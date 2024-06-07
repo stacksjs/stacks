@@ -1,25 +1,9 @@
 import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
-import type { RequestInstance } from '@stacksjs/types'
 
-export interface TeamRequestType extends RequestInstance{
-      validate(): void
-      getParam(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal'): number | string | null
-       id: number
- name: string
-      companyName: string
-      email: string
-      billingEmail: string
-      status: string
-      description: string
-      path: string
-      isPersonal: boolean
-     created_at: Date
-      updated_at: Date
-      deleted_at: Date
-    }
+import { TeamRequestType } from '../types/requests'
 
-export class TeamRequest extends Request implements TeamRequestType  {
+export class TeamRequest extends Request implements TeamRequestType {
       public id = 1
 public name = ''
 public companyName = ''

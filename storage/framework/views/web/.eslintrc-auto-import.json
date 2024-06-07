@@ -952,6 +952,17 @@
     "writeTextFile": true,
     "writeToLogFile": true,
     "xRayPath": true,
-    "zip": true
+    "zip": true,
+    "SimpleMessagesProvider": true,
+    "VineError": true,
+    "extractDynamicAction": true,
+    "extractDynamicRequest": true,
+    "extractModelFromAction": true,
+    "extractModelRequest": true,
+    "getErrors": true,
+    "getModelName": true,
+    "getTableName": true,
+    "reportError": true,
+    "validateField": true
   }
 }

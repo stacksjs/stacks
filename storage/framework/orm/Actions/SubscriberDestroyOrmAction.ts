@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import Subscriber from '../src/models/Subscriber'
- import type { SubscriberRequestType } from '../../requests/SubscriberRequest'
+  import type { SubscriberRequestType } from '../../types/requests'
 
 export default new Action({
       name: 'Subscriber Destroy',

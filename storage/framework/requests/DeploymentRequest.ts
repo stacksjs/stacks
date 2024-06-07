@@ -1,24 +1,9 @@
 import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
-import type { RequestInstance } from '@stacksjs/types'
 
-export interface DeploymentRequestType extends RequestInstance{
-      validate(): void
-      getParam(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput'): number | string | null
-       id: number
- commitSha: string
-      commitMessage: string
-      branch: string
-      status: string
-      executionTime: number
-      deployScript: string
-      terminalOutput: string
-     created_at: Date
-      updated_at: Date
-      deleted_at: Date
-    }
+import { DeploymentRequestType } from '../types/requests'
 
-export class DeploymentRequest extends Request implements DeploymentRequestType  {
+export class DeploymentRequest extends Request implements DeploymentRequestType {
       public id = 1
 public commitSha = ''
 public commitMessage = ''

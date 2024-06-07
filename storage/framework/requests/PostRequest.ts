@@ -1,19 +1,9 @@
 import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
-import type { RequestInstance } from '@stacksjs/types'
 
-export interface PostRequestType extends RequestInstance{
-      validate(): void
-      getParam(key: 'id' |'title' |'body'): number | string | null
-       id: number
- title: string
-      body: string
-     created_at: Date
-      updated_at: Date
-      deleted_at: Date
-    }
+import { PostRequestType } from '../types/requests'
 
-export class PostRequest extends Request implements PostRequestType  {
+export class PostRequest extends Request implements PostRequestType {
       public id = 1
 public title = ''
 public body = ''

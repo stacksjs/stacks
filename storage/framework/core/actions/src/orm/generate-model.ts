@@ -105,12 +105,13 @@ async function writeModelNames() {
 
 async function writeModelRequests() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
+  let typeString = ``
   for (let i = 0; i < modelFiles.length; i++) {
+    
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = modelFiles[i] as string
 
@@ -158,13 +159,19 @@ async function writeModelRequests() {
 
     const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
 
-    fileString += `export interface ${modelName}RequestType extends RequestInstance{
+    const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+
+    fileString += `import { ${modelName}RequestType } from '../types/requests'\n\n`
+
+    const types = `export interface ${modelName}RequestType extends RequestInstance {
       validate(): void
       getParam(key: ${fieldStringType}): number | string | null
       ${fieldString}
     }\n\n`
     
-    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
+    typeString += types
+    
+    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
       ${fieldStringInt}
       public async validate(): Promise<void> {
         await validateField('${modelName}', this.all())
@@ -173,10 +180,13 @@ async function writeModelRequests() {
     
     export const ${modelLowerCase}Request = new ${modelName}Request()
     `
+    const requestWrite = requestD.writer()
 
     const writer = requestFile.writer()
 
     writer.write(fileString)
+    
+    requestWrite.write(typeString)
   }
 }
 
@@ -189,7 +199,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   let handleString = ``
 
 
-  actionString += ` import type { ${modelName}RequestType } from '../../requests/${modelName}Request'\n\n`
+  actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
 
   if (apiRoute === 'index') {
     handleString += `async handle(request: ${modelName}RequestType) {
