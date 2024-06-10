@@ -1,6 +1,6 @@
 import type { JobOptions, Nullable } from '@stacksjs/types'
 import type { ValidationBoolean, ValidationNumber, ValidationString } from '@stacksjs/validation'
-import type { ModelRequests } from '../../../types/requests'
+import type { ModelRequest } from '../../../types/requests'
 
 type ValidationKey = string
 interface ValidationValue {
@@ -19,7 +19,7 @@ interface ActionOptions {
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
   enabled?: JobOptions['enabled']
-  handle: (request?: ModelRequests) => Promise<any> | object | string
+  handle: (request?: ModelRequest) => Promise<any> | object | string
 }
 
 export class Action {
@@ -32,7 +32,7 @@ export class Action {
   path?: ActionOptions['path']
   method?: ActionOptions['method']
   validations?: Record<ValidationKey, ValidationValue>
-  handle: (request?: ModelRequests) => Promise<any> | object | string
+  handle: (request?: ModelRequest) => Promise<any> | object | string
 
   constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path, method }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access

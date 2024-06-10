@@ -103,7 +103,7 @@ async function writeModelNames() {
   }
 }
 
-async function writeModelRequests() {
+async function writeModelRequest() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
@@ -194,7 +194,7 @@ async function writeModelRequests() {
     writer.write(fileString)
   }
 
-  typeString += `export type ModelRequests = ${importTypesString}`
+  typeString += `export type ModelRequest = ${importTypesString}`
 
   const requestWrite = requestD.writer()
 
@@ -288,10 +288,10 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
-  await deleteExistingModelRequests()
+  await deleteExistingModelRequest()
 
   await writeModelNames()
-  await writeModelRequests()
+  await writeModelRequest()
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
@@ -384,7 +384,7 @@ async function deleteExistingModelNameTypes() {
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
-async function deleteExistingModelRequests() {
+async function deleteExistingModelRequest() {
   const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
 
   for (const requestFile of requestFiles) {

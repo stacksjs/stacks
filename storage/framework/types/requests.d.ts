@@ -101,4 +101,4 @@ export interface PostRequestType extends RequestInstance {
       deleted_at: Date
     }
 
-export type ModelRequests = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | UserRequestType | PostRequestTypequestType | UserRequestType | PostRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | UserRequestType | PostRequestTypequestType | UserRequestType | PostRequestType
