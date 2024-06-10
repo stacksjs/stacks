@@ -8,6 +8,8 @@ import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
+import presetWind from '@unocss/preset-wind'
+import { presetUno, presetAttributify, presetIcons } from 'unocss'
 
 function minify(code: string) {
   const cleanCssInstance = new CleanCSS({})
@@ -20,7 +22,14 @@ export default defineConfig(({ command, mode }) => {
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
-    UnoCSS(),
+    UnoCSS({
+      presets: [
+        presetUno(),
+        presetAttributify(),
+        presetIcons(),
+        presetWind()
+      ]
+    }),
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,

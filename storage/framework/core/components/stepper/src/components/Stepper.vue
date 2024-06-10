@@ -235,3 +235,5 @@ defineExpose({
     </step>
   </div>
 </template>
+
+<style scoped></style>

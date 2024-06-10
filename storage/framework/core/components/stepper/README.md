@@ -1,24 +1,52 @@
-# Stacks
+# Stacks Stepper
 
-The official bun-create template for the Stacks framework.
+The *Stepper* component is a versatile & customizable component for creating multi-step processes in your application. It allows users to navigate through a sequence of steps, providing a visual indicator of their progress. This is oftentimes used to build to welcome the user into your application.
 
 ## ☘️ Features
 
-- wip
+- Customizable steps
+- Linear and non-linear stepper modes
+- Step validation
+- Configurable labels and icons
+- Callback events for step changes
+- Lightweight
 
 ## 🤖 Usage
 
 ```bash
-bun create stacks my-project
+bun install -d @stacksjs/stepper
 ```
 
-Now, you can get started using Stacks:
+```ts
 
-```js
-// wip
+// App.vue
+import { Stepper } from '@stacksjs/stepper'
+
+const steps = ref(5)
+const step  = ref(1)
+
+const stepper = ref(null)
+
+<Stepper ref='stepper' :steps="steps" v-model='step' />
+
+
+<template v-if="step === 1">
+  <div> </div>
+</template>
+
+<template v-if="step === 2">
+  <div> </div>
+</template>
+
 ```
 
-Learn more in the docs.
+To view the full documentation, please visit [stacksjs.org/docs/components/stepper](stacksjs.org/docs/components/stepper).
+
+## 🧪 Testing
+
+```bash
+bun test
+```
 
 ## 📈 Changelog
 
@@ -36,7 +64,16 @@ For help, discussion about best practices, or any other conversation that would 
 
 For casual chit-chat with others using this package:
 
-[Join the Stacks Discord](https://discord.gg/stacksjs)
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
+
+## 🙏🏼 Credits
+
+Many thanks to the following core technologies & people who have contributed to this package:
+
+- [Collect.js](https://github.com/ecrmnn/collect.js)
+- [Laravel](https://laravel.com/)
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
 
 ## 📄 License
 
