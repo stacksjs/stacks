@@ -27,7 +27,7 @@
     "publish": "bunx @raycast/api@latest publish"
   },
   "dependencies": {
-    "@raycast/api": "^1.75.2",
+    "@raycast/api": "^1.76.0",
     "@raycast/utils": "^1.15.0"
   },
   "devDependencies": {
