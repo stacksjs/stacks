@@ -11,6 +11,10 @@ export interface RequestInstance {
 
     get(element: string): string | number | undefined;
 
+    header(element: string): string
+
+    Header(element: string): string
+
     all(): RequestData;
 
     has(element: string): boolean;

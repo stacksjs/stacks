@@ -7,7 +7,7 @@ import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
 import { getModelName } from '@stacksjs/orm'
-import { lowercase } from '@stacksjs/strings'
+import { camelCase, lowercase } from '@stacksjs/strings'
 
 interface ServeOptions {
   host?: string
@@ -76,6 +76,7 @@ export async function serverResponse(req: Request) {
 
   await addRouteQuery(url)
   await addRouteParam(routeParams)
+  await addHeaders(req.headers)
 
   await executeMiddleware(foundRoute)
 
@@ -127,15 +128,44 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
   }
 
-  if (isString(foundCallback)) return await new Response(foundCallback)
+  if (isString(foundCallback)) return await new Response(foundCallback, { 
+      headers: { 'Content-Type': 'json', }, status: 200
+    }
+  )
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
 
-    return await new Response(JSON.stringify(result))
+    return await new Response(JSON.stringify(result), { status: 200 })
   }
 
-  if (isObject(foundCallback)) return await new Response(JSON.stringify(foundCallback))
+  if (isObject(foundCallback) && foundCallback.status) {
+    if (foundCallback.status === 422) {
+      delete foundCallback.status
+      return await new Response(JSON.stringify(foundCallback),
+      { headers: { 'Content-Type': 'json' }, status: 422 })
+    }
+  }
+
+  if (isObject(foundCallback) && foundCallback.status) {
+    if (foundCallback.status === 401) {
+      delete foundCallback.status
+      return await new Response(JSON.stringify(foundCallback),
+      { headers: { 'Content-Type': 'json' }, status: 401 })
+    }
+  }
+
+  if (isObject(foundCallback) && foundCallback.status) {
+    if (foundCallback.status === 403) {
+      delete foundCallback.status
+      return await new Response(JSON.stringify(foundCallback),
+      { headers: { 'Content-Type': 'json' }, status: 403 })
+    }
+  }
+
+  if (isObject(foundCallback))
+    return await new Response(JSON.stringify(foundCallback),
+      { headers: { 'Content-Type': 'json' }, status: 200 })
 
   // If no known type matched, return a generic error.
   return await new Response('Unknown callback type.', { status: 500 })
@@ -155,7 +185,7 @@ async function addRouteQuery(url: URL) {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default;
     const modelName = getModelName(model, modelFile);
-    const modelNameLower = `${lowercase(modelName)}Request`;
+    const modelNameLower = `${camelCase(modelName)}Request`;
     const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
     const requestImport = await import(requestPath);
     const requestInstance = requestImport[modelNameLower];
@@ -187,6 +217,25 @@ async function addRouteParam(param: RouteParam): Promise<void> {
   }
 
   RequestParam.addParam(param)
+}
+
+async function addHeaders(headers: Headers): Promise<void> {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
+
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default as Model;
+    const modelName = getModelName(model, modelFile);
+    const modelNameLower = `${lowercase(modelName)}Request`;
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
+    const requestImport = await import(requestPath);
+    const requestInstance = requestImport[modelNameLower];
+
+    if (requestInstance) {
+      requestInstance.addHeaders(headers);
+    }
+  }
+
+  RequestParam.addHeaders(headers)
 }
 
 function executeMiddleware(route: Route): void {

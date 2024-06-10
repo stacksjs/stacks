@@ -24,18 +24,24 @@ export default {
 
   attributes: {
     title: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`title` must be a string',
+        message: {
+          string: 'title must be a string',
+          required: 'title is required',
+        },
       },
 
       factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     body: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`body` must be a string',
+        message: {
+          string: 'body must be a string',
+          required: 'body is required',
+        },
       },
       factory: () => faker.lorem.sentence({ min: 10, max: 10 }),
     },

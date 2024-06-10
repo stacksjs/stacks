@@ -2,7 +2,7 @@ import { ok } from '@stacksjs/error-handling'
 import { route } from './router'
 import { path } from '@stacksjs/path'
 
-import { lowercase } from '@stacksjs/strings'
+import { camelCase, lowercase, pascalCase } from '@stacksjs/strings'
 
 export async function listRoutes() {
   const routeLists = await route.getRoutes()
@@ -47,10 +47,33 @@ export function extractModelFromAction(action: string): string {
   return model
 }
 
+export function extractDynamicAction(action: string): string | undefined {
+  const regex = /Actions\/(.*?)Action/;
+
+  const match = action.match(regex);
+
+  return match ? match[1] : '';
+}
+
 export async function extractModelRequest(action: string) {
   const extractedModel = extractModelFromAction(action)
 
-  const lowerCaseModel = lowercase(extractedModel)
+  const lowerCaseModel = camelCase(extractedModel)
+
+  const requestPath = path.projectStoragePath(`framework/requests/${extractedModel}Request.ts`)
+
+  const requestInstance = await import(requestPath)
+
+  const requestIndex = `${lowerCaseModel}Request`
+  
+  return requestInstance[requestIndex]
+}
+
+
+export async function extractDynamicRequest(action: string) {
+  const extractedModel = extractDynamicAction(action) || ''
+
+  const lowerCaseModel = camelCase(extractedModel)
 
   const requestPath = path.projectStoragePath(`framework/requests/${extractedModel}Request.ts`)
 
