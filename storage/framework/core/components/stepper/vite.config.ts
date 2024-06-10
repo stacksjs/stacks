@@ -34,7 +34,6 @@ export default defineConfig(({ command, mode }) => {
   ]
   let cssCodeStr = ''
 
-
   if (mode === 'lib') {
     userConfig.build = {
       lib: {
