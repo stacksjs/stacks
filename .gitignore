@@ -20,5 +20,5 @@ custom-cli
 .idea
 .stacks
 .vscode
+.zed
 ./test.ts
-
