@@ -24,9 +24,12 @@ export default {
 
   attributes: {
     subscribed: {
-      validator: {
+      validation: {
         rule: schema.boolean(),
-        message: '`subscribed` must be a boolean',
+        message: {
+          boolean: 'subscribed must be a boolean',
+          required: 'subscribed is required',
+        },
       },
 
       factory: () => faker.datatype.boolean(),

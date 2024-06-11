@@ -6,7 +6,7 @@ import type { Job } from '@stacksjs/types'
 import { request } from '@stacksjs/router'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
-import { extractModelRequest } from './utils'
+import { extractModelRequest, extractDynamicRequest } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 
@@ -286,11 +286,10 @@ export class Router implements RouterInterface {
 
     let actionModule = null
 
-    if (modulePath.includes('OrmAction')) {
+    if (modulePath.includes('OrmAction'))
       actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
-    } else {
+    else
       actionModule = await import(importPathFunction(`${modulePath}.ts`))
-    }
 
     // Use custom path from action module if available
     const newPath = actionModule.default.path ?? originalPath
@@ -303,10 +302,19 @@ export class Router implements RouterInterface {
     // then validate
     // if succeeds, run the handle
     // if fails, return validation error
+    let requestInstance
 
-    const requestInstance = await extractModelRequest(modulePath)
-    
-    return await actionModule.default.handle(requestInstance)
+    if (modulePath.includes('OrmAction'))
+     requestInstance = await extractModelRequest(modulePath)
+    else
+      requestInstance = await extractDynamicRequest(modulePath)
+
+    try {
+      return await actionModule.default.handle(requestInstance)
+    } catch (error: any) {
+       return { status: error.status, errors: error.errors }
+    }
+   
   }
 
   private normalizePath(path: string): string {

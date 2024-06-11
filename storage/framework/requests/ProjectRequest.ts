@@ -1,24 +1,20 @@
 import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
-import type { RequestInstance } from '@stacksjs/types'
 
-export interface ProjectRequestType extends RequestInstance{
-      validate(): void
-       name: string
-      description: string
-      url: string
-      status: string
-     
-    }
+import { ProjectRequestType } from '../types/requests'
 
-export class ProjectRequest extends Request implements ProjectRequestType  {
-      public name = ''
+export class ProjectRequest extends Request implements ProjectRequestType {
+      public id = 1
+public name = ''
 public description = ''
 public url = ''
 public status = ''
-
-      public validate(): void {
-        validateField('Project', this.all())
+public created_at = new Date()
+      public updated_at = new Date()
+      public deleted_at = new Date()
+      
+      public async validate(): Promise<void> {
+        await validateField('Project', this.all())
       }
     }
     

@@ -24,7 +24,7 @@ export default {
   attributes: {
     email: {
       unique: true,
-      validator: {
+      validation: {
         rule: schema.string().email(),
         message: {
           email: 'Email must be valid',

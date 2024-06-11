@@ -103,13 +103,19 @@ async function writeModelNames() {
   }
 }
 
-async function writeModelRequests() {
+async function writeModelRequest() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
+  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+  let importTypes = ``
+  let importTypesString = ``
+  let typeString = ``
   for (let i = 0; i < modelFiles.length; i++) {
+    
+    let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = modelFiles[i] as string
 
@@ -117,7 +123,12 @@ async function writeModelRequests() {
     const modelName = getModelName(model, modeFileElement)
 
     const attributes = await extractFields(model, modeFileElement)
-  
+    
+    fieldString += ` id: number\n`
+    fieldStringInt += `public id = 1\n`
+    fieldStringType += `'id' |`
+    let keyCounter = 0
+
     for (const attribute of attributes) {
       let defaultValue: any = `''`
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
@@ -130,22 +141,48 @@ async function writeModelRequests() {
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
 
+      fieldStringType += `'${attribute.field}'`
+      if (keyCounter < attributes.length - 1)
+        fieldStringType += ' |'
+
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
-    } 
+
+      keyCounter++
+    }
+
+    fieldStringInt += `public created_at = new Date()
+      public updated_at = new Date()
+      public deleted_at = new Date()
+      `
+
+    fieldString += `created_at: Date
+      updated_at: Date
+      deleted_at: Date`
 
     const modelLowerCase = camelCase(modelName)
 
     const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
 
-    fileString += `export interface ${modelName}RequestType extends RequestInstance{
+    importTypes = `${modelName}RequestType`
+    importTypesString += `${importTypes}`
+
+    if (i < modelFiles.length - 1)
+      importTypesString += ` | `
+
+    fileString += `import { ${importTypes} } from '../types/requests'\n\n`
+
+    const types = `export interface ${modelName}RequestType extends RequestInstance {
       validate(): void
+      get(key: ${fieldStringType}): string | number | undefined;
       ${fieldString}
     }\n\n`
     
-    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
+    typeString += types
+    
+    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
       ${fieldStringInt}
-      public validate(): void {
-        validateField('${modelName}', this.all())
+      public async validate(): Promise<void> {
+        await validateField('${modelName}', this.all())
       }
     }
     
@@ -156,6 +193,12 @@ async function writeModelRequests() {
 
     writer.write(fileString)
   }
+
+  typeString += `export type ModelRequest = ${importTypesString}`
+
+  const requestWrite = requestD.writer()
+
+  requestWrite.write(typeString)
 }
 
 async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
@@ -167,7 +210,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   let handleString = ``
 
 
-  actionString += ` import type { ${modelName}RequestType } from '../../requests/${modelName}Request'\n\n`
+  actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
 
   if (apiRoute === 'index') {
     handleString += `async handle(request: ${modelName}RequestType) {
@@ -203,7 +246,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   if (apiRoute === 'store') {
     handleString += `async handle(request: ${modelName}RequestType) {
-        request.validate()
+        await request.validate()
         const model = await ${modelName}.create(request.all())
 
         return model
@@ -214,7 +257,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   if (apiRoute === 'update') {
     handleString += `async handle(request: ${modelName}RequestType) {
-        request.validate()
+        await request.validate()
         
         const id = request.getParam('id')
 
@@ -245,10 +288,10 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
-  await deleteExistingModelRequests()
+  await deleteExistingModelRequest()
 
   await writeModelNames()
-  await writeModelRequests()
+  await writeModelRequest()
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
@@ -341,7 +384,7 @@ async function deleteExistingModelNameTypes() {
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
-async function deleteExistingModelRequests() {
+async function deleteExistingModelRequest() {
   const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
 
   for (const requestFile of requestFiles) {

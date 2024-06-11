@@ -21,9 +21,12 @@ export default {
 
   attributes: {
     name: {
-      validator: {
+      validation: {
         rule: schema.string(),
-        message: '`name` must be a string',
+        message: {
+          string: 'name must be a string',
+          required: 'name is required',
+        },
       },
 
       factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
@@ -31,28 +34,39 @@ export default {
 
     token: {
       unique: true,
-      validator: {
+      validation: {
         rule: schema.string().maxLength(512),
-        message: '`token` must be a string',
+        message: {
+          string: 'token must be a string',
+          required: 'token is required',
+          maxLength: 'token must have a maximum of 512 characters',
+        },
       },
 
       factory: () => faker.string.uuid(),
     },
 
     plainTextToken: {
-      validator: {
+      validation: {
         rule: schema.string().maxLength(512),
-        message: '`plainTextToken` must be a string',
+        message: {
+          string: 'plainTextToken must be a string',
+          required: 'plainTextToken is required',
+          maxLength: 'plainTextToken must have a maximum of 512 characters',
+        },
       },
 
       factory: () => faker.string.uuid(),
     },
 
     abilities: {
-      validator: {
+      validation: {
         rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
-        message:
-          '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
+        message: {
+          required: 'abilities is required',
+          maxLength: 'plainTextToken must have a maximum of 512 characters',
+          string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
+        },
       },
 
       factory: () =>

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import User from '../src/models/User'
- import type { UserRequestType } from '../../requests/UserRequest'
+  import type { UserRequestType } from '../../types/requests'
 
 export default new Action({
       name: 'User Show',

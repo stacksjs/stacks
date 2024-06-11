@@ -12,7 +12,7 @@ await route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/a
 await route.get('/', () => 'hello world') // $APP_URL/api
 await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 
-await route.post('/email/subscribe', 'Actions/EmailSubscribeAction')
+await route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
 
 await route.email('/welcome')
 await route.health() // adds an `/api/health` route

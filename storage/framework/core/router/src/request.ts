@@ -6,10 +6,12 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string } | null
 
-export class Request implements RequestInstance{
+
+export class Request implements RequestInstance {
   private static instance: Request
   private query: RequestData = {}
   private params: RouteParams = null
+  private headers: Headers = {}
 
   // An attempt to singleston instance, might be needed at some point
   public static getInstance(): Request {
@@ -25,6 +27,10 @@ export class Request implements RequestInstance{
 
   public addParam(param: RouteParam): void {
     this.params = param
+  }
+
+  public addHeaders(headerParams: Headers): void {
+    this.headers = headerParams
   }
 
   public get(element: string): string | number | undefined {
@@ -48,6 +54,18 @@ export class Request implements RequestInstance{
     const match = pattern.exec(pathname)
 
     if (match?.groups) this.params = match.groups
+  }
+
+  public header(headerParam: string) {
+    return this.headers[headerParam]
+  }
+
+  public getHeaders() {
+    return this.headers
+  }
+
+  public Header(headerParam: string) {
+    return this.headers[headerParam]
   }
 
   public getParam(key: string): number | string | null {

@@ -136,14 +136,14 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validator?.rule)
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validations?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validator?.rule?.required) {
+    if (fieldOptions.unique || fieldOptions.validations?.rule?.required) {
       migrationContent += `, col => col`
       if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions.validator?.rule?.required) migrationContent += `.notNull()`
+      if (fieldOptions.validations?.rule?.required) migrationContent += `.notNull()`
       migrationContent += ``
     }
 
@@ -236,7 +236,7 @@ export async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validator?.rule)
+    const columnType = mapFieldTypeToColumnType(options.validations?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
   }
 
