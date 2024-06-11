@@ -32,7 +32,7 @@ export class Action {
   path?: ActionOptions['path']
   method?: ActionOptions['method']
   validations?: Record<ValidationKey, ValidationValue>
-  handle: (request?: ModelRequest) => Promise<any> | object | string
+  handle: (request: ModelRequest) => Promise<any> | object | string
 
   constructor({ name, description, validations, handle, rate, tries, backoff, enabled, path, method }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access

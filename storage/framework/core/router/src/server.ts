@@ -78,8 +78,6 @@ export async function serverResponse(req: Request) {
   await addRouteParam(routeParams)
   await addHeaders(req.headers)
 
-  await executeMiddleware(foundRoute)
-
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
 
@@ -103,6 +101,8 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
   const foundCallback = await route.resolveCallback(foundRoute.callback)
+
+  await executeMiddleware(foundRoute)
 
   if (!statusCode) statusCode = 200
 
@@ -238,27 +238,20 @@ async function addHeaders(headers: Headers): Promise<void> {
   RequestParam.addHeaders(headers)
 }
 
-function executeMiddleware(route: Route): void {
+async function executeMiddleware(route: Route): Promise<any> {
   const { middleware = null } = route
 
   if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
     // let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
-      // TODO: fix and uncomment this
-      // middlewareItem = middlewares.find((m) => {
-      //   return m.name === middleware
-      // })
-      // if (middlewareItem)
-      //   middlewareItem.handle() // Invoke only if it exists and is not undefined.
+      const middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+
+      const middlewareInstance = (await import(middlewarePath)).default
+
+      return await middlewareInstance.handle()
+      
     } else {
-      // middleware.forEach((m) => {
       middleware.forEach(() => {
-        // TODO: fix and uncomment this
-        // middlewareItem = middlewares.find((middlewareItem: MiddlewareOptions) => {
-        //   return middlewareItem.name === m
-        // })
-        // if (middlewareItem)
-        //   middlewareItem.handle() // Again, invoke only if it exists.
       })
     }
   }

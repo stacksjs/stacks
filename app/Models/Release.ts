@@ -19,7 +19,7 @@ export default {
 
     useApi: {
       uri: 'releases', // your-url.com/api/releases
-      middleware: ['auth'], // defaults to `[]`
+      middleware: ['Auth'], // defaults to `[]`
       routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
 

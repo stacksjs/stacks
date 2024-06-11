@@ -222,4 +222,4 @@ export interface PostRequestType extends Request {
       deleted_at?: string
     }
 
-export type ModelRequest = UserRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType

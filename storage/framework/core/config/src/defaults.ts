@@ -27,7 +27,7 @@ export default {
   api: {
     // version: 'v1',
     prefix: 'api',
-    middleware: ['auth'],
+    middleware: ['Auth'],
     routes: {
       index: true,
       show: true,
