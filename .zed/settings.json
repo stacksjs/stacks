@@ -2,14 +2,8 @@
   "format_on_save": "on",
   "code_actions_on_format": {
     "source.fixAll": true,
+    "source.fixAll.eslint": false,
     "source.organizeImports.biome": true
-  },
-  "languages": {
-    "JavaScript": {
-      "code_actions_on_format": {
-        "source.fixAll.eslint": false
-      }
-    }
   },
   "formatter": "language_server",
   "autosave": "on_focus_change"

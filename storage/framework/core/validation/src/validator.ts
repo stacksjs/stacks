@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
-import { Model } from '@stacksjs/types'
+import type { Model } from '@stacksjs/types'
 import { SimpleMessagesProvider, VineError, reportError, schema } from '@stacksjs/validation'
 import type { SchemaTypes } from '@vinejs/vine/types'
 
@@ -9,7 +9,7 @@ interface RequestData {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  const model = (await import(/* @vite-ignore */path.userModelsPath(`${modelFile}.ts`))).default as Model
+  const model = (await import(/* @vite-ignore */ path.userModelsPath(`${modelFile}.ts`))).default as Model
   const attributes = model.attributes
 
   const ruleObject: Record<string, SchemaTypes> = {}
@@ -36,6 +36,6 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   } catch (error: any) {
     if (error instanceof VineError.E_VALIDATION_ERROR) reportError(error.messages)
 
-      throw { status: 422, errors: error.messages };
+    throw { status: 422, errors: error.messages }
   }
 }

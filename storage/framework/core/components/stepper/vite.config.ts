@@ -1,15 +1,15 @@
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
+import presetWind from '@unocss/preset-wind'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
+import { presetAttributify, presetIcons, presetUno } from 'unocss'
 import UnoCSS from 'unocss/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import presetWind from '@unocss/preset-wind'
-import { presetUno, presetAttributify, presetIcons } from 'unocss'
 
 function minify(code: string) {
   const cleanCssInstance = new CleanCSS({})
@@ -23,12 +23,7 @@ export default defineConfig(({ command, mode }) => {
       include: /\.(stx|vue|md)($|\?)/,
     }),
     UnoCSS({
-      presets: [
-        presetUno(),
-        presetAttributify(),
-        presetIcons(),
-        presetWind()
-      ]
+      presets: [presetUno(), presetAttributify(), presetIcons(), presetWind()],
     }),
     Components({
       extensions: ['stx', 'vue', 'md'],

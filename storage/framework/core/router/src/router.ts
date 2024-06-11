@@ -1,12 +1,12 @@
 import type { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
+import { request } from '@stacksjs/router'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
-import { request } from '@stacksjs/router'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
-import { extractModelRequest, extractDynamicRequest } from './utils'
+import { extractDynamicRequest, extractModelRequest } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 
@@ -279,8 +279,6 @@ export class Router implements RouterInterface {
 
     if (modulePath.includes('OrmAction')) importPathFunction = p.projectStoragePath
 
-   
-
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
@@ -288,8 +286,7 @@ export class Router implements RouterInterface {
 
     if (modulePath.includes('OrmAction'))
       actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
-    else
-      actionModule = await import(importPathFunction(`${modulePath}.ts`))
+    else actionModule = await import(importPathFunction(`${modulePath}.ts`))
 
     // Use custom path from action module if available
     const newPath = actionModule.default.path ?? originalPath
@@ -304,17 +301,14 @@ export class Router implements RouterInterface {
     // if fails, return validation error
     let requestInstance
 
-    if (modulePath.includes('OrmAction'))
-     requestInstance = await extractModelRequest(modulePath)
-    else
-      requestInstance = await extractDynamicRequest(modulePath)
+    if (modulePath.includes('OrmAction')) requestInstance = await extractModelRequest(modulePath)
+    else requestInstance = await extractDynamicRequest(modulePath)
 
     try {
       return await actionModule.default.handle(requestInstance)
     } catch (error: any) {
-       return { status: error.status, errors: error.errors }
+      return { status: error.status, errors: error.errors }
     }
-   
   }
 
   private normalizePath(path: string): string {

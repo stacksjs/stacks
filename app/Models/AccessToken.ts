@@ -65,7 +65,8 @@ export default {
         message: {
           required: 'abilities is required',
           maxLength: 'plainTextToken must have a maximum of 512 characters',
-          string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
+          string:
+            '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },
 

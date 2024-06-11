@@ -12,7 +12,7 @@ import {
   watch,
   withDefaults,
 } from 'vue'
-import type { StepperProps, OptionParams } from '../types'
+import type { OptionParams, StepperProps } from '../types'
 import Step from './Step.vue'
 
 defineOptions({
@@ -30,7 +30,7 @@ const props = withDefaults(defineProps<StepperProps>(), {
   debug: false,
 })
 
-const modelValue =  defineModel()
+const modelValue = defineModel()
 
 const emit = defineEmits(['reset'])
 
@@ -41,16 +41,23 @@ const currentIndex = ref(toIndex(modelValue.value))
 const slots = useSlots()
 const id = computed(() => `${namespace.kebab}-${Math.random().toString(36).substring(2, 9)}`)
 
-watch(() => modelValue.value, (step) => {
-  currentIndex.value = toIndex(step)
-  if (props.persist) {
-    setStorage();
-  }
-});
+watch(
+  () => modelValue.value,
+  (step) => {
+    currentIndex.value = toIndex(step)
+    if (props.persist) {
+      setStorage()
+    }
+  },
+)
 
-watch(currentIndex, (stepIndex) => {
-  emitValue(toValue(stepIndex));
-}, { immediate: true });
+watch(
+  currentIndex,
+  (stepIndex) => {
+    emitValue(toValue(stepIndex))
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   if (props.persist) {

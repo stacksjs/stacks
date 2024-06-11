@@ -5,9 +5,7 @@
   "description": "The Stacks Raycast extension.",
   "author": "Stacks.js",
   "license": "MIT",
-  "categories": [
-    "Documentation"
-  ],
+  "categories": ["Documentation"],
   "icon": "stacks-logo.ico",
   "owner": "stacks",
   "commands": [

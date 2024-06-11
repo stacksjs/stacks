@@ -1,6 +1,6 @@
 import { ok } from '@stacksjs/error-handling'
-import { route } from './router'
 import { path } from '@stacksjs/path'
+import { route } from './router'
 
 import { camelCase, lowercase, pascalCase } from '@stacksjs/strings'
 
@@ -15,32 +15,32 @@ export async function listRoutes() {
 export function extractModelFromAction(action: string): string {
   let model = ''
 
-  if (action.includes("StoreOrmAction")) {
-    const match = action.match(/\/([A-Z][a-z]+)StoreOrmAction/);
+  if (action.includes('StoreOrmAction')) {
+    const match = action.match(/\/([A-Z][a-z]+)StoreOrmAction/)
 
-    const modelString = match ? match[1] : '';
-  
+    const modelString = match ? match[1] : ''
+
     model = modelString as string
   }
 
-  if (action.includes("ShowOrmAction")) {
-    const match = action.match(/\/([A-Z][a-z]+)ShowOrmAction/);
-    const modelString = match ? match[1] : '';
-  
+  if (action.includes('ShowOrmAction')) {
+    const match = action.match(/\/([A-Z][a-z]+)ShowOrmAction/)
+    const modelString = match ? match[1] : ''
+
     model = modelString as string
   }
 
-  if (action.includes("UpdateOrmAction")) {
-    const match = action.match(/\/([A-Z][a-z]+)UpdateOrmAction/);
-    const modelString = match ? match[1] : '';
-  
+  if (action.includes('UpdateOrmAction')) {
+    const match = action.match(/\/([A-Z][a-z]+)UpdateOrmAction/)
+    const modelString = match ? match[1] : ''
+
     model = modelString as string
   }
 
-  if (action.includes("DestroyOrmAction")) {
-    const match = action.match(/\/([A-Z][a-z]+)DestroyOrmAction/);
-    const modelString = match ? match[1] : '';
-  
+  if (action.includes('DestroyOrmAction')) {
+    const match = action.match(/\/([A-Z][a-z]+)DestroyOrmAction/)
+    const modelString = match ? match[1] : ''
+
     model = modelString as string
   }
 
@@ -48,11 +48,11 @@ export function extractModelFromAction(action: string): string {
 }
 
 export function extractDynamicAction(action: string): string | undefined {
-  const regex = /Actions\/(.*?)Action/;
+  const regex = /Actions\/(.*?)Action/
 
-  const match = action.match(regex);
+  const match = action.match(regex)
 
-  return match ? match[1] : '';
+  return match ? match[1] : ''
 }
 
 export async function extractModelRequest(action: string) {
@@ -65,10 +65,9 @@ export async function extractModelRequest(action: string) {
   const requestInstance = await import(requestPath)
 
   const requestIndex = `${lowerCaseModel}Request`
-  
+
   return requestInstance[requestIndex]
 }
-
 
 export async function extractDynamicRequest(action: string) {
   const extractedModel = extractDynamicAction(action) || ''
@@ -80,6 +79,6 @@ export async function extractDynamicRequest(action: string) {
   const requestInstance = await import(requestPath)
 
   const requestIndex = `${lowerCaseModel}Request`
-  
+
   return requestInstance[requestIndex]
 }

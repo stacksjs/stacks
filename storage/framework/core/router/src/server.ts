@@ -1,13 +1,13 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { extname, path } from '@stacksjs/path'
+import { getModelName } from '@stacksjs/orm'
+import { path, extname } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
+import { camelCase, lowercase } from '@stacksjs/strings'
 import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
-import { getModelName } from '@stacksjs/orm'
-import { camelCase, lowercase } from '@stacksjs/strings'
 
 interface ServeOptions {
   host?: string
@@ -102,16 +102,21 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
   const foundCallback = await route.resolveCallback(foundRoute.callback)
 
-  const middlewarePayload =await executeMiddleware(foundRoute)
+  const middlewarePayload = await executeMiddleware(foundRoute)
 
-
-  if (middlewarePayload !== null && typeof middlewarePayload === 'object' && Object.keys(middlewarePayload).length > 0) {
+  if (
+    middlewarePayload !== null &&
+    typeof middlewarePayload === 'object' &&
+    Object.keys(middlewarePayload).length > 0
+  ) {
     const middlewareStatus = middlewarePayload.status
-    
+
     delete middlewarePayload.status
 
-    return await new Response(JSON.stringify(middlewarePayload),
-    { headers: { 'Content-Type': 'json' }, status: middlewareStatus || 401 })
+    return await new Response(JSON.stringify(middlewarePayload), {
+      headers: { 'Content-Type': 'json' },
+      status: middlewareStatus || 401,
+    })
   }
 
   if (!statusCode) statusCode = 200
@@ -138,10 +143,11 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
   }
 
-  if (isString(foundCallback)) return await new Response(foundCallback, { 
-      headers: { 'Content-Type': 'json', }, status: 200
-    }
-  )
+  if (isString(foundCallback))
+    return await new Response(foundCallback, {
+      headers: { 'Content-Type': 'json' },
+      status: 200,
+    })
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
@@ -152,30 +158,26 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 422) {
       delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback),
-      { headers: { 'Content-Type': 'json' }, status: 422 })
+      return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 422 })
     }
   }
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
       delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback),
-      { headers: { 'Content-Type': 'json' }, status: 401 })
+      return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 401 })
     }
   }
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 403) {
       delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback),
-      { headers: { 'Content-Type': 'json' }, status: 403 })
+      return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 403 })
     }
   }
 
   if (isObject(foundCallback))
-    return await new Response(JSON.stringify(foundCallback),
-      { headers: { 'Content-Type': 'json' }, status: 200 })
+    return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 200 })
 
   // If no known type matched, return a generic error.
   return await new Response('Unknown callback type.', { status: 500 })
@@ -190,39 +192,39 @@ function noCache(response: Response) {
 }
 
 async function addRouteQuery(url: URL) {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default;
-    const modelName = getModelName(model, modelFile);
-    const modelNameLower = `${camelCase(modelName)}Request`;
-    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
-    const requestImport = await import(requestPath);
-    const requestInstance = requestImport[modelNameLower];
+    const model = (await import(modelFile)).default
+    const modelName = getModelName(model, modelFile)
+    const modelNameLower = `${camelCase(modelName)}Request`
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
+    const requestImport = await import(requestPath)
+    const requestInstance = requestImport[modelNameLower]
 
     if (requestInstance && !isObjectNotEmpty(url.searchParams)) {
-      requestInstance.addQuery(url);
+      requestInstance.addQuery(url)
     }
   }
 
   if (!isObjectNotEmpty(url.searchParams)) {
-    RequestParam.addQuery(url);
+    RequestParam.addQuery(url)
   }
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model;
-    const modelName = getModelName(model, modelFile);
-    const modelNameLower = `${lowercase(modelName)}Request`;
-    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
-    const requestImport = await import(requestPath);
-    const requestInstance = requestImport[modelNameLower];
+    const model = (await import(modelFile)).default as Model
+    const modelName = getModelName(model, modelFile)
+    const modelNameLower = `${lowercase(modelName)}Request`
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
+    const requestImport = await import(requestPath)
+    const requestInstance = requestImport[modelNameLower]
 
     if (requestInstance) {
-      requestInstance.addParam(param);
+      requestInstance.addParam(param)
     }
   }
 
@@ -230,18 +232,18 @@ async function addRouteParam(param: RouteParam): Promise<void> {
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'));
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model;
-    const modelName = getModelName(model, modelFile);
-    const modelNameLower = `${lowercase(modelName)}Request`;
-    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`);
-    const requestImport = await import(requestPath);
-    const requestInstance = requestImport[modelNameLower];
+    const model = (await import(modelFile)).default as Model
+    const modelName = getModelName(model, modelFile)
+    const modelNameLower = `${lowercase(modelName)}Request`
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
+    const requestImport = await import(requestPath)
+    const requestInstance = requestImport[modelNameLower]
 
     if (requestInstance) {
-      requestInstance.addHeaders(headers);
+      requestInstance.addHeaders(headers)
     }
   }
 
@@ -263,7 +265,6 @@ async function executeMiddleware(route: Route): Promise<any> {
       } catch (error: any) {
         return error
       }
-   
     } else {
       for (const middlewareElement of middleware) {
         const middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)

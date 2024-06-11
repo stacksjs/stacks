@@ -1,6 +1,7 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
+import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
@@ -12,7 +13,6 @@ import {
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
 } from '.'
-import { getModelName, getTableName } from '@stacksjs/orm'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()

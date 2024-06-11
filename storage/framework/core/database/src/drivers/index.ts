@@ -147,7 +147,6 @@ export async function getRelations(model: Model, modelPath: string): Promise<Rel
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
 
-
         const modelName = getModelName(model, modelPath)
         const formattedModelName = modelName.toLowerCase()
         const tableName = getTableName(model, modelPath)
@@ -204,7 +203,7 @@ export async function fetchOtherModelRelations(model: Model, modelPath: string):
 
 export async function getPivotTables(
   model: Model,
-  modelPath: string
+  modelPath: string,
 ): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
   const pivotTable = []
 

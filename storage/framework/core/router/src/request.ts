@@ -1,11 +1,10 @@
-import type { RequestInstance, RouteParam } from "@stacksjs/types"
+import type { RequestInstance, RouteParam } from '@stacksjs/types'
 
 interface RequestData {
   [key: string]: string
 }
 
 type RouteParams = { [key: string]: string } | null
-
 
 export class Request implements RequestInstance {
   private static instance: Request
@@ -76,10 +75,10 @@ export class Request implements RequestInstance {
     const authorizationHeader = this.headers.get('authorization')
 
     if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
-      return authorizationHeader.substring(7);
+      return authorizationHeader.substring(7)
     }
 
-    return null;
+    return null
   }
 
   public getParams(): RouteParams {
@@ -90,6 +89,6 @@ export class Request implements RequestInstance {
     const value = this.params ? this.params[key] || null : null
     return value ? Number.parseInt(value) : null
   }
-} 
+}
 
 export const request = new Request()

@@ -1,31 +1,31 @@
 interface RequestData {
-    [key: string]: string
+  [key: string]: string
 }
-  
+
 type RouteParams = { [key: string]: string } | null
 
 export interface RequestInstance {
-    addQuery(url: URL): void;
+  addQuery(url: URL): void
 
-    addParam(param: RouteParams): void;
+  addParam(param: RouteParams): void
 
-    get(element: string): string | number | undefined;
+  get(element: string): string | number | undefined
 
-    header(element: string): string | number | boolean | null
+  header(element: string): string | number | boolean | null
 
-    Header(element: string): string | number | boolean | null
+  Header(element: string): string | number | boolean | null
 
-    all(): RequestData;
+  all(): RequestData
 
-    has(element: string): boolean;
+  has(element: string): boolean
 
-    isEmpty(): boolean;
+  isEmpty(): boolean
 
-    extractParamsFromRoute(routePattern: string, pathname: string): void;
+  extractParamsFromRoute(routePattern: string, pathname: string): void
 
-    getParam(key: string): number | string | null;
+  getParam(key: string): number | string | null
 
-    getParams(): RouteParams;
+  getParams(): RouteParams
 
-    getParamAsInt(key: string): number | null;
+  getParamAsInt(key: string): number | null
 }

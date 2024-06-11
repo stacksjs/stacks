@@ -15,15 +15,8 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "steppers",
-    "components",
-    "library",
-    "stacks"
-  ],
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "keywords": ["steppers", "components", "library", "stacks"],
+  "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,14 +26,8 @@
       "import": "./dist/*"
     }
   },
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build --mode lib",

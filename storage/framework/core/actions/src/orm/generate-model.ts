@@ -1,10 +1,10 @@
 import { log } from '@stacksjs/logging'
+import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { camelCase, pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import { getModelName, getTableName} from '@stacksjs/orm'
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -41,7 +41,7 @@ async function generateApiRoutes(modelFiles: string[]) {
         if (middlewares.length) {
           for (let i = 0; i < middlewares.length; i++) {
             middlewareString += `'${middlewares[i]}'`
-  
+
             if (i < middlewares.length - 1) {
               middlewareString += ','
             }
@@ -112,7 +112,6 @@ async function writeModelRequest() {
   let typeString = `import { Request } from '../core/router/src/request'\n\n`
 
   for (let i = 0; i < modelFiles.length; i++) {
-    
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
@@ -124,7 +123,7 @@ async function writeModelRequest() {
     const modelName = getModelName(model, modeFileElement)
 
     const attributes = await extractFields(model, modeFileElement)
-    
+
     fieldString += ` id?: number\n`
     fieldStringInt += `public id = 1\n`
     fieldStringType += `'id' |`
@@ -133,22 +132,18 @@ async function writeModelRequest() {
 
     const otherModelRelations = await fetchOtherModelRelations(model, modelName)
 
-
     for (const attribute of attributes) {
       let defaultValue: any = `''`
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
 
-      if (attribute.fieldArray?.entity === 'boolean')
-        defaultValue = false
+      if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
 
-      if (attribute.fieldArray?.entity === 'number')
-        defaultValue = 0
+      if (attribute.fieldArray?.entity === 'number') defaultValue = 0
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
 
       fieldStringType += `'${attribute.field}'`
-      if (keyCounter < attributes.length - 1)
-        fieldStringType += ' |'
+      if (keyCounter < attributes.length - 1) fieldStringType += ' |'
 
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
 
@@ -158,8 +153,7 @@ async function writeModelRequest() {
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
 
-      if (keyCounter >= attributes.length - 1)
-        fieldStringType += ' |'
+      if (keyCounter >= attributes.length - 1) fieldStringType += ' |'
 
       fieldStringType += `'${otherModel.foreignKey}'`
 
@@ -187,8 +181,7 @@ async function writeModelRequest() {
     importTypes = `${modelName}RequestType`
     importTypesString += `${importTypes}`
 
-    if (i < modelFiles.length - 1)
-      importTypesString += ` | `
+    if (i < modelFiles.length - 1) importTypesString += ` | `
 
     fileString += `import { ${importTypes} } from '../types/requests'\n\n`
 
@@ -198,13 +191,13 @@ async function writeModelRequest() {
       all(): RequestData${modelName}
       ${fieldString}
     }\n\n`
-    
+
     typeString += `interface RequestData${modelName} {
       ${fieldString}
     }\n`
 
     typeString += types
-    
+
     fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
       ${fieldStringInt}
       public async validate(): Promise<void> {
@@ -234,7 +227,6 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   actionString += `import ${modelName} from '../src/models/${modelName}'\n`
 
   let handleString = ``
-
 
   actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
 
@@ -444,7 +436,7 @@ async function setKyselyTypes() {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
     const pivotTables = await getPivotTables(model, modelName)
-    
+
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
 
@@ -579,7 +571,7 @@ function getRelationCount(relation: string): string {
 
 async function getPivotTables(
   model: Model,
-  modelName: string
+  modelName: string,
 ): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
@@ -590,8 +582,7 @@ async function getPivotTables(
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = modelName.toLowerCase()
 
-      const firstForeignKey =
-        belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
+      const firstForeignKey = belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
       const secondForeignKey =
         belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
@@ -615,7 +606,7 @@ export async function fetchOtherModelRelations(model: Model, modelName: string):
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
     const modelFile = await import(modelFileElement)
-      
+
     if (modelName === modelFile.default.name) continue
 
     const otherModelName = getModelName(modelFile, modelFileElement)
@@ -632,7 +623,12 @@ export async function fetchOtherModelRelations(model: Model, modelName: string):
   return modelRelations
 }
 
-async function generateModelString(tableName: string, modelName: string, model: Model, attributes: ModelElement[]): Promise<string> {
+async function generateModelString(
+  tableName: string,
+  modelName: string,
+  model: Model,
+  attributes: ModelElement[],
+): Promise<string> {
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 

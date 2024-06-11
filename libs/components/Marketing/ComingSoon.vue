@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue'
 import { Fetch } from '@stacksjs/api'
+import { ref } from 'vue'
 
 // Reactive state for the email input
 const email = ref('')
