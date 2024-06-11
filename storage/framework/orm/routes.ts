@@ -30,6 +30,3 @@ await route.post('users', 'Actions/UserStoreOrmAction').middleware(['Auth'])
 await route.delete('users/{id}', 'Actions/UserDestroyOrmAction').middleware(['Api'])
 
 await route.get('users/{id}', 'Actions/UserShowOrmAction').middleware(['Api'])
-
-th'])
-
