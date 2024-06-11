@@ -17,7 +17,7 @@ export default {
 
     useApi: {
       uri: 'subscribers', // your-url.com/api/users
-      middleware: ['Auth'], // defaults to `[]`
+      middleware: ['Api'], // defaults to `[]`
       routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
   },

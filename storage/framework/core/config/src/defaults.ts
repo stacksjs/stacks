@@ -24,18 +24,18 @@ export default {
     driver: undefined,
   },
 
-  api: {
-    // version: 'v1',
-    prefix: 'api',
-    middleware: ['Auth'],
-    routes: {
-      index: true,
-      show: true,
-      store: true,
-      update: true,
-      destroy: true,
-    },
-  },
+  // api: {
+  //   // version: 'v1',
+  //   prefix: 'api',
+  //   middleware: ['Api'],
+  //   routes: {
+  //     index: true,
+  //     show: true,
+  //     store: true,
+  //     update: true,
+  //     destroy: true,
+  //   },
+  // },
 
   app: {
     name: 'Stacks',
