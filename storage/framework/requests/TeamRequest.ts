@@ -13,9 +13,10 @@ public status = ''
 public description = ''
 public path = ''
 public isPersonal = false
-public created_at = new Date()
-      public updated_at = new Date()
-      public deleted_at = new Date()
+public accesstoken_id = 0
+public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
       
       public async validate(): Promise<void> {
         await validateField('Team', this.all())

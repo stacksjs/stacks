@@ -19,7 +19,7 @@ interface ActionOptions {
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
   enabled?: JobOptions['enabled']
-  handle: (request?: ModelRequest) => Promise<any> | object | string
+  handle: (request: ModelRequest) => Promise<any> | object | string
 }
 
 export class Action {

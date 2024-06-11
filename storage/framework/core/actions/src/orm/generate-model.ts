@@ -3,7 +3,7 @@ import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { camelCase, pascalCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
-import { isString, isBoolean } from '@stacksjs/validation'
+import { isString } from '@stacksjs/validation'
 import { getModelName, getTableName} from '@stacksjs/orm'
 export interface FieldArrayElement {
   entity: string
@@ -109,7 +109,8 @@ async function writeModelRequest() {
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
   let importTypes = ``
   let importTypesString = ``
-  let typeString = ``
+  let typeString = `import { Request } from '../core/router/src/request'\n\n`
+
   for (let i = 0; i < modelFiles.length; i++) {
     
     let fieldStringType = ``
@@ -124,10 +125,14 @@ async function writeModelRequest() {
 
     const attributes = await extractFields(model, modeFileElement)
     
-    fieldString += ` id: number\n`
+    fieldString += ` id?: number\n`
     fieldStringInt += `public id = 1\n`
     fieldStringType += `'id' |`
     let keyCounter = 0
+    let keyCounterForeign = 0
+
+    const otherModelRelations = await fetchOtherModelRelations(model, modelName)
+
 
     for (const attribute of attributes) {
       let defaultValue: any = `''`
@@ -150,14 +155,27 @@ async function writeModelRequest() {
       keyCounter++
     }
 
-    fieldStringInt += `public created_at = new Date()
-      public updated_at = new Date()
-      public deleted_at = new Date()
+    for (const otherModel of otherModelRelations) {
+      fieldString += ` ${otherModel.foreignKey}: number\n     `
+
+      fieldStringType += ` | '${otherModel.foreignKey}'`
+
+      if (keyCounterForeign < otherModelRelations.length - 1)
+        fieldStringType += ' |'
+
+      fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
+
+      keyCounterForeign++
+    }
+
+    fieldStringInt += `public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
       `
 
-    fieldString += `created_at: Date
-      updated_at: Date
-      deleted_at: Date`
+    fieldString += `created_at?: string
+      updated_at?: string
+      deleted_at?: string`
 
     const modelLowerCase = camelCase(modelName)
 
@@ -171,12 +189,17 @@ async function writeModelRequest() {
 
     fileString += `import { ${importTypes} } from '../types/requests'\n\n`
 
-    const types = `export interface ${modelName}RequestType extends RequestInstance {
+    const types = `export interface ${modelName}RequestType extends Request {
       validate(): void
       get(key: ${fieldStringType}): string | number | undefined;
+      all(): RequestData${modelName}
       ${fieldString}
     }\n\n`
     
+    typeString += `interface RequestData${modelName} {
+      ${fieldString}
+    }\n`
+
     typeString += types
     
     fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
@@ -386,10 +409,13 @@ async function deleteExistingModelNameTypes() {
 
 async function deleteExistingModelRequest() {
   const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
+  const requestD = path.frameworkPath('types/requests.d.ts')
 
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
   }
+
+  if (fs.existsSync(requestD)) await Bun.$`rm ${requestD}`
 }
 
 async function setKyselyTypes() {

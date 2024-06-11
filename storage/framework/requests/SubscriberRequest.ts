@@ -6,9 +6,10 @@ import { SubscriberRequestType } from '../types/requests'
 export class SubscriberRequest extends Request implements SubscriberRequestType {
       public id = 1
 public subscribed = false
-public created_at = new Date()
-      public updated_at = new Date()
-      public deleted_at = new Date()
+public user_id = 0
+public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
       
       public async validate(): Promise<void> {
         await validateField('Subscriber', this.all())

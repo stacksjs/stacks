@@ -11,7 +11,7 @@ export class Request implements RequestInstance {
   private static instance: Request
   private query: RequestData = {}
   private params: RouteParams = null
-  private headers: Headers = {}
+  private headers: any = {}
 
   // An attempt to singleston instance, might be needed at some point
   public static getInstance(): Request {
@@ -56,20 +56,30 @@ export class Request implements RequestInstance {
     if (match?.groups) this.params = match.groups
   }
 
-  public header(headerParam: string) {
-    return this.headers[headerParam]
+  public header(headerParam: string): string | number | boolean | null {
+    return this.headers.get(headerParam)
   }
 
   public getHeaders() {
     return this.headers
   }
 
-  public Header(headerParam: string) {
-    return this.headers[headerParam]
+  public Header(headerParam: string): string | number | boolean | null {
+    return this.headers.get(headerParam)
   }
 
   public getParam(key: string): number | string | null {
     return this.params ? this.params[key] || null : null
+  }
+
+  public bearerToken(): string | null {
+    const authorizationHeader = this.headers.get('authorization')
+
+    if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
+      return authorizationHeader.substring(7);
+    }
+
+    return null;
   }
 
   public getParams(): RouteParams {

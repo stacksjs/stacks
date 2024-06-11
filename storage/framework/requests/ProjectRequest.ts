@@ -9,9 +9,9 @@ public name = ''
 public description = ''
 public url = ''
 public status = ''
-public created_at = new Date()
-      public updated_at = new Date()
-      public deleted_at = new Date()
+public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
       
       public async validate(): Promise<void> {
         await validateField('Project', this.all())

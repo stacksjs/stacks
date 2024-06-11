@@ -1,21 +1,19 @@
 import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
 
-import { PostRequestType } from '../types/requests'
+import { ReleaseRequestType } from '../types/requests'
 
-export class PostRequest extends Request implements PostRequestType {
+export class ReleaseRequest extends Request implements ReleaseRequestType {
       public id = 1
-public title = ''
-public body = ''
-public user_id = 0
+public version = ''
 public created_at = ''
       public updated_at = ''
       public deleted_at = ''
       
       public async validate(): Promise<void> {
-        await validateField('Post', this.all())
+        await validateField('Release', this.all())
       }
     }
     
-    export const postRequest = new PostRequest()
+    export const releaseRequest = new ReleaseRequest()
     

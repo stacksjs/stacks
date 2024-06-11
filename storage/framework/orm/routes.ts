@@ -11,6 +11,16 @@ await route.delete('subscribers/{id}', 'Actions/SubscriberDestroyOrmAction').mid
 
 await route.get('subscribers/{id}', 'Actions/SubscriberShowOrmAction').middleware(['auth'])
 
+await route.get('releases', 'Actions/ReleaseIndexOrmAction').middleware(['auth'])
+
+await route.patch('releases/{id}', 'Actions/ReleaseUpdateOrmAction').middleware(['auth'])
+
+await route.post('releases', 'Actions/ReleaseStoreOrmAction').middleware(['auth'])
+
+await route.delete('releases/{id}', 'Actions/ReleaseDestroyOrmAction').middleware(['auth'])
+
+await route.get('releases/{id}', 'Actions/ReleaseShowOrmAction').middleware(['auth'])
+
 await route.get('users', 'Actions/UserIndexOrmAction').middleware(['auth'])
 
 await route.patch('users/{id}', 'Actions/UserUpdateOrmAction').middleware(['auth'])

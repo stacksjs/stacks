@@ -9,9 +9,10 @@ public name = ''
 public token = ''
 public plainTextToken = ''
 public abilities = ''
-public created_at = new Date()
-      public updated_at = new Date()
-      public deleted_at = new Date()
+public team_id = 0
+public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
       
       public async validate(): Promise<void> {
         await validateField('AccessToken', this.all())

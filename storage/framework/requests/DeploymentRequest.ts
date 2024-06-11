@@ -12,9 +12,10 @@ public status = ''
 public executionTime = 0
 public deployScript = ''
 public terminalOutput = ''
-public created_at = new Date()
-      public updated_at = new Date()
-      public deleted_at = new Date()
+public user_id = 0
+public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
       
       public async validate(): Promise<void> {
         await validateField('Deployment', this.all())
