@@ -25,7 +25,7 @@ await route.get('users', 'Actions/UserIndexOrmAction').middleware(['Auth'])
 
 await route.patch('users/{id}', 'Actions/UserUpdateOrmAction').middleware(['Auth'])
 
-await route.post('users', 'Actions/UserStoreOrmAction').middleware('Auth')
+await route.post('users', 'Actions/UserStoreOrmAction').middleware(['Auth', 'Api'])
 
 await route.delete('users/{id}', 'Actions/UserDestroyOrmAction').middleware(['Auth'])
 

@@ -102,7 +102,17 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
   const foundCallback = await route.resolveCallback(foundRoute.callback)
 
-  await executeMiddleware(foundRoute)
+  const middlewarePayload =await executeMiddleware(foundRoute)
+
+
+  if (middlewarePayload !== null && typeof middlewarePayload === 'object' && Object.keys(middlewarePayload).length > 0) {
+    const middlewareStatus = middlewarePayload.status
+    
+    delete middlewarePayload.status
+
+    return await new Response(JSON.stringify(middlewarePayload),
+    { headers: { 'Content-Type': 'json' }, status: middlewareStatus || 401 })
+  }
 
   if (!statusCode) statusCode = 200
 
@@ -248,11 +258,24 @@ async function executeMiddleware(route: Route): Promise<any> {
 
       const middlewareInstance = (await import(middlewarePath)).default
 
-      return await middlewareInstance.handle()
-      
+      try {
+        await middlewareInstance.handle()
+      } catch (error: any) {
+        return error
+      }
+   
     } else {
-      middleware.forEach(() => {
-      })
+      for (const middlewareElement of middleware) {
+        const middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
+
+        const middlewareInstance = (await import(middlewarePath)).default
+
+        try {
+          await middlewareInstance.handle()
+        } catch (error: any) {
+          return error
+        }
+      }
     }
   }
 }

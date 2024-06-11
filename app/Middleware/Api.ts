@@ -5,6 +5,6 @@ export default new Middleware({
   name: 'API Authentication',
   priority: 1,
   handle() {
-    log.info('API Authentication middleware')
+    log.info('API Authentication')
   },
 })
