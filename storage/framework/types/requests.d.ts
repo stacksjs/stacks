@@ -55,7 +55,7 @@ interface RequestDataAccessToken {
     }
 export interface AccessTokenRequestType extends Request {
       validate(): void
-      get(key: 'id' |'name' |'token' |'plainTextToken' |'abilities' | 'team_id'): string | number | undefined;
+      get(key: 'id' |'name' |'token' |'plainTextToken' |'abilities' |'team_id'): string | number | undefined;
       all(): RequestDataAccessToken
        id?: number
  name: string
@@ -85,7 +85,7 @@ interface RequestDataTeam {
     }
 export interface TeamRequestType extends Request {
       validate(): void
-      get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' | 'accesstoken_id'): string | number | undefined;
+      get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' |'accesstoken_id'): string | number | undefined;
       all(): RequestDataTeam
        id?: number
  name: string
@@ -112,7 +112,7 @@ interface RequestDataSubscriber {
     }
 export interface SubscriberRequestType extends Request {
       validate(): void
-      get(key: 'id' |'subscribed' | 'user_id'): string | number | undefined;
+      get(key: 'id' |'subscribed' |'user_id'): string | number | undefined;
       all(): RequestDataSubscriber
        id?: number
  subscribed: boolean
@@ -138,7 +138,7 @@ interface RequestDataDeployment {
     }
 export interface DeploymentRequestType extends Request {
       validate(): void
-      get(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput' | 'user_id'): string | number | undefined;
+      get(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput' |'user_id'): string | number | undefined;
       all(): RequestDataDeployment
        id?: number
  commitSha: string
@@ -186,7 +186,7 @@ interface RequestDataUser {
     }
 export interface UserRequestType extends Request {
       validate(): void
-      get(key: 'id' |'name' |'email' |'jobTitle' |'password' | 'deployment_id' | | 'post_id'): string | number | undefined;
+      get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'deployment_id' |'post_id'): string | number | undefined;
       all(): RequestDataUser
        id?: number
  name: string
@@ -211,7 +211,7 @@ interface RequestDataPost {
     }
 export interface PostRequestType extends Request {
       validate(): void
-      get(key: 'id' |'title' |'body' | 'user_id'): string | number | undefined;
+      get(key: 'id' |'title' |'body' |'user_id'): string | number | undefined;
       all(): RequestDataPost
        id?: number
  title: string

@@ -158,10 +158,13 @@ async function writeModelRequest() {
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
 
-      fieldStringType += ` | '${otherModel.foreignKey}'`
-
-      if (keyCounterForeign < otherModelRelations.length - 1)
+      if (keyCounter >= attributes.length - 1)
         fieldStringType += ' |'
+
+      fieldStringType += `'${otherModel.foreignKey}'`
+
+      // if (keyCounterForeign < otherModelRelations.length - 1)
+      //   fieldStringType += ' |'
 
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
 
