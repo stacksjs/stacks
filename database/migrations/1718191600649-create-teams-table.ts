@@ -14,7 +14,7 @@ export async function up(db: Database<any>) {
     .addColumn('path', 'varchar(255)')
     .addColumn('isPersonal', 'boolean')
     .addColumn('accesstoken_id', 'integer', (col) =>
-        col.references('access_tokens.id').onDelete('cascade')
+        col.references('personal_access_tokens.id').onDelete('cascade')
       ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')

@@ -379,6 +379,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         return new Team.modelInstance(model)
       }
 
+
+
       toJSON() {
         const output: Partial<AccessTokenType> = { ...this.accesstoken }
 
@@ -393,9 +395,10 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       }
     }
 
-    const Model = AccessTokenModel
+    class AccessTokenBuilder {
+      const Model = AccessTokenModel
 
-    let queryInstance: any = null 
+      let queryInstance: any = null 
 
     // starting here, ORM functions
     export async function find(id: number, fields?: (keyof AccessTokenType)[]) {
@@ -451,7 +454,14 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return results.length
     }
 
-    export async function get(criteria: Partial<AccessTokenType>, sort: { column: keyof AccessTokenType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+    export async function get() {
+      if (queryInstance)
+        return queryInstance.execute()
+
+      return await query.selectAll().execute()
+    }
+
+    export async function fetch(criteria: Partial<AccessTokenType>, sort: { column: keyof AccessTokenType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
       let query = db.selectFrom('personal_access_tokens')
 
       if (criteria.id)
@@ -540,7 +550,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function where(...args: (string | number)[]) {
+    export function where(...args: (string | number)[]) {
       let column: any
       let operator: any
       let value: any
@@ -558,7 +568,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
       query = query.where(column, operator, value)
 
-      queryInstance = await query.selectAll()
+      queryInstance = query.selectAll()
 
       return queryInstance
     }
@@ -631,6 +641,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         query = query.offset(options.offset)
 
       return await query.selectAll().execute()
+    }
     }
 
     export const AccessToken = {

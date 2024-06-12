@@ -398,6 +398,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     const Model = TeamModel
 
+    let queryInstance: any = null 
+
     // starting here, ORM functions
     export async function find(id: number, fields?: (keyof TeamType)[]) {
       let query = db.selectFrom('teams').where('id', '=', id)
@@ -452,7 +454,14 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return results.length
     }
 
-    export async function get(criteria: Partial<TeamType>, sort: { column: keyof TeamType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+    export async function get() {
+      if (queryInstance)
+        return queryInstance.execute()
+
+      return await query.selectAll().execute()
+    }
+
+    export async function fetch(criteria: Partial<TeamType>, sort: { column: keyof TeamType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
       let query = db.selectFrom('teams')
 
       if (criteria.id)
@@ -504,8 +513,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first(): Promise<TeamModel> {
-     return await db.selectFrom('teams')
+    export async function first(): Promise<AccessTokenModel> {
+      if (queryInstance)
+        return queryInstance.executeTakeFirst()
+      
+     return await db.selectFrom('personal_access_tokens')
         .selectAll()
         .executeTakeFirst()
     }
@@ -538,7 +550,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function where(...args: (string | number)[]) {
+    export function where(...args: (string | number)[]) {
       let column: any
       let operator: any
       let value: any
@@ -552,11 +564,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           throw new Error("Invalid number of arguments")
       }
 
-      let query = db.selectFrom('teams')
+      let query = db.selectFrom('personal_access_tokens')
 
       query = query.where(column, operator, value)
 
-      return await query.selectAll()
+      queryInstance = query.selectAll()
+
+      return queryInstance
     }
 
     export async function whereIs(

@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('access_tokens')
+    .createTable('personal_access_tokens')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar(255)')
     .addColumn('token', 'varchar(512)', col => col.unique())

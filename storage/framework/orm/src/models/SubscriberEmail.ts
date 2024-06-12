@@ -375,6 +375,8 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 
     const Model = SubscriberEmailModel
 
+    let queryInstance: any = null 
+
     // starting here, ORM functions
     export async function find(id: number, fields?: (keyof SubscriberEmailType)[]) {
       let query = db.selectFrom('subscriber_emails').where('id', '=', id)
@@ -429,7 +431,14 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return results.length
     }
 
-    export async function get(criteria: Partial<SubscriberEmailType>, sort: { column: keyof SubscriberEmailType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+    export async function get() {
+      if (queryInstance)
+        return queryInstance.execute()
+
+      return await query.selectAll().execute()
+    }
+
+    export async function fetch(criteria: Partial<SubscriberEmailType>, sort: { column: keyof SubscriberEmailType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
       let query = db.selectFrom('subscriber_emails')
 
       if (criteria.id)
@@ -481,8 +490,11 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
       return await find(Number(result.insertId))
     }
 
-    export async function first(): Promise<SubscriberEmailModel> {
-     return await db.selectFrom('subscriber_emails')
+    export async function first(): Promise<AccessTokenModel> {
+      if (queryInstance)
+        return queryInstance.executeTakeFirst()
+      
+     return await db.selectFrom('personal_access_tokens')
         .selectAll()
         .executeTakeFirst()
     }
@@ -515,7 +527,7 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
         .executeTakeFirst()
     }
 
-    export async function where(...args: (string | number)[]) {
+    export function where(...args: (string | number)[]) {
       let column: any
       let operator: any
       let value: any
@@ -529,11 +541,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
           throw new Error("Invalid number of arguments")
       }
 
-      let query = db.selectFrom('subscriber_emails')
+      let query = db.selectFrom('personal_access_tokens')
 
       query = query.where(column, operator, value)
 
-      return await query.selectAll()
+      queryInstance = query.selectAll()
+
+      return queryInstance
     }
 
     export async function whereIs(

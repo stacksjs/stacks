@@ -431,6 +431,8 @@ import Deployment from './Deployment'
 
     const Model = UserModel
 
+    let queryInstance: any = null 
+
     // starting here, ORM functions
     export async function find(id: number, fields?: (keyof UserType)[]) {
       let query = db.selectFrom('users').where('id', '=', id)
@@ -485,7 +487,14 @@ import Deployment from './Deployment'
       return results.length
     }
 
-    export async function get(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+    export async function get() {
+      if (queryInstance)
+        return queryInstance.execute()
+
+      return await query.selectAll().execute()
+    }
+
+    export async function fetch(criteria: Partial<UserType>, sort: { column: keyof UserType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
       let query = db.selectFrom('users')
 
       if (criteria.id)
@@ -537,8 +546,11 @@ import Deployment from './Deployment'
       return await find(Number(result.insertId))
     }
 
-    export async function first(): Promise<UserModel> {
-     return await db.selectFrom('users')
+    export async function first(): Promise<AccessTokenModel> {
+      if (queryInstance)
+        return queryInstance.executeTakeFirst()
+      
+     return await db.selectFrom('personal_access_tokens')
         .selectAll()
         .executeTakeFirst()
     }
@@ -571,7 +583,7 @@ import Deployment from './Deployment'
         .executeTakeFirst()
     }
 
-    export async function where(...args: (string | number)[]) {
+    export function where(...args: (string | number)[]) {
       let column: any
       let operator: any
       let value: any
@@ -585,11 +597,13 @@ import Deployment from './Deployment'
           throw new Error("Invalid number of arguments")
       }
 
-      let query = db.selectFrom('users')
+      let query = db.selectFrom('personal_access_tokens')
 
       query = query.where(column, operator, value)
 
-      return await query.selectAll()
+      queryInstance = query.selectAll()
+
+      return queryInstance
     }
 
     export async function whereIs(
