@@ -134,7 +134,7 @@ async function writeModelRequest() {
 
     for (const attribute of attributes) {
       let defaultValue: any = `''`
-      const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
       if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
 
@@ -649,6 +649,7 @@ async function generateModelString(
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
     const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
+    
 
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
@@ -758,7 +759,11 @@ async function generateModelString(
     }
   }
 
-  for (const attribute of attributes) fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
+  for (const attribute of attributes) {
+    const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+
+    fieldString += ` ${attribute.field}: ${entity}\n     `
+  } 
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelName)
 
@@ -950,7 +955,7 @@ async function generateModelString(
 
         query = query.where(column, operator, value)
 
-        return await query.selectAll().execute()
+        return await query.selectAll()
       }
 
       async whereIs(criteria: Partial<${modelName}Type>, options: QueryOptions = {}) {
@@ -1140,6 +1145,8 @@ async function generateModelString(
 
     const Model = ${modelName}Model
 
+    let queryInstance: any = null 
+
     // starting here, ORM functions
     export async function find(id: number, fields?: (keyof ${modelName}Type)[]) {
       let query = db.selectFrom('${tableName}').where('id', '=', id)
@@ -1194,7 +1201,14 @@ async function generateModelString(
       return results.length
     }
 
-    export async function get(criteria: Partial<${modelName}Type>, sort: { column: keyof ${modelName}Type, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
+    export async function get() {
+      if (queryInstance)
+        return queryInstance.execute()
+
+      return await query.selectAll().execute()
+    }
+
+    export async function fetch(criteria: Partial<${modelName}Type>, sort: { column: keyof ${modelName}Type, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
       let query = db.selectFrom('${tableName}')
 
       if (criteria.id)
@@ -1246,8 +1260,11 @@ async function generateModelString(
       return await find(Number(result.insertId))
     }
 
-    export async function first(): Promise<${modelName}Model> {
-     return await db.selectFrom('${tableName}')
+    export async function first(): Promise<AccessTokenModel> {
+      if (queryInstance)
+        return queryInstance.executeTakeFirst()
+      
+     return await db.selectFrom('personal_access_tokens')
         .selectAll()
         .executeTakeFirst()
     }
@@ -1294,11 +1311,13 @@ async function generateModelString(
           throw new Error("Invalid number of arguments")
       }
 
-      let query = db.selectFrom('${tableName}')
+      let query = db.selectFrom('personal_access_tokens')
 
       query = query.where(column, operator, value)
 
-      return await query.selectAll().execute()
+      queryInstance = await query.selectAll()
+
+      return queryInstance
     }
 
     export async function whereIs(

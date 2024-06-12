@@ -47,7 +47,7 @@ interface RequestDataAccessToken {
  name: string
       token: string
       plainTextToken: string
-      abilities: string
+      abilities: string[]
       team_id: number
      created_at?: string
       updated_at?: string
@@ -61,7 +61,7 @@ export interface AccessTokenRequestType extends Request {
  name: string
       token: string
       plainTextToken: string
-      abilities: string
+      abilities: string[]
       team_id: number
      created_at?: string
       updated_at?: string

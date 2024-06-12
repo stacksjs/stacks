@@ -1,18 +1,19 @@
 import { Action } from '@stacksjs/actions'
-import type { SubscriberRequestType } from '../../types/requests'
 import Subscriber from '../src/models/Subscriber'
+  import type { SubscriberRequestType } from '../../types/requests'
 
 export default new Action({
-  name: 'Subscriber Destroy',
-  description: 'Subscriber Destroy ORM Action',
-  method: 'DELETE',
-  async handle(request: SubscriberRequestType) {
-    const id = request.getParam('id')
+      name: 'Subscriber Destroy',
+      description: 'Subscriber Destroy ORM Action',
+      method: 'DELETE',
+      async handle(request: SubscriberRequestType) {
+        const id = request.getParam('id')
 
-    const model = await Subscriber.findOrFail(Number(id))
+        const model = await Subscriber.findOrFail(Number(id))
 
-    model.delete()
+        model.delete()
 
-    return 'Model deleted!'
-  },
-})
+        return 'Model deleted!'
+      },
+    })
+  
