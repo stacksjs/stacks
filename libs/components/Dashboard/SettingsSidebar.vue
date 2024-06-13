@@ -1,426 +1,216 @@
-<script setup lang="ts">
-import {SettingsMenuOption} from "stacks/types";
-
-const props = defineProps<{ menuOptions?: SettingsMenuOption[] }>()
-
-const menuOptions = computed(() => props.menuOptions || [])
-</script>
-
 <template>
-  <header class="lg:w-64 border-b border-gray-200 dark:border-gray-600 p-4 sm:p-6 lg:p-8">
-
+  <header class="lg:w-92 border-b border-gray-200 dark:border-gray-600 p-4 sm:p-6 lg:p-8">
     <div class="bg-white rounded-lg shadow-sm p-4 w-full">
-      <h3 class="md:text-sm font-semibold text-gray-700">Stacks Settings</h3>
-      <p class="mt-2 text-sm text-gray-500">List of available settings</p>
+      <h3 class="md:text-sm font-semibold text-gray-700">
+        Stacks Settings
+      </h3>
+      <p class="mt-2 text-sm text-gray-500">
+        List of available settings
+      </p>
     </div>
     <!-- Side navigation -->
-    <nav class="flex overflow-y-auto py-4">
-      <ul
-        role="list"
-        class="flex-col min-w-full flex-none gap-y-6 text-sm font-semibold leading-6 text-gray-600"
-      >
-        <li>
-          <RouterLink to="/settings/ai">
-            AI
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/analytics">
-            Analytics
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/app">
-            App
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/cache">
-            Cache
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/cli">
-            CLI
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/cli">
-            Cloud
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/database">
-            Database
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/dns">
-            DNS
-          </RouterLink>
-        </li>
-        <!-- <li><RouterLink to="/settings/docs">Docs</RouterLink></li> -->
-        <li>
-          <RouterLink to="/settings/email">
-            Email
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/file-systems">
-            File Systems
-          </RouterLink>
-        </li>
-        <!-- <li><RouterLink to="/settings/storage">git</RouterLink></li> -->
-        <li>
-          <RouterLink to="/settings/hashing">
-            Hashing
-          </RouterLink>
-        </li>
-        <li>
-          <!-- ./lang/* -->
-          <RouterLink to="/settings/languages">
-            Languages
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/library">
-            Library
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/native">
-            Native
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/mail">
-            Mail
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/queue">
-            Queue
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/search-engine">
-            Search Engine
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/security">
-            Security
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/services">
-            Services
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/storage">
-            Storage
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/team">
-            Team
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/settings/ui">
-            UI
-          </RouterLink>
-        </li>
-      </ul>
-    </nav>
-
-    <nav class="flex flex-1 flex-col">
+    <nav class="mt-4 flex flex-1 flex-col bg-white rounded-lg shadow-sm p-4 w-full">
       <ul
         role="list"
         class="-mx-2 mt-2 space-y-1"
       >
-        <li v-for="(menu, index) in menuOptions" :key="index">
-          <RouterLink
-            :to="menu.path"
-            class="sidebar-links group"
-          >
-            <div class="i-heroicons-rocket-launch text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-            {{menu.label}}
+        <li>
+          <RouterLink to="ai" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-cpu-chip text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              AI
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
           </RouterLink>
         </li>
-      </ul>
-
-      <ul
-        role="list"
-        class="flex flex-1 flex-col gap-y-8"
-      >
         <li>
-          <ul
-            role="list"
-            class="-mx-2 mt-2 space-y-1"
-          >
-            <li>
-              <RouterLink
-                to="/"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-home text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Dashboard
-              </RouterLink>
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <div class="flex justify-between items-center">
-            <div class="text-xs font-semibold leading-6 text-gray-400">
-              Library
+          <RouterLink to="analytics" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Analytics
             </div>
-
-            <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-          </div>
-
-          <ul
-            role="list"
-            class="-mx-2 mt-2 space-y-1"
-          >
-            <li>
-              <RouterLink
-                to="/functions"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-code-bracket text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Functions
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/components"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-puzzle-piece text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Components
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/releases"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-building-library text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Releases
-              </RouterLink>
-            </li>
-          </ul>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
         </li>
-
         <li>
-          <div class="flex justify-between items-center">
-            <div class="text-xs font-semibold leading-6 text-gray-400">
+          <RouterLink to="app" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               App
             </div>
-
-            <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-          </div>
-
-          <ul
-            role="list"
-            class="-mx-2 mt-2 space-y-1"
-          >
-            <li>
-              <RouterLink
-                to="/deployments"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-rocket-launch text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Deployments
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/requests"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-magnifying-glass text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Requests
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/actions"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-bolt text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Actions
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/commands"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-command-line text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Commands
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/jobs"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-queue-list text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Jobs
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/notifications"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-envelope text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Notifications
-              </RouterLink>
-            </li>
-          </ul>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
         </li>
-
         <li>
-          <div class="flex justify-between items-center">
-            <div class="text-xs font-semibold leading-6 text-gray-400">
-              Models
+          <RouterLink to="cache" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Cache
             </div>
-
-            <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-          </div>
-
-          <ul
-            role="list"
-            class="-mx-2 mt-2 space-y-1"
-          >
-            <li>
-              <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-              <RouterLink
-                to="/models/users"
-                class="sidebar-links"
-              >
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span>
-                <span class="truncate">Users</span>
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/models/teams"
-                class="sidebar-links"
-              >
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">T</span>
-                <span class="truncate">Teams</span>
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/models/subscribers"
-                class="sidebar-links"
-              >
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">S</span>
-                <span class="truncate">Subscribers</span>
-              </RouterLink>
-            </li>
-          </ul>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
         </li>
-
         <li>
-          <div class="flex justify-between items-center">
-            <div class="text-xs font-semibold leading-6 text-gray-400">
-              Management
+          <RouterLink to="cli" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              CLI
             </div>
-
-            <div class="i-heroicons-chevron-down text-gray-300 w-4 h-4 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-          </div>
-
-          <ul
-            role="list"
-            class="-mx-2 mt-2 space-y-1"
-          >
-            <li>
-              <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-              <RouterLink
-                to="/dns"
-                class="sidebar-links"
-              >
-                <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
-                <div class="i-heroicons-document-magnifying-glass text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                <span class="truncate">DNS</span>
-              </RouterLink>
-            </li>
-
-            <li>
-              <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
-              <RouterLink
-                to="/emails"
-                class="sidebar-links"
-              >
-                <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
-                <div class="i-heroicons-at-symbol text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                <span class="truncate">Emails</span>
-              </RouterLink>
-            </li>
-
-            <li>
-              <RouterLink
-                to="/logs"
-                class="sidebar-links group"
-              >
-                <div class="i-heroicons-document-text text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-                Logs
-              </RouterLink>
-            </li>
-          </ul>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
         </li>
-
-        <li class="mt-auto flex items-center justify-between space-x-4">
-          <div class="flex items-center">
-            <RouterLink
-              to="/buddy"
-              class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
-              active-class="active"
-            >
-              <div class="i-heroicons-chat-bubble-left-ellipsis text-gray-500 w-5 h-5 dark:text-gray-200 transition-all duration-150 ease-in-out" />
-            </RouterLink>
-
-            <RouterLink
-              to="/environment"
-              class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
-              active-class="active"
-            >
-              <div class="i-heroicons-key text-gray-500 w-5 h-5 dark:text-gray-200 transition-all duration-150 ease-in-out" />
-            </RouterLink>
-
-            <RouterLink
-              to="/settings/billing"
-              class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
-              active-class="active"
-            >
-              <div class="i-heroicons-cog-8-tooth text-gray-500 w-5 h-5 dark:text-gray-200 transition-all duration-150 ease-in-out" />
-            </RouterLink>
-          </div>
-          <!-- <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Production</span> -->
-          <!-- red for production -->
-          <!-- blue for staging -->
-          <!-- green for development -->
-          <!-- gray for local -->
-          <div class="flex-none rounded-full p-1 text-red-400 bg-red-400/10">
-            <div class="h-2 w-2 rounded-full bg-current animate-pulse" />
-          </div>
+        <li>
+          <RouterLink to="cloud" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Cloud
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="database" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Database
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="dns" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              DNS
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="email" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Email
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="file-system" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              File System
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="hashing" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Hashing
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="languages" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Languages
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="library" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Library
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="native" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Native
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="mail" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Mail
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="queue" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Queue
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="search-engine" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Search Engine
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="security" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Security
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="service" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Service
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="storage" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Storage
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="team" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              Team
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="ui" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              UI
+            </div>
+            <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
+          </RouterLink>
         </li>
       </ul>
     </nav>

@@ -8,10 +8,12 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ActivityFeed: typeof import('./../../../libs/components/Dashboard/Deployments/ActivityFeed.vue')['default']
+    AIForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/AIForm.vue')['default']
     Alert: typeof import('./../../../libs/components/Dashboard/Modals/Popups/Alert.vue')['default']
     AppButton: typeof import('./../../../libs/components/Dashboard/Buttons/AppButton.vue')['default']
     BaseModal: typeof import('./../../../libs/components/Dashboard/Modals/BaseModal.vue')['default']
     Button: typeof import('./../../../libs/components/Button.vue')['default']
+    CacheForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/CacheForm.vue')['default']
     CallToAction: typeof import('./../../../libs/components/Marketing/CallToAction.vue')['default']
     CodeEditor: typeof import('./../../../libs/components/CodeEditor.vue')['default']
     ComingSoon: typeof import('./../../../libs/components/Marketing/ComingSoon.vue')['default']
@@ -45,6 +47,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryFeatures: typeof import('./../../../libs/components/Marketing/SecondaryFeatures.vue')['default']
+    SettingsFormManager: typeof import('./../../../libs/components/Dashboard/Settings/SettingsFormManager.vue')['default']
     SettingsHeader: typeof import('./../../../libs/components/Dashboard/SettingsHeader.vue')['default']
     SettingsSidebar: typeof import('./../../../libs/components/Dashboard/SettingsSidebar.vue')['default']
     Sidebar: typeof import('./../../../libs/components/Dashboard/Sidebar.vue')['default']
