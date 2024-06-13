@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AIForm from './Forms/AIForm.vue'
 import AnalyticsForm from './Forms/AnalyticsForm.vue'
+import AppForm from './Forms/AppForm.vue'
 
 const props = defineProps({
   name: String,
@@ -115,6 +116,9 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
         </template>
         <template v-else-if="name === 'analytics'">
           <AnalyticsForm />
+        </template>
+        <template v-else-if="name === 'app'">
+          <AppForm />
         </template>
         <template v-else>
           <div class="text-center">

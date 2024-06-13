@@ -17,7 +17,7 @@
         <li>
           <RouterLink to="ai" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-cpu-chip text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-sparkles text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               AI
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -35,7 +35,7 @@
         <li>
           <RouterLink to="app" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-cog-6-tooth text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               App
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
