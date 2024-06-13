@@ -1,667 +1,373 @@
+import { db } from '@stacksjs/database'
+import type { Result } from '@stacksjs/error-handling'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import type { Result } from '@stacksjs/error-handling'
-    import { err, handleError, ok } from '@stacksjs/error-handling'
-    import { db } from '@stacksjs/database'
-    import Team from './Team'
+import Team from './Team'
 
+// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+// import { Pool } from 'pg'
 
-    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-    // import { Pool } from 'pg'
+// TODO: we need an action that auto-generates these table interfaces
+export interface PersonalAccessTokensTable {
+  id: Generated<number>
+  name: string
+  token: string
+  plainTextToken: string
+  abilities: string[]
+  team_id: number
 
-    // TODO: we need an action that auto-generates these table interfaces
-    export interface PersonalAccessTokensTable {
-      id: Generated<number>
-      name: string
-      token: string
-      plainTextToken: string
-      abilities: string[]
-      team_id: number 
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
+  deleted_at: ColumnType<Date, string | undefined, never>
+}
 
-      created_at: ColumnType<Date, string | undefined, never>
-      updated_at: ColumnType<Date, string | undefined, never>
-      deleted_at: ColumnType<Date, string | undefined, never>
-    }
+interface AccessTokenResponse {
+  data: PersonalAccessTokens
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
 
-    interface AccessTokenResponse {
-      data: PersonalAccessTokens
+export type AccessTokenType = Selectable<PersonalAccessTokensTable>
+export type NewAccessToken = Insertable<PersonalAccessTokensTable>
+export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
+export type PersonalAccessTokens = AccessTokenType[]
+
+export type AccessTokenColumn = PersonalAccessTokens
+export type AccessTokenColumns = Array<keyof PersonalAccessTokens>
+
+type SortDirection = 'asc' | 'desc'
+interface SortOptions {
+  column: AccessTokenType
+  order: SortDirection
+}
+// Define a type for the options parameter
+interface QueryOptions {
+  sort?: SortOptions
+  limit?: number
+  offset?: number
+  page?: number
+}
+
+export class AccessTokenModel {
+  private accesstoken: Partial<AccessTokenType> | null
+  private results: Partial<AccessTokenType>[]
+  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  protected query: any
+  public id: number | undefined
+  public name: string | undefined
+  public token: string | undefined
+  public plainTextToken: string | undefined
+  public abilities: string[] | undefined
+  public team_id: number | undefined
+
+  constructor(accesstoken: Partial<AccessTokenType> | null) {
+    this.accesstoken = accesstoken
+    this.id = accesstoken?.id
+    this.name = accesstoken?.name
+    this.token = accesstoken?.token
+    this.plainTextToken = accesstoken?.plainTextToken
+    this.abilities = accesstoken?.abilities
+    this.team_id = accesstoken?.team_id
+
+    this.query = db.selectFrom('personal_access_tokens')
+  }
+
+  // Method to find a AccessToken by ID
+  async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
+    let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return null
+
+    return this
+  }
+
+  // Method to find a AccessToken by ID
+  static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
+    let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return null
+
+    return new this(model)
+  }
+
+  static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
+    let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) throw `No model results found for ${id} `
+
+    return new this(model)
+  }
+
+  static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
+    let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.execute()
+
+    return model.map((modelItem) => new AccessTokenModel(modelItem))
+  }
+
+  // Method to get a AccessToken by criteria
+  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<AccessTokenModel[]> {
+    let query = db.selectFrom('personal_access_tokens')
+
+    // Apply sorting from options
+    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply limit and offset from options
+    if (options.limit !== undefined) query = query.limit(options.limit)
+
+    if (options.offset !== undefined) query = query.offset(options.offset)
+
+    const model = await query.selectAll().execute()
+    return model.map((modelItem) => new AccessTokenModel(modelItem))
+  }
+
+  // Method to get a AccessToken by criteria
+  static async get(): Promise<AccessTokenModel[]> {
+    const query = db.selectFrom('personal_access_tokens')
+
+    const model = await query.selectAll().execute()
+
+    return model.map((modelItem) => new AccessTokenModel(modelItem))
+  }
+
+  // Method to get a AccessToken by criteria
+  async get(): Promise<AccessTokenModel[]> {
+    return await this.query.selectAll().execute()
+  }
+
+  // Method to get all personal_access_tokens
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
+    const totalRecordsResult = await db
+      .selectFrom('personal_access_tokens')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    const personal_access_tokensWithExtra = await db
+      .selectFrom('personal_access_tokens')
+      .selectAll()
+      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+      .limit((options.limit ?? 10) + 1) // Fetch one extra record
+      .offset((options.page - 1) * (options.limit ?? 10))
+      .execute()
+
+    let nextCursor = null
+    if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
+      nextCursor = personal_access_tokensWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+
+    return {
+      data: personal_access_tokensWithExtra,
       paging: {
-        total_records: number
-        page: number
-        total_pages: number
-      }
-      next_cursor: number | null
+        total_records: totalRecords,
+        page: options.page,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
+  // Method to create a new accesstoken
+  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+    const result = await db.insertInto('personal_access_tokens').values(newAccessToken).executeTakeFirstOrThrow()
+
+    return (await find(Number(result.insertId))) as AccessTokenModel
+  }
+
+  // Method to remove a AccessToken
+  static async remove(id: number): Promise<void> {
+    await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
+  }
+
+  async where(...args: (string | number)[]): Promise<AccessTokenType[]> {
+    let column: any
+    let operator: any
+    let value: any
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
     }
 
-    export type AccessTokenType = Selectable<PersonalAccessTokensTable>
-    export type NewAccessToken = Insertable<PersonalAccessTokensTable>
-    export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
-    export type PersonalAccessTokens = AccessTokenType[]
+    let query = db.selectFrom('personal_access_tokens')
 
-    export type AccessTokenColumn = PersonalAccessTokens
-    export type AccessTokenColumns = Array<keyof PersonalAccessTokens>
+    query = query.where(column, operator, value)
 
-    type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: AccessTokenType, order: SortDirection }
-    // Define a type for the options parameter
-    interface QueryOptions {
-      sort?: SortOptions
-      limit?: number
-      offset?: number
-      page?: number
+    return await query.selectAll()
+  }
+
+  static where(...args: (string | number)[]): AccessTokenModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
     }
 
-    export class AccessTokenModel {
-      private accesstoken: Partial<AccessTokenType>
-      private results: Partial<AccessTokenType>[]
-      private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
-
-      constructor(accesstoken: Partial<AccessTokenType>) {
-        this.accesstoken = accesstoken
-      }
-
-      // Method to find a accesstoken by ID
-      static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
-        let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
-
-        if (!model)
-          return null
-
-        return new AccessTokenModel(model)
-      }
-
-      static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
-        let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
-
-        if (!model)
-          throw(`No model results found for ${id} `)
-
-        return new AccessTokenModel(model)
-      }
-
-      static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
-        let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.execute()
-
-        return model.map(modelItem => new AccessTokenModel(modelItem))
-      }
-
-      // Method to get a accesstoken by criteria
-      static async get(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<AccessTokenModel[]> {
-        let query = db.selectFrom('personal_access_tokens')
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply limit and offset from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        const model = await query.selectAll().execute()
-        return model.map(modelItem => new AccessTokenModel(modelItem))
-      }
-
-      // Method to get all personal_access_tokens
-      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
-        const totalRecordsResult = await db.selectFrom('personal_access_tokens')
-          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-          .executeTakeFirst()
-
-        const totalRecords = Number(totalRecordsResult?.total) || 0
-        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-        const personal_access_tokensWithExtra = await db.selectFrom('personal_access_tokens')
-          .selectAll()
-          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-          .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page - 1) * (options.limit ?? 10))
-          .execute()
-
-        let nextCursor = null
-        if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
-          nextCursor = personal_access_tokensWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    instance.query = instance.query.where(column, operator, value)
 
-        return {
-          data: personal_access_tokensWithExtra,
-          paging: {
-            total_records: totalRecords,
-            page: options.page,
-            total_pages: totalPages,
-          },
-          next_cursor: nextCursor,
-        }
-      }
+    return instance
+  }
 
-      // Method to create a new accesstoken
-      static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-        const result = await db.insertInto('personal_access_tokens')
-          .values(newAccessToken)
-          .executeTakeFirstOrThrow()
+  static whereIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+    const instance = new this(null)
 
-        return await find(Number(result.insertId)) as AccessTokenModel
-      }
+    instance.query = instance.query.where(column, 'in', values)
 
-      // Method to remove a accesstoken
-      static async remove(id: number): Promise<AccessTokenModel> {
-        const model = await db.deleteFrom('personal_access_tokens')
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
+    return instance
+  }
 
-        return new AccessTokenModel(model)
-      }
+  async first(): Promise<AccessTokenModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
 
-      async where(...args: (string | number)[]): Promise<AccessTokenType[]> {
-        let column: any
-        let operator: any
-        let value: any
-
-        if (args.length === 2) {
-          [column, value] = args
-          operator = '='
-        } else if (args.length === 3) {
-            [column, operator, value] = args
-        } else {
-            throw new Error("Invalid number of arguments")
-        }
-
-        let query = db.selectFrom('personal_access_tokens')
-
-        query = query.where(column, operator, value)
-
-        return await query.selectAll()
-      }
-
-      async whereIs(criteria: Partial<AccessTokenType>, options: QueryOptions = {}) {
-        let query = db.selectFrom('personal_access_tokens')
-
-        // Existing criteria checks
-        if (criteria.id)
-          query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-        if (criteria.email)
-          query = query.where('email', '=', criteria.email)
-
-        if (criteria.name !== undefined) {
-          query = query.where(
-            'name',
-            criteria.name === null ? 'is' : '=',
-            criteria.name,
-          )
-        }
-
-        if (criteria.password)
-          query = query.where('password', '=', criteria.password)
-
-        if (criteria.created_at)
-          query = query.where('created_at', '=', criteria.created_at)
-
-        if (criteria.updated_at)
-          query = query.where('updated_at', '=', criteria.updated_at)
-
-        if (criteria.deleted_at)
-          query = query.where('deleted_at', '=', criteria.deleted_at)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
-      }
-
-      async whereIn(column: keyof AccessTokenType, values: any[], options: QueryOptions = {}): Promise<AccessTokenType[]> {
-
-        let query = db.selectFrom('personal_access_tokens')
-
-        query = query.where(column, 'in', values)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
-      }
-
-      async first(): Promise<AccessTokenType> {
-        return await db.selectFrom('personal_access_tokens')
-          .selectAll()
-          .executeTakeFirst()
-      }
-
-      async last(): Promise<AccessTokenType> {
-        return await db.selectFrom('personal_access_tokens')
-          .selectAll()
-          .orderBy('id', 'desc')
-          .executeTakeFirst()
-      }
-
-      async orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): Promise<AccessTokenType[]> {
-        return await db.selectFrom('personal_access_tokens')
-          .selectAll()
-          .orderBy(column, order)
-          .execute()
-      }
-
-      async orderByDesc(column: keyof AccessTokenType): Promise<AccessTokenType[]> {
-        return await db.selectFrom('personal_access_tokens')
-          .selectAll()
-          .orderBy(column, 'desc')
-          .execute()
-      }
-
-      async orderByAsc(column: keyof AccessTokenType): Promise<AccessTokenType[]> {
-        return await db.selectFrom('personal_access_tokens')
-          .selectAll()
-          .orderBy(column, 'asc')
-          .execute()
-      }
-
-      // Method to get the accesstoken instance itself
-      self(): AccessTokenModel {
-        return this
-      }
-
-      // Method to get the accesstoken instance data
-      get() {
-        return this.accesstoken
-      }
-
-      // Method to update the accesstoken instance
-      async update(accesstoken: AccessTokenUpdate): Promise<Result<AccessTokenType, Error>> {
-        if (this.accesstoken.id === undefined)
-          return err(handleError('AccessToken ID is undefined'))
-
-        const updatedModel = await db.updateTable('personal_access_tokens')
-          .set(accesstoken)
-          .where('id', '=', this.accesstoken.id)
-          .executeTakeFirst()
-
-        if (!updatedModel)
-          return err(handleError('AccessToken not found'))
-
-        return ok(updatedModel)
-      }
-
-      // Method to save (insert or update) the accesstoken instance
-      async save(): Promise<void> {
-        if (!this.accesstoken)
-          throw new Error('AccessToken data is undefined')
-
-        if (this.accesstoken.id === undefined) {
-          // Insert new accesstoken
-          const newModel = await db.insertInto('personal_access_tokens')
-            .values(this.accesstoken as NewAccessToken)
-            .executeTakeFirstOrThrow()
-        }
-        else {
-          // Update existing accesstoken
-          await this.update(this.accesstoken)
-        }
-      }
-
-      // Method to delete the accesstoken instance
-      async delete(): Promise<void> {
-        if (this.accesstoken.id === undefined)
-          throw new Error('AccessToken ID is undefined')
-
-        await db.deleteFrom('personal_access_tokens')
-          .where('id', '=', this.accesstoken.id)
-          .execute()
-
-        this.accesstoken = {}
-      }
-
-      // Method to refresh the accesstoken instance data from the database
-      async refresh(): Promise<void> {
-        if (this.accesstoken.id === undefined)
-          throw new Error('AccessToken ID is undefined')
-
-        const refreshedModel = await db.selectFrom('personal_access_tokens')
-          .where('id', '=', this.accesstoken.id)
-          .selectAll()
-          .executeTakeFirst()
-
-        if (!refreshedModel)
-          throw new Error('AccessToken not found')
-
-        this.accesstoken = refreshedModel
-      }
-
-      
-      async team() {
-        if (this.accesstoken.id === undefined)
-          throw new Error('Relation Error!')
-
-        const model = await db.selectFrom('teams')
-        .where('accesstoken_id', '=', this.accesstoken.id)
-        .selectAll()
-        .executeTakeFirst()
-
-        if (! model)
-          throw new Error('Model Relation Not Found!')
-
-        return new Team.modelInstance(model)
-      }
-
-
-
-      toJSON() {
-        const output: Partial<AccessTokenType> = { ...this.accesstoken }
-
-        this.hidden.forEach((attr) => {
-          if (attr in output)
-            delete output[attr as keyof Partial<AccessTokenType>]
-        })
-
-        type AccessToken = Omit<AccessTokenType, 'password'>
-
-        return output as AccessToken
-      }
+    return new AccessTokenModel(model)
+  }
+
+  static async first(): Promise<AccessTokenType | undefined> {
+    return await db.selectFrom('personal_access_tokens').selectAll().executeTakeFirst()
+  }
+
+  async last(): Promise<AccessTokenType> {
+    return await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
+  static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query.orderBy(column, order)
+
+    return instance
+  }
+
+  orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+    this.query.orderBy(column, order)
+
+    return this
+  }
+
+  static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query.orderBy(column, 'desc')
+
+    return instance
+  }
+
+  orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+    this.query.orderBy(column, 'desc')
+
+    return this
+  }
+
+  static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query.orderBy(column, 'desc')
+
+    return instance
+  }
+
+  orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+    this.query.orderBy(column, 'desc')
+
+    return this
+  }
+
+  // Method to update the accesstoken instance
+  async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | null> {
+    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+
+    const updatedModel = await db
+      .updateTable('personal_access_tokens')
+      .set(accesstoken)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    return await this.find(Number(this.id))
+  }
+
+  // Method to save (insert or update) the accesstoken instance
+  async save(): Promise<void> {
+    if (!this.accesstoken) throw new Error('AccessToken data is undefined')
+
+    if (this.accesstoken.id === undefined) {
+      // Insert new accesstoken
+      const newModel = await db
+        .insertInto('personal_access_tokens')
+        .values(this.accesstoken as NewAccessToken)
+        .executeTakeFirstOrThrow()
+    } else {
+      // Update existing accesstoken
+      await this.update(this.accesstoken)
     }
+  }
 
-    class AccessTokenBuilder {
-      const Model = AccessTokenModel
+  // Method to delete the accesstoken instance
+  async delete(): Promise<void> {
+    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
-      let queryInstance: any = null 
+    await db.deleteFrom('personal_access_tokens').where('id', '=', this.id).execute()
+  }
 
-    // starting here, ORM functions
-    export async function find(id: number, fields?: (keyof AccessTokenType)[]) {
-      let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+  async team() {
+    if (this.id === undefined) throw new Error('Relation Error!')
 
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
+    const model = await db.selectFrom('teams').where('accesstoken_id', '=', this.id).selectAll().executeTakeFirst()
 
-      const model = await query.executeTakeFirst()
+    if (!model) throw new Error('Model Relation Not Found!')
 
-      if (!model)
-        return null
+    return new Team.modelInstance(model)
+  }
 
-      return new AccessTokenModel(model)
-    }
+  toJSON() {
+    const output: Partial<AccessTokenType> = { ...this.accesstoken }
 
-    export async function findOrFail(id: number, fields?: (keyof AccessTokenType)[]) {
-      let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+    this.hidden.forEach((attr) => {
+      if (attr in output) delete output[attr as keyof Partial<AccessTokenType>]
+    })
 
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
+    type AccessToken = Omit<AccessTokenType, 'password'>
 
-      const model = await query.executeTakeFirst()
+    return output as AccessToken
+  }
+}
 
-      if (!model)
-        throw(`No model results found for ${id} `)
+const AccessToken = AccessTokenModel
 
-      return new AccessTokenModel(model)
-    }
-
-    export async function findMany(ids: number[], fields?: (keyof AccessTokenType)[]) {
-      let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.execute()
-
-      return model.map(modelItem => new AccessTokenModel(modelItem))
-    }
-
-    export async function count(): Number {
-      const results = await db.selectFrom('personal_access_tokens')
-        .selectAll()
-        .execute()
-
-      return results.length
-    }
-
-    export async function get() {
-      if (queryInstance)
-        return queryInstance.execute()
-
-      return await query.selectAll().execute()
-    }
-
-    export async function fetch(criteria: Partial<AccessTokenType>, sort: { column: keyof AccessTokenType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
-      let query = db.selectFrom('personal_access_tokens')
-
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
-
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
-
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
-
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
-
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
-
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
-
-      // Apply sorting based on the 'sort' parameter
-      query = query.orderBy(sort.column, sort.order)
-
-      return await query.selectAll().execute()
-    }
-
-    export async function all(limit: number = 10, offset: number = 0): Promise<AccessTokenType[]> {
-      return await db.selectFrom('personal_access_tokens')
-        .selectAll()
-        .orderBy('created_at', 'desc')
-        .limit(limit)
-        .offset(offset)
-        .execute()
-    }
-
-    export async function create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-      const result = await db.insertInto('personal_access_tokens')
-      .values(newAccessToken)
-      .executeTakeFirstOrThrow()
-
-      return await find(Number(result.insertId))
-    }
-
-    export async function first(): Promise<AccessTokenModel> {
-      if (queryInstance)
-        return queryInstance.executeTakeFirst()
-      
-     return await db.selectFrom('personal_access_tokens')
-        .selectAll()
-        .executeTakeFirst()
-    }
-
-    export async function recent(limit: number): Promise<AccessTokenModel[]> {
-      return await db.selectFrom('personal_access_tokens')
-         .selectAll()
-         .limit(limit)
-         .execute()
-     }
-
-     export async function last(limit: number): Promise<AccessTokenType> {
-      return await db.selectFrom('personal_access_tokens')
-         .selectAll()
-         .orderBy('id', 'desc')
-         .limit(limit)
-         .execute()
-     }
-
-    export async function update(id: number, accesstokenUpdate: AccessTokenUpdate) {
-      return await db.updateTable('personal_access_tokens')
-        .set(accesstokenUpdate)
-        .where('id', '=', id)
-        .execute()
-    }
-
-    export async function remove(id: number) {
-      return await db.deleteFrom('personal_access_tokens')
-        .where('id', '=', id)
-        .executeTakeFirst()
-    }
-
-    export function where(...args: (string | number)[]) {
-      let column: any
-      let operator: any
-      let value: any
-
-      if (args.length === 2) {
-        [column, value] = args
-        operator = '='
-      } else if (args.length === 3) {
-          [column, operator, value] = args
-      } else {
-          throw new Error("Invalid number of arguments")
-      }
-
-      let query = db.selectFrom('personal_access_tokens')
-
-      query = query.where(column, operator, value)
-
-      queryInstance = query.selectAll()
-
-      return queryInstance
-    }
-
-    export async function whereIs(
-      criteria: Partial<AccessTokenType>,
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('personal_access_tokens')
-
-      // Apply criteria
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id)
-
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
-
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
-
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
-
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
-
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
-
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
-
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
-
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
-
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
-
-      return await query.selectAll().execute()
-    }
-
-    export async function whereIn(
-      column: keyof AccessTokenType,
-      values: any[],
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('personal_access_tokens')
-
-      query = query.where(column, 'in', values)
-
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
-
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
-
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
-
-      return await query.selectAll().execute()
-    }
-    }
-
-    export const AccessToken = {
-      find,
-      findOrFail,
-      findMany,
-      get,
-      count,
-      all,
-      create,
-      update,
-      remove,
-      Model,
-      first,
-      last,
-      recent,
-      where,
-      whereIn,
-      model: AccessTokenModel
-    }
-
-    export default AccessToken
-    
+export default AccessToken

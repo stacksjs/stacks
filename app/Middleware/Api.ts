@@ -8,13 +8,13 @@ export default new Middleware({
   async handle() {
     const bearerToken = request.bearerToken() || ''
 
-    const parts = bearerToken.split('|');
-    
+    const parts = bearerToken.split('|')
+
     // Ensure that the input string contains exactly one '|'
     if (parts.length !== 2) {
       throw { message: 'Invalid bearer token format', status: 401 }
     }
-    
+
     // const teamToken = parts[0]
     // const plainString = parts[1] as string
 
