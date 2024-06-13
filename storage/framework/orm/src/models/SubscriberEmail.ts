@@ -189,7 +189,7 @@ export class SubscriberEmailModel {
     await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
   }
 
-  async where(...args: (string | number)[]): Promise<SubscriberEmailType[]> {
+  where(...args: (string | number)[]): SubscriberEmailModel {
     let column: any
     let operator: any
     let value: any
@@ -203,11 +203,9 @@ export class SubscriberEmailModel {
       throw new Error('Invalid number of arguments')
     }
 
-    let query = db.selectFrom('subscriber_emails')
+    this.query = this.query.where(column, operator, value)
 
-    query = query.where(column, operator, value)
-
-    return await query.selectAll()
+    return this
   }
 
   static where(...args: (string | number)[]): SubscriberEmailModel {

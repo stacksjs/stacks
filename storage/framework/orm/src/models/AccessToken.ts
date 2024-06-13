@@ -203,7 +203,7 @@ export class AccessTokenModel {
     await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
   }
 
-  async where(...args: (string | number)[]): Promise<AccessTokenType[]> {
+  where(...args: (string | number)[]): AccessTokenModel {
     let column: any
     let operator: any
     let value: any
@@ -217,11 +217,9 @@ export class AccessTokenModel {
       throw new Error('Invalid number of arguments')
     }
 
-    let query = db.selectFrom('personal_access_tokens')
+    this.query = this.query.where(column, operator, value)
 
-    query = query.where(column, operator, value)
-
-    return await query.selectAll()
+    return this
   }
 
   static where(...args: (string | number)[]): AccessTokenModel {
@@ -348,11 +346,11 @@ export class AccessTokenModel {
   async team() {
     if (this.id === undefined) throw new Error('Relation Error!')
 
-    const model = await db.selectFrom('teams').where('accesstoken_id', '=', this.id).selectAll().executeTakeFirst()
+    const model = Team.where('accesstoken_id', '=', this.id).first()
 
     if (!model) throw new Error('Model Relation Not Found!')
 
-    return new Team.modelInstance(model)
+    return model
   }
 
   toJSON() {

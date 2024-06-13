@@ -189,7 +189,7 @@ export class ReleaseModel {
     await db.deleteFrom('releases').where('id', '=', id).execute()
   }
 
-  async where(...args: (string | number)[]): Promise<ReleaseType[]> {
+  where(...args: (string | number)[]): ReleaseModel {
     let column: any
     let operator: any
     let value: any
@@ -203,11 +203,9 @@ export class ReleaseModel {
       throw new Error('Invalid number of arguments')
     }
 
-    let query = db.selectFrom('releases')
+    this.query = this.query.where(column, operator, value)
 
-    query = query.where(column, operator, value)
-
-    return await query.selectAll()
+    return this
   }
 
   static where(...args: (string | number)[]): ReleaseModel {

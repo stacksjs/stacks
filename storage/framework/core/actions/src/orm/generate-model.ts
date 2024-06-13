@@ -669,17 +669,16 @@ async function generateModelString(
           throw new Error('Relation Error!')
 
         const firstModel = await db.selectFrom('${throughTableRelation}')
-        .where('${foreignKeyRelation}', '=', this.id)
-        .selectAll()
-        .executeTakeFirst()
+          .where('${foreignKeyRelation}', '=', this.id)
+          .selectAll()
+          .executeTakeFirst()
 
         if (! firstModel)
           throw new Error('Model Relation Not Found!')
 
-        const finalModel = await db.selectFrom('${tableRelation}')
-        .where('${foreignKeyThroughRelation}', '=', firstModel.id)
-        .selectAll()
-        .executeTakeFirst()
+        const finalModel = ${modelRelation}
+          .where('${foreignKeyThroughRelation}', '=', firstModel.id)
+          .first()
 
         return new ${modelRelation}.modelInstance(finalModel)
       }\n\n`
@@ -709,15 +708,13 @@ async function generateModelString(
         if (this.id === undefined)
           throw new Error('Relation Error!')
 
-        const model = await db.selectFrom('${tableRelation}')
-        .where('${foreignKeyRelation}', '=', this.id)
-        .selectAll()
-        .executeTakeFirst()
+        const model = ${modelRelation}
+        .where('${foreignKeyRelation}', '=', this.id).first()
 
         if (! model)
           throw new Error('Model Relation Not Found!')
 
-        return new ${modelRelation}.modelInstance(model)
+        return model
       }\n\n`
     }
 
@@ -729,15 +726,14 @@ async function generateModelString(
         if (this.${foreignKeyRelation} === undefined)
           throw new Error('Relation Error!')
 
-        const model = await db.selectFrom('${tableRelation}')
-        .where('id', '=', ${foreignKeyRelation})
-        .selectAll()
-        .executeTakeFirst()
+        const model = await ${modelRelation}
+          .where('id', '=', ${foreignKeyRelation})
+          .first()
 
         if (! model)
           throw new Error('Model Relation Not Found!')
 
-        return new ${modelRelation}.modelInstance(model)
+        return model
       }\n\n`
     }
 
@@ -985,7 +981,7 @@ async function generateModelString(
           .execute()
       }
 
-      async where(...args: (string | number)[]): Promise<${modelName}Type[]> {
+      where(...args: (string | number)[]): ${modelName}Model {
         let column: any
         let operator: any
         let value: any
@@ -999,11 +995,9 @@ async function generateModelString(
             throw new Error("Invalid number of arguments")
         }
 
-        let query = db.selectFrom('${tableName}')
+        this.query = this.query.where(column, operator, value)
 
-        query = query.where(column, operator, value)
-
-        return await query.selectAll()
+        return this
       }
 
       static where(...args: (string | number)[]): ${modelName}Model {

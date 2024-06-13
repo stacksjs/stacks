@@ -209,7 +209,7 @@ export class UserModel {
     await db.deleteFrom('users').where('id', '=', id).execute()
   }
 
-  async where(...args: (string | number)[]): Promise<UserType[]> {
+  where(...args: (string | number)[]): UserModel {
     let column: any
     let operator: any
     let value: any
@@ -223,11 +223,9 @@ export class UserModel {
       throw new Error('Invalid number of arguments')
     }
 
-    let query = db.selectFrom('users')
+    this.query = this.query.where(column, operator, value)
 
-    query = query.where(column, operator, value)
-
-    return await query.selectAll()
+    return this
   }
 
   static where(...args: (string | number)[]): UserModel {
@@ -350,21 +348,21 @@ export class UserModel {
   async post() {
     if (this.id === undefined) throw new Error('Relation Error!')
 
-    const model = await db.selectFrom('posts').where('user_id', '=', this.id).selectAll().executeTakeFirst()
+    const model = Post.where('user_id', '=', this.id).first()
 
     if (!model) throw new Error('Model Relation Not Found!')
 
-    return new Post.modelInstance(model)
+    return model
   }
 
   async subscriber() {
     if (this.id === undefined) throw new Error('Relation Error!')
 
-    const model = await db.selectFrom('subscribers').where('user_id', '=', this.id).selectAll().executeTakeFirst()
+    const model = Subscriber.where('user_id', '=', this.id).first()
 
     if (!model) throw new Error('Model Relation Not Found!')
 
-    return new Subscriber.modelInstance(model)
+    return model
   }
 
   async deployments() {

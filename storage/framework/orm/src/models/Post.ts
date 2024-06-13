@@ -196,7 +196,7 @@ export class PostModel {
     await db.deleteFrom('posts').where('id', '=', id).execute()
   }
 
-  async where(...args: (string | number)[]): Promise<PostType[]> {
+  where(...args: (string | number)[]): PostModel {
     let column: any
     let operator: any
     let value: any
@@ -210,11 +210,9 @@ export class PostModel {
       throw new Error('Invalid number of arguments')
     }
 
-    let query = db.selectFrom('posts')
+    this.query = this.query.where(column, operator, value)
 
-    query = query.where(column, operator, value)
-
-    return await query.selectAll()
+    return this
   }
 
   static where(...args: (string | number)[]): PostModel {
@@ -337,11 +335,11 @@ export class PostModel {
   async user() {
     if (this.post_id === undefined) throw new Error('Relation Error!')
 
-    const model = await db.selectFrom('users').where('id', '=', post_id).selectAll().executeTakeFirst()
+    const model = await User.where('id', '=', post_id).first()
 
     if (!model) throw new Error('Model Relation Not Found!')
 
-    return new User.modelInstance(model)
+    return model
   }
 
   toJSON() {
