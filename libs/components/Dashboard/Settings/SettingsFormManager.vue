@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AIForm from './Forms/AIForm.vue'
+import AnalyticsForm from './Forms/AnalyticsForm.vue'
 
 const props = defineProps({
   name: String,
@@ -113,7 +114,7 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
           <AIForm />
         </template>
         <template v-else-if="name === 'analytics'">
-          TODO Analytics
+          <AnalyticsForm />
         </template>
         <template v-else>
           <div class="text-center">
@@ -127,7 +128,6 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
           </div>
         </template>
       </div>
-
     </div>
   </main>
 </template>
