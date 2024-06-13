@@ -2,6 +2,7 @@
 import AIForm from './Forms/AIForm.vue'
 import AnalyticsForm from './Forms/AnalyticsForm.vue'
 import AppForm from './Forms/AppForm.vue'
+import CacheForm from './Forms/CacheForm.vue'
 
 const props = defineProps({
   name: String,
@@ -111,15 +112,10 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
       </p>
 
       <div class="mt-10">
-        <template v-if="name === 'ai'">
-          <AIForm />
-        </template>
-        <template v-else-if="name === 'analytics'">
-          <AnalyticsForm />
-        </template>
-        <template v-else-if="name === 'app'">
-          <AppForm />
-        </template>
+        <template v-if="name === 'ai'"><AIForm /></template>
+        <template v-else-if="name === 'analytics'"><AnalyticsForm /></template>
+        <template v-else-if="name === 'app'"><AppForm /></template>
+        <template v-else-if="name === 'cache'"><CacheForm /></template>
         <template v-else>
           <div class="text-center">
             <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
