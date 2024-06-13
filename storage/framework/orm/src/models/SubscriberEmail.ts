@@ -250,7 +250,7 @@ export class SubscriberEmailModel {
     return await db.selectFrom('subscriber_emails').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<SubscriberEmailType | un> {
+  async last(): Promise<SubscriberEmailType | undefined> {
     return await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

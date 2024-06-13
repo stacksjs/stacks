@@ -267,7 +267,7 @@ export class UserModel {
     return await db.selectFrom('users').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<UserType | un> {
+  async last(): Promise<UserType | undefined> {
     return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

@@ -272,7 +272,7 @@ export class TeamModel {
     return await db.selectFrom('teams').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<TeamType | un> {
+  async last(): Promise<TeamType | undefined> {
     return await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

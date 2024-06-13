@@ -256,7 +256,7 @@ export class ProjectModel {
     return await db.selectFrom('projects').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<ProjectType | un> {
+  async last(): Promise<ProjectType | undefined> {
     return await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

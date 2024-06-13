@@ -1041,7 +1041,7 @@ async function generateModelString(
           .executeTakeFirst()
       }
 
-      async last(): Promise<${modelName}Type | un> {
+      async last(): Promise<${modelName}Type | undefined> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy('id', 'desc')

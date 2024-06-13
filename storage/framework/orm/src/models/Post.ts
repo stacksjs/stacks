@@ -254,7 +254,7 @@ export class PostModel {
     return await db.selectFrom('posts').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<PostType | un> {
+  async last(): Promise<PostType | undefined> {
     return await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

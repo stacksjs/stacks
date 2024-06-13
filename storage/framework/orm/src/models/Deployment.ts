@@ -269,7 +269,7 @@ export class DeploymentModel {
     return await db.selectFrom('deployments').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<DeploymentType | un> {
+  async last(): Promise<DeploymentType | undefined> {
     return await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

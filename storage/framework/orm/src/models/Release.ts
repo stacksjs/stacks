@@ -247,7 +247,7 @@ export class ReleaseModel {
     return await db.selectFrom('releases').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<ReleaseType | un> {
+  async last(): Promise<ReleaseType | undefined> {
     return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 

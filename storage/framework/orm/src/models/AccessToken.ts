@@ -261,7 +261,7 @@ export class AccessTokenModel {
     return await db.selectFrom('personal_access_tokens').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<AccessTokenType | un> {
+  async last(): Promise<AccessTokenType | undefined> {
     return await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
