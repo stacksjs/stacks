@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, pascalCase } from '@stacksjs/strings'
+import { camelCase, pascalCase, plural } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
@@ -739,7 +739,7 @@ async function generateModelString(
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const pivotTable = pivotTableRelation || tableRelation
-      const relationName = relation.relationName || formattedModelName + capitalizeTableRelation
+      const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
 
       relationMethods += `
       async ${relationName}() {
@@ -902,7 +902,7 @@ async function generateModelString(
       }
 
       // Method to get a ${modelName} by criteria
-      static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<${modelName}Model[]> {
+      static async fetch(criteria: Partial<${modelName}Type>, options: QueryOptions = {}): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}')
 
         // Apply sorting from options
@@ -966,7 +966,7 @@ async function generateModelString(
       }
 
       // Method to create a new ${formattedModelName}
-      static async create(newAccessToken: NewAccessToken): Promise<${modelName}Model> {
+      static async create(${tableName}: New${modelName}): Promise<${modelName}Model> {
         const result = await db.insertInto('${tableName}')
           .values(new${modelName})
           .executeTakeFirstOrThrow()
@@ -1035,13 +1035,13 @@ async function generateModelString(
         return new ${modelName}Model(model)
       }
   
-      static async first(): Promise<AccessTokenType | undefined> {
+      static async first(): Promise<${modelName}Type | undefined> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last(): Promise<${modelName}Type> {
+      async last(): Promise<${modelName}Type | un> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy('id', 'desc')
@@ -1090,10 +1090,10 @@ async function generateModelString(
         return this
       }
 
-      // Method to update the accesstoken instance
+      // Method to update the ${tableName} instance
       async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | null> {
         if (this.id === undefined)
-          throw new Error('AccessToken ID is undefined')
+          throw new Error('${modelName} ID is undefined')
   
         const updatedModel = await db.updateTable('${tableName}')
           .set(${formattedModelName})

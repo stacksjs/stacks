@@ -123,7 +123,7 @@ export class PostModel {
   }
 
   // Method to get a Post by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<PostModel[]> {
+  static async fetch(criteria: Partial<PostType>, options: QueryOptions = {}): Promise<PostModel[]> {
     let query = db.selectFrom('posts')
 
     // Apply sorting from options
@@ -185,7 +185,7 @@ export class PostModel {
   }
 
   // Method to create a new post
-  static async create(newAccessToken: NewAccessToken): Promise<PostModel> {
+  static async create(posts: NewPost): Promise<PostModel> {
     const result = await db.insertInto('posts').values(newPost).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as PostModel
@@ -250,11 +250,11 @@ export class PostModel {
     return new PostModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<PostType | undefined> {
     return await db.selectFrom('posts').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<PostType> {
+  async last(): Promise<PostType | un> {
     return await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -300,9 +300,9 @@ export class PostModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the posts instance
   async update(post: PostUpdate): Promise<PostModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('Post ID is undefined')
 
     const updatedModel = await db.updateTable('posts').set(post).where('id', '=', this.id).executeTakeFirst()
 

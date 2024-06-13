@@ -116,7 +116,7 @@ export class ReleaseModel {
   }
 
   // Method to get a Release by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<ReleaseModel[]> {
+  static async fetch(criteria: Partial<ReleaseType>, options: QueryOptions = {}): Promise<ReleaseModel[]> {
     let query = db.selectFrom('releases')
 
     // Apply sorting from options
@@ -178,7 +178,7 @@ export class ReleaseModel {
   }
 
   // Method to create a new release
-  static async create(newAccessToken: NewAccessToken): Promise<ReleaseModel> {
+  static async create(releases: NewRelease): Promise<ReleaseModel> {
     const result = await db.insertInto('releases').values(newRelease).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as ReleaseModel
@@ -243,11 +243,11 @@ export class ReleaseModel {
     return new ReleaseModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<ReleaseType | undefined> {
     return await db.selectFrom('releases').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<ReleaseType> {
+  async last(): Promise<ReleaseType | un> {
     return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -293,9 +293,9 @@ export class ReleaseModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the releases instance
   async update(release: ReleaseUpdate): Promise<ReleaseModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('Release ID is undefined')
 
     const updatedModel = await db.updateTable('releases').set(release).where('id', '=', this.id).executeTakeFirst()
 

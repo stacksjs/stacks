@@ -141,7 +141,7 @@ export class TeamModel {
   }
 
   // Method to get a Team by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<TeamModel[]> {
+  static async fetch(criteria: Partial<TeamType>, options: QueryOptions = {}): Promise<TeamModel[]> {
     let query = db.selectFrom('teams')
 
     // Apply sorting from options
@@ -203,7 +203,7 @@ export class TeamModel {
   }
 
   // Method to create a new team
-  static async create(newAccessToken: NewAccessToken): Promise<TeamModel> {
+  static async create(teams: NewTeam): Promise<TeamModel> {
     const result = await db.insertInto('teams').values(newTeam).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as TeamModel
@@ -268,11 +268,11 @@ export class TeamModel {
     return new TeamModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<TeamType | undefined> {
     return await db.selectFrom('teams').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<TeamType> {
+  async last(): Promise<TeamType | un> {
     return await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -318,9 +318,9 @@ export class TeamModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the teams instance
   async update(team: TeamUpdate): Promise<TeamModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('Team ID is undefined')
 
     const updatedModel = await db.updateTable('teams').set(team).where('id', '=', this.id).executeTakeFirst()
 
@@ -350,7 +350,7 @@ export class TeamModel {
     await db.deleteFrom('teams').where('id', '=', this.id).execute()
   }
 
-  async teamPersonal_access_tokens() {
+  async teamAccessTokens() {
     if (this.id === undefined) throw new Error('Relation Error!')
 
     const results = await db

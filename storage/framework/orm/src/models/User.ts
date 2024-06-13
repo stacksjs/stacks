@@ -136,7 +136,7 @@ export class UserModel {
   }
 
   // Method to get a User by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<UserModel[]> {
+  static async fetch(criteria: Partial<UserType>, options: QueryOptions = {}): Promise<UserModel[]> {
     let query = db.selectFrom('users')
 
     // Apply sorting from options
@@ -198,7 +198,7 @@ export class UserModel {
   }
 
   // Method to create a new user
-  static async create(newAccessToken: NewAccessToken): Promise<UserModel> {
+  static async create(users: NewUser): Promise<UserModel> {
     const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as UserModel
@@ -263,11 +263,11 @@ export class UserModel {
     return new UserModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<UserType | undefined> {
     return await db.selectFrom('users').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<UserType> {
+  async last(): Promise<UserType | un> {
     return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -313,9 +313,9 @@ export class UserModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the users instance
   async update(user: UserUpdate): Promise<UserModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('User ID is undefined')
 
     const updatedModel = await db.updateTable('users').set(user).where('id', '=', this.id).executeTakeFirst()
 

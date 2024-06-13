@@ -125,7 +125,7 @@ export class ProjectModel {
   }
 
   // Method to get a Project by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<ProjectModel[]> {
+  static async fetch(criteria: Partial<ProjectType>, options: QueryOptions = {}): Promise<ProjectModel[]> {
     let query = db.selectFrom('projects')
 
     // Apply sorting from options
@@ -187,7 +187,7 @@ export class ProjectModel {
   }
 
   // Method to create a new project
-  static async create(newAccessToken: NewAccessToken): Promise<ProjectModel> {
+  static async create(projects: NewProject): Promise<ProjectModel> {
     const result = await db.insertInto('projects').values(newProject).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as ProjectModel
@@ -252,11 +252,11 @@ export class ProjectModel {
     return new ProjectModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<ProjectType | undefined> {
     return await db.selectFrom('projects').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<ProjectType> {
+  async last(): Promise<ProjectType | un> {
     return await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -302,9 +302,9 @@ export class ProjectModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the projects instance
   async update(project: ProjectUpdate): Promise<ProjectModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('Project ID is undefined')
 
     const updatedModel = await db.updateTable('projects').set(project).where('id', '=', this.id).executeTakeFirst()
 

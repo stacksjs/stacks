@@ -116,7 +116,10 @@ export class SubscriberEmailModel {
   }
 
   // Method to get a SubscriberEmail by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<SubscriberEmailModel[]> {
+  static async fetch(
+    criteria: Partial<SubscriberEmailType>,
+    options: QueryOptions = {},
+  ): Promise<SubscriberEmailModel[]> {
     let query = db.selectFrom('subscriber_emails')
 
     // Apply sorting from options
@@ -178,7 +181,7 @@ export class SubscriberEmailModel {
   }
 
   // Method to create a new subscriberemail
-  static async create(newAccessToken: NewAccessToken): Promise<SubscriberEmailModel> {
+  static async create(subscriber_emails: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as SubscriberEmailModel
@@ -243,11 +246,11 @@ export class SubscriberEmailModel {
     return new SubscriberEmailModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<SubscriberEmailType | undefined> {
     return await db.selectFrom('subscriber_emails').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<SubscriberEmailType> {
+  async last(): Promise<SubscriberEmailType | un> {
     return await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -293,9 +296,9 @@ export class SubscriberEmailModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the subscriber_emails instance
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
     const updatedModel = await db
       .updateTable('subscriber_emails')

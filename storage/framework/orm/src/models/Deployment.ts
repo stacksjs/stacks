@@ -138,7 +138,7 @@ export class DeploymentModel {
   }
 
   // Method to get a Deployment by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<DeploymentModel[]> {
+  static async fetch(criteria: Partial<DeploymentType>, options: QueryOptions = {}): Promise<DeploymentModel[]> {
     let query = db.selectFrom('deployments')
 
     // Apply sorting from options
@@ -200,7 +200,7 @@ export class DeploymentModel {
   }
 
   // Method to create a new deployment
-  static async create(newAccessToken: NewAccessToken): Promise<DeploymentModel> {
+  static async create(deployments: NewDeployment): Promise<DeploymentModel> {
     const result = await db.insertInto('deployments').values(newDeployment).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as DeploymentModel
@@ -265,11 +265,11 @@ export class DeploymentModel {
     return new DeploymentModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<DeploymentType | undefined> {
     return await db.selectFrom('deployments').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<DeploymentType> {
+  async last(): Promise<DeploymentType | un> {
     return await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -315,9 +315,9 @@ export class DeploymentModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the deployments instance
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('Deployment ID is undefined')
 
     const updatedModel = await db
       .updateTable('deployments')

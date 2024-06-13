@@ -119,7 +119,7 @@ export class SubscriberModel {
   }
 
   // Method to get a Subscriber by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<SubscriberModel[]> {
+  static async fetch(criteria: Partial<SubscriberType>, options: QueryOptions = {}): Promise<SubscriberModel[]> {
     let query = db.selectFrom('subscribers')
 
     // Apply sorting from options
@@ -181,7 +181,7 @@ export class SubscriberModel {
   }
 
   // Method to create a new subscriber
-  static async create(newAccessToken: NewAccessToken): Promise<SubscriberModel> {
+  static async create(subscribers: NewSubscriber): Promise<SubscriberModel> {
     const result = await db.insertInto('subscribers').values(newSubscriber).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as SubscriberModel
@@ -246,11 +246,11 @@ export class SubscriberModel {
     return new SubscriberModel(model)
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<SubscriberType | undefined> {
     return await db.selectFrom('subscribers').selectAll().executeTakeFirst()
   }
 
-  async last(): Promise<SubscriberType> {
+  async last(): Promise<SubscriberType | un> {
     return await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
@@ -296,9 +296,9 @@ export class SubscriberModel {
     return this
   }
 
-  // Method to update the accesstoken instance
+  // Method to update the subscribers instance
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined) throw new Error('Subscriber ID is undefined')
 
     const updatedModel = await db
       .updateTable('subscribers')
