@@ -44,6 +44,7 @@ interface SortOptions {
   column: AccessTokenType
   order: SortDirection
 }
+
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions

@@ -19,13 +19,13 @@ export default new Middleware({
 
     const team = await Team.find(Number(teamToken))
 
-    if (!team) {
+    if (! team) {
       throw { message: 'Invalid bearer token', status: 401 }
     }
 
     const teamBearerToken = await AccessToken.where('token', plainString).first()
 
-    if (!teamBearerToken) {
+    if (! teamBearerToken) {
       throw { message: 'Invalid bearer token', status: 401 }
     }
   },
