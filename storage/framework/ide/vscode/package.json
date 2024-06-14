@@ -28,7 +28,7 @@
   "icon": "logo.png",
   "files": ["logo.png", "LICENSE.md"],
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.90.1"
   },
   "scripts": {
     "package": "npx vsce package",
