@@ -1,6 +1,4 @@
 import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import AccessToken from './AccessToken'
 
@@ -61,6 +59,7 @@ export class TeamModel {
   private results: Partial<TeamType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
+  protected hasSelect: boolean
   public id: number | undefined
   public name: string | undefined
   public companyName: string | undefined
@@ -86,6 +85,7 @@ export class TeamModel {
     this.accesstoken_id = team?.accesstoken_id
 
     this.query = db.selectFrom('teams')
+    this.hasSelect = false
   }
 
   // Method to find a Team by ID
@@ -167,7 +167,15 @@ export class TeamModel {
 
   // Method to get a Team by criteria
   async get(): Promise<TeamModel[]> {
-    return await this.query.selectAll().execute()
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
   }
 
   // Method to get all teams
@@ -279,13 +287,13 @@ export class TeamModel {
   static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, order)
+    instance.query = instance.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
-    this.query.orderBy(column, order)
+    this.query = this.query.orderBy(column, order)
 
     return this
   }
@@ -293,13 +301,13 @@ export class TeamModel {
   static orderByDesc(column: keyof TeamType): TeamModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof TeamType): TeamModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -307,13 +315,13 @@ export class TeamModel {
   static orderByAsc(column: keyof TeamType): TeamModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof TeamType): TeamModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.query.orderBy(column, 'desc')
 
     return this
   }
@@ -360,6 +368,34 @@ export class TeamModel {
       .execute()
 
     return results
+  }
+
+  distinct(column: keyof TeamType): TeamModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof TeamType): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): TeamModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   toJSON() {

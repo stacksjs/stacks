@@ -1,6 +1,4 @@
 import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -52,6 +50,7 @@ export class ReleaseModel {
   private results: Partial<ReleaseType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
+  protected hasSelect: boolean
   public id: number | undefined
   public version: string | undefined
 
@@ -61,6 +60,7 @@ export class ReleaseModel {
     this.version = release?.version
 
     this.query = db.selectFrom('releases')
+    this.hasSelect = false
   }
 
   // Method to find a Release by ID
@@ -142,7 +142,15 @@ export class ReleaseModel {
 
   // Method to get a Release by criteria
   async get(): Promise<ReleaseModel[]> {
-    return await this.query.selectAll().execute()
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
 
   // Method to get all releases
@@ -254,13 +262,13 @@ export class ReleaseModel {
   static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, order)
+    instance.query = instance.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
-    this.query.orderBy(column, order)
+    this.query = this.query.orderBy(column, order)
 
     return this
   }
@@ -268,13 +276,13 @@ export class ReleaseModel {
   static orderByDesc(column: keyof ReleaseType): ReleaseModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof ReleaseType): ReleaseModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -282,13 +290,13 @@ export class ReleaseModel {
   static orderByAsc(column: keyof ReleaseType): ReleaseModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof ReleaseType): ReleaseModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.query.orderBy(column, 'desc')
 
     return this
   }
@@ -323,6 +331,34 @@ export class ReleaseModel {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
     await db.deleteFrom('releases').where('id', '=', this.id).execute()
+  }
+
+  distinct(column: keyof ReleaseType): ReleaseModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof ReleaseType): ReleaseModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): ReleaseModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): ReleaseModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   toJSON() {

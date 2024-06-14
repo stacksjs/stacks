@@ -1,6 +1,4 @@
 import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -52,6 +50,7 @@ export class SubscriberEmailModel {
   private results: Partial<SubscriberEmailType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
+  protected hasSelect: boolean
   public id: number | undefined
   public email: string | undefined
 
@@ -61,6 +60,7 @@ export class SubscriberEmailModel {
     this.email = subscriberemail?.email
 
     this.query = db.selectFrom('subscriber_emails')
+    this.hasSelect = false
   }
 
   // Method to find a SubscriberEmail by ID
@@ -145,7 +145,15 @@ export class SubscriberEmailModel {
 
   // Method to get a SubscriberEmail by criteria
   async get(): Promise<SubscriberEmailModel[]> {
-    return await this.query.selectAll().execute()
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
 
   // Method to get all subscriber_emails
@@ -257,13 +265,13 @@ export class SubscriberEmailModel {
   static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, order)
+    instance.query = instance.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-    this.query.orderBy(column, order)
+    this.query = this.query.orderBy(column, order)
 
     return this
   }
@@ -271,13 +279,13 @@ export class SubscriberEmailModel {
   static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -285,13 +293,13 @@ export class SubscriberEmailModel {
   static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.query.orderBy(column, 'desc')
 
     return this
   }
@@ -330,6 +338,34 @@ export class SubscriberEmailModel {
     if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
     await db.deleteFrom('subscriber_emails').where('id', '=', this.id).execute()
+  }
+
+  distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   toJSON() {

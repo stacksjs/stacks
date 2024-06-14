@@ -1,6 +1,4 @@
 import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import User from './User'
 
@@ -55,6 +53,7 @@ export class PostModel {
   private results: Partial<PostType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
+  protected hasSelect: boolean
   public id: number | undefined
   public title: string | undefined
   public body: string | undefined
@@ -68,6 +67,7 @@ export class PostModel {
     this.user_id = post?.user_id
 
     this.query = db.selectFrom('posts')
+    this.hasSelect = false
   }
 
   // Method to find a Post by ID
@@ -149,7 +149,15 @@ export class PostModel {
 
   // Method to get a Post by criteria
   async get(): Promise<PostModel[]> {
-    return await this.query.selectAll().execute()
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: PostModel) => new PostModel(modelItem))
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: PostModel) => new PostModel(modelItem))
   }
 
   // Method to get all posts
@@ -261,13 +269,13 @@ export class PostModel {
   static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, order)
+    instance.query = instance.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    this.query.orderBy(column, order)
+    this.query = this.query.orderBy(column, order)
 
     return this
   }
@@ -275,13 +283,13 @@ export class PostModel {
   static orderByDesc(column: keyof PostType): PostModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof PostType): PostModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -289,13 +297,13 @@ export class PostModel {
   static orderByAsc(column: keyof PostType): PostModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof PostType): PostModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.query.orderBy(column, 'desc')
 
     return this
   }
@@ -340,6 +348,34 @@ export class PostModel {
     if (!model) throw new Error('Model Relation Not Found!')
 
     return model
+  }
+
+  distinct(column: keyof PostType): PostModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof PostType): PostModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): PostModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): PostModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   toJSON() {

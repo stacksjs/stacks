@@ -1,6 +1,4 @@
 import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import Team from './Team'
 
@@ -57,6 +55,7 @@ export class AccessTokenModel {
   private results: Partial<AccessTokenType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
+  protected hasSelect: boolean
   public id: number | undefined
   public name: string | undefined
   public token: string | undefined
@@ -74,6 +73,7 @@ export class AccessTokenModel {
     this.team_id = accesstoken?.team_id
 
     this.query = db.selectFrom('personal_access_tokens')
+    this.hasSelect = false
   }
 
   // Method to find a AccessToken by ID
@@ -155,7 +155,15 @@ export class AccessTokenModel {
 
   // Method to get a AccessToken by criteria
   async get(): Promise<AccessTokenModel[]> {
-    return await this.query.selectAll().execute()
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
   }
 
   // Method to get all personal_access_tokens
@@ -268,13 +276,13 @@ export class AccessTokenModel {
   static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, order)
+    instance.query = instance.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
-    this.query.orderBy(column, order)
+    this.query = this.query.orderBy(column, order)
 
     return this
   }
@@ -282,13 +290,13 @@ export class AccessTokenModel {
   static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -296,13 +304,13 @@ export class AccessTokenModel {
   static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.query.orderBy(column, 'desc')
 
     return this
   }
@@ -351,6 +359,34 @@ export class AccessTokenModel {
     if (!model) throw new Error('Model Relation Not Found!')
 
     return model
+  }
+
+  distinct(column: keyof AccessTokenType): AccessTokenModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof AccessTokenType): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   toJSON() {

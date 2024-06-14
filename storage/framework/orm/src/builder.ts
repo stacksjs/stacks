@@ -81,7 +81,6 @@ export class AccessTokenModel {
     this.results = null
     this.hasSelect = false
   }
-  
 
   // Method to find a accesstoken by ID
   static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
@@ -100,11 +99,11 @@ export class AccessTokenModel {
   // Method to find a accesstoken by ID
   static select(columns: string[]): AccessTokenModel {
     const instance = new this(null)
-    
+
     instance.query = instance.query.select(columns)
 
     instance.hasSelect = true
-    
+
     return instance
   }
 
@@ -182,9 +181,6 @@ export class AccessTokenModel {
 
   // Method to get a accesstoken by criteria
   async get(): Promise<AccessTokenModel[]> {
-
-    console.log(this.query)
-
     if (this.hasSelect) {
       const model = await this.query.execute()
 
@@ -251,10 +247,10 @@ export class AccessTokenModel {
     const instance = new this(null)
 
     if (args.length === 2) {
-      [column, value] = args
+      ;[column, value] = args
       operator = '='
     } else if (args.length === 3) {
-      [column, operator, value] = args
+      ;[column, operator, value] = args
     } else {
       throw new Error('Invalid number of arguments')
     }
@@ -303,13 +299,13 @@ export class AccessTokenModel {
   static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -317,13 +313,13 @@ export class AccessTokenModel {
   static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -360,9 +356,32 @@ export class AccessTokenModel {
     await db.deleteFrom('personal_access_tokens').where('id', '=', this.id).execute()
   }
 
-  // Method to delete the accesstoken instance
-  async distinct(column: keyof AccessTokenType): Promise<void> {
-    return this.query.distinctOn(column)
+  distinct(column: keyof AccessTokenType): AccessTokenModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof AccessTokenType): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   //   // Method to refresh the accesstoken instance data from the database
@@ -394,6 +413,6 @@ export class AccessTokenModel {
   }
 }
 
-const result = await AccessTokenModel.select(['name', 'token']).get()
+const result = await AccessTokenModel.orderByDesc('id').get()
 
 console.log(result)

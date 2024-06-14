@@ -1,6 +1,4 @@
 import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import Post from './Post'
 
@@ -62,6 +60,7 @@ export class UserModel {
   private results: Partial<UserType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
+  protected hasSelect: boolean
   public id: number | undefined
   public name: string | undefined
   public email: string | undefined
@@ -81,6 +80,7 @@ export class UserModel {
     this.post_id = user?.post_id
 
     this.query = db.selectFrom('users')
+    this.hasSelect = false
   }
 
   // Method to find a User by ID
@@ -162,7 +162,15 @@ export class UserModel {
 
   // Method to get a User by criteria
   async get(): Promise<UserModel[]> {
-    return await this.query.selectAll().execute()
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: UserModel) => new UserModel(modelItem))
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
 
   // Method to get all users
@@ -274,13 +282,13 @@ export class UserModel {
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, order)
+    instance.query = instance.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
-    this.query.orderBy(column, order)
+    this.query = this.query.orderBy(column, order)
 
     return this
   }
@@ -288,13 +296,13 @@ export class UserModel {
   static orderByDesc(column: keyof UserType): UserModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof UserType): UserModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.orderBy(column, 'desc')
 
     return this
   }
@@ -302,13 +310,13 @@ export class UserModel {
   static orderByAsc(column: keyof UserType): UserModel {
     const instance = new this(null)
 
-    instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByAsc(column: keyof UserType): UserModel {
-    this.query.orderBy(column, 'desc')
+    this.query = this.query.orderBy(column, 'desc')
 
     return this
   }
@@ -371,6 +379,34 @@ export class UserModel {
     const results = await db.selectFrom('deployments').where('user_id', '=', this.id).selectAll().execute()
 
     return results
+  }
+
+  distinct(column: keyof UserType): UserModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof UserType): UserModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): UserModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): UserModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
   }
 
   toJSON() {

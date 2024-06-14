@@ -781,8 +781,6 @@ async function generateModelString(
   }
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import type { Result } from '@stacksjs/error-handling'
-    import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
     ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -830,12 +828,14 @@ async function generateModelString(
       private results: Partial<${modelName}Type>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
       protected query: any
+      protected hasSelect: boolean
       ${declareFields}
       constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
         this.${formattedModelName} = ${formattedModelName}
         ${constructorFields}
 
         this.query = db.selectFrom('${tableName}')
+        this.hasSelect = false
       }
 
       // Method to find a ${modelName} by ID
@@ -931,7 +931,15 @@ async function generateModelString(
 
       // Method to get a ${modelName} by criteria
       async get(): Promise<${modelName}Model[]> {
-        return await this.query.selectAll().execute()
+        if (this.hasSelect) {
+          const model = await this.query.execute()
+    
+          return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+        }
+    
+        const model = await this.query.selectAll().execute()
+    
+        return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
 
       // Method to get all ${tableName}
@@ -1051,13 +1059,13 @@ async function generateModelString(
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
         const instance = new this(null);
   
-        instance.query.orderBy(column, order)
+        instance.query = instance.orderBy(column, order)
   
         return instance
       }
   
       orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
-        this.query.orderBy(column, order)
+        this.query = this.query.orderBy(column, order)
   
         return this
       }
@@ -1065,13 +1073,13 @@ async function generateModelString(
       static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new this(null);
   
-        instance.query.orderBy(column, 'desc')
+        instance.query = instance.query.orderBy(column, 'desc')
   
         return instance
       }
   
       orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
-        this.query.orderBy(column, 'desc')
+        this.query = this.orderBy(column, 'desc')
   
         return this
       }
@@ -1079,13 +1087,13 @@ async function generateModelString(
       static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new this(null);
 
-        instance.query.orderBy(column, 'desc')
+        instance.query = instance.query.orderBy(column, 'desc')
 
         return instance
       }
 
       orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
-        this.query.orderBy(column, 'desc')
+        this.query = this.query.orderBy(column, 'desc')
 
         return this
       }
@@ -1131,6 +1139,34 @@ async function generateModelString(
       }
 
       ${relationMethods}
+
+      distinct(column: keyof ${modelName}Type): ${modelName}Model {
+        this.query = this.query.distinctOn(column)
+    
+        return this
+      }
+    
+      static distinct(column: keyof ${modelName}Type): ${modelName}Model {
+        const instance = new this(null)
+    
+        instance.query = instance.query.distinctOn(column)
+    
+        return instance
+      }
+    
+      join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
+        this.query = this.query.innerJoin(table, firstCol, secondCol)
+    
+        return this
+      }
+    
+      static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
+        const instance = new this(null)
+    
+        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    
+        return instance
+      }
 
       toJSON() {
         const output: Partial<${modelName}Type> = { ...this.${formattedModelName} }
