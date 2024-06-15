@@ -45,13 +45,13 @@
   "peerDependencies": {
     "@biomejs/biome": "^1.8.1",
     "@commitlint/cli": "^19.3.0",
-    "lint-staged": "^15.2.6",
+    "lint-staged": "^15.2.7",
     "publint": "^0.2.8"
   },
   "dependencies": {
     "@biomejs/biome": "^1.8.1",
     "@commitlint/cli": "^19.3.0",
-    "lint-staged": "^15.2.6",
+    "lint-staged": "^15.2.7",
     "publint": "^0.2.8"
   },
   "devDependencies": {
