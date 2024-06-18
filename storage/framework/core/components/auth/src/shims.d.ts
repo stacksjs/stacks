@@ -1,6 +1,4 @@
-declare interface Window {
-  // extend the window
-}
+declare type Window = {}
 
 // with unplugin-vue-markdown, markdown files can be treated as Vue components
 declare module '*.md' {

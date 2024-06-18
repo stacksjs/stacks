@@ -173,6 +173,26 @@ export class UserModel {
     return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
 
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
   // Method to get all users
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
     const totalRecordsResult = await db
@@ -465,6 +485,12 @@ async function find(id: number, fields?: (keyof UserType)[]): Promise<UserModel 
   if (!model) return null
 
   return new UserModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await UserModel.count()
+
+  return results
 }
 
 export async function whereName(value: any): Promise<UserModel[]> {

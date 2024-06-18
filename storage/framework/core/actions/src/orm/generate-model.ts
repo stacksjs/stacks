@@ -960,6 +960,26 @@ async function generateModelString(
         return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
 
+      static async count(): Promise<number> {
+        const instance = new this(null)
+
+        const results = await instance.query.selectAll().execute()
+
+        return results.length
+      }
+
+      async count(): Promise<number> {
+        if (this.hasSelect) {
+          const results = await this.query.execute()
+
+          return results.length
+        }
+
+        const results = await this.query.selectAll().execute()
+
+        return results.length
+      }
+
       // Method to get all ${tableName}
       static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
         const totalRecordsResult = await db.selectFrom('${tableName}')
@@ -1213,6 +1233,12 @@ async function generateModelString(
       if (!model) return null
 
       return new ${modelName}Model(model)
+    }
+
+    export async function count(): Promise<number> {
+      const results = await ${modelName}Model.count()
+
+      return results
     }
 
     ${whereFunctionStatements}

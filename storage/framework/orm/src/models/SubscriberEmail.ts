@@ -156,6 +156,26 @@ export class SubscriberEmailModel {
     return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
 
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
   // Method to get all subscriber_emails
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
     const totalRecordsResult = await db
@@ -396,6 +416,12 @@ async function find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise
   if (!model) return null
 
   return new SubscriberEmailModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await SubscriberEmailModel.count()
+
+  return results
 }
 
 export async function whereEmail(value: any): Promise<SubscriberEmailModel[]> {

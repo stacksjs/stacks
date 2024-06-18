@@ -175,6 +175,26 @@ export class DeploymentModel {
     return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
   }
 
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
   // Method to get all deployments
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
     const totalRecordsResult = await db
@@ -473,6 +493,12 @@ async function find(id: number, fields?: (keyof DeploymentType)[]): Promise<Depl
   if (!model) return null
 
   return new DeploymentModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await DeploymentModel.count()
+
+  return results
 }
 
 export async function whereCommitSha(value: any): Promise<DeploymentModel[]> {

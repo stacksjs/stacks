@@ -160,6 +160,26 @@ export class PostModel {
     return model.map((modelItem: PostModel) => new PostModel(modelItem))
   }
 
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
   // Method to get all posts
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
     const totalRecordsResult = await db
@@ -418,6 +438,12 @@ async function find(id: number, fields?: (keyof PostType)[]): Promise<PostModel 
   if (!model) return null
 
   return new PostModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await PostModel.count()
+
+  return results
 }
 
 export async function whereTitle(value: any): Promise<PostModel[]> {

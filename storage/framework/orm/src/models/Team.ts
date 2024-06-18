@@ -178,6 +178,26 @@ export class TeamModel {
     return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
   }
 
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
   // Method to get all teams
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TeamResponse> {
     const totalRecordsResult = await db
@@ -486,6 +506,12 @@ async function find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel 
   if (!model) return null
 
   return new TeamModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await TeamModel.count()
+
+  return results
 }
 
 export async function whereName(value: any): Promise<TeamModel[]> {

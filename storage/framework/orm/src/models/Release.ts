@@ -153,6 +153,26 @@ export class ReleaseModel {
     return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
 
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
   // Method to get all releases
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
     const totalRecordsResult = await db
@@ -393,6 +413,12 @@ async function find(id: number, fields?: (keyof ReleaseType)[]): Promise<Release
   if (!model) return null
 
   return new ReleaseModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await ReleaseModel.count()
+
+  return results
 }
 
 export async function whereVersion(value: any): Promise<ReleaseModel[]> {
