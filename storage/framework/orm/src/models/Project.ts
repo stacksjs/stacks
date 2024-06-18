@@ -225,6 +225,27 @@ export class ProjectModel {
     return this
   }
 
+  static where(...args: (string | number)[]): ProjectModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
+    }
+
+    instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
   static whereName(value: string | number | boolean): ProjectModel {
     const instance = new this(null)
 
@@ -253,27 +274,6 @@ export class ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('status', '=', value)
-
-    return instance
-  }
-
-  static where(...args: (string | number)[]): ProjectModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new this(null)
-
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
-
-    instance.query = instance.query.where(column, operator, value)
 
     return instance
   }
@@ -346,7 +346,7 @@ export class ProjectModel {
   async update(project: ProjectUpdate): Promise<ProjectModel | null> {
     if (this.id === undefined) throw new Error('Project ID is undefined')
 
-    const updatedModel = await db.updateTable('projects').set(project).where('id', '=', this.id).executeTakeFirst()
+    await db.updateTable('projects').set(project).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -413,6 +413,51 @@ export class ProjectModel {
 
     return output as Project
   }
+}
+
+async function find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel | null> {
+  let query = db.selectFrom('projects').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new ProjectModel(model)
+}
+
+export async function whereName(value: any): Promise<ProjectModel[]> {
+  const query = db.selectFrom('projects').where('name', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new ProjectModel(modelItem))
+}
+
+export async function whereDescription(value: any): Promise<ProjectModel[]> {
+  const query = db.selectFrom('projects').where('description', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new ProjectModel(modelItem))
+}
+
+export async function whereUrl(value: any): Promise<ProjectModel[]> {
+  const query = db.selectFrom('projects').where('url', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new ProjectModel(modelItem))
+}
+
+export async function whereStatus(value: any): Promise<ProjectModel[]> {
+  const query = db.selectFrom('projects').where('status', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
 const Project = ProjectModel

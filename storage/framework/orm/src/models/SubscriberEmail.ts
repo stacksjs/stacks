@@ -219,14 +219,6 @@ export class SubscriberEmailModel {
     return this
   }
 
-  static whereEmail(value: string | number | boolean): SubscriberEmailModel {
-    const instance = new this(null)
-
-    instance.query = instance.query.where('email', '=', value)
-
-    return instance
-  }
-
   static where(...args: (string | number)[]): SubscriberEmailModel {
     let column: any
     let operator: any
@@ -244,6 +236,14 @@ export class SubscriberEmailModel {
     }
 
     instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
+  static whereEmail(value: string | number | boolean): SubscriberEmailModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('email', '=', value)
 
     return instance
   }
@@ -316,11 +316,7 @@ export class SubscriberEmailModel {
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | null> {
     if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-    const updatedModel = await db
-      .updateTable('subscriber_emails')
-      .set(subscriberemail)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
+    await db.updateTable('subscriber_emails').set(subscriberemail).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -387,6 +383,27 @@ export class SubscriberEmailModel {
 
     return output as SubscriberEmail
   }
+}
+
+async function find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | null> {
+  let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new SubscriberEmailModel(model)
+}
+
+export async function whereEmail(value: any): Promise<SubscriberEmailModel[]> {
+  const query = db.selectFrom('subscriber_emails').where('email', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new SubscriberEmailModel(modelItem))
 }
 
 const SubscriberEmail = SubscriberEmailModel

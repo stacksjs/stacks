@@ -238,6 +238,27 @@ export class DeploymentModel {
     return this
   }
 
+  static where(...args: (string | number)[]): DeploymentModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
+    }
+
+    instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
   static whereCommitSha(value: string | number | boolean): DeploymentModel {
     const instance = new this(null)
 
@@ -290,27 +311,6 @@ export class DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('terminalOutput', '=', value)
-
-    return instance
-  }
-
-  static where(...args: (string | number)[]): DeploymentModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new this(null)
-
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
-
-    instance.query = instance.query.where(column, operator, value)
 
     return instance
   }
@@ -383,11 +383,7 @@ export class DeploymentModel {
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | null> {
     if (this.id === undefined) throw new Error('Deployment ID is undefined')
 
-    const updatedModel = await db
-      .updateTable('deployments')
-      .set(deployment)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
+    await db.updateTable('deployments').set(deployment).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -464,6 +460,75 @@ export class DeploymentModel {
 
     return output as Deployment
   }
+}
+
+async function find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | null> {
+  let query = db.selectFrom('deployments').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new DeploymentModel(model)
+}
+
+export async function whereCommitSha(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('commitSha', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
+}
+
+export async function whereCommitMessage(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('commitMessage', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
+}
+
+export async function whereBranch(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('branch', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
+}
+
+export async function whereStatus(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('status', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
+}
+
+export async function whereExecutionTime(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('executionTime', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
+}
+
+export async function whereDeployScript(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('deployScript', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
+}
+
+export async function whereTerminalOutput(value: any): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('terminalOutput', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 const Deployment = DeploymentModel

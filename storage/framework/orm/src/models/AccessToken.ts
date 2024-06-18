@@ -230,6 +230,27 @@ export class AccessTokenModel {
     return this
   }
 
+  static where(...args: (string | number)[]): AccessTokenModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
+    }
+
+    instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
   static whereName(value: string | number | boolean): AccessTokenModel {
     const instance = new this(null)
 
@@ -258,27 +279,6 @@ export class AccessTokenModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('abilities', '=', value)
-
-    return instance
-  }
-
-  static where(...args: (string | number)[]): AccessTokenModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new this(null)
-
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
-
-    instance.query = instance.query.where(column, operator, value)
 
     return instance
   }
@@ -351,11 +351,7 @@ export class AccessTokenModel {
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | null> {
     if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
-    const updatedModel = await db
-      .updateTable('personal_access_tokens')
-      .set(accesstoken)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
+    await db.updateTable('personal_access_tokens').set(accesstoken).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -432,6 +428,51 @@ export class AccessTokenModel {
 
     return output as AccessToken
   }
+}
+
+async function find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
+  let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new AccessTokenModel(model)
+}
+
+export async function whereName(value: any): Promise<AccessTokenModel[]> {
+  const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new AccessTokenModel(modelItem))
+}
+
+export async function whereToken(value: any): Promise<AccessTokenModel[]> {
+  const query = db.selectFrom('personal_access_tokens').where('token', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new AccessTokenModel(modelItem))
+}
+
+export async function wherePlainTextToken(value: any): Promise<AccessTokenModel[]> {
+  const query = db.selectFrom('personal_access_tokens').where('plainTextToken', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new AccessTokenModel(modelItem))
+}
+
+export async function whereAbilities(value: any): Promise<AccessTokenModel[]> {
+  const query = db.selectFrom('personal_access_tokens').where('abilities', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new AccessTokenModel(modelItem))
 }
 
 const AccessToken = AccessTokenModel

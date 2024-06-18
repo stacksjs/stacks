@@ -241,6 +241,27 @@ export class TeamModel {
     return this
   }
 
+  static where(...args: (string | number)[]): TeamModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
+    }
+
+    instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
   static whereName(value: string | number | boolean): TeamModel {
     const instance = new this(null)
 
@@ -301,27 +322,6 @@ export class TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('isPersonal', '=', value)
-
-    return instance
-  }
-
-  static where(...args: (string | number)[]): TeamModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new this(null)
-
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
-
-    instance.query = instance.query.where(column, operator, value)
 
     return instance
   }
@@ -394,7 +394,7 @@ export class TeamModel {
   async update(team: TeamUpdate): Promise<TeamModel | null> {
     if (this.id === undefined) throw new Error('Team ID is undefined')
 
-    const updatedModel = await db.updateTable('teams').set(team).where('id', '=', this.id).executeTakeFirst()
+    await db.updateTable('teams').set(team).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -473,6 +473,83 @@ export class TeamModel {
 
     return output as Team
   }
+}
+
+async function find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+  let query = db.selectFrom('teams').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new TeamModel(model)
+}
+
+export async function whereName(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('name', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereCompanyName(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('companyName', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereEmail(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('email', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereBillingEmail(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('billingEmail', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereStatus(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('status', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereDescription(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('description', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function wherePath(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('path', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereIsPersonal(value: any): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('isPersonal', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 const Team = TeamModel

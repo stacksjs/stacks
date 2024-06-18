@@ -219,14 +219,6 @@ export class SubscriberModel {
     return this
   }
 
-  static whereSubscribed(value: string | number | boolean): SubscriberModel {
-    const instance = new this(null)
-
-    instance.query = instance.query.where('subscribed', '=', value)
-
-    return instance
-  }
-
   static where(...args: (string | number)[]): SubscriberModel {
     let column: any
     let operator: any
@@ -244,6 +236,14 @@ export class SubscriberModel {
     }
 
     instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
+  static whereSubscribed(value: string | number | boolean): SubscriberModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('subscribed', '=', value)
 
     return instance
   }
@@ -316,11 +316,7 @@ export class SubscriberModel {
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | null> {
     if (this.id === undefined) throw new Error('Subscriber ID is undefined')
 
-    const updatedModel = await db
-      .updateTable('subscribers')
-      .set(subscriber)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
+    await db.updateTable('subscribers').set(subscriber).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -387,6 +383,27 @@ export class SubscriberModel {
 
     return output as Subscriber
   }
+}
+
+async function find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | null> {
+  let query = db.selectFrom('subscribers').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new SubscriberModel(model)
+}
+
+export async function whereSubscribed(value: any): Promise<SubscriberModel[]> {
+  const query = db.selectFrom('subscribers').where('subscribed', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new SubscriberModel(modelItem))
 }
 
 const Subscriber = SubscriberModel

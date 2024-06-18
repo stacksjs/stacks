@@ -636,6 +636,7 @@ async function generateModelString(
   let constructorFields = ''
   let declareFields = ''
   let whereStatements = ''
+  let whereFunctionStatements = ''
   let relationMethods = ``
   let relationImports = ``
 
@@ -776,6 +777,14 @@ async function generateModelString(
         instance.query = instance.query.where('${attribute.field}', '=', value)
   
         return instance
+      } \n\n`
+
+    whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: any): Promise<${modelName}Model[]> {
+        const query = db.selectFrom('${tableName}').where('${attribute.field}', '=', value)
+
+        const results = await query.execute()
+
+        return results.map(modelItem => new ${modelName}Model(modelItem))
       } \n\n`
   }
 
@@ -1193,6 +1202,20 @@ async function generateModelString(
       }
     }
 
+    async function find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
+      let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+      if (fields) query = query.select(fields)
+      else query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model) return null
+
+      return new ${modelName}Model(model)
+    }
+
+    ${whereFunctionStatements}
 
     const ${modelName} = ${modelName}Model
 

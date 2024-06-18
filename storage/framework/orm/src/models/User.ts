@@ -236,6 +236,27 @@ export class UserModel {
     return this
   }
 
+  static where(...args: (string | number)[]): UserModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
+    }
+
+    instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
   static whereName(value: string | number | boolean): UserModel {
     const instance = new this(null)
 
@@ -264,27 +285,6 @@ export class UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('password', '=', value)
-
-    return instance
-  }
-
-  static where(...args: (string | number)[]): UserModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new this(null)
-
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
-
-    instance.query = instance.query.where(column, operator, value)
 
     return instance
   }
@@ -357,7 +357,7 @@ export class UserModel {
   async update(user: UserUpdate): Promise<UserModel | null> {
     if (this.id === undefined) throw new Error('User ID is undefined')
 
-    const updatedModel = await db.updateTable('users').set(user).where('id', '=', this.id).executeTakeFirst()
+    await db.updateTable('users').set(user).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -454,4 +454,51 @@ export class UserModel {
   }
 }
 
-export const User = UserModel
+async function find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | null> {
+  let query = db.selectFrom('users').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new UserModel(model)
+}
+
+export async function whereName(value: any): Promise<UserModel[]> {
+  const query = db.selectFrom('users').where('name', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new UserModel(modelItem))
+}
+
+export async function whereEmail(value: any): Promise<UserModel[]> {
+  const query = db.selectFrom('users').where('email', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new UserModel(modelItem))
+}
+
+export async function whereJobTitle(value: any): Promise<UserModel[]> {
+  const query = db.selectFrom('users').where('jobTitle', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new UserModel(modelItem))
+}
+
+export async function wherePassword(value: any): Promise<UserModel[]> {
+  const query = db.selectFrom('users').where('password', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new UserModel(modelItem))
+}
+
+const User = UserModel
+
+export default User

@@ -223,22 +223,6 @@ export class PostModel {
     return this
   }
 
-  static whereTitle(value: string | number | boolean): PostModel {
-    const instance = new this(null)
-
-    instance.query = instance.query.where('title', '=', value)
-
-    return instance
-  }
-
-  static whereBody(value: string | number | boolean): PostModel {
-    const instance = new this(null)
-
-    instance.query = instance.query.where('body', '=', value)
-
-    return instance
-  }
-
   static where(...args: (string | number)[]): PostModel {
     let column: any
     let operator: any
@@ -256,6 +240,22 @@ export class PostModel {
     }
 
     instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
+  static whereTitle(value: string | number | boolean): PostModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('title', '=', value)
+
+    return instance
+  }
+
+  static whereBody(value: string | number | boolean): PostModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('body', '=', value)
 
     return instance
   }
@@ -328,7 +328,7 @@ export class PostModel {
   async update(post: PostUpdate): Promise<PostModel | null> {
     if (this.id === undefined) throw new Error('Post ID is undefined')
 
-    const updatedModel = await db.updateTable('posts').set(post).where('id', '=', this.id).executeTakeFirst()
+    await db.updateTable('posts').set(post).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -405,6 +405,35 @@ export class PostModel {
 
     return output as Post
   }
+}
+
+async function find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | null> {
+  let query = db.selectFrom('posts').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new PostModel(model)
+}
+
+export async function whereTitle(value: any): Promise<PostModel[]> {
+  const query = db.selectFrom('posts').where('title', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new PostModel(modelItem))
+}
+
+export async function whereBody(value: any): Promise<PostModel[]> {
+  const query = db.selectFrom('posts').where('body', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new PostModel(modelItem))
 }
 
 const Post = PostModel

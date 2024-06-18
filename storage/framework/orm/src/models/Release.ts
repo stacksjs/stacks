@@ -216,14 +216,6 @@ export class ReleaseModel {
     return this
   }
 
-  static whereVersion(value: string | number | boolean): ReleaseModel {
-    const instance = new this(null)
-
-    instance.query = instance.query.where('version', '=', value)
-
-    return instance
-  }
-
   static where(...args: (string | number)[]): ReleaseModel {
     let column: any
     let operator: any
@@ -241,6 +233,14 @@ export class ReleaseModel {
     }
 
     instance.query = instance.query.where(column, operator, value)
+
+    return instance
+  }
+
+  static whereVersion(value: string | number | boolean): ReleaseModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('version', '=', value)
 
     return instance
   }
@@ -313,7 +313,7 @@ export class ReleaseModel {
   async update(release: ReleaseUpdate): Promise<ReleaseModel | null> {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
-    const updatedModel = await db.updateTable('releases').set(release).where('id', '=', this.id).executeTakeFirst()
+    await db.updateTable('releases').set(release).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
@@ -380,6 +380,27 @@ export class ReleaseModel {
 
     return output as Release
   }
+}
+
+async function find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | null> {
+  let query = db.selectFrom('releases').where('id', '=', id)
+
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model) return null
+
+  return new ReleaseModel(model)
+}
+
+export async function whereVersion(value: any): Promise<ReleaseModel[]> {
+  const query = db.selectFrom('releases').where('version', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new ReleaseModel(modelItem))
 }
 
 const Release = ReleaseModel
