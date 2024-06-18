@@ -230,6 +230,38 @@ export class AccessTokenModel {
     return this
   }
 
+  static whereName(value: string | number | boolean): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereToken(value: string | number | boolean): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('token', '=', value)
+
+    return instance
+  }
+
+  static wherePlainTextToken(value: string | number | boolean): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('plainTextToken', '=', value)
+
+    return instance
+  }
+
+  static whereAbilities(value: string | number | boolean): AccessTokenModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('abilities', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): AccessTokenModel {
     let column: any
     let operator: any

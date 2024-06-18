@@ -225,6 +225,38 @@ export class ProjectModel {
     return this
   }
 
+  static whereName(value: string | number | boolean): ProjectModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string | number | boolean): ProjectModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereUrl(value: string | number | boolean): ProjectModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('url', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string | number | boolean): ProjectModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('status', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): ProjectModel {
     let column: any
     let operator: any

@@ -241,6 +241,70 @@ export class TeamModel {
     return this
   }
 
+  static whereName(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereCompanyName(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('companyName', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('email', '=', value)
+
+    return instance
+  }
+
+  static whereBillingEmail(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('billingEmail', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('description', '=', value)
+
+    return instance
+  }
+
+  static wherePath(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('path', '=', value)
+
+    return instance
+  }
+
+  static whereIsPersonal(value: string | number | boolean): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('isPersonal', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): TeamModel {
     let column: any
     let operator: any

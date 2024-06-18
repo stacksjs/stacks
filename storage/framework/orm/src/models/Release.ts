@@ -216,6 +216,14 @@ export class ReleaseModel {
     return this
   }
 
+  static whereVersion(value: string | number | boolean): ReleaseModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('version', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): ReleaseModel {
     let column: any
     let operator: any

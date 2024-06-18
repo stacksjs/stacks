@@ -236,6 +236,38 @@ export class UserModel {
     return this
   }
 
+  static whereName(value: string | number | boolean): UserModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string | number | boolean): UserModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('email', '=', value)
+
+    return instance
+  }
+
+  static whereJobTitle(value: string | number | boolean): UserModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('jobTitle', '=', value)
+
+    return instance
+  }
+
+  static wherePassword(value: string | number | boolean): UserModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('password', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): UserModel {
     let column: any
     let operator: any
@@ -422,6 +454,4 @@ export class UserModel {
   }
 }
 
-const User = UserModel
-
-export default User
+export const User = UserModel

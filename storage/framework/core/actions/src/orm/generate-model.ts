@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, pascalCase, plural } from '@stacksjs/strings'
+import { camelCase, capitalCase, pascalCase, plural } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
@@ -635,6 +635,7 @@ async function generateModelString(
   let fieldString = ''
   let constructorFields = ''
   let declareFields = ''
+  let whereStatements = ''
   let relationMethods = ``
   let relationImports = ``
 
@@ -768,6 +769,14 @@ async function generateModelString(
     declareFields += `public ${attribute.field}: ${entity} | undefined \n   `
 
     constructorFields += `this.${attribute.field} = ${formattedModelName}?.${attribute.field}\n   `
+
+    whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean): ${modelName}Model {
+        const instance = new this(null);
+
+        instance.query = instance.query.where('${attribute.field}', '=', value)
+  
+        return instance
+      } \n\n`
   }
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelName)
@@ -1029,6 +1038,8 @@ async function generateModelString(
         return instance
       }
 
+       ${whereStatements}
+
       static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
         const instance = new this(null);
   
@@ -1103,7 +1114,7 @@ async function generateModelString(
         if (this.id === undefined)
           throw new Error('${modelName} ID is undefined')
   
-        const updatedModel = await db.updateTable('${tableName}')
+        await db.updateTable('${tableName}')
           .set(${formattedModelName})
           .where('id', '=', this.id)
           .executeTakeFirst()

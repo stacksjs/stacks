@@ -238,6 +238,62 @@ export class DeploymentModel {
     return this
   }
 
+  static whereCommitSha(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('commitSha', '=', value)
+
+    return instance
+  }
+
+  static whereCommitMessage(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('commitMessage', '=', value)
+
+    return instance
+  }
+
+  static whereBranch(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('branch', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereExecutionTime(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('executionTime', '=', value)
+
+    return instance
+  }
+
+  static whereDeployScript(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('deployScript', '=', value)
+
+    return instance
+  }
+
+  static whereTerminalOutput(value: string | number | boolean): DeploymentModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('terminalOutput', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): DeploymentModel {
     let column: any
     let operator: any

@@ -223,6 +223,22 @@ export class PostModel {
     return this
   }
 
+  static whereTitle(value: string | number | boolean): PostModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('title', '=', value)
+
+    return instance
+  }
+
+  static whereBody(value: string | number | boolean): PostModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('body', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): PostModel {
     let column: any
     let operator: any

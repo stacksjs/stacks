@@ -219,6 +219,14 @@ export class SubscriberModel {
     return this
   }
 
+  static whereSubscribed(value: string | number | boolean): SubscriberModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('subscribed', '=', value)
+
+    return instance
+  }
+
   static where(...args: (string | number)[]): SubscriberModel {
     let column: any
     let operator: any
