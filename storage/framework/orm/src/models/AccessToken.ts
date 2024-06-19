@@ -220,7 +220,7 @@ export class AccessTokenModel {
   }
 
   // Method to create a new accesstoken
-  static async create(personal_access_tokens: NewAccessToken): Promise<AccessTokenModel> {
+  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const result = await db.insertInto('personal_access_tokens').values(newAccessToken).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as AccessTokenModel

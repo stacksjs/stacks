@@ -1,14 +1,25 @@
 <script setup>
-import { Fetch } from '@stacksjs/api'
 import { ref } from 'vue'
 
 // Reactive state for the email input
 const email = ref('')
 
 // Method to handle email submission
-function submitEmail() {
-  console.log(fetch)
-  console.log(email.value) // Log the email to the console
+async function submitEmail() {
+  const body = {
+    email: email.value,
+  }
+
+  const url = 'http://localhost:3008/api/email/subscribe'
+
+  await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
 
   email.value = '' // Clear the input field after submission
 }

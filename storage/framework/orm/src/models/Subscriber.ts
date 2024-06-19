@@ -209,7 +209,7 @@ export class SubscriberModel {
   }
 
   // Method to create a new subscriber
-  static async create(subscribers: NewSubscriber): Promise<SubscriberModel> {
+  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
     const result = await db.insertInto('subscribers').values(newSubscriber).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as SubscriberModel

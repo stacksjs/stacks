@@ -228,7 +228,7 @@ export class DeploymentModel {
   }
 
   // Method to create a new deployment
-  static async create(deployments: NewDeployment): Promise<DeploymentModel> {
+  static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const result = await db.insertInto('deployments').values(newDeployment).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as DeploymentModel

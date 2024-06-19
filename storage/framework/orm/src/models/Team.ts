@@ -231,7 +231,7 @@ export class TeamModel {
   }
 
   // Method to create a new team
-  static async create(teams: NewTeam): Promise<TeamModel> {
+  static async create(newTeam: NewTeam): Promise<TeamModel> {
     const result = await db.insertInto('teams').values(newTeam).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as TeamModel

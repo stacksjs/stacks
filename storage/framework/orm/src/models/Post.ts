@@ -213,7 +213,7 @@ export class PostModel {
   }
 
   // Method to create a new post
-  static async create(posts: NewPost): Promise<PostModel> {
+  static async create(newPost: NewPost): Promise<PostModel> {
     const result = await db.insertInto('posts').values(newPost).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as PostModel

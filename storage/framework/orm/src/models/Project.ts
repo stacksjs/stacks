@@ -215,7 +215,7 @@ export class ProjectModel {
   }
 
   // Method to create a new project
-  static async create(projects: NewProject): Promise<ProjectModel> {
+  static async create(newProject: NewProject): Promise<ProjectModel> {
     const result = await db.insertInto('projects').values(newProject).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as ProjectModel

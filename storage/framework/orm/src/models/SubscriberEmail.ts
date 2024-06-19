@@ -209,7 +209,7 @@ export class SubscriberEmailModel {
   }
 
   // Method to create a new subscriberemail
-  static async create(subscriber_emails: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+  static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as SubscriberEmailModel

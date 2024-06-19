@@ -189,7 +189,7 @@ export interface UserRequestType extends Request {
       get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'deployment_id' |'post_id'): string | number | undefined;
       all(): RequestDataUser
        id?: number
- name: string
+      name: string
       email: string
       jobTitle: string
       password: string

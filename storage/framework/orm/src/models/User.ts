@@ -226,7 +226,7 @@ export class UserModel {
   }
 
   // Method to create a new user
-  static async create(users: NewUser): Promise<UserModel> {
+  static async create(newUser: NewUser): Promise<UserModel> {
     const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as UserModel

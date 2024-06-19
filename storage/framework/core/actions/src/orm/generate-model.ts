@@ -1012,7 +1012,7 @@ async function generateModelString(
       }
 
       // Method to create a new ${formattedModelName}
-      static async create(${tableName}: New${modelName}): Promise<${modelName}Model> {
+      static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const result = await db.insertInto('${tableName}')
           .values(new${modelName})
           .executeTakeFirstOrThrow()

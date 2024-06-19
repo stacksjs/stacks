@@ -206,7 +206,7 @@ export class ReleaseModel {
   }
 
   // Method to create a new release
-  static async create(releases: NewRelease): Promise<ReleaseModel> {
+  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
     const result = await db.insertInto('releases').values(newRelease).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as ReleaseModel

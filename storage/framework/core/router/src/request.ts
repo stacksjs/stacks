@@ -20,8 +20,12 @@ export class Request implements RequestInstance {
     return Request.instance
   }
 
-  public addQuery(url: URL): void {
-    this.query = Object.fromEntries(url.searchParams)
+  public addQuery(url: URL, params: any): void {
+    if (Object.keys(url.searchParams).length === 0) {
+      this.query = params
+    } else {
+      this.query = Object.fromEntries(url.searchParams)
+    }
   }
 
   public addParam(param: RouteParam): void {

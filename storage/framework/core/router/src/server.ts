@@ -33,12 +33,14 @@ export async function serve(options: ServeOptions = {}) {
     development,
 
     async fetch(req: Request) {
-      return await serverResponse(req)
+      const reqBody = await req.text()
+
+      return await serverResponse(req, reqBody)
     },
   })
 }
 
-export async function serverResponse(req: Request) {
+export async function serverResponse(req: Request, body: string) {
   log.info(`Incoming Request: ${req.method} ${req.url}`)
   log.info(`Headers: ${JSON.stringify(req.headers)}`)
   log.info(`Body: ${JSON.stringify(req.body)}`)
@@ -58,6 +60,10 @@ export async function serverResponse(req: Request) {
 
   log.info(`URL: ${JSON.stringify(url)}`)
 
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req)
+  }
+
   const foundRoute: Route | undefined = routesList
     .filter((route: Route) => {
       const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
@@ -67,18 +73,38 @@ export async function serverResponse(req: Request) {
     .find((route: Route) => route.method === req.method)
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
-  // if (url.pathname === '/favicon.ico')
-  //   return new Response('')
 
-  if (!foundRoute) return new Response('Pretty 404 page coming soon', { status: 404 }) // TODO: create a pretty 404 page
+  if (!foundRoute) {
+    return new Response('Pretty 404 page coming soon', {
+      status: 404,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Content-Type': 'json',
+      },
+    }) // TODO: create a pretty 404 page
+  }
 
   const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname)
 
-  await addRouteQuery(url)
+  await addRouteQuery(url, body)
   await addRouteParam(routeParams)
   await addHeaders(req.headers)
 
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
+}
+
+function handleOptions(req: Request) {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers':
+        'Content-Type, Authorization, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Accept',
+      'Access-Control-Max-Age': '86400', // Cache the preflight response for a day
+    },
+  })
 }
 
 function extractDynamicSegments(routePattern: string, path: string): RouteParam {
@@ -114,7 +140,11 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     delete middlewarePayload.status
 
     return await new Response(JSON.stringify(middlewarePayload), {
-      headers: { 'Content-Type': 'json' },
+      headers: {
+        'Content-Type': 'json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
       status: middlewareStatus || 401,
     })
   }
@@ -128,7 +158,14 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     return await noCache(response)
   }
 
-  if (foundRoute?.method !== req.method) return new Response('Method not allowed', { status: 405 })
+  if (foundRoute?.method !== req.method)
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
+    })
 
   // Check if it's a path to an HTML file
   if (isString(foundCallback) && extname(foundCallback) === '.html') {
@@ -136,51 +173,106 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       const fileContent = Bun.file(foundCallback)
 
       return await new Response(fileContent, {
-        headers: { 'Content-Type': 'text/html' },
+        headers: {
+          'Content-Type': 'text/html',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
       })
     } catch (error) {
-      return await new Response('Error reading the HTML file', { status: 500 })
+      return await new Response('Error reading the HTML file', {
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+      })
     }
   }
 
   if (isString(foundCallback))
     return await new Response(foundCallback, {
-      headers: { 'Content-Type': 'json' },
+      headers: {
+        'Content-Type': 'json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
       status: 200,
     })
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
 
-    return await new Response(JSON.stringify(result), { status: 200 })
+    return await new Response(JSON.stringify(result), {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
+    })
   }
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 422) {
       delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 422 })
+      return await new Response(JSON.stringify(foundCallback), {
+        headers: {
+          'Content-Type': 'json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: 422,
+      })
     }
   }
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
       delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 401 })
+      return await new Response(JSON.stringify(foundCallback), {
+        headers: {
+          'Content-Type': 'json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: 401,
+      })
     }
   }
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 403) {
       delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 403 })
+      return await new Response(JSON.stringify(foundCallback), {
+        headers: {
+          'Content-Type': 'json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: 403,
+      })
     }
   }
 
   if (isObject(foundCallback))
-    return await new Response(JSON.stringify(foundCallback), { headers: { 'Content-Type': 'json' }, status: 200 })
+    return await new Response(JSON.stringify(foundCallback), {
+      headers: {
+        'Content-Type': 'json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
+      status: 200,
+    })
 
   // If no known type matched, return a generic error.
-  return await new Response('Unknown callback type.', { status: 500 })
+  return await new Response('Unknown callback type.', {
+    headers: {
+      'Content-Type': 'json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': '*',
+    },
+    status: 500,
+  })
 }
 
 function noCache(response: Response) {
@@ -191,7 +283,7 @@ function noCache(response: Response) {
   return response
 }
 
-async function addRouteQuery(url: URL) {
+async function addRouteQuery(url: URL, body: string) {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
@@ -203,12 +295,12 @@ async function addRouteQuery(url: URL) {
     const requestInstance = requestImport[modelNameLower]
 
     if (requestInstance && !isObjectNotEmpty(url.searchParams)) {
-      requestInstance.addQuery(url)
+      requestInstance.addQuery(url, JSON.parse(body))
     }
   }
 
   if (!isObjectNotEmpty(url.searchParams)) {
-    RequestParam.addQuery(url)
+    RequestParam.addQuery(url, JSON.parse(body))
   }
 }
 
