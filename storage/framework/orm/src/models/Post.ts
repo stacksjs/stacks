@@ -446,6 +446,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newPost: NewPost): Promise<PostModel> {
+  const result = await db.insertInto('posts').values(newPost).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as PostModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('posts').where('id', '=', id).execute()
+}
+
 export async function whereTitle(value: any): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('title', '=', value)
 

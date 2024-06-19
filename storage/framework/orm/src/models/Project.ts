@@ -454,6 +454,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newProject: NewProject): Promise<ProjectModel> {
+  const result = await db.insertInto('projects').values(newProject).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as ProjectModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('projects').where('id', '=', id).execute()
+}
+
 export async function whereName(value: any): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('name', '=', value)
 

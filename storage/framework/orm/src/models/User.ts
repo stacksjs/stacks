@@ -493,6 +493,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newUser: NewUser): Promise<UserModel> {
+  const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as UserModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('users').where('id', '=', id).execute()
+}
+
 export async function whereName(value: any): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('name', '=', value)
 

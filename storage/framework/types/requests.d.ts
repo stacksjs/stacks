@@ -13,7 +13,6 @@ interface RequestDataProject {
 export interface ProjectRequestType extends Request {
       validate(): void
       get(key: 'id' |'name' |'description' |'url' |'status'): string | number | undefined;
-      all(): RequestDataProject
        id?: number
  name: string
       description: string
@@ -34,7 +33,6 @@ interface RequestDataSubscriberEmail {
 export interface SubscriberEmailRequestType extends Request {
       validate(): void
       get(key: 'id' |'email'): string | number | undefined;
-      all(): RequestDataSubscriberEmail
        id?: number
  email: string
      created_at?: string
@@ -56,7 +54,6 @@ interface RequestDataAccessToken {
 export interface AccessTokenRequestType extends Request {
       validate(): void
       get(key: 'id' |'name' |'token' |'plainTextToken' |'abilities' |'team_id'): string | number | undefined;
-      all(): RequestDataAccessToken
        id?: number
  name: string
       token: string
@@ -86,7 +83,6 @@ interface RequestDataTeam {
 export interface TeamRequestType extends Request {
       validate(): void
       get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' |'accesstoken_id'): string | number | undefined;
-      all(): RequestDataTeam
        id?: number
  name: string
       companyName: string
@@ -113,7 +109,6 @@ interface RequestDataSubscriber {
 export interface SubscriberRequestType extends Request {
       validate(): void
       get(key: 'id' |'subscribed' |'user_id'): string | number | undefined;
-      all(): RequestDataSubscriber
        id?: number
  subscribed: boolean
       user_id: number
@@ -139,7 +134,6 @@ interface RequestDataDeployment {
 export interface DeploymentRequestType extends Request {
       validate(): void
       get(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput' |'user_id'): string | number | undefined;
-      all(): RequestDataDeployment
        id?: number
  commitSha: string
       commitMessage: string
@@ -164,7 +158,6 @@ interface RequestDataRelease {
 export interface ReleaseRequestType extends Request {
       validate(): void
       get(key: 'id' |'version'): string | number | undefined;
-      all(): RequestDataRelease
        id?: number
  version: string
      created_at?: string
@@ -187,9 +180,8 @@ interface RequestDataUser {
 export interface UserRequestType extends Request {
       validate(): void
       get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'deployment_id' |'post_id'): string | number | undefined;
-      all(): RequestDataUser
        id?: number
-      name: string
+ name: string
       email: string
       jobTitle: string
       password: string
@@ -212,7 +204,6 @@ interface RequestDataPost {
 export interface PostRequestType extends Request {
       validate(): void
       get(key: 'id' |'title' |'body' |'user_id'): string | number | undefined;
-      all(): RequestDataPost
        id?: number
  title: string
       body: string

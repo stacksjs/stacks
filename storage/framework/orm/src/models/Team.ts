@@ -514,6 +514,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newTeam: NewTeam): Promise<TeamModel> {
+  const result = await db.insertInto('teams').values(newTeam).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as TeamModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('teams').where('id', '=', id).execute()
+}
+
 export async function whereName(value: any): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('name', '=', value)
 

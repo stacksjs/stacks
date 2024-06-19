@@ -188,7 +188,6 @@ async function writeModelRequest() {
     const types = `export interface ${modelName}RequestType extends Request {
       validate(): void
       get(key: ${fieldStringType}): string | number | undefined;
-      all(): RequestData${modelName}
       ${fieldString}
     }\n\n`
 
@@ -772,7 +771,7 @@ async function generateModelString(
     constructorFields += `this.${attribute.field} = ${formattedModelName}?.${attribute.field}\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean): ${modelName}Model {
-        const instance = new this(null);
+        const instance = new this(null)
 
         instance.query = instance.query.where('${attribute.field}', '=', value)
   
@@ -1051,7 +1050,7 @@ async function generateModelString(
         let operator: any
         let value: any
   
-        const instance = new this(null);
+        const instance = new this(null)
   
         if (args.length === 2) {
           [column, value] = args
@@ -1070,7 +1069,7 @@ async function generateModelString(
        ${whereStatements}
 
       static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-        const instance = new this(null);
+        const instance = new this(null)
   
         instance.query = instance.query.where(column, 'in', values)
   
@@ -1097,7 +1096,7 @@ async function generateModelString(
       }
 
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
-        const instance = new this(null);
+        const instance = new this(null)
   
         instance.query = instance.orderBy(column, order)
   
@@ -1111,7 +1110,7 @@ async function generateModelString(
       }
 
       static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
-        const instance = new this(null);
+        const instance = new this(null)
   
         instance.query = instance.query.orderBy(column, 'desc')
   
@@ -1125,7 +1124,7 @@ async function generateModelString(
       }
 
       static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
-        const instance = new this(null);
+        const instance = new this(null)
 
         instance.query = instance.query.orderBy(column, 'desc')
 
@@ -1239,6 +1238,20 @@ async function generateModelString(
       const results = await ${modelName}Model.count()
 
       return results
+    }
+
+    export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+      const result = await db.insertInto('${tableName}')
+        .values(new${modelName})
+        .executeTakeFirstOrThrow()
+
+      return await find(Number(result.insertId)) as ${modelName}Model
+    }
+
+    async function remove(id: number): Promise<void> {
+        await db.deleteFrom('${tableName}')
+          .where('id', '=', id)
+          .execute()
     }
 
     ${whereFunctionStatements}

@@ -501,6 +501,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
+  const result = await db.insertInto('deployments').values(newDeployment).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as DeploymentModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('deployments').where('id', '=', id).execute()
+}
+
 export async function whereCommitSha(value: any): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('commitSha', '=', value)
 

@@ -421,6 +421,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
+  const result = await db.insertInto('releases').values(newRelease).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as ReleaseModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('releases').where('id', '=', id).execute()
+}
+
 export async function whereVersion(value: any): Promise<ReleaseModel[]> {
   const query = db.selectFrom('releases').where('version', '=', value)
 

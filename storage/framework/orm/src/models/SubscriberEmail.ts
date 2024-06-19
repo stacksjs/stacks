@@ -424,6 +424,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+  const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as SubscriberEmailModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
+}
+
 export async function whereEmail(value: any): Promise<SubscriberEmailModel[]> {
   const query = db.selectFrom('subscriber_emails').where('email', '=', value)
 

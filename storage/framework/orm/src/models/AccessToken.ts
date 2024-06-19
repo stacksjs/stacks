@@ -469,6 +469,16 @@ export async function count(): Promise<number> {
   return results
 }
 
+export async function create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+  const result = await db.insertInto('personal_access_tokens').values(newAccessToken).executeTakeFirstOrThrow()
+
+  return (await find(Number(result.insertId))) as AccessTokenModel
+}
+
+async function remove(id: number): Promise<void> {
+  await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
+}
+
 export async function whereName(value: any): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
 
