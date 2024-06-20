@@ -87,7 +87,12 @@ export async function serverResponse(req: Request, body: string) {
 
   const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname)
 
-  await addRouteQuery(url, body)
+  if (!body) {
+    await addRouteQuery(url)
+  } else {
+    await addBody(body)
+  }
+
   await addRouteParam(routeParams)
   await addHeaders(req.headers)
 
@@ -214,7 +219,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 422) {
+      // biome-ignore lint/performance/noDelete: <explanation>
       delete foundCallback.status
+
       return await new Response(JSON.stringify(foundCallback), {
         headers: {
           'Content-Type': 'json',
@@ -229,6 +236,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
       delete foundCallback.status
+
       return await new Response(JSON.stringify(foundCallback), {
         headers: {
           'Content-Type': 'json',
@@ -283,7 +291,7 @@ function noCache(response: Response) {
   return response
 }
 
-async function addRouteQuery(url: URL, body: string) {
+async function addRouteQuery(url: URL) {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const modelFile of modelFiles) {
@@ -294,14 +302,31 @@ async function addRouteQuery(url: URL, body: string) {
     const requestImport = await import(requestPath)
     const requestInstance = requestImport[modelNameLower]
 
-    if (requestInstance && !isObjectNotEmpty(url.searchParams)) {
-      requestInstance.addQuery(url, JSON.parse(body))
+    if (requestInstance) {
+      requestInstance.addQuery(url)
     }
   }
 
-  if (!isObjectNotEmpty(url.searchParams)) {
-    RequestParam.addQuery(url, JSON.parse(body))
+  RequestParam.addQuery(url)
+}
+
+async function addBody(params: any) {
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default
+    const modelName = getModelName(model, modelFile)
+    const modelNameLower = `${camelCase(modelName)}Request`
+    const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
+    const requestImport = await import(requestPath)
+    const requestInstance = requestImport[modelNameLower]
+
+    if (requestInstance) {
+      requestInstance.addBodies(JSON.parse(params))
+    }
   }
+
+  RequestParam.addBodies(JSON.parse(params))
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
