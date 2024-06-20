@@ -2,7 +2,7 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { route } from './router'
 
-import { camelCase, lowercase, pascalCase } from '@stacksjs/strings'
+import { camelCase } from '@stacksjs/strings'
 
 export async function listRoutes() {
   const routeLists = await route.getRoutes()

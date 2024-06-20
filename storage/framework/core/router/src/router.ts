@@ -1,7 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
-import { request } from '@stacksjs/router'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'

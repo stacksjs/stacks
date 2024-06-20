@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, capitalCase, pascalCase, plural } from '@stacksjs/strings'
+import { camelCase, pascalCase, plural } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
@@ -651,7 +651,6 @@ async function generateModelString(
     const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
-    const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
 
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
