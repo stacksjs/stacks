@@ -3,6 +3,11 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema.alterTable('users')
-    .dropColumn('content')
+    .addColumn('content', 'varchar(255)', col => col.notNull())
     .execute();
+await sql`
+      ALTER TABLE users
+      MODIFY COLUMN content VARCHAR(255) NOT NULL AFTER job_title;
+    `.execute(db)
+
 }

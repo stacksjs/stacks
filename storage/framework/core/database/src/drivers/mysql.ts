@@ -259,7 +259,7 @@ export async function createAlterTableMigration(modelPath: string) {
       migrationContent += ``
     }
 
-    migrationContent += `)\n`
+    migrationContent += `)\n\n`
   }
 
   console.log(migrationContent)
@@ -268,6 +268,20 @@ export async function createAlterTableMigration(modelPath: string) {
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
 
   migrationContent += `    .execute();\n`
+
+  for (const fieldName of fieldsToAdd) {
+    const formattedFieldName = snakeCase(fieldName)
+
+    const previousValue = getPreviousValue(Object.keys(currentFields), fieldName)
+
+    if (previousValue) {
+      migrationContent += `await sql\`
+      ALTER TABLE ${tableName}
+      MODIFY COLUMN ${formattedFieldName} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousValue)};
+    \`.execute(db)\n\n`
+    }
+  }
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -289,6 +303,16 @@ function pluckChanges(array1: string[], array2: string[]): { added: string[]; re
   }
 
   return { added, removed }
+}
+
+function getPreviousValue<T>(array: T[], target: T): T | null {
+  const index = array.indexOf(target)
+
+  if (index === -1 || index === 0) {
+    return null // Target not found or is the first element
+  }
+
+  return array[index - 1] ?? null
 }
 
 export async function fetchMysqlTables(): Promise<string[]> {

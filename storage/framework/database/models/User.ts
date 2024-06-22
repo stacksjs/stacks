@@ -80,6 +80,18 @@ export default {
 
       factory: () => faker.person.jobTitle(),
     },
+    content: {
+      required: true,
+      validation: {
+        rule: schema.string().minLength(3).maxLength(255),
+        message: {
+          minLength: 'Job title must have a minimum of 3 characters',
+          maxLength: 'Job title must have a maximum of 255 characters',
+        },
+      },
+
+      factory: () => faker.person.jobTitle(),
+    },
 
     password: {
       required: true,
