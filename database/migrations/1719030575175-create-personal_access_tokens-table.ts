@@ -7,7 +7,7 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar(255)')
     .addColumn('token', 'varchar(512)', col => col.unique())
-    .addColumn('plainTextToken', 'varchar(512)')
+    .addColumn('plain_text_token', 'varchar(512)')
     .addColumn('abilities', sql`enum('read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin')`)
     .addColumn('team_id', 'integer', (col) =>
         col.references('teams.id').onDelete('cascade')

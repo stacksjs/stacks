@@ -4,6 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   checkPivotMigration,
@@ -236,8 +237,10 @@ export async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
+    const fieldNameFormatted = snakeCase(fieldName)
+
     const columnType = mapFieldTypeToColumnType(options.validations?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', '${columnType}')\n`
   }
 
   // Remove fields that no longer exist

@@ -4,6 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Model } from '@stacksjs/types'
 import {
   checkPivotMigration,
@@ -141,8 +142,9 @@ async function createTableMigration(modelPath: string) {
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
+    const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validations?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions.validations?.rule?.required) {

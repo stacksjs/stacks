@@ -4,6 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   checkPivotMigration,
@@ -140,9 +141,9 @@ async function createTableMigration(modelPath: string) {
 
   for (const [fieldName, options] of Object.entries(fields)) {
     const fieldOptions = options as Attribute
-
+    const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
-    migrationContent += `    .addColumn('${fieldName}', ${columnType}`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions?.required) {
@@ -230,8 +231,12 @@ export async function createAlterTableMigration(modelPath: string) {
   const currentFields = model.attributes as Attributes
 
   // Determine fields to add and remove
-  const fieldsToAdd = Object.keys(currentFields)
-  const fieldsToRemove = Object.keys(lastFields)
+
+  const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
+
+  const fieldsToAdd = changes?.added || []
+
+  const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -242,8 +247,22 @@ export async function createAlterTableMigration(modelPath: string) {
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validation?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
+    const formattedFieldName = snakeCase(fieldName)
+
+    migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
+
+    // Check if there are configurations that require the lambda function
+    if (options.unique || options?.required) {
+      migrationContent += `, col => col`
+      if (options.unique) migrationContent += `.unique()`
+      if (options?.required) migrationContent += `.notNull()`
+      migrationContent += ``
+    }
+
+    migrationContent += `)\n`
   }
+
+  console.log(migrationContent)
 
   // Remove fields that no longer exist
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
@@ -259,6 +278,17 @@ export async function createAlterTableMigration(modelPath: string) {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+function pluckChanges(array1: string[], array2: string[]): { added: string[]; removed: string[] } | null {
+  const removed = array1.filter((item) => !array2.includes(item))
+  const added = array2.filter((item) => !array1.includes(item))
+
+  if (removed.length === 0 && added.length === 0) {
+    return null
+  }
+
+  return { added, removed }
 }
 
 export async function fetchMysqlTables(): Promise<string[]> {
