@@ -11,8 +11,10 @@ import {
   fetchOtherModelRelations,
   getLastMigrationFields,
   getPivotTables,
+  getPreviousValue,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
+  pluckChanges,
 } from '.'
 
 export async function resetMysqlDatabase() {
@@ -262,8 +264,6 @@ export async function createAlterTableMigration(modelPath: string) {
     migrationContent += `)\n\n`
   }
 
-  console.log(migrationContent)
-
   // Remove fields that no longer exist
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
 
@@ -294,26 +294,6 @@ export async function createAlterTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-function pluckChanges(array1: string[], array2: string[]): { added: string[]; removed: string[] } | null {
-  const removed = array1.filter((item) => !array2.includes(item))
-  const added = array2.filter((item) => !array1.includes(item))
-
-  if (removed.length === 0 && added.length === 0) {
-    return null
-  }
-
-  return { added, removed }
-}
-
-function getPreviousValue<T>(array: T[], target: T): T | null {
-  const index = array.indexOf(target)
-
-  if (index === -1 || index === 0) {
-    return null // Target not found or is the first element
-  }
-
-  return array[index - 1] ?? null
-}
 
 export async function fetchMysqlTables(): Promise<string[]> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))

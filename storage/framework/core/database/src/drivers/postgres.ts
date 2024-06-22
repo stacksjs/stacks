@@ -5,7 +5,7 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import type { Attribute, Model } from '@stacksjs/types'
+import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   checkPivotMigration,
   fetchOtherModelRelations,
@@ -13,6 +13,7 @@ import {
   getPivotTables,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
+  pluckChanges,
 } from '.'
 
 export async function resetPostgresDatabase() {
@@ -229,11 +230,13 @@ export async function createAlterTableMigration(modelPath: string) {
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.attributes
+  const currentFields = model.attributes as Attributes
 
-  // Determine fields to add and remove
-  const fieldsToAdd = Object.keys(currentFields)
-  const fieldsToRemove = Object.keys(lastFields)
+  const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
+
+  const fieldsToAdd = changes?.added || []
+
+  const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

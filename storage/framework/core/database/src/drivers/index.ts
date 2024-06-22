@@ -241,3 +241,25 @@ export async function getPivotTables(
 function hasRelations(obj: any, key: string): boolean {
   return key in obj
 }
+
+
+export function pluckChanges(array1: string[], array2: string[]): { added: string[]; removed: string[] } | null {
+  const removed = array1.filter((item) => !array2.includes(item))
+  const added = array2.filter((item) => !array1.includes(item))
+
+  if (removed.length === 0 && added.length === 0) {
+    return null
+  }
+
+  return { added, removed }
+}
+
+export function getPreviousValue<T>(array: T[], target: T): T | null {
+  const index = array.indexOf(target)
+
+  if (index === -1 || index === 0) {
+    return null // Target not found or is the first element
+  }
+
+  return array[index - 1] ?? null
+}
