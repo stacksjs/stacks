@@ -23,6 +23,7 @@ declare module 'vue' {
     ComingSoon: typeof import('./../../../libs/components/Marketing/ComingSoon.vue')['default']
     Container: typeof import('./../../../libs/components/Container.vue')['default']
     Counter: typeof import('./../../../libs/components/Buttons/Counter.vue')['default']
+    DatabaseForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/DatabaseForm.vue')['default']
     DeploymentHistory: typeof import('./../../../libs/components/Dashboard/Deployments/DeploymentHistory.vue')['default']
     DeploymentList: typeof import('./../../../libs/components/Dashboard/Deployments/DeploymentList.vue')['default']
     DeployScript: typeof import('./../../../libs/components/Dashboard/Deployments/DeployScript.vue')['default']

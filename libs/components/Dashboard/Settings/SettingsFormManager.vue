@@ -5,6 +5,7 @@ import AppForm from './Forms/AppForm.vue'
 import CacheForm from './Forms/CacheForm.vue'
 import CliForm from './Forms/CLIForm.vue'
 import CloudForm from './Forms/CloudForm.vue'
+import DatabaseForm from './Forms/DatabaseForm.vue'
 
 const props = defineProps({
   name: String,
@@ -120,6 +121,7 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
         <template v-else-if="name === 'cache'"><CacheForm /></template>
         <template v-else-if="name === 'cli'"><CliForm /></template>
         <template v-else-if="name === 'cloud'"><CloudForm /></template>
+        <template v-else-if="name === 'database'"><DatabaseForm /></template>
         <template v-else>
           <div class="text-center">
             <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
