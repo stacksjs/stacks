@@ -17,6 +17,8 @@ declare module 'vue' {
     Button: typeof import('./../../../libs/components/Button.vue')['default']
     CacheForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/CacheForm.vue')['default']
     CallToAction: typeof import('./../../../libs/components/Marketing/CallToAction.vue')['default']
+    CLIForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/CLIForm.vue')['default']
+    CloudForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/CloudForm.vue')['default']
     CodeEditor: typeof import('./../../../libs/components/CodeEditor.vue')['default']
     ComingSoon: typeof import('./../../../libs/components/Marketing/ComingSoon.vue')['default']
     Container: typeof import('./../../../libs/components/Container.vue')['default']

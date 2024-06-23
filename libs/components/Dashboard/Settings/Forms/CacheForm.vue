@@ -7,7 +7,7 @@
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
+        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
             <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
               DynamoDB
@@ -104,7 +104,7 @@
           </div>
         </div>
 
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
+        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
             <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
               Memcached
@@ -195,7 +195,7 @@
           </div>
         </div>
 
-        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
+        <div class="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
             <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
               Redis

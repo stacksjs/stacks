@@ -4,6 +4,7 @@ import AnalyticsForm from './Forms/AnalyticsForm.vue'
 import AppForm from './Forms/AppForm.vue'
 import CacheForm from './Forms/CacheForm.vue'
 import CliForm from './Forms/CLIForm.vue'
+import CloudForm from './Forms/CloudForm.vue'
 
 const props = defineProps({
   name: String,
@@ -104,7 +105,7 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
 
 <template>
   <main>
-    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2 px-4 py-6">
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2 px-4 py-6 sm:px-6 lg:px-8">
       <h2 class="text-base font-semibold leading-7 text-gray-900">
         {{ pageTitle }} Configuration
       </h2>
@@ -118,6 +119,7 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
         <template v-else-if="name === 'app'"><AppForm /></template>
         <template v-else-if="name === 'cache'"><CacheForm /></template>
         <template v-else-if="name === 'cli'"><CliForm /></template>
+        <template v-else-if="name === 'cloud'"><CloudForm /></template>
         <template v-else>
           <div class="text-center">
             <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
