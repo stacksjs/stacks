@@ -7,6 +7,7 @@ import { fs, glob } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
+  arrangeColumns,
   checkPivotMigration,
   fetchOtherModelRelations,
   getLastMigrationFields,
@@ -130,7 +131,6 @@ async function createTableMigration(modelPath: string) {
   await createPivotTableMigration(model, modelPath)
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
-  const fields = model.attributes
   const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
   const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
 
@@ -141,7 +141,7 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
 
-  for (const [fieldName, options] of Object.entries(fields)) {
+  for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validations?.rule)

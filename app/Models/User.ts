@@ -44,6 +44,7 @@ export default {
   attributes: {
     name: {
       required: true,
+      order: 5,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
@@ -58,6 +59,7 @@ export default {
     email: {
       unique: true,
       required: true,
+      order: 1,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -70,6 +72,7 @@ export default {
 
     jobTitle: {
       required: true,
+      order: 3,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
@@ -82,6 +85,7 @@ export default {
     },
     content: {
       required: true,
+      order: 4,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
@@ -95,6 +99,7 @@ export default {
 
     password: {
       required: true,
+      order: 2,
       validation: {
         rule: schema.string().minLength(6).maxLength(255),
         message: {

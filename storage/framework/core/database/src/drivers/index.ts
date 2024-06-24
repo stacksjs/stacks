@@ -242,7 +242,6 @@ function hasRelations(obj: any, key: string): boolean {
   return key in obj
 }
 
-
 export function pluckChanges(array1: string[], array2: string[]): { added: string[]; removed: string[] } | null {
   const removed = array1.filter((item) => !array2.includes(item))
   const added = array2.filter((item) => !array1.includes(item))
@@ -262,4 +261,18 @@ export function getPreviousValue<T>(array: T[], target: T): T | null {
   }
 
   return array[index - 1] ?? null
+}
+
+export function arrangeColumns(attributes: Attributes | undefined) {
+  if (!attributes) return []
+
+  const entries = Object.entries(attributes)
+
+  entries.sort(([keyA, valueA], [keyB, valueB]) => {
+    const orderA = valueA.order ?? Number.POSITIVE_INFINITY
+    const orderB = valueB.order ?? Number.POSITIVE_INFINITY
+    return orderA - orderB
+  })
+
+  return entries
 }
