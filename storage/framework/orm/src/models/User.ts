@@ -237,7 +237,7 @@ export class UserModel {
     await db.deleteFrom('users').where('id', '=', id).execute()
   }
 
-  where(...args: (string | number)[]): UserModel {
+  where(...args: (string | number | boolean | undefined | null)[]): UserModel {
     let column: any
     let operator: any
     let value: any
@@ -256,7 +256,7 @@ export class UserModel {
     return this
   }
 
-  static where(...args: (string | number)[]): UserModel {
+  static where(...args: (string | number | boolean | undefined | null)[]): UserModel {
     let column: any
     let operator: any
     let value: any
@@ -277,7 +277,7 @@ export class UserModel {
     return instance
   }
 
-  static whereName(value: string | number | boolean): UserModel {
+  static whereName(value: string | number | boolean | undefined | null): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('name', '=', value)
@@ -285,7 +285,7 @@ export class UserModel {
     return instance
   }
 
-  static whereEmail(value: string | number | boolean): UserModel {
+  static whereEmail(value: string | number | boolean | undefined | null): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('email', '=', value)
@@ -293,7 +293,7 @@ export class UserModel {
     return instance
   }
 
-  static whereJobTitle(value: string | number | boolean): UserModel {
+  static whereJobTitle(value: string | number | boolean | undefined | null): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('jobTitle', '=', value)
@@ -301,7 +301,7 @@ export class UserModel {
     return instance
   }
 
-  static wherePassword(value: string | number | boolean): UserModel {
+  static wherePassword(value: string | number | boolean | undefined | null): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('password', '=', value)
@@ -321,6 +321,12 @@ export class UserModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     return new UserModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null && model !== undefined
   }
 
   static async first(): Promise<UserType | undefined> {
@@ -503,7 +509,7 @@ async function remove(id: number): Promise<void> {
   await db.deleteFrom('users').where('id', '=', id).execute()
 }
 
-export async function whereName(value: any): Promise<UserModel[]> {
+export async function whereName(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('name', '=', value)
 
   const results = await query.execute()
@@ -511,7 +517,7 @@ export async function whereName(value: any): Promise<UserModel[]> {
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-export async function whereEmail(value: any): Promise<UserModel[]> {
+export async function whereEmail(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('email', '=', value)
 
   const results = await query.execute()
@@ -519,7 +525,7 @@ export async function whereEmail(value: any): Promise<UserModel[]> {
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-export async function whereJobTitle(value: any): Promise<UserModel[]> {
+export async function whereJobTitle(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('jobTitle', '=', value)
 
   const results = await query.execute()
@@ -527,7 +533,7 @@ export async function whereJobTitle(value: any): Promise<UserModel[]> {
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-export async function wherePassword(value: any): Promise<UserModel[]> {
+export async function wherePassword(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('password', '=', value)
 
   const results = await query.execute()

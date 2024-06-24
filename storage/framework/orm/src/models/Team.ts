@@ -242,7 +242,7 @@ export class TeamModel {
     await db.deleteFrom('teams').where('id', '=', id).execute()
   }
 
-  where(...args: (string | number)[]): TeamModel {
+  where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
     let column: any
     let operator: any
     let value: any
@@ -261,7 +261,7 @@ export class TeamModel {
     return this
   }
 
-  static where(...args: (string | number)[]): TeamModel {
+  static where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
     let column: any
     let operator: any
     let value: any
@@ -282,7 +282,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereName(value: string | number | boolean): TeamModel {
+  static whereName(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('name', '=', value)
@@ -290,7 +290,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereCompanyName(value: string | number | boolean): TeamModel {
+  static whereCompanyName(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('companyName', '=', value)
@@ -298,7 +298,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereEmail(value: string | number | boolean): TeamModel {
+  static whereEmail(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('email', '=', value)
@@ -306,7 +306,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereBillingEmail(value: string | number | boolean): TeamModel {
+  static whereBillingEmail(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('billingEmail', '=', value)
@@ -314,7 +314,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereStatus(value: string | number | boolean): TeamModel {
+  static whereStatus(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('status', '=', value)
@@ -322,7 +322,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereDescription(value: string | number | boolean): TeamModel {
+  static whereDescription(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('description', '=', value)
@@ -330,7 +330,7 @@ export class TeamModel {
     return instance
   }
 
-  static wherePath(value: string | number | boolean): TeamModel {
+  static wherePath(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('path', '=', value)
@@ -338,7 +338,7 @@ export class TeamModel {
     return instance
   }
 
-  static whereIsPersonal(value: string | number | boolean): TeamModel {
+  static whereIsPersonal(value: string | number | boolean | undefined | null): TeamModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('isPersonal', '=', value)
@@ -358,6 +358,12 @@ export class TeamModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     return new TeamModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<TeamType | undefined> {
@@ -524,7 +530,7 @@ async function remove(id: number): Promise<void> {
   await db.deleteFrom('teams').where('id', '=', id).execute()
 }
 
-export async function whereName(value: any): Promise<TeamModel[]> {
+export async function whereName(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('name', '=', value)
 
   const results = await query.execute()
@@ -532,7 +538,7 @@ export async function whereName(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function whereCompanyName(value: any): Promise<TeamModel[]> {
+export async function whereCompanyName(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('companyName', '=', value)
 
   const results = await query.execute()
@@ -540,7 +546,7 @@ export async function whereCompanyName(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function whereEmail(value: any): Promise<TeamModel[]> {
+export async function whereEmail(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('email', '=', value)
 
   const results = await query.execute()
@@ -548,7 +554,7 @@ export async function whereEmail(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function whereBillingEmail(value: any): Promise<TeamModel[]> {
+export async function whereBillingEmail(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('billingEmail', '=', value)
 
   const results = await query.execute()
@@ -556,7 +562,7 @@ export async function whereBillingEmail(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function whereStatus(value: any): Promise<TeamModel[]> {
+export async function whereStatus(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('status', '=', value)
 
   const results = await query.execute()
@@ -564,7 +570,7 @@ export async function whereStatus(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function whereDescription(value: any): Promise<TeamModel[]> {
+export async function whereDescription(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('description', '=', value)
 
   const results = await query.execute()
@@ -572,7 +578,7 @@ export async function whereDescription(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function wherePath(value: any): Promise<TeamModel[]> {
+export async function wherePath(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('path', '=', value)
 
   const results = await query.execute()
@@ -580,7 +586,7 @@ export async function wherePath(value: any): Promise<TeamModel[]> {
   return results.map((modelItem) => new TeamModel(modelItem))
 }
 
-export async function whereIsPersonal(value: any): Promise<TeamModel[]> {
+export async function whereIsPersonal(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('isPersonal', '=', value)
 
   const results = await query.execute()

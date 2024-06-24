@@ -217,7 +217,7 @@ export class ReleaseModel {
     await db.deleteFrom('releases').where('id', '=', id).execute()
   }
 
-  where(...args: (string | number)[]): ReleaseModel {
+  where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
     let column: any
     let operator: any
     let value: any
@@ -236,7 +236,7 @@ export class ReleaseModel {
     return this
   }
 
-  static where(...args: (string | number)[]): ReleaseModel {
+  static where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
     let column: any
     let operator: any
     let value: any
@@ -257,7 +257,7 @@ export class ReleaseModel {
     return instance
   }
 
-  static whereVersion(value: string | number | boolean): ReleaseModel {
+  static whereVersion(value: string | number | boolean | undefined | null): ReleaseModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('version', '=', value)
@@ -277,6 +277,12 @@ export class ReleaseModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     return new ReleaseModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<ReleaseType | undefined> {
@@ -431,7 +437,7 @@ async function remove(id: number): Promise<void> {
   await db.deleteFrom('releases').where('id', '=', id).execute()
 }
 
-export async function whereVersion(value: any): Promise<ReleaseModel[]> {
+export async function whereVersion(value: string | number | boolean | undefined | null): Promise<ReleaseModel[]> {
   const query = db.selectFrom('releases').where('version', '=', value)
 
   const results = await query.execute()

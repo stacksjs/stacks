@@ -220,7 +220,7 @@ export class SubscriberModel {
     await db.deleteFrom('subscribers').where('id', '=', id).execute()
   }
 
-  where(...args: (string | number)[]): SubscriberModel {
+  where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
     let column: any
     let operator: any
     let value: any
@@ -239,7 +239,7 @@ export class SubscriberModel {
     return this
   }
 
-  static where(...args: (string | number)[]): SubscriberModel {
+  static where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
     let column: any
     let operator: any
     let value: any
@@ -260,7 +260,7 @@ export class SubscriberModel {
     return instance
   }
 
-  static whereSubscribed(value: string | number | boolean): SubscriberModel {
+  static whereSubscribed(value: string | number | boolean | undefined | null): SubscriberModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('subscribed', '=', value)
@@ -280,6 +280,12 @@ export class SubscriberModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     return new SubscriberModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<SubscriberType | undefined> {
@@ -434,7 +440,7 @@ async function remove(id: number): Promise<void> {
   await db.deleteFrom('subscribers').where('id', '=', id).execute()
 }
 
-export async function whereSubscribed(value: any): Promise<SubscriberModel[]> {
+export async function whereSubscribed(value: string | number | boolean | undefined | null): Promise<SubscriberModel[]> {
   const query = db.selectFrom('subscribers').where('subscribed', '=', value)
 
   const results = await query.execute()

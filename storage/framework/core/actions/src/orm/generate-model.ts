@@ -769,7 +769,7 @@ async function generateModelString(
 
     constructorFields += `this.${attribute.field} = ${formattedModelName}?.${attribute.field}\n   `
 
-    whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean): ${modelName}Model {
+    whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): ${modelName}Model {
         const instance = new this(null)
 
         instance.query = instance.query.where('${attribute.field}', '=', value)
@@ -777,7 +777,7 @@ async function generateModelString(
         return instance
       } \n\n`
 
-    whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: any): Promise<${modelName}Model[]> {
+    whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): Promise<${modelName}Model[]> {
         const query = db.selectFrom('${tableName}').where('${attribute.field}', '=', value)
 
         const results = await query.execute()
@@ -1025,7 +1025,7 @@ async function generateModelString(
           .execute()
       }
 
-      where(...args: (string | number)[]): ${modelName}Model {
+      where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
         let column: any
         let operator: any
         let value: any
@@ -1044,7 +1044,7 @@ async function generateModelString(
         return this
       }
 
-      static where(...args: (string | number)[]): ${modelName}Model {
+      static where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
         let column: any
         let operator: any
         let value: any
@@ -1079,6 +1079,12 @@ async function generateModelString(
         const model = await this.query.selectAll().executeTakeFirst()
         
         return new ${modelName}Model(model)
+      }
+
+      async exists(): Promise<boolean> {
+        const model = await this.query.selectAll().executeTakeFirst()
+        
+        return model !== null || model !== undefined
       }
   
       static async first(): Promise<${modelName}Type | undefined> {

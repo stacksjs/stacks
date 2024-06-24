@@ -224,7 +224,7 @@ export class PostModel {
     await db.deleteFrom('posts').where('id', '=', id).execute()
   }
 
-  where(...args: (string | number)[]): PostModel {
+  where(...args: (string | number | boolean | undefined | null)[]): PostModel {
     let column: any
     let operator: any
     let value: any
@@ -243,7 +243,7 @@ export class PostModel {
     return this
   }
 
-  static where(...args: (string | number)[]): PostModel {
+  static where(...args: (string | number | boolean | undefined | null)[]): PostModel {
     let column: any
     let operator: any
     let value: any
@@ -264,7 +264,7 @@ export class PostModel {
     return instance
   }
 
-  static whereTitle(value: string | number | boolean): PostModel {
+  static whereTitle(value: string | number | boolean | undefined | null): PostModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('title', '=', value)
@@ -272,7 +272,7 @@ export class PostModel {
     return instance
   }
 
-  static whereBody(value: string | number | boolean): PostModel {
+  static whereBody(value: string | number | boolean | undefined | null): PostModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('body', '=', value)
@@ -292,6 +292,12 @@ export class PostModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     return new PostModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<PostType | undefined> {
@@ -456,7 +462,7 @@ async function remove(id: number): Promise<void> {
   await db.deleteFrom('posts').where('id', '=', id).execute()
 }
 
-export async function whereTitle(value: any): Promise<PostModel[]> {
+export async function whereTitle(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('title', '=', value)
 
   const results = await query.execute()
@@ -464,7 +470,7 @@ export async function whereTitle(value: any): Promise<PostModel[]> {
   return results.map((modelItem) => new PostModel(modelItem))
 }
 
-export async function whereBody(value: any): Promise<PostModel[]> {
+export async function whereBody(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('body', '=', value)
 
   const results = await query.execute()

@@ -226,7 +226,7 @@ export class ProjectModel {
     await db.deleteFrom('projects').where('id', '=', id).execute()
   }
 
-  where(...args: (string | number)[]): ProjectModel {
+  where(...args: (string | number | boolean | undefined | null)[]): ProjectModel {
     let column: any
     let operator: any
     let value: any
@@ -245,7 +245,7 @@ export class ProjectModel {
     return this
   }
 
-  static where(...args: (string | number)[]): ProjectModel {
+  static where(...args: (string | number | boolean | undefined | null)[]): ProjectModel {
     let column: any
     let operator: any
     let value: any
@@ -266,7 +266,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereName(value: string | number | boolean): ProjectModel {
+  static whereName(value: string | number | boolean | undefined | null): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('name', '=', value)
@@ -274,7 +274,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereDescription(value: string | number | boolean): ProjectModel {
+  static whereDescription(value: string | number | boolean | undefined | null): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('description', '=', value)
@@ -282,7 +282,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereUrl(value: string | number | boolean): ProjectModel {
+  static whereUrl(value: string | number | boolean | undefined | null): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('url', '=', value)
@@ -290,7 +290,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereStatus(value: string | number | boolean): ProjectModel {
+  static whereStatus(value: string | number | boolean | undefined | null): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('status', '=', value)
@@ -310,6 +310,12 @@ export class ProjectModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     return new ProjectModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<ProjectType | undefined> {
@@ -464,7 +470,7 @@ async function remove(id: number): Promise<void> {
   await db.deleteFrom('projects').where('id', '=', id).execute()
 }
 
-export async function whereName(value: any): Promise<ProjectModel[]> {
+export async function whereName(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('name', '=', value)
 
   const results = await query.execute()
@@ -472,7 +478,7 @@ export async function whereName(value: any): Promise<ProjectModel[]> {
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-export async function whereDescription(value: any): Promise<ProjectModel[]> {
+export async function whereDescription(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('description', '=', value)
 
   const results = await query.execute()
@@ -480,7 +486,7 @@ export async function whereDescription(value: any): Promise<ProjectModel[]> {
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-export async function whereUrl(value: any): Promise<ProjectModel[]> {
+export async function whereUrl(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('url', '=', value)
 
   const results = await query.execute()
@@ -488,7 +494,7 @@ export async function whereUrl(value: any): Promise<ProjectModel[]> {
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-export async function whereStatus(value: any): Promise<ProjectModel[]> {
+export async function whereStatus(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('status', '=', value)
 
   const results = await query.execute()
