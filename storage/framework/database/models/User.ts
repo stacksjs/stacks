@@ -12,10 +12,11 @@ export default {
   autoIncrement: true, // defaults to true
 
   traits: {
-    useAuth: true, // defaults to false, `authenticatable` used as an alias
+    useAuth: {
+      useTwoFactor: true,
+    },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
-
     useSearch: {
       // defaults to true, `searchable` used as an alias
       searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)

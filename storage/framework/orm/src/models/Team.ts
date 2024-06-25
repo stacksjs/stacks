@@ -1,3 +1,4 @@
+import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import AccessToken from './AccessToken'

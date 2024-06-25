@@ -2,7 +2,9 @@ import type { ModelNames, Model as ModelType } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable, SearchOptions } from '.'
 
-export type AuthOptions = {}
+export type AuthOptions = {
+  useTwoFactor?: boolean
+}
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 

@@ -798,6 +798,7 @@ async function generateModelString(
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
+    import { generateTwoFactorSecret } from '@stacksjs/auth'
     ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'

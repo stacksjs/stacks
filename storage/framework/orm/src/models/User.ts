@@ -1,3 +1,4 @@
+import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import Post from './Post'
@@ -326,7 +327,7 @@ export class UserModel {
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 
-    return model !== null && model !== undefined
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<UserType | undefined> {

@@ -128,6 +128,8 @@ async function createTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const tableName = await getTableName(model, modelPath)
 
+  const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
+
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
 
@@ -156,6 +158,10 @@ async function createTableMigration(modelPath: string) {
     }
 
     migrationContent += `)\n`
+  }
+
+  if (false !== twoFactorEnabled && twoFactorEnabled) {
+    migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
   }
 
   if (otherModelRelations?.length) {
