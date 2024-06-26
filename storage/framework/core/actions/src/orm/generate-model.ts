@@ -638,6 +638,7 @@ async function generateModelString(
   let whereFunctionStatements = ''
   let relationMethods = ``
   let relationImports = ``
+  let twoFactorStatements = ''
 
   const relations = await getRelations(model, modelName)
 
@@ -760,6 +761,30 @@ async function generateModelString(
 
   constructorFields += `this.id = ${formattedModelName}?.id\n   `
 
+  const useTwoFactor = model.traits?.useAuth?.useTwoFactor
+
+  if (useTwoFactor) {
+    declareFields += `public two_factor_secret: string | undefined \n`
+    constructorFields += `this.two_factor_secret = ${formattedModelName}?.two_factor_secret\n   `
+
+    twoFactorStatements += `
+      async generateTwoFactorForModel() {
+        const secret = generateTwoFactorSecret()
+
+        await this.update({ 'two_factor_secret': secret })
+      }
+
+      verifyTwoFactorCode(code: string): boolean {
+        if (! this.${formattedModelName}) return false
+
+        const modelTwoFactorSecret = this.${formattedModelName}.two_factor_secret
+        const isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+
+        return isValid
+      }
+    `
+  }
+
   for (const attribute of attributes) {
     const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
@@ -796,9 +821,14 @@ async function generateModelString(
     constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
   }
 
+  if (useTwoFactor) {
+    fieldString += `two_factor_secret: string \n`
+  }
+
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
+    import { verifyTwoFactorCode } from '@stacksjs/auth'
     ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
@@ -1225,6 +1255,8 @@ async function generateModelString(
 
         return output as ${modelName}
       }
+
+      ${twoFactorStatements}
     }
 
     async function find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {

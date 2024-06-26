@@ -12,7 +12,6 @@ import {
   fetchOtherModelRelations,
   getLastMigrationFields,
   getPivotTables,
-  getPreviousValue,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
   pluckChanges,

@@ -1,4 +1,5 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import Post from './Post'
@@ -19,6 +20,7 @@ export interface UsersTable {
   password: string
   deployment_id: number
   post_id: number
+  two_factor_secret: string
 
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string | undefined, never>
@@ -63,6 +65,7 @@ export class UserModel {
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
+  public two_factor_secret: string | undefined
   public name: string | undefined
   public email: string | undefined
   public jobTitle: string | undefined
@@ -73,6 +76,7 @@ export class UserModel {
   constructor(user: Partial<UserType> | null) {
     this.user = user
     this.id = user?.id
+    this.two_factor_secret = user?.two_factor_secret
     this.name = user?.name
     this.email = user?.email
     this.jobTitle = user?.jobTitle
@@ -478,6 +482,21 @@ export class UserModel {
     type User = Omit<UserType, 'password'>
 
     return output as User
+  }
+
+  async generateTwoFactorForModel() {
+    const secret = generateTwoFactorSecret()
+
+    await this.update({ two_factor_secret: secret })
+  }
+
+  verifyTwoFactorCode(code: string): boolean {
+    if (!this.user) return false
+
+    const modelTwoFactorSecret = this.user.two_factor_secret
+    const isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+
+    return isValid
   }
 }
 

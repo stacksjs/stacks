@@ -1,4 +1,5 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import User from './User'

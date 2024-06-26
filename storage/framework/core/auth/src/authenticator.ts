@@ -13,6 +13,12 @@ export function generateTwoFactorToken(): string {
   return token
 }
 
+export function verifyTwoFactorCode(token: string, secret: string): boolean {
+  const isValid = authenticator.verify({ token, secret })
+
+  return isValid
+}
+
 export function generateQrCode(): void {
   const user = 'johndoe@example.com'
   const service = 'StacksJS 2fa'
