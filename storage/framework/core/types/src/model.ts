@@ -120,6 +120,8 @@ export interface Attribute {
   unique?: boolean
   order?: number
   required?: boolean
+  hidden?: boolean
+  fillable?: boolean
   factory?: () => any
   validation?: {
     rule: VineType

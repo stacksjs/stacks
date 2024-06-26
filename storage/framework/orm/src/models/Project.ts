@@ -52,7 +52,6 @@ interface QueryOptions {
 
 export class ProjectModel {
   private project: Partial<ProjectType> | null
-  private results: Partial<ProjectType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -85,12 +84,14 @@ export class ProjectModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a Project by ID
   static async find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel | null> {
     let query = db.selectFrom('projects').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -99,11 +100,13 @@ export class ProjectModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel> {
     let query = db.selectFrom('projects').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -112,18 +115,20 @@ export class ProjectModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof ProjectType)[]): Promise<ProjectModel[]> {
     let query = db.selectFrom('projects').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new ProjectModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   // Method to get a Project by criteria
@@ -139,7 +144,7 @@ export class ProjectModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new ProjectModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   // Method to get a Project by criteria
@@ -148,7 +153,7 @@ export class ProjectModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new ProjectModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   // Method to get a Project by criteria
@@ -156,12 +161,12 @@ export class ProjectModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+      return model.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+    return model.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -441,6 +446,13 @@ export class ProjectModel {
 
     return output as Project
   }
+
+  parseResult(model: any): ProjectModel {
+    delete model['password']
+    delete model.project['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel | null> {
@@ -468,7 +480,7 @@ export async function create(newProject: NewProject): Promise<ProjectModel> {
   return (await find(Number(result.insertId))) as ProjectModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('projects').where('id', '=', id).execute()
 }
 
@@ -477,7 +489,7 @@ export async function whereName(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
 }
 
 export async function whereDescription(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
@@ -485,7 +497,7 @@ export async function whereDescription(value: string | number | boolean | undefi
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
 }
 
 export async function whereUrl(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
@@ -493,7 +505,7 @@ export async function whereUrl(value: string | number | boolean | undefined | nu
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
 }
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
@@ -501,7 +513,7 @@ export async function whereStatus(value: string | number | boolean | undefined |
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
 }
 
 const Project = ProjectModel

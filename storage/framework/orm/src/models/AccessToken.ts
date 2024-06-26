@@ -54,7 +54,6 @@ interface QueryOptions {
 
 export class AccessTokenModel {
   private accesstoken: Partial<AccessTokenType> | null
-  private results: Partial<AccessTokenType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -89,12 +88,14 @@ export class AccessTokenModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a AccessToken by ID
   static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -103,11 +104,13 @@ export class AccessTokenModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -116,18 +119,20 @@ export class AccessTokenModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
     let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   // Method to get a AccessToken by criteria
@@ -143,7 +148,7 @@ export class AccessTokenModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   // Method to get a AccessToken by criteria
@@ -152,7 +157,7 @@ export class AccessTokenModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   // Method to get a AccessToken by criteria
@@ -160,12 +165,12 @@ export class AccessTokenModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+      return model.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+    return model.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -456,6 +461,13 @@ export class AccessTokenModel {
 
     return output as AccessToken
   }
+
+  parseResult(model: any): AccessTokenModel {
+    delete model['password']
+    delete model.accesstoken['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
@@ -483,7 +495,7 @@ export async function create(newAccessToken: NewAccessToken): Promise<AccessToke
   return (await find(Number(result.insertId))) as AccessTokenModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
 }
 
@@ -492,7 +504,7 @@ export async function whereName(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
 }
 
 export async function whereToken(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
@@ -500,7 +512,7 @@ export async function whereToken(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
 }
 
 export async function wherePlainTextToken(
@@ -510,7 +522,7 @@ export async function wherePlainTextToken(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
 }
 
 export async function whereAbilities(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
@@ -518,7 +530,7 @@ export async function whereAbilities(value: string | number | boolean | undefine
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
 }
 
 const AccessToken = AccessTokenModel

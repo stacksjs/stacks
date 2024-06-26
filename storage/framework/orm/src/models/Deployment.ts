@@ -57,7 +57,6 @@ interface QueryOptions {
 
 export class DeploymentModel {
   private deployment: Partial<DeploymentType> | null
-  private results: Partial<DeploymentType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -98,12 +97,14 @@ export class DeploymentModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a Deployment by ID
   static async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | null> {
     let query = db.selectFrom('deployments').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -112,11 +113,13 @@ export class DeploymentModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel> {
     let query = db.selectFrom('deployments').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -125,18 +128,20 @@ export class DeploymentModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof DeploymentType)[]): Promise<DeploymentModel[]> {
     let query = db.selectFrom('deployments').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new DeploymentModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   // Method to get a Deployment by criteria
@@ -152,7 +157,7 @@ export class DeploymentModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new DeploymentModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   // Method to get a Deployment by criteria
@@ -161,7 +166,7 @@ export class DeploymentModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new DeploymentModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   // Method to get a Deployment by criteria
@@ -169,12 +174,12 @@ export class DeploymentModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+      return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+    return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -488,6 +493,13 @@ export class DeploymentModel {
 
     return output as Deployment
   }
+
+  parseResult(model: any): DeploymentModel {
+    delete model['password']
+    delete model.deployment['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | null> {
@@ -515,7 +527,7 @@ export async function create(newDeployment: NewDeployment): Promise<DeploymentMo
   return (await find(Number(result.insertId))) as DeploymentModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('deployments').where('id', '=', id).execute()
 }
 
@@ -524,7 +536,7 @@ export async function whereCommitSha(value: string | number | boolean | undefine
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 export async function whereCommitMessage(
@@ -534,7 +546,7 @@ export async function whereCommitMessage(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 export async function whereBranch(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
@@ -542,7 +554,7 @@ export async function whereBranch(value: string | number | boolean | undefined |
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
@@ -550,7 +562,7 @@ export async function whereStatus(value: string | number | boolean | undefined |
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 export async function whereExecutionTime(
@@ -560,7 +572,7 @@ export async function whereExecutionTime(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 export async function whereDeployScript(
@@ -570,7 +582,7 @@ export async function whereDeployScript(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 export async function whereTerminalOutput(
@@ -580,7 +592,7 @@ export async function whereTerminalOutput(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
 }
 
 const Deployment = DeploymentModel

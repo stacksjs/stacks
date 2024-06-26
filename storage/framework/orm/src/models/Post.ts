@@ -52,7 +52,6 @@ interface QueryOptions {
 
 export class PostModel {
   private post: Partial<PostType> | null
-  private results: Partial<PostType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -83,12 +82,14 @@ export class PostModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a Post by ID
   static async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | null> {
     let query = db.selectFrom('posts').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -97,11 +98,13 @@ export class PostModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof PostType)[]): Promise<PostModel> {
     let query = db.selectFrom('posts').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -110,18 +113,20 @@ export class PostModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof PostType)[]): Promise<PostModel[]> {
     let query = db.selectFrom('posts').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new PostModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
   }
 
   // Method to get a Post by criteria
@@ -137,7 +142,7 @@ export class PostModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new PostModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
   }
 
   // Method to get a Post by criteria
@@ -146,7 +151,7 @@ export class PostModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new PostModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
   }
 
   // Method to get a Post by criteria
@@ -154,12 +159,12 @@ export class PostModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: PostModel) => new PostModel(modelItem))
+      return model.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: PostModel) => new PostModel(modelItem))
+    return model.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -433,6 +438,13 @@ export class PostModel {
 
     return output as Post
   }
+
+  parseResult(model: any): PostModel {
+    delete model['password']
+    delete model.post['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | null> {
@@ -460,7 +472,7 @@ export async function create(newPost: NewPost): Promise<PostModel> {
   return (await find(Number(result.insertId))) as PostModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('posts').where('id', '=', id).execute()
 }
 
@@ -469,7 +481,7 @@ export async function whereTitle(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new PostModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
 }
 
 export async function whereBody(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
@@ -477,7 +489,7 @@ export async function whereBody(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new PostModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
 }
 
 const Post = PostModel

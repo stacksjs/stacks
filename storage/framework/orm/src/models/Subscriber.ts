@@ -50,7 +50,6 @@ interface QueryOptions {
 
 export class SubscriberModel {
   private subscriber: Partial<SubscriberType> | null
-  private results: Partial<SubscriberType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -79,12 +78,14 @@ export class SubscriberModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a Subscriber by ID
   static async find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | null> {
     let query = db.selectFrom('subscribers').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -93,11 +94,13 @@ export class SubscriberModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel> {
     let query = db.selectFrom('subscribers').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -106,18 +109,20 @@ export class SubscriberModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof SubscriberType)[]): Promise<SubscriberModel[]> {
     let query = db.selectFrom('subscribers').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new SubscriberModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   // Method to get a Subscriber by criteria
@@ -133,7 +138,7 @@ export class SubscriberModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new SubscriberModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   // Method to get a Subscriber by criteria
@@ -142,7 +147,7 @@ export class SubscriberModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new SubscriberModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   // Method to get a Subscriber by criteria
@@ -150,12 +155,12 @@ export class SubscriberModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+      return model.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+    return model.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -411,6 +416,13 @@ export class SubscriberModel {
 
     return output as Subscriber
   }
+
+  parseResult(model: any): SubscriberModel {
+    delete model['password']
+    delete model.subscriber['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | null> {
@@ -438,7 +450,7 @@ export async function create(newSubscriber: NewSubscriber): Promise<SubscriberMo
   return (await find(Number(result.insertId))) as SubscriberModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('subscribers').where('id', '=', id).execute()
 }
 
@@ -447,7 +459,7 @@ export async function whereSubscribed(value: string | number | boolean | undefin
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new SubscriberModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
 }
 
 const Subscriber = SubscriberModel

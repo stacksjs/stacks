@@ -253,16 +253,6 @@ export function pluckChanges(array1: string[], array2: string[]): { added: strin
   return { added, removed }
 }
 
-export function getPreviousValue<T>(array: T[], target: T): T | null {
-  const index = array.indexOf(target)
-
-  if (index === -1 || index === 0) {
-    return null // Target not found or is the first element
-  }
-
-  return array[index - 1] ?? null
-}
-
 export function arrangeColumns(attributes: Attributes | undefined) {
   if (!attributes) return []
 

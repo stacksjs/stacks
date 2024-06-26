@@ -46,6 +46,7 @@ export default {
     name: {
       required: true,
       order: 5,
+
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {

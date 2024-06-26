@@ -49,7 +49,6 @@ interface QueryOptions {
 
 export class SubscriberEmailModel {
   private subscriberemail: Partial<SubscriberEmailType> | null
-  private results: Partial<SubscriberEmailType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -76,12 +75,14 @@ export class SubscriberEmailModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a SubscriberEmail by ID
   static async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | null> {
     let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -90,11 +91,13 @@ export class SubscriberEmailModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel> {
     let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -103,18 +106,20 @@ export class SubscriberEmailModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel[]> {
     let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -133,7 +138,7 @@ export class SubscriberEmailModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -142,7 +147,7 @@ export class SubscriberEmailModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -150,12 +155,12 @@ export class SubscriberEmailModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+      return model.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+    return model.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -411,6 +416,13 @@ export class SubscriberEmailModel {
 
     return output as SubscriberEmail
   }
+
+  parseResult(model: any): SubscriberEmailModel {
+    delete model['password']
+    delete model.subscriberemail['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | null> {
@@ -438,7 +450,7 @@ export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<Su
   return (await find(Number(result.insertId))) as SubscriberEmailModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
 }
 
@@ -447,7 +459,7 @@ export async function whereEmail(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new SubscriberEmailModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
 }
 
 const SubscriberEmail = SubscriberEmailModel

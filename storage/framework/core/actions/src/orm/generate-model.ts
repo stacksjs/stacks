@@ -872,7 +872,6 @@ async function generateModelString(
 
     export class ${modelName}Model {
       private ${formattedModelName}: Partial<${modelName}Type> | null
-      private results: Partial<${modelName}Type>[]
       private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
       protected query: any
       protected hasSelect: boolean
@@ -898,14 +897,16 @@ async function generateModelString(
 
         if (!model)
           return null
-
-        return this
+        
+        return this.parseResult(this)
       }
 
       // Method to find a ${modelName} by ID
       static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
+        const instance = new this(null)
+        
         if (fields)
           query = query.select(fields)
         else
@@ -916,11 +917,13 @@ async function generateModelString(
         if (!model)
           return null
 
-        return new this(model)
+        return instance.parseResult(new this(model))
       }
 
       static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+        const instance = new this(null)
 
         if (fields)
           query = query.select(fields)
@@ -932,12 +935,15 @@ async function generateModelString(
         if (!model)
           throw(\`No model results found for \${id}\ \`)
 
-        return new this(model)
+
+        return instance.parseResult(new this(model))
       }
 
       static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
+        const instance = new this(null)
+         
         if (fields)
           query = query.select(fields)
         else
@@ -945,7 +951,9 @@ async function generateModelString(
 
         const model = await query.execute()
 
-        return model.map(modelItem => new ${modelName}Model(modelItem))
+        instance.parseResult(new ${modelName}Model(modelItem))
+
+        return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }
 
       // Method to get a ${modelName} by criteria
@@ -1256,6 +1264,13 @@ async function generateModelString(
         return output as ${modelName}
       }
 
+      parseResult(model: any): ${modelName}Model {
+        delete model['password']
+        delete model.${formattedModelName}['password']
+
+        return model
+      }
+
       ${twoFactorStatements}
     }
 
@@ -1286,10 +1301,10 @@ async function generateModelString(
       return await find(Number(result.insertId)) as ${modelName}Model
     }
 
-    async function remove(id: number): Promise<void> {
-        await db.deleteFrom('${tableName}')
-          .where('id', '=', id)
-          .execute()
+    export async function remove(id: number): Promise<void> {
+      await db.deleteFrom('${tableName}')
+        .where('id', '=', id)
+        .execute()
     }
 
     ${whereFunctionStatements}

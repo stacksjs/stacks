@@ -49,7 +49,6 @@ interface QueryOptions {
 
 export class ReleaseModel {
   private release: Partial<ReleaseType> | null
-  private results: Partial<ReleaseType>[]
   private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
@@ -76,12 +75,14 @@ export class ReleaseModel {
 
     if (!model) return null
 
-    return this
+    return this.parseResult(this)
   }
 
   // Method to find a Release by ID
   static async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | null> {
     let query = db.selectFrom('releases').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -90,11 +91,13 @@ export class ReleaseModel {
 
     if (!model) return null
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findOrFail(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel> {
     let query = db.selectFrom('releases').where('id', '=', id)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
@@ -103,18 +106,20 @@ export class ReleaseModel {
 
     if (!model) throw `No model results found for ${id} `
 
-    return new this(model)
+    return instance.parseResult(new this(model))
   }
 
   static async findMany(ids: number[], fields?: (keyof ReleaseType)[]): Promise<ReleaseModel[]> {
     let query = db.selectFrom('releases').where('id', 'in', ids)
+
+    const instance = new this(null)
 
     if (fields) query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new ReleaseModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   // Method to get a Release by criteria
@@ -130,7 +135,7 @@ export class ReleaseModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new ReleaseModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   // Method to get a Release by criteria
@@ -139,7 +144,7 @@ export class ReleaseModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new ReleaseModel(modelItem))
+    return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   // Method to get a Release by criteria
@@ -147,12 +152,12 @@ export class ReleaseModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+      return model.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+    return model.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   static async count(): Promise<number> {
@@ -408,6 +413,13 @@ export class ReleaseModel {
 
     return output as Release
   }
+
+  parseResult(model: any): ReleaseModel {
+    delete model['password']
+    delete model.release['password']
+
+    return model
+  }
 }
 
 async function find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | null> {
@@ -435,7 +447,7 @@ export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
   return (await find(Number(result.insertId))) as ReleaseModel
 }
 
-async function remove(id: number): Promise<void> {
+export async function remove(id: number): Promise<void> {
   await db.deleteFrom('releases').where('id', '=', id).execute()
 }
 
@@ -444,7 +456,7 @@ export async function whereVersion(value: string | number | boolean | undefined 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => new ReleaseModel(modelItem))
+  return results.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
 }
 
 const Release = ReleaseModel
