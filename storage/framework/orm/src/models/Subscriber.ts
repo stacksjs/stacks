@@ -50,7 +50,7 @@ interface QueryOptions {
 
 export class SubscriberModel {
   private subscriber: Partial<SubscriberType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = [] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -122,6 +122,8 @@ export class SubscriberModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new SubscriberModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
@@ -138,7 +140,7 @@ export class SubscriberModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
+    return model.map((modelItem) => new SubscriberModel(modelItem))
   }
 
   // Method to get a Subscriber by criteria
@@ -147,7 +149,7 @@ export class SubscriberModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
+    return model.map((modelItem) => new SubscriberModel(modelItem))
   }
 
   // Method to get a Subscriber by criteria
@@ -155,12 +157,12 @@ export class SubscriberModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
+      return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
+    return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -418,8 +420,10 @@ export class SubscriberModel {
   }
 
   parseResult(model: any): SubscriberModel {
-    delete model['password']
-    delete model.subscriber['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.subscriber[hiddenAttribute]
+    }
 
     return model
   }
@@ -459,7 +463,7 @@ export async function whereSubscribed(value: string | number | boolean | undefin
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
+  return results.map((modelItem) => new SubscriberModel(modelItem))
 }
 
 const Subscriber = SubscriberModel

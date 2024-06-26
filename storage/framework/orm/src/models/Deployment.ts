@@ -57,7 +57,7 @@ interface QueryOptions {
 
 export class DeploymentModel {
   private deployment: Partial<DeploymentType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = [] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -141,6 +141,8 @@ export class DeploymentModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new DeploymentModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
@@ -157,7 +159,7 @@ export class DeploymentModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+    return model.map((modelItem) => new DeploymentModel(modelItem))
   }
 
   // Method to get a Deployment by criteria
@@ -166,7 +168,7 @@ export class DeploymentModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+    return model.map((modelItem) => new DeploymentModel(modelItem))
   }
 
   // Method to get a Deployment by criteria
@@ -174,12 +176,12 @@ export class DeploymentModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
+      return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
+    return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -495,8 +497,10 @@ export class DeploymentModel {
   }
 
   parseResult(model: any): DeploymentModel {
-    delete model['password']
-    delete model.deployment['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.deployment[hiddenAttribute]
+    }
 
     return model
   }
@@ -536,7 +540,7 @@ export async function whereCommitSha(value: string | number | boolean | undefine
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 export async function whereCommitMessage(
@@ -546,7 +550,7 @@ export async function whereCommitMessage(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 export async function whereBranch(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
@@ -554,7 +558,7 @@ export async function whereBranch(value: string | number | boolean | undefined |
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
@@ -562,7 +566,7 @@ export async function whereStatus(value: string | number | boolean | undefined |
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 export async function whereExecutionTime(
@@ -572,7 +576,7 @@ export async function whereExecutionTime(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 export async function whereDeployScript(
@@ -582,7 +586,7 @@ export async function whereDeployScript(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 export async function whereTerminalOutput(
@@ -592,7 +596,7 @@ export async function whereTerminalOutput(
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
 const Deployment = DeploymentModel

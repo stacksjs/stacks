@@ -58,7 +58,7 @@ interface QueryOptions {
 
 export class TeamModel {
   private team: Partial<TeamType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = [] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -144,6 +144,8 @@ export class TeamModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new TeamModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
   }
 
@@ -160,7 +162,7 @@ export class TeamModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+    return model.map((modelItem) => new TeamModel(modelItem))
   }
 
   // Method to get a Team by criteria
@@ -169,7 +171,7 @@ export class TeamModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+    return model.map((modelItem) => new TeamModel(modelItem))
   }
 
   // Method to get a Team by criteria
@@ -177,12 +179,12 @@ export class TeamModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
+      return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
+    return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -508,8 +510,10 @@ export class TeamModel {
   }
 
   parseResult(model: any): TeamModel {
-    delete model['password']
-    delete model.team['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.team[hiddenAttribute]
+    }
 
     return model
   }
@@ -549,7 +553,7 @@ export async function whereName(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function whereCompanyName(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -557,7 +561,7 @@ export async function whereCompanyName(value: string | number | boolean | undefi
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function whereEmail(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -565,7 +569,7 @@ export async function whereEmail(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function whereBillingEmail(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -573,7 +577,7 @@ export async function whereBillingEmail(value: string | number | boolean | undef
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -581,7 +585,7 @@ export async function whereStatus(value: string | number | boolean | undefined |
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function whereDescription(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -589,7 +593,7 @@ export async function whereDescription(value: string | number | boolean | undefi
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function wherePath(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -597,7 +601,7 @@ export async function wherePath(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 export async function whereIsPersonal(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
@@ -605,7 +609,7 @@ export async function whereIsPersonal(value: string | number | boolean | undefin
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  return results.map((modelItem) => new TeamModel(modelItem))
 }
 
 const Team = TeamModel

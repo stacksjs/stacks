@@ -49,7 +49,7 @@ interface QueryOptions {
 
 export class ReleaseModel {
   private release: Partial<ReleaseType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = [] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -119,6 +119,8 @@ export class ReleaseModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new ReleaseModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
@@ -135,7 +137,7 @@ export class ReleaseModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
+    return model.map((modelItem) => new ReleaseModel(modelItem))
   }
 
   // Method to get a Release by criteria
@@ -144,7 +146,7 @@ export class ReleaseModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
+    return model.map((modelItem) => new ReleaseModel(modelItem))
   }
 
   // Method to get a Release by criteria
@@ -152,12 +154,12 @@ export class ReleaseModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
+      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
+    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -415,8 +417,10 @@ export class ReleaseModel {
   }
 
   parseResult(model: any): ReleaseModel {
-    delete model['password']
-    delete model.release['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.release[hiddenAttribute]
+    }
 
     return model
   }
@@ -456,7 +460,7 @@ export async function whereVersion(value: string | number | boolean | undefined 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
+  return results.map((modelItem) => new ReleaseModel(modelItem))
 }
 
 const Release = ReleaseModel

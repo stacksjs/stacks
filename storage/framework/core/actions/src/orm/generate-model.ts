@@ -3,7 +3,7 @@ import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { camelCase, pascalCase, plural } from '@stacksjs/strings'
-import type { Model, RelationConfig } from '@stacksjs/types'
+import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
   entity: string
@@ -622,6 +622,16 @@ export async function fetchOtherModelRelations(model: Model, modelName: string):
   return modelRelations
 }
 
+function getHiddenAttributes(attributes: Attributes | undefined): string[] {
+  if (attributes === undefined) return []
+
+  return Object.keys(attributes).filter((key) => {
+    if (attributes === undefined) return false
+
+    return attributes[key]?.hidden === true
+  })
+}
+
 async function generateModelString(
   tableName: string,
   modelName: string,
@@ -825,6 +835,8 @@ async function generateModelString(
     fieldString += `two_factor_secret: string \n`
   }
 
+  const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
+
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
@@ -869,10 +881,10 @@ async function generateModelString(
       offset?: number
       page?: number
     }
-
+  
     export class ${modelName}Model {
       private ${formattedModelName}: Partial<${modelName}Type> | null
-      private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+      private hidden = ${hidden} // TODO: this hidden functionality needs to be implemented still
       protected query: any
       protected hasSelect: boolean
       ${declareFields}
@@ -1265,8 +1277,10 @@ async function generateModelString(
       }
 
       parseResult(model: any): ${modelName}Model {
-        delete model['password']
-        delete model.${formattedModelName}['password']
+        for (const hiddenAttribute of this.hidden) {
+          delete model[hiddenAttribute]
+           delete model.${formattedModelName}[hiddenAttribute]
+        }
 
         return model
       }

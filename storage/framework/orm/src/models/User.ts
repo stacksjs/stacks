@@ -60,7 +60,7 @@ interface QueryOptions {
 
 export class UserModel {
   private user: Partial<UserType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = ['password']
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -142,6 +142,8 @@ export class UserModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new UserModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
   }
 
@@ -158,7 +160,7 @@ export class UserModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+    return model.map((modelItem) => new UserModel(modelItem))
   }
 
   // Method to get a User by criteria
@@ -167,7 +169,7 @@ export class UserModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+    return model.map((modelItem) => new UserModel(modelItem))
   }
 
   // Method to get a User by criteria
@@ -175,12 +177,12 @@ export class UserModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
+      return model.map((modelItem: UserModel) => new UserModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
+    return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -490,8 +492,10 @@ export class UserModel {
   }
 
   parseResult(model: any): UserModel {
-    delete model['password']
-    delete model.user['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.user[hiddenAttribute]
+    }
 
     return model
   }
@@ -546,7 +550,7 @@ export async function whereName(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+  return results.map((modelItem) => new UserModel(modelItem))
 }
 
 export async function whereEmail(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
@@ -554,7 +558,7 @@ export async function whereEmail(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+  return results.map((modelItem) => new UserModel(modelItem))
 }
 
 export async function whereJobTitle(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
@@ -562,7 +566,7 @@ export async function whereJobTitle(value: string | number | boolean | undefined
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+  return results.map((modelItem) => new UserModel(modelItem))
 }
 
 export async function wherePassword(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
@@ -570,7 +574,7 @@ export async function wherePassword(value: string | number | boolean | undefined
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+  return results.map((modelItem) => new UserModel(modelItem))
 }
 
 const User = UserModel

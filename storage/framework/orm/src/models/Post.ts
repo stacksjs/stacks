@@ -52,7 +52,7 @@ interface QueryOptions {
 
 export class PostModel {
   private post: Partial<PostType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = [] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -126,6 +126,8 @@ export class PostModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new PostModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
   }
 
@@ -142,7 +144,7 @@ export class PostModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+    return model.map((modelItem) => new PostModel(modelItem))
   }
 
   // Method to get a Post by criteria
@@ -151,7 +153,7 @@ export class PostModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+    return model.map((modelItem) => new PostModel(modelItem))
   }
 
   // Method to get a Post by criteria
@@ -159,12 +161,12 @@ export class PostModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
+      return model.map((modelItem: PostModel) => new PostModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
+    return model.map((modelItem: PostModel) => new PostModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -440,8 +442,10 @@ export class PostModel {
   }
 
   parseResult(model: any): PostModel {
-    delete model['password']
-    delete model.post['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.post[hiddenAttribute]
+    }
 
     return model
   }
@@ -481,7 +485,7 @@ export async function whereTitle(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+  return results.map((modelItem) => new PostModel(modelItem))
 }
 
 export async function whereBody(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
@@ -489,7 +493,7 @@ export async function whereBody(value: string | number | boolean | undefined | n
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+  return results.map((modelItem) => new PostModel(modelItem))
 }
 
 const Post = PostModel

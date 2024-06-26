@@ -49,7 +49,7 @@ interface QueryOptions {
 
 export class SubscriberEmailModel {
   private subscriberemail: Partial<SubscriberEmailType> | null
-  private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+  private hidden = [] // TODO: this hidden functionality needs to be implemented still
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -119,6 +119,8 @@ export class SubscriberEmailModel {
 
     const model = await query.execute()
 
+    instance.parseResult(new SubscriberEmailModel(modelItem))
+
     return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
@@ -138,7 +140,7 @@ export class SubscriberEmailModel {
     if (options.offset !== undefined) query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -147,7 +149,7 @@ export class SubscriberEmailModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -155,12 +157,12 @@ export class SubscriberEmailModel {
     if (this.hasSelect) {
       const model = await this.query.execute()
 
-      return model.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
     }
 
     const model = await this.query.selectAll().execute()
 
-    return model.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
 
   static async count(): Promise<number> {
@@ -418,8 +420,10 @@ export class SubscriberEmailModel {
   }
 
   parseResult(model: any): SubscriberEmailModel {
-    delete model['password']
-    delete model.subscriberemail['password']
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.subscriberemail[hiddenAttribute]
+    }
 
     return model
   }
@@ -459,7 +463,7 @@ export async function whereEmail(value: string | number | boolean | undefined | 
 
   const results = await query.execute()
 
-  return results.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+  return results.map((modelItem) => new SubscriberEmailModel(modelItem))
 }
 
 const SubscriberEmail = SubscriberEmailModel

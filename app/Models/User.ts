@@ -88,6 +88,7 @@ export default {
     password: {
       required: true,
       order: 2,
+      hidden: true,
       validation: {
         rule: schema.string().minLength(6).maxLength(255),
         message: {
