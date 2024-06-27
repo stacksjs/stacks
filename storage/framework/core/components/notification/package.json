@@ -4,6 +4,7 @@
   "version": "0.61.24",
   "description": "An opinionated notification component for Stacks.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification#readme",
@@ -24,12 +25,11 @@
   },
   "module": "dist/stacks-notification.js",
   "types": "dist/stacks-notification.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "lib", "src", "volar.d.ts"],
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "bunx --bun vite build",
-    "build:lib": "vite build --mode lib && bun run build:types",
+    "build": "vite build --mode lib && bun run build:types",
+    "build:demo": "bunx --bun vite build",
     "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
     "preview": "bunx --bun vite preview"
   },
