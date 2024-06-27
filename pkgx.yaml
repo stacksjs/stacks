@@ -9,7 +9,7 @@
 # https://stacksjs.org/docs/dependency-management
 
 dependencies:
-  bun.sh: ^1.1.12
+  bun.sh: ^1.1.16
   aws.amazon.com/cli: ^2.15.30
   dns.lookup.dog: ^0.1.0
   info-zip.org/zip: ^3.0

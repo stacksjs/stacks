@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { computed, defineEmits, defineOptions, defineProps, onMounted, useSlots } from 'vue'
+import { computed, onMounted, useSlots } from 'vue'
 
 defineOptions({
   name: 'Step',
