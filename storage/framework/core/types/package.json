@@ -44,7 +44,7 @@
     "@rollup/pluginutils": "^5.1.0",
     "@stacksjs/validation": "workspace:*",
     "@types/aws4": "^1.11.6",
-    "@types/bun": "^1.1.4",
+    "@types/bun": "^1.1.6",
     "@types/crypto-js": "^4.2.2",
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.5",
@@ -58,16 +58,16 @@
     "ora": "^8.0.1",
     "unocss": "^0.61.0",
     "unplugin-auto-import": "^0.17.6",
-    "unplugin-vue-components": "^0.27.0",
+    "unplugin-vue-components": "^0.27.2",
     "vite": "^5.3.1",
     "vite-plugin-inspect": "^0.8.4",
     "vite-plugin-pwa": "^0.20.0",
     "vite-ssg": "^0.23.7",
     "vitepress": "1.2.3",
-    "vue": "^3.4.29"
+    "vue": "^3.4.30"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.146.0",
-    "typescript": "^5.4.5"
+    "aws-cdk-lib": "^2.147.1",
+    "typescript": "^5.5.2"
   }
 }
