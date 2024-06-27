@@ -5,6 +5,7 @@
   "private": true,
   "description": "Your project description",
   "author": "your-name <your-email>",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -15,7 +16,6 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "scripts": {
     "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",

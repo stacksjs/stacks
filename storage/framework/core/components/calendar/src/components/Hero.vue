@@ -26,7 +26,7 @@ import { notification } from '../'
           }
         "
       >
-        Render a notification
+        Render a Notification
       </button>
       <a
         class="button btn-secondary"

@@ -47,6 +47,7 @@ classpath
 clippy
 cmake
 codecov
+codegen
 codeowners
 colorette
 Combobox
