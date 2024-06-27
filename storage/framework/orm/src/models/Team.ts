@@ -58,7 +58,8 @@ interface QueryOptions {
 
 export class TeamModel {
   private team: Partial<TeamType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -241,7 +242,15 @@ export class TeamModel {
 
   // Method to create a new team
   static async create(newTeam: NewTeam): Promise<TeamModel> {
-    const result = await db.insertInto('teams').values(newTeam).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newTeam)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newTeam[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('teams').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as TeamModel
   }
@@ -429,7 +438,14 @@ export class TeamModel {
   async update(team: TeamUpdate): Promise<TeamModel | null> {
     if (this.id === undefined) throw new Error('Team ID is undefined')
 
-    await db.updateTable('teams').set(team).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newTeam)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newTeam[key]
+        return obj
+      }, {})
+
+    await db.updateTable('teams').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

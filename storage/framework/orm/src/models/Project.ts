@@ -52,7 +52,8 @@ interface QueryOptions {
 
 export class ProjectModel {
   private project: Partial<ProjectType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -225,7 +226,15 @@ export class ProjectModel {
 
   // Method to create a new project
   static async create(newProject: NewProject): Promise<ProjectModel> {
-    const result = await db.insertInto('projects').values(newProject).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newProject)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newProject[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('projects').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as ProjectModel
   }
@@ -381,7 +390,14 @@ export class ProjectModel {
   async update(project: ProjectUpdate): Promise<ProjectModel | null> {
     if (this.id === undefined) throw new Error('Project ID is undefined')
 
-    await db.updateTable('projects').set(project).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newProject)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newProject[key]
+        return obj
+      }, {})
+
+    await db.updateTable('projects').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

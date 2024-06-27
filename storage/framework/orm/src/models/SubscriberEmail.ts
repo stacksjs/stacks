@@ -49,7 +49,8 @@ interface QueryOptions {
 
 export class SubscriberEmailModel {
   private subscriberemail: Partial<SubscriberEmailType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -219,7 +220,15 @@ export class SubscriberEmailModel {
 
   // Method to create a new subscriberemail
   static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-    const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newSubscriberEmail)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newSubscriberEmail[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('subscriber_emails').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as SubscriberEmailModel
   }
@@ -351,7 +360,14 @@ export class SubscriberEmailModel {
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | null> {
     if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-    await db.updateTable('subscriber_emails').set(subscriberemail).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newSubscriberEmail)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newSubscriberEmail[key]
+        return obj
+      }, {})
+
+    await db.updateTable('subscriber_emails').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

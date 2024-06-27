@@ -54,7 +54,8 @@ interface QueryOptions {
 
 export class AccessTokenModel {
   private accesstoken: Partial<AccessTokenType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -230,7 +231,15 @@ export class AccessTokenModel {
 
   // Method to create a new accesstoken
   static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    const result = await db.insertInto('personal_access_tokens').values(newAccessToken).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newAccessToken)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newAccessToken[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('personal_access_tokens').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as AccessTokenModel
   }
@@ -386,7 +395,14 @@ export class AccessTokenModel {
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | null> {
     if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
-    await db.updateTable('personal_access_tokens').set(accesstoken).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newAccessToken)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newAccessToken[key]
+        return obj
+      }, {})
+
+    await db.updateTable('personal_access_tokens').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

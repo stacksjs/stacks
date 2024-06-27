@@ -479,7 +479,10 @@ async function setKyselyTypes() {
 
 async function extractFields(model: Model, modelFile: string): Promise<ModelElement[]> {
   // TODO: we can improve this type
-  const fields: Record<string, any> = model.attributes
+  let fields: Record<string, any> | undefined = model.attributes
+
+  if (!fields) fields = {}
+
   const fieldKeys = Object.keys(fields)
 
   const rules: string[] = []
@@ -629,6 +632,16 @@ function getHiddenAttributes(attributes: Attributes | undefined): string[] {
     if (attributes === undefined) return false
 
     return attributes[key]?.hidden === true
+  })
+}
+
+function getFillableAttributes(attributes: Attributes | undefined): string[] {
+  if (attributes === undefined) return []
+
+  return Object.keys(attributes).filter((key) => {
+    if (attributes === undefined) return false
+
+    return attributes[key]?.fillable === true
   })
 }
 
@@ -836,6 +849,7 @@ async function generateModelString(
   }
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
+  const fillable = JSON.stringify(getFillableAttributes(model.attributes))
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
@@ -884,7 +898,8 @@ async function generateModelString(
   
     export class ${modelName}Model {
       private ${formattedModelName}: Partial<${modelName}Type> | null
-      private hidden = ${hidden} // TODO: this hidden functionality needs to be implemented still
+      private hidden = ${hidden}
+      private fillable = ${fillable}
       protected query: any
       protected hasSelect: boolean
       ${declareFields}
@@ -1062,8 +1077,16 @@ async function generateModelString(
 
       // Method to create a new ${formattedModelName}
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+        const instance = new this(null)
+        const filteredValues = Object.keys(new${modelName})
+          .filter(key => instance.fillable.includes(key))
+          .reduce((obj: any, key) => {
+              obj[key] = new${modelName}[key];
+              return obj
+          }, {}) as new${modelName}
+
         const result = await db.insertInto('${tableName}')
-          .values(new${modelName})
+          .values(filteredValues)
           .executeTakeFirstOrThrow()
 
         return await find(Number(result.insertId)) as ${modelName}Model
@@ -1197,9 +1220,16 @@ async function generateModelString(
       async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | null> {
         if (this.id === undefined)
           throw new Error('${modelName} ID is undefined')
+
+        const filteredValues = Object.keys(new${modelName})
+            .filter(key => this.fillable.includes(key))
+            .reduce((obj, key) => {
+                obj[key] = new${modelName}[key];
+                return obj;
+            }, {});
   
         await db.updateTable('${tableName}')
-          .set(${formattedModelName})
+          .set(filteredValues)
           .where('id', '=', this.id)
           .executeTakeFirst()
   

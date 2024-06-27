@@ -61,6 +61,7 @@ interface QueryOptions {
 export class UserModel {
   private user: Partial<UserType> | null
   private hidden = ['password']
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -239,7 +240,15 @@ export class UserModel {
 
   // Method to create a new user
   static async create(newUser: NewUser): Promise<UserModel> {
-    const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newUser)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newUser[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('users').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as UserModel
   }
@@ -395,7 +404,14 @@ export class UserModel {
   async update(user: UserUpdate): Promise<UserModel | null> {
     if (this.id === undefined) throw new Error('User ID is undefined')
 
-    await db.updateTable('users').set(user).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newUser)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newUser[key]
+        return obj
+      }, {})
+
+    await db.updateTable('users').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

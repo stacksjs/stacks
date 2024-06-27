@@ -57,7 +57,8 @@ interface QueryOptions {
 
 export class DeploymentModel {
   private deployment: Partial<DeploymentType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -238,7 +239,15 @@ export class DeploymentModel {
 
   // Method to create a new deployment
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    const result = await db.insertInto('deployments').values(newDeployment).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newDeployment)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newDeployment[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('deployments').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as DeploymentModel
   }
@@ -418,7 +427,14 @@ export class DeploymentModel {
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | null> {
     if (this.id === undefined) throw new Error('Deployment ID is undefined')
 
-    await db.updateTable('deployments').set(deployment).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newDeployment)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newDeployment[key]
+        return obj
+      }, {})
+
+    await db.updateTable('deployments').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

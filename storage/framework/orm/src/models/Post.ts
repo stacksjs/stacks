@@ -52,7 +52,8 @@ interface QueryOptions {
 
 export class PostModel {
   private post: Partial<PostType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -223,7 +224,15 @@ export class PostModel {
 
   // Method to create a new post
   static async create(newPost: NewPost): Promise<PostModel> {
-    const result = await db.insertInto('posts').values(newPost).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newPost)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newPost[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('posts').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as PostModel
   }
@@ -363,7 +372,14 @@ export class PostModel {
   async update(post: PostUpdate): Promise<PostModel | null> {
     if (this.id === undefined) throw new Error('Post ID is undefined')
 
-    await db.updateTable('posts').set(post).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newPost)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newPost[key]
+        return obj
+      }, {})
+
+    await db.updateTable('posts').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

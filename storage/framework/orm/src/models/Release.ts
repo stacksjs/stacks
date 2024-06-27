@@ -49,7 +49,8 @@ interface QueryOptions {
 
 export class ReleaseModel {
   private release: Partial<ReleaseType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -216,7 +217,15 @@ export class ReleaseModel {
 
   // Method to create a new release
   static async create(newRelease: NewRelease): Promise<ReleaseModel> {
-    const result = await db.insertInto('releases').values(newRelease).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newRelease)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newRelease[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('releases').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as ReleaseModel
   }
@@ -348,7 +357,14 @@ export class ReleaseModel {
   async update(release: ReleaseUpdate): Promise<ReleaseModel | null> {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
-    await db.updateTable('releases').set(release).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newRelease)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newRelease[key]
+        return obj
+      }, {})
+
+    await db.updateTable('releases').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }

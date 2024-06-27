@@ -50,7 +50,8 @@ interface QueryOptions {
 
 export class SubscriberModel {
   private subscriber: Partial<SubscriberType> | null
-  private hidden = [] // TODO: this hidden functionality needs to be implemented still
+  private hidden = []
+  private fillable = []
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -219,7 +220,15 @@ export class SubscriberModel {
 
   // Method to create a new subscriber
   static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-    const result = await db.insertInto('subscribers').values(newSubscriber).executeTakeFirstOrThrow()
+    const instance = new this(null)
+    const filteredValues = Object.keys(newSubscriber)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newSubscriber[key]
+        return obj
+      }, {})
+
+    const result = await db.insertInto('subscribers').values(filteredValues).executeTakeFirstOrThrow()
 
     return (await find(Number(result.insertId))) as SubscriberModel
   }
@@ -351,7 +360,14 @@ export class SubscriberModel {
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | null> {
     if (this.id === undefined) throw new Error('Subscriber ID is undefined')
 
-    await db.updateTable('subscribers').set(subscriber).where('id', '=', this.id).executeTakeFirst()
+    const filteredValues = Object.keys(newSubscriber)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newSubscriber[key]
+        return obj
+      }, {})
+
+    await db.updateTable('subscribers').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
     return await this.find(Number(this.id))
   }
