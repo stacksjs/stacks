@@ -53,7 +53,7 @@
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "bun-plugin-dts-auto": "^0.11.1",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.2"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -63,7 +63,7 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.2"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
