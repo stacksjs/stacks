@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import {
   computed,
-  defineEmits,
-  defineExpose,
-  defineOptions,
-  defineProps,
   onBeforeUnmount,
   onMounted,
   ref,
   useSlots,
   watch,
-  withDefaults,
 } from 'vue'
 import type { OptionParams, StepperProps } from '../types'
 import Step from './Step.vue'
