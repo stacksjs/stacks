@@ -22,9 +22,12 @@ export default defineConfig(({ command, mode }) => {
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
+
     UnoCSS({
       presets: [presetUno(), presetAttributify(), presetIcons(), presetWind()],
+      mode: 'shadow-dom',
     }),
+
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
@@ -34,8 +37,10 @@ export default defineConfig(({ command, mode }) => {
         }),
       ],
     }),
+
     Icons(),
   ]
+
   let cssCodeStr = ''
 
   if (mode === 'lib') {
@@ -48,11 +53,29 @@ export default defineConfig(({ command, mode }) => {
 
       outDir: 'dist',
       emptyOutDir: false,
-      cssCodeSplit: false,
+      // cssCodeSplit: true,
       sourcemap: true,
 
       rollupOptions: {
-        external: ['vue'],
+        external: [
+          'vue',
+          'fs',
+          'path',
+          'node:v8',
+          'node:util',
+          'node:path',
+          'node:process',
+          'node:fs',
+          'node:module',
+          'stream',
+          'node:url',
+          'os',
+          'node:assert',
+          'assert',
+          'child_process',
+          'node:fs/promises',
+          'node:assert',
+        ],
         output: [
           // {
           //   format: 'cjs',
