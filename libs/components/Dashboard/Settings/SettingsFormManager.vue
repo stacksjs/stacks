@@ -11,6 +11,7 @@ import EmailForm from './Forms/EmailForm.vue'
 import FileSystemForm from './Forms/FileSystemForm.vue'
 import HashingForm from './Forms/HashingForm.vue'
 import LibraryForm from './Forms/LibraryForm.vue'
+import QueueForm from './Forms/QueueForm.vue'
 
 const props = defineProps({
   name: String,
@@ -132,6 +133,7 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
         <template v-else-if="name === 'file-system'"><FileSystemForm /></template>
         <template v-else-if="name === 'hashing'"><HashingForm /></template>
         <template v-else-if="name === 'library'"><LibraryForm /></template>
+        <template v-else-if="name === 'queue'"><QueueForm /></template>
         <template v-else>
           <div class="text-center">
             <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
