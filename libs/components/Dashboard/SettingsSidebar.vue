@@ -177,10 +177,10 @@
           </RouterLink>
         </li>
         <li>
-          <RouterLink to="service" class="sidebar-links group flex items-center justify-between">
+          <RouterLink to="services" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
               <div class="i-heroicons-briefcase text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
-              Service
+              Services
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
           </RouterLink>

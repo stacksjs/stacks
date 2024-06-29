@@ -14,6 +14,7 @@ import LibraryForm from './Forms/LibraryForm.vue'
 import QueueForm from './Forms/QueueForm.vue'
 import SearchEngineForm from './Forms/SearchEngineForm.vue'
 import SecurityForm from './Forms/SecurityForm.vue'
+import ServicesForm from './Forms/ServicesForm.vue'
 
 const props = defineProps({
   name: String,
@@ -138,6 +139,7 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
         <template v-else-if="name === 'queue'"><QueueForm /></template>
         <template v-else-if="name === 'search-engine'"><SearchEngineForm /></template>
         <template v-else-if="name === 'security'"><SecurityForm /></template>
+        <template v-else-if="name === 'services'"><ServicesForm /></template>
         <template v-else>
           <div class="text-center">
             <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
