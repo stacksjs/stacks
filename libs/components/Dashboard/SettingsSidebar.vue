@@ -89,7 +89,7 @@
         <li>
           <RouterLink to="email" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-at-symbol text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Email
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -98,7 +98,7 @@
         <li>
           <RouterLink to="file-system" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-folder text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               File System
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -107,7 +107,7 @@
         <li>
           <RouterLink to="hashing" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-hashtag text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Hashing
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -116,7 +116,7 @@
         <li>
           <RouterLink to="languages" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-language text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Languages
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -125,7 +125,7 @@
         <li>
           <RouterLink to="library" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-book-open text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Library
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -134,7 +134,7 @@
         <li>
           <RouterLink to="native" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-viewfinder-circle text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Native
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -143,7 +143,7 @@
         <li>
           <RouterLink to="mail" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-envelope text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Mail
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -152,7 +152,7 @@
         <li>
           <RouterLink to="queue" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-queue-list text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Queue
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -161,7 +161,7 @@
         <li>
           <RouterLink to="search-engine" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-magnifying-glass text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Search Engine
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -170,7 +170,7 @@
         <li>
           <RouterLink to="security" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-shield-check text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Security
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -179,7 +179,7 @@
         <li>
           <RouterLink to="service" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-briefcase text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Service
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -188,7 +188,7 @@
         <li>
           <RouterLink to="storage" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-circle-stack text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Storage
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -197,7 +197,7 @@
         <li>
           <RouterLink to="team" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-user-group text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               Team
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
@@ -206,7 +206,7 @@
         <li>
           <RouterLink to="ui" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-heroicons-square-3-stack-3d text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+              <div class="i-heroicons-rectangle-group text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
               UI
             </div>
             <div class="i-heroicons-chevron-right text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out self-end" />
