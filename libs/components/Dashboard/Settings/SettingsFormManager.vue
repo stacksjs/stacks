@@ -126,24 +126,60 @@ const pageTitle = computed < String > (() => options.find(option => option.key =
       </p>
 
       <div class="mt-10">
-        <template v-if="name === 'ai'"><AIForm /></template>
-        <template v-else-if="name === 'analytics'"><AnalyticsForm /></template>
-        <template v-else-if="name === 'app'"><AppForm /></template>
-        <template v-else-if="name === 'cache'"><CacheForm /></template>
-        <template v-else-if="name === 'cli'"><CliForm /></template>
-        <template v-else-if="name === 'cloud'"><CloudForm /></template>
-        <template v-else-if="name === 'database'"><DatabaseForm /></template>
-        <template v-else-if="name === 'dns'"><DNSForm /></template>
-        <template v-else-if="name === 'email'"><EmailForm /></template>
-        <template v-else-if="name === 'file-system'"><FileSystemForm /></template>
-        <template v-else-if="name === 'hashing'"><HashingForm /></template>
-        <template v-else-if="name === 'library'"><LibraryForm /></template>
-        <template v-else-if="name === 'queue'"><QueueForm /></template>
-        <template v-else-if="name === 'search-engine'"><SearchEngineForm /></template>
-        <template v-else-if="name === 'security'"><SecurityForm /></template>
-        <template v-else-if="name === 'services'"><ServicesForm /></template>
-        <template v-else-if="name === 'storage'"><StorageForm /></template>
-        <template v-else-if="name === 'team'"><TeamsForm /></template>
+        <template v-if="name === 'ai'">
+          <AIForm />
+        </template>
+        <template v-else-if="name === 'analytics'">
+          <AnalyticsForm />
+        </template>
+        <template v-else-if="name === 'app'">
+          <AppForm />
+        </template>
+        <template v-else-if="name === 'cache'">
+          <CacheForm />
+        </template>
+        <template v-else-if="name === 'cli'">
+          <CliForm />
+        </template>
+        <template v-else-if="name === 'cloud'">
+          <CloudForm />
+        </template>
+        <template v-else-if="name === 'database'">
+          <DatabaseForm />
+        </template>
+        <template v-else-if="name === 'dns'">
+          <DNSForm />
+        </template>
+        <template v-else-if="name === 'email'">
+          <EmailForm />
+        </template>
+        <template v-else-if="name === 'file-system'">
+          <FileSystemForm />
+        </template>
+        <template v-else-if="name === 'hashing'">
+          <HashingForm />
+        </template>
+        <template v-else-if="name === 'library'">
+          <LibraryForm />
+        </template>
+        <template v-else-if="name === 'queue'">
+          <QueueForm />
+        </template>
+        <template v-else-if="name === 'search-engine'">
+          <SearchEngineForm />
+        </template>
+        <template v-else-if="name === 'security'">
+          <SecurityForm />
+        </template>
+        <template v-else-if="name === 'services'">
+          <ServicesForm />
+        </template>
+        <template v-else-if="name === 'storage'">
+          <StorageForm />
+        </template>
+        <template v-else-if="name === 'team'">
+          <TeamsForm />
+        </template>
         <template v-else>
           <div class="text-center">
             <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
