@@ -24,16 +24,11 @@
     "extension pack",
     "stacks extension collection"
   ],
-  "categories": [
-    "Extension Packs"
-  ],
+  "categories": ["Extension Packs"],
   "icon": "logo.png",
-  "files": [
-    "logo.png",
-    "LICENSE.md"
-  ],
+  "files": ["logo.png", "LICENSE.md"],
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.90.2"
   },
   "scripts": {
     "package": "npx vsce package",
@@ -60,6 +55,6 @@
     "nhoizey.gremlins"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.27.0"
+    "@vscode/vsce": "^2.29.0"
   }
 }

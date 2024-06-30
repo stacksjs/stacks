@@ -85,7 +85,7 @@ notification.promise(promise, {
         () =>
           new Promise((resolve) => {
             setTimeout(() => {
-              resolve({ name: 'Vue Sonner' })
+              resolve({ name: 'Stacks Notification' })
             }, 2000)
           }),
         {
@@ -106,7 +106,7 @@ const CustomDiv = defineComponent({
   setup() {
     return () =>
       h('div', {
-        innerHTML: 'A custom toast with unstyling'
+        innerHTML: 'A custom toast with styling'
       })
   }
 })
@@ -125,7 +125,7 @@ async function handleCopyCode() {
     code: activeType.value.snippet,
     checkIconRef: showCheckIcon,
   })
-  notification('Copied to your clipboard!!!')
+  notification('Copied to your clipboard!')
 }
 </script>
 
@@ -134,10 +134,12 @@ async function handleCopyCode() {
     <h1 class="text-lg font-semibold my-2">
       Types
     </h1>
+
     <p class="text-base my-3">
       You can customize the type of toast you want to render, and pass an
       options object as the second argument.
     </p>
+
     <div class="mb-4 flex flex-wrap gap-3 overflow-auto">
       <button
         v-for="type in allTypes"
@@ -157,6 +159,7 @@ async function handleCopyCode() {
         {{ type.name }}
       </button>
     </div>
+
     <div class="code-block relative group">
       <Highlight
         language="javascript"

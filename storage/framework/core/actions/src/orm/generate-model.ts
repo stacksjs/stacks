@@ -1,10 +1,10 @@
 import { log } from '@stacksjs/logging'
+import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, pascalCase } from '@stacksjs/strings'
-import type { Model, RelationConfig } from '@stacksjs/types'
-import { isString, isBoolean } from '@stacksjs/validation'
-import { getModelName, getTableName} from '@stacksjs/orm'
+import { camelCase, pascalCase, plural } from '@stacksjs/strings'
+import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -41,7 +41,7 @@ async function generateApiRoutes(modelFiles: string[]) {
         if (middlewares.length) {
           for (let i = 0; i < middlewares.length; i++) {
             middlewareString += `'${middlewares[i]}'`
-  
+
             if (i < middlewares.length - 1) {
               middlewareString += ','
             }
@@ -103,13 +103,19 @@ async function writeModelNames() {
   }
 }
 
-async function writeModelRequests() {
+async function writeModelRequest() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
+  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+  let importTypes = ``
+  let importTypesString = ``
+  let typeString = `import { Request } from '../core/router/src/request'\n\n`
+
   for (let i = 0; i < modelFiles.length; i++) {
+    let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport type { RequestInstance } from '@stacksjs/types'\n\n`
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = modelFiles[i] as string
 
@@ -117,32 +123,81 @@ async function writeModelRequests() {
     const modelName = getModelName(model, modeFileElement)
 
     const attributes = await extractFields(model, modeFileElement)
-  
+
+    fieldString += ` id?: number\n`
+    fieldStringInt += `public id = 1\n`
+    fieldStringType += `'id' |`
+    let keyCounter = 0
+    let keyCounterForeign = 0
+
+    const otherModelRelations = await fetchOtherModelRelations(model, modelName)
+
     for (const attribute of attributes) {
       let defaultValue: any = `''`
-      const entity = attribute.fieldArray?.entity === 'enum' ? 'string' : attribute.fieldArray?.entity
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
-      if (attribute.fieldArray?.entity === 'boolean')
-        defaultValue = false
+      if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
 
-      if (attribute.fieldArray?.entity === 'number')
-        defaultValue = 0
+      if (attribute.fieldArray?.entity === 'number') defaultValue = 0
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
 
+      fieldStringType += `'${attribute.field}'`
+      if (keyCounter < attributes.length - 1) fieldStringType += ' |'
+
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
-    } 
+
+      keyCounter++
+    }
+
+    for (const otherModel of otherModelRelations) {
+      fieldString += ` ${otherModel.foreignKey}: number\n     `
+
+      if (keyCounter >= attributes.length - 1) fieldStringType += ' |'
+
+      fieldStringType += `'${otherModel.foreignKey}'`
+
+      // if (keyCounterForeign < otherModelRelations.length - 1)
+      //   fieldStringType += ' |'
+
+      fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
+
+      keyCounterForeign++
+    }
+
+    fieldStringInt += `public created_at = ''
+      public updated_at = ''
+      public deleted_at = ''
+      `
+
+    fieldString += `created_at?: string
+      updated_at?: string
+      deleted_at?: string`
 
     const modelLowerCase = camelCase(modelName)
 
     const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
 
-    fileString += `export interface ${modelName}RequestType extends RequestInstance{
+    importTypes = `${modelName}RequestType`
+    importTypesString += `${importTypes}`
+
+    if (i < modelFiles.length - 1) importTypesString += ` | `
+
+    fileString += `import { ${importTypes} } from '../types/requests'\n\n`
+
+    const types = `export interface ${modelName}RequestType extends Request {
       validate(): void
+      get(key: ${fieldStringType}): string | number | undefined;
       ${fieldString}
     }\n\n`
-    
-    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType  {
+
+    typeString += `interface RequestData${modelName} {
+      ${fieldString}
+    }\n`
+
+    typeString += types
+
+    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
       ${fieldStringInt}
       public async validate(): Promise<void> {
         await validateField('${modelName}', this.all())
@@ -156,6 +211,12 @@ async function writeModelRequests() {
 
     writer.write(fileString)
   }
+
+  typeString += `export type ModelRequest = ${importTypesString}`
+
+  const requestWrite = requestD.writer()
+
+  requestWrite.write(typeString)
 }
 
 async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
@@ -166,8 +227,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
 
   let handleString = ``
 
-
-  actionString += ` import type { ${modelName}RequestType } from '../../requests/${modelName}Request'\n\n`
+  actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
 
   if (apiRoute === 'index') {
     handleString += `async handle(request: ${modelName}RequestType) {
@@ -245,10 +305,10 @@ async function initiateModelGeneration(): Promise<void> {
   await deleteExistingModels()
   await deleteExistingOrmActions()
   await deleteExistingModelNameTypes()
-  await deleteExistingModelRequests()
+  await deleteExistingModelRequest()
 
   await writeModelNames()
-  await writeModelRequests()
+  await writeModelRequest()
 
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
@@ -341,12 +401,15 @@ async function deleteExistingModelNameTypes() {
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
-async function deleteExistingModelRequests() {
+async function deleteExistingModelRequest() {
   const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
+  const requestD = path.frameworkPath('types/requests.d.ts')
 
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
   }
+
+  if (fs.existsSync(requestD)) await Bun.$`rm ${requestD}`
 }
 
 async function setKyselyTypes() {
@@ -372,7 +435,7 @@ async function setKyselyTypes() {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
     const pivotTables = await getPivotTables(model, modelName)
-    
+
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
 
@@ -416,7 +479,10 @@ async function setKyselyTypes() {
 
 async function extractFields(model: Model, modelFile: string): Promise<ModelElement[]> {
   // TODO: we can improve this type
-  const fields: Record<string, any> = model.attributes
+  let fields: Record<string, any> | undefined = model.attributes
+
+  if (!fields) fields = {}
+
   const fieldKeys = Object.keys(fields)
 
   const rules: string[] = []
@@ -507,7 +573,7 @@ function getRelationCount(relation: string): string {
 
 async function getPivotTables(
   model: Model,
-  modelName: string
+  modelName: string,
 ): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
@@ -518,8 +584,7 @@ async function getPivotTables(
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = modelName.toLowerCase()
 
-      const firstForeignKey =
-        belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
+      const firstForeignKey = belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
       const secondForeignKey =
         belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
@@ -543,7 +608,7 @@ export async function fetchOtherModelRelations(model: Model, modelName: string):
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
     const modelFile = await import(modelFileElement)
-      
+
     if (modelName === modelFile.default.name) continue
 
     const otherModelName = getModelName(modelFile, modelFileElement)
@@ -560,13 +625,43 @@ export async function fetchOtherModelRelations(model: Model, modelName: string):
   return modelRelations
 }
 
-async function generateModelString(tableName: string, modelName: string, model: Model, attributes: ModelElement[]): Promise<string> {
+function getHiddenAttributes(attributes: Attributes | undefined): string[] {
+  if (attributes === undefined) return []
+
+  return Object.keys(attributes).filter((key) => {
+    if (attributes === undefined) return false
+
+    return attributes[key]?.hidden === true
+  })
+}
+
+function getFillableAttributes(attributes: Attributes | undefined): string[] {
+  if (attributes === undefined) return []
+
+  return Object.keys(attributes).filter((key) => {
+    if (attributes === undefined) return false
+
+    return attributes[key]?.fillable === true
+  })
+}
+
+async function generateModelString(
+  tableName: string,
+  modelName: string,
+  model: Model,
+  attributes: ModelElement[],
+): Promise<string> {
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
   let fieldString = ''
+  let constructorFields = ''
+  let declareFields = ''
+  let whereStatements = ''
+  let whereFunctionStatements = ''
   let relationMethods = ``
   let relationImports = ``
+  let twoFactorStatements = ''
 
   const relations = await getRelations(model, modelName)
 
@@ -580,7 +675,6 @@ async function generateModelString(tableName: string, modelName: string, model: 
     const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
-    const capitalizeTableRelation = tableRelation.charAt(0).toUpperCase() + tableRelation.slice(1)
 
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
@@ -595,21 +689,20 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
       relationMethods += `
       async ${relationName}() {
-        if (this.${formattedModelName}.id === undefined)
+        if (this.id === undefined)
           throw new Error('Relation Error!')
 
         const firstModel = await db.selectFrom('${throughTableRelation}')
-        .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
-        .selectAll()
-        .executeTakeFirst()
+          .where('${foreignKeyRelation}', '=', this.id)
+          .selectAll()
+          .executeTakeFirst()
 
         if (! firstModel)
           throw new Error('Model Relation Not Found!')
 
-        const finalModel = await db.selectFrom('${tableRelation}')
-        .where('${foreignKeyThroughRelation}', '=', firstModel.id)
-        .selectAll()
-        .executeTakeFirst()
+        const finalModel = ${modelRelation}
+          .where('${foreignKeyThroughRelation}', '=', firstModel.id)
+          .first()
 
         return new ${modelRelation}.modelInstance(finalModel)
       }\n\n`
@@ -620,11 +713,11 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
       relationMethods += `
       async ${relationName}() {
-        if (this.${formattedModelName}.id === undefined)
+        if (this.id === undefined)
           throw new Error('Relation Error!')
 
         const results = await db.selectFrom('${tableRelation}')
-          .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
+          .where('${foreignKeyRelation}', '=', this.id)
           .selectAll()
           .execute()
 
@@ -636,18 +729,16 @@ async function generateModelString(tableName: string, modelName: string, model: 
       const relationName = relation.relationName || formattedModelRelation
       relationMethods += `
       async ${relationName}() {
-        if (this.${formattedModelName}.id === undefined)
+        if (this.id === undefined)
           throw new Error('Relation Error!')
 
-        const model = await db.selectFrom('${tableRelation}')
-        .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
-        .selectAll()
-        .executeTakeFirst()
+        const model = ${modelRelation}
+        .where('${foreignKeyRelation}', '=', this.id).first()
 
         if (! model)
           throw new Error('Model Relation Not Found!')
 
-        return new ${modelRelation}.modelInstance(model)
+        return model
       }\n\n`
     }
 
@@ -659,29 +750,28 @@ async function generateModelString(tableName: string, modelName: string, model: 
         if (this.${foreignKeyRelation} === undefined)
           throw new Error('Relation Error!')
 
-        const model = await db.selectFrom('${tableRelation}')
-        .where('id', '=', ${foreignKeyRelation})
-        .selectAll()
-        .executeTakeFirst()
+        const model = await ${modelRelation}
+          .where('id', '=', ${foreignKeyRelation})
+          .first()
 
         if (! model)
           throw new Error('Model Relation Not Found!')
 
-        return new ${modelRelation}.modelInstance(model)
+        return model
       }\n\n`
     }
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const pivotTable = pivotTableRelation || tableRelation
-      const relationName = relation.relationName || formattedModelName + capitalizeTableRelation
+      const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
 
       relationMethods += `
       async ${relationName}() {
-        if (this.${formattedModelName}.id === undefined)
+        if (this.id === undefined)
           throw new Error('Relation Error!')
 
         const results = await db.selectFrom('${pivotTable}')
-          .where('${foreignKeyRelation}', '=', this.${formattedModelName}.id)
+          .where('${foreignKeyRelation}', '=', this.id)
           .selectAll()
           .execute()
 
@@ -690,16 +780,81 @@ async function generateModelString(tableName: string, modelName: string, model: 
     }
   }
 
-  for (const attribute of attributes) fieldString += ` ${attribute.field}: ${attribute.fieldArray?.entity}\n     `
+  declareFields += `public id: number | undefined \n   `
+
+  constructorFields += `this.id = ${formattedModelName}?.id\n   `
+
+  const useTwoFactor = model.traits?.useAuth?.useTwoFactor
+
+  if (useTwoFactor) {
+    declareFields += `public two_factor_secret: string | undefined \n`
+    constructorFields += `this.two_factor_secret = ${formattedModelName}?.two_factor_secret\n   `
+
+    twoFactorStatements += `
+      async generateTwoFactorForModel() {
+        const secret = generateTwoFactorSecret()
+
+        await this.update({ 'two_factor_secret': secret })
+      }
+
+      verifyTwoFactorCode(code: string): boolean {
+        if (! this.${formattedModelName}) return false
+
+        const modelTwoFactorSecret = this.${formattedModelName}.two_factor_secret
+        const isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+
+        return isValid
+      }
+    `
+  }
+
+  for (const attribute of attributes) {
+    const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+
+    fieldString += ` ${attribute.field}: ${entity}\n     `
+
+    declareFields += `public ${attribute.field}: ${entity} | undefined \n   `
+
+    constructorFields += `this.${attribute.field} = ${formattedModelName}?.${attribute.field}\n   `
+
+    whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): ${modelName}Model {
+        const instance = new this(null)
+
+        instance.query = instance.query.where('${attribute.field}', '=', value)
+  
+        return instance
+      } \n\n`
+
+    whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): Promise<${modelName}Model[]> {
+        const query = db.selectFrom('${tableName}').where('${attribute.field}', '=', value)
+
+        const results = await query.execute()
+
+        return results.map(modelItem => new ${modelName}Model(modelItem))
+      } \n\n`
+  }
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelName)
 
-  for (const otherModelRelation of otherModelRelations) fieldString += ` ${otherModelRelation.foreignKey}: number \n`
+  for (const otherModelRelation of otherModelRelations) {
+    fieldString += ` ${otherModelRelation.foreignKey}: number \n`
+
+    declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
+
+    constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
+  }
+
+  if (useTwoFactor) {
+    fieldString += `two_factor_secret: string \n`
+  }
+
+  const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
+  const fillable = JSON.stringify(getFillableAttributes(model.attributes))
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import type { Result } from '@stacksjs/error-handling'
-    import { err, handleError, ok } from '@stacksjs/error-handling'
     import { db } from '@stacksjs/database'
+    import { generateTwoFactorSecret } from '@stacksjs/auth'
+    import { verifyTwoFactorCode } from '@stacksjs/auth'
     ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
@@ -740,18 +895,24 @@ async function generateModelString(tableName: string, modelName: string, model: 
       offset?: number
       page?: number
     }
-
+  
     export class ${modelName}Model {
-      private ${formattedModelName}: Partial<${modelName}Type>
-      private results: Partial<${modelName}Type>[]
-      private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
-
-      constructor(${formattedModelName}: Partial<${modelName}Type>) {
+      private ${formattedModelName}: Partial<${modelName}Type> | null
+      private hidden = ${hidden}
+      private fillable = ${fillable}
+      protected query: any
+      protected hasSelect: boolean
+      ${declareFields}
+      constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
         this.${formattedModelName} = ${formattedModelName}
+        ${constructorFields}
+
+        this.query = db.selectFrom('${tableName}')
+        this.hasSelect = false
       }
 
-      // Method to find a ${formattedModelName} by ID
-      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
+      // Method to find a ${modelName} by ID
+      async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         if (fields)
@@ -763,13 +924,16 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
         if (!model)
           return null
-
-        return new ${modelName}Model(model)
+        
+        return this.parseResult(this)
       }
 
-      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
+      // Method to find a ${modelName} by ID
+      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
+        const instance = new this(null)
+        
         if (fields)
           query = query.select(fields)
         else
@@ -778,14 +942,35 @@ async function generateModelString(tableName: string, modelName: string, model: 
         const model = await query.executeTakeFirst()
 
         if (!model)
+          return null
+
+        return instance.parseResult(new this(model))
+      }
+
+      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
+        let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+        const instance = new this(null)
+
+        if (fields)
+          query = query.select(fields)
+        else
+          query = query.selectAll()
+
+        const model = await query.executeTakeFirst()
+       
+        if (!model)
           throw(\`No model results found for \${id}\ \`)
 
-        return new ${modelName}Model(model)
+
+        return instance.parseResult(new this(model))
       }
 
       static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
+        const instance = new this(null)
+         
         if (fields)
           query = query.select(fields)
         else
@@ -793,11 +978,13 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
         const model = await query.execute()
 
-        return model.map(modelItem => new ${modelName}Model(modelItem))
+        instance.parseResult(new ${modelName}Model(modelItem))
+
+        return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }
 
-      // Method to get a ${formattedModelName} by criteria
-      static async get(criteria: Partial<${modelName}Type>, options: QueryOptions = {}): Promise<${modelName}Model[]> {
+      // Method to get a ${modelName} by criteria
+      static async fetch(criteria: Partial<${modelName}Type>, options: QueryOptions = {}): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}')
 
         // Apply sorting from options
@@ -815,8 +1002,50 @@ async function generateModelString(tableName: string, modelName: string, model: 
         return model.map(modelItem => new ${modelName}Model(modelItem))
       }
 
+      // Method to get a ${modelName} by criteria
+      static async get(): Promise<${modelName}Model[]> {
+        const query = db.selectFrom('${tableName}')
+
+        const model = await query.selectAll().execute()
+
+        return model.map(modelItem => new ${modelName}Model(modelItem))
+      }
+
+      // Method to get a ${modelName} by criteria
+      async get(): Promise<${modelName}Model[]> {
+        if (this.hasSelect) {
+          const model = await this.query.execute()
+    
+          return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+        }
+    
+        const model = await this.query.selectAll().execute()
+    
+        return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+      }
+
+      static async count(): Promise<number> {
+        const instance = new this(null)
+
+        const results = await instance.query.selectAll().execute()
+
+        return results.length
+      }
+
+      async count(): Promise<number> {
+        if (this.hasSelect) {
+          const results = await this.query.execute()
+
+          return results.length
+        }
+
+        const results = await this.query.selectAll().execute()
+
+        return results.length
+      }
+
       // Method to get all ${tableName}
-      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
+      static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
         const totalRecordsResult = await db.selectFrom('${tableName}')
           .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
           .executeTakeFirst()
@@ -848,23 +1077,29 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
       // Method to create a new ${formattedModelName}
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+        const instance = new this(null)
+        const filteredValues = Object.keys(new${modelName})
+          .filter(key => instance.fillable.includes(key))
+          .reduce((obj: any, key) => {
+              obj[key] = new${modelName}[key];
+              return obj
+          }, {}) as new${modelName}
+
         const result = await db.insertInto('${tableName}')
-          .values(new${modelName})
+          .values(filteredValues)
           .executeTakeFirstOrThrow()
 
         return await find(Number(result.insertId)) as ${modelName}Model
       }
 
-      // Method to remove a ${formattedModelName}
-      static async remove(id: number): Promise<${modelName}Model> {
-        const model = await db.deleteFrom('${tableName}')
+      // Method to remove a ${modelName}
+      static async remove(id: number): Promise<void> {
+        await db.deleteFrom('${tableName}')
           .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new ${modelName}Model(model)
+          .execute()
       }
 
-      async where(...args: (string | number)[]): Promise<${modelName}Type[]> {
+      where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
         let column: any
         let operator: any
         let value: any
@@ -878,135 +1113,127 @@ async function generateModelString(tableName: string, modelName: string, model: 
             throw new Error("Invalid number of arguments")
         }
 
-        let query = db.selectFrom('${tableName}')
+        this.query = this.query.where(column, operator, value)
 
-        query = query.where(column, operator, value)
-
-        return await query.selectAll().execute()
+        return this
       }
 
-      async whereIs(criteria: Partial<${modelName}Type>, options: QueryOptions = {}) {
-        let query = db.selectFrom('${tableName}')
-
-        // Existing criteria checks
-        if (criteria.id)
-          query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-        if (criteria.email)
-          query = query.where('email', '=', criteria.email)
-
-        if (criteria.name !== undefined) {
-          query = query.where(
-            'name',
-            criteria.name === null ? 'is' : '=',
-            criteria.name,
-          )
+      static where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
+        let column: any
+        let operator: any
+        let value: any
+  
+        const instance = new this(null)
+  
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
         }
-
-        if (criteria.password)
-          query = query.where('password', '=', criteria.password)
-
-        if (criteria.created_at)
-          query = query.where('created_at', '=', criteria.created_at)
-
-        if (criteria.updated_at)
-          query = query.where('updated_at', '=', criteria.updated_at)
-
-        if (criteria.deleted_at)
-          query = query.where('deleted_at', '=', criteria.deleted_at)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
+  
+        instance.query = instance.query.where(column, operator, value)
+  
+        return instance
       }
 
-      async whereIn(column: keyof ${modelName}Type, values: any[], options: QueryOptions = {}): Promise<${modelName}Type[]> {
+       ${whereStatements}
 
-        let query = db.selectFrom('${tableName}')
-
-        query = query.where(column, 'in', values)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
+      static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        const instance = new this(null)
+  
+        instance.query = instance.query.where(column, 'in', values)
+  
+        return instance
       }
 
-      async first(): Promise<${modelName}Type> {
+      async first(): Promise<${modelName}Model | undefined> {
+        const model = await this.query.selectAll().executeTakeFirst()
+        
+        return new ${modelName}Model(model)
+      }
+
+      async exists(): Promise<boolean> {
+        const model = await this.query.selectAll().executeTakeFirst()
+        
+        return model !== null || model !== undefined
+      }
+  
+      static async first(): Promise<${modelName}Type | undefined> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .executeTakeFirst()
       }
 
-      async last(): Promise<${modelName}Type> {
+      async last(): Promise<${modelName}Type | undefined> {
         return await db.selectFrom('${tableName}')
           .selectAll()
           .orderBy('id', 'desc')
           .executeTakeFirst()
       }
 
-      async orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): Promise<${modelName}Type[]> {
-        return await db.selectFrom('${tableName}')
-          .selectAll()
-          .orderBy(column, order)
-          .execute()
+      static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+        const instance = new this(null)
+  
+        instance.query = instance.orderBy(column, order)
+  
+        return instance
       }
-
-      async orderByDesc(column: keyof ${modelName}Type): Promise<${modelName}Type[]> {
-        return await db.selectFrom('${tableName}')
-          .selectAll()
-          .orderBy(column, 'desc')
-          .execute()
-      }
-
-      async orderByAsc(column: keyof ${modelName}Type): Promise<${modelName}Type[]> {
-        return await db.selectFrom('${tableName}')
-          .selectAll()
-          .orderBy(column, 'asc')
-          .execute()
-      }
-
-      // Method to get the ${formattedModelName} instance itself
-      self(): ${modelName}Model {
+  
+      orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+        this.query = this.query.orderBy(column, order)
+  
         return this
       }
 
-      // Method to get the ${formattedModelName} instance data
-      get() {
-        return this.${formattedModelName}
+      static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+        const instance = new this(null)
+  
+        instance.query = instance.query.orderBy(column, 'desc')
+  
+        return instance
+      }
+  
+      orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+        this.query = this.orderBy(column, 'desc')
+  
+        return this
       }
 
-      // Method to update the ${formattedModelName} instance
-      async update(${formattedModelName}: ${modelName}Update): Promise<Result<${modelName}Type, Error>> {
-        if (this.${formattedModelName}.id === undefined)
-          return err(handleError('${modelName} ID is undefined'))
+      static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+        const instance = new this(null)
 
-        const updatedModel = await db.updateTable('${tableName}')
-          .set(${formattedModelName})
-          .where('id', '=', this.${formattedModelName}.id)
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+        this.query = this.query.orderBy(column, 'desc')
+
+        return this
+      }
+
+      // Method to update the ${tableName} instance
+      async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | null> {
+        if (this.id === undefined)
+          throw new Error('${modelName} ID is undefined')
+
+        const filteredValues = Object.keys(new${modelName})
+            .filter(key => this.fillable.includes(key))
+            .reduce((obj, key) => {
+                obj[key] = new${modelName}[key];
+                return obj;
+            }, {});
+  
+        await db.updateTable('${tableName}')
+          .set(filteredValues)
+          .where('id', '=', this.id)
           .executeTakeFirst()
-
-        if (!updatedModel)
-          return err(handleError('${modelName} not found'))
-
-        return ok(updatedModel)
+  
+          return await this.find(Number(this.id))
       }
 
       // Method to save (insert or update) the ${formattedModelName} instance
@@ -1028,33 +1255,43 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
       // Method to delete the ${formattedModelName} instance
       async delete(): Promise<void> {
-        if (this.${formattedModelName}.id === undefined)
+        if (this.id === undefined)
           throw new Error('${modelName} ID is undefined')
-
+        
         await db.deleteFrom('${tableName}')
-          .where('id', '=', this.${formattedModelName}.id)
+          .where('id', '=', this.id)
           .execute()
-
-        this.${formattedModelName} = {}
-      }
-
-      // Method to refresh the ${formattedModelName} instance data from the database
-      async refresh(): Promise<void> {
-        if (this.${formattedModelName}.id === undefined)
-          throw new Error('${modelName} ID is undefined')
-
-        const refreshedModel = await db.selectFrom('${tableName}')
-          .where('id', '=', this.${formattedModelName}.id)
-          .selectAll()
-          .executeTakeFirst()
-
-        if (!refreshedModel)
-          throw new Error('${modelName} not found')
-
-        this.${formattedModelName} = refreshedModel
       }
 
       ${relationMethods}
+
+      distinct(column: keyof ${modelName}Type): ${modelName}Model {
+        this.query = this.query.distinctOn(column)
+    
+        return this
+      }
+    
+      static distinct(column: keyof ${modelName}Type): ${modelName}Model {
+        const instance = new this(null)
+    
+        instance.query = instance.query.distinctOn(column)
+    
+        return instance
+      }
+    
+      join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
+        this.query = this.query.innerJoin(table, firstCol, secondCol)
+    
+        return this
+      }
+    
+      static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
+        const instance = new this(null)
+    
+        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    
+        return instance
+      }
 
       toJSON() {
         const output: Partial<${modelName}Type> = { ...this.${formattedModelName} }
@@ -1068,259 +1305,55 @@ async function generateModelString(tableName: string, modelName: string, model: 
 
         return output as ${modelName}
       }
-    }
 
-    const Model = ${modelName}Model
+      parseResult(model: any): ${modelName}Model {
+        for (const hiddenAttribute of this.hidden) {
+          delete model[hiddenAttribute]
+           delete model.${formattedModelName}[hiddenAttribute]
+        }
 
-    // starting here, ORM functions
-    export async function find(id: number, fields?: (keyof ${modelName}Type)[]) {
-      let query = db.selectFrom('${tableName}').where('id', '=', id)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.executeTakeFirst()
-
-      if (!model)
-        return null
-
-      return new ${modelName}Model(model)
-    }
-
-    export async function findOrFail(id: number, fields?: (keyof ${modelName}Type)[]) {
-      let query = db.selectFrom('${tableName}').where('id', '=', id)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.executeTakeFirst()
-
-      if (!model)
-        throw(\`No model results found for \${id}\ \`)
-
-      return new ${modelName}Model(model)
-    }
-
-    export async function findMany(ids: number[], fields?: (keyof ${modelName}Type)[]) {
-      let query = db.selectFrom('${tableName}').where('id', 'in', ids)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.execute()
-
-      return model.map(modelItem => new ${modelName}Model(modelItem))
-    }
-
-    export async function count(): Number {
-      const results = await db.selectFrom('${tableName}')
-        .selectAll()
-        .execute()
-
-      return results.length
-    }
-
-    export async function get(criteria: Partial<${modelName}Type>, sort: { column: keyof ${modelName}Type, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
-      let query = db.selectFrom('${tableName}')
-
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
-
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
+        return model
       }
 
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
-
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
-
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
-
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
-
-      // Apply sorting based on the 'sort' parameter
-      query = query.orderBy(sort.column, sort.order)
-
-      return await query.selectAll().execute()
+      ${twoFactorStatements}
     }
 
-    export async function all(limit: number = 10, offset: number = 0): Promise<${modelName}Type[]> {
-      return await db.selectFrom('${tableName}')
-        .selectAll()
-        .orderBy('created_at', 'desc')
-        .limit(limit)
-        .offset(offset)
-        .execute()
+    async function find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
+      let query = db.selectFrom('${tableName}').where('id', '=', id)
+
+      if (fields) query = query.select(fields)
+      else query = query.selectAll()
+
+      const model = await query.executeTakeFirst()
+
+      if (!model) return null
+
+      return new ${modelName}Model(model)
+    }
+
+    export async function count(): Promise<number> {
+      const results = await ${modelName}Model.count()
+
+      return results
     }
 
     export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
       const result = await db.insertInto('${tableName}')
-      .values(new${modelName})
-      .executeTakeFirstOrThrow()
+        .values(new${modelName})
+        .executeTakeFirstOrThrow()
 
-      return await find(Number(result.insertId))
+      return await find(Number(result.insertId)) as ${modelName}Model
     }
 
-    export async function first(): Promise<${modelName}Model> {
-     return await db.selectFrom('${tableName}')
-        .selectAll()
-        .executeTakeFirst()
-    }
-
-    export async function recent(limit: number): Promise<${modelName}Model[]> {
-      return await db.selectFrom('${tableName}')
-         .selectAll()
-         .limit(limit)
-         .execute()
-     }
-
-     export async function last(limit: number): Promise<${modelName}Type> {
-      return await db.selectFrom('${tableName}')
-         .selectAll()
-         .orderBy('id', 'desc')
-         .limit(limit)
-         .execute()
-     }
-
-    export async function update(id: number, ${formattedModelName}Update: ${modelName}Update) {
-      return await db.updateTable('${tableName}')
-        .set(${formattedModelName}Update)
+    export async function remove(id: number): Promise<void> {
+      await db.deleteFrom('${tableName}')
         .where('id', '=', id)
         .execute()
     }
 
-    export async function remove(id: number) {
-      return await db.deleteFrom('${tableName}')
-        .where('id', '=', id)
-        .executeTakeFirst()
-    }
+    ${whereFunctionStatements}
 
-    export async function where(...args: (string | number)[]) {
-      let column: any
-      let operator: any
-      let value: any
-
-      if (args.length === 2) {
-        [column, value] = args
-        operator = '='
-      } else if (args.length === 3) {
-          [column, operator, value] = args
-      } else {
-          throw new Error("Invalid number of arguments")
-      }
-
-      let query = db.selectFrom('${tableName}')
-
-      query = query.where(column, operator, value)
-
-      return await query.selectAll().execute()
-    }
-
-    export async function whereIs(
-      criteria: Partial<${modelName}Type>,
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('${tableName}')
-
-      // Apply criteria
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id)
-
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
-
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
-
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
-
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
-
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
-
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
-
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
-
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
-
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
-
-      return await query.selectAll().execute()
-    }
-
-    export async function whereIn(
-      column: keyof ${modelName}Type,
-      values: any[],
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('${tableName}')
-
-      query = query.where(column, 'in', values)
-
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
-
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
-
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
-
-      return await query.selectAll().execute()
-    }
-
-    export const ${modelName} = {
-      find,
-      findOrFail,
-      findMany,
-      get,
-      count,
-      all,
-      create,
-      update,
-      remove,
-      Model,
-      first,
-      last,
-      recent,
-      where,
-      whereIn,
-      model: ${modelName}Model
-    }
+    const ${modelName} = ${modelName}Model
 
     export default ${modelName}
     `

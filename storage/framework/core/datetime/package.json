@@ -15,14 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "datetime",
-    "date",
-    "time",
-    "helpers",
-    "composables",
-    "stacks"
-  ],
+  "keywords": ["datetime", "date", "time", "helpers", "composables", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -35,21 +28,15 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@formkit/tempo": "^0.1.1",
+    "@formkit/tempo": "^0.1.2",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {

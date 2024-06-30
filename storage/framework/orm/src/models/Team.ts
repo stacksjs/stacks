@@ -1,652 +1,633 @@
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { db } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import type { Result } from '@stacksjs/error-handling'
-    import { err, handleError, ok } from '@stacksjs/error-handling'
-    import { db } from '@stacksjs/database'
-    import AccessToken from './AccessToken'
+import AccessToken from './AccessToken'
 
+// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+// import { Pool } from 'pg'
 
-    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-    // import { Pool } from 'pg'
+// TODO: we need an action that auto-generates these table interfaces
+export interface TeamsTable {
+  id: Generated<number>
+  name: string
+  companyName: string
+  email: string
+  billingEmail: string
+  status: string
+  description: string
+  path: string
+  isPersonal: boolean
+  accesstoken_id: number
 
-    // TODO: we need an action that auto-generates these table interfaces
-    export interface TeamsTable {
-      id: Generated<number>
-      name: string
-      companyName: string
-      email: string
-      billingEmail: string
-      status: string
-      description: string
-      path: string
-      isPersonal: boolean
-      accesstoken_id: number 
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
+  deleted_at: ColumnType<Date, string | undefined, never>
+}
 
-      created_at: ColumnType<Date, string | undefined, never>
-      updated_at: ColumnType<Date, string | undefined, never>
-      deleted_at: ColumnType<Date, string | undefined, never>
+interface TeamResponse {
+  data: Teams
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export type TeamType = Selectable<TeamsTable>
+export type NewTeam = Insertable<TeamsTable>
+export type TeamUpdate = Updateable<TeamsTable>
+export type Teams = TeamType[]
+
+export type TeamColumn = Teams
+export type TeamColumns = Array<keyof Teams>
+
+type SortDirection = 'asc' | 'desc'
+interface SortOptions {
+  column: TeamType
+  order: SortDirection
+}
+// Define a type for the options parameter
+interface QueryOptions {
+  sort?: SortOptions
+  limit?: number
+  offset?: number
+  page?: number
+}
+
+export class TeamModel {
+  private team: Partial<TeamType> | null
+  private hidden = []
+  private fillable = []
+  protected query: any
+  protected hasSelect: boolean
+  public id: number | undefined
+  public name: string | undefined
+  public companyName: string | undefined
+  public email: string | undefined
+  public billingEmail: string | undefined
+  public status: string | undefined
+  public description: string | undefined
+  public path: string | undefined
+  public isPersonal: boolean | undefined
+  public accesstoken_id: number | undefined
+
+  constructor(team: Partial<TeamType> | null) {
+    this.team = team
+    this.id = team?.id
+    this.name = team?.name
+    this.companyName = team?.companyName
+    this.email = team?.email
+    this.billingEmail = team?.billingEmail
+    this.status = team?.status
+    this.description = team?.description
+    this.path = team?.path
+    this.isPersonal = team?.isPersonal
+    this.accesstoken_id = team?.accesstoken_id
+
+    this.query = db.selectFrom('teams')
+    this.hasSelect = false
+  }
+
+  // Method to find a Team by ID
+  async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+    let query = db.selectFrom('teams').where('id', '=', id)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return null
+
+    return this.parseResult(this)
+  }
+
+  // Method to find a Team by ID
+  static async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+    let query = db.selectFrom('teams').where('id', '=', id)
+
+    const instance = new this(null)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return null
+
+    return instance.parseResult(new this(model))
+  }
+
+  static async findOrFail(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
+    let query = db.selectFrom('teams').where('id', '=', id)
+
+    const instance = new this(null)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) throw `No model results found for ${id} `
+
+    return instance.parseResult(new this(model))
+  }
+
+  static async findMany(ids: number[], fields?: (keyof TeamType)[]): Promise<TeamModel[]> {
+    let query = db.selectFrom('teams').where('id', 'in', ids)
+
+    const instance = new this(null)
+
+    if (fields) query = query.select(fields)
+    else query = query.selectAll()
+
+    const model = await query.execute()
+
+    instance.parseResult(new TeamModel(modelItem))
+
+    return model.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  }
+
+  // Method to get a Team by criteria
+  static async fetch(criteria: Partial<TeamType>, options: QueryOptions = {}): Promise<TeamModel[]> {
+    let query = db.selectFrom('teams')
+
+    // Apply sorting from options
+    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+
+    // Apply limit and offset from options
+    if (options.limit !== undefined) query = query.limit(options.limit)
+
+    if (options.offset !== undefined) query = query.offset(options.offset)
+
+    const model = await query.selectAll().execute()
+    return model.map((modelItem) => new TeamModel(modelItem))
+  }
+
+  // Method to get a Team by criteria
+  static async get(): Promise<TeamModel[]> {
+    const query = db.selectFrom('teams')
+
+    const model = await query.selectAll().execute()
+
+    return model.map((modelItem) => new TeamModel(modelItem))
+  }
+
+  // Method to get a Team by criteria
+  async get(): Promise<TeamModel[]> {
+    if (this.hasSelect) {
+      const model = await this.query.execute()
+
+      return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
     }
 
-    interface TeamResponse {
-      data: Teams
-      paging: {
-        total_records: number
-        page: number
-        total_pages: number
-      }
-      next_cursor: number | null
-    }
+    const model = await this.query.selectAll().execute()
 
-    export type TeamType = Selectable<TeamsTable>
-    export type NewTeam = Insertable<TeamsTable>
-    export type TeamUpdate = Updateable<TeamsTable>
-    export type Teams = TeamType[]
+    return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  }
 
-    export type TeamColumn = Teams
-    export type TeamColumns = Array<keyof Teams>
+  static async count(): Promise<number> {
+    const instance = new this(null)
 
-    type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: TeamType, order: SortDirection }
-    // Define a type for the options parameter
-    interface QueryOptions {
-      sort?: SortOptions
-      limit?: number
-      offset?: number
-      page?: number
-    }
+    const results = await instance.query.selectAll().execute()
 
-    export class TeamModel {
-      private team: Partial<TeamType>
-      private results: Partial<TeamType>[]
-      private hidden = ['password'] // TODO: this hidden functionality needs to be implemented still
+    return results.length
+  }
 
-      constructor(team: Partial<TeamType>) {
-        this.team = team
-      }
-
-      // Method to find a team by ID
-      static async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
-        let query = db.selectFrom('teams').where('id', '=', id)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
-
-        if (!model)
-          return null
-
-        return new TeamModel(model)
-      }
-
-      static async findOrFail(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
-        let query = db.selectFrom('teams').where('id', '=', id)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
-
-        if (!model)
-          throw(`No model results found for ${id} `)
-
-        return new TeamModel(model)
-      }
-
-      static async findMany(ids: number[], fields?: (keyof TeamType)[]): Promise<TeamModel[]> {
-        let query = db.selectFrom('teams').where('id', 'in', ids)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
-
-        const model = await query.execute()
-
-        return model.map(modelItem => new TeamModel(modelItem))
-      }
-
-      // Method to get a team by criteria
-      static async get(criteria: Partial<TeamType>, options: QueryOptions = {}): Promise<TeamModel[]> {
-        let query = db.selectFrom('teams')
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply limit and offset from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        const model = await query.selectAll().execute()
-        return model.map(modelItem => new TeamModel(modelItem))
-      }
-
-      // Method to get all teams
-      static async all(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TeamResponse> {
-        const totalRecordsResult = await db.selectFrom('teams')
-          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-          .executeTakeFirst()
-
-        const totalRecords = Number(totalRecordsResult?.total) || 0
-        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-        const teamsWithExtra = await db.selectFrom('teams')
-          .selectAll()
-          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-          .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page - 1) * (options.limit ?? 10))
-          .execute()
-
-        let nextCursor = null
-        if (teamsWithExtra.length > (options.limit ?? 10))
-          nextCursor = teamsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
-
-        return {
-          data: teamsWithExtra,
-          paging: {
-            total_records: totalRecords,
-            page: options.page,
-            total_pages: totalPages,
-          },
-          next_cursor: nextCursor,
-        }
-      }
-
-      // Method to create a new team
-      static async create(newTeam: NewTeam): Promise<TeamModel> {
-        const result = await db.insertInto('teams')
-          .values(newTeam)
-          .executeTakeFirstOrThrow()
-
-        return await find(Number(result.insertId)) as TeamModel
-      }
-
-      // Method to remove a team
-      static async remove(id: number): Promise<TeamModel> {
-        const model = await db.deleteFrom('teams')
-          .where('id', '=', id)
-          .executeTakeFirstOrThrow()
-
-        return new TeamModel(model)
-      }
-
-      async where(...args: (string | number)[]): Promise<TeamType[]> {
-        let column: any
-        let operator: any
-        let value: any
-
-        if (args.length === 2) {
-          [column, value] = args
-          operator = '='
-        } else if (args.length === 3) {
-            [column, operator, value] = args
-        } else {
-            throw new Error("Invalid number of arguments")
-        }
-
-        let query = db.selectFrom('teams')
-
-        query = query.where(column, operator, value)
-
-        return await query.selectAll().execute()
-      }
-
-      async whereIs(criteria: Partial<TeamType>, options: QueryOptions = {}) {
-        let query = db.selectFrom('teams')
-
-        // Existing criteria checks
-        if (criteria.id)
-          query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
-
-        if (criteria.email)
-          query = query.where('email', '=', criteria.email)
-
-        if (criteria.name !== undefined) {
-          query = query.where(
-            'name',
-            criteria.name === null ? 'is' : '=',
-            criteria.name,
-          )
-        }
-
-        if (criteria.password)
-          query = query.where('password', '=', criteria.password)
-
-        if (criteria.created_at)
-          query = query.where('created_at', '=', criteria.created_at)
-
-        if (criteria.updated_at)
-          query = query.where('updated_at', '=', criteria.updated_at)
-
-        if (criteria.deleted_at)
-          query = query.where('deleted_at', '=', criteria.deleted_at)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
-      }
-
-      async whereIn(column: keyof TeamType, values: any[], options: QueryOptions = {}): Promise<TeamType[]> {
-
-        let query = db.selectFrom('teams')
-
-        query = query.where(column, 'in', values)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply pagination from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        return await query.selectAll().execute()
-      }
-
-      async first(): Promise<TeamType> {
-        return await db.selectFrom('teams')
-          .selectAll()
-          .executeTakeFirst()
-      }
-
-      async last(): Promise<TeamType> {
-        return await db.selectFrom('teams')
-          .selectAll()
-          .orderBy('id', 'desc')
-          .executeTakeFirst()
-      }
-
-      async orderBy(column: keyof TeamType, order: 'asc' | 'desc'): Promise<TeamType[]> {
-        return await db.selectFrom('teams')
-          .selectAll()
-          .orderBy(column, order)
-          .execute()
-      }
-
-      async orderByDesc(column: keyof TeamType): Promise<TeamType[]> {
-        return await db.selectFrom('teams')
-          .selectAll()
-          .orderBy(column, 'desc')
-          .execute()
-      }
-
-      async orderByAsc(column: keyof TeamType): Promise<TeamType[]> {
-        return await db.selectFrom('teams')
-          .selectAll()
-          .orderBy(column, 'asc')
-          .execute()
-      }
-
-      // Method to get the team instance itself
-      self(): TeamModel {
-        return this
-      }
-
-      // Method to get the team instance data
-      get() {
-        return this.team
-      }
-
-      // Method to update the team instance
-      async update(team: TeamUpdate): Promise<Result<TeamType, Error>> {
-        if (this.team.id === undefined)
-          return err(handleError('Team ID is undefined'))
-
-        const updatedModel = await db.updateTable('teams')
-          .set(team)
-          .where('id', '=', this.team.id)
-          .executeTakeFirst()
-
-        if (!updatedModel)
-          return err(handleError('Team not found'))
-
-        return ok(updatedModel)
-      }
-
-      // Method to save (insert or update) the team instance
-      async save(): Promise<void> {
-        if (!this.team)
-          throw new Error('Team data is undefined')
-
-        if (this.team.id === undefined) {
-          // Insert new team
-          const newModel = await db.insertInto('teams')
-            .values(this.team as NewTeam)
-            .executeTakeFirstOrThrow()
-        }
-        else {
-          // Update existing team
-          await this.update(this.team)
-        }
-      }
-
-      // Method to delete the team instance
-      async delete(): Promise<void> {
-        if (this.team.id === undefined)
-          throw new Error('Team ID is undefined')
-
-        await db.deleteFrom('teams')
-          .where('id', '=', this.team.id)
-          .execute()
-
-        this.team = {}
-      }
-
-      // Method to refresh the team instance data from the database
-      async refresh(): Promise<void> {
-        if (this.team.id === undefined)
-          throw new Error('Team ID is undefined')
-
-        const refreshedModel = await db.selectFrom('teams')
-          .where('id', '=', this.team.id)
-          .selectAll()
-          .executeTakeFirst()
-
-        if (!refreshedModel)
-          throw new Error('Team not found')
-
-        this.team = refreshedModel
-      }
-
-      
-      async teamAccess_tokens() {
-        if (this.team.id === undefined)
-          throw new Error('Relation Error!')
-
-        const results = await db.selectFrom('team_access_tokens')
-          .where('team_id', '=', this.team.id)
-          .selectAll()
-          .execute()
-
-          return results
-      }
-
-
-
-      toJSON() {
-        const output: Partial<TeamType> = { ...this.team }
-
-        this.hidden.forEach((attr) => {
-          if (attr in output)
-            delete output[attr as keyof Partial<TeamType>]
-        })
-
-        type Team = Omit<TeamType, 'password'>
-
-        return output as Team
-      }
-    }
-
-    const Model = TeamModel
-
-    // starting here, ORM functions
-    export async function find(id: number, fields?: (keyof TeamType)[]) {
-      let query = db.selectFrom('teams').where('id', '=', id)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.executeTakeFirst()
-
-      if (!model)
-        return null
-
-      return new TeamModel(model)
-    }
-
-    export async function findOrFail(id: number, fields?: (keyof TeamType)[]) {
-      let query = db.selectFrom('teams').where('id', '=', id)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.executeTakeFirst()
-
-      if (!model)
-        throw(`No model results found for ${id} `)
-
-      return new TeamModel(model)
-    }
-
-    export async function findMany(ids: number[], fields?: (keyof TeamType)[]) {
-      let query = db.selectFrom('teams').where('id', 'in', ids)
-
-      if (fields)
-        query = query.select(fields)
-      else
-        query = query.selectAll()
-
-      const model = await query.execute()
-
-      return model.map(modelItem => new TeamModel(modelItem))
-    }
-
-    export async function count(): Number {
-      const results = await db.selectFrom('teams')
-        .selectAll()
-        .execute()
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      const results = await this.query.execute()
 
       return results.length
     }
 
-    export async function get(criteria: Partial<TeamType>, sort: { column: keyof TeamType, order: 'asc' | 'desc' } = { column: 'created_at', order: 'desc' }) {
-      let query = db.selectFrom('teams')
+    const results = await this.query.selectAll().execute()
 
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id) // Kysely is immutable, we must re-assign
+    return results.length
+  }
 
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
+  // Method to get all teams
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TeamResponse> {
+    const totalRecordsResult = await db
+      .selectFrom('teams')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
 
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
+    const teamsWithExtra = await db
+      .selectFrom('teams')
+      .selectAll()
+      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+      .limit((options.limit ?? 10) + 1) // Fetch one extra record
+      .offset((options.page - 1) * (options.limit ?? 10))
+      .execute()
 
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
+    let nextCursor = null
+    if (teamsWithExtra.length > (options.limit ?? 10)) nextCursor = teamsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
+    return {
+      data: teamsWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
 
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
+  // Method to create a new team
+  static async create(newTeam: NewTeam): Promise<TeamModel> {
+    const instance = new this(null)
+    const filteredValues = Object.keys(newTeam)
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newTeam[key]
+        return obj
+      }, {})
 
-      // Apply sorting based on the 'sort' parameter
-      query = query.orderBy(sort.column, sort.order)
+    const result = await db.insertInto('teams').values(filteredValues).executeTakeFirstOrThrow()
 
-      return await query.selectAll().execute()
+    return (await find(Number(result.insertId))) as TeamModel
+  }
+
+  // Method to remove a Team
+  static async remove(id: number): Promise<void> {
+    await db.deleteFrom('teams').where('id', '=', id).execute()
+  }
+
+  where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
     }
 
-    export async function all(limit: number = 10, offset: number = 0): Promise<TeamType[]> {
-      return await db.selectFrom('teams')
-        .selectAll()
-        .orderBy('created_at', 'desc')
-        .limit(limit)
-        .offset(offset)
-        .execute()
+    this.query = this.query.where(column, operator, value)
+
+    return this
+  }
+
+  static where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new this(null)
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
     }
 
-    export async function create(newTeam: NewTeam): Promise<TeamModel> {
-      const result = await db.insertInto('teams')
-      .values(newTeam)
-      .executeTakeFirstOrThrow()
+    instance.query = instance.query.where(column, operator, value)
 
-      return await find(Number(result.insertId))
+    return instance
+  }
+
+  static whereName(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereCompanyName(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('companyName', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('email', '=', value)
+
+    return instance
+  }
+
+  static whereBillingEmail(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('billingEmail', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('description', '=', value)
+
+    return instance
+  }
+
+  static wherePath(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('path', '=', value)
+
+    return instance
+  }
+
+  static whereIsPersonal(value: string | number | boolean | undefined | null): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where('isPersonal', '=', value)
+
+    return instance
+  }
+
+  static whereIn(column: keyof TeamType, values: any[]): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.where(column, 'in', values)
+
+    return instance
+  }
+
+  async first(): Promise<TeamModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return new TeamModel(model)
+  }
+
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    return model !== null || model !== undefined
+  }
+
+  static async first(): Promise<TeamType | undefined> {
+    return await db.selectFrom('teams').selectAll().executeTakeFirst()
+  }
+
+  async last(): Promise<TeamType | undefined> {
+    return await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
+  static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.orderBy(column, order)
+
+    return instance
+  }
+
+  orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
+    this.query = this.query.orderBy(column, order)
+
+    return this
+  }
+
+  static orderByDesc(column: keyof TeamType): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.orderBy(column, 'desc')
+
+    return instance
+  }
+
+  orderByDesc(column: keyof TeamType): TeamModel {
+    this.query = this.orderBy(column, 'desc')
+
+    return this
+  }
+
+  static orderByAsc(column: keyof TeamType): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.orderBy(column, 'desc')
+
+    return instance
+  }
+
+  orderByAsc(column: keyof TeamType): TeamModel {
+    this.query = this.query.orderBy(column, 'desc')
+
+    return this
+  }
+
+  // Method to update the teams instance
+  async update(team: TeamUpdate): Promise<TeamModel | null> {
+    if (this.id === undefined) throw new Error('Team ID is undefined')
+
+    const filteredValues = Object.keys(newTeam)
+      .filter((key) => this.fillable.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = newTeam[key]
+        return obj
+      }, {})
+
+    await db.updateTable('teams').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
+
+    return await this.find(Number(this.id))
+  }
+
+  // Method to save (insert or update) the team instance
+  async save(): Promise<void> {
+    if (!this.team) throw new Error('Team data is undefined')
+
+    if (this.team.id === undefined) {
+      // Insert new team
+      const newModel = await db
+        .insertInto('teams')
+        .values(this.team as NewTeam)
+        .executeTakeFirstOrThrow()
+    } else {
+      // Update existing team
+      await this.update(this.team)
+    }
+  }
+
+  // Method to delete the team instance
+  async delete(): Promise<void> {
+    if (this.id === undefined) throw new Error('Team ID is undefined')
+
+    await db.deleteFrom('teams').where('id', '=', this.id).execute()
+  }
+
+  async teamAccessTokens() {
+    if (this.id === undefined) throw new Error('Relation Error!')
+
+    const results = await db
+      .selectFrom('team_personal_access_tokens')
+      .where('team_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    return results
+  }
+
+  distinct(column: keyof TeamType): TeamModel {
+    this.query = this.query.distinctOn(column)
+
+    return this
+  }
+
+  static distinct(column: keyof TeamType): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.distinctOn(column)
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): TeamModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): TeamModel {
+    const instance = new this(null)
+
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+    return instance
+  }
+
+  toJSON() {
+    const output: Partial<TeamType> = { ...this.team }
+
+    this.hidden.forEach((attr) => {
+      if (attr in output) delete output[attr as keyof Partial<TeamType>]
+    })
+
+    type Team = Omit<TeamType, 'password'>
+
+    return output as Team
+  }
+
+  parseResult(model: any): TeamModel {
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute]
+      delete model.team[hiddenAttribute]
     }
 
-    export async function first(): Promise<TeamModel> {
-     return await db.selectFrom('teams')
-        .selectAll()
-        .executeTakeFirst()
-    }
+    return model
+  }
+}
 
-    export async function recent(limit: number): Promise<TeamModel[]> {
-      return await db.selectFrom('teams')
-         .selectAll()
-         .limit(limit)
-         .execute()
-     }
+async function find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+  let query = db.selectFrom('teams').where('id', '=', id)
 
-     export async function last(limit: number): Promise<TeamType> {
-      return await db.selectFrom('teams')
-         .selectAll()
-         .orderBy('id', 'desc')
-         .limit(limit)
-         .execute()
-     }
+  if (fields) query = query.select(fields)
+  else query = query.selectAll()
 
-    export async function update(id: number, teamUpdate: TeamUpdate) {
-      return await db.updateTable('teams')
-        .set(teamUpdate)
-        .where('id', '=', id)
-        .execute()
-    }
+  const model = await query.executeTakeFirst()
 
-    export async function remove(id: number) {
-      return await db.deleteFrom('teams')
-        .where('id', '=', id)
-        .executeTakeFirst()
-    }
+  if (!model) return null
 
-    export async function where(...args: (string | number)[]) {
-      let column: any
-      let operator: any
-      let value: any
+  return new TeamModel(model)
+}
 
-      if (args.length === 2) {
-        [column, value] = args
-        operator = '='
-      } else if (args.length === 3) {
-          [column, operator, value] = args
-      } else {
-          throw new Error("Invalid number of arguments")
-      }
+export async function count(): Promise<number> {
+  const results = await TeamModel.count()
 
-      let query = db.selectFrom('teams')
+  return results
+}
 
-      query = query.where(column, operator, value)
+export async function create(newTeam: NewTeam): Promise<TeamModel> {
+  const result = await db.insertInto('teams').values(newTeam).executeTakeFirstOrThrow()
 
-      return await query.selectAll().execute()
-    }
+  return (await find(Number(result.insertId))) as TeamModel
+}
 
-    export async function whereIs(
-      criteria: Partial<TeamType>,
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('teams')
+export async function remove(id: number): Promise<void> {
+  await db.deleteFrom('teams').where('id', '=', id).execute()
+}
 
-      // Apply criteria
-      if (criteria.id)
-        query = query.where('id', '=', criteria.id)
+export async function whereName(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('name', '=', value)
 
-      if (criteria.email)
-        query = query.where('email', '=', criteria.email)
+  const results = await query.execute()
 
-      if (criteria.name !== undefined) {
-        query = query.where(
-          'name',
-          criteria.name === null ? 'is' : '=',
-          criteria.name,
-        )
-      }
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
 
-      if (criteria.password)
-        query = query.where('password', '=', criteria.password)
+export async function whereCompanyName(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('companyName', '=', value)
 
-      if (criteria.created_at)
-        query = query.where('created_at', '=', criteria.created_at)
+  const results = await query.execute()
 
-      if (criteria.updated_at)
-        query = query.where('updated_at', '=', criteria.updated_at)
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
 
-      if (criteria.deleted_at)
-        query = query.where('deleted_at', '=', criteria.deleted_at)
+export async function whereEmail(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('email', '=', value)
 
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
+  const results = await query.execute()
 
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
 
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
+export async function whereBillingEmail(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('billingEmail', '=', value)
 
-      return await query.selectAll().execute()
-    }
+  const results = await query.execute()
 
-    export async function whereIn(
-      column: keyof TeamType,
-      values: any[],
-      options: QueryOptions = {},
-    ) {
-      let query = db.selectFrom('teams')
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
 
-      query = query.where(column, 'in', values)
+export async function whereStatus(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('status', '=', value)
 
-      // Apply sorting from options
-      if (options.sort)
-        query = query.orderBy(options.sort.column, options.sort.order)
+  const results = await query.execute()
 
-      // Apply pagination from options
-      if (options.limit !== undefined)
-        query = query.limit(options.limit)
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
 
-      if (options.offset !== undefined)
-        query = query.offset(options.offset)
+export async function whereDescription(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('description', '=', value)
 
-      return await query.selectAll().execute()
-    }
+  const results = await query.execute()
 
-    export const Team = {
-      find,
-      findOrFail,
-      findMany,
-      get,
-      count,
-      all,
-      create,
-      update,
-      remove,
-      Model,
-      first,
-      last,
-      recent,
-      where,
-      whereIn,
-      model: TeamModel
-    }
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
 
-    export default Team
-    
+export async function wherePath(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('path', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+export async function whereIsPersonal(value: string | number | boolean | undefined | null): Promise<TeamModel[]> {
+  const query = db.selectFrom('teams').where('isPersonal', '=', value)
+
+  const results = await query.execute()
+
+  return results.map((modelItem) => new TeamModel(modelItem))
+}
+
+const Team = TeamModel
+
+export default Team

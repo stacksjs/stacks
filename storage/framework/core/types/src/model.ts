@@ -2,7 +2,9 @@ import type { ModelNames, Model as ModelType } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable, SearchOptions } from '.'
 
-export type AuthOptions = {}
+export type AuthOptions = {
+  useTwoFactor?: boolean
+}
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
@@ -116,7 +118,10 @@ export interface ModelOptions extends Base {
 export interface Attribute {
   default?: string | number | boolean | Date
   unique?: boolean
+  order?: number
   required?: boolean
+  hidden?: boolean
+  fillable?: boolean
   factory?: () => any
   validation?: {
     rule: VineType

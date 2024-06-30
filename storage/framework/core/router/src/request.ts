@@ -1,4 +1,4 @@
-import type { RequestInstance, RouteParam } from "@stacksjs/types"
+import type { RequestInstance, RouteParam } from '@stacksjs/types'
 
 interface RequestData {
   [key: string]: string
@@ -6,10 +6,11 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string } | null
 
-export class Request implements RequestInstance{
+export class Request implements RequestInstance {
   private static instance: Request
   private query: RequestData = {}
   private params: RouteParams = null
+  private headers: any = {}
 
   // An attempt to singleston instance, might be needed at some point
   public static getInstance(): Request {
@@ -23,8 +24,16 @@ export class Request implements RequestInstance{
     this.query = Object.fromEntries(url.searchParams)
   }
 
+  public addBodies(params: any): void {
+    this.query = params
+  }
+
   public addParam(param: RouteParam): void {
     this.params = param
+  }
+
+  public addHeaders(headerParams: Headers): void {
+    this.headers = headerParams
   }
 
   public get(element: string): string | number | undefined {
@@ -50,8 +59,30 @@ export class Request implements RequestInstance{
     if (match?.groups) this.params = match.groups
   }
 
+  public header(headerParam: string): string | number | boolean | null {
+    return this.headers.get(headerParam)
+  }
+
+  public getHeaders() {
+    return this.headers
+  }
+
+  public Header(headerParam: string): string | number | boolean | null {
+    return this.headers.get(headerParam)
+  }
+
   public getParam(key: string): number | string | null {
     return this.params ? this.params[key] || null : null
+  }
+
+  public bearerToken(): string | null {
+    const authorizationHeader = this.headers.get('authorization')
+
+    if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
+      return authorizationHeader.substring(7)
+    }
+
+    return null
   }
 
   public getParams(): RouteParams {
@@ -62,6 +93,6 @@ export class Request implements RequestInstance{
     const value = this.params ? this.params[key] || null : null
     return value ? Number.parseInt(value) : null
   }
-} 
+}
 
 export const request = new Request()

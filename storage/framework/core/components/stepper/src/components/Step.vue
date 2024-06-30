@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { computed, defineEmits, defineOptions, defineProps, onMounted, useSlots } from 'vue'
+import { computed, onMounted, useSlots } from 'vue'
 
 defineOptions({
   name: 'Step',
@@ -47,20 +47,17 @@ const scope = computed(() => ({
 }))
 
 const classes = computed(() => ({
-    'is-active': props.active,
-    'is-visited': props.visited,
-    'is-disabled': props.disabled
+  'is-active': props.active,
+  'is-visited': props.visited,
+  'is-disabled': props.disabled,
 }))
 
 const indexClasses = computed(() => {
-
   const defaultClass = ' '
-  const additionalClass = props.active  ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
+  const additionalClass = props.active ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
 
   return defaultClass + additionalClass
 })
-
-
 
 function handleChange() {
   emit('change', props.index)

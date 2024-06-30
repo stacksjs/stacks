@@ -5,7 +5,7 @@ export default antfu({
   // Enable stylistic formatting rules
   // stylistic: true,
 
-  // Or customize the stylistic rules
+  // Or customize the stylistic
   stylistic: {
     indent: 2, // 4, or 'tab'
     quotes: 'single', // or 'double'
@@ -16,15 +16,15 @@ export default antfu({
   vue: true,
 
   // Disable jsonc and yaml support
-  // jsonc: false,
-  // yaml: false,
+  jsonc: true,
+  yaml: true,
 
   // `.eslintignore` is no longer supported in Flat config, use `ignores` instead
   ignores: [
     '**/fixtures',
     '**/test',
     '**/tests',
-    '**/framework',
+    // '**/framework',
     // '**/core/env/src/index.js',
     '**/README.md',
     // ...globs

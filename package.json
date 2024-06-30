@@ -5,6 +5,7 @@
   "private": true,
   "description": "Your project description",
   "author": "your-name <your-email>",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -15,7 +16,6 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "scripts": {
     "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
@@ -54,7 +54,7 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "ace-builds": "^1.34.2",
+    "ace-builds": "^1.35.1",
     "resize-observer-polyfill": "^1.5.1",
     "stacks": "workspace:*",
     "vue3-ace-editor": "^2.2.4"
@@ -79,7 +79,7 @@
     "storage/framework/views/*"
   ],
   "devDependencies": {
-    "@antfu/eslint-config": "^2.20.0",
-    "eslint": "^9.4.0"
+    "@antfu/eslint-config": "^2.21.2",
+    "eslint": "^9.6.0"
   }
 }

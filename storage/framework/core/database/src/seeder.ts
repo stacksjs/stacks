@@ -31,9 +31,11 @@ async function seedModel(name: string, model?: Model) {
     const record: any = {}
 
     for (const fieldName in model.attributes) {
+      const formattedFieldName = snakeCase(fieldName)
       const field = model.attributes[fieldName]
+
       // Use the factory function if available, otherwise leave the field undefined
-      record[fieldName] = field?.factory ? field.factory() : undefined
+      record[formattedFieldName] = field?.factory ? field.factory() : undefined
     }
 
     if (otherRelations?.length) {
@@ -60,9 +62,10 @@ async function seedModelRelation(modelName: string): Promise<BigInt | number> {
   const table = modelInstance.table
 
   for (const fieldName in modelInstance.attributes) {
+    const formattedFieldName = snakeCase(fieldName)
     const field = modelInstance.attributes[fieldName]
     // Use the factory function if available, otherwise leave the field undefined
-    record[fieldName] = field?.factory ? field.factory() : undefined
+    record[formattedFieldName] = field?.factory ? field.factory() : undefined
   }
 
   const data = await db.insertInto(table).values(record).executeTakeFirstOrThrow()

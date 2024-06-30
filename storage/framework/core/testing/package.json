@@ -38,24 +38,18 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.44.1"
+    "@playwright/test": "^1.45.0"
   },
   "dependencies": {
-    "@playwright/test": "^1.44.1"
+    "@playwright/test": "^1.45.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

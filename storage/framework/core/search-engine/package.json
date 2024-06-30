@@ -40,14 +40,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -58,7 +52,7 @@
     "@stacksjs/ui": "workspace:*"
   },
   "dependencies": {
-    "@opensearch-project/opensearch": "^2.9.0",
+    "@opensearch-project/opensearch": "^2.10.0",
     "meilisearch": "^0.40.0"
   },
   "devDependencies": {

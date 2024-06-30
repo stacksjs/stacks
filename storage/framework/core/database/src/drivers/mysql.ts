@@ -1,18 +1,21 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
+import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
+  arrangeColumns,
   checkPivotMigration,
   fetchOtherModelRelations,
   getLastMigrationFields,
   getPivotTables,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
+  pluckChanges,
 } from '.'
-import { getModelName, getTableName } from '@stacksjs/orm'
 
 export async function resetMysqlDatabase() {
   const tables = await fetchMysqlTables()
@@ -124,10 +127,11 @@ async function createTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const tableName = await getTableName(model, modelPath)
 
+  const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
+
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
 
-  const fields = model.attributes
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
@@ -138,11 +142,11 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
-  for (const [fieldName, options] of Object.entries(fields)) {
+  for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
-
+    const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
-    migrationContent += `    .addColumn('${fieldName}', ${columnType}`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions?.required) {
@@ -153,6 +157,10 @@ async function createTableMigration(modelPath: string) {
     }
 
     migrationContent += `)\n`
+  }
+
+  if (false !== twoFactorEnabled && twoFactorEnabled) {
+    migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
   }
 
   if (otherModelRelations?.length) {
@@ -230,25 +238,45 @@ export async function createAlterTableMigration(modelPath: string) {
   const currentFields = model.attributes as Attributes
 
   // Determine fields to add and remove
-  const fieldsToAdd = Object.keys(currentFields)
-  const fieldsToRemove = Object.keys(lastFields)
+
+  const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
+
+  const fieldsToAdd = changes?.added || []
+
+  const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema.alterTable('${tableName}')\n`
+
+  if (fieldsToAdd.length || fieldsToRemove.length) migrationContent += `  await db.schema.alterTable('${tableName}')\n`
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validation?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
+    const formattedFieldName = snakeCase(fieldName)
+
+    migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
+
+    // Check if there are configurations that require the lambda function
+    if (options.unique || options?.required) {
+      migrationContent += `, col => col`
+      if (options.unique) migrationContent += `.unique()`
+      if (options?.required) migrationContent += `.notNull()`
+      migrationContent += ``
+    }
+
+    migrationContent += `)\n\n`
   }
 
   // Remove fields that no longer exist
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
 
-  migrationContent += `    .execute();\n`
+  if (fieldsToAdd.length || fieldsToRemove.length) migrationContent += `    .execute();\n`
+
+  migrationContent += reArrangeColumns(model.attributes, tableName)
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -259,6 +287,27 @@ export async function createAlterTableMigration(modelPath: string) {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
+  const fields = arrangeColumns(attributes)
+  let migrationContent = ''
+
+  let previousField = ''
+  for (const [fieldName, options] of fields) {
+    const fieldNameFormatted = snakeCase(fieldName)
+
+    if (previousField) {
+      migrationContent += `await sql\`
+        ALTER TABLE ${tableName}
+        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
+      \`.execute(db)\n\n`
+    }
+
+    previousField = fieldNameFormatted
+  }
+
+  return migrationContent
 }
 
 export async function fetchMysqlTables(): Promise<string[]> {

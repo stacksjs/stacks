@@ -4,14 +4,17 @@ import { ok } from '@stacksjs/error-handling'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import type { Attribute, Model } from '@stacksjs/types'
+import { snakeCase } from '@stacksjs/strings'
+import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
+  arrangeColumns,
   checkPivotMigration,
   fetchOtherModelRelations,
   getLastMigrationFields,
   getPivotTables,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
+  pluckChanges,
 } from '.'
 
 export async function resetPostgresDatabase() {
@@ -128,7 +131,6 @@ async function createTableMigration(modelPath: string) {
   await createPivotTableMigration(model, modelPath)
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
-  const fields = model.attributes
   const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
   const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
 
@@ -139,10 +141,11 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
 
-  for (const [fieldName, options] of Object.entries(fields)) {
+  for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
+    const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validations?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions.validations?.rule?.required) {
@@ -227,11 +230,13 @@ export async function createAlterTableMigration(modelPath: string) {
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.attributes
+  const currentFields = model.attributes as Attributes
 
-  // Determine fields to add and remove
-  const fieldsToAdd = Object.keys(currentFields)
-  const fieldsToRemove = Object.keys(lastFields)
+  const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
+
+  const fieldsToAdd = changes?.added || []
+
+  const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

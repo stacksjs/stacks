@@ -1,7 +1,9 @@
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
+import presetWind from '@unocss/preset-wind'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
+import { presetAttributify, presetIcons, presetUno } from 'unocss'
 import UnoCSS from 'unocss/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
@@ -20,7 +22,12 @@ export default defineConfig(({ command, mode }) => {
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
-    UnoCSS(),
+
+    UnoCSS({
+      presets: [presetUno(), presetAttributify(), presetIcons(), presetWind()],
+      mode: 'shadow-dom',
+    }),
+
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
@@ -30,10 +37,11 @@ export default defineConfig(({ command, mode }) => {
         }),
       ],
     }),
+
     Icons(),
   ]
-  let cssCodeStr = ''
 
+  let cssCodeStr = ''
 
   if (mode === 'lib') {
     userConfig.build = {
@@ -45,11 +53,29 @@ export default defineConfig(({ command, mode }) => {
 
       outDir: 'dist',
       emptyOutDir: false,
-      cssCodeSplit: false,
+      // cssCodeSplit: true,
       sourcemap: true,
 
       rollupOptions: {
-        external: ['vue'],
+        external: [
+          'vue',
+          'fs',
+          'path',
+          'node:v8',
+          'node:util',
+          'node:path',
+          'node:process',
+          'node:fs',
+          'node:module',
+          'stream',
+          'node:url',
+          'os',
+          'node:assert',
+          'assert',
+          'child_process',
+          'node:fs/promises',
+          'node:assert',
+        ],
         output: [
           // {
           //   format: 'cjs',

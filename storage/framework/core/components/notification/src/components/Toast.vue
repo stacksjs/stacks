@@ -78,6 +78,9 @@ onMounted(() => {
   if (!mounted.value) return
 
   const toastNode = toastRef.value
+  if (!toastNode)
+    throw new Error("Toast node is not defined")
+
   const originalHeight = toastNode?.style.height
   toastNode.style.height = 'auto'
   const newHeight = toastNode.getBoundingClientRect().height
@@ -230,9 +233,14 @@ onMounted(() => {
     // Add toast height tot heights array after the toast is mounted
     initialHeight.value = height
 
-    const newHeights = [{ toastId: props.toast.id, height, position: props.toast.position }, ...props.heights]
+    if (!props.toast.position)
+      throw new Error('Toast position is not defined')
+
+    const position = props.toast.position
+    const newHeights = [{ toastId: props.toast.id, height, position }, ...props.heights]
     emit('update:heights', newHeights)
   }
+
   mounted.value = true
 })
 

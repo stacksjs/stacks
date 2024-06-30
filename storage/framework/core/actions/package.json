@@ -38,14 +38,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -68,7 +62,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
-    "vue-component-meta": "^2.0.19"
+    "vue-component-meta": "^2.0.22"
   },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -86,7 +80,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
-    "vue-component-meta": "^2.0.19"
+    "vue-component-meta": "^2.0.22"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

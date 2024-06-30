@@ -1,34 +1,26 @@
 import { Request } from '@stacksjs/router'
 import { validateField } from '@stacksjs/validation'
-import type { RequestInstance } from '@stacksjs/types'
 
-export interface TeamRequestType extends RequestInstance{
-      validate(): void
-       name: string
-      companyName: string
-      email: string
-      billingEmail: string
-      status: string
-      description: string
-      path: string
-      isPersonal: boolean
-     
-    }
+import type { TeamRequestType } from '../types/requests'
 
-export class TeamRequest extends Request implements TeamRequestType  {
-      public name = ''
-public companyName = ''
-public email = ''
-public billingEmail = ''
-public status = ''
-public description = ''
-public path = ''
-public isPersonal = false
+export class TeamRequest extends Request implements TeamRequestType {
+  public id = 1
+  public name = ''
+  public companyName = ''
+  public email = ''
+  public billingEmail = ''
+  public status = ''
+  public description = ''
+  public path = ''
+  public isPersonal = false
+  public accesstoken_id = 0
+  public created_at = ''
+  public updated_at = ''
+  public deleted_at = ''
 
-      public async validate(): Promise<void> {
-        await validateField('Team', this.all())
-      }
-    }
-    
-    export const teamRequest = new TeamRequest()
-    
+  public async validate(): Promise<void> {
+    await validateField('Team', this.all())
+  }
+}
+
+export const teamRequest = new TeamRequest()

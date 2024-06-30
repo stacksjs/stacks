@@ -5,7 +5,7 @@ import { server } from '@stacksjs/server'
 import { withPwa } from '@vite-pwa/vitepress'
 import { defineConfig } from 'vitepress'
 import { transformerTwoslash } from 'vitepress-plugin-twoslash'
-import userConfig from '../../../../config/docs'
+import userConfig from '../../../../docs/config'
 import { analyticsHead, faviconHead } from './head'
 
 // import { config } from '@stacksjs/config'

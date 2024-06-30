@@ -18,13 +18,11 @@ const reset = () => {
   }
 }
 
-
 const previous = () => {
-  if(stepperRef.value) {
+  if (stepperRef.value) {
     stepperRef.value.previous()
   }
 }
-
 </script>
 
 <template>

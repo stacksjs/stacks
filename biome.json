@@ -62,6 +62,7 @@
   },
   "files": {
     "ignore": [
+      "database/migrations/*",
       "storage/framework/types/*",
       "storage/framework/cache/*",
       "storage/framework/server/*",

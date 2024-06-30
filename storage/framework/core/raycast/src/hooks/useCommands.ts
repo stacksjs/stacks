@@ -1,6 +1,6 @@
 import { useFetch } from '@raycast/utils'
-import type { BuddyCommand } from '../types'
 import { API_URL } from '../config'
+import type { BuddyCommand } from '../types'
 
 interface UseCommandsOptions {
   search?: string
@@ -10,8 +10,7 @@ interface UseCommandsOptions {
 export function useCommands({ search, version }: UseCommandsOptions) {
   const query = new URLSearchParams()
 
-  for (const [key, value] of Object.entries({ search, version }))
-    value && query.set(key, value)
+  for (const [key, value] of Object.entries({ search, version })) value && query.set(key, value)
 
   const url = `${API_URL}/commands?${query.toString()}`
   const { data, isLoading } = useFetch<{ commands: BuddyCommand[] }>(url, {
@@ -19,7 +18,7 @@ export function useCommands({ search, version }: UseCommandsOptions) {
   })
 
   return {
-    commands: data?.commands?.filter(c => !c?.signature?.startsWith('_')),
+    commands: data?.commands?.filter((c) => !c?.signature?.startsWith('_')),
     isLoading,
   }
 }

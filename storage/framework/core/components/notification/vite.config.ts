@@ -39,11 +39,11 @@ export default defineConfig(({ command, mode }) => {
   if (mode === 'lib') {
     userConfig.build = {
       lib: {
-        entry: resolve(__dirname, 'packages/index.ts'),
+        entry: resolve(__dirname, 'src/index.ts'),
         name: 'StacksNotification',
         fileName: 'stacks-notification',
       },
-      outDir: 'lib',
+      outDir: 'dist',
       emptyOutDir: true,
       cssCodeSplit: false,
       sourcemap: true,
@@ -56,7 +56,7 @@ export default defineConfig(({ command, mode }) => {
           // },
           {
             format: 'es',
-            entryFileNames: `stacks-notification.js`,
+            entryFileNames: `index.js`,
             preserveModules: false,
           },
         ],

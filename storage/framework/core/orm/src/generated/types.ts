@@ -1,14 +1,15 @@
 import type { ProjectsTable } from '../../../../orm/src/models/Project'
 import type { SubscriberEmailsTable } from '../../../../orm/src/models/SubscriberEmail'
-import type { AccessTokensTable } from '../../../../orm/src/models/AccessToken'
+import type { PersonalAccessTokensTable } from '../../../../orm/src/models/AccessToken'
 import type { TeamsTable } from '../../../../orm/src/models/Team'
 import type { SubscribersTable } from '../../../../orm/src/models/Subscriber'
 import type { DeploymentsTable } from '../../../../orm/src/models/Deployment'
+import type { ReleasesTable } from '../../../../orm/src/models/Release'
 import type { UsersTable } from '../../../../orm/src/models/User'
 import type { PostsTable } from '../../../../orm/src/models/Post'
 import type { Generated } from 'kysely'
 
-export interface TeamAccessTokensTable {
+export interface TeamPersonalAccessTokensTable {
         id: Generated<number>
         team_id: number
         accesstoken_id: number
@@ -16,11 +17,12 @@ export interface TeamAccessTokensTable {
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
-  access_tokens: AccessTokensTable
-  team_access_tokens: TeamAccessTokensTable
+  personal_access_tokens: PersonalAccessTokensTable
+  team_personal_access_tokens: TeamPersonalAccessTokensTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
+  releases: ReleasesTable
   users: UsersTable
   posts: PostsTable
 }

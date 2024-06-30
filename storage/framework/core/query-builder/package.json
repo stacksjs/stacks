@@ -15,10 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "stacks",
-    "kysely"
-  ],
+  "keywords": ["stacks", "kysely"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -31,14 +28,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
@@ -54,7 +45,7 @@
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.27.3",
     "kysely-bun-worker": "^0.6.1",
-    "mysql2": "^3.10.0",
+    "mysql2": "^3.10.1",
     "pg": "^8.12.0"
   },
   "devDependencies": {

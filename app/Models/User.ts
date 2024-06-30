@@ -12,10 +12,11 @@ export default {
   autoIncrement: true, // defaults to true
 
   traits: {
-    useAuth: true, // defaults to false, `authenticatable` used as an alias
+    useAuth: {
+      useTwoFactor: true,
+    },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
-
     useSearch: {
       // defaults to true, `searchable` used as an alias
       searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)
@@ -31,7 +32,7 @@ export default {
 
     useApi: {
       uri: 'users', // your-url.com/api/users
-      middleware: ['auth'], // defaults to `[]`
+      middleware: ['Api'], // defaults to `[]`
       routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
 
@@ -44,6 +45,8 @@ export default {
   attributes: {
     name: {
       required: true,
+      order: 5,
+
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
@@ -58,6 +61,7 @@ export default {
     email: {
       unique: true,
       required: true,
+      order: 1,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -70,6 +74,7 @@ export default {
 
     jobTitle: {
       required: true,
+      order: 3,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
@@ -80,9 +85,10 @@ export default {
 
       factory: () => faker.person.jobTitle(),
     },
-
     password: {
       required: true,
+      order: 2,
+      hidden: true,
       validation: {
         rule: schema.string().minLength(6).maxLength(255),
         message: {

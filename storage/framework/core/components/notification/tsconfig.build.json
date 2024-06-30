@@ -7,7 +7,7 @@
     "declarationDir": "./temp",
     "emitDeclarationOnly": true,
     "noEmit": false,
-    "outDir": "lib"
+    "outDir": "dist"
   },
   "vueCompilerOptions": {
     "skipTemplateCodegen": true

@@ -40,14 +40,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx vite ../../dashboard -c ../vite-config/src/desktop.ts",
     "dev:app": "tauri dev",
@@ -64,7 +58,7 @@
     "@tauri-apps/cli": "^1.5.14",
     "unified-network": "^0.6.4",
     "unstorage": "^1.10.2",
-    "vue": "^3.4.27"
+    "vue": "^3.4.31"
   },
   "dependencies": {
     "@stacksjs/build": "workspace:*",
@@ -73,7 +67,7 @@
     "@tauri-apps/cli": "^1.5.14",
     "unified-network": "^0.6.4",
     "unstorage": "^1.10.2",
-    "vue": "^3.4.27"
+    "vue": "^3.4.31"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

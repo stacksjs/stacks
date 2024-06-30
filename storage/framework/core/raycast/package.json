@@ -5,9 +5,7 @@
   "description": "The Stacks Raycast extension.",
   "author": "Stacks.js",
   "license": "MIT",
-  "categories": [
-    "Documentation"
-  ],
+  "categories": ["Documentation"],
   "icon": "stacks-logo.ico",
   "owner": "stacks",
   "commands": [
@@ -27,12 +25,12 @@
     "publish": "bunx @raycast/api@latest publish"
   },
   "dependencies": {
-    "@raycast/api": "^1.75.2",
-    "@raycast/utils": "^1.15.0"
+    "@raycast/api": "^1.77.3",
+    "@raycast/utils": "^1.16.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.2"
   },
   "version": "0.61.24"
 }

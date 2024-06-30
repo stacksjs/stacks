@@ -5,7 +5,7 @@ import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'AccessToken', // defaults to the sanitized file name
-  table: 'access_tokens', // defaults to the lowercase, plural name of the model name (or the name of the model file)
+  table: 'personal_access_tokens', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
@@ -65,7 +65,8 @@ export default {
         message: {
           required: 'abilities is required',
           maxLength: 'plainTextToken must have a maximum of 512 characters',
-          string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
+          string:
+            '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },
 

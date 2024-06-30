@@ -12,9 +12,7 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/calendar"
   },
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
       "types": "./lib/stacks-calendar.d.ts",
@@ -26,15 +24,8 @@
   },
   "module": "dist/stacks-calendar.js",
   "types": "dist/stacks-calendar.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "lib",
-    "src",
-    "volar.d.ts"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "lib", "src", "volar.d.ts"],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",
@@ -45,8 +36,8 @@
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
     "highlight.js": "^11.9.0",
-    "vue": "^3.4.27",
-    "vue-sonner": "^1.1.2"
+    "vue": "^3.4.31",
+    "vue-sonner": "^1.1.3"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.47.0",

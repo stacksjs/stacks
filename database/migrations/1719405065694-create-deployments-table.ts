@@ -5,13 +5,13 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('deployments')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('commitSha', 'varchar(512)', col => col.unique())
-    .addColumn('commitMessage', 'varchar(255)')
+    .addColumn('commit_sha', 'varchar(512)', col => col.unique())
+    .addColumn('commit_message', 'varchar(255)')
     .addColumn('branch', 'varchar(255)')
     .addColumn('status', 'varchar(255)')
-    .addColumn('executionTime', 'integer')
-    .addColumn('deployScript', 'varchar(255)')
-    .addColumn('terminalOutput', 'varchar(255)')
+    .addColumn('execution_time', 'integer')
+    .addColumn('deploy_script', 'varchar(255)')
+    .addColumn('terminal_output', 'varchar(255)')
     .addColumn('user_id', 'integer', (col) =>
         col.references('users.id').onDelete('cascade')
       ) 

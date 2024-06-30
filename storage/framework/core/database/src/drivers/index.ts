@@ -147,7 +147,6 @@ export async function getRelations(model: Model, modelPath: string): Promise<Rel
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
 
-
         const modelName = getModelName(model, modelPath)
         const formattedModelName = modelName.toLowerCase()
         const tableName = getTableName(model, modelPath)
@@ -204,7 +203,7 @@ export async function fetchOtherModelRelations(model: Model, modelPath: string):
 
 export async function getPivotTables(
   model: Model,
-  modelPath: string
+  modelPath: string,
 ): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
   const pivotTable = []
 
@@ -241,4 +240,29 @@ export async function getPivotTables(
 
 function hasRelations(obj: any, key: string): boolean {
   return key in obj
+}
+
+export function pluckChanges(array1: string[], array2: string[]): { added: string[]; removed: string[] } | null {
+  const removed = array1.filter((item) => !array2.includes(item))
+  const added = array2.filter((item) => !array1.includes(item))
+
+  if (removed.length === 0 && added.length === 0) {
+    return null
+  }
+
+  return { added, removed }
+}
+
+export function arrangeColumns(attributes: Attributes | undefined) {
+  if (!attributes) return []
+
+  const entries = Object.entries(attributes)
+
+  entries.sort(([keyA, valueA], [keyB, valueB]) => {
+    const orderA = valueA.order ?? Number.POSITIVE_INFINITY
+    const orderB = valueB.order ?? Number.POSITIVE_INFINITY
+    return orderA - orderB
+  })
+
+  return entries
 }
