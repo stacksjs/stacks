@@ -94,8 +94,7 @@ function handleChange() {
   </div>
 </template>
 
-<style scoped>
-
+<style>
 .step:hover:not(.is-disabled) {
   opacity: 0.85;
 }
@@ -129,6 +128,5 @@ function handleChange() {
     margin-right: 0.5rem; /* Assuming mr-2 maps to 0.5rem */
   }
 }
-
-
+@unocss-placeholder
 </style>
