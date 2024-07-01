@@ -853,6 +853,7 @@ async function generateModelString(
 
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
+    import { sql } from '@stacksjs/database'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
     import { verifyTwoFactorCode } from '@stacksjs/auth'
     ${relationImports}
@@ -1293,6 +1294,10 @@ async function generateModelString(
         return instance
       }
 
+      static async rawQuery(rawQuery: string): Promise<any> {
+        return await sql\`\${rawQuery}\`\.execute(db)
+      }
+
       toJSON() {
         const output: Partial<${modelName}Type> = { ...this.${formattedModelName} }
 
@@ -1345,12 +1350,16 @@ async function generateModelString(
       return await find(Number(result.insertId)) as ${modelName}Model
     }
 
+    export async function rawQuery(rawQuery: string): Promise<any> {
+      return await sql\`\${rawQuery}\`\.execute(db)
+    }
+
     export async function remove(id: number): Promise<void> {
       await db.deleteFrom('${tableName}')
         .where('id', '=', id)
         .execute()
     }
-
+    
     ${whereFunctionStatements}
 
     const ${modelName} = ${modelName}Model

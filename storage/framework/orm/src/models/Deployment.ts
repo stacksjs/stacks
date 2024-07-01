@@ -1,6 +1,7 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import User from './User'
 
@@ -242,10 +243,10 @@ export class DeploymentModel {
     const instance = new this(null)
     const filteredValues = Object.keys(newDeployment)
       .filter((key) => instance.fillable.includes(key))
-      .reduce((obj, key) => {
+      .reduce((obj: any, key) => {
         obj[key] = newDeployment[key]
         return obj
-      }, {})
+      }, {}) as newDeployment
 
     const result = await db.insertInto('deployments').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -500,6 +501,10 @@ export class DeploymentModel {
     return instance
   }
 
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
+
   toJSON() {
     const output: Partial<DeploymentType> = { ...this.deployment }
 
@@ -545,6 +550,10 @@ export async function create(newDeployment: NewDeployment): Promise<DeploymentMo
   const result = await db.insertInto('deployments').values(newDeployment).executeTakeFirstOrThrow()
 
   return (await find(Number(result.insertId))) as DeploymentModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {

@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  useSlots,
-  watch,
-} from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue'
 import type { OptionParams, StepperProps } from '../types'
 import Step from './Step.vue'
 

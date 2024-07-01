@@ -45,7 +45,7 @@ export default {
   attributes: {
     name: {
       required: true,
-      order: 5,
+      order: 1,
 
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
@@ -61,7 +61,7 @@ export default {
     email: {
       unique: true,
       required: true,
-      order: 1,
+      order: 5,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -88,6 +88,7 @@ export default {
     password: {
       required: true,
       order: 2,
+      hidden: true,
       validation: {
         rule: schema.string().minLength(6).maxLength(255),
         message: {
