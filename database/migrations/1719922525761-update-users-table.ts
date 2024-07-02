@@ -9,12 +9,12 @@ await sql`
 
 await sql`
         ALTER TABLE users
-        MODIFY COLUMN job_title VARCHAR(255) NOT NULL AFTER password;
+        MODIFY COLUMN email VARCHAR(255) NOT NULL AFTER password;
       `.execute(db)
 
 await sql`
         ALTER TABLE users
-        MODIFY COLUMN email VARCHAR(255) NOT NULL AFTER job_title;
+        MODIFY COLUMN job_title VARCHAR(255) NOT NULL AFTER email;
       `.execute(db)
 
 }

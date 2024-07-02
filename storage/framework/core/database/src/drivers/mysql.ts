@@ -13,6 +13,7 @@ import {
   getLastMigrationFields,
   getPivotTables,
   hasTableBeenMigrated,
+  isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
@@ -187,7 +188,6 @@ async function createTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  // Assuming fs.writeFileSync is available or use an equivalent method
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
@@ -217,7 +217,6 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    // Assuming fs.writeFileSync is available or use an equivalent method
     Bun.write(migrationFilePath, migrationContent)
 
     log.success(`Created pivot migration: ${migrationFileName}`)
@@ -230,6 +229,7 @@ export async function createAlterTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = await getTableName(model, modelPath)
+  let hasChanged = false
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
@@ -249,7 +249,10 @@ export async function createAlterTableMigration(modelPath: string) {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
 
-  if (fieldsToAdd.length || fieldsToRemove.length) migrationContent += `  await db.schema.alterTable('${tableName}')\n`
+  if (fieldsToAdd.length || fieldsToRemove.length) {
+    hasChanged = true
+    migrationContent += `  await db.schema.alterTable('${tableName}')\n`
+  }
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
@@ -275,7 +278,13 @@ export async function createAlterTableMigration(modelPath: string) {
 
   if (fieldsToAdd.length || fieldsToRemove.length) migrationContent += `    .execute();\n`
 
-  migrationContent += reArrangeColumns(model.attributes, tableName)
+  const lastFieldOrder = Object.values(lastFields).map((attr) => attr.order)
+  const currentFieldOrder = Object.values(currentFields).map((attr) => attr.order)
+
+  if (!isArrayEqual(lastFieldOrder, currentFieldOrder)) {
+    hasChanged = true
+    migrationContent += reArrangeColumns(model.attributes, tableName)
+  }
 
   migrationContent += `}\n`
 
@@ -283,10 +292,11 @@ export async function createAlterTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-update-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  // Assuming fs.writeFileSync is available or use an equivalent method
-  Bun.write(migrationFilePath, migrationContent)
+  if (hasChanged) {
+    Bun.write(migrationFilePath, migrationContent)
 
-  log.success(`Created migration: ${italic(migrationFileName)}`)
+    log.success(`Created migration: ${italic(migrationFileName)}`)
+  }
 }
 
 function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {

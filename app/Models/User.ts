@@ -61,7 +61,7 @@ export default {
     email: {
       unique: true,
       required: true,
-      order: 5,
+      order: 3,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -74,7 +74,7 @@ export default {
 
     jobTitle: {
       required: true,
-      order: 3,
+      order: 5,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
