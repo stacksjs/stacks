@@ -48,7 +48,7 @@ export default {
       order: 1,
 
       validation: {
-        rule: schema.string().minLength(3).maxLength(255),
+        rule: schema.string().minLength(3).maxLength(55),
         message: {
           minLength: 'Name must have a minimum of 3 characters',
           maxLength: 'Name must have a maximum of 255 characters',

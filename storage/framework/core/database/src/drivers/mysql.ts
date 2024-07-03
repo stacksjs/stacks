@@ -10,6 +10,7 @@ import {
   arrangeColumns,
   checkPivotMigration,
   fetchOtherModelRelations,
+  findCharacterLength,
   getLastMigrationFields,
   getPivotTables,
   hasTableBeenMigrated,
@@ -127,6 +128,8 @@ async function createTableMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const tableName = await getTableName(model, modelPath)
+
+
 
   const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
 
@@ -254,6 +257,10 @@ export async function createAlterTableMigration(modelPath: string) {
     migrationContent += `  await db.schema.alterTable('${tableName}')\n`
   }
 
+  const fieldValidations = findDifferingKeys(lastFields, currentFields)
+
+
+
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
@@ -271,6 +278,27 @@ export async function createAlterTableMigration(modelPath: string) {
     }
 
     migrationContent += `)\n\n`
+  }
+
+  function findDifferingKeys(obj1: any, obj2: any): string[] {
+    const differingKeys: string[] = [];
+    
+    for (const key in obj1) {
+      if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
+
+        const lastCharacterLength = findCharacterLength(obj1[key].validation.rule)
+        const latestCharacterLength = findCharacterLength(obj2[key].validation.rule)
+
+        console.log({lastCharacterLength, latestCharacterLength})
+        // if (findCharacterLength(obj1[key].validation.rule) !== findCharacterLength(obj2[key].validation.rule)) {
+
+  
+        //   differingKeys.push(key);
+        // }
+      }
+    }
+    
+    return differingKeys;
   }
 
   // Remove fields that no longer exist
