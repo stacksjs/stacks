@@ -259,7 +259,15 @@ export async function createAlterTableMigration(modelPath: string) {
 
   const fieldValidations = findDifferingKeys(lastFields, currentFields)
 
-
+  for (const fieldValidation of fieldValidations) {
+    hasChanged = true
+    const fieldNameFormatted = snakeCase(fieldValidation.key)
+    migrationContent += `await sql\`
+        ALTER TABLE ${tableName}
+        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
+      \`.execute(db)\n\n`
+  }
+  
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
@@ -278,27 +286,6 @@ export async function createAlterTableMigration(modelPath: string) {
     }
 
     migrationContent += `)\n\n`
-  }
-
-  function findDifferingKeys(obj1: any, obj2: any): string[] {
-    const differingKeys: string[] = [];
-    
-    for (const key in obj1) {
-      if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
-
-        const lastCharacterLength = findCharacterLength(obj1[key].validation.rule)
-        const latestCharacterLength = findCharacterLength(obj2[key].validation.rule)
-
-        console.log({lastCharacterLength, latestCharacterLength})
-        // if (findCharacterLength(obj1[key].validation.rule) !== findCharacterLength(obj2[key].validation.rule)) {
-
-  
-        //   differingKeys.push(key);
-        // }
-      }
-    }
-    
-    return differingKeys;
   }
 
   // Remove fields that no longer exist

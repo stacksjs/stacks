@@ -10,9 +10,11 @@ import {
   arrangeColumns,
   checkPivotMigration,
   fetchOtherModelRelations,
+  findDifferingKeys,
   getLastMigrationFields,
   getPivotTables,
   hasTableBeenMigrated,
+  isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
@@ -219,7 +221,7 @@ export async function createAlterTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = await getTableName(model, modelPath)
-
+  let hasChanged = false
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
@@ -232,10 +234,29 @@ export async function createAlterTableMigration(modelPath: string) {
 
   const fieldsToRemove = changes?.removed || []
 
+
+
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema.alterTable('${tableName}')\n`
+
+  if (fieldsToAdd.length || fieldsToRemove.length) {
+    hasChanged = true
+    migrationContent += `  await db.schema.alterTable('${tableName}')\n`
+  }
+
+  const fieldValidations = findDifferingKeys(lastFields, currentFields)
+
+  for (const fieldValidation of fieldValidations) {
+    hasChanged = true
+    const fieldNameFormatted = snakeCase(fieldValidation.key)
+    migrationContent += `await sql\`
+        ALTER TABLE ${tableName}
+        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
+      \`.execute(db)\n\n`
+  }
+  
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
@@ -255,9 +276,18 @@ export async function createAlterTableMigration(modelPath: string) {
 
     migrationContent += `)\n\n`
   }
-
   // Remove fields that no longer exist
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
+
+  if (fieldsToAdd.length || fieldsToRemove.length) migrationContent += `    .execute();\n`
+
+  const lastFieldOrder = Object.values(lastFields).map((attr) => attr.order)
+  const currentFieldOrder = Object.values(currentFields).map((attr) => attr.order)
+
+  if (!isArrayEqual(lastFieldOrder, currentFieldOrder)) {
+    hasChanged = true
+    migrationContent += reArrangeColumns(model.attributes, tableName)
+  }
 
   migrationContent += `    .execute();\n`
 
@@ -267,8 +297,30 @@ export async function createAlterTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-update-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  // Assuming fs.writeFileSync is available or use an equivalent method
-  Bun.write(migrationFilePath, migrationContent)
+  if (hasChanged) {
+    Bun.write(migrationFilePath, migrationContent)
 
-  log.success(`Created migration: ${italic(migrationFileName)}`)
+    log.success(`Created migration: ${italic(migrationFileName)}`)
+  }
+
+  function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
+    const fields = arrangeColumns(attributes)
+    let migrationContent = ''
+  
+    let previousField = ''
+    for (const [fieldName, options] of fields) {
+      const fieldNameFormatted = snakeCase(fieldName)
+  
+      if (previousField) {
+        migrationContent += `await sql\`
+          ALTER TABLE ${tableName}
+          MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
+        \`.execute(db)\n\n`
+      }
+  
+      previousField = fieldNameFormatted
+    }
+  
+    return migrationContent
+  }
 }

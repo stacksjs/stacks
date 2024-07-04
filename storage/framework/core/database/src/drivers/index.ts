@@ -314,3 +314,22 @@ export function isArrayEqual(arr1: (number | undefined)[], arr2: (number | undef
 
   return true
 }
+
+export function findDifferingKeys(obj1: any, obj2: any): { key: string, max: number, min: number }[] {
+  const differingKeys: { key: string, max: number, min: number }[] = [];
+  
+  for (const key in obj1) {
+    if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
+      const lastCharacterLength = findCharacterLength(obj1[key].validation.rule)
+      const latestCharacterLength = findCharacterLength(obj2[key].validation.rule)
+
+      if (lastCharacterLength !== undefined && latestCharacterLength !== undefined) {
+        if (lastCharacterLength.max !== latestCharacterLength.max || lastCharacterLength.min !== latestCharacterLength.min) {
+          differingKeys.push({key, max: latestCharacterLength.max, min: latestCharacterLength.min});
+        }
+      }
+    }
+  }
+
+  return differingKeys;
+}

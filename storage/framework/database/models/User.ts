@@ -45,10 +45,10 @@ export default {
   attributes: {
     name: {
       required: true,
-      order: 1,
+      order: 3,
 
       validation: {
-        rule: schema.string().minLength(3).maxLength(55),
+        rule: schema.string().minLength(3).maxLength(88),
         message: {
           minLength: 'Name must have a minimum of 3 characters',
           maxLength: 'Name must have a maximum of 255 characters',
@@ -61,7 +61,7 @@ export default {
     email: {
       unique: true,
       required: true,
-      order: 3,
+      order: 1,
       validation: {
         rule: schema.string().email(),
         message: {
