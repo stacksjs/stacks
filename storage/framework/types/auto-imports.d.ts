@@ -188,7 +188,7 @@ declare global {
   const copyFolder: typeof import('../core/storage/src/copy')['copyFolder']
   const coreEnvPath: typeof import('../core/path/src/paths')['coreEnvPath']
   const corePath: typeof import('../core/path/src/paths')['corePath']
-  const count: typeof import('../../../libs/functions/counter')['count']
+  const count: typeof import('../../../resources/functions/counter')['count']
   const create: typeof import('../core/orm/src/generated/User')['create']
   const createAlterTableMigration: typeof import('../core/database/src/migrations')['createAlterTableMigration']
   const createApp: typeof import('vue')['createApp']
@@ -440,7 +440,7 @@ declare global {
   const hits: typeof import('../core/search-engine/src/index')['hits']
   const homeDir: typeof import('../core/path/src/paths')['homeDir']
   const ignorableWatch: typeof import('../core/utils/src/vendors')['ignorableWatch']
-  const increment: typeof import('../../../libs/functions/counter')['increment']
+  const increment: typeof import('../../../resources/functions/counter')['increment']
   const index: typeof import('../core/search-engine/src/index')['index']
   const inflateSync: typeof import('../core/storage/src/zip')['inflateSync']
   const initProject: typeof import('../core/utils/src/helpers')['initProject']
@@ -457,7 +457,7 @@ declare global {
   const isArray: typeof import('../core/validation/src/is')['isArray']
   const isBoolean: typeof import('../core/validation/src/is')['isBoolean']
   const isBrowser: typeof import('../core/validation/src/is')['isBrowser']
-  const isDark: typeof import('../../../libs/functions/dark')['isDark']
+  const isDark: typeof import('../../../resources/functions/dark')['isDark']
   const isDate: typeof import('../core/validation/src/is')['isDate']
   const isDeepEqual: typeof import('../core/utils/src/equal')['isDeepEqual']
   const isDef: typeof import('../core/validation/src/is')['isDef']
@@ -631,7 +631,7 @@ declare global {
   const perPage: typeof import('../core/search-engine/src/index')['perPage']
   const playwrightConfig: typeof import('../core/playwright.config')['default']
   const plivo: typeof import('../core/sms/src/drivers/index')['plivo']
-  const preferredDark: typeof import('../../../libs/functions/dark')['preferredDark']
+  const preferredDark: typeof import('../../../resources/functions/dark')['preferredDark']
   const presetForms: typeof import('../core/ui/src/index')['presetForms']
   const process: typeof import('../core/env/src/index')['process']
   const projectConfigPath: typeof import('../core/path/src/paths')['projectConfigPath']
@@ -787,7 +787,7 @@ declare global {
   const toString: typeof import('../core/utils/src/base')['toString']
   const toUnits: typeof import('../core/utils/src/currency')['toUnits']
   const toValue: typeof import('vue')['toValue']
-  const toggleDark: typeof import('../../../libs/functions/dark')['toggleDark']
+  const toggleDark: typeof import('../../../resources/functions/dark')['toggleDark']
   const totalPages: typeof import('../core/search-engine/src/index')['totalPages']
   const transformerCompileClass: typeof import('../core/ui/src/index')['transformerCompileClass']
   const traverse: typeof import('../core/build/src/utils')['traverse']
@@ -1216,7 +1216,7 @@ declare module 'vue' {
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
-    readonly count: UnwrapRef<typeof import('../../../libs/functions/counter')['count']>
+    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -1448,7 +1448,7 @@ declare module 'vue' {
     readonly hits: UnwrapRef<typeof import('../core/search-engine/src/index')['hits']>
     readonly homeDir: UnwrapRef<typeof import('../core/path/src/paths')['homeDir']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../../../libs/functions/counter')['increment']>
+    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../core/search-engine/src/index')['index']>
     readonly inflateSync: UnwrapRef<typeof import('../core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../core/utils/src/helpers')['initProject']>
@@ -1465,7 +1465,7 @@ declare module 'vue' {
     readonly isArray: UnwrapRef<typeof import('../core/validation/src/is')['isArray']>
     readonly isBoolean: UnwrapRef<typeof import('../core/validation/src/is')['isBoolean']>
     readonly isBrowser: UnwrapRef<typeof import('../core/validation/src/is')['isBrowser']>
-    readonly isDark: UnwrapRef<typeof import('../../../libs/functions/dark')['isDark']>
+    readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
     readonly isDate: UnwrapRef<typeof import('../core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('../core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('../core/validation/src/is')['isDef']>
@@ -1630,7 +1630,7 @@ declare module 'vue' {
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
     readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
     readonly plivo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['plivo']>
-    readonly preferredDark: UnwrapRef<typeof import('../../../libs/functions/dark')['preferredDark']>
+    readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('../core/ui/src/index')['presetForms']>
     readonly process: UnwrapRef<typeof import('../core/env/src/index')['process']>
     readonly projectConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['projectConfigPath']>
@@ -1772,7 +1772,7 @@ declare module 'vue' {
     readonly toString: UnwrapRef<typeof import('../core/utils/src/base')['toString']>
     readonly toUnits: UnwrapRef<typeof import('../core/utils/src/currency')['toUnits']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../../../libs/functions/dark')['toggleDark']>
+    readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('../core/search-engine/src/index')['totalPages']>
     readonly traverse: UnwrapRef<typeof import('../core/build/src/utils')['traverse']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
@@ -2177,7 +2177,7 @@ declare module '@vue/runtime-core' {
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/paths')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/paths')['corePath']>
-    readonly count: UnwrapRef<typeof import('../../../libs/functions/counter')['count']>
+    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/utils/src/promise')['createControlledPromise']>
@@ -2409,7 +2409,7 @@ declare module '@vue/runtime-core' {
     readonly hits: UnwrapRef<typeof import('../core/search-engine/src/index')['hits']>
     readonly homeDir: UnwrapRef<typeof import('../core/path/src/paths')['homeDir']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/utils/src/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../../../libs/functions/counter')['increment']>
+    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../core/search-engine/src/index')['index']>
     readonly inflateSync: UnwrapRef<typeof import('../core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../core/utils/src/helpers')['initProject']>
@@ -2426,7 +2426,7 @@ declare module '@vue/runtime-core' {
     readonly isArray: UnwrapRef<typeof import('../core/validation/src/is')['isArray']>
     readonly isBoolean: UnwrapRef<typeof import('../core/validation/src/is')['isBoolean']>
     readonly isBrowser: UnwrapRef<typeof import('../core/validation/src/is')['isBrowser']>
-    readonly isDark: UnwrapRef<typeof import('../../../libs/functions/dark')['isDark']>
+    readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
     readonly isDate: UnwrapRef<typeof import('../core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('../core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('../core/validation/src/is')['isDef']>
@@ -2591,7 +2591,7 @@ declare module '@vue/runtime-core' {
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
     readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
     readonly plivo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['plivo']>
-    readonly preferredDark: UnwrapRef<typeof import('../../../libs/functions/dark')['preferredDark']>
+    readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly presetForms: UnwrapRef<typeof import('../core/ui/src/index')['presetForms']>
     readonly process: UnwrapRef<typeof import('../core/env/src/index')['process']>
     readonly projectConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['projectConfigPath']>
@@ -2733,7 +2733,7 @@ declare module '@vue/runtime-core' {
     readonly toString: UnwrapRef<typeof import('../core/utils/src/base')['toString']>
     readonly toUnits: UnwrapRef<typeof import('../core/utils/src/currency')['toUnits']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../../../libs/functions/dark')['toggleDark']>
+    readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('../core/search-engine/src/index')['totalPages']>
     readonly traverse: UnwrapRef<typeof import('../core/build/src/utils')['traverse']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>

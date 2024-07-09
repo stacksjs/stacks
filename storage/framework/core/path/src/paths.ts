@@ -51,7 +51,7 @@ export function userViewsPath(path?: string) {
 }
 
 export function userFunctionsPath(path?: string) {
-  return resourcesPath(`views/${path || ''}`)
+  return resourcesPath(`functions/${path || ''}`)
 }
 
 /**
@@ -352,8 +352,8 @@ export function libsPath(path?: string): string {
  * @param path - The relative path to the file or directory within the `libs` directory.
  * @returns The absolute path to the specified file or directory within the `libs` directory.
  */
-export function userLibsPath(path?: string): string {
-  return projectPath(`libs/${path || ''}`)
+export function userLibsPath(path?: 'components' | 'functions' | string): string {
+  return resourcesPath(`${path || ''}`)
 }
 
 /**
