@@ -1,21 +1,20 @@
 import User from '../../../orm/src/models/User'
 
 interface Credentials {
-  password: string
-  [key: string]: string
+  password: string | number | undefined
+  [key: string]: string | number | undefined
 }
 
 const authConfig = { username: 'email', password: 'password' }
 
 export async function attempt(credentials: Credentials, remember?: boolean) {
-  const exists = await User.where(authConfig.username, credentials.email)
-    .where(authConfig.password, credentials.password)
-    .first()
+  const exists = await User.where(authConfig.username, credentials[authConfig.username])
+    .where(authConfig.password, credentials[authConfig.password])
+    .exists()
 
   if (exists) {
-    return {
-      apiToken: '132131232141231',
-      message: 'success',
-    }
+    return true
   }
+
+  return false
 }

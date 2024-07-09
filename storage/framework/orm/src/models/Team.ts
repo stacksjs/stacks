@@ -92,7 +92,7 @@ export class TeamModel {
   }
 
   // Method to find a Team by ID
-  async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+  async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | undefined> {
     let query = db.selectFrom('teams').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -100,13 +100,13 @@ export class TeamModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a Team by ID
-  static async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+  static async find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | undefined> {
     let query = db.selectFrom('teams').where('id', '=', id)
 
     const instance = new this(null)
@@ -116,7 +116,7 @@ export class TeamModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -375,6 +375,10 @@ export class TeamModel {
 
   async first(): Promise<TeamModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new TeamModel(model)
   }

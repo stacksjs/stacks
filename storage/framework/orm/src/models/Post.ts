@@ -74,7 +74,7 @@ export class PostModel {
   }
 
   // Method to find a Post by ID
-  async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | null> {
+  async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | undefined> {
     let query = db.selectFrom('posts').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -82,13 +82,13 @@ export class PostModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a Post by ID
-  static async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | null> {
+  static async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | undefined> {
     let query = db.selectFrom('posts').where('id', '=', id)
 
     const instance = new this(null)
@@ -98,7 +98,7 @@ export class PostModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -309,6 +309,10 @@ export class PostModel {
 
   async first(): Promise<PostModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new PostModel(model)
   }

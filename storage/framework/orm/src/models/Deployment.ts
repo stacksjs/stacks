@@ -89,7 +89,7 @@ export class DeploymentModel {
   }
 
   // Method to find a Deployment by ID
-  async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | null> {
+  async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | undefined> {
     let query = db.selectFrom('deployments').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -97,13 +97,13 @@ export class DeploymentModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a Deployment by ID
-  static async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | null> {
+  static async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | undefined> {
     let query = db.selectFrom('deployments').where('id', '=', id)
 
     const instance = new this(null)
@@ -113,7 +113,7 @@ export class DeploymentModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -364,6 +364,10 @@ export class DeploymentModel {
 
   async first(): Promise<DeploymentModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new DeploymentModel(model)
   }

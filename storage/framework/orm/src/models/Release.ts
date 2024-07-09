@@ -67,7 +67,7 @@ export class ReleaseModel {
   }
 
   // Method to find a Release by ID
-  async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | null> {
+  async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | undefined> {
     let query = db.selectFrom('releases').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -75,13 +75,13 @@ export class ReleaseModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a Release by ID
-  static async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | null> {
+  static async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | undefined> {
     let query = db.selectFrom('releases').where('id', '=', id)
 
     const instance = new this(null)
@@ -91,7 +91,7 @@ export class ReleaseModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -294,6 +294,10 @@ export class ReleaseModel {
 
   async first(): Promise<ReleaseModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new ReleaseModel(model)
   }

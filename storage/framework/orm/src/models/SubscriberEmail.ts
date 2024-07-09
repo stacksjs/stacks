@@ -67,7 +67,7 @@ export class SubscriberEmailModel {
   }
 
   // Method to find a SubscriberEmail by ID
-  async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | null> {
+  async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | undefined> {
     let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -75,13 +75,13 @@ export class SubscriberEmailModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a SubscriberEmail by ID
-  static async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | null> {
+  static async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | undefined> {
     let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
     const instance = new this(null)
@@ -91,7 +91,7 @@ export class SubscriberEmailModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -297,6 +297,10 @@ export class SubscriberEmailModel {
 
   async first(): Promise<SubscriberEmailModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new SubscriberEmailModel(model)
   }

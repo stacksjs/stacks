@@ -80,7 +80,7 @@ export class AccessTokenModel {
   }
 
   // Method to find a AccessToken by ID
-  async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
+  async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | undefined> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -88,13 +88,13 @@ export class AccessTokenModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a AccessToken by ID
-  static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
+  static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | undefined> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
     const instance = new this(null)
@@ -104,7 +104,7 @@ export class AccessTokenModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -332,6 +332,10 @@ export class AccessTokenModel {
 
   async first(): Promise<AccessTokenModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new AccessTokenModel(model)
   }

@@ -90,7 +90,7 @@ export class UserModel {
   }
 
   // Method to find a User by ID
-  async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | null> {
+  async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | undefined> {
     let query = db.selectFrom('users').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -98,13 +98,13 @@ export class UserModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a User by ID
-  static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | null> {
+  static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | undefined> {
     let query = db.selectFrom('users').where('id', '=', id)
 
     const instance = new this(null)
@@ -114,7 +114,7 @@ export class UserModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -342,13 +342,17 @@ export class UserModel {
   async first(): Promise<UserModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
 
+    if (!model) {
+      return undefined
+    }
+
     return new UserModel(model)
   }
 
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 
-    return model !== null || model !== undefined
+    return model !== null && model !== undefined
   }
 
   static async first(): Promise<UserType | undefined> {

@@ -946,7 +946,7 @@ async function generateModelString(
       }
 
       // Method to find a ${modelName} by ID
-      async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
+      async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | undefined> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         if (fields)
@@ -957,13 +957,13 @@ async function generateModelString(
         const model = await query.executeTakeFirst()
 
         if (!model)
-          return null
+          return undefined
         
         return this.parseResult(this)
       }
 
       // Method to find a ${modelName} by ID
-      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
+      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | undefined> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         const instance = new this(null)
@@ -976,7 +976,7 @@ async function generateModelString(
         const model = await query.executeTakeFirst()
 
         if (!model)
-          return null
+          return undefined
 
         return instance.parseResult(new this(model))
       }
@@ -1185,6 +1185,10 @@ async function generateModelString(
 
       async first(): Promise<${modelName}Model | undefined> {
         const model = await this.query.selectAll().executeTakeFirst()
+
+        if (! model) {
+          return undefined
+        }
         
         return new ${modelName}Model(model)
       }

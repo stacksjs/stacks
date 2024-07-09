@@ -70,7 +70,7 @@ export class SubscriberModel {
   }
 
   // Method to find a Subscriber by ID
-  async find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | null> {
+  async find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | undefined> {
     let query = db.selectFrom('subscribers').where('id', '=', id)
 
     if (fields) query = query.select(fields)
@@ -78,13 +78,13 @@ export class SubscriberModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return this.parseResult(this)
   }
 
   // Method to find a Subscriber by ID
-  static async find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | null> {
+  static async find(id: number, fields?: (keyof SubscriberType)[]): Promise<SubscriberModel | undefined> {
     let query = db.selectFrom('subscribers').where('id', '=', id)
 
     const instance = new this(null)
@@ -94,7 +94,7 @@ export class SubscriberModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model) return undefined
 
     return instance.parseResult(new this(model))
   }
@@ -297,6 +297,10 @@ export class SubscriberModel {
 
   async first(): Promise<SubscriberModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) {
+      return undefined
+    }
 
     return new SubscriberModel(model)
   }
