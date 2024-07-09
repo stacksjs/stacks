@@ -26,7 +26,7 @@ export class ReleaseRequest extends Request implements ReleaseRequestType {
   public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes !== undefined || attributes !== null) {
+    if (attributes === undefined || attributes === null) {
       await validateField('Release', this.all())
     } else {
       await customValidate(attributes, this.all())

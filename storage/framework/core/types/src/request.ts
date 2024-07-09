@@ -1,8 +1,24 @@
+import type { VineType } from '@stacksjs/types'
+
 interface RequestData {
   [key: string]: string
 }
 
 type RouteParams = { [key: string]: string } | null
+
+interface ValidationType {
+  rule: VineType
+  message: { [key: string]: string }
+}
+
+interface ValidationField {
+  [key: string]: string | ValidationType
+  validation: ValidationType
+}
+
+interface CustomAttributes {
+  [key: string]: ValidationField
+}
 
 export interface RequestInstance {
   addQuery(url: URL): void
@@ -18,6 +34,8 @@ export interface RequestInstance {
   Header(element: string): string | number | boolean | null
 
   all(): RequestData
+
+  validate(attributes: CustomAttributes): void
 
   has(element: string): boolean
 

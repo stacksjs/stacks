@@ -26,7 +26,7 @@ export class SubscriberEmailRequest extends Request implements SubscriberEmailRe
   public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes !== undefined || attributes !== null) {
+    if (attributes === undefined || attributes === null) {
       await validateField('SubscriberEmail', this.all())
     } else {
       await customValidate(attributes, this.all())

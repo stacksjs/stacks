@@ -1,13 +1,13 @@
 import { Action } from '@stacksjs/actions'
-import { schema } from '@stacksjs/validation'
 // import { epmailSubscribeRequest } from '@stacksjs/validation'
-import type { UserRequestType } from '../../storage/framework/types/requests'
+import type { RequestInstance } from '@stacksjs/types'
+import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'LoginAction',
   description: 'Login to Dashboard',
   method: 'POST',
-  async handle(request: UserRequestType) {
+  async handle(request: RequestInstance) {
     const email = request.get('email')
 
     await request.validate({
@@ -16,16 +16,6 @@ export default new Action({
           rule: schema.string().email(),
           message: {
             email: 'Email must be a valid email address',
-          },
-        },
-      },
-
-      password: {
-        validation: {
-          rule: schema.string().minLength(6).maxLength(255),
-          message: {
-            minLength: 'Password must have a minimum of 6 characters',
-            maxLength: 'Password must have a maximum of 255 characters',
           },
         },
       },

@@ -29,7 +29,7 @@ export class ProjectRequest extends Request implements ProjectRequestType {
   public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes !== undefined || attributes !== null) {
+    if (attributes === undefined || attributes === null) {
       await validateField('Project', this.all())
     } else {
       await customValidate(attributes, this.all())

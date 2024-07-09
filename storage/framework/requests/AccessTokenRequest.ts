@@ -30,7 +30,7 @@ export class AccessTokenRequest extends Request implements AccessTokenRequestTyp
   public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes !== undefined || attributes !== null) {
+    if (attributes === undefined || attributes === null) {
       await validateField('AccessToken', this.all())
     } else {
       await customValidate(attributes, this.all())

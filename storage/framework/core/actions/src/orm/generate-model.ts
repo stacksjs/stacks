@@ -228,7 +228,7 @@ async function writeModelRequest() {
     fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
       ${fieldStringInt}
       public async validate(attributes?: CustomAttributes): Promise<void> {
-        if (attributes !== undefined || attributes !== null) {
+        if (attributes === undefined || attributes === null) {
           await validateField('${modelName}', this.all())
         } else {
           await customValidate(attributes, this.all())

@@ -1,8 +1,8 @@
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { route } from './router'
-
+import { glob } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
+import { route } from './router'
 
 export async function listRoutes() {
   const routeLists = await route.getRoutes()
@@ -73,6 +73,19 @@ export async function extractDynamicRequest(action: string) {
   const extractedModel = extractDynamicAction(action) || ''
 
   const lowerCaseModel = camelCase(extractedModel)
+
+  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+
+  const fileToCheck = `${extractedModel}.ts`
+
+  const fileExists = modelFiles.some((file) => file.split('/').pop() === fileToCheck)
+
+  if (!fileExists) {
+    const requestPath = path.projectStoragePath(`framework/core/router/src/request.ts`)
+    const requestInstance = await import(requestPath)
+
+    return requestInstance.request
+  }
 
   const requestPath = path.projectStoragePath(`framework/requests/${extractedModel}Request.ts`)
 

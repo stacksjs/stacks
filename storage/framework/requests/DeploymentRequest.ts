@@ -33,7 +33,7 @@ export class DeploymentRequest extends Request implements DeploymentRequestType 
   public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes !== undefined || attributes !== null) {
+    if (attributes === undefined || attributes === null) {
       await validateField('Deployment', this.all())
     } else {
       await customValidate(attributes, this.all())

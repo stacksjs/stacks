@@ -1,7 +1,24 @@
 import type { RequestInstance, RouteParam } from '@stacksjs/types'
 
+import type { VineType } from '@stacksjs/types'
+import { customValidate, validateField } from '@stacksjs/validation'
+
 interface RequestData {
   [key: string]: string
+}
+
+interface ValidationType {
+  rule: VineType
+  message: { [key: string]: string }
+}
+
+interface ValidationField {
+  [key: string]: string | ValidationType
+  validation: ValidationType
+}
+
+interface CustomAttributes {
+  [key: string]: ValidationField
 }
 
 type RouteParams = { [key: string]: string } | null
@@ -42,6 +59,14 @@ export class Request implements RequestInstance {
 
   public all(): RequestData {
     return this.query
+  }
+
+  public async validate(attributes?: CustomAttributes): Promise<void> {
+    if (attributes === undefined || attributes === null) {
+      await validateField('Release', this.all())
+    } else {
+      await customValidate(attributes, this.all())
+    }
   }
 
   public has(element: string): boolean {
