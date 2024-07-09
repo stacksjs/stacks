@@ -14,6 +14,8 @@ await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/
 
 await route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
 
+await route.post('/login', 'Actions/LoginAction')
+
 await route.email('/welcome')
 await route.health() // adds an `/api/health` route
 

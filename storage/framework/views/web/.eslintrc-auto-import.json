@@ -963,6 +963,11 @@
     "getModelName": true,
     "getTableName": true,
     "reportError": true,
-    "validateField": true
+    "validateField": true,
+    "attempt": true,
+    "generateQrCode": true,
+    "generateTwoFactorSecret": true,
+    "generateTwoFactorToken": true,
+    "verifyTwoFactorCode": true
   }
 }

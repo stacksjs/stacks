@@ -129,8 +129,6 @@ async function createTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const tableName = await getTableName(model, modelPath)
 
-
-
   const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
 
   await createPivotTableMigration(model, modelPath)
@@ -267,7 +265,6 @@ export async function createAlterTableMigration(modelPath: string) {
         MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
       \`.execute(db)\n\n`
   }
-  
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {

@@ -111,11 +111,25 @@ async function writeModelRequest() {
   let importTypesString = ``
   let typeString = `import { Request } from '../core/router/src/request'\n\n`
 
+  typeString += `interface ValidationType {
+    rule: VineType;
+    message: { [key: string]: string };
+  }\n\n`
+
+  typeString += `interface ValidationField {
+    [key: string]: string | ValidationType;
+    validation: ValidationType;
+  }\n\n`
+
+  typeString += `interface CustomAttributes {
+    [key: string]: ValidationField
+  }\n\n`
+
   for (let i = 0; i < modelFiles.length; i++) {
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\n\n`
+    let fileString = `import { Request } from '@stacksjs/router'\nimport type { VineType } from '@stacksjs/types'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = modelFiles[i] as string
 
@@ -183,10 +197,24 @@ async function writeModelRequest() {
 
     if (i < modelFiles.length - 1) importTypesString += ` | `
 
-    fileString += `import { ${importTypes} } from '../types/requests'\n\n`
+    fileString += `import type { ${importTypes} } from '../types/requests'\n\n`
+
+    fileString += `interface ValidationType {
+      rule: VineType;
+      message: { [key: string]: string };
+    }\n\n`
+
+    fileString += `interface ValidationField {
+      [key: string]: string | ValidationType;
+      validation: ValidationType;
+    }\n\n`
+
+    fileString += `interface CustomAttributes {
+      [key: string]: ValidationField
+    }`
 
     const types = `export interface ${modelName}RequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: ${fieldStringType}): string | number | undefined;
       ${fieldString}
     }\n\n`
@@ -199,8 +227,13 @@ async function writeModelRequest() {
 
     fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
       ${fieldStringInt}
-      public async validate(): Promise<void> {
-        await validateField('${modelName}', this.all())
+      public async validate(attributes?: CustomAttributes): Promise<void> {
+        if (attributes !== undefined || attributes !== null) {
+          await validateField('${modelName}', this.all())
+        } else {
+          await customValidate(attributes, this.all())
+        }
+     
       }
     }
     

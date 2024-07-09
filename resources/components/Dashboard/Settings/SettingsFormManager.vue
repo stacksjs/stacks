@@ -2,11 +2,11 @@
 import AIForm from './Forms/AIForm.vue'
 import AnalyticsForm from './Forms/AnalyticsForm.vue'
 import AppForm from './Forms/AppForm.vue'
-import CacheForm from './Forms/CacheForm.vue'
 import CliForm from './Forms/CLIForm.vue'
+import CacheForm from './Forms/CacheForm.vue'
 import CloudForm from './Forms/CloudForm.vue'
-import DatabaseForm from './Forms/DatabaseForm.vue'
 import DNSForm from './Forms/DNSForm.vue'
+import DatabaseForm from './Forms/DatabaseForm.vue'
 import EmailForm from './Forms/EmailForm.vue'
 import FileSystemForm from './Forms/FileSystemForm.vue'
 import HashingForm from './Forms/HashingForm.vue'
@@ -112,7 +112,7 @@ const options = [
     label: 'UI',
   },
 ]
-const pageTitle = computed < String > (() => options.find(option => option.key === name.value)?.label || name.value)
+const pageTitle = computed<String>(() => options.find((option) => option.key === name.value)?.label || name.value)
 </script>
 
 <template>

@@ -1,8 +1,23 @@
 import { Request } from '@stacksjs/router'
+import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
+import { customValidate } from '@stacksjs/validation'
 
 import type { SubscriberRequestType } from '../types/requests'
 
+interface ValidationType {
+  rule: VineType
+  message: { [key: string]: string }
+}
+
+interface ValidationField {
+  [key: string]: string | ValidationType
+  validation: ValidationType
+}
+
+interface CustomAttributes {
+  [key: string]: ValidationField
+}
 export class SubscriberRequest extends Request implements SubscriberRequestType {
   public id = 1
   public subscribed = false
@@ -11,8 +26,12 @@ export class SubscriberRequest extends Request implements SubscriberRequestType 
   public updated_at = ''
   public deleted_at = ''
 
-  public async validate(): Promise<void> {
-    await validateField('Subscriber', this.all())
+  public async validate(attributes?: CustomAttributes): Promise<void> {
+    if (attributes !== undefined || attributes !== null) {
+      await validateField('Subscriber', this.all())
+    } else {
+      await customValidate(attributes, this.all())
+    }
   }
 }
 

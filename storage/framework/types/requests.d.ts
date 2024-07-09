@@ -1,5 +1,19 @@
 import { Request } from '../core/router/src/request'
 
+interface ValidationType {
+    rule: VineType;
+    message: { [key: string]: string };
+  }
+
+interface ValidationField {
+    [key: string]: string | ValidationType;
+    validation: ValidationType;
+  }
+
+interface CustomAttributes {
+    [key: string]: ValidationField
+  }
+
 interface RequestDataProject {
        id?: number
  name: string
@@ -11,7 +25,7 @@ interface RequestDataProject {
       deleted_at?: string
     }
 export interface ProjectRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'name' |'description' |'url' |'status'): string | number | undefined;
        id?: number
  name: string
@@ -31,7 +45,7 @@ interface RequestDataSubscriberEmail {
       deleted_at?: string
     }
 export interface SubscriberEmailRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'email'): string | number | undefined;
        id?: number
  email: string
@@ -52,7 +66,7 @@ interface RequestDataAccessToken {
       deleted_at?: string
     }
 export interface AccessTokenRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'name' |'token' |'plainTextToken' |'abilities' |'team_id'): string | number | undefined;
        id?: number
  name: string
@@ -81,7 +95,7 @@ interface RequestDataTeam {
       deleted_at?: string
     }
 export interface TeamRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' |'accesstoken_id'): string | number | undefined;
        id?: number
  name: string
@@ -107,7 +121,7 @@ interface RequestDataSubscriber {
       deleted_at?: string
     }
 export interface SubscriberRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'subscribed' |'user_id'): string | number | undefined;
        id?: number
  subscribed: boolean
@@ -132,7 +146,7 @@ interface RequestDataDeployment {
       deleted_at?: string
     }
 export interface DeploymentRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput' |'user_id'): string | number | undefined;
        id?: number
  commitSha: string
@@ -156,7 +170,7 @@ interface RequestDataRelease {
       deleted_at?: string
     }
 export interface ReleaseRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'version'): string | number | undefined;
        id?: number
  version: string
@@ -178,7 +192,7 @@ interface RequestDataUser {
       deleted_at?: string
     }
 export interface UserRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'deployment_id' |'post_id'): string | number | undefined;
        id?: number
  name: string
@@ -202,7 +216,7 @@ interface RequestDataPost {
       deleted_at?: string
     }
 export interface PostRequestType extends Request {
-      validate(): void
+      validate(attributes?: CustomAttributes): void
       get(key: 'id' |'title' |'body' |'user_id'): string | number | undefined;
        id?: number
  title: string

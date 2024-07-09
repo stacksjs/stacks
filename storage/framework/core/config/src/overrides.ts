@@ -23,7 +23,7 @@ import services from '~/config/services'
 import storage from '~/config/storage'
 import team from '~/config/team'
 import ui from '~/config/ui'
-import docs from '~/docs/config'
+// import docs from '~/docs/config'
 
 // this "user config" will override the default config options
 export default {
@@ -35,7 +35,7 @@ export default {
   cloud,
   database,
   dns,
-  docs,
+  // docs,
   email,
   errors,
   git,

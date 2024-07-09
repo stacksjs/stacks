@@ -234,8 +234,6 @@ export async function createAlterTableMigration(modelPath: string) {
 
   const fieldsToRemove = changes?.removed || []
 
-
-
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
@@ -256,7 +254,6 @@ export async function createAlterTableMigration(modelPath: string) {
         MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
       \`.execute(db)\n\n`
   }
-  
 
   // Add new fields
   for (const fieldName of fieldsToAdd) {
@@ -306,21 +303,21 @@ export async function createAlterTableMigration(modelPath: string) {
   function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
     const fields = arrangeColumns(attributes)
     let migrationContent = ''
-  
+
     let previousField = ''
     for (const [fieldName, options] of fields) {
       const fieldNameFormatted = snakeCase(fieldName)
-  
+
       if (previousField) {
         migrationContent += `await sql\`
           ALTER TABLE ${tableName}
           MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
         \`.execute(db)\n\n`
       }
-  
+
       previousField = fieldNameFormatted
     }
-  
+
     return migrationContent
   }
 }
