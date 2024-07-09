@@ -68,6 +68,8 @@ declare module 'vue' {
     SlimLayout: typeof import('./../../../libs/components/Marketing/SlimLayout.vue')['default']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
+    StorageForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/StorageForm.vue')['default']
+    TeamsForm: typeof import('./../../../libs/components/Dashboard/Settings/Forms/TeamsForm.vue')['default']
     TerminalContainer: typeof import('./../../../libs/components/TerminalContainer.vue')['default']
     Testimonials: typeof import('./../../../libs/components/Marketing/Testimonials.vue')['default']
     Toast: typeof import('./../../../libs/components/Dashboard/Modals/Popups/Toast.vue')['default']
