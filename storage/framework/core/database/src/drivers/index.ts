@@ -11,6 +11,11 @@ export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
 
+interface Range {
+  min: number;
+  max: number;
+}
+
 export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = (await import(oldModelPath)).default as Model
@@ -114,6 +119,35 @@ export function prepareTextColumnType(rule: VineType) {
   if (minLengthValidation && !maxLengthValidation) columnType = 'text'
 
   return `'${columnType}'`
+}
+
+export function findCharacterLength(rule: VineType): { min: number, max: number } | undefined {
+    const result: any = {};
+
+    // Find min and max length validations
+    const minLengthValidation = rule.validations.find((v: any) => v.options?.min !== undefined)
+    const maxLengthValidation = rule.validations.find((v: any) => v.options?.max !== undefined)
+
+    if (minLengthValidation === undefined || maxLengthValidation === undefined) {
+      return undefined
+    }
+
+    for (const key of ['min', 'max']) {
+      if (maxLengthValidation.options[key] === undefined && minLengthValidation.options[key] === undefined) continue
+
+      result.max = maxLengthValidation.options[key]
+      result.min = minLengthValidation.options[key]
+    }
+
+     
+    // if (minLengthValidation.options[key] !== maxLengthValidation.options[key]) {
+    //   result[key] = maxLengthValidation.options[key];
+    // }
+    return result
+}
+
+export function compareRanges(range1: Range, range2: Range): boolean {
+  return range1.min === range2.min && range1.max === range2.max;
 }
 
 export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
@@ -265,4 +299,37 @@ export function arrangeColumns(attributes: Attributes | undefined) {
   })
 
   return entries
+}
+
+export function isArrayEqual(arr1: (number | undefined)[], arr2: (number | undefined)[]): boolean {
+  if (!arr1 || !arr2) {
+    return false
+  }
+
+  if (arr1.length !== arr2.length) return false
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false
+  }
+
+  return true
+}
+
+export function findDifferingKeys(obj1: any, obj2: any): { key: string, max: number, min: number }[] {
+  const differingKeys: { key: string, max: number, min: number }[] = [];
+  
+  for (const key in obj1) {
+    if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
+      const lastCharacterLength = findCharacterLength(obj1[key].validation.rule)
+      const latestCharacterLength = findCharacterLength(obj2[key].validation.rule)
+
+      if (lastCharacterLength !== undefined && latestCharacterLength !== undefined) {
+        if (lastCharacterLength.max !== latestCharacterLength.max || lastCharacterLength.min !== latestCharacterLength.min) {
+          differingKeys.push({key, max: latestCharacterLength.max, min: latestCharacterLength.min});
+        }
+      }
+    }
+  }
+
+  return differingKeys;
 }

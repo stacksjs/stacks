@@ -1,6 +1,7 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import Post from './Post'
 
@@ -243,10 +244,10 @@ export class UserModel {
     const instance = new this(null)
     const filteredValues = Object.keys(newUser)
       .filter((key) => instance.fillable.includes(key))
-      .reduce((obj, key) => {
+      .reduce((obj: any, key) => {
         obj[key] = newUser[key]
         return obj
-      }, {})
+      }, {}) as newUser
 
     const result = await db.insertInto('users').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -495,6 +496,10 @@ export class UserModel {
     return instance
   }
 
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
+
   toJSON() {
     const output: Partial<UserType> = { ...this.user }
 
@@ -555,6 +560,10 @@ export async function create(newUser: NewUser): Promise<UserModel> {
   const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
 
   return (await find(Number(result.insertId))) as UserModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {

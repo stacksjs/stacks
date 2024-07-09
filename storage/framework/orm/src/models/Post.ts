@@ -1,6 +1,7 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import User from './User'
 
@@ -227,10 +228,10 @@ export class PostModel {
     const instance = new this(null)
     const filteredValues = Object.keys(newPost)
       .filter((key) => instance.fillable.includes(key))
-      .reduce((obj, key) => {
+      .reduce((obj: any, key) => {
         obj[key] = newPost[key]
         return obj
-      }, {})
+      }, {}) as newPost
 
     const result = await db.insertInto('posts').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -445,6 +446,10 @@ export class PostModel {
     return instance
   }
 
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
+
   toJSON() {
     const output: Partial<PostType> = { ...this.post }
 
@@ -490,6 +495,10 @@ export async function create(newPost: NewPost): Promise<PostModel> {
   const result = await db.insertInto('posts').values(newPost).executeTakeFirstOrThrow()
 
   return (await find(Number(result.insertId))) as PostModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {

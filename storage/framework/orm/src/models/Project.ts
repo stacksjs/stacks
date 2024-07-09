@@ -1,6 +1,7 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -229,10 +230,10 @@ export class ProjectModel {
     const instance = new this(null)
     const filteredValues = Object.keys(newProject)
       .filter((key) => instance.fillable.includes(key))
-      .reduce((obj, key) => {
+      .reduce((obj: any, key) => {
         obj[key] = newProject[key]
         return obj
-      }, {})
+      }, {}) as newProject
 
     const result = await db.insertInto('projects').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -453,6 +454,10 @@ export class ProjectModel {
     return instance
   }
 
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
+
   toJSON() {
     const output: Partial<ProjectType> = { ...this.project }
 
@@ -498,6 +503,10 @@ export async function create(newProject: NewProject): Promise<ProjectModel> {
   const result = await db.insertInto('projects').values(newProject).executeTakeFirstOrThrow()
 
   return (await find(Number(result.insertId))) as ProjectModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {

@@ -1,6 +1,7 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -223,10 +224,10 @@ export class SubscriberEmailModel {
     const instance = new this(null)
     const filteredValues = Object.keys(newSubscriberEmail)
       .filter((key) => instance.fillable.includes(key))
-      .reduce((obj, key) => {
+      .reduce((obj: any, key) => {
         obj[key] = newSubscriberEmail[key]
         return obj
-      }, {})
+      }, {}) as newSubscriberEmail
 
     const result = await db.insertInto('subscriber_emails').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -423,6 +424,10 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
+
   toJSON() {
     const output: Partial<SubscriberEmailType> = { ...this.subscriberemail }
 
@@ -468,6 +473,10 @@ export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<Su
   const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
 
   return (await find(Number(result.insertId))) as SubscriberEmailModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {

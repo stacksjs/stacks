@@ -1,18 +1,6 @@
 import { path } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
 
-interface Route {
-  name: string
-  method: string
-  url: string
-  uri: string
-  callback: string
-  pattern: RegExp
-  statusCode: number
-  paramNames: string[]
-  middleware: string[]
-}
-
 async function generateOpenAPISpec() {
   const routeLists: any[] = await route.getRoutes()
 

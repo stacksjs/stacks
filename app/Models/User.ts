@@ -45,10 +45,10 @@ export default {
   attributes: {
     name: {
       required: true,
-      order: 5,
+      order: 3,
 
       validation: {
-        rule: schema.string().minLength(3).maxLength(255),
+        rule: schema.string().minLength(3).maxLength(88),
         message: {
           minLength: 'Name must have a minimum of 3 characters',
           maxLength: 'Name must have a maximum of 255 characters',
@@ -74,7 +74,7 @@ export default {
 
     jobTitle: {
       required: true,
-      order: 3,
+      order: 5,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {

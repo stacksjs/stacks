@@ -1,6 +1,7 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import AccessToken from './AccessToken'
 
@@ -245,10 +246,10 @@ export class TeamModel {
     const instance = new this(null)
     const filteredValues = Object.keys(newTeam)
       .filter((key) => instance.fillable.includes(key))
-      .reduce((obj, key) => {
+      .reduce((obj: any, key) => {
         obj[key] = newTeam[key]
         return obj
-      }, {})
+      }, {}) as newTeam
 
     const result = await db.insertInto('teams').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -513,6 +514,10 @@ export class TeamModel {
     return instance
   }
 
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
+
   toJSON() {
     const output: Partial<TeamType> = { ...this.team }
 
@@ -558,6 +563,10 @@ export async function create(newTeam: NewTeam): Promise<TeamModel> {
   const result = await db.insertInto('teams').values(newTeam).executeTakeFirstOrThrow()
 
   return (await find(Number(result.insertId))) as TeamModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {

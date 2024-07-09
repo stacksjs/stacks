@@ -134,6 +134,9 @@ export default defineConfig(({ command, mode }) => {
     },
 
     plugins: [...commonPlugins],
+    server:{
+      port: 3000
+    },
     ...userConfig,
   }
 })
