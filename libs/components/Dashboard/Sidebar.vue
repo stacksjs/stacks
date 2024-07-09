@@ -268,7 +268,7 @@
                 </RouterLink>
 
                 <RouterLink
-                  to="/settings/billing"
+                  to="/settings/ai"
                   class="px-3 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-200 transition-all duration-150 ease-in-out flex items-center justify-center"
                   active-class="active"
                 >

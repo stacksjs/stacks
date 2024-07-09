@@ -121,6 +121,7 @@ declare global {
   const assert: typeof import('../core/testing/src/index')['assert']
   const assetsPath: typeof import('../core/path/src/paths')['assetsPath']
   const asyncComputed: typeof import('../core/utils/src/vendors')['asyncComputed']
+  const attempt: typeof import('../core/auth/src/authentication')['attempt']
   const auth: typeof import('../core/auth/src/index')['auth']
   const authPath: typeof import('../core/path/src/paths')['authPath']
   const autoResetRef: typeof import('../core/utils/src/vendors')['autoResetRef']
@@ -376,7 +377,10 @@ declare global {
   const generateMigrationFile: typeof import('../core/database/src/migrations')['generateMigrationFile']
   const generateMigrations: typeof import('../core/database/src/migrations')['generateMigrations']
   const generatePkgxConfig: typeof import('../core/actions/src/generate/index')['generatePkgxConfig']
+  const generateQrCode: typeof import('../core/auth/src/authenticator')['generateQrCode']
   const generateSeeder: typeof import('../core/actions/src/generate/index')['generateSeeder']
+  const generateTwoFactorSecret: typeof import('../core/auth/src/authenticator')['generateTwoFactorSecret']
+  const generateTwoFactorToken: typeof import('../core/auth/src/authenticator')['generateTwoFactorToken']
   const generateTypes: typeof import('../core/actions/src/generate/index')['generateTypes']
   const generateVsCodeCustomData: typeof import('../core/actions/src/generate/index')['generateVsCodeCustomData']
   const generateWebTypes: typeof import('../core/actions/src/generate/index')['generateWebTypes']
@@ -586,8 +590,8 @@ declare global {
   const okAsync: typeof import('../core/error-handling/src/index')['okAsync']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
-  const onBeforeRouteLeave: typeof import('vue-router/auto')['onBeforeRouteLeave']
-  const onBeforeRouteUpdate: typeof import('vue-router/auto')['onBeforeRouteUpdate']
+  const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
+  const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
   const onBeforeUpdate: typeof import('vue')['onBeforeUpdate']
   const onClickOutside: typeof import('../core/utils/src/vendors')['onClickOutside']
@@ -942,8 +946,8 @@ declare global {
   const useRefHistory: typeof import('../core/utils/src/vendors')['useRefHistory']
   const useResizeObserver: typeof import('../core/utils/src/vendors')['useResizeObserver']
   const useRound: typeof import('../core/utils/src/math')['useRound']
-  const useRoute: typeof import('vue-router/auto')['useRoute']
-  const useRouter: typeof import('vue-router/auto')['useRouter']
+  const useRoute: typeof import('vue-router')['useRoute']
+  const useRouter: typeof import('vue-router')['useRouter']
   const useSMS: typeof import('../core/notifications/src/index')['useSMS']
   const useScheduler: typeof import('../core/scheduler/src/index')['useScheduler']
   const useScreenOrientation: typeof import('../core/utils/src/vendors')['useScreenOrientation']
@@ -1022,6 +1026,7 @@ declare global {
   const validationPath: typeof import('../core/path/src/paths')['validationPath']
   const validator: typeof import('../core/validation/src/validate')['validator']
   const verifyHash: typeof import('../core/security/src/hash')['verifyHash']
+  const verifyTwoFactorCode: typeof import('../core/auth/src/authenticator')['verifyTwoFactorCode']
   const version: typeof import('../core/utils/src/versions')['version']
   const views: typeof import('../core/build/src/index')['views']
   const viewsPath: typeof import('../core/path/src/paths')['viewsPath']
@@ -1148,7 +1153,7 @@ declare module 'vue' {
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/paths')['arraysPath']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/paths')['assetsPath']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['asyncComputed']>
-    readonly auth: UnwrapRef<typeof import('../core/auth/src/index')['auth']>
+    readonly attempt: UnwrapRef<typeof import('../core/auth/src/authentication')['attempt']>
     readonly authPath: UnwrapRef<typeof import('../core/path/src/paths')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/utils/src/vendors')['autoResetRef']>
     readonly base64Encode: UnwrapRef<typeof import('../core/security/src/hash')['base64Encode']>
@@ -1281,7 +1286,6 @@ declare module 'vue' {
     readonly defineJob: UnwrapRef<typeof import('../core/utils/src/config')['defineJob']>
     readonly defineLibrary: UnwrapRef<typeof import('../core/utils/src/config')['defineLibrary']>
     readonly defineNotification: UnwrapRef<typeof import('../core/utils/src/config')['defineNotification']>
-    readonly definePage: UnwrapRef<typeof import('unplugin-vue-router/runtime')['definePage']>
     readonly definePayment: UnwrapRef<typeof import('../core/utils/src/config')['definePayment']>
     readonly defineQueue: UnwrapRef<typeof import('../core/utils/src/config')['defineQueue']>
     readonly defineSearchEngine: UnwrapRef<typeof import('../core/utils/src/config')['defineSearchEngine']>
@@ -1382,7 +1386,10 @@ declare module 'vue' {
     readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
     readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
+    readonly generateQrCode: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateQrCode']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
+    readonly generateTwoFactorSecret: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateTwoFactorSecret']>
+    readonly generateTwoFactorToken: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateTwoFactorToken']>
     readonly generateTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateVsCodeCustomData']>
     readonly generateWebTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateWebTypes']>
@@ -1585,8 +1592,8 @@ declare module 'vue' {
     readonly okAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['okAsync']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
-    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteLeave']>
-    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteUpdate']>
+    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
+    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('../core/utils/src/vendors')['onClickOutside']>
@@ -1918,8 +1925,8 @@ declare module 'vue' {
     readonly useRefHistory: UnwrapRef<typeof import('../core/utils/src/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/utils/src/vendors')['useResizeObserver']>
     readonly useRound: UnwrapRef<typeof import('../core/utils/src/math')['useRound']>
-    readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
-    readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
+    readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
+    readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenSafeArea']>
@@ -1996,6 +2003,7 @@ declare module 'vue' {
     readonly validateField: UnwrapRef<typeof import('../core/validation/src/validator')['validateField']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
+    readonly verifyTwoFactorCode: UnwrapRef<typeof import('../core/auth/src/authenticator')['verifyTwoFactorCode']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/paths')['viewsPath']>
     readonly viteConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['viteConfigPath']>
@@ -2106,7 +2114,7 @@ declare module '@vue/runtime-core' {
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/paths')['arraysPath']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/paths')['assetsPath']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['asyncComputed']>
-    readonly auth: UnwrapRef<typeof import('../core/auth/src/index')['auth']>
+    readonly attempt: UnwrapRef<typeof import('../core/auth/src/authentication')['attempt']>
     readonly authPath: UnwrapRef<typeof import('../core/path/src/paths')['authPath']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/utils/src/vendors')['autoResetRef']>
     readonly base64Encode: UnwrapRef<typeof import('../core/security/src/hash')['base64Encode']>
@@ -2239,7 +2247,6 @@ declare module '@vue/runtime-core' {
     readonly defineJob: UnwrapRef<typeof import('../core/utils/src/config')['defineJob']>
     readonly defineLibrary: UnwrapRef<typeof import('../core/utils/src/config')['defineLibrary']>
     readonly defineNotification: UnwrapRef<typeof import('../core/utils/src/config')['defineNotification']>
-    readonly definePage: UnwrapRef<typeof import('unplugin-vue-router/runtime')['definePage']>
     readonly definePayment: UnwrapRef<typeof import('../core/utils/src/config')['definePayment']>
     readonly defineQueue: UnwrapRef<typeof import('../core/utils/src/config')['defineQueue']>
     readonly defineSearchEngine: UnwrapRef<typeof import('../core/utils/src/config')['defineSearchEngine']>
@@ -2340,7 +2347,10 @@ declare module '@vue/runtime-core' {
     readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
     readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
+    readonly generateQrCode: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateQrCode']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
+    readonly generateTwoFactorSecret: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateTwoFactorSecret']>
+    readonly generateTwoFactorToken: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateTwoFactorToken']>
     readonly generateTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateTypes']>
     readonly generateVsCodeCustomData: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateVsCodeCustomData']>
     readonly generateWebTypes: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateWebTypes']>
@@ -2543,8 +2553,8 @@ declare module '@vue/runtime-core' {
     readonly okAsync: UnwrapRef<typeof import('../core/error-handling/src/index')['okAsync']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
-    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteLeave']>
-    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteUpdate']>
+    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
+    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('../core/utils/src/vendors')['onClickOutside']>
@@ -2876,8 +2886,8 @@ declare module '@vue/runtime-core' {
     readonly useRefHistory: UnwrapRef<typeof import('../core/utils/src/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/utils/src/vendors')['useResizeObserver']>
     readonly useRound: UnwrapRef<typeof import('../core/utils/src/math')['useRound']>
-    readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
-    readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
+    readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
+    readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('../core/utils/src/vendors')['useScreenSafeArea']>
@@ -2954,6 +2964,7 @@ declare module '@vue/runtime-core' {
     readonly validateField: UnwrapRef<typeof import('../core/validation/src/validator')['validateField']>
     readonly validationPath: UnwrapRef<typeof import('../core/path/src/paths')['validationPath']>
     readonly verifyHash: UnwrapRef<typeof import('../core/security/src/hash')['verifyHash']>
+    readonly verifyTwoFactorCode: UnwrapRef<typeof import('../core/auth/src/authenticator')['verifyTwoFactorCode']>
     readonly version: UnwrapRef<typeof import('../core/utils/src/versions')['version']>
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/paths')['viewsPath']>
     readonly viteConfigPath: UnwrapRef<typeof import('../core/path/src/paths')['viteConfigPath']>

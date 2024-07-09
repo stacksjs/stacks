@@ -4,7 +4,8 @@ const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
 
 watch(theme, (currentVal) => {
-  if (currentVal === 'light') isDark.value = false
+  if (currentVal === 'light')
+    isDark.value = false
   else isDark.value = true
 
   useToggle(isDark)
@@ -96,6 +97,7 @@ watch(theme, (currentVal) => {
               <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Your Profile</a>
               <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Documentation</a>
               <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Billing</a>
+              <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Settings</a>
               <a id="user-menu-item-2" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Sign out</a>
               <a
                 id="user-menu-item-4"
