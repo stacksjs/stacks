@@ -6,6 +6,7 @@ This is where you store your project's assets.
 - `audio/` - Audio files
 - `video/` - Video files
 - `styles/` - CSS files
+- `fonts/` - Fonts
 
 > **Note**
 > If your project does not require any assets, you can remove this folder.
