@@ -5,6 +5,8 @@ import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 import AccessToken from './AccessToken'
 
+import User from './User'
+
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
 
@@ -20,6 +22,7 @@ export interface TeamsTable {
   path: string
   isPersonal: boolean
   accesstoken_id: number
+  user_id: number
 
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string | undefined, never>
@@ -73,6 +76,7 @@ export class TeamModel {
   public path: string | undefined
   public isPersonal: boolean | undefined
   public accesstoken_id: number | undefined
+  public user_id: number | undefined
 
   constructor(team: Partial<TeamType> | null) {
     this.team = team
@@ -86,6 +90,7 @@ export class TeamModel {
     this.path = team?.path
     this.isPersonal = team?.isPersonal
     this.accesstoken_id = team?.accesstoken_id
+    this.user_id = team?.user_id
 
     this.query = db.selectFrom('teams')
     this.hasSelect = false
@@ -482,12 +487,28 @@ export class TeamModel {
     if (this.id === undefined) throw new Error('Relation Error!')
 
     const results = await db
-      .selectFrom('team_personal_access_tokens')
+      .selectFrom('personal_access_token_teams')
       .where('team_id', '=', this.id)
       .selectAll()
       .execute()
 
-    return results
+    const tableRelationIds = results.map((result) => result.personal_access_token_id)
+
+    const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
+
+    return relationResults
+  }
+
+  async teamUsers() {
+    if (this.id === undefined) throw new Error('Relation Error!')
+
+    const results = await db.selectFrom('team_users').where('team_id', '=', this.id).selectAll().execute()
+
+    const tableRelationIds = results.map((result) => result.user_id)
+
+    const relationResults = await User.whereIn('id', tableRelationIds).get()
+
+    return relationResults
   }
 
   distinct(column: keyof TeamType): TeamModel {

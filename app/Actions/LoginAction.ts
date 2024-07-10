@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { attempt } from '@stacksjs/auth'
+import { attempt, authToken, team } from '@stacksjs/auth'
 // import { epmailSubscribeRequest } from '@stacksjs/validation'
 import type { RequestInstance } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
@@ -34,7 +34,11 @@ export default new Action({
     })
 
     if (await attempt({ email, password })) {
-      return 'success'
+      const token = await authToken()
+
+      const teamValue = await team()
+
+      return { token, team: teamValue }
     }
 
     return 'fail'

@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { snakeCase } from '@stacksjs/strings'
+import { singular, snakeCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 import { generateMigrations, resetDatabase, runDatabaseMigration } from './migrations'
@@ -100,13 +100,28 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          pivotTable: relationInstance?.pivotTable || getPivotTableName(formattedModelName || '', modelRelation.table),
         })
       }
     }
   }
 
   return relationships
+}
+
+function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
+  // Create an array of the model names
+  const models = [formattedModelName, modelRelationTable]
+
+  // Sort the array alphabetically
+  models.sort()
+
+  models[0] = singular(models[0] || '')
+
+  // Join the sorted array with an underscore
+  const pivotTableName = models.join('_')
+
+  return pivotTableName
 }
 
 export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {

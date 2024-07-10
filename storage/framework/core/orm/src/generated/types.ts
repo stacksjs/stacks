@@ -13,16 +13,26 @@ export interface TeamPersonalAccessTokensTable {
         id: Generated<number>
         team_id: number
         accesstoken_id: number
+      }export interface TeamUsersTable {
+        id: Generated<number>
+        team_id: number
+        user_id: number
+      }export interface UserTeamsTable {
+        id: Generated<number>
+        user_id: number
+        team_id: number
       }
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  team_personal_access_tokens: TeamPersonalAccessTokensTable
+  team_personal_access_tokens: UserTeamsTable
+  team_users: UserTeamsTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
   releases: ReleasesTable
+  user_teams: UserTeamsTable
   users: UsersTable
   posts: PostsTable
 }

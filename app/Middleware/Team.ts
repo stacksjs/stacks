@@ -10,7 +10,7 @@ export default new Middleware({
 
     const parts = bearerToken.split(':')
 
-    if (parts.length !== 2) {
+    if (parts.length !== 3) {
       throw { message: 'Invalid bearer token format', status: 401 }
     }
 

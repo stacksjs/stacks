@@ -24,6 +24,7 @@ export class UserRequest extends Request implements UserRequestType {
   public email = ''
   public jobTitle = ''
   public password = ''
+  public team_id = 0
   public deployment_id = 0
   public post_id = 0
   public created_at = ''

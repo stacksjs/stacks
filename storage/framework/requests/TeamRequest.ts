@@ -29,6 +29,7 @@ export class TeamRequest extends Request implements TeamRequestType {
   public path = ''
   public isPersonal = false
   public accesstoken_id = 0
+  public user_id = 0
   public created_at = ''
   public updated_at = ''
   public deleted_at = ''

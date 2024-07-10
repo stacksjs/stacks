@@ -9,6 +9,8 @@ import Subscriber from './Subscriber'
 
 import Deployment from './Deployment'
 
+import Team from './Team'
+
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
 
@@ -19,6 +21,7 @@ export interface UsersTable {
   email: string
   jobTitle: string
   password: string
+  team_id: number
   deployment_id: number
   post_id: number
   two_factor_secret: string
@@ -71,6 +74,7 @@ export class UserModel {
   public email: string | undefined
   public jobTitle: string | undefined
   public password: string | undefined
+  public team_id: number | undefined
   public deployment_id: number | undefined
   public post_id: number | undefined
 
@@ -82,6 +86,7 @@ export class UserModel {
     this.email = user?.email
     this.jobTitle = user?.jobTitle
     this.password = user?.password
+    this.team_id = user?.team_id
     this.deployment_id = user?.deployment_id
     this.post_id = user?.post_id
 
@@ -352,7 +357,7 @@ export class UserModel {
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 
-    return model !== null && model !== undefined
+    return model !== null || model !== undefined
   }
 
   static async first(): Promise<UserType | undefined> {
@@ -470,6 +475,18 @@ export class UserModel {
     const results = await db.selectFrom('deployments').where('user_id', '=', this.id).selectAll().execute()
 
     return results
+  }
+
+  async userTeams() {
+    if (this.id === undefined) throw new Error('Relation Error!')
+
+    const results = await db.selectFrom('team_users').where('user_id', '=', this.id).selectAll().execute()
+
+    const tableRelationIds = results.map((result) => result.team_id)
+
+    const relationResults = await Team.whereIn('id', tableRelationIds).get()
+
+    return relationResults
   }
 
   distinct(column: keyof UserType): UserModel {

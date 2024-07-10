@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, pascalCase, plural } from '@stacksjs/strings'
+import { camelCase, pascalCase, plural, singular } from '@stacksjs/strings'
 import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
@@ -392,13 +392,30 @@ async function getRelations(model: Model, modelName: string): Promise<RelationCo
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable: relationInstance?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
+          pivotTable:
+            relationInstance?.pivotTable ||
+            getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
         })
       }
     }
   }
 
   return relationships
+}
+
+function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
+  // Create an array of the model names
+  const models = [formattedModelName, modelRelationTable]
+
+  // Sort the array alphabetically
+  models.sort()
+
+  models[0] = singular(models[0] || '')
+
+  // Join the sorted array with an underscore
+  const pivotTableName = models.join('_')
+
+  return pivotTableName
 }
 
 function hasRelations(obj: any, key: string): boolean {
@@ -807,8 +824,12 @@ async function generateModelString(
           .where('${foreignKeyRelation}', '=', this.id)
           .selectAll()
           .execute()
+          
+          const tableRelationIds = results.map(result => result.${singular(tableRelation)}_id)
 
-          return results
+          const relationResults = await ${modelRelation}.whereIn('id', tableRelationIds).get()
+
+          return relationResults
       }\n\n`
     }
   }

@@ -90,13 +90,14 @@ interface RequestDataTeam {
       path: string
       isPersonal: boolean
       accesstoken_id: number
+      user_id: number
      created_at?: string
       updated_at?: string
       deleted_at?: string
     }
 export interface TeamRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' |'accesstoken_id'): string | number | undefined;
+      get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' |'accesstoken_id' |'user_id'): string | number | undefined;
        id?: number
  name: string
       companyName: string
@@ -107,6 +108,7 @@ export interface TeamRequestType extends Request {
       path: string
       isPersonal: boolean
       accesstoken_id: number
+      user_id: number
      created_at?: string
       updated_at?: string
       deleted_at?: string
@@ -185,6 +187,7 @@ interface RequestDataUser {
       email: string
       jobTitle: string
       password: string
+      team_id: number
       deployment_id: number
       post_id: number
      created_at?: string
@@ -193,12 +196,13 @@ interface RequestDataUser {
     }
 export interface UserRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'deployment_id' |'post_id'): string | number | undefined;
+      get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'team_id' |'deployment_id' |'post_id'): string | number | undefined;
        id?: number
  name: string
       email: string
       jobTitle: string
       password: string
+      team_id: number
       deployment_id: number
       post_id: number
      created_at?: string
