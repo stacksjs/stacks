@@ -31,9 +31,12 @@ jobs:
 
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
+        with:
+          version: latest
 
       - name: Lint
-        run: biome ci --reporter github
+        # run: biome ci --reporter github
+        run: biome ci .
 
   typecheck:
     runs-on: ${{ matrix.os }}
