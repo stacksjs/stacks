@@ -11,6 +11,7 @@ import {
   checkPivotMigration,
   fetchOtherModelRelations,
   findCharacterLength,
+  findDifferingKeys,
   getLastMigrationFields,
   getPivotTables,
   hasTableBeenMigrated,

@@ -42,6 +42,8 @@ export default {
   hasOne: ['Post', 'Subscriber'],
   hasMany: ['Deployment'],
 
+  belongsToMany: ['Team'],
+
   attributes: {
     name: {
       required: true,

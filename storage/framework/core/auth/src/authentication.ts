@@ -18,3 +18,15 @@ export async function attempt(credentials: Credentials, remember?: boolean) {
 
   return false
 }
+
+export async function generateToken(userId: number) {
+  const exists = await User.where(authConfig.username, credentials[authConfig.username])
+    .where(authConfig.password, credentials[authConfig.password])
+    .exists()
+
+  if (exists) {
+    return true
+  }
+
+  return false
+}

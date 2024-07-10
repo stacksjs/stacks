@@ -13,6 +13,14 @@ export interface SeedOptions {
   count: number
 }
 
+interface BelongsToManyType {
+  model: ModelNames
+  firstForeignKey?: string
+  secondForeignKey?: string
+  pivotTable?: string
+  relationName?: string
+}
+
 export interface ApiSettings {
   uri: string
   middleware: string[]
@@ -89,15 +97,7 @@ export interface ModelOptions extends Base {
         relationName?: string
       }[]
     | ModelNames[] // belongsTo: 'User'
-  belongsToMany:
-    | {
-        model: ModelNames
-        firstForeignKey?: string
-        secondForeignKey?: string
-        pivotTable?: string
-        relationName?: string
-      }
-    | ModelNames[]
+  belongsToMany: BelongsToManyType[] | ModelNames[]
   hasOneThrough: {
     model: ModelNames
     through: ModelNames

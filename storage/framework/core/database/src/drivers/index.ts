@@ -241,26 +241,41 @@ export async function getPivotTables(
   const pivotTable = []
 
   const modelName = getTableName(model, modelPath)
+  let firstForeignKey = ''
+  let secondForeignKey = ''
+  let table = ''
+  let modelRelationPath = ''
 
   if (model.belongsToMany) {
     if ('belongsToMany' in model) {
       for (const belongsToManyRelation of model.belongsToMany) {
-        const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
+        if (typeof belongsToManyRelation === 'string') {
+          modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
+        } else {
+          modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
+        }
+
         const modelRelation = (await import(modelRelationPath)).default
         const formattedModelName = modelName.toLowerCase()
 
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const modelRelationModelName = getModelName(modelRelation, modelRelationPath)
 
-        const firstForeignKey =
-          belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
-        const secondForeignKey =
-          belongsToManyRelation.secondForeignKey || `${modelRelationModelName.toLowerCase()}_${model.primaryKey}`
+        if (typeof belongsToManyRelation === 'string') {
+          firstForeignKey = `${modelName.toLowerCase()}_${model.primaryKey}`
+          secondForeignKey = `${modelRelationModelName.toLowerCase()}_${model.primaryKey}`
+          table = getPivotTableName(formattedModelName, modelRelationTable)
+        } else {
+          firstForeignKey = belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
+          secondForeignKey =
+            belongsToManyRelation.secondForeignKey || `${modelRelationModelName.toLowerCase()}_${model.primaryKey}`
+          table = belongsToManyRelation?.pivotTable || getPivotTableName(formattedModelName, modelRelationTable)
+        }
 
         pivotTable.push({
-          table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelationTable}`,
-          firstForeignKey: firstForeignKey,
-          secondForeignKey: secondForeignKey,
+          table,
+          firstForeignKey,
+          secondForeignKey,
         })
       }
 
@@ -269,6 +284,19 @@ export async function getPivotTables(
   }
 
   return []
+}
+
+function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
+  // Create an array of the model names
+  const models = [formattedModelName, modelRelationTable]
+
+  // Sort the array alphabetically
+  models.sort()
+
+  // Join the sorted array with an underscore
+  const pivotTableName = models.join('_')
+
+  return pivotTableName
 }
 
 function hasRelations(obj: any, key: string): boolean {
