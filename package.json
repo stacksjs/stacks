@@ -79,7 +79,7 @@
     "storage/framework/views/*"
   ],
   "devDependencies": {
-    "@antfu/eslint-config": "^2.21.3",
+    "@antfu/eslint-config": "^2.22.0",
     "eslint": "^9.6.0"
   }
 }
