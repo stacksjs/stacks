@@ -1131,14 +1131,18 @@ async function generateModelString(
       }
 
       // Method to create a new ${formattedModelName}
-      static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+      static async create(new${modelName}: New${modelName}): Promise<${modelName}Model | undefined> {
         const instance = new this(null)
         const filteredValues = Object.keys(new${modelName})
           .filter(key => instance.fillable.includes(key))
           .reduce((obj: any, key) => {
               obj[key] = new${modelName}[key];
               return obj
-          }, {}) as new${modelName}
+          }, {})
+
+        if (Object.keys(filteredValues).length === 0) {
+          return undefined
+        }
 
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)

@@ -1,8 +1,11 @@
 <script setup>
 import { ref } from 'vue'
+import BaseButton from '../Buttons/BaseButton.vue'
 
 // Reactive state for the email input
 const email = ref('')
+
+const loading = ref(false)
 
 // Method to handle email submission
 async function submitEmail() {
@@ -12,6 +15,7 @@ async function submitEmail() {
 
   const url = 'http://localhost:3008/api/email/subscribe'
 
+  loading.value = true
   await fetch(url, {
     method: 'POST',
     headers: {
@@ -22,6 +26,8 @@ async function submitEmail() {
   })
 
   email.value = '' // Clear the input field after submission
+
+  loading.value = false
 }
 </script>
 
@@ -76,9 +82,7 @@ async function submitEmail() {
                 <input id="email" v-model="email" type="email" name="email" class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6" placeholder="enter-your@email.com">
               </div>
 
-              <button type="button" class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50" @click="submitEmail">
-                Submit
-              </button>
+              <BaseButton buttonText="Submit" classString="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50" :loading="loading" @click.native="submitEmail" />
             </div>
           </div>
 

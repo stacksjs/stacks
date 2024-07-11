@@ -239,14 +239,18 @@ export class DeploymentModel {
   }
 
   // Method to create a new deployment
-  static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
+  static async create(newDeployment: NewDeployment): Promise<DeploymentModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newDeployment)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newDeployment[key]
         return obj
-      }, {}) as newDeployment
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('deployments').values(filteredValues).executeTakeFirstOrThrow()
 

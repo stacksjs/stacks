@@ -51,7 +51,7 @@ interface QueryOptions {
 export class SubscriberEmailModel {
   private subscriberemail: Partial<SubscriberEmailType> | null
   private hidden = []
-  private fillable = []
+  private fillable = ['email']
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -220,14 +220,18 @@ export class SubscriberEmailModel {
   }
 
   // Method to create a new subscriberemail
-  static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+  static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newSubscriberEmail)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newSubscriberEmail[key]
         return obj
-      }, {}) as newSubscriberEmail
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('subscriber_emails').values(filteredValues).executeTakeFirstOrThrow()
 

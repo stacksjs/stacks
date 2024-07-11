@@ -231,14 +231,18 @@ export class AccessTokenModel {
   }
 
   // Method to create a new accesstoken
-  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newAccessToken)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newAccessToken[key]
         return obj
-      }, {}) as newAccessToken
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('personal_access_tokens').values(filteredValues).executeTakeFirstOrThrow()
 

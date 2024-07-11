@@ -20,15 +20,14 @@ async function login() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
     },
     body: JSON.stringify(body),
   })
 
   if (!response.ok) {
     const res = await response.json()
-  }
-  else {
+  } else {
     const data = await response.json()
 
     localStorage.setItem('token', data.token)

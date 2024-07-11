@@ -220,14 +220,18 @@ export class SubscriberModel {
   }
 
   // Method to create a new subscriber
-  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
+  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newSubscriber)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newSubscriber[key]
         return obj
-      }, {}) as newSubscriber
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('subscribers').values(filteredValues).executeTakeFirstOrThrow()
 

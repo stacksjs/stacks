@@ -242,7 +242,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         status: 403,
       })
     }
-    
+
     if (foundCallback.status === 422) {
       // biome-ignore lint/performance/noDelete: <explanation>
       delete foundCallback.status
@@ -256,7 +256,6 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         status: 422,
       })
     }
-
 
     if (foundCallback.status === 500) {
       delete foundCallback.status

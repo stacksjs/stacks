@@ -245,14 +245,18 @@ export class UserModel {
   }
 
   // Method to create a new user
-  static async create(newUser: NewUser): Promise<UserModel> {
+  static async create(newUser: NewUser): Promise<UserModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newUser)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newUser[key]
         return obj
-      }, {}) as newUser
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('users').values(filteredValues).executeTakeFirstOrThrow()
 

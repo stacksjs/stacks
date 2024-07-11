@@ -224,14 +224,18 @@ export class PostModel {
   }
 
   // Method to create a new post
-  static async create(newPost: NewPost): Promise<PostModel> {
+  static async create(newPost: NewPost): Promise<PostModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newPost)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newPost[key]
         return obj
-      }, {}) as newPost
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('posts').values(filteredValues).executeTakeFirstOrThrow()
 

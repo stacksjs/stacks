@@ -226,14 +226,18 @@ export class ProjectModel {
   }
 
   // Method to create a new project
-  static async create(newProject: NewProject): Promise<ProjectModel> {
+  static async create(newProject: NewProject): Promise<ProjectModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newProject)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newProject[key]
         return obj
-      }, {}) as newProject
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('projects').values(filteredValues).executeTakeFirstOrThrow()
 

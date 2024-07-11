@@ -13,6 +13,7 @@ declare module 'vue' {
     AnalyticsForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/AnalyticsForm.vue')['default']
     AppButton: typeof import('./../../../resources/components/Dashboard/Buttons/AppButton.vue')['default']
     AppForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/AppForm.vue')['default']
+    BaseButton: typeof import('./../../../resources/components/Buttons/BaseButton.vue')['default']
     BaseModal: typeof import('./../../../resources/components/Dashboard/Modals/BaseModal.vue')['default']
     Button: typeof import('./../../../resources/components/Button.vue')['default']
     CacheForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/CacheForm.vue')['default']

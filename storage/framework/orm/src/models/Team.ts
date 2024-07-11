@@ -247,14 +247,18 @@ export class TeamModel {
   }
 
   // Method to create a new team
-  static async create(newTeam: NewTeam): Promise<TeamModel> {
+  static async create(newTeam: NewTeam): Promise<TeamModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newTeam)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newTeam[key]
         return obj
-      }, {}) as newTeam
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('teams').values(filteredValues).executeTakeFirstOrThrow()
 

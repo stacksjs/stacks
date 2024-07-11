@@ -217,14 +217,18 @@ export class ReleaseModel {
   }
 
   // Method to create a new release
-  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
+  static async create(newRelease: NewRelease): Promise<ReleaseModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newRelease)
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newRelease[key]
         return obj
-      }, {}) as newRelease
+      }, {})
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
+    }
 
     const result = await db.insertInto('releases').values(filteredValues).executeTakeFirstOrThrow()
 
