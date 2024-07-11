@@ -7,16 +7,24 @@ const email = ref('')
 
 const loading = ref(false)
 
+const errors = ref([])
+
+const successMessage = ref('')
 // Method to handle email submission
 async function submitEmail() {
   const body = {
     email: email.value,
   }
 
+  errors.value = []
+
+  successMessage.value = ''
+
   const url = 'http://localhost:3008/api/email/subscribe'
 
   loading.value = true
-  await fetch(url, {
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -25,7 +33,15 @@ async function submitEmail() {
     body: JSON.stringify(body),
   })
 
-  email.value = '' // Clear the input field after submission
+  if (! response.ok) {
+    const errs = await response.json()
+
+    errors.value = errs.errors
+  } else {
+    successMessage.value = 'Thanks! Stay tune for more updates.'
+  }
+
+  email.value = ''
 
   loading.value = false
 }
@@ -88,6 +104,14 @@ async function submitEmail() {
 
           <a href="https://stacksjs.org/docs" class="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
         </div>
+
+        <p v-for="error in errors" class="text-xs pt-2 text-red-500">
+          {{ error.message }}
+        </p>
+
+        <p v-if="successMessage" class="text-xs pt-2 text-green-700">
+          {{ successMessage }}
+        </p>
       </div>
       <div class="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-none xl:ml-32">
         <div class="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
