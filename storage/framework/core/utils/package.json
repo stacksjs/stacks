@@ -4,8 +4,8 @@
   "version": "0.61.24",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
-  "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
+  "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/helpers#readme",
   "repository": {
     "type": "git",

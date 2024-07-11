@@ -32,6 +32,9 @@
     }
   },
   "json": {
+    "parser": {
+      "allowComments": true
+    },
     "formatter": {
       "indentStyle": "space",
       "indentWidth": 2,

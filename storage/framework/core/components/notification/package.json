@@ -16,16 +16,16 @@
   "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
-      "types": "./lib/stacks-notification.d.ts",
-      "import": "./lib/stacks-notification.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
-      "import": "./lib/*"
+      "import": "./src/*"
     }
   },
-  "module": "dist/stacks-notification.js",
-  "types": "dist/stacks-notification.d.ts",
-  "files": ["README.md", "lib", "src", "volar.d.ts"],
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "vite build --mode lib && bun run build:types",

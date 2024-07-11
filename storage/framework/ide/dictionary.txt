@@ -210,6 +210,7 @@ opensearchservice
 openweb
 openweblabs
 orta
+otplib
 outdir
 outfile
 outro
@@ -239,6 +240,7 @@ pubspec
 pullapprove
 pyproject
 pyrightconfig
+qrcode
 rangav
 raycast
 releaseable

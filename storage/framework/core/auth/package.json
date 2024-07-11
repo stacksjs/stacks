@@ -36,9 +36,11 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/qrcode": "^1.5.5"
   },
   "dependencies": {
+    "@stacksjs/router": "workspace:*",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.3"
   }

@@ -232,6 +232,8 @@ onMounted(() => {
     // Add toast height tot heights array after the toast is mounted
     initialHeight.value = height
 
+    if (!props.toast.position) throw new Error('Toast position is not defined')
+
     const position = props.toast.position
     const newHeights = [{ toastId: props.toast.id, height, position }, ...props.heights]
     emit('update:heights', newHeights)

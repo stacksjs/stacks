@@ -1,15 +1,11 @@
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
-import { path as p } from '@stacksjs/path'
-import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
 import UnoCSS from 'unocss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 
@@ -27,9 +23,7 @@ export default defineConfig(({ command, mode }) => {
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
-
     UnoCSS(),
-
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
@@ -39,52 +33,26 @@ export default defineConfig(({ command, mode }) => {
         }),
       ],
     }),
-
     Icons(),
-
-    AutoImport({
-      include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
-      imports: [
-        'pinia',
-        'vue',
-        'vue-i18n',
-        // '@vueuse/core',
-        // 'vitepress'
-        // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-        // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-        // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-        VueHeadImports,
-        VueRouterAutoImports,
-        {
-          'vue-router/auto': ['useLink'],
-        },
-      ],
-
-      // dts: p.frameworkPath('types/auto-imports.d.ts'),
-
-      dirs: [p.corePath()],
-
-      vueTemplate: true,
-    }),
   ]
 
   if (mode === 'lib') {
     userConfig.build = {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'StacksNotification',
-        fileName: 'stacks-notification',
+        name: 'StacksModal',
+        fileName: 'stacks-modal',
       },
       outDir: 'dist',
       emptyOutDir: true,
       cssCodeSplit: false,
       sourcemap: true,
       rollupOptions: {
-        external: ['vue', '@stacksjs/utils'],
+        external: ['vue'],
         output: [
           // {
           //   format: 'cjs',
-          //   entryFileNames: `stacks-notification.cjs`,
+          //   entryFileNames: `stacks-modal.cjs`,
           // },
           {
             format: 'es',
@@ -114,7 +82,7 @@ export default defineConfig(({ command, mode }) => {
 
           return {
             code: `\
-            function __insertCSSStacksNotification(code) {
+            function __insertCSSStacksModal(code) {
               if (!code || typeof document == 'undefined') return
               let head = document.head || document.getElementsByTagName('head')[0]
               let style = document.createElement('style')
@@ -122,7 +90,7 @@ export default defineConfig(({ command, mode }) => {
               head.appendChild(style)
               ;style.styleSheet ? (style.styleSheet.cssText = code) : style.appendChild(document.createTextNode(code))
             }\n
-            __insertCSSStacksNotification(${JSON.stringify(cssCodeStr)})
+            __insertCSSStacksModal(${JSON.stringify(cssCodeStr)})
             \n ${code}`,
             map: { mappings: '' },
           }
@@ -133,10 +101,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     resolve: {
-      '~/config/env': p.projectConfigPath('env.ts'),
-      '~/config/errors': p.projectConfigPath('errors.ts'),
-
-      ...alias,
+      alias,
     },
     plugins: [...commonPlugins],
     ...userConfig,
