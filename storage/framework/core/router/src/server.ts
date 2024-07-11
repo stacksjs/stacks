@@ -218,6 +218,31 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isObject(foundCallback) && foundCallback.status) {
+    if (foundCallback.status === 401) {
+      delete foundCallback.status
+
+      return await new Response(JSON.stringify(foundCallback), {
+        headers: {
+          'Content-Type': 'json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: 401,
+      })
+    }
+
+    if (foundCallback.status === 403) {
+      delete foundCallback.status
+      return await new Response(JSON.stringify(foundCallback), {
+        headers: {
+          'Content-Type': 'json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: 403,
+      })
+    }
+    
     if (foundCallback.status === 422) {
       // biome-ignore lint/performance/noDelete: <explanation>
       delete foundCallback.status
@@ -231,25 +256,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         status: 422,
       })
     }
-  }
 
-  if (isObject(foundCallback) && foundCallback.status) {
-    if (foundCallback.status === 401) {
-      delete foundCallback.status
 
-      return await new Response(JSON.stringify(foundCallback), {
-        headers: {
-          'Content-Type': 'json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 401,
-      })
-    }
-  }
-
-  if (isObject(foundCallback) && foundCallback.status) {
-    if (foundCallback.status === 403) {
+    if (foundCallback.status === 500) {
       delete foundCallback.status
       return await new Response(JSON.stringify(foundCallback), {
         headers: {
@@ -257,7 +266,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         },
-        status: 403,
+        status: 500,
       })
     }
   }

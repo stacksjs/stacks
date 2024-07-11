@@ -41,6 +41,6 @@ export default new Action({
       return { token, team: teamValue }
     }
 
-    return 'fail'
+    return { message: 'Incorrect email or password', status: 401 }
   },
 })
