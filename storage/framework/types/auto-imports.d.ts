@@ -124,6 +124,7 @@ declare global {
   const attempt: typeof import('../core/auth/src/authentication')['attempt']
   const auth: typeof import('../core/auth/src/index')['auth']
   const authPath: typeof import('../core/path/src/paths')['authPath']
+  const authToken: typeof import('../core/auth/src/authentication')['authToken']
   const autoResetRef: typeof import('../core/utils/src/vendors')['autoResetRef']
   const base64Encode: typeof import('../core/security/src/hash')['base64Encode']
   const base64Verify: typeof import('../core/security/src/hash')['base64Verify']
@@ -229,6 +230,7 @@ declare global {
   const customElementsDataPath: typeof import('../core/path/src/paths')['customElementsDataPath']
   const customRef: typeof import('vue')['customRef']
   const customStorageEventName: typeof import('../core/utils/src/vendors')['customStorageEventName']
+  const customValidate: typeof import('../core/validation/src/validator')['customValidate']
   const dashboardPath: typeof import('../core/path/src/index')['dashboardPath']
   const databasePath: typeof import('../core/path/src/paths')['databasePath']
   const dateFormat: typeof import('../core/datetime/src/index')['dateFormat']
@@ -763,6 +765,7 @@ declare global {
   const syncRefs: typeof import('../core/utils/src/vendors')['syncRefs']
   const tab: typeof import('../core/utils/src/regex')['tab']
   const tap: typeof import('../core/utils/src/function')['tap']
+  const team: typeof import('../core/auth/src/authentication')['team']
   const telnyx: typeof import('../core/sms/src/drivers/index')['telnyx']
   const templateRef: typeof import('../core/utils/src/vendors')['templateRef']
   const termii: typeof import('../core/sms/src/drivers/index')['termii']
@@ -1155,6 +1158,7 @@ declare module 'vue' {
     readonly asyncComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['asyncComputed']>
     readonly attempt: UnwrapRef<typeof import('../core/auth/src/authentication')['attempt']>
     readonly authPath: UnwrapRef<typeof import('../core/path/src/paths')['authPath']>
+    readonly authToken: UnwrapRef<typeof import('../core/auth/src/authentication')['authToken']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/utils/src/vendors')['autoResetRef']>
     readonly base64Encode: UnwrapRef<typeof import('../core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('../core/security/src/hash')['base64Verify']>
@@ -1254,6 +1258,7 @@ declare module 'vue' {
     readonly customElementsDataPath: UnwrapRef<typeof import('../core/path/src/paths')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly customStorageEventName: UnwrapRef<typeof import('../core/utils/src/vendors')['customStorageEventName']>
+    readonly customValidate: UnwrapRef<typeof import('../core/validation/src/validator')['customValidate']>
     readonly databasePath: UnwrapRef<typeof import('../core/path/src/paths')['databasePath']>
     readonly datetimePath: UnwrapRef<typeof import('../core/path/src/paths')['datetimePath']>
     readonly db: UnwrapRef<typeof import('../core/database/src/utils')['db']>
@@ -1750,6 +1755,7 @@ declare module 'vue' {
     readonly syncRefs: UnwrapRef<typeof import('../core/utils/src/vendors')['syncRefs']>
     readonly tab: UnwrapRef<typeof import('../core/utils/src/regex')['tab']>
     readonly tap: UnwrapRef<typeof import('../core/utils/src/function')['tap']>
+    readonly team: UnwrapRef<typeof import('../core/auth/src/authentication')['team']>
     readonly telnyx: UnwrapRef<typeof import('../core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>
@@ -2116,6 +2122,7 @@ declare module '@vue/runtime-core' {
     readonly asyncComputed: UnwrapRef<typeof import('../core/utils/src/vendors')['asyncComputed']>
     readonly attempt: UnwrapRef<typeof import('../core/auth/src/authentication')['attempt']>
     readonly authPath: UnwrapRef<typeof import('../core/path/src/paths')['authPath']>
+    readonly authToken: UnwrapRef<typeof import('../core/auth/src/authentication')['authToken']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/utils/src/vendors')['autoResetRef']>
     readonly base64Encode: UnwrapRef<typeof import('../core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('../core/security/src/hash')['base64Verify']>
@@ -2215,6 +2222,7 @@ declare module '@vue/runtime-core' {
     readonly customElementsDataPath: UnwrapRef<typeof import('../core/path/src/paths')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly customStorageEventName: UnwrapRef<typeof import('../core/utils/src/vendors')['customStorageEventName']>
+    readonly customValidate: UnwrapRef<typeof import('../core/validation/src/validator')['customValidate']>
     readonly databasePath: UnwrapRef<typeof import('../core/path/src/paths')['databasePath']>
     readonly datetimePath: UnwrapRef<typeof import('../core/path/src/paths')['datetimePath']>
     readonly db: UnwrapRef<typeof import('../core/database/src/utils')['db']>
@@ -2711,6 +2719,7 @@ declare module '@vue/runtime-core' {
     readonly syncRefs: UnwrapRef<typeof import('../core/utils/src/vendors')['syncRefs']>
     readonly tab: UnwrapRef<typeof import('../core/utils/src/regex')['tab']>
     readonly tap: UnwrapRef<typeof import('../core/utils/src/function')['tap']>
+    readonly team: UnwrapRef<typeof import('../core/auth/src/authentication')['team']>
     readonly telnyx: UnwrapRef<typeof import('../core/sms/src/drivers/index')['telnyx']>
     readonly templateRef: UnwrapRef<typeof import('../core/utils/src/vendors')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>

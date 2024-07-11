@@ -29,11 +29,11 @@ export function autoImports(options?: AutoImportsOptions) {
 
     vueTemplate: true,
 
-    eslintrc: {
-      enabled: true,
-      filepath: './.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
-      globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
-    },
+    // eslintrc: {
+    //   enabled: true,
+    //   filepath: './.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
+    //   globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
+    // },
 
     ...options,
   } as AutoImportsOptions)

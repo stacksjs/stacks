@@ -11,7 +11,7 @@ Building complex components is oftentimes difficult using traditional developmen
 It is interesting to note that this is not necessarily due to the complexity of the development tasks required but rather due to the sheer amount of moving pieces required to build & engineer truly composable libraries. You may have already asked yourself one or many of the following questions/scenarios:
 
 - Which code style should be followed?
-- Code formatting setup _(e.g. Eslint, tslint, Prettier, etc.)_
+- Code formatting setup _(i.e. Eslint, Biome, tslint, Prettier, etc.)_
 - Create a custom, project-specific CI _(e.g. GitHub Actions, Circle CI, Travis CI, etc.)_
 - Automatic library changelog generations upon releases, based on git naming conventions
 - Distribution channels setup _(e.g. package managers like npm & CDNs)_

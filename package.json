@@ -54,10 +54,7 @@
     "stx": "bun run buddy"
   },
   "dependencies": {
-    "ace-builds": "^1.35.2",
-    "resize-observer-polyfill": "^1.5.1",
-    "stacks": "workspace:*",
-    "vue3-ace-editor": "^2.2.4"
+    "stacks": "workspace:*"
   },
   "config": {
     "commitizen": {
@@ -77,9 +74,5 @@
     "storage/framework/libs/components/vue",
     "storage/framework/libs/components/web",
     "storage/framework/views/*"
-  ],
-  "devDependencies": {
-    "@antfu/eslint-config": "^2.22.0",
-    "eslint": "^9.6.0"
-  }
+  ]
 }
