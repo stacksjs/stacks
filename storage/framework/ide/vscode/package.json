@@ -28,7 +28,7 @@
   "icon": "logo.png",
   "files": ["logo.png", "LICENSE.md"],
   "engines": {
-    "vscode": "^1.91.0"
+    "vscode": "^1.91.1"
   },
   "scripts": {
     "package": "npx vsce package",
@@ -55,6 +55,6 @@
     "nhoizey.gremlins"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.29.0"
+    "@vscode/vsce": "^2.30.0"
   }
 }

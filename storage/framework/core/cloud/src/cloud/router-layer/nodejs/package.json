@@ -10,6 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@stacksjs/router": "^0.61.24"
+    "@stacksjs/router": "^0.62.0"
   }
 }
