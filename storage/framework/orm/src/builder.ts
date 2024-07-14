@@ -215,7 +215,7 @@ export class AccessTokenModel {
 
     let nextCursor = null
     if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
-      nextCursor = personal_access_tokensWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+      nextCursor = personal_access_tokensWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: personal_access_tokensWithExtra,
@@ -224,7 +224,7 @@ export class AccessTokenModel {
         page,
         total_pages: totalPages,
       },
-      next_cursor: nextCursor,
+      next_cursor: nextCursor ?? null,
     }
   }
 

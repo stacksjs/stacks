@@ -350,7 +350,7 @@ export function findDifferingKeys(obj1: any, obj2: any): { key: string; max: num
   const differingKeys: { key: string; max: number; min: number }[] = []
 
   for (const key in obj1) {
-    if (obj1.hasOwnProperty(key) && obj2.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj1, key) && Object.prototype.hasOwnProperty.call(obj2, key)) {
       const lastCharacterLength = findCharacterLength(obj1[key].validation.rule)
       const latestCharacterLength = findCharacterLength(obj2[key].validation.rule)
 

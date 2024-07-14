@@ -130,8 +130,10 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
   return dynamicSegments
 }
 
+type CallbackWithStatus = Route['callback'] & { status: number }
+
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
-  const foundCallback = await route.resolveCallback(foundRoute.callback)
+  const foundCallback: CallbackWithStatus = await route.resolveCallback(foundRoute.callback)
 
   const middlewarePayload = await executeMiddleware(foundRoute)
 
@@ -142,9 +144,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   ) {
     const middlewareStatus = middlewarePayload.status
 
-    delete middlewarePayload.status
+    const { status, ...payloadWithoutStatus } = middlewarePayload
 
-    return await new Response(JSON.stringify(middlewarePayload), {
+    return await new Response(JSON.stringify(payloadWithoutStatus), {
       headers: {
         'Content-Type': 'json',
         'Access-Control-Allow-Origin': '*',
@@ -219,9 +221,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
-      delete foundCallback.status
+      const { status, ...rest } = foundCallback
 
-      return await new Response(JSON.stringify(foundCallback), {
+      return await new Response(JSON.stringify(rest), {
         headers: {
           'Content-Type': 'json',
           'Access-Control-Allow-Origin': '*',
@@ -232,8 +234,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 403) {
-      delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback), {
+      const { status, ...rest } = foundCallback
+
+      return await new Response(JSON.stringify(rest), {
         headers: {
           'Content-Type': 'json',
           'Access-Control-Allow-Origin': '*',
@@ -244,10 +247,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 422) {
-      // biome-ignore lint/performance/noDelete: <explanation>
-      delete foundCallback.status
+      const { status, ...rest } = foundCallback
 
-      return await new Response(JSON.stringify(foundCallback), {
+      return await new Response(JSON.stringify(rest), {
         headers: {
           'Content-Type': 'json',
           'Access-Control-Allow-Origin': '*',
@@ -258,13 +260,10 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 500) {
-      delete foundCallback.status
-      return await new Response(JSON.stringify(foundCallback), {
-        headers: {
-          'Content-Type': 'json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
+      const { status, ...rest } = foundCallback
+
+      return await new Response(JSON.stringify(rest), {
+        headers: { 'Content-Type': 'json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' },
         status: 500,
       })
     }

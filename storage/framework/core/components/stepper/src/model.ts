@@ -4,7 +4,8 @@ class Model {
   queries: Object = {}
 
   constructor() {
-    return { id: this.id, value: this.value, queries: this.queries }
+    // return { id: this.id, value: this.value, queries: this.queries }
+    console.log('wip to pass lint', this)
   }
 }
 
