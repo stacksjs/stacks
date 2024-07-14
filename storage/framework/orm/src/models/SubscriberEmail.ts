@@ -226,7 +226,7 @@ export class SubscriberEmailModel {
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newSubscriberEmail[key]
-        
+
         return obj
       }, {})
 

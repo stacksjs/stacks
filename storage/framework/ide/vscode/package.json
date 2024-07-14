@@ -24,14 +24,9 @@
     "extension pack",
     "stacks extension collection"
   ],
-  "categories": [
-    "Extension Packs"
-  ],
+  "categories": ["Extension Packs"],
   "icon": "logo.png",
-  "files": [
-    "logo.png",
-    "LICENSE.md"
-  ],
+  "files": ["logo.png", "LICENSE.md"],
   "engines": {
     "vscode": "^1.91.0"
   },

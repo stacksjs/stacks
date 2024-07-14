@@ -33,7 +33,7 @@ async function submitEmail() {
     body: JSON.stringify(body),
   })
 
-  if (! response.ok) {
+  if (!response.ok) {
     const errs = await response.json()
 
     errors.value = errs.errors

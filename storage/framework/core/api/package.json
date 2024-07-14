@@ -4,9 +4,7 @@
   "version": "0.62.0",
   "description": "The Stacks array utilities.",
   "author": "Chris Breuer",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/arrays#readme",
@@ -38,11 +36,7 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "generate-types": "openapi-typescript ./../../api/openapi.json --output ./../../api/api-types.ts",

@@ -15,12 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "vite",
-    "configs",
-    "vite-plugin",
-    "stacks"
-  ],
+  "keywords": ["vite", "configs", "vite-plugin", "stacks"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -78,14 +73,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",

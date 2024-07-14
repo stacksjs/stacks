@@ -5,7 +5,7 @@
   },
   "overrides": [
     {
-      "include": [".vscode/**"],
+      "include": [".vscode/**", "components.d.ts"],
       "json": {
         "parser": {
           "allowComments": true,
@@ -65,6 +65,7 @@
   },
   "files": {
     "ignore": [
+      "components.d.ts",
       "database/migrations/*",
       "storage/framework/types/*",
       "storage/framework/cache/*",

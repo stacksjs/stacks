@@ -4,9 +4,7 @@
   "version": "0.62.0",
   "description": "An opinionated notification component for Stacks.",
   "author": "Chris Breuer",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification#readme",
@@ -15,9 +13,7 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/notification"
   },
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -29,11 +25,7 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "vite build --mode lib && bun run build:types",

@@ -21,6 +21,7 @@ async function watchFolders() {
   const coreDirectories = await readdir(path.corePath(), {
     withFileTypes: true,
   })
+
   coreDirectories.forEach((dir) => {
     const ignore = ['dist', 'bun-create', 'lint', 'components']
 

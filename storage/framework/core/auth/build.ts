@@ -5,5 +5,4 @@ const result = await Bun.build({
   target: 'bun',
 })
 
-if (! result.success)
-  console.log(result)
+if (!result.success) console.log(result)

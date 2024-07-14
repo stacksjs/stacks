@@ -15,15 +15,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "css",
-    "atomic",
-    "ui",
-    "engine",
-    "styles",
-    "stacks",
-    "unocss"
-  ],
+  "keywords": ["css", "atomic", "ui", "engine", "styles", "stacks", "unocss"],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -44,14 +36,8 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
