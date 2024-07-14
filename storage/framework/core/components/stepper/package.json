@@ -1,10 +1,12 @@
 {
   "name": "@stacksjs/stepper",
   "type": "module",
-  "version": "0.61.24",
+  "version": "0.62.0",
   "description": "A modern stepper component.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/stepper#readme",
@@ -16,8 +18,15 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["steppers", "components", "library", "stacks"],
-  "sideEffects": ["**/*.css"],
+  "keywords": [
+    "steppers",
+    "components",
+    "library",
+    "stacks"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,7 +36,11 @@
       "import": "./dist/*"
     }
   },
-  "files": ["README.md", "dist", "src"],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build --mode lib",

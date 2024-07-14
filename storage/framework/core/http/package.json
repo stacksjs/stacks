@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/http",
   "type": "module",
-  "version": "0.61.24",
+  "version": "0.62.0",
   "description": "Stacks HTTP methods.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -15,7 +15,13 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["http", "utilities", "functions", "bun", "stacks"],
+  "keywords": [
+    "http",
+    "utilities",
+    "functions",
+    "bun",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -28,8 +34,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
