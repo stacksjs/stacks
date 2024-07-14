@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { defineComponent, h, markRaw, ref } from 'vue'
-import { notification } from '../'
-import { useCopyCode } from '../composables/useCopyCode'
+// import { notification } from '../'
+// import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 
@@ -16,116 +16,118 @@ const CustomDiv = defineComponent({
   },
 })
 
-const allTypes = [
-  {
-    name: 'Default',
-    snippet: `notification('Event has been created')`,
-    action: () => notification('Event has been created'),
-  },
-  {
-    name: 'Description',
-    snippet: `notification.message('Event has been created', {
-  description: 'Monday, January 3rd at 6:00pm',
-})`,
-    action: () =>
-      notification('Event has been created', {
-        description: 'Monday, January 3rd at 6:00pm',
-      }),
-  },
-  {
-    name: 'Success',
-    snippet: `notification.success('Event has been created')`,
-    action: () => notification.success('Event has been created'),
-  },
-  {
-    name: 'Info',
-    snippet: `notification.info('Event has been created')`,
-    action: () => notification.info('Event has been created'),
-  },
-  {
-    name: 'Warning',
-    snippet: `notification.warning('Event has been created')`,
-    action: () => notification.warning('Event has been created'),
-  },
-  {
-    name: 'Error',
-    snippet: `notification.error('Event has not been created')`,
-    action: () => notification.error('Event has not been created'),
-  },
-  {
-    name: 'Action',
-    snippet: `notification('Event has been created', {
-  action: {
-    label: 'Undo',
-    onClick: () => console.log('Undo')
-  },
-})`,
-    action: () =>
-      notification.message('Event has been created', {
-        action: {
-          label: 'Undo',
-          onClick: () => console.log('Undo'),
-        },
-        duration: 10000000,
-      }),
-  },
-  {
-    name: 'Promise',
-    snippet: `const promise = () => new Promise((resolve) => setTimeout(resolve, 2000));
+// const allTypes = [
+//   {
+//     name: 'Default',
+//     snippet: `notification('Event has been created')`,
+//     // action: () => notification('Event has been created'),
+//   },
+//   {
+//     name: 'Description',
+//     snippet: `notification.message('Event has been created', {
+//   description: 'Monday, January 3rd at 6:00pm',
+// })`,
+//     // action: () => {},
+//     // action: () =>
+//       // notification('Event has been created', {
+//       //   description: 'Monday, January 3rd at 6:00pm',
+//       // }),
+//   // },
+//   {
+//     name: 'Success',
+//     snippet: `notification.success('Event has been created')`,
+//     // action: () => {},
+//     // action: () => notification.success('Event has been created'),
+//   },
+//   {
+//     name: 'Info',
+//     snippet: `notification.info('Event has been created')`,
+//     // action: () => notification.info('Event has been created'),
+//   },
+//   {
+//     name: 'Warning',
+//     snippet: `notification.warning('Event has been created')`,
+//     // action: () => notification.warning('Event has been created'),
+//   },
+//   {
+//     name: 'Error',
+//     snippet: `notification.error('Event has not been created')`,
+//     action: () => notification.error('Event has not been created'),
+//   },
+//   {
+//     name: 'Action',
+//     snippet: `notification('Event has been created', {
+//   action: {
+//     label: 'Undo',
+//     onClick: () => console.log('Undo')
+//   },
+// })`,
+//     action: () =>
+//       // notification.message('Event has been created', {
+//       //   action: {
+//       //     label: 'Undo',
+//       //     onClick: () => console.log('Undo'),
+//       //   },
+//       //   duration: 10000000,
+//       // }),
+//   },
+//   {
+//     name: 'Promise',
+//     snippet: `const promise = () => new Promise((resolve) => setTimeout(resolve, 2000));
 
-notification.promise(promise, {
-  loading: 'Loading...',
-  success: (data) => {
-    return ${promiseCode};
-  },
-  error: (data: any) => 'Error',
-});`,
-    action: () =>
-      notification.promise(
-        () =>
-          new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({ name: 'Stacks Notification' })
-            }, 2000)
-          }),
-        {
-          loading: 'Loading...',
-          success: (data: any) => {
-            return `${data.name} toast has been added`
-          },
-          error: (data: any) => 'Error',
-          duration: 10000000,
-        },
-      ),
-  },
-  {
-    name: 'Custom',
-    snippet: `import { defineComponent, h, markRaw } from 'vue'
+// notification.promise(promise, {
+//   loading: 'Loading...',
+//   success: (data) => {
+//     return ${promiseCode};
+//   },
+//   error: (data: any) => 'Error',
+// });`,
+//     action: () =>
+//       // notification.promise(
+//       //   () =>
+//       //     new Promise((resolve) => {
+//       //       setTimeout(() => {
+//       //         resolve({ name: 'Stacks Notification' })
+//       //       }, 2000)
+//       //     }),
+//       //   {
+//       //     loading: 'Loading...',
+//       //     success: (data: any) => {
+//       //       return `${data.name} toast has been added`
+//       //     },
+//       //     error: (data: any) => 'Error',
+//       //     duration: 10000000,
+//       //   },
+//       // ),
+//   },
+//   {
+//     name: 'Custom',
+//     snippet: `import { defineComponent, h, markRaw } from 'vue'
 
-const CustomDiv = defineComponent({
-  setup() {
-    return () =>
-      h('div', {
-        innerHTML: 'A custom toast with styling'
-      })
-  }
-})
+// const CustomDiv = defineComponent({
+//   setup() {
+//     return () =>
+//       h('div', {
+//         innerHTML: 'A custom toast with styling'
+//       })
+//   }
+// })
 
-notification(markRaw(CustomDiv))
-`,
-    action: () => notification(markRaw(CustomDiv)),
-  },
-]
+// notification(markRaw(CustomDiv))
+// `,
+//     action: () => notification(markRaw(CustomDiv)),
+//   },
+// ]
 
-const activeType = ref(allTypes[0])
+// const activeType = ref(allTypes[0])
 const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
-  await useCopyCode({
-    code: activeType.value.snippet,
-    checkIconRef: showCheckIcon,
-  })
-  notification('Copied to your clipboard!')
+  // await useCopyCode({
+  //   code: activeType.value.snippet,
+  //   checkIconRef: showCheckIcon,
+  // })
+  // notification('Copied to your clipboard!')
 }
 </script>
 
@@ -161,12 +163,12 @@ async function handleCopyCode() {
     </div>
 
     <div class="code-block relative group">
-      <Highlight
+      <!-- <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
         :autodetect="false"
         :code="activeType.snippet"
-      />
+      /> -->
       <button
         aria-label="Copy code"
         title="Copy code"

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { Notification } from '.'
+// import { Notification } from '.'
 import Expand from './components/Expand.vue'
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
@@ -50,12 +50,12 @@ const theme = ref<Theme>('light')
       <Footer />
     </div>
 
-    <Notification
+    <!-- <Notification
       :position="position"
       :expand="expand"
       :rich-colors="richColors"
       :close-button="closeButton"
       :theme="theme"
-    />
+    /> -->
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { markRaw, ref } from 'vue'
-import { notification } from '../'
+// import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import HeadlessToast from './HeadlessToast.vue'
 import HeadlessToastWithProps from './HeadlessToastWithProps.vue'
@@ -19,7 +19,7 @@ const allTypes = [
 <Notification richColors  />
 `,
     action: () => {
-      notification.success('Event has been created')
+      // notification.success('Event has been created')
       emit('setRichColors', true)
     },
   },
@@ -32,7 +32,7 @@ const allTypes = [
 <Notification richColors  />
 `,
     action: () => {
-      notification.info('Event has been created')
+      // notification.info('Event has been created')
       emit('setRichColors', true)
     },
   },
@@ -45,7 +45,7 @@ const allTypes = [
 <Notification richColors  />
 `,
     action: () => {
-      notification.warning('Event has been created')
+      // notification.warning('Event has been created')
       emit('setRichColors', true)
     },
   },
@@ -58,7 +58,7 @@ const allTypes = [
 <Notification richColors  />
 `,
     action: () => {
-      notification.error('Event has not been created')
+      // notification.error('Event has not been created')
       emit('setRichColors', true)
     },
   },
@@ -73,9 +73,9 @@ const allTypes = [
 <Notification closeButton  />
 `,
     action: () => {
-      notification('Event has been created', {
-        description: 'Monday, January 3rd at 6:00pm',
-      })
+      // notification('Event has been created', {
+      //   description: 'Monday, January 3rd at 6:00pm',
+      // })
       emit('setCloseButton')
     },
   },
@@ -88,7 +88,7 @@ import HeadlessToast from './HeadlessToast.vue'
 notification.custom(markRaw(HeadlessToast));
 `,
     action: () => {
-      notification.custom(markRaw(HeadlessToast), { duration: 999999 })
+      // notification.custom(markRaw(HeadlessToast), { duration: 999999 })
       emit('setCloseButton')
     },
   },
@@ -105,11 +105,11 @@ notification.warning(markRaw(HeadlessToastWithProps), {
 });
 `,
     action: () => {
-      notification.warning(markRaw(HeadlessToastWithProps), {
-        componentProps: {
-          message: 'This is <br />multiline message',
-        },
-      })
+      // notification.warning(markRaw(HeadlessToastWithProps), {
+      //   componentProps: {
+      //     message: 'This is <br />multiline message',
+      //   },
+      // })
     },
   },
 ]
@@ -122,7 +122,7 @@ async function handleCopyCode() {
     code: activeType.value.snippet,
     checkIconRef: showCheckIcon,
   })
-  notification('Copied to your clipboard!!!')
+  // notification('Copied to your clipboard!!!')
 }
 </script>
 

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
 import { computed, ref } from 'vue'
-import { notification } from '../'
+// import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import type { Position } from '../types'
 import CheckIcon from './icons/CheckIcon.vue'
@@ -27,14 +27,14 @@ function handleChangePosition(activePosition: Position) {
   // No need to show a toast when there is already one
   if (toastsAmount > 0 && props.position !== activePosition) return
 
-  notification('Event has been created', {
-    description: 'Monday, January 3rd at 6:00pm',
-  })
+  // notification('Event has been created', {
+  //   description: 'Monday, January 3rd at 6:00pm',
+  // })
 }
 
 async function handleCopyCode() {
   await useCopyCode({ code: renderedCode.value, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!!!')
+  // notification('Copied to your clipboard!')
 }
 </script>
 

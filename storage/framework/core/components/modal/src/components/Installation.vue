@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { notification } from '../'
+// import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
@@ -11,7 +11,7 @@ const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!')
+  // notification('Copied to your clipboard!')
 }
 </script>
 

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { notification } from '../'
+// import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
@@ -17,12 +17,12 @@ const renderedCode = computed(() => {
 function handleClick(action: string) {
   currentAction.value = action
   emit('setTheme', action)
-  notification('Event has been created')
+  // notification('Event has been created')
 }
 
 async function handleCopyCode() {
   await useCopyCode({ code: renderedCode.value, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!!!')
+  // notification('Copied to your clipboard!')
 }
 </script>
 
