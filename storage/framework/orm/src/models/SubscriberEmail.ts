@@ -202,20 +202,20 @@ export class SubscriberEmailModel {
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset((options.page - 1) * (options.limit ?? 10))
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
       .execute()
 
     let nextCursor = null
-    if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: subscriber_emailsWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page,
+        page: options.page ?? 0,
         total_pages: totalPages,
       },
-      next_cursor: nextCursor,
+      next_cursor: nextCursor ?? null,
     }
   }
 

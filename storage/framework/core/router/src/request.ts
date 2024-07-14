@@ -103,7 +103,7 @@ export class Request implements RequestInstance {
   public bearerToken(): string | null {
     const authorizationHeader = this.headers.get('authorization')
 
-    if (authorizationHeader && authorizationHeader.startsWith('Bearer ')) {
+    if (authorizationHeader?.startsWith('Bearer ')) {
       return authorizationHeader.substring(7)
     }
 

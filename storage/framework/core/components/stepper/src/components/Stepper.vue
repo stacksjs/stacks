@@ -65,7 +65,7 @@ onBeforeUnmount(() => {
   }
 })
 
-function getSlotName(suffix = '', displayIndex: string, options: Partial<OptionParams> = {}) {
+function getSlotName(suffix: string, displayIndex: string, options: Partial<OptionParams> = {}) {
   const defaults: OptionParams = { prefix: 'step' }
   options = Object.assign({}, defaults, options)
   const { prefix } = options

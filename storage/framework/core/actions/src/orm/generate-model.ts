@@ -233,10 +233,10 @@ async function writeModelRequest() {
         } else {
           await customValidate(attributes, this.all())
         }
-     
+
       }
     }
-    
+
     export const ${modelLowerCase}Request = new ${modelName}Request()
     `
 
@@ -308,7 +308,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   if (apiRoute === 'update') {
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
-        
+
         const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(Number(id))
@@ -824,7 +824,7 @@ async function generateModelString(
           .where('${foreignKeyRelation}', '=', this.id)
           .selectAll()
           .execute()
-          
+
           const tableRelationIds = results.map(result => result.${singular(tableRelation)}_id)
 
           const relationResults = await ${modelRelation}.whereIn('id', tableRelationIds).get()
@@ -875,7 +875,7 @@ async function generateModelString(
         const instance = new this(null)
 
         instance.query = instance.query.where('${attribute.field}', '=', value)
-  
+
         return instance
       } \n\n`
 
@@ -950,7 +950,7 @@ async function generateModelString(
       offset?: number
       page?: number
     }
-  
+
     export class ${modelName}Model {
       private ${formattedModelName}: Partial<${modelName}Type> | null
       private hidden = ${hidden}
@@ -979,7 +979,7 @@ async function generateModelString(
 
         if (!model)
           return undefined
-        
+
         return this.parseResult(this)
       }
 
@@ -988,7 +988,7 @@ async function generateModelString(
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         const instance = new this(null)
-        
+
         if (fields)
           query = query.select(fields)
         else
@@ -1013,7 +1013,7 @@ async function generateModelString(
           query = query.selectAll()
 
         const model = await query.executeTakeFirst()
-       
+
         if (!model)
           throw(\`No model results found for \${id}\ \`)
 
@@ -1025,7 +1025,7 @@ async function generateModelString(
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
         const instance = new this(null)
-         
+
         if (fields)
           query = query.select(fields)
         else
@@ -1070,12 +1070,12 @@ async function generateModelString(
       async get(): Promise<${modelName}Model[]> {
         if (this.hasSelect) {
           const model = await this.query.execute()
-    
+
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
-    
+
         const model = await this.query.selectAll().execute()
-    
+
         return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
 
@@ -1112,7 +1112,7 @@ async function generateModelString(
           .selectAll()
           .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
           .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset((options.page - 1) * (options.limit ?? 10))
+          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
           .execute()
 
         let nextCursor = null
@@ -1181,9 +1181,9 @@ async function generateModelString(
         let column: any
         let operator: any
         let value: any
-  
+
         const instance = new this(null)
-  
+
         if (args.length === 2) {
           [column, value] = args
           operator = '='
@@ -1192,9 +1192,9 @@ async function generateModelString(
         } else {
             throw new Error("Invalid number of arguments")
         }
-  
+
         instance.query = instance.query.where(column, operator, value)
-  
+
         return instance
       }
 
@@ -1202,9 +1202,9 @@ async function generateModelString(
 
       static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
         const instance = new this(null)
-  
+
         instance.query = instance.query.where(column, 'in', values)
-  
+
         return instance
       }
 
@@ -1214,16 +1214,16 @@ async function generateModelString(
         if (! model) {
           return undefined
         }
-        
+
         return new ${modelName}Model(model)
       }
 
       async exists(): Promise<boolean> {
         const model = await this.query.selectAll().executeTakeFirst()
-        
+
         return model !== null || model !== undefined
       }
-  
+
       static async first(): Promise<${modelName}Type | undefined> {
         return await db.selectFrom('${tableName}')
           .selectAll()
@@ -1239,29 +1239,29 @@ async function generateModelString(
 
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
         const instance = new this(null)
-  
+
         instance.query = instance.orderBy(column, order)
-  
+
         return instance
       }
-  
+
       orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
         this.query = this.query.orderBy(column, order)
-  
+
         return this
       }
 
       static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new this(null)
-  
+
         instance.query = instance.query.orderBy(column, 'desc')
-  
+
         return instance
       }
-  
+
       orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
         this.query = this.orderBy(column, 'desc')
-  
+
         return this
       }
 
@@ -1290,12 +1290,12 @@ async function generateModelString(
                 obj[key] = new${modelName}[key];
                 return obj;
             }, {});
-  
+
         await db.updateTable('${tableName}')
           .set(filteredValues)
           .where('id', '=', this.id)
           .executeTakeFirst()
-  
+
           return await this.find(Number(this.id))
       }
 
@@ -1320,7 +1320,7 @@ async function generateModelString(
       async delete(): Promise<void> {
         if (this.id === undefined)
           throw new Error('${modelName} ID is undefined')
-        
+
         await db.deleteFrom('${tableName}')
           .where('id', '=', this.id)
           .execute()
@@ -1330,29 +1330,29 @@ async function generateModelString(
 
       distinct(column: keyof ${modelName}Type): ${modelName}Model {
         this.query = this.query.distinctOn(column)
-    
+
         return this
       }
-    
+
       static distinct(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new this(null)
-    
+
         instance.query = instance.query.distinctOn(column)
-    
+
         return instance
       }
-    
+
       join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
         this.query = this.query.innerJoin(table, firstCol, secondCol)
-    
+
         return this
       }
-    
+
       static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
         const instance = new this(null)
-    
+
         instance.query = instance.query.innerJoin(table, firstCol, secondCol)
-    
+
         return instance
       }
 
@@ -1421,7 +1421,7 @@ async function generateModelString(
         .where('id', '=', id)
         .execute()
     }
-    
+
     ${whereFunctionStatements}
 
     const ${modelName} = ${modelName}Model

@@ -30,7 +30,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
-    if (attributes.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       ruleObject[key] = attributes[key]?.validation?.rule
       const validatorMessages = attributes[key]?.validation?.message
 
@@ -59,7 +59,7 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
-    if (attributes.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       ruleObject[key] = attributes[key]?.validation?.rule
       const validatorMessages = attributes[key]?.validation?.message
 
