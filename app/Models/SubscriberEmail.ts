@@ -28,7 +28,7 @@ export default {
       validation: {
         rule: schema.string().email(),
         message: {
-          email: 'Email must be valid',
+          email: 'Email address must be of valid format',
           required: 'Email is required',
         },
       },

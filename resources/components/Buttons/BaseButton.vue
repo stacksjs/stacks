@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const props = defineProps<{
   loading: boolean
-  buttonText: boolean
+  buttonText: string
   classString: string
 }>()
 
 const fullClass = computed(() => {
-  let cls = ' duration-150 ease-in-out transition'
+  let cls = ' duration-150 ease-in-out transition focus:ring-2 focus:ring-inset focus:ring-blue-600'
 
   if (props.loading) {
     cls += ` opacity-75 disabled:cursor-not-allowed `
@@ -39,6 +39,7 @@ const fullClass = computed(() => {
             />
         </svg>
 
-        {{ props.buttonText }}
+        <span v-if="!props.loading">{{ props.buttonText }}</span>
+        <span v-else>One moment...</span>
     </button>
 </template>
