@@ -327,12 +327,11 @@ export function make(buddy: CLI) {
       log.debug('Running `buddy make:certificate` ...', options)
 
       const domain = await localUrl()
-      log.info(`Creating SSL certificate...`)
 
+      log.info(`Creating SSL certificate...`)
       await runCommand(`tlsx ${domain}`, {
         cwd: p.projectStoragePath('keys'),
       })
-
       log.success('Certificate created')
 
       log.info(`Installing SSL certificate...`)
