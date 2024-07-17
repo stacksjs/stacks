@@ -151,7 +151,7 @@ async function payPlan() {
     <div class="bg-white mt-16 px-8 py-6 w-2/3 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
       <div class="flex items-center">
         <img
-          src="/logo.svg"
+          src="/images/logos/logo.svg"
           alt=""
           class="w-12 h-12 rounded-md"
         >

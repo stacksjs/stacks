@@ -2,7 +2,7 @@
 
 What is the Composability-First Design pattern? Also known as "Atomic-First Design," read along for an explanation and to learn more about how these design principles to improve your development experience (DX).
 
-![Atomic UI & FX Design](../../resources/assets/images/diagram.png)
+<!-- ![Atomic UI & FX Design](../../resources/assets/images/diagram.png) -->
 
 ## The Why
 

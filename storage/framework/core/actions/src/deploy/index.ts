@@ -17,7 +17,7 @@ if (storage.hasFiles(p.projectPath('docs'))) {
 if (config.app.docMode !== true) {
   // when in docMode, we can disregard building views
   await runCommand('bun run build', {
-    cwd: p.frameworkPath('views'),
+    cwd: p.frameworkPath('views/web'),
   })
 }
 

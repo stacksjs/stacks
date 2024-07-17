@@ -25,7 +25,31 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['path', 'fs', 'net', 'tls', 'stream', 'node:process', 'constants', 'node:dns/promises', 'node:util'],
+      external: [
+        'path',
+        'fs',
+        'net',
+        'tls',
+        'stream',
+        'node:process',
+        'constants',
+        'node:dns/promises',
+        'node:util',
+        'node:os',
+        'node:path',
+        'node:fs',
+        'node:module',
+        'node:url',
+        'node:assert',
+        'node:v8',
+        'pkg-types',
+        'fsevents',
+        'c12',
+        '@stacksjs/logging',
+        '@stacksjs/utils',
+        '@stacksjs/cli',
+        'execa',
+      ],
     },
   },
 
@@ -34,7 +58,7 @@ export default defineConfig({
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+  assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
@@ -109,9 +133,9 @@ export default defineConfig({
     script: 'async',
     formatting: 'minify',
 
-    crittersOptions: {
-      reduceInlineStyles: false,
-    },
+    // crittersOptions: {
+      // reduceInlineStyles: false,
+    // },
 
     onFinished() {
       generateSitemap()
