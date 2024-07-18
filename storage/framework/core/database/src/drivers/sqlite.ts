@@ -140,14 +140,14 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validations?.rule)
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validations?.rule?.required) {
+    if (fieldOptions.unique || fieldOptions.validation?.rule?.required) {
       migrationContent += `, col => col`
       if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions.validations?.rule?.required) migrationContent += `.notNull()`
+      if (fieldOptions.validation?.rule?.required) migrationContent += `.notNull()`
       migrationContent += ``
     }
 

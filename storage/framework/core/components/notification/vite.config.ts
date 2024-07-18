@@ -21,7 +21,11 @@ function minify(code: string) {
 let cssCodeStr = ''
 
 export default defineConfig(({ command, mode }) => {
-  const userConfig: UserConfig = {}
+  const userConfig: UserConfig = {
+    optimizeDeps: {
+      exclude: ['fsevents'],
+    },
+  }
 
   const commonPlugins = [
     Vue({
@@ -48,11 +52,6 @@ export default defineConfig(({ command, mode }) => {
         'pinia',
         'vue',
         'vue-i18n',
-        // '@vueuse/core',
-        // 'vitepress'
-        // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-        // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-        // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
         VueHeadImports,
         VueRouterAutoImports,
         {
@@ -61,8 +60,6 @@ export default defineConfig(({ command, mode }) => {
       ],
 
       // dts: p.frameworkPath('types/auto-imports.d.ts'),
-
-      dirs: [p.corePath()],
 
       vueTemplate: true,
     }),
@@ -80,7 +77,7 @@ export default defineConfig(({ command, mode }) => {
       cssCodeSplit: false,
       sourcemap: true,
       rollupOptions: {
-        external: ['vue', '@stacksjs/utils'],
+        external: ['vue', '@stacksjs/utils', 'fsevents'],
         output: [
           // {
           //   format: 'cjs',

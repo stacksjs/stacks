@@ -4,7 +4,7 @@ import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stac
 import env from '~/config/env'
 import type { EnvKey } from '../../../env'
 
-// we need to get this just into right format so we can infer the type
+// we need to get this into the right format so we can infer the type
 type EnvValue = string | boolean | number | readonly string[]
 type EnvType = typeof env
 type EnvKeys = keyof EnvType

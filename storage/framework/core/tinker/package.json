@@ -16,8 +16,6 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": ["tinker-stack", "repl", "ts", "vue", "stacks"],
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
