@@ -55,6 +55,6 @@
     "nhoizey.gremlins"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^2.30.0"
+    "@vscode/vsce": "^2.31.0"
   }
 }
