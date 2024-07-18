@@ -77,7 +77,7 @@ export default defineConfig(({ command, mode }) => {
       cssCodeSplit: false,
       sourcemap: true,
       rollupOptions: {
-        external: ['vue', '@stacksjs/utils', 'fsevents'],
+        external: ['vue'],
         output: [
           // {
           //   format: 'cjs',
