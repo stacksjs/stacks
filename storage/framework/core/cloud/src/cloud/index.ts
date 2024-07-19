@@ -92,7 +92,7 @@ export class Cloud extends Stack {
   // we use an async init() method here because we need to wait for the
 
   async init() {
-    if (config.api?.deploy) {
+    if (config.cloud.api?.deploy) {
       const props = this.props
       this.api = new ComputeStack(this, {
         ...props,

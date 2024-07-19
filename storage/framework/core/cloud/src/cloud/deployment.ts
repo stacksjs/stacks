@@ -20,7 +20,7 @@ export class DeploymentStack {
     // following paths are relative to where the command is run from
     this.privateSource = '../../private'
     this.docsSource = '../docs/dist/'
-    this.websiteSource = config.app.docMode === true ? this.docsSource : '../views/dist/'
+    this.websiteSource = config.app.docMode === true ? this.docsSource : '../views/web/dist/'
 
     new s3deploy.BucketDeployment(scope, 'Website', {
       sources: [

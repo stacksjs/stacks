@@ -69,9 +69,9 @@ export class SecurityStack {
         name: 'CountryRule',
         priority: priorities.length,
         statement: {
-          // geoMatchStatement: {
-          //   countryCodes: config.security.firewall.countryCodes,
-          // },
+          geoMatchStatement: {
+            countryCodes: config.security.firewall.countryCodes as string[],
+          },
         },
         action: {
           block: {},
@@ -130,7 +130,7 @@ export class SecurityStack {
               searchString: 'true',
               textTransformations: [
                 {
-                  priority: index,
+                  priority: 0,
                   type: 'NONE',
                 },
               ],
