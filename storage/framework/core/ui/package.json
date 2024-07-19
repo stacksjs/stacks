@@ -51,7 +51,7 @@
     "pinia": "^2.1.7",
     "unocss": "^0.61.5",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.32",
+    "vue": "^3.4.33",
     "vue-tsc": "^2.0.26"
   },
   "dependencies": {
@@ -70,7 +70,7 @@
     "unocss": "^0.61.5",
     "unocss-preset-primitives": "0.0.2-beta.1",
     "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.32",
+    "vue": "^3.4.33",
     "vue-tsc": "^2.0.26"
   },
   "devDependencies": {

@@ -39,7 +39,7 @@
     "bumpp": "^9.4.1",
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
-    "cz-git": "^1.9.3",
+    "cz-git": "^1.9.4",
     "giget": "^1.2.3",
     "simple-git-hooks": "^2.11.1"
   },
@@ -47,7 +47,7 @@
     "bumpp": "^9.4.1",
     "changelogen": "^0.5.5",
     "commitizen": "^4.3.0",
-    "cz-git": "^1.9.3",
+    "cz-git": "^1.9.4",
     "giget": "^1.2.3",
     "simple-git-hooks": "^2.11.1"
   },
