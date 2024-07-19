@@ -110,11 +110,15 @@ export default defineConfig({
       },
     }),
 
-    router(),
+    router({
+      type: 'views',
+    }),
+
     layouts({
       extensions: ['stx', 'vue'],
       layoutsDirs: p.layoutsPath('', { relative: true }),
     }),
+
     autoImports(),
     components(),
     cssEngine(),
@@ -134,8 +138,13 @@ export default defineConfig({
     formatting: 'minify',
 
     // crittersOptions: {
-      // reduceInlineStyles: false,
+    //   reduceInlineStyles: false,
     // },
+
+    includedRoutes(paths, routes) {
+      // exclude all the route paths that contains 'errors', 'system-tray', or 'dashboard'
+      return paths.filter((i) => !i.includes('errors') && !i.includes('system-tray') && !i.includes('dashboard'))
+    },
 
     onFinished() {
       generateSitemap()

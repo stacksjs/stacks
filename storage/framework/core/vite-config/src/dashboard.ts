@@ -114,9 +114,9 @@ export default defineConfig({
     script: 'async',
     formatting: 'minify',
 
-    crittersOptions: {
-      reduceInlineStyles: false,
-    },
+    // crittersOptions: {
+    //   reduceInlineStyles: false,
+    // },
 
     onFinished() {
       generateSitemap()

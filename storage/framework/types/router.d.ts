@@ -61,7 +61,6 @@ declare module 'vue-router/auto-routes' {
     '/errors/503': RouteRecordInfo<'/errors/503', '/errors/503', Record<never, never>, Record<never, never>>,
     '/errors/504': RouteRecordInfo<'/errors/504', '/errors/504', Record<never, never>, Record<never, never>>,
     '/hello-world/[name]': RouteRecordInfo<'/hello-world/[name]', '/hello-world/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
-    '/README': RouteRecordInfo<'/README', '/README', Record<never, never>, Record<never, never>>,
     '/system-tray/': RouteRecordInfo<'/system-tray/', '/system-tray', Record<never, never>, Record<never, never>>,
   }
 }

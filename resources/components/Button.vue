@@ -37,8 +37,6 @@ const className = computed(() => {
 
   if (props.className) classes += ` ${props.className}`
 
-  console.log('classes', classes)
-
   return classes
 })
 
