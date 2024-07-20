@@ -57,12 +57,12 @@ export class CdnStack {
     })
 
     // Step 1: Create a Kinesis Firehose delivery stream for the logs
-    const logStream = new kinesis.Stream(scope, 'StacksCdnRealtimeLogStream', {
-      streamName: 'StacksCdnRealtimeLogStream',
-      retentionPeriod: Duration.days(1),
-      shardCount: 1,
-      encryption: kinesis.StreamEncryption.UNENCRYPTED,
-    })
+    // const logStream = new kinesis.Stream(scope, 'StacksCdnRealtimeLogStream', {
+    //   streamName: 'StacksCdnRealtimeLogStream',
+    //   retentionPeriod: Duration.days(1),
+    //   shardCount: 1,
+    //   encryption: kinesis.StreamEncryption.UNENCRYPTED,
+    // })
 
     // Create an IAM role for CloudFront to write logs to Kinesis Firehose
     // new iam.Role(scope, 'LoggingRole', {
@@ -80,20 +80,20 @@ export class CdnStack {
     // })
 
     // TODO: make this configurable
-    this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
-      endPoints: [cloudfront.Endpoint.fromKinesisStream(logStream)],
-      fields: [
-        'timestamp',
-        'c-ip',
-        'cs-method',
-        'cs-uri-stem',
-        'cs-uri-query',
-        'cs-referer',
-        'cs-user-agent',
-        'sc-status',
-      ],
-      samplingRate: 100, // Adjust the sampling rate as needed
-    })
+    // this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
+    //   endPoints: [cloudfront.Endpoint.fromKinesisStream(logStream)],
+    //   fields: [
+    //     'timestamp',
+    //     'c-ip',
+    //     'cs-method',
+    //     'cs-uri-stem',
+    //     'cs-uri-query',
+    //     'cs-referer',
+    //     'cs-user-agent',
+    //     'sc-status',
+    //   ],
+    //   samplingRate: 100, // Adjust the sampling rate as needed
+    // })
 
     // the actual CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
@@ -125,7 +125,7 @@ export class CdnStack {
         cachedMethods: this.cachedMethods(),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: this.cdnCachePolicy,
-        realtimeLogConfig: this.realtimeLogConfig,
+        // realtimeLogConfig: this.realtimeLogConfig,
       },
 
       additionalBehaviors: this.additionalBehaviors(scope, props),
@@ -233,7 +233,7 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
-    return config.api?.deploy
+    return config.cloud.api?.deploy
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
