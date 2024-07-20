@@ -38,10 +38,10 @@
     "meilisearch": "^0.41.0"
   },
   "dependencies": {
-    "@vueform/multiselect": "^2.6.8",
-    "vite": "^5.3.4"
+    "@vueform/multiselect": "^2.6.8"
   },
   "devDependencies": {
+    "vite": "^5.3.4",
     "@stacksjs/development": "workspace:*"
   }
 }

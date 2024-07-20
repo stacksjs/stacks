@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { path } from '@stacksjs/path'
+import { resourcesPath } from '@stacksjs/path'
 import { config } from '@vue-email/compiler'
 import type { I18n } from 'vue-email'
 
@@ -8,11 +8,13 @@ export interface RenderOptions {
   i18n?: I18n
 }
 
-const email = config(path.resourcesPath('emails'), {
-  verbose: !!process.env.DEBUG,
-  // options: {
-  //   baseUrl: 'https://APP_URL/',
-  // },
-})
+export const template = async (path: string, options?: RenderOptions) => {
+  const email = config(resourcesPath('emails'), {
+    verbose: !!process.env.DEBUG,
+    // options: {
+    //   baseUrl: 'https://APP_URL/',
+    // },
+  })
 
-export const template = async (path: string, options?: RenderOptions) => await email.render(path, options)
+  return await email.render(path, options)
+}
