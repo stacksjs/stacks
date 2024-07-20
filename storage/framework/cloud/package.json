@@ -91,7 +91,7 @@
     "@stacksjs/validation": "workspace:*",
     "aws-cdk": "^2.149.0",
     "aws-cdk-lib": "^2.149.0",
-    "aws4fetch": "^1.0.18",
+    "aws4fetch": "^1.0.19",
     "constructs": "^10.3.0"
   },
   "devDependencies": {
