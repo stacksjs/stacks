@@ -1,7 +1,7 @@
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
 # TODO: use alpine layer
-FROM oven/bun:1 as base
+FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
 # Install curl - I wonder if there is a better way to do this, because it is only needed for the healthcheck — is wget installed by default?
