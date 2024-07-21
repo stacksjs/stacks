@@ -4,6 +4,7 @@
   "version": "0.58.56",
   "scripts": {
     "dev": "./dev local",
+    "dev:container": "docker run -d -p 3000:3000 stacks",
     "build": "bun build.ts"
   },
   "dependencies": {

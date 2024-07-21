@@ -51,6 +51,9 @@ COPY --from=prerelease /usr/src/app/index.ts ./index.ts
 COPY --from=prerelease /usr/src/app/tsconfig.json ./tsconfig.json
 COPY --from=prerelease /usr/src/app/package.json ./package.json
 
+# Add volume for logs
+VOLUME ["/mnt/efs"]
+
 # run the app
 USER bun
 EXPOSE 3000/tcp

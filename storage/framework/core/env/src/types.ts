@@ -44,8 +44,8 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
       if (typeof value === 'object') {
         const schemaNameSymbol = Symbol.for('schema_name')
         const schemaName = value[schemaNameSymbol]
-        log.debug('value', value)
-        log.debug('schemaName', schemaName)
+        // log.debug('value', value)
+        // log.debug('schemaName', schemaName)
 
         if (schemaName === 'vine.string') {
           validatorType = schema.string()

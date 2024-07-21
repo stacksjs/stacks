@@ -6,6 +6,7 @@ import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { logsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 import { consola, createConsola } from 'consola'
 
 export async function logLevel() {
@@ -105,7 +106,9 @@ export const log: Log = {
       return await writeToLogFile(`DEBUG: ${arg}`)
 
     logger.debug(arg)
-    await writeToLogFile(`DEBUG: ${arg}`)
+
+    if (isString(arg)) await writeToLogFile(`DEBUG: ${arg}`)
+    else await writeToLogFile(`DEBUG: ${JSON.stringify(arg)}`)
   },
 
   async start(...arg: any) {

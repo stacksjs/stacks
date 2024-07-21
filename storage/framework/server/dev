@@ -13,12 +13,12 @@ DOCS_DIR="$PROJECT_ROOT/docs"
 ROUTES_DIR="$PROJECT_ROOT/routes"
 
 if [ "$1" = "local" ]; then
-  APP_ENV="local"
+  ENV="local"
 else
-  APP_ENV="remote" # Default to remote because we are using EFS
+  ENV="remote" # Default to remote because we are using EFS
 fi
 
-if [ "$APP_ENV" != "local" ]; then
+if [ "$ENV" != "local" ]; then
   STORAGE_DIR="/mnt/efs" # Use EFS mount for non-local environments
 else # Local environment
   STORAGE_DIR="$PROJECT_ROOT/storage"

@@ -43,6 +43,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "consola": "^3.2.3"
   },
   "devDependencies": {

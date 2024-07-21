@@ -160,7 +160,7 @@ export async function getJumpBoxInstanceId(name?: string) {
     ],
   })
 
-  if (data.Reservations?.[0].Instances?.[0]) return data.Reservations[0].Instances[0].InstanceId
+  if (data.Reservations?.[0]?.Instances?.[0]) return data.Reservations[0].Instances[0].InstanceId
 
   return undefined
 }
@@ -537,7 +537,7 @@ export async function getJumpBoxSecurityGroupName() {
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({ InstanceIds: [jumpBoxId] })
 
-  if (data.Reservations?.[0].Instances?.[0]) {
+  if (data.Reservations?.[0]?.Instances?.[0]) {
     const instance = data.Reservations[0].Instances[0]
     const securityGroups = instance.SecurityGroups
 
@@ -551,7 +551,7 @@ export async function getSecurityGroupFromInstanceId(instanceId: string) {
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({ InstanceIds: [instanceId] })
 
-  if (data.Reservations?.[0].Instances?.[0]) {
+  if (data.Reservations?.[0]?.Instances?.[0]) {
     const instance = data.Reservations[0].Instances[0]
     const securityGroups = instance.SecurityGroups
 
