@@ -130,6 +130,8 @@ export class Cloud extends Stack {
         ...props,
         publicBucket: this.storage.publicBucket,
         privateBucket: this.storage.privateBucket,
+        appBucket: this.storage.publicBucket,
+        docsBucket: this.storage.docsBucket,
         cdn: this.cdn.distribution,
       })
     }

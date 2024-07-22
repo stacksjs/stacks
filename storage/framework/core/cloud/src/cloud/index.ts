@@ -126,7 +126,8 @@ export class Cloud extends Stack {
 
       this.deployment = new DeploymentStack(this, {
         ...props,
-        publicBucket: this.storage.publicBucket,
+        appBucket: this.storage.publicBucket,
+        docsBucket: this.storage.docsBucket,
         privateBucket: this.storage.privateBucket,
         cdn: this.cdn.distribution,
       })
