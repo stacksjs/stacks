@@ -206,16 +206,16 @@ export class SubscriberEmailModel {
       .execute()
 
     let nextCursor = null
-    if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: subscriber_emailsWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page ?? 0,
+        page: options.page,
         total_pages: totalPages,
       },
-      next_cursor: nextCursor ?? null,
+      next_cursor: nextCursor,
     }
   }
 
@@ -226,7 +226,6 @@ export class SubscriberEmailModel {
       .filter((key) => instance.fillable.includes(key))
       .reduce((obj: any, key) => {
         obj[key] = newSubscriberEmail[key]
-
         return obj
       }, {})
 

@@ -152,21 +152,21 @@ function hasRelations(obj: any, key: string): boolean {
 
 export async function seed() {
   // TODO: need to check other databases too
-  const dbPath = path.userDatabasePath('stacks.sqlite')
+  // const dbPath = path.userDatabasePath('stacks.sqlite')
 
-  if (!fs.existsSync(dbPath)) {
-    log.warn('No database found, configuring it...')
-    // first, ensure the database is reset
-    await resetDatabase()
+  // if (!fs.existsSync(dbPath)) {
+  //   log.warn('No database found, configuring it...')
+  //   // first, ensure the database is reset
+  //   await resetDatabase()
 
-    // then, generate the migrations
-    await generateMigrations()
+  //   // then, generate the migrations
+  //   await generateMigrations()
 
-    // finally, migrate the database
-    await runDatabaseMigration()
-  } else {
-    log.debug('Database configured...')
-  }
+  //   // finally, migrate the database
+  //   await runDatabaseMigration()
+  // } else {
+  //   log.debug('Database configured...')
+  // }
 
   // if a custom seeder exists, use it instead
   const customSeederPath = path.userDatabasePath('seeder.ts')

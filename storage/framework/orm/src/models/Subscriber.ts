@@ -206,16 +206,16 @@ export class SubscriberModel {
       .execute()
 
     let nextCursor = null
-    if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: subscribersWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page ?? 0,
+        page: options.page,
         total_pages: totalPages,
       },
-      next_cursor: nextCursor ?? null,
+      next_cursor: nextCursor,
     }
   }
 

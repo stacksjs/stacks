@@ -62,7 +62,7 @@ export function migrate(buddy: CLI) {
         process.exit()
       }
 
-      await outro(`All tables dropped successfully`, {
+      await outro(`All tables dropped successfully & migrated successfully`, {
         startTime: perf,
         useSeconds: true,
       })

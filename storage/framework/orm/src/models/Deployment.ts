@@ -225,16 +225,16 @@ export class DeploymentModel {
       .execute()
 
     let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: deploymentsWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page ?? 0,
+        page: options.page,
         total_pages: totalPages,
       },
-      next_cursor: nextCursor ?? null,
+      next_cursor: nextCursor,
     }
   }
 

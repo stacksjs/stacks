@@ -231,16 +231,16 @@ export class UserModel {
       .execute()
 
     let nextCursor = null
-    if (usersWithExtra.length > (options.limit ?? 10)) nextCursor = usersWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (usersWithExtra.length > (options.limit ?? 10)) nextCursor = usersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: usersWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page ?? 0,
+        page: options.page,
         total_pages: totalPages,
       },
-      next_cursor: nextCursor ?? null,
+      next_cursor: nextCursor,
     }
   }
 

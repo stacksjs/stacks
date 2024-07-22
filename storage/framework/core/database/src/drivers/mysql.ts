@@ -67,20 +67,20 @@ export async function generateMysqlMigration(modelPath: string) {
   // check if any files are in the database folder
   const files = await fs.readdir(path.userMigrationsPath())
 
-  if (files.length === 0) {
-    log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
+  // if (files.length === 0) {
+  //   log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
-    // delete the *.ts files in the database/models folder
-    const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  //   // delete the *.ts files in the database/models folder
+  //   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
-    if (modelFiles.length) {
-      log.debug('No existing model files in framework path...')
+  //   if (modelFiles.length) {
+  //     log.debug('No existing model files in framework path...')
 
-      for (const file of modelFiles) {
-        if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
-      }
-    }
-  }
+  //     for (const file of modelFiles) {
+  //       if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
+  //     }
+  //   }
+  // }
 
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)

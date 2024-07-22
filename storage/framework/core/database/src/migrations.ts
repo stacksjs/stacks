@@ -88,6 +88,7 @@ export async function generateMigrations() {
 
     for (const file of modelFiles) {
       log.debug('Generating migration for:', file)
+
       await generateMigration(file)
     }
 
@@ -99,11 +100,11 @@ export async function generateMigrations() {
 }
 
 export async function generateMigration(modelPath: string) {
-  if (driver === 'sqlite') generateSqliteMigration(modelPath)
+  if (driver === 'sqlite') await generateSqliteMigration(modelPath)
 
-  if (driver === 'mysql') generateMysqlMigration(modelPath)
+  if (driver === 'mysql') await generateMysqlMigration(modelPath)
 
-  if (driver === 'postgres') generatePostgresMigration(modelPath)
+  if (driver === 'postgres') await generatePostgresMigration(modelPath)
 }
 
 export async function getExecutedMigrations() {
