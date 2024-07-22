@@ -10,6 +10,7 @@ export interface StorageStackProps extends NestedCloudProps {
 export class StorageStack {
   publicBucket: s3.Bucket
   privateBucket: s3.Bucket
+  docsBucket: s3.Bucket
   logBucket: s3.Bucket
   bucketPrefix: string
   vault: backup.BackupVault
@@ -27,7 +28,16 @@ export class StorageStack {
       encryption: s3.BucketEncryption.S3_MANAGED,
     })
 
+    this.docsBucket = new s3.Bucket(scope, 'DocsBucket', {
+      bucketName: `${this.bucketPrefix}-docs-${props.timestamp}`,
+      versioned: true,
+      autoDeleteObjects: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+    })
+
     Tags.of(this.publicBucket).add('daily-backup', 'true')
+    Tags.of(this.docsBucket).add('weekly-backup', 'true')
 
     this.privateBucket = new s3.Bucket(scope, 'PrivateBucket', {
       bucketName: `${this.bucketPrefix}-private-${props.timestamp}`,
