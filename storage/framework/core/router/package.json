@@ -37,13 +37,13 @@
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.10.0",
+    "unplugin-vue-router": "^0.10.1",
     "vue-router": "^4.4.0"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "unplugin-vue-router": "^0.10.0",
+    "unplugin-vue-router": "^0.10.1",
     "vue-router": "^4.4.0"
   },
   "devDependencies": {

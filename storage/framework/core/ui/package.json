@@ -52,14 +52,14 @@
     "unocss": "^0.61.5",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.33",
-    "vue-tsc": "^2.0.26"
+    "vue-tsc": "^2.0.28"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.22",
     "@iconify-json/heroicons": "^1.1.22",
     "@iconify-json/heroicons-outline": "^1.1.10",
     "@iconify-json/heroicons-solid": "^1.1.11",
-    "@iconify/json": "^2.2.229",
+    "@iconify/json": "^2.2.230",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -71,7 +71,7 @@
     "unocss-preset-primitives": "0.0.2-beta.1",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.33",
-    "vue-tsc": "^2.0.26"
+    "vue-tsc": "^2.0.28"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
