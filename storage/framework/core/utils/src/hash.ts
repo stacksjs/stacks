@@ -14,12 +14,18 @@ export function originRequestFunctionHash() {
 }
 
 export function websiteSourceHash() {
-  const docsSrc = [p.projectPath('docs'), p.projectPath('config/docs.ts')]
-
   const websiteSrc = [
     p.projectPath('resources/views'),
-    // p.projectPath('config/app.ts'),
   ]
 
-  return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
+  return hashPaths(websiteSrc)
+}
+
+export function docsSourceHash() {
+  const docsSrc = [
+    p.projectPath('docs'),
+    p.projectPath('config/docs.ts')
+  ]
+
+  return hashPaths(docsSrc)
 }

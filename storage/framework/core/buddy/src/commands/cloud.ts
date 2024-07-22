@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront'
 import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
 import {
   addJumpBox,
@@ -9,6 +10,7 @@ import {
   deleteParameterStore,
   deleteStacksBuckets,
   deleteStacksFunctions,
+  getCloudFrontDistributionId,
   getJumpBoxInstanceId,
 } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
@@ -24,6 +26,8 @@ export function cloud(buddy: CLI) {
     remove: 'Removes the Stacks Cloud. In case it fails, try again',
     optimizeCost: 'Removes certain resources that may be re-applied at a later time',
     cleanUp: 'Removes all resources that were retained during the cloud deletion',
+    invalidateCache: 'Invalidates the CloudFront cache',
+    paths: 'The paths to invalidate',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -32,13 +36,15 @@ export function cloud(buddy: CLI) {
     .command('cloud', descriptions.cloud)
     .option('--ssh', descriptions.ssh, { default: false })
     .option('--connect', descriptions.ssh, { default: false })
+    .option('--invalidate-cache', descriptions.invalidateCache, { default: false })
+    .option('--paths [paths]', descriptions.paths)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud` ...', options)
+      const startTime = performance.now()
 
       if (options.ssh || options.connect) {
-        const startTime = performance.now()
         const jumpBoxId = await getJumpBoxInstanceId()
         const result = await runCommand(`aws ssm start-session --target ${jumpBoxId}`, {
           ...options,
@@ -59,7 +65,49 @@ export function cloud(buddy: CLI) {
         process.exit(ExitCode.Success)
       }
 
-      log.info('Not implemented yet. Please use the --ssh (or --connect) flag to connect to the Stacks Cloud.')
+      if (options.invalidateCache) {
+        const { confirm } = await prompts({
+          name: 'confirm',
+          type: 'confirm',
+          message: 'Would you like to invalidate the CDN (CloudFront) cache?',
+        })
+
+        if (!confirm) {
+          await outro('Exited', { startTime, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+
+        log.info('Invalidating the CloudFront cache...')
+
+        const cloudfront = new CloudFrontClient()
+        const distributionId = await getCloudFrontDistributionId()
+
+        const params = {
+          DistributionId: distributionId,
+          InvalidationBatch: {
+            CallerReference: `${Date.now()}`,
+            Paths: {
+              Quantity: 1,
+              Items: [
+                '/*',
+                /* more items */
+              ],
+            },
+          },
+        }
+
+        const command = new CreateInvalidationCommand(params)
+
+        cloudfront.send(command).then(
+          (data) => console.log(data),
+          (err) => console.log(err, err.stack),
+        )
+
+        await outro('Exited', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.org/docs/cloud')
       process.exit(ExitCode.Success)
     })
 
@@ -370,6 +418,61 @@ export function cloud(buddy: CLI) {
         startTime,
         useSeconds: true,
       })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('cloud:invalidate-cache', descriptions.invalidateCache)
+    .option('--paths [paths]', descriptions.paths, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions) => {
+      log.debug('Running `buddy cloud:invalidate-cache` ...', options)
+
+      const startTime = await intro('buddy cloud:invalidate-cache')
+
+      const { confirm } = await prompts({
+        name: 'confirm',
+        type: 'confirm',
+        message: 'Would you like to invalidate the CloudFront cache?',
+      })
+
+      if (!confirm) {
+        await outro('Exited', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      log.info('Invalidating the CloudFront cache...')
+      // const result = await runCommand('aws cloudfront create-invalidation --distribution-id E1U4Z2E9NJW9J --paths "/*"', {
+      //   ...options,
+      //   cwd: p.projectPath(),
+      //   stdin: 'pipe',
+      // })
+
+      if (options.paths) {
+        const result = await runCommand(
+          `aws cloudfront create-invalidation --distribution-id E1U4Z2E9NJW9J --paths ${options.paths}`,
+          {
+            ...options,
+            cwd: p.projectPath(), // TODO: this should be the cloud path
+            stdin: 'pipe',
+          },
+        ) // TODO: this should be the cloud path
+
+        if (result.isErr()) {
+          await outro(
+            'While running the cloud command, there was an issue',
+            { startTime, useSeconds: true },
+            result.error,
+          )
+          process.exit(ExitCode.FatalError)
+        }
+
+        await outro('Exited', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.org/docs/cloud')
       process.exit(ExitCode.Success)
     })
 

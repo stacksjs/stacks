@@ -39,7 +39,7 @@ export class CdnStack {
   cdnCachePolicy: cloudfront.CachePolicy
   apiCachePolicy: cloudfront.CachePolicy | undefined
   vanityUrl: string
-  realtimeLogConfig: cloudfront.RealtimeLogConfig
+  realtimeLogConfig!: cloudfront.RealtimeLogConfig
   props: CdnStackProps
 
   constructor(scope: Construct, props: CdnStackProps) {

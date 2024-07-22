@@ -17,7 +17,7 @@ await route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
 await route.post('/login', 'Actions/LoginAction')
 
 await route.email('/welcome')
-await route.health() // adds an `/api/health` route
+await route.health() // adds a GET `/api/health` route
 
 // await route.group('/some-path', async () => {...})
 // await route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`

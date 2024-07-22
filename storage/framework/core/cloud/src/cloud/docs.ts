@@ -16,7 +16,8 @@ export class DocsStack {
 
   constructor(scope: Construct, props: DocsStackProps) {
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
-    const docsPrefix = config.app.docMode ? '' : config.docs.base
+    const docsPrefix = 'docs'
+    // const docsPrefix = config.app.docMode ? '' : config.docs.base
 
     // this edge function ensures pretty docs urls
     // soon to be reused for our Meema features

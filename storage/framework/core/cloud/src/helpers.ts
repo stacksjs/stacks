@@ -606,6 +606,13 @@ export async function getOrCreateTimestamp(): Promise<string> {
   }
 }
 
+
+// get the CloudFront distribution ID of the current stack
+export async function getCloudFrontDistributionId(): Promise<string> {
+  return await runCommand(`aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${config.app.url}'].Id"`, {
+}
+
+
 // function isProductionEnv(env: string) {
 //   return env === 'production' || env === 'prod'
 // }

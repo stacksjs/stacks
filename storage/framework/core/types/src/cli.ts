@@ -351,6 +351,8 @@ export interface CloudCliOptions extends CliOptions {
   ssh?: boolean
   connect?: boolean
   jumpBox?: boolean
+  invalidateCache?: boolean
+  paths?: string
 }
 export interface CommitOptions extends CliOptions {}
 export interface KeyOptions extends CliOptions {}
