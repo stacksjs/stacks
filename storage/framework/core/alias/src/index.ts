@@ -218,7 +218,7 @@ export const alias: Record<string, string> = {
   '~/config/cloud': p.projectConfigPath('cloud.ts'),
   '~/config/database': p.projectConfigPath('database.ts'),
   '~/config/dns': p.projectConfigPath('dns.ts'),
-  '~/config/docs': p.projectConfigPath('docs.ts'),
+  '~/config/docs': p.docsPath('config.ts'),
   '~/config/email': p.projectConfigPath('email.ts'),
   '~/config/git': p.projectConfigPath('git.ts'),
   '~/config/hashing': p.projectConfigPath('hashing.ts'),
