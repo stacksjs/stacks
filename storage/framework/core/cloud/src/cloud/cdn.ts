@@ -22,6 +22,7 @@ export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate
   logBucket: s3.Bucket
   publicBucket: s3.Bucket
+  docsBucket: s3.Bucket
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
   zone: route53.IHostedZone
@@ -271,7 +272,7 @@ export class CdnStack {
   docsBehaviorOptions(props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     return {
       '/docs': {
-        origin: new origins.S3Origin(props.publicBucket, {
+        origin: new origins.S3Origin(props.docsBucket, {
           originAccessIdentity: this.originAccessIdentity,
           originPath: '/docs',
         }),

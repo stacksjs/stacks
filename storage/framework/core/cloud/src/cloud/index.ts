@@ -113,6 +113,7 @@ export class Cloud extends Stack {
       this.cdn = new CdnStack(this, {
         ...props,
         publicBucket: this.storage.publicBucket,
+        docsBucket: this.storage.docsBucket,
         logBucket: this.storage.logBucket,
         certificate: this.security.certificate,
         firewall: this.security.firewall,
