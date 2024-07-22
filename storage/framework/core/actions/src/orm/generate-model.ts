@@ -733,7 +733,9 @@ async function generateModelString(
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
 
-      const formattedThroughRelation = relation.throughModel.toLowerCase()
+      if (relation.throughModel === undefined) continue
+
+      const formattedThroughRelation = relation?.throughModel?.toLowerCase()
       const throughTableRelation = throughRelation
       const foreignKeyThroughRelation = relation.throughForeignKey || `${formattedThroughRelation}_id`
 

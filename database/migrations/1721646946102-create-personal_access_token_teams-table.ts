@@ -4,6 +4,6 @@ export async function up(db: Database<any>) {
     .createTable('personal_access_token_teams')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('team_id', 'integer')
-    .addColumn('accesstoken_id', 'integer')
+    .addColumn('personal_access_token_id', 'integer')
     .execute()
     }

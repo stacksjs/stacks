@@ -143,8 +143,8 @@ export interface RelationConfig {
   relationModel?: string
   relationTable?: string
   foreignKey: string
-  relationName: string
-  throughModel: string
-  throughForeignKey: string
+  relationName?: string
+  throughModel?: string
+  throughForeignKey?: string
   pivotTable: string
 }

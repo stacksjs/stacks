@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { singular, snakeCase } from '@stacksjs/strings'
+import { plural, singular, snakeCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 import { generateMigrations, resetDatabase, runDatabaseMigration } from './migrations'
@@ -25,8 +25,6 @@ async function seedModel(name: string, model?: Model) {
   const records = []
   const otherRelations = await fetchOtherModelRelations(model)
 
-  log.debug(otherRelations)
-
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
 
@@ -42,6 +40,10 @@ async function seedModel(name: string, model?: Model) {
       for (let j = 0; j < otherRelations.length; j++) {
         const relationElement = otherRelations[j] as RelationConfig
 
+        if (relationElement.relationship === 'belongsToMany') {
+          await seedPivotRelation(relationElement)
+        }
+
         record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
       }
     }
@@ -51,6 +53,47 @@ async function seedModel(name: string, model?: Model) {
 
   // @ts-expect-error todo: we can improve this in the future
   await db.insertInto(tableName).values(records).execute()
+}
+
+async function seedPivotRelation(relation: RelationConfig): Promise<any> {
+  const record: any = {}
+  const record2: any = {}
+  const pivotRecord: any = {}
+
+  const modelInstance = (await import(path.userModelsPath(relation?.model))).default
+  const relationModelInstance = (await import(path.userModelsPath(relation?.relationModel))).default
+
+  if (!relationModelInstance) return 1
+
+  const relationModelTable = relationModelInstance.table
+  const relationTable = relation.table
+  const pivotTable = relation.pivotTable
+  const modelKey = `${singular(relationTable)}_id`
+  const foreignKey = relation.foreignKey
+
+  for (const fieldName in relationModelInstance.attributes) {
+    const formattedFieldName = snakeCase(fieldName)
+    const field = relationModelInstance.attributes[fieldName]
+    // Use the factory function if available, otherwise leave the field undefined
+    record[formattedFieldName] = field?.factory ? field.factory() : undefined
+  }
+
+  for (const fieldName in modelInstance.attributes) {
+    const formattedFieldName = snakeCase(fieldName)
+    const field = modelInstance.attributes[fieldName]
+    // Use the factory function if available, otherwise leave the field undefined
+    record2[formattedFieldName] = field?.factory ? field.factory() : undefined
+  }
+
+  const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
+  const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
+  const relationData = data.insertId || 1
+  const modelData = data2.insertId || 1
+
+  pivotRecord[foreignKey] = relationData
+  pivotRecord[modelKey] = modelData
+
+  if (pivotTable) await db.insertInto(pivotTable).values(pivotRecord).executeTakeFirstOrThrow()
 }
 
 async function seedModelRelation(modelName: string): Promise<BigInt | number> {
@@ -73,9 +116,12 @@ async function seedModelRelation(modelName: string): Promise<BigInt | number> {
   return data.insertId || 1
 }
 
-export async function getRelations(model: Model): Promise<RelationConfig[]> {
+export async function getRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
   const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
+
+  const modelName = getModelName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
@@ -88,18 +134,18 @@ export async function getRelations(model: Model): Promise<RelationConfig[]> {
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = model.name?.toLowerCase()
+        const formattedModelName = modelName?.toLowerCase()
 
         relationships.push({
           relationship: relation,
           model: relationModel,
           table: modelRelation.table,
-          relationModel: model.name,
-          relationTable: model.table,
+          relationModel: modelName,
+          relationTable: tableName,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          relationName: relationInstance.relationName || '',
-          throughModel: relationInstance.through || '',
-          throughForeignKey: relationInstance.throughForeignKey || '',
+          relationName: relationInstance.relationName,
+          throughModel: relationInstance.through,
+          throughForeignKey: relationInstance.throughForeignKey,
           pivotTable: relationInstance?.pivotTable || getPivotTableName(formattedModelName || '', modelRelation.table),
         })
       }
@@ -117,6 +163,7 @@ function getPivotTableName(formattedModelName: string, modelRelationTable: strin
   models.sort()
 
   models[0] = singular(models[0] || '')
+  models[1] = plural(models[1] || '')
 
   // Join the sorted array with an underscore
   const pivotTableName = models.join('_')
@@ -134,7 +181,7 @@ export async function fetchOtherModelRelations(model: Model): Promise<RelationCo
 
     if (model.name === modelFile.default.name) continue
 
-    const relations = await getRelations(modelFile.default)
+    const relations = await getRelations(modelFile.default, modelFileElement)
 
     if (!relations.length) continue
 
