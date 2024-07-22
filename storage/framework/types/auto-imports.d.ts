@@ -301,6 +301,7 @@ declare global {
   const dnsPath: typeof import('../core/path/src/paths')['dnsPath']
   const docsConfig: typeof import('../core/index')['docsConfig']
   const docsPath: typeof import('../core/path/src/paths')['docsPath']
+  const docsSourceHash: typeof import('../core/utils/src/hash')['docsSourceHash']
   const doesExist: typeof import('../core/storage/src/files')['doesExist']
   const doesFolderExist: typeof import('../core/storage/src/folders')['doesFolderExist']
   const doesNotExist: typeof import('../core/storage/src/files')['doesNotExist']
@@ -1084,6 +1085,15 @@ declare global {
   // @ts-ignore
   export type { Component, ComponentPublicInstance, ComputedRef, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { Every } from '../core/types/src/cron-jobs'
+  import('../core/types/src/cron-jobs')
+  // @ts-ignore
+  export type { SocialLinkIcon } from '../core/types/src/docs'
+  import('../core/types/src/docs')
+  // @ts-ignore
+  export type { ExitCode } from '../core/types/src/exit-code'
+  import('../core/types/src/exit-code')
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'
@@ -1323,6 +1333,7 @@ declare module 'vue' {
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/paths')['dnsPath']>
     readonly docsConfig: UnwrapRef<typeof import('../core/index')['docsConfig']>
     readonly docsPath: UnwrapRef<typeof import('../core/path/src/paths')['docsPath']>
+    readonly docsSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['docsSourceHash']>
     readonly doesExist: UnwrapRef<typeof import('../core/storage/src/files')['doesExist']>
     readonly doesFolderExist: UnwrapRef<typeof import('../core/storage/src/folders')['doesFolderExist']>
     readonly doesNotExist: UnwrapRef<typeof import('../core/storage/src/files')['doesNotExist']>
@@ -2287,6 +2298,7 @@ declare module '@vue/runtime-core' {
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/paths')['dnsPath']>
     readonly docsConfig: UnwrapRef<typeof import('../core/index')['docsConfig']>
     readonly docsPath: UnwrapRef<typeof import('../core/path/src/paths')['docsPath']>
+    readonly docsSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['docsSourceHash']>
     readonly doesExist: UnwrapRef<typeof import('../core/storage/src/files')['doesExist']>
     readonly doesFolderExist: UnwrapRef<typeof import('../core/storage/src/folders')['doesFolderExist']>
     readonly doesNotExist: UnwrapRef<typeof import('../core/storage/src/files')['doesNotExist']>

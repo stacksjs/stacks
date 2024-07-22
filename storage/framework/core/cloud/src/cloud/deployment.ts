@@ -46,7 +46,7 @@ export class DeploymentStack {
             assetHashType: AssetHashType.CUSTOM,
           }),
         ],
-        destinationBucket: props.appBucket,
+        destinationBucket: props.docsBucket,
         distribution: props.cdn,
         distributionPaths: ['/docs/*'],
       })
