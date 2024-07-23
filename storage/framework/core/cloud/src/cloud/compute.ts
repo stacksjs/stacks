@@ -6,13 +6,16 @@ import {
   CfnOutput as Output,
   RemovalPolicy,
   aws_ec2 as ec2,
+  aws_ecr as ecr,
   aws_ecs as ecs,
   aws_route53 as route53,
   aws_route53_targets as route53Targets,
   aws_secretsmanager as secretsmanager,
 } from 'aws-cdk-lib'
+import * as ecr_assets from 'aws-cdk-lib/aws-ecr-assets'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import { LogGroup } from 'aws-cdk-lib/aws-logs'
+import * as ecr_deployment from 'cdk-ecr-deployment'
 import type { Construct } from 'constructs'
 import type { EnvKey } from '../../../../env'
 import type { NestedCloudProps } from '../types'
@@ -49,9 +52,24 @@ export class ComputeStack {
       },
     })
 
+    const repository = new ecr.Repository(scope, 'StacksRepository', {
+      repositoryName: 'stacks',
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteImages: true,
+    })
+
+    const assetImage = new ecr_assets.DockerImageAsset(scope, 'DockerImageAsset', {
+      directory: p.frameworkPath('server'),
+    })
+
+    new ecr_deployment.ECRDeployment(scope, 'DeployDockerImage', {
+      src: new ecr_deployment.DockerImageName(assetImage.imageUri),
+      dest: new ecr_deployment.DockerImageName(`${repository.repositoryUri}:latest`),
+    })
+
     const container = this.taskDefinition.addContainer('WebServerContainer', {
       containerName: `${props.appName}-${props.appEnv}-api`,
-      image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
+      image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
       logging: new ecs.AwsLogDriver({
         streamPrefix: `${props.appName}-${props.appEnv}-web-server-logs`,
         logGroup: new LogGroup(scope, 'StacksApiLogs', {
