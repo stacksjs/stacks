@@ -63,25 +63,25 @@ export class DeploymentModel {
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
-  public commitSha: string | undefined
-  public commitMessage: string | undefined
+  public commit_sha: string | undefined
+  public commit_message: string | undefined
   public branch: string | undefined
   public status: string | undefined
-  public executionTime: number | undefined
-  public deployScript: string | undefined
-  public terminalOutput: string | undefined
+  public execution_time: number | undefined
+  public deploy_script: string | undefined
+  public terminal_output: string | undefined
   public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
     this.deployment = deployment
     this.id = deployment?.id
-    this.commitSha = deployment?.commitSha
-    this.commitMessage = deployment?.commitMessage
+    this.commit_sha = deployment?.commit_sha
+    this.commit_message = deployment?.commit_message
     this.branch = deployment?.branch
     this.status = deployment?.status
-    this.executionTime = deployment?.executionTime
-    this.deployScript = deployment?.deployScript
-    this.terminalOutput = deployment?.terminalOutput
+    this.execution_time = deployment?.execution_time
+    this.deploy_script = deployment?.deploy_script
+    this.terminal_output = deployment?.terminal_output
     this.user_id = deployment?.user_id
 
     this.query = db.selectFrom('deployments')

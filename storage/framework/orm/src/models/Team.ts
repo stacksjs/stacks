@@ -68,13 +68,13 @@ export class TeamModel {
   protected hasSelect: boolean
   public id: number | undefined
   public name: string | undefined
-  public companyName: string | undefined
+  public company_name: string | undefined
   public email: string | undefined
-  public billingEmail: string | undefined
+  public billing_email: string | undefined
   public status: string | undefined
   public description: string | undefined
   public path: string | undefined
-  public isPersonal: boolean | undefined
+  public is_personal: boolean | undefined
   public accesstoken_id: number | undefined
   public user_id: number | undefined
 
@@ -82,13 +82,13 @@ export class TeamModel {
     this.team = team
     this.id = team?.id
     this.name = team?.name
-    this.companyName = team?.companyName
+    this.company_name = team?.company_name
     this.email = team?.email
-    this.billingEmail = team?.billingEmail
+    this.billing_email = team?.billing_email
     this.status = team?.status
     this.description = team?.description
     this.path = team?.path
-    this.isPersonal = team?.isPersonal
+    this.is_personal = team?.is_personal
     this.accesstoken_id = team?.accesstoken_id
     this.user_id = team?.user_id
 
@@ -497,6 +497,8 @@ export class TeamModel {
       .execute()
 
     const tableRelationIds = results.map((result) => result.personal_access_token_id)
+
+    if (!tableRelationIds.length) return []
 
     const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
 

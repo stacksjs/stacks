@@ -1085,15 +1085,6 @@ declare global {
   // @ts-ignore
   export type { Component, ComponentPublicInstance, ComputedRef, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, VNode, WritableComputedRef } from 'vue'
   import('vue')
-  // @ts-ignore
-  export type { Every } from '../core/types/src/cron-jobs'
-  import('../core/types/src/cron-jobs')
-  // @ts-ignore
-  export type { SocialLinkIcon } from '../core/types/src/docs'
-  import('../core/types/src/docs')
-  // @ts-ignore
-  export type { ExitCode } from '../core/types/src/exit-code'
-  import('../core/types/src/exit-code')
 }
 // for vue template auto import
 import { UnwrapRef } from 'vue'

@@ -62,7 +62,7 @@ export class AccessTokenModel {
   public id: number | undefined
   public name: string | undefined
   public token: string | undefined
-  public plainTextToken: string | undefined
+  public plain_text_token: string | undefined
   public abilities: string[] | undefined
   public team_id: number | undefined
 
@@ -71,7 +71,7 @@ export class AccessTokenModel {
     this.id = accesstoken?.id
     this.name = accesstoken?.name
     this.token = accesstoken?.token
-    this.plainTextToken = accesstoken?.plainTextToken
+    this.plain_text_token = accesstoken?.plain_text_token
     this.abilities = accesstoken?.abilities
     this.team_id = accesstoken?.team_id
 

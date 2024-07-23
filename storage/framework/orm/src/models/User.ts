@@ -72,7 +72,7 @@ export class UserModel {
   public two_factor_secret: string | undefined
   public name: string | undefined
   public email: string | undefined
-  public jobTitle: string | undefined
+  public job_title: string | undefined
   public password: string | undefined
   public team_id: number | undefined
   public deployment_id: number | undefined
@@ -84,7 +84,7 @@ export class UserModel {
     this.two_factor_secret = user?.two_factor_secret
     this.name = user?.name
     this.email = user?.email
-    this.jobTitle = user?.jobTitle
+    this.job_title = user?.job_title
     this.password = user?.password
     this.team_id = user?.team_id
     this.deployment_id = user?.deployment_id

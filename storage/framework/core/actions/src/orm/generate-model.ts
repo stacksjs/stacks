@@ -2,7 +2,7 @@ import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, pascalCase, plural, singular } from '@stacksjs/strings'
+import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 export interface FieldArrayElement {
@@ -829,6 +829,9 @@ async function generateModelString(
 
           const tableRelationIds = results.map(result => result.${singular(tableRelation)}_id)
 
+          if (! tableRelationIds.length)
+            throw new Error('Relation Error!')
+
           const relationResults = await ${modelRelation}.whereIn('id', tableRelationIds).get()
 
           return relationResults
@@ -869,9 +872,9 @@ async function generateModelString(
 
     fieldString += ` ${attribute.field}: ${entity}\n     `
 
-    declareFields += `public ${attribute.field}: ${entity} | undefined \n   `
+    declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
 
-    constructorFields += `this.${attribute.field} = ${formattedModelName}?.${attribute.field}\n   `
+    constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): ${modelName}Model {
         const instance = new this(null)

@@ -68,7 +68,8 @@ export async function authToken() {
 
     const team = teams[0]
 
-    const accessToken = await AccessToken.where('team_id', team.id).first()
+    const accessTokens = await team.teamAccessTokens()
+    const accessToken = accessTokens[0]
 
     const tokenId = accessToken?.id
 

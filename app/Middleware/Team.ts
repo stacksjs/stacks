@@ -18,7 +18,7 @@ export default new Middleware({
     const teamId = parts[1] as string
     const plainString = parts[2] as string
 
-    const team = await Team.find(Number(teamToken))
+    const team = await Team.find(Number(teamId))
 
     if (!team) {
       throw { message: 'Invalid bearer token', status: 401 }
