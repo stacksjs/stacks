@@ -21,7 +21,7 @@ export function websiteSourceHash() {
 }
 
 export function docsSourceHash() {
-  const docsSrc = [p.projectPath('docs'), p.projectPath('config/docs.ts')]
+  const docsSrc = [p.projectPath('docs')]
 
   return hashPaths(docsSrc)
 }
