@@ -8,11 +8,11 @@ interface MakeOptions {
 }
 
 async function make(password: string, options?: MakeOptions) {
-  if (options?.algorithm === 'argon2') return argon2Encode(password, { type: 'argon2id' })
+  if (options?.algorithm === 'argon2') return await argon2Encode(password, { type: 'argon2id' })
 
-  if (options?.algorithm === 'bcrypt') return bcryptEncode(password)
+  if (options?.algorithm === 'bcrypt') return await bcryptEncode(password)
 
-  if (options?.algorithm === 'base64') return base64Encode(password)
+  if (options?.algorithm === 'base64') return await base64Encode(password)
 
   throw new Error('Unsupported algorithm')
 }
