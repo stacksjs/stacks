@@ -1,4 +1,5 @@
 import { request } from '@stacksjs/router'
+import { verifyHash } from '@stacksjs/security'
 import AccessToken from '../../../orm/src/models/AccessToken'
 import Team from '../../../orm/src/models/Team'
 import User from '../../../orm/src/models/User'
@@ -13,14 +14,16 @@ const authConfig = { username: 'email', password: 'password' }
 let authUser: any = undefined
 
 export async function attempt(credentials: Credentials, remember?: boolean) {
-  const user = await User.where(authConfig.username, credentials[authConfig.username])
-    .where(authConfig.password, credentials[authConfig.password])
-    .first()
+  const user = await User.where(authConfig.username, credentials[authConfig.username]).first()
 
-  if (user) {
-    authUser = user
+  const hashCheck = await verifyHash(credentials[authConfig.password], user?.password, 'bcrypt')
 
-    return true
+  if (hashCheck) {
+    if (user) {
+      authUser = user
+
+      return true
+    }
   }
 
   return false

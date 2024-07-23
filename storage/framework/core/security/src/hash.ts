@@ -20,11 +20,11 @@ async function make(password: string, options?: MakeOptions) {
 type Algorithm = 'bcrypt' | 'base64' | 'argon2'
 
 async function verify(password: string, hash: string, algorithm?: Algorithm) {
-  if (algorithm === 'argon2') return argon2Verify(password, hash)
+  if (algorithm === 'argon2') return await argon2Verify(password, hash)
 
-  if (algorithm === 'bcrypt') return bcryptVerify(password, hash)
+  if (algorithm === 'bcrypt') return await bcryptVerify(password, hash)
 
-  if (algorithm === 'base64') return base64Verify(password, hash)
+  if (algorithm === 'base64') return await base64Verify(password, hash)
 
   throw new Error('Unsupported algorithm')
 }

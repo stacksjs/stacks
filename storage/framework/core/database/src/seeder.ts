@@ -37,9 +37,7 @@ async function seedModel(name: string, model?: Model) {
 
       // Use the factory function if available, otherwise leave the field undefined
       if (formattedFieldName === 'password')
-        record[formattedFieldName] = field?.factory
-          ? await makeHash(field.factory(), { algorithm: 'bcrypt' })
-          : undefined
+        record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
       else record[formattedFieldName] = field?.factory ? field.factory() : undefined
     }
 
@@ -83,7 +81,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
     const field = relationModelInstance.attributes[fieldName]
     // Use the factory function if available, otherwise leave the field undefined
     if (formattedFieldName === 'password')
-      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(), { algorithm: 'bcrypt' }) : undefined
+      record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
     else record[formattedFieldName] = field?.factory ? field.factory() : undefined
   }
 
@@ -92,9 +90,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
     const field = modelInstance.attributes[fieldName]
     // Use the factory function if available, otherwise leave the field undefined
     if (formattedFieldName === 'password')
-      record2[formattedFieldName] = field?.factory
-        ? await makeHash(field.factory(), { algorithm: 'bcrypt' })
-        : undefined
+      record2[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
     else record2[formattedFieldName] = field?.factory ? field.factory() : undefined
   }
 
