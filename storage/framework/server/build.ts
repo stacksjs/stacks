@@ -44,11 +44,12 @@ async function buildServer() {
   }
 
   // TODO: also allow for a custom container name via a config option
-  await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
-    cwd: frameworkPath('server'),
-  })
+  // this currently does not need to be enabled because our CDK deployment handles the docker build process
+  // await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
+  //   cwd: frameworkPath('server'),
+  // })
 
-  log.success('Server built')
+  log.success('Server ready to be built')
 }
 
 async function main() {

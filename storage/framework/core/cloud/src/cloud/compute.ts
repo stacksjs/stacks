@@ -55,7 +55,7 @@ export class ComputeStack {
     const repository = new ecr.Repository(scope, 'StacksRepository', {
       repositoryName: 'stacks',
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteImages: true,
+      emptyOnDelete: true,
     })
 
     const assetImage = new ecr_assets.DockerImageAsset(scope, 'DockerImageAsset', {
