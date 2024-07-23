@@ -58,8 +58,8 @@ const config: UserConfig = {
   ...docs,
 }
 
-export default withPwa(defineConfig(config))
-
 export * from './plugins'
 export * from './scripts/pwa'
 export * from './meta'
+
+export default withPwa(defineConfig(config))

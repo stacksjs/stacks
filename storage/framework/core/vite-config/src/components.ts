@@ -12,7 +12,7 @@ const config = {
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
   publicDir: p.publicPath(),
-  base: '/libs',
+  base: '/libs/',
 
   assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 

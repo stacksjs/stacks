@@ -284,7 +284,7 @@ export class CdnStack {
         realtimeLogConfig: this.realtimeLogConfig,
       },
       '/docs/*': {
-        origin: new origins.S3Origin(props.publicBucket, {
+        origin: new origins.S3Origin(props.docsBucket, {
           originAccessIdentity: this.originAccessIdentity,
           originPath: '/docs',
         }),
