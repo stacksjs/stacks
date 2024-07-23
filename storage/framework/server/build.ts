@@ -29,7 +29,7 @@ async function useCustomOrDefaultServerConfig() {
 }
 
 async function buildServer() {
-  log.info('Building server...')
+  log.info('Preparing server...')
 
   await cleanAndCopy(frameworkPath('core'), frameworkPath('server/core'))
   await cleanAndCopy(projectPath('config'), frameworkPath('server/config'))
