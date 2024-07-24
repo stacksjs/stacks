@@ -67,7 +67,6 @@ export class AccessTokenModel {
   public team_id: number | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
-    this.accesstoken = accesstoken
     this.id = accesstoken?.id
     this.name = accesstoken?.name
     this.token = accesstoken?.token

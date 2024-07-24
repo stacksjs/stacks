@@ -60,7 +60,6 @@ export class SubscriberModel {
   public user_id: number | undefined
 
   constructor(subscriber: Partial<SubscriberType> | null) {
-    this.subscriber = subscriber
     this.id = subscriber?.id
     this.subscribed = subscriber?.subscribed
     this.user_id = subscriber?.user_id

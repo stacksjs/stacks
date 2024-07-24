@@ -73,7 +73,6 @@ export class DeploymentModel {
   public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
-    this.deployment = deployment
     this.id = deployment?.id
     this.commit_sha = deployment?.commit_sha
     this.commit_message = deployment?.commit_message

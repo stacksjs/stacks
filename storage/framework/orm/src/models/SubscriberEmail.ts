@@ -58,7 +58,6 @@ export class SubscriberEmailModel {
   public email: string | undefined
 
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
-    this.subscriberemail = subscriberemail
     this.id = subscriberemail?.id
     this.email = subscriberemail?.email
 

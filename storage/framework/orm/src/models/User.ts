@@ -79,7 +79,6 @@ export class UserModel {
   public post_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
-    this.user = user
     this.id = user?.id
     this.two_factor_secret = user?.two_factor_secret
     this.name = user?.name

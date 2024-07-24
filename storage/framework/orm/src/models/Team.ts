@@ -79,7 +79,6 @@ export class TeamModel {
   public user_id: number | undefined
 
   constructor(team: Partial<TeamType> | null) {
-    this.team = team
     this.id = team?.id
     this.name = team?.name
     this.company_name = team?.company_name

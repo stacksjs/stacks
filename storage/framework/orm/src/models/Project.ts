@@ -64,7 +64,6 @@ export class ProjectModel {
   public status: string | undefined
 
   constructor(project: Partial<ProjectType> | null) {
-    this.project = project
     this.id = project?.id
     this.name = project?.name
     this.description = project?.description

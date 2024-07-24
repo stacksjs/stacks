@@ -58,7 +58,6 @@ export class ReleaseModel {
   public version: string | undefined
 
   constructor(release: Partial<ReleaseType> | null) {
-    this.release = release
     this.id = release?.id
     this.version = release?.version
 

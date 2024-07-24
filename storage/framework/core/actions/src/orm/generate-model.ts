@@ -964,7 +964,6 @@ async function generateModelString(
       protected hasSelect: boolean
       ${declareFields}
       constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
-        this.${formattedModelName} = ${formattedModelName}
         ${constructorFields}
 
         this.query = db.selectFrom('${tableName}')

@@ -63,7 +63,6 @@ export class PostModel {
   public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
-    this.post = post
     this.id = post?.id
     this.title = post?.title
     this.body = post?.body
