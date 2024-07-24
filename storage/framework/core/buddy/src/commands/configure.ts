@@ -62,7 +62,8 @@ async function configureAws(options?: ConfigureOptions) {
   const defaultRegion = 'us-east-1' // we only support `us-east-1` for now
   const defaultOutputFormat = options?.output ?? 'json'
 
-  const command = `aws configure --profile ${options?.profile ?? process.env.AWS_PROFILE}`
+  const profile =  process.env.AWS_PROFILE ?? options?.profile
+  const command = profile ? `aws configure --profile ${profile}` : `aws configure`
   const input = `${awsAccessKeyId}\n${awsSecretAccessKey}\n${defaultRegion}\n${defaultOutputFormat}\n`
 
   const result = await runCommand(command, {

@@ -4,8 +4,10 @@ import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
+import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DeployOptions } from '@stacksjs/types'
+import { $ } from 'bun'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
@@ -35,6 +37,7 @@ export function deploy(buddy: CLI) {
       log.info(`Deploying to ${italic(domain)}`)
 
       await checkIfAwsIsConfigured()
+      await checkIfAwsIsBootstrapped()
 
       options.domain = await configureDomain(domain, options, startTime)
 
@@ -129,4 +132,34 @@ async function checkIfAwsIsConfigured() {
   }
 
   log.success('AWS is configured')
+}
+
+async function checkIfAwsIsBootstrapped() {
+  try {
+    log.info('Ensuring AWS is bootstrapped...')
+    // const toolkitName = 'stacks-toolkit'
+    await runCommand('aws cloudformation describe-stacks --stack-name stacks-toolkit', { silent: true })
+    // await $`aws cloudformation describe-stacks --stack-name stacks-toolkit`.quiet()
+    log.success('AWS is bootstrapped')
+
+    return true
+  } catch (err: any) {
+    log.debug(`Not yet bootstrapped. Failed with code ${err.exitCode}`)
+    log.debug(err.stdout.toString())
+    log.debug(err.stderr.toString())
+
+    log.info('AWS is not bootstrapped yet')
+    log.info('Bootstrapping. This may take a few moments...')
+
+    try {
+      $.cwd(p.frameworkPath('cloud'))
+      const result = await $`bun run bootstrap`
+      console.log(result)
+      return true
+    } catch (error) {
+      log.error('Failed to bootstrap AWS')
+      console.error(error)
+      process.exit(ExitCode.FatalError)
+    }
+  }
 }

@@ -3,7 +3,8 @@ import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-import { slug } from '@stacksjs/strings'
+
+// import { slug } from '@stacksjs/strings'
 
 async function cleanAndCopy(sourcePath: string, targetPath: string) {
   await runCommand(`rm -rf ${targetPath}`, {
