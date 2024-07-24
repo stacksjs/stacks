@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.4"
   },
   "version": "0.62.0"
 }
