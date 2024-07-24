@@ -120,14 +120,17 @@ export async function generateSqliteMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
-async function createTableMigration(modelPath: string): Promise<void> {
+async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
   const tableName = await getTableName(model, modelPath)
 
+  const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
+
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
+
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
@@ -140,24 +143,29 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
+    const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}'`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validation?.rule?.required) {
+    if (fieldOptions.unique || fieldOptions?.required) {
       migrationContent += `, col => col`
       if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions.validation?.rule?.required) migrationContent += `.notNull()`
+      if (fieldOptions?.required) migrationContent += `.notNull()`
       migrationContent += ``
     }
 
     migrationContent += `)\n`
   }
 
+  if (false !== twoFactorEnabled && twoFactorEnabled) {
+    migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
+  }
+
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade').notNull()
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
       ) \n`
     }
   }
@@ -178,7 +186,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  // Assuming fs.writeFileSync is available or use an equivalent method
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
@@ -208,7 +215,6 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    // Assuming fs.writeFileSync is available or use an equivalent method
     Bun.write(migrationFilePath, migrationContent)
 
     log.success(`Created pivot migration: ${migrationFileName}`)
@@ -222,11 +228,14 @@ export async function createAlterTableMigration(modelPath: string) {
   const modelName = getModelName(model, modelPath)
   const tableName = await getTableName(model, modelPath)
   let hasChanged = false
+
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
   const currentFields = model.attributes as Attributes
+
+  // Determine fields to add and remove
 
   const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
 
@@ -237,7 +246,6 @@ export async function createAlterTableMigration(modelPath: string) {
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema.alterTable('${tableName}')\n`
 
   if (fieldsToAdd.length || fieldsToRemove.length) {
     hasChanged = true
@@ -273,6 +281,7 @@ export async function createAlterTableMigration(modelPath: string) {
 
     migrationContent += `)\n\n`
   }
+
   // Remove fields that no longer exist
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
 
@@ -286,8 +295,6 @@ export async function createAlterTableMigration(modelPath: string) {
     migrationContent += reArrangeColumns(model.attributes, tableName)
   }
 
-  migrationContent += `    .execute();\n`
-
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -299,25 +306,25 @@ export async function createAlterTableMigration(modelPath: string) {
 
     log.success(`Created migration: ${italic(migrationFileName)}`)
   }
+}
 
-  function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
-    const fields = arrangeColumns(attributes)
-    let migrationContent = ''
+function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
+  const fields = arrangeColumns(attributes)
+  let migrationContent = ''
 
-    let previousField = ''
-    for (const [fieldName, options] of fields) {
-      const fieldNameFormatted = snakeCase(fieldName)
+  let previousField = ''
+  for (const [fieldName, options] of fields) {
+    const fieldNameFormatted = snakeCase(fieldName)
 
-      if (previousField) {
-        migrationContent += `await sql\`
-          ALTER TABLE ${tableName}
-          MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
-        \`.execute(db)\n\n`
-      }
-
-      previousField = fieldNameFormatted
+    if (previousField) {
+      migrationContent += `await sql\`
+        ALTER TABLE ${tableName}
+        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
+      \`.execute(db)\n\n`
     }
 
-    return migrationContent
+    previousField = fieldNameFormatted
   }
+
+  return migrationContent
 }
