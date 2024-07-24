@@ -16,8 +16,8 @@ export interface PostsTable {
   user_id: number
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface PostResponse {
@@ -59,12 +59,20 @@ export class PostModel {
   public id: number | undefined
   public title: string | undefined
   public body: string | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
   public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
     this.id = post?.id
     this.title = post?.title
     this.body = post?.body
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
     this.user_id = post?.user_id
 
     this.query = db.selectFrom('posts')
@@ -461,6 +469,10 @@ export class PostModel {
       id: this.id,
       title: this.title,
       body: this.body,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {

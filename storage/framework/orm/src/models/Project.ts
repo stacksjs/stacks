@@ -16,8 +16,8 @@ export interface ProjectsTable {
   status: string
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface ProjectResponse {
@@ -62,12 +62,19 @@ export class ProjectModel {
   public url: string | undefined
   public status: string | undefined
 
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
+
   constructor(project: Partial<ProjectType> | null) {
     this.id = project?.id
     this.name = project?.name
     this.description = project?.description
     this.url = project?.url
     this.status = project?.status
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
 
     this.query = db.selectFrom('projects')
     this.hasSelect = false
@@ -471,6 +478,10 @@ export class ProjectModel {
       description: this.description,
       url: this.url,
       status: this.status,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {

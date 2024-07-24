@@ -27,7 +27,6 @@ export class AccessTokenRequest extends Request implements AccessTokenRequestTyp
   public team_id = 0
   public created_at = ''
   public updated_at = ''
-  public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

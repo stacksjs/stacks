@@ -23,6 +23,7 @@ export class SubscriberEmailRequest extends Request implements SubscriberEmailRe
   public email = ''
   public created_at = ''
   public updated_at = ''
+
   public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {

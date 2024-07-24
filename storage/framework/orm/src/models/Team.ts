@@ -25,8 +25,8 @@ export interface TeamsTable {
   user_id: number
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface TeamResponse {
@@ -74,6 +74,9 @@ export class TeamModel {
   public description: string | undefined
   public path: string | undefined
   public is_personal: boolean | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
   public accesstoken_id: number | undefined
   public user_id: number | undefined
 
@@ -87,6 +90,11 @@ export class TeamModel {
     this.description = team?.description
     this.path = team?.path
     this.is_personal = team?.is_personal
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
     this.accesstoken_id = team?.accesstoken_id
     this.user_id = team?.user_id
 
@@ -560,6 +568,10 @@ export class TeamModel {
       description: this.description,
       path: this.path,
       is_personal: this.is_personal,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {

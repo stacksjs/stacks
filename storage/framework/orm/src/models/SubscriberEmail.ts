@@ -13,7 +13,9 @@ export interface SubscriberEmailsTable {
   email: string
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
+
   deleted_at: ColumnType<Date, string | undefined, never>
 }
 
@@ -56,9 +58,20 @@ export class SubscriberEmailModel {
   public id: number | undefined
   public email: string | undefined
 
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
+
+  public deleted_at: Date | undefined
+
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
     this.id = subscriberemail?.id
     this.email = subscriberemail?.email
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
+    this.deleted_at = user?.deleted_at
 
     this.query = db.selectFrom('subscriber_emails')
     this.hasSelect = false
@@ -438,6 +451,12 @@ export class SubscriberEmailModel {
     const output: Partial<SubscriberEmailType> = {
       id: this.id,
       email: this.email,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
+
+      deleted_at: this.deleted_at,
     }
 
     this.hidden.forEach((attr) => {

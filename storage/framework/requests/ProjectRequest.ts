@@ -26,7 +26,6 @@ export class ProjectRequest extends Request implements ProjectRequestType {
   public status = ''
   public created_at = ''
   public updated_at = ''
-  public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

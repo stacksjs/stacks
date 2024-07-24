@@ -13,8 +13,8 @@ export interface ReleasesTable {
   version: string
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface ReleaseResponse {
@@ -56,9 +56,16 @@ export class ReleaseModel {
   public id: number | undefined
   public version: string | undefined
 
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
+
   constructor(release: Partial<ReleaseType> | null) {
     this.id = release?.id
     this.version = release?.version
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
 
     this.query = db.selectFrom('releases')
     this.hasSelect = false
@@ -435,6 +442,10 @@ export class ReleaseModel {
     const output: Partial<ReleaseType> = {
       id: this.id,
       version: this.version,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {

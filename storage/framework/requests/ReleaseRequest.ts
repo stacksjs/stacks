@@ -23,7 +23,6 @@ export class ReleaseRequest extends Request implements ReleaseRequestType {
   public version = ''
   public created_at = ''
   public updated_at = ''
-  public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

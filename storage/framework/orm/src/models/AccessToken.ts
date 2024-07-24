@@ -18,8 +18,8 @@ export interface PersonalAccessTokensTable {
   team_id: number
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface AccessTokenResponse {
@@ -63,6 +63,9 @@ export class AccessTokenModel {
   public token: string | undefined
   public plain_text_token: string | undefined
   public abilities: string[] | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
   public team_id: number | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
@@ -71,6 +74,11 @@ export class AccessTokenModel {
     this.token = accesstoken?.token
     this.plain_text_token = accesstoken?.plain_text_token
     this.abilities = accesstoken?.abilities
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
     this.team_id = accesstoken?.team_id
 
     this.query = db.selectFrom('personal_access_tokens')
@@ -486,6 +494,10 @@ export class AccessTokenModel {
       token: this.token,
       plain_text_token: this.plain_text_token,
       abilities: this.abilities,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {

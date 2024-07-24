@@ -136,6 +136,9 @@ async function writeModelRequest() {
     const model = (await import(modeFileElement)).default as Model
     const modelName = getModelName(model, modeFileElement)
 
+    const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+    const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
+
     const attributes = await extractFields(model, modeFileElement)
 
     fieldString += ` id?: number\n`
@@ -179,10 +182,17 @@ async function writeModelRequest() {
       keyCounterForeign++
     }
 
-    fieldStringInt += `public created_at = ''
-      public updated_at = ''
-      public deleted_at = ''
+    if (useTimestamps) {
+      fieldStringInt += `public created_at = ''
+        public updated_at = ''
       `
+    }
+
+    if (useSoftDeletes) {
+      fieldStringInt += `
+        public deleted_at = ''
+      `
+    }
 
     fieldString += `created_at?: string
       updated_at?: string
@@ -720,6 +730,9 @@ async function generateModelString(
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
   }
 
+  const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+  const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
+
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
@@ -896,6 +909,37 @@ async function generateModelString(
       } \n\n`
   }
 
+  if (useTimestamps) {
+    declareFields += `
+      public created_at: Date | undefined
+      public updated_at: Date | undefined
+    `
+
+    constructorFields += `
+      this.created_at = user?.created_at\n
+      this.updated_at = user?.updated_at\n
+    `
+
+    jsonFields += `
+      created_at: this.created_at,\n
+      updated_at: this.updated_at,\n
+    `
+  }
+
+  if (useSoftDeletes) {
+    declareFields += `
+      public deleted_at: Date | undefined
+    `
+
+    constructorFields += `
+      this.deleted_at = user?.deleted_at\n
+    `
+
+    jsonFields += `
+      deleted_at: this.deleted_at,\n
+    `
+  }
+
   jsonFields += '}'
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelName)
@@ -910,6 +954,19 @@ async function generateModelString(
 
   if (useTwoFactor) {
     fieldString += `two_factor_secret: string \n`
+  }
+
+  if (useTimestamps) {
+    fieldString += `
+      created_at: ColumnType<Date, string | undefined, never>\n
+      updated_at: ColumnType<Date, string | undefined, never>
+    `
+  }
+
+  if (useSoftDeletes) {
+    fieldString += `
+      deleted_at: ColumnType<Date, string | undefined, never>\n
+    `
   }
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
@@ -928,9 +985,6 @@ async function generateModelString(
     export interface ${formattedTableName}Table {
       id: Generated<number>
      ${fieldString}
-      created_at: ColumnType<Date, string | undefined, never>
-      updated_at: ColumnType<Date, string | undefined, never>
-      deleted_at: ColumnType<Date, string | undefined, never>
     }
 
     interface ${modelName}Response {

@@ -30,7 +30,6 @@ export class DeploymentRequest extends Request implements DeploymentRequestType 
   public user_id = 0
   public created_at = ''
   public updated_at = ''
-  public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

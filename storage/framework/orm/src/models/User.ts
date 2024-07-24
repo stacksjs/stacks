@@ -27,7 +27,9 @@ export interface UsersTable {
   two_factor_secret: string
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
+
   deleted_at: ColumnType<Date, string | undefined, never>
 }
 
@@ -73,6 +75,11 @@ export class UserModel {
   public email: string | undefined
   public job_title: string | undefined
   public password: string | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
+
+  public deleted_at: Date | undefined
   public team_id: number | undefined
   public deployment_id: number | undefined
   public post_id: number | undefined
@@ -84,6 +91,13 @@ export class UserModel {
     this.email = user?.email
     this.job_title = user?.job_title
     this.password = user?.password
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
+    this.deleted_at = user?.deleted_at
+
     this.team_id = user?.team_id
     this.deployment_id = user?.deployment_id
     this.post_id = user?.post_id
@@ -532,6 +546,12 @@ export class UserModel {
       email: this.email,
       job_title: this.job_title,
       password: this.password,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
+
+      deleted_at: this.deleted_at,
     }
 
     this.hidden.forEach((attr) => {

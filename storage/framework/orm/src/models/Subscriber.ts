@@ -14,8 +14,8 @@ export interface SubscribersTable {
   user_id: number
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface SubscriberResponse {
@@ -56,11 +56,19 @@ export class SubscriberModel {
   protected hasSelect: boolean
   public id: number | undefined
   public subscribed: boolean | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
   public user_id: number | undefined
 
   constructor(subscriber: Partial<SubscriberType> | null) {
     this.id = subscriber?.id
     this.subscribed = subscriber?.subscribed
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
     this.user_id = subscriber?.user_id
 
     this.query = db.selectFrom('subscribers')
@@ -438,6 +446,10 @@ export class SubscriberModel {
     const output: Partial<SubscriberType> = {
       id: this.id,
       subscribed: this.subscribed,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {

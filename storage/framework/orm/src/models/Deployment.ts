@@ -21,8 +21,8 @@ export interface DeploymentsTable {
   user_id: number
 
   created_at: ColumnType<Date, string | undefined, never>
+
   updated_at: ColumnType<Date, string | undefined, never>
-  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 interface DeploymentResponse {
@@ -69,6 +69,9 @@ export class DeploymentModel {
   public execution_time: number | undefined
   public deploy_script: string | undefined
   public terminal_output: string | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
   public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
@@ -80,6 +83,11 @@ export class DeploymentModel {
     this.execution_time = deployment?.execution_time
     this.deploy_script = deployment?.deploy_script
     this.terminal_output = deployment?.terminal_output
+
+    this.created_at = user?.created_at
+
+    this.updated_at = user?.updated_at
+
     this.user_id = deployment?.user_id
 
     this.query = db.selectFrom('deployments')
@@ -521,6 +529,10 @@ export class DeploymentModel {
       execution_time: this.execution_time,
       deploy_script: this.deploy_script,
       terminal_output: this.terminal_output,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
     }
 
     this.hidden.forEach((attr) => {
