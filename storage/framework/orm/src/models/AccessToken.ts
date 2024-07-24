@@ -54,7 +54,6 @@ interface QueryOptions {
 }
 
 export class AccessTokenModel {
-  private accesstoken: Partial<AccessTokenType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -481,7 +480,13 @@ export class AccessTokenModel {
   }
 
   toJSON() {
-    const output: Partial<AccessTokenType> = { ...this.accesstoken }
+    const output: Partial<AccessTokenType> = {
+      id: this.id,
+      name: this.name,
+      token: this.token,
+      plain_text_token: this.plain_text_token,
+      abilities: this.abilities,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<AccessTokenType>]
@@ -500,7 +505,6 @@ export class AccessTokenModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.accesstoken[hiddenAttribute]
     }
 
     return model

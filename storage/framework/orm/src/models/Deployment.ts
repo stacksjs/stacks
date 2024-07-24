@@ -57,7 +57,6 @@ interface QueryOptions {
 }
 
 export class DeploymentModel {
-  private deployment: Partial<DeploymentType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -513,7 +512,16 @@ export class DeploymentModel {
   }
 
   toJSON() {
-    const output: Partial<DeploymentType> = { ...this.deployment }
+    const output: Partial<DeploymentType> = {
+      id: this.id,
+      commit_sha: this.commit_sha,
+      commit_message: this.commit_message,
+      branch: this.branch,
+      status: this.status,
+      execution_time: this.execution_time,
+      deploy_script: this.deploy_script,
+      terminal_output: this.terminal_output,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<DeploymentType>]
@@ -532,7 +540,6 @@ export class DeploymentModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.deployment[hiddenAttribute]
     }
 
     return model

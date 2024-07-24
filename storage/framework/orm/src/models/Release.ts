@@ -49,7 +49,6 @@ interface QueryOptions {
 }
 
 export class ReleaseModel {
-  private release: Partial<ReleaseType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -433,7 +432,10 @@ export class ReleaseModel {
   }
 
   toJSON() {
-    const output: Partial<ReleaseType> = { ...this.release }
+    const output: Partial<ReleaseType> = {
+      id: this.id,
+      version: this.version,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<ReleaseType>]
@@ -452,7 +454,6 @@ export class ReleaseModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.release[hiddenAttribute]
     }
 
     return model

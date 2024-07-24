@@ -165,7 +165,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     return await noCache(response)
   }
 
-  if (foundRoute?.method !== req.method)
+  if (foundRoute?.method !== req.method) {
     return new Response('Method not allowed', {
       status: 405,
       headers: {
@@ -173,6 +173,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         'Access-Control-Allow-Headers': '*',
       },
     })
+  }
 
   // Check if it's a path to an HTML file
   if (isString(foundCallback) && extname(foundCallback) === '.html') {
@@ -269,7 +270,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
   }
 
-  if (isObject(foundCallback))
+  if (isObject(foundCallback)) {
+    console.log(foundCallback)
     return await new Response(JSON.stringify(foundCallback), {
       headers: {
         'Content-Type': 'json',
@@ -278,6 +280,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       },
       status: 200,
     })
+  }
 
   // If no known type matched, return a generic error.
   return await new Response('Unknown callback type.', {

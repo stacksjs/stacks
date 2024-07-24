@@ -52,7 +52,6 @@ interface QueryOptions {
 }
 
 export class PostModel {
-  private post: Partial<PostType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -458,7 +457,11 @@ export class PostModel {
   }
 
   toJSON() {
-    const output: Partial<PostType> = { ...this.post }
+    const output: Partial<PostType> = {
+      id: this.id,
+      title: this.title,
+      body: this.body,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<PostType>]
@@ -477,7 +480,6 @@ export class PostModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.post[hiddenAttribute]
     }
 
     return model

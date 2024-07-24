@@ -52,7 +52,6 @@ interface QueryOptions {
 }
 
 export class ProjectModel {
-  private project: Partial<ProjectType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -466,7 +465,13 @@ export class ProjectModel {
   }
 
   toJSON() {
-    const output: Partial<ProjectType> = { ...this.project }
+    const output: Partial<ProjectType> = {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      url: this.url,
+      status: this.status,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<ProjectType>]
@@ -485,7 +490,6 @@ export class ProjectModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.project[hiddenAttribute]
     }
 
     return model

@@ -61,7 +61,6 @@ interface QueryOptions {
 }
 
 export class TeamModel {
-  private team: Partial<TeamType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -551,7 +550,17 @@ export class TeamModel {
   }
 
   toJSON() {
-    const output: Partial<TeamType> = { ...this.team }
+    const output: Partial<TeamType> = {
+      id: this.id,
+      name: this.name,
+      company_name: this.company_name,
+      email: this.email,
+      billing_email: this.billing_email,
+      status: this.status,
+      description: this.description,
+      path: this.path,
+      is_personal: this.is_personal,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<TeamType>]
@@ -570,7 +579,6 @@ export class TeamModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.team[hiddenAttribute]
     }
 
     return model

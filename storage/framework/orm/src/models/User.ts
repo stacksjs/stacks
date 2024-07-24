@@ -63,7 +63,6 @@ interface QueryOptions {
 }
 
 export class UserModel {
-  private user: Partial<UserType> | null
   private hidden = ['password']
   private fillable = []
   protected query: any
@@ -527,7 +526,13 @@ export class UserModel {
   }
 
   toJSON() {
-    const output: Partial<UserType> = { ...this.user }
+    const output: Partial<UserType> = {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      job_title: this.job_title,
+      password: this.password,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<UserType>]
@@ -546,7 +551,6 @@ export class UserModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.user[hiddenAttribute]
     }
 
     return model

@@ -706,6 +706,7 @@ async function generateModelString(
 
   let fieldString = ''
   let constructorFields = ''
+  let jsonFields = '{\n'
   let declareFields = ''
   let whereStatements = ''
   let whereFunctionStatements = ''
@@ -867,6 +868,7 @@ async function generateModelString(
     `
   }
 
+  jsonFields += `\nid: this.id,\n`
   for (const attribute of attributes) {
     const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
@@ -875,6 +877,7 @@ async function generateModelString(
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
 
     constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
+    jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): ${modelName}Model {
         const instance = new this(null)
@@ -892,6 +895,8 @@ async function generateModelString(
         return results.map(modelItem => new ${modelName}Model(modelItem))
       } \n\n`
   }
+
+  jsonFields += '}'
 
   const otherModelRelations = await fetchOtherModelRelations(model, modelName)
 
@@ -957,7 +962,6 @@ async function generateModelString(
     }
 
     export class ${modelName}Model {
-      private ${formattedModelName}: Partial<${modelName}Type> | null
       private hidden = ${hidden}
       private fillable = ${fillable}
       protected query: any
@@ -1365,7 +1369,7 @@ async function generateModelString(
       }
 
       toJSON() {
-        const output: Partial<${modelName}Type> = { ...this.${formattedModelName} }
+        const output: Partial<${modelName}Type> = ${jsonFields}
 
         this.hidden.forEach((attr) => {
           if (attr in output)
@@ -1385,7 +1389,6 @@ async function generateModelString(
 
         for (const hiddenAttribute of this.hidden) {
           delete model[hiddenAttribute]
-           delete model.${formattedModelName}[hiddenAttribute]
         }
 
         return model

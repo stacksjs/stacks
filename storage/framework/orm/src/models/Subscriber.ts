@@ -50,7 +50,6 @@ interface QueryOptions {
 }
 
 export class SubscriberModel {
-  private subscriber: Partial<SubscriberType> | null
   private hidden = []
   private fillable = []
   protected query: any
@@ -436,7 +435,10 @@ export class SubscriberModel {
   }
 
   toJSON() {
-    const output: Partial<SubscriberType> = { ...this.subscriber }
+    const output: Partial<SubscriberType> = {
+      id: this.id,
+      subscribed: this.subscribed,
+    }
 
     this.hidden.forEach((attr) => {
       if (attr in output) delete output[attr as keyof Partial<SubscriberType>]
@@ -455,7 +457,6 @@ export class SubscriberModel {
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
-      delete model.subscriber[hiddenAttribute]
     }
 
     return model
