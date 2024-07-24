@@ -105,7 +105,7 @@ export class UserModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new UserModel(model))
   }
 
   // Method to find a User by ID
@@ -355,7 +355,7 @@ export class UserModel {
       return undefined
     }
 
-    return new UserModel(model)
+    return this.parseResult(new UserModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -488,6 +488,8 @@ export class UserModel {
 
     const tableRelationIds = results.map((result) => result.team_id)
 
+    if (!tableRelationIds.length) throw new Error('Relation Error!')
+
     const relationResults = await Team.whereIn('id', tableRelationIds).get()
 
     return relationResults
@@ -537,7 +539,12 @@ export class UserModel {
     return output as User
   }
 
-  parseResult(model: any): UserModel {
+  parseResult(model: UserModel): UserModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.user[hiddenAttribute]

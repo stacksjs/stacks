@@ -77,7 +77,7 @@ export class ReleaseModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new ReleaseModel(model))
   }
 
   // Method to find a Release by ID
@@ -303,7 +303,7 @@ export class ReleaseModel {
       return undefined
     }
 
-    return new ReleaseModel(model)
+    return this.parseResult(new ReleaseModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -445,7 +445,12 @@ export class ReleaseModel {
     return output as Release
   }
 
-  parseResult(model: any): ReleaseModel {
+  parseResult(model: ReleaseModel): ReleaseModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.release[hiddenAttribute]

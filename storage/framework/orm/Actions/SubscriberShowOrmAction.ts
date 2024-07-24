@@ -9,6 +9,6 @@ export default new Action({
   async handle(request: SubscriberRequestType) {
     const id = await request.getParam('id')
 
-    return Subscriber.findOrFail(Number(id))
+    return await Subscriber.findOrFail(Number(id))
   },
 })

@@ -90,7 +90,7 @@ export class AccessTokenModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new AccessTokenModel(model))
   }
 
   // Method to find a AccessToken by ID
@@ -341,7 +341,7 @@ export class AccessTokenModel {
       return undefined
     }
 
-    return new AccessTokenModel(model)
+    return this.parseResult(new AccessTokenModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -493,7 +493,12 @@ export class AccessTokenModel {
     return output as AccessToken
   }
 
-  parseResult(model: any): AccessTokenModel {
+  parseResult(model: AccessTokenModel): AccessTokenModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.accesstoken[hiddenAttribute]

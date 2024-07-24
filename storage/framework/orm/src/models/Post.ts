@@ -84,7 +84,7 @@ export class PostModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new PostModel(model))
   }
 
   // Method to find a Post by ID
@@ -318,7 +318,7 @@ export class PostModel {
       return undefined
     }
 
-    return new PostModel(model)
+    return this.parseResult(new PostModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -470,7 +470,12 @@ export class PostModel {
     return output as Post
   }
 
-  parseResult(model: any): PostModel {
+  parseResult(model: PostModel): PostModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.post[hiddenAttribute]

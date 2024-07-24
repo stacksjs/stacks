@@ -107,7 +107,7 @@ export class TeamModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new TeamModel(model))
   }
 
   // Method to find a Team by ID
@@ -389,7 +389,7 @@ export class TeamModel {
       return undefined
     }
 
-    return new TeamModel(model)
+    return this.parseResult(new TeamModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -498,7 +498,7 @@ export class TeamModel {
 
     const tableRelationIds = results.map((result) => result.personal_access_token_id)
 
-    if (!tableRelationIds.length) return []
+    if (!tableRelationIds.length) throw new Error('Relation Error!')
 
     const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
 
@@ -511,6 +511,8 @@ export class TeamModel {
     const results = await db.selectFrom('team_users').where('team_id', '=', this.id).selectAll().execute()
 
     const tableRelationIds = results.map((result) => result.user_id)
+
+    if (!tableRelationIds.length) throw new Error('Relation Error!')
 
     const relationResults = await User.whereIn('id', tableRelationIds).get()
 
@@ -561,7 +563,12 @@ export class TeamModel {
     return output as Team
   }
 
-  parseResult(model: any): TeamModel {
+  parseResult(model: TeamModel): TeamModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.team[hiddenAttribute]

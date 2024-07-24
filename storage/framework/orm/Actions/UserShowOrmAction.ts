@@ -9,6 +9,6 @@ export default new Action({
   async handle(request: UserRequestType) {
     const id = await request.getParam('id')
 
-    return User.findOrFail(Number(id))
+    return await User.findOrFail(Number(id))
   },
 })

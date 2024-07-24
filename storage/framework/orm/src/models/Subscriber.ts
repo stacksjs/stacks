@@ -80,7 +80,7 @@ export class SubscriberModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new SubscriberModel(model))
   }
 
   // Method to find a Subscriber by ID
@@ -306,7 +306,7 @@ export class SubscriberModel {
       return undefined
     }
 
-    return new SubscriberModel(model)
+    return this.parseResult(new SubscriberModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -448,7 +448,12 @@ export class SubscriberModel {
     return output as Subscriber
   }
 
-  parseResult(model: any): SubscriberModel {
+  parseResult(model: SubscriberModel): SubscriberModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.subscriber[hiddenAttribute]

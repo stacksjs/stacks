@@ -9,6 +9,6 @@ export default new Action({
   async handle(request: ReleaseRequestType) {
     const id = await request.getParam('id')
 
-    return Release.findOrFail(Number(id))
+    return await Release.findOrFail(Number(id))
   },
 })

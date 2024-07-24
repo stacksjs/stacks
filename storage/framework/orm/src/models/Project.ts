@@ -86,7 +86,7 @@ export class ProjectModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new ProjectModel(model))
   }
 
   // Method to find a Project by ID
@@ -336,7 +336,7 @@ export class ProjectModel {
       return undefined
     }
 
-    return new ProjectModel(model)
+    return this.parseResult(new ProjectModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -478,7 +478,12 @@ export class ProjectModel {
     return output as Project
   }
 
-  parseResult(model: any): ProjectModel {
+  parseResult(model: ProjectModel): ProjectModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.project[hiddenAttribute]

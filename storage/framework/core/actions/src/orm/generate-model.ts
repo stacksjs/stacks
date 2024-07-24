@@ -274,7 +274,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
     handleString += `async handle(request: ${modelName}RequestType) {
         const id = await request.getParam('id')
 
-        return ${modelName}.findOrFail(Number(id))
+        return await ${modelName}.findOrFail(Number(id))
       },`
 
     method = 'GET'
@@ -985,7 +985,7 @@ async function generateModelString(
         if (!model)
           return undefined
 
-        return this.parseResult(this)
+        return this.parseResult(new ${modelName}Model(model))
       }
 
       // Method to find a ${modelName} by ID
@@ -1219,8 +1219,8 @@ async function generateModelString(
         if (! model) {
           return undefined
         }
-
-        return new ${modelName}Model(model)
+        
+        return this.parseResult(new ${modelName}Model(model))
       }
 
       async exists(): Promise<boolean> {
@@ -1378,7 +1378,12 @@ async function generateModelString(
         return output as ${modelName}
       }
 
-      parseResult(model: any): ${modelName}Model {
+      parseResult(model: ${modelName}Model): ${modelName}Model {
+        delete model['query']
+        delete model['fillable']
+        delete model['two_factor_secret']
+        delete model['hasSelect']
+
         for (const hiddenAttribute of this.hidden) {
           delete model[hiddenAttribute]
            delete model.${formattedModelName}[hiddenAttribute]

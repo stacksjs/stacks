@@ -99,7 +99,7 @@ export class DeploymentModel {
 
     if (!model) return undefined
 
-    return this.parseResult(this)
+    return this.parseResult(new DeploymentModel(model))
   }
 
   // Method to find a Deployment by ID
@@ -373,7 +373,7 @@ export class DeploymentModel {
       return undefined
     }
 
-    return new DeploymentModel(model)
+    return this.parseResult(new DeploymentModel(model))
   }
 
   async exists(): Promise<boolean> {
@@ -525,7 +525,12 @@ export class DeploymentModel {
     return output as Deployment
   }
 
-  parseResult(model: any): DeploymentModel {
+  parseResult(model: DeploymentModel): DeploymentModel {
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
       delete model.deployment[hiddenAttribute]
