@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import IconButton from './Buttons/IconButton.vue'
-import Dropdown from './Elements/Dropdown.vue'
+// import IconButton from './Buttons/IconButton.vue'
+// import Dropdown from './Elements/Dropdown.vue'
 </script>
 
 <template>
@@ -40,7 +40,7 @@ import Dropdown from './Elements/Dropdown.vue'
             </li>
 
             <li>
-              <Dropdown
+              <!-- <Dropdown
                 label="Library"
                 open
                 :elements="[
@@ -48,7 +48,7 @@ import Dropdown from './Elements/Dropdown.vue'
                   { to: '/', label: 'Functions' },
                   { to: '/', label: 'Composability' },
                   { to: '/', label: 'Publishing' },
-                ]"/>
+                ]"/> -->
             </li>
 
             <li>
@@ -65,9 +65,9 @@ import Dropdown from './Elements/Dropdown.vue'
                 class="-mx-2 mt-2 space-y-1"
               >
                 <li>
-                  <IconButton to="/functions">
+                  <!-- <IconButton to="/functions">
                     Functions
-                  </IconButton>
+                  </IconButton> -->
                 </li>
 
                 <li>

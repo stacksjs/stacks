@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
+
 const props = defineProps<{
   label: string
   open?: boolean
