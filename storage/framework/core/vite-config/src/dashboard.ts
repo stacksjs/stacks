@@ -21,7 +21,21 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['path', 'fs', 'net', 'tls', 'stream', 'node:process', 'constants', 'node:dns/promises', 'node:util'],
+      external: [
+        'path',
+        'fs',
+        'net',
+        'tls',
+        'stream',
+        'node:process',
+        'constants',
+        'node:dns/promises',
+        'node:util',
+        '@stacksjs/cli',
+        'unplugin-icons',
+        '@iconify/utils',
+        '@jsdevtools/ez-spawn',
+      ],
     },
   },
 

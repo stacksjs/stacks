@@ -60,4 +60,16 @@ export default defineConfig({
   ],
 
   safelist: ui.safelist?.split(' ') || [],
+
+  theme: {
+    extend: {
+      colors: {
+        primary: '#1F1FE9',
+        secondary: '#B80C09',
+        success: '#CAFE48',
+        dark: '#1A181B',
+        light: '#F5F3F5',
+      },
+    },
+  },
 })

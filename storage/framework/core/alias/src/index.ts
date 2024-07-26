@@ -66,7 +66,7 @@ export const alias: Record<string, string> = {
   '@stacksjs/objects/*': p.objectsPath('src/*'),
   '@stacksjs/orm': p.ormPath('src/index.ts'),
   '@stacksjs/orm/*': p.ormPath('src/*'),
-  '@stacksjs/path': p.pathPath('src/index.ts'), // 🤦🏼‍♂️
+  '@stacksjs/path': p.pathPath('src/index.ts'), // 🤦
   '@stacksjs/path/*': p.pathPath('src/*'),
   '@stacksjs/push': p.pushPath('src/index.ts'),
   '@stacksjs/push/*': p.pushPath('src/*'),
@@ -167,7 +167,7 @@ export const alias: Record<string, string> = {
   'stacks/objects/*': p.objectsPath('src/*'),
   'stacks/orm': p.ormPath('src/index.ts'),
   'stacks/orm/*': p.ormPath('src/*'),
-  'stacks/path': p.pathPath('src/index.ts'), // 🤦🏼‍♂️
+  'stacks/path': p.pathPath('src/index.ts'), // 🤦
   'stacks/path/*': p.pathPath('src/*'),
   'stacks/push': p.pushPath('src/index.ts'),
   'stacks/push/*': p.pushPath('src/*'),
@@ -219,6 +219,8 @@ export const alias: Record<string, string> = {
   '~/config/database': p.projectConfigPath('database.ts'),
   '~/config/dns': p.projectConfigPath('dns.ts'),
   '~/config/docs': p.docsPath('config.ts'),
+  '~/config/errors': p.projectConfigPath('errors.ts'),
+  '~/config/env': p.projectConfigPath('env.ts'),
   '~/config/email': p.projectConfigPath('email.ts'),
   '~/config/git': p.projectConfigPath('git.ts'),
   '~/config/hashing': p.projectConfigPath('hashing.ts'),

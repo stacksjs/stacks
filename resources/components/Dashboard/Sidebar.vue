@@ -1,3 +1,8 @@
+<script setup lang="ts">
+import IconButton from './Buttons/IconButton.vue'
+import Dropdown from './Elements/Dropdown.vue'
+</script>
+
 <template>
   <div>
     <!-- Static sidebar for desktop -->
@@ -35,6 +40,18 @@
             </li>
 
             <li>
+              <Dropdown
+                label="Library"
+                open
+                :elements="[
+                  { to: '/', label: 'Components' },
+                  { to: '/', label: 'Functions' },
+                  { to: '/', label: 'Composability' },
+                  { to: '/', label: 'Publishing' },
+                ]"/>
+            </li>
+
+            <li>
               <div class="flex justify-between items-center">
                 <div class="text-xs font-semibold leading-6 text-gray-400">
                   Library
@@ -48,13 +65,9 @@
                 class="-mx-2 mt-2 space-y-1"
               >
                 <li>
-                  <RouterLink
-                    to="/functions"
-                    class="sidebar-links group"
-                  >
-                    <div class="i-heroicons-code-bracket text-gray-500 w-5 h-5 dark:text-gray-200 group-hover:text-gray-700 transition duration-150 ease-in-out" />
+                  <IconButton to="/functions">
                     Functions
-                  </RouterLink>
+                  </IconButton>
                 </li>
 
                 <li>
@@ -294,9 +307,5 @@
 <style scoped>
 .sidebar-links {
   @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
-}
-
-.router-link-active, .router-link-exact-active {
-  @apply dark:bg-blue-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600 flex items-center text-sm rounded-md !important
 }
 </style>
