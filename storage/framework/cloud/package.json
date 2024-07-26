@@ -39,7 +39,10 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "bootstrap": "bunx cdk bootstrap",
-    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never"
+    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never",
+    "dev": "./dev local",
+    "dev:container": "docker run -d -p 3000:3000 stacks",
+    "build": "bun build.ts"
   },
   "peerDependencies": {
     "@aws-sdk/client-bedrock": "^3.616.0",
@@ -80,6 +83,7 @@
     "@aws-sdk/client-ses": "^3.616.0",
     "@aws-sdk/client-sesv2": "^3.616.0",
     "@aws-sdk/client-ssm": "^3.616.0",
+    "@stacksjs/queue": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/env": "workspace:*",
@@ -99,5 +103,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "source-map-support": "^0.5.21"
-  }
+  },
+  "workspaces": ["core/*"]
 }

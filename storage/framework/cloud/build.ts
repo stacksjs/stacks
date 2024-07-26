@@ -32,12 +32,12 @@ async function useCustomOrDefaultServerConfig() {
 async function buildServer() {
   log.info('Preparing server...')
 
-  await cleanAndCopy(frameworkPath('core'), frameworkPath('server/core'))
-  await cleanAndCopy(projectPath('config'), frameworkPath('server/config'))
-  await cleanAndCopy(projectPath('routes'), frameworkPath('server/routes'))
-  await cleanAndCopy(projectPath('app'), frameworkPath('server/app'))
-  await cleanAndCopy(projectPath('docs'), frameworkPath('server/docs'))
-  await cleanAndCopy(projectPath('storage'), frameworkPath('server/storage'))
+  await cleanAndCopy(frameworkPath('core'), frameworkPath('cloud/core'))
+  await cleanAndCopy(projectPath('config'), frameworkPath('cloud/config'))
+  await cleanAndCopy(projectPath('routes'), frameworkPath('cloud/routes'))
+  await cleanAndCopy(projectPath('app'), frameworkPath('cloud/app'))
+  await cleanAndCopy(projectPath('docs'), frameworkPath('cloud/docs'))
+  await cleanAndCopy(projectPath('storage'), frameworkPath('cloud/storage'))
 
   if (!app.name) {
     log.error('Please provide a name for your app in your config file')

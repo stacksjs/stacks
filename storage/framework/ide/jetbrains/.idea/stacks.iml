@@ -6,15 +6,15 @@
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/Actions" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/app" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/config" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/docs" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/routes" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/storage" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/Actions" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/app" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/config" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/routes" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/storage" />
       <excludeFolder url="file://$MODULE_DIR$/.stacks" />
       <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/cdk.out" />
-      <excludeFolder url="file://$MODULE_DIR$/storage/framework/server/core" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cloud/core" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

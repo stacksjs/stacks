@@ -192,9 +192,6 @@ search-engine:
 security:
   - 'storage/framework/core/security/**'
 
-server:
-  - 'storage/framework/core/server/**'
-
 signals:
   - 'storage/framework/core/signals/**'
 
