@@ -3,6 +3,7 @@ import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import mitt from 'mitt'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -246,11 +247,17 @@ export class SubscriberEmailModel {
 
     const result = await db.insertInto('subscriber_emails').values(filteredValues).executeTakeFirstOrThrow()
 
-    return (await find(Number(result.insertId))) as SubscriberEmailModel
+    const model = (await find(Number(result.insertId))) as SubscriberEmailModel
+
+    return model
   }
 
   // Method to remove a SubscriberEmail
   static async remove(id: number): Promise<void> {
+    const instance = new this(null)
+
+    const model = await instance.find(id)
+
     await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
   }
 
@@ -389,7 +396,9 @@ export class SubscriberEmailModel {
 
     await db.updateTable('subscriber_emails').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-    return await this.find(Number(this.id))
+    const model = this.find(Number(this.id))
+
+    return model
   }
 
   // Method to save (insert or update) the subscriberemail instance

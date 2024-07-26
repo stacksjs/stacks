@@ -3,6 +3,7 @@ import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import mitt from 'mitt'
 import Team from './Team'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -252,11 +253,17 @@ export class AccessTokenModel {
 
     const result = await db.insertInto('personal_access_tokens').values(filteredValues).executeTakeFirstOrThrow()
 
-    return (await find(Number(result.insertId))) as AccessTokenModel
+    const model = (await find(Number(result.insertId))) as AccessTokenModel
+
+    return model
   }
 
   // Method to remove a AccessToken
   static async remove(id: number): Promise<void> {
+    const instance = new this(null)
+
+    const model = await instance.find(id)
+
     await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
   }
 
@@ -419,7 +426,9 @@ export class AccessTokenModel {
 
     await db.updateTable('personal_access_tokens').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-    return await this.find(Number(this.id))
+    const model = this.find(Number(this.id))
+
+    return model
   }
 
   // Method to save (insert or update) the accesstoken instance

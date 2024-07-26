@@ -36,6 +36,8 @@ export default {
       routes: ['index', 'update', 'store', 'destroy', 'show'],
     },
 
+    observe: true,
+
     // useUuid: true, // defaults to false
   },
 

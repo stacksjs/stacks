@@ -3,6 +3,7 @@ import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import mitt from 'mitt'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -246,11 +247,17 @@ export class ProjectModel {
 
     const result = await db.insertInto('projects').values(filteredValues).executeTakeFirstOrThrow()
 
-    return (await find(Number(result.insertId))) as ProjectModel
+    const model = (await find(Number(result.insertId))) as ProjectModel
+
+    return model
   }
 
   // Method to remove a Project
   static async remove(id: number): Promise<void> {
+    const instance = new this(null)
+
+    const model = await instance.find(id)
+
     await db.deleteFrom('projects').where('id', '=', id).execute()
   }
 
@@ -413,7 +420,9 @@ export class ProjectModel {
 
     await db.updateTable('projects').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-    return await this.find(Number(this.id))
+    const model = this.find(Number(this.id))
+
+    return model
   }
 
   // Method to save (insert or update) the project instance

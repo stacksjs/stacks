@@ -137,6 +137,7 @@ async function writeModelRequest() {
     const modelName = getModelName(model, modeFileElement)
 
     const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+
     const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
     const attributes = await extractFields(model, modeFileElement)
@@ -723,6 +724,9 @@ async function generateModelString(
   let relationMethods = ``
   let relationImports = ``
   let twoFactorStatements = ''
+  let mittCreateStatement = ``
+  let mittUpdateStatement = ``
+  let mittDeleteStatement = ``
 
   const relations = await getRelations(model, modelName)
 
@@ -732,6 +736,15 @@ async function generateModelString(
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
+  const observer = model?.traits?.observe
+
+  if (typeof observer === 'boolean') {
+    if (observer) {
+      mittCreateStatement += `emitter.emit('${formattedModelName}.created', model)`
+      mittUpdateStatement += `emitter.emit('${formattedModelName}.updated', model)`
+      mittDeleteStatement += `emitter.emit('${formattedModelName}.deleted', model)`
+    }
+  }
 
   for (const relation of relations) {
     const modelRelation = relation.model
@@ -975,6 +988,7 @@ async function generateModelString(
   return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
     import { sql } from '@stacksjs/database'
+    import mitt from 'mitt'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
     import { verifyTwoFactorCode } from '@stacksjs/auth'
     ${relationImports}
@@ -1210,14 +1224,25 @@ async function generateModelString(
           .values(filteredValues)
           .executeTakeFirstOrThrow()
 
-        return await find(Number(result.insertId)) as ${modelName}Model
+        const model = await find(Number(result.insertId)) as ${modelName}Model
+
+        ${mittCreateStatement}
+
+        return model
       }
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
+       
+        const instance = new this(null)
+
+        const model = await instance.find(id)
+        
         await db.deleteFrom('${tableName}')
           .where('id', '=', id)
           .execute()
+
+        ${mittDeleteStatement}
       }
 
       where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
@@ -1358,7 +1383,11 @@ async function generateModelString(
           .where('id', '=', this.id)
           .executeTakeFirst()
 
-          return await this.find(Number(this.id))
+        const model = this.find(Number(this.id))
+
+        ${mittUpdateStatement}
+
+        return model
       }
 
       // Method to save (insert or update) the ${formattedModelName} instance
@@ -1386,6 +1415,10 @@ async function generateModelString(
         await db.deleteFrom('${tableName}')
           .where('id', '=', this.id)
           .execute()
+
+        const model = this
+
+        ${mittDeleteStatement}
       }
 
       ${relationMethods}

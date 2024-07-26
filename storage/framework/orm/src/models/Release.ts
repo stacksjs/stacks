@@ -3,6 +3,7 @@ import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import mitt from 'mitt'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -237,11 +238,17 @@ export class ReleaseModel {
 
     const result = await db.insertInto('releases').values(filteredValues).executeTakeFirstOrThrow()
 
-    return (await find(Number(result.insertId))) as ReleaseModel
+    const model = (await find(Number(result.insertId))) as ReleaseModel
+
+    return model
   }
 
   // Method to remove a Release
   static async remove(id: number): Promise<void> {
+    const instance = new this(null)
+
+    const model = await instance.find(id)
+
     await db.deleteFrom('releases').where('id', '=', id).execute()
   }
 
@@ -380,7 +387,9 @@ export class ReleaseModel {
 
     await db.updateTable('releases').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-    return await this.find(Number(this.id))
+    const model = this.find(Number(this.id))
+
+    return model
   }
 
   // Method to save (insert or update) the release instance

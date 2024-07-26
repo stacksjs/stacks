@@ -3,6 +3,7 @@ import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import mitt from 'mitt'
 import Post from './Post'
 
 import Subscriber from './Subscriber'
@@ -272,12 +273,22 @@ export class UserModel {
 
     const result = await db.insertInto('users').values(filteredValues).executeTakeFirstOrThrow()
 
-    return (await find(Number(result.insertId))) as UserModel
+    const model = (await find(Number(result.insertId))) as UserModel
+
+    emitter.emit('user.created', model)
+
+    return model
   }
 
   // Method to remove a User
   static async remove(id: number): Promise<void> {
+    const instance = new this(null)
+
+    const model = await instance.find(id)
+
     await db.deleteFrom('users').where('id', '=', id).execute()
+
+    emitter.emit('user.deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -439,7 +450,11 @@ export class UserModel {
 
     await db.updateTable('users').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-    return await this.find(Number(this.id))
+    const model = this.find(Number(this.id))
+
+    emitter.emit('user.updated', model)
+
+    return model
   }
 
   // Method to save (insert or update) the user instance
@@ -463,6 +478,8 @@ export class UserModel {
     if (this.id === undefined) throw new Error('User ID is undefined')
 
     await db.deleteFrom('users').where('id', '=', this.id).execute()
+
+    emitter.emit('user.deleted', this)
   }
 
   async post() {
