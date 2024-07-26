@@ -275,6 +275,7 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
+    const emitter = mitt()
     emitter.emit('user.created', model)
 
     return model
@@ -288,6 +289,7 @@ export class UserModel {
 
     await db.deleteFrom('users').where('id', '=', id).execute()
 
+    const emitter = mitt()
     emitter.emit('user.deleted', model)
   }
 
@@ -452,6 +454,7 @@ export class UserModel {
 
     const model = this.find(Number(this.id))
 
+    const emitter = mitt()
     emitter.emit('user.updated', model)
 
     return model
@@ -479,6 +482,7 @@ export class UserModel {
 
     await db.deleteFrom('users').where('id', '=', this.id).execute()
 
+    const emitter = mitt()
     emitter.emit('user.deleted', this)
   }
 

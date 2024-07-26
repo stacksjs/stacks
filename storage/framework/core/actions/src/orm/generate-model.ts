@@ -740,9 +740,22 @@ async function generateModelString(
 
   if (typeof observer === 'boolean') {
     if (observer) {
-      mittCreateStatement += `emitter.emit('${formattedModelName}.created', model)`
-      mittUpdateStatement += `emitter.emit('${formattedModelName}.updated', model)`
-      mittDeleteStatement += `emitter.emit('${formattedModelName}.deleted', model)`
+      mittCreateStatement += `const emitter = mitt()\n emitter.emit('${formattedModelName}.created', model)`
+      mittUpdateStatement += `const emitter = mitt()\n emitter.emit('${formattedModelName}.updated', model)`
+      mittDeleteStatement += `const emitter = mitt()\n emitter.emit('${formattedModelName}.deleted', model)`
+    }
+  }
+
+  if (Array.isArray(observer)) {
+    // Iterate through the array and append statements based on its contents
+    if (observer.includes('create')) {
+      mittCreateStatement += `const emitter = mitt()\n emitter.emit('${formattedModelName}.created', model);`
+    }
+    if (observer.includes('update')) {
+      mittUpdateStatement += `const emitter = mitt()\n emitter.emit('${formattedModelName}.updated', model);`
+    }
+    if (observer.includes('delete')) {
+      mittDeleteStatement += `const emitter = mitt()\n emitter.emit('${formattedModelName}.deleted', model);`
     }
   }
 
