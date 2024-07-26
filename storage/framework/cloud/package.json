@@ -86,7 +86,6 @@
     "@stacksjs/queue": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
-    "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",

@@ -60,8 +60,6 @@ export class QueueStack {
 
       const actionPath = path.appPath(`Actions/${file}`)
 
-      console.log(actionPath)
-
       // Await the loading of the job module
       const action = await this.loadModule(actionPath)
       this.createQueueRule(action, file)
