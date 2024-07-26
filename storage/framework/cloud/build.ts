@@ -8,11 +8,11 @@ import { hasFiles } from '@stacksjs/storage'
 
 async function cleanAndCopy(sourcePath: string, targetPath: string) {
   await runCommand(`rm -rf ${targetPath}`, {
-    cwd: frameworkPath('server'),
+    cwd: frameworkPath('cloud'),
   })
 
   await runCommand(`cp -r ${sourcePath} ${targetPath}`, {
-    cwd: frameworkPath('server'),
+    cwd: frameworkPath('cloud'),
   })
 }
 
@@ -20,7 +20,7 @@ async function useCustomOrDefaultServerConfig() {
   if (hasFiles(projectPath('server'))) {
     // if we have a custom server configuration, use it by copying it to the server directory
     await runCommand(`cp -r ../../../server .`, {
-      cwd: frameworkPath('server'),
+      cwd: frameworkPath('cloud'),
     })
 
     return log.info('Using custom server configuration')
@@ -47,7 +47,7 @@ async function buildServer() {
   // TODO: also allow for a custom container name via a config option
   // this currently does not need to be enabled because our CDK deployment handles the docker build process
   // await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
-  //   cwd: frameworkPath('server'),
+  //   cwd: frameworkPath('cloud'),
   // })
 
   log.success('Server ready to be built')

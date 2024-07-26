@@ -30,7 +30,6 @@ declare module 'vue' {
     DeployScript: typeof import('./../../../resources/components/Dashboard/Deployments/DeployScript.vue')['default']
     DNSForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/DNSForm.vue')['default']
     Dropdown: typeof import('./../../../resources/components/Dashboard/Elements/Dropdown.vue')['default']
-    DropdownList: typeof import('./../../../resources/components/Dashboard/Elements/DropdownList.vue')['default']
     EmailForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/EmailForm.vue')['default']
     Faqs: typeof import('./../../../resources/components/Marketing/Faqs.vue')['default']
     Feature: typeof import('./../../../resources/components/Marketing/Feature.vue')['default']
