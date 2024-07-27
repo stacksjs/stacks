@@ -65,12 +65,12 @@
     "kysely-bun-worker": "^0.6.2"
   },
   "optionalDependencies": {
-    "mysql2": "^3.10.3"
+    "mysql2": "^3.11.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/tar": "^6.1.13",
-    "debug": "^4.3.5",
+    "debug": "^4.3.6",
     "mkdirp": "^3.0.1",
     "q": "^1.5.1",
     "tar": "^7.4.3"
