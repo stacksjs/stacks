@@ -13,13 +13,19 @@ export function deploy(buddy: CLI) {
   const descriptions = {
     deploy: 'Re-installs your npm dependencies',
     project: 'Target a specific project',
+    production: 'Deploy to production',
+    development: 'Deploy to development',
+    staging: 'Deploy to staging',
     verbose: 'Enable verbose output',
   }
 
   buddy
-    .command('deploy', descriptions.deploy)
+    .command('deploy [env]', descriptions.deploy)
     .option('--domain', 'Specify a domain to deploy to', { default: undefined })
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--prod', descriptions.production, { default: true })
+    .option('--dev', descriptions.development, { default: false })
+    .option('--staging', descriptions.staging, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
