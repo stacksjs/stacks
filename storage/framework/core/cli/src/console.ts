@@ -39,7 +39,7 @@ export class Prompt {
     return logger.prompt(message, { ...options, type: 'multiselect' })
   }
 
-  async confirm(message: any, options: any) {
+  async confirm(message: any, options?: any) {
     if (this.isRequired())
       return logger.prompt(message, {
         ...options,

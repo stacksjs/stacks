@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompt, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
@@ -27,11 +27,13 @@ export function deploy(buddy: CLI) {
     .option('--dev', descriptions.development, { default: false })
     .option('--staging', descriptions.staging, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DeployOptions) => {
+    .action(async (env: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
       const startTime = await intro('buddy deploy')
       const domain = options.domain || app.url
+
+      if (options.prod || env === 'production' || env === 'prod') await confirmProductionDeployment()
 
       if (!domain) {
         log.info('No domain found in your .env or ./config/app.ts')
@@ -65,6 +67,15 @@ export function deploy(buddy: CLI) {
     log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
   })
+}
+
+async function confirmProductionDeployment() {
+  const answer = await log.prompt.require().confirm('Are you sure you want to deploy to production?')
+
+  if (!answer) {
+    log.info('Aborting deployment...')
+    process.exit(ExitCode.InvalidArgument)
+  }
 }
 
 async function configureDomain(domain: string, options: DeployOptions, startTime: number) {
