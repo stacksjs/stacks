@@ -3,7 +3,6 @@ import { log, runCommand } from '@stacksjs/cli'
 import { app, cloud as cloudConfig } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-import { cloud } from '../core/buddy/src'
 
 // import { slug } from '@stacksjs/strings'
 
