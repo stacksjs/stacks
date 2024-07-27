@@ -32,6 +32,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   log.debug('exec:', Array.isArray(command) ? command.join(' ') : command)
   log.debug('cmd:', cmd)
   log.debug('exec options:', options)
+  const cwd = options?.cwd || process.cwd()
 
   const proc = Bun.spawn(cmd, {
     ...options,
@@ -39,7 +40,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
       options?.silent || options?.quiet ? 'ignore' : options?.stdin ? options.stdin : options?.stdout || 'inherit',
     stderr: options?.silent || options?.quiet ? 'ignore' : options?.stderr || 'inherit',
     detached: options?.background || false,
-    cwd: options?.cwd || process.cwd(),
+    cwd,
     // env: { ...e, ...options?.env },
     onExit(subprocess, exitCode, signalCode, error) {
       exitHandler('spawn', subprocess, exitCode, signalCode, error)

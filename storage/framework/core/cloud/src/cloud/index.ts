@@ -34,9 +34,9 @@ export class Cloud extends Stack {
   permissions: PermissionsStack
   ai: AiStack
   cli: CliStack
-  api!: ComputeStack
+  api?: ComputeStack
   cdn!: CdnStack
-  queue!: QueueStack
+  queue?: QueueStack
   deployment!: DeploymentStack
   scope: Construct
   props: CloudOptions
@@ -92,8 +92,9 @@ export class Cloud extends Stack {
   // we use an async init() method here because we need to wait for the
 
   async init() {
-    if (config.cloud.api?.deploy) {
-      const props = this.props
+    const props = this.props
+
+    if (this.shouldDeployApi()) {
       this.api = new ComputeStack(this, {
         ...props,
         vpc: this.network.vpc,
@@ -110,28 +111,35 @@ export class Cloud extends Stack {
 
       await this.queue.init()
 
-      this.cdn = new CdnStack(this, {
-        ...props,
-        publicBucket: this.storage.publicBucket,
-        docsBucket: this.storage.docsBucket,
-        logBucket: this.storage.logBucket,
-        certificate: this.security.certificate,
-        firewall: this.security.firewall,
-        originRequestFunction: this.docs.originRequestFunction,
-        zone: this.dns.zone,
-        cliSetupUrl: this.cli.cliSetupUrl,
-        askAiUrl: this.ai.askAiUrl,
-        summarizeAiUrl: this.ai.summarizeAiUrl,
-        lb: this.api?.lb,
-      })
-
-      this.deployment = new DeploymentStack(this, {
-        ...props,
-        appBucket: this.storage.publicBucket,
-        docsBucket: this.storage.docsBucket,
-        privateBucket: this.storage.privateBucket,
-        cdn: this.cdn.distribution,
-      })
     }
+
+     this.cdn = new CdnStack(this, {
+      ...props,
+      publicBucket: this.storage.publicBucket,
+      docsBucket: this.storage.docsBucket,
+      logBucket: this.storage.logBucket,
+      certificate: this.security.certificate,
+      firewall: this.security.firewall,
+      originRequestFunction: this.docs.originRequestFunction,
+      zone: this.dns.zone,
+      cliSetupUrl: this.cli.cliSetupUrl,
+      askAiUrl: this.ai.askAiUrl,
+      summarizeAiUrl: this.ai.summarizeAiUrl,
+      lb: this.api?.lb,
+    })
+
+
+    this.deployment = new DeploymentStack(this, {
+      ...props,
+      publicBucket: this.storage.publicBucket,
+      privateBucket: this.storage.privateBucket,
+      docsBucket: this.storage.docsBucket,
+      cdn: this.cdn.distribution,
+    })
+    console.log('here6')
+  }
+
+  shouldDeployApi() {
+    return config.cloud.api?.deploy
   }
 }

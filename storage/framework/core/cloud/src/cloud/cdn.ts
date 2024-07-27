@@ -21,7 +21,7 @@ export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate
   logBucket: s3.Bucket
   publicBucket: s3.Bucket
-  docsBucket: s3.Bucket
+  docsBucket?: s3.Bucket
   firewall: wafv2.CfnWebACL
   originRequestFunction: lambda.Function
   zone: route53.IHostedZone
@@ -111,7 +111,7 @@ export class CdnStack {
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(props.publicBucket, {
+        origin: new origins.S3Origin(config.app.docMode ? props.docsBucket as s3.Bucket : props.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
         }),
         edgeLambdas: [
@@ -257,6 +257,7 @@ export class CdnStack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         realtimeLogConfig: this.realtimeLogConfig,
       },
+
       '/api/*': {
         origin: origin(),
         compress: true,
@@ -269,10 +270,12 @@ export class CdnStack {
     }
   }
 
-  docsBehaviorOptions(props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
+  docsBehaviorOptions(docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
+    if (!docsBucket) return {}
+
     return {
       '/docs': {
-        origin: new origins.S3Origin(props.docsBucket, {
+        origin: new origins.S3Origin(docsBucket, {
           originAccessIdentity: this.originAccessIdentity,
           originPath: '/docs',
         }),
@@ -283,8 +286,9 @@ export class CdnStack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         realtimeLogConfig: this.realtimeLogConfig,
       },
+
       '/docs/*': {
-        origin: new origins.S3Origin(props.docsBucket, {
+        origin: new origins.S3Origin(docsBucket, {
           originAccessIdentity: this.originAccessIdentity,
           originPath: '/docs',
         }),
@@ -409,7 +413,7 @@ export class CdnStack {
     // because the docs will be the root of the site
     if (this.shouldDeployDocs()) {
       behaviorOptions = {
-        ...this.docsBehaviorOptions(props),
+        ...this.docsBehaviorOptions(props.docsBucket),
         ...behaviorOptions,
       }
     }

@@ -8,8 +8,8 @@ import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
 export interface DeploymentStackProps extends NestedCloudProps {
-  appBucket: s3.Bucket
-  docsBucket: s3.Bucket
+  publicBucket: s3.Bucket
+  docsBucket?: s3.Bucket
   privateBucket: s3.Bucket
   cdn: cloudfront.Distribution
 }
@@ -17,22 +17,22 @@ export interface DeploymentStackProps extends NestedCloudProps {
 export class DeploymentStack {
   privateSource: string
   docsSource: string
-  appSource: string
+  publicSource: string
 
   constructor(scope: Construct, props: DeploymentStackProps) {
     // following paths are relative to where the command is run from
     this.privateSource = '../../private'
     this.docsSource = '../docs/dist/'
-    this.appSource = config.app.docMode === true ? this.docsSource : '../views/web/dist/'
+    this.publicSource = config.app.docMode === true ? this.docsSource : '../views/web/dist/'
 
     new s3deploy.BucketDeployment(scope, 'Website', {
       sources: [
-        s3deploy.Source.asset(this.appSource, {
+        s3deploy.Source.asset(this.publicSource, {
           assetHash: websiteSourceHash(),
           assetHashType: AssetHashType.CUSTOM,
         }),
       ],
-      destinationBucket: props.appBucket,
+      destinationBucket: props.publicBucket,
       distribution: props.cdn,
       distributionPaths: ['/*'],
     })
@@ -46,7 +46,7 @@ export class DeploymentStack {
             assetHashType: AssetHashType.CUSTOM,
           }),
         ],
-        destinationBucket: props.docsBucket,
+        destinationBucket: props.docsBucket as s3.Bucket,
         distribution: props.cdn,
         distributionPaths: ['/docs/*'],
       })
@@ -59,6 +59,6 @@ export class DeploymentStack {
   }
 
   shouldDeployDocs() {
-    return hasFiles(p.projectPath('docs'))
+    return hasFiles(p.projectPath('docs')) && !config.app.docMode
   }
 }

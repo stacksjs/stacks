@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, italic, log, outro, prompt, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
@@ -169,7 +169,7 @@ async function checkIfAwsIsBootstrapped() {
     log.info('Bootstrapping. This may take a few moments...')
 
     try {
-      $.cwd(p.frameworkPath('cloud'))
+      $.cwd(p.frameworkCloudPath())
       const result = await $`bun run bootstrap`
       console.log(result)
       return true
