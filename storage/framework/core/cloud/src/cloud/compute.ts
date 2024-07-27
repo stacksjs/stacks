@@ -50,13 +50,14 @@ export class ComputeStack {
       },
     })
 
-    const assetImage = new ecr_assets.DockerImageAsset(scope, 'DockerImageAsset', {
-      directory: p.frameworkPath('cloud'),
-    })
+    // const assetImage = new ecr_assets.DockerImageAsset(scope, 'DockerImageAsset', {
+    //   directory: p.frameworkPath('cloud'),
+    // })
 
     const container = this.taskDefinition.addContainer('WebServerContainer', {
       containerName: `${props.appName}-${props.appEnv}-api`,
-      image: ecs.ContainerImage.fromDockerImageAsset(assetImage),
+      // image: ecs.ContainerImage.fromDockerImageAsset(assetImage),
+      image: ecs.ContainerImage.fromAsset(p.frameworkPath('cloud')),
       logging: new ecs.AwsLogDriver({
         streamPrefix: `${props.appName}-${props.appEnv}-web-server-logs`,
         logGroup: new LogGroup(scope, 'StacksApiLogs', {

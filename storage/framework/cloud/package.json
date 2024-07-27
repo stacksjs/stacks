@@ -39,7 +39,7 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "bootstrap": "bunx cdk bootstrap",
-    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never",
+    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../cloud && bunx cdk deploy --require-approval never",
     "dev": "./dev local",
     "dev:container": "docker run -d -p 3000:3000 stacks",
     "build": "bun build.ts"

@@ -1,8 +1,9 @@
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
-import { app } from '@stacksjs/config'
+import { app, cloud as cloudConfig } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
+import { cloud } from '../core/buddy/src'
 
 // import { slug } from '@stacksjs/strings'
 
@@ -55,7 +56,8 @@ async function buildServer() {
 
 async function main() {
   useCustomOrDefaultServerConfig()
-  await buildServer()
+  if (cloudConfig.api?.deploy)
+    await buildServer()
 }
 
 main().catch((error) => {

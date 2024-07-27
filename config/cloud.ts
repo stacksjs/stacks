@@ -21,7 +21,7 @@ export default {
     prefix: env.API_PREFIX || 'api',
     // version: 'v1',
     description: 'My awesome Stacks API',
-    deploy: true,
+    deploy: false,
     memorySize: 512,
     prewarm: 10,
     timeout: 30,
