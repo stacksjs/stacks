@@ -42,7 +42,7 @@
     "luxon": "^3.4.4"
   },
   "devDependencies": {
-    "@fast-check/jest": "^1.8.2",
+    "@fast-check/jest": "^2.0.0",
     "@stacksjs/development": "workspace:*",
     "@types/luxon": "^3.4.2",
     "@types/sinon": "^17.0.3",
