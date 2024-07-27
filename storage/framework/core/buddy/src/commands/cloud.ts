@@ -218,7 +218,7 @@ export function cloud(buddy: CLI) {
 
       const result = await runCommand(`bunx cdk destroy`, {
         ...options,
-        cwd: p.cloudPath(),
+        cwd: p.frameworkCloudPath(),
         stdin: 'inherit',
       })
 

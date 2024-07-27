@@ -13,7 +13,6 @@ import {
   aws_route53_targets as targets,
 } from 'aws-cdk-lib'
 import type { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2'
-import * as kinesis from 'aws-cdk-lib/aws-kinesis'
 import type { Construct } from 'constructs'
 import type { EnvKey } from '../../../../env'
 import type { NestedCloudProps } from '../types'
@@ -234,11 +233,12 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
+    console.log('shouldDeployApi', config.cloud.api?.deploy)
     return config.cloud.api?.deploy
   }
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = `api.${props.domain}`
+    const hostname = `api.${props.domain}` // TODO: make `api` configurable
 
     const origin = () => {
       return new origins.HttpOrigin(hostname, {
@@ -373,7 +373,7 @@ export class CdnStack {
   }
 
   shouldDeployDocs() {
-    return hasFiles(p.projectPath('docs'))
+    return hasFiles(p.projectPath('docs')) && !config.app.docMode
   }
 
   additionalBehaviors(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
@@ -407,7 +407,7 @@ export class CdnStack {
 
     // if docMode is used, we don't need to add a behavior for the docs
     // because the docs will be the root of the site
-    if (this.shouldDeployDocs() && !config.app.docMode) {
+    if (this.shouldDeployDocs()) {
       behaviorOptions = {
         ...this.docsBehaviorOptions(props),
         ...behaviorOptions,
