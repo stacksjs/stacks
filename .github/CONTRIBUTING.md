@@ -5,7 +5,7 @@ WIP: Updates to here are in progress.
 First off, thank you for taking the time to contribute to the Stacks ecosystem ❤️
 
 > **Note**
-> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [Vue][vue], [Vite][vite], [Tauri][tauri], [Nitro][nitro], and [Bun][bun].
+> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [Vite][vite], [Tauri][tauri], [Nitro][nitro], [Vue][vue], and [Bun][bun].
 
 ## 💭 Knowledge
 

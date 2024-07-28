@@ -353,6 +353,7 @@ export interface CloudCliOptions extends CliOptions {
   jumpBox?: boolean
   invalidateCache?: boolean
   paths?: string
+  diff?: boolean
 }
 export interface CommitOptions extends CliOptions {}
 export interface KeyOptions extends CliOptions {}

@@ -11,17 +11,18 @@ import { $ } from 'bun'
 
 export function deploy(buddy: CLI) {
   const descriptions = {
-    deploy: 'Re-installs your npm dependencies',
+    deploy: 'Deploy your project',
     project: 'Target a specific project',
     production: 'Deploy to production',
     development: 'Deploy to development',
     staging: 'Deploy to staging',
+    domain: 'Specify a domain to deploy to',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('deploy [env]', descriptions.deploy)
-    .option('--domain', 'Specify a domain to deploy to', { default: undefined })
+    .option('--domain', descriptions.domain, { default: undefined })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--prod', descriptions.production, { default: true })
     .option('--dev', descriptions.development, { default: false })

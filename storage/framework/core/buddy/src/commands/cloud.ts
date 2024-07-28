@@ -23,10 +23,11 @@ export function cloud(buddy: CLI) {
     cloud: 'Interact with the Stacks Cloud',
     ssh: 'SSH into the Stacks Cloud',
     add: 'Add a resource to the Stacks Cloud',
-    remove: 'Removes the Stacks Cloud. In case it fails, try again',
-    optimizeCost: 'Removes certain resources that may be re-applied at a later time',
-    cleanUp: 'Removes all resources that were retained during the cloud deletion',
-    invalidateCache: 'Invalidates the CloudFront cache',
+    remove: 'Remove the Stacks Cloud. In case it fails, try again',
+    optimizeCost: 'Remove certain resources that may be re-applied at a later time',
+    cleanUp: 'Remove all resources that were retained during the cloud deletion',
+    invalidateCache: 'Invalidate the CloudFront cache',
+    diff: 'Show the diff of the current, undeployed cloud changes ',
     paths: 'The paths to invalidate',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -38,6 +39,7 @@ export function cloud(buddy: CLI) {
     .option('--connect', descriptions.ssh, { default: false })
     .option('--invalidate-cache', descriptions.invalidateCache, { default: false })
     .option('--paths [paths]', descriptions.paths)
+    .option('--diff', descriptions.diff, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
@@ -104,6 +106,22 @@ export function cloud(buddy: CLI) {
         )
 
         await outro('Exited', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      if (options.diff) {
+        const result = await runCommand('bunx cdk diff', {
+          cwd: p.frameworkCloudPath(),
+          stdin: 'pipe'
+        })
+
+        if (result.isErr()) {
+          await outro('While running the cloud diff command, there was an issue', { startTime, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
+
+        await outro('Showing diff of the current, undeployed cloud changes', { startTime, useSeconds: true })
+        console.log(result.value)
         process.exit(ExitCode.Success)
       }
 
@@ -473,6 +491,30 @@ export function cloud(buddy: CLI) {
       }
 
       log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.org/docs/cloud')
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('cloud:diff', descriptions.diff)
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions) => {
+      log.debug('Running `buddy cloud:diff` ...', options)
+
+      const startTime = await intro('buddy cloud:diff')
+
+      const result = await runCommand('bunx cdk diff', {
+        cwd: p.frameworkCloudPath(),
+        stdin: 'pipe'
+      })
+
+      if (result.isErr()) {
+        await outro('While running the cloud diff command, there was an issue', { startTime, useSeconds: true }, result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('Showing diff of the current, undeployed cloud changes', { startTime, useSeconds: true })
+      console.log(result.value)
       process.exit(ExitCode.Success)
     })
 

@@ -11,7 +11,6 @@ import {
   aws_route53_targets as route53Targets,
   aws_secretsmanager as secretsmanager,
 } from 'aws-cdk-lib'
-import * as ecr_assets from 'aws-cdk-lib/aws-ecr-assets'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import type { Construct } from 'constructs'
@@ -223,8 +222,12 @@ export class ComputeStack {
       },
     })
 
-    secrets.grantRead(service.taskDefinition.executionRole)
-    container.addEnvironment('SECRETS_ARN', secrets.secretArn)
+    if (service.taskDefinition.executionRole) {
+      secrets.grantRead(service.taskDefinition.executionRole)
+      container.addEnvironment('SECRETS_ARN', secrets.secretArn)
+    } else {
+      throw new Error('Service task execution role is undefined.')
+    }
 
     const apiPrefix = 'api'
     new Output(scope, 'ApiUrl', {

@@ -17,8 +17,8 @@ import type { CLI, DevOptions } from '@stacksjs/types'
 
 export function dev(buddy: CLI) {
   const descriptions = {
-    dev: 'Starts development server',
-    frontend: 'Starts the frontend development server',
+    dev: 'Start development server',
+    frontend: 'Start the frontend development server',
     components: 'Start the Components development server',
     desktop: 'Start the Desktop App development server',
     dashboard: 'Start the Dashboard development server',

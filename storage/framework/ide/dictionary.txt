@@ -301,6 +301,7 @@ typecheck
 typegen
 typesense
 unconfig
+undeployed
 undeploys
 unhead
 unimport
