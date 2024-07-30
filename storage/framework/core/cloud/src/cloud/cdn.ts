@@ -239,17 +239,14 @@ export class CdnStack {
 
   apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = `api.${props.domain}` // TODO: make `api` configurable
-
-    const origin = () => {
-      return new origins.HttpOrigin(hostname, {
-        originPath: '/',
-        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-      })
-    }
+    const origin = new origins.HttpOrigin(hostname, {
+      originPath: '/',
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+    })
 
     return {
       '/api': {
-        origin: origin(),
+        origin,
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
@@ -259,7 +256,7 @@ export class CdnStack {
       },
 
       '/api/*': {
-        origin: origin(),
+        origin,
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
@@ -273,12 +270,14 @@ export class CdnStack {
   docsBehaviorOptions(docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
 
+    const origin = new origins.S3Origin(docsBucket, {
+      originAccessIdentity: this.originAccessIdentity,
+      originPath: '/docs',
+    })
+
     return {
       '/docs': {
-        origin: new origins.S3Origin(docsBucket, {
-          originAccessIdentity: this.originAccessIdentity,
-          originPath: '/docs',
-        }),
+        origin,
         compress: true,
         allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
         cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
@@ -288,10 +287,7 @@ export class CdnStack {
       },
 
       '/docs/*': {
-        origin: new origins.S3Origin(docsBucket, {
-          originAccessIdentity: this.originAccessIdentity,
-          originPath: '/docs',
-        }),
+        origin,
         compress: true,
         allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
         cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
