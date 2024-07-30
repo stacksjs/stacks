@@ -1,8 +1,6 @@
+import { listen } from '@stacksjs/events'
 import { path as p } from '@stacksjs/path'
-import mitt from 'mitt'
 import events from './Events'
-
-const emitter = mitt()
 
 for (const key in events) {
     // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
@@ -12,14 +10,22 @@ for (const key in events) {
 
         for (const eventListener of eventListeners) {
             const modulePath = eventListener
-            try {
-                const actionModule = await import(p.projectPath(`Actions/${modulePath}.ts`))
-
-                emitter.on(eventKey, e => actionModule.default.handle(e))
-                // Handle successful import
-            } catch (error) {
-                console.error('Module not found:', modulePath);
+            
+            if (isFunction(modulePath)) {
+                await modulePath()
+            } else {
+                try {
+                    const actionModule = await import(p.projectPath(`Actions/${modulePath}.ts`))
+    
+                    listen(eventKey, e => actionModule.default.handle(e))
+                } catch (error) {
+                    console.error('Module not found:', modulePath);
+                }
             }
         }
     }
+  }
+
+  function isFunction(val: unknown): val is Function {
+    return typeof val === 'function'
   }
