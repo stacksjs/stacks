@@ -38,7 +38,7 @@
     "meilisearch": "^0.41.0"
   },
   "dependencies": {
-    "@vueform/multiselect": "^2.6.8"
+    "@vueform/multiselect": "^2.6.9"
   },
   "devDependencies": {
     "vite": "^5.3.5",
