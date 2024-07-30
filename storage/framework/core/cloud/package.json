@@ -97,7 +97,6 @@
     "aws-cdk": "^2.150.0",
     "aws-cdk-lib": "^2.150.0",
     "aws4fetch": "^1.0.19",
-    "cdk-ecr-deployment": "^3.0.77",
     "constructs": "^10.3.0"
   },
   "devDependencies": {

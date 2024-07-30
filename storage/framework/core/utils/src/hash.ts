@@ -15,7 +15,15 @@ export function originRequestFunctionHash() {
 
 export function websiteSourceHash() {
   const docsSrc = [p.projectPath('docs')]
-  const websiteSrc = [p.projectPath('resources/views')]
+  const websiteSrc = [
+    p.projectPath('resources/views'),
+    p.projectPath('resources/assets'),
+    p.projectPath('resources/lang'),
+    p.projectPath('resources/functions'),
+    p.projectPath('resources/components'),
+    p.projectPath('resources/modules'),
+    p.projectPath('resources/stores'),
+  ]
 
   return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
 }

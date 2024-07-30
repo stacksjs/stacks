@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront'
-import { intro, italic, log, outro, prompts, runCommand, runCommandSync, underline } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
 import {
   addJumpBox,
   deleteCdkRemnants,
@@ -262,8 +262,9 @@ export function cloud(buddy: CLI) {
       try {
         log.info('Finalizing the removal of your cloud resources.')
         log.info('This will take a few moments...')
-        loop(7, () => {
-          runCommandSync('buddy cloud:cleanup', {
+        // sometimes, this fails, so we need to retry it until all resources are deleted -> weird workaround, and would love a more stable alternative
+        await loop(7, async () => {
+          await runCommand('buddy cloud:cleanup', {
             ...options,
             cwd: p.projectPath(),
             stdout: 'ignore',
