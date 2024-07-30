@@ -3,6 +3,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
+import type { Subprocess } from '@stacksjs/types'
 
 await runCommand('bun run build', {
   cwd: p.frameworkPath(),
@@ -37,6 +38,14 @@ log.info('Preparing Deployment...')
 
 const profile = process.env.AWS_PROFILE ?? 'stacks'
 
-await runCommand(`bunx cdk deploy --require-approval never --profile="${profile}"`, {
+const result = await runCommand(`npx cdk deploy --require-approval never --profile="${profile}"`, {
   cwd: p.frameworkCloudPath(),
 })
+
+if (result.isErr()) {
+  log.error(result.error)
+  process.exit(ExitCode.FatalError)
+}
+
+const t = result.value as Subprocess
+const x = await t.exited

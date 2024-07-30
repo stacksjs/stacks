@@ -18,8 +18,8 @@ export default {
   key: env.APP_KEY,
 
   maintenanceMode: env.APP_MAINTENANCE ?? false,
-  docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
-  // docMode: false,
+  // docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
+  docMode: false,
 
   timezone: 'America/Los_Angeles',
   locale: 'en',

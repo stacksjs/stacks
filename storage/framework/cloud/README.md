@@ -6,6 +6,10 @@ Copy the root .env into this directory.
 
 This directory is used to store files to build the Docker image for the server.
 
+## Notes
+
+We use a custom `tsconfig.json` file to ensure that the aliases point to the correct paths.
+
 ### TODO
 
 - [ ] Don't include node_modules in the Docker image, but bundle it using Bun

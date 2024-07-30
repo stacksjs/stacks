@@ -37,8 +37,8 @@ export class DeploymentStack {
       distributionPaths: ['/*'],
     })
 
-    // if docs should be deployed, add it to the deployment
     if (this.shouldDeployDocs()) {
+      // if docs should be deployed, add it to the deployment
       new s3deploy.BucketDeployment(scope, 'Docs', {
         sources: [
           s3deploy.Source.asset(this.docsSource, {
@@ -52,10 +52,14 @@ export class DeploymentStack {
       })
     }
 
-    new s3deploy.BucketDeployment(scope, 'PrivateFiles', {
-      sources: [s3deploy.Source.asset(this.privateSource)],
-      destinationBucket: props.privateBucket,
-    })
+    if (hasFiles(this.privateSource)) {
+      new s3deploy.BucketDeployment(scope, 'PrivateFiles', {
+        sources: [s3deploy.Source.asset(this.privateSource)],
+        destinationBucket: props.privateBucket,
+      })
+    } else {
+      console.error(`The path ${this.privateSource} does not have any files`)
+    }
   }
 
   shouldDeployDocs() {

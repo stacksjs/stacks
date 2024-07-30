@@ -110,7 +110,7 @@ export function cloud(buddy: CLI) {
       }
 
       if (options.diff) {
-        const result = await runCommand('bunx cdk diff', {
+        const result = await runCommand('npx cdk diff', {
           cwd: p.frameworkCloudPath(),
           stdin: 'pipe'
         })
@@ -234,7 +234,7 @@ export function cloud(buddy: CLI) {
       // sleep for 2 seconds to get the user to read the message
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      const result = await runCommand(`bunx cdk destroy`, {
+      const result = await runCommand(`npx cdk destroy`, {
         ...options,
         cwd: p.frameworkCloudPath(),
         stdin: 'inherit',
@@ -504,7 +504,7 @@ export function cloud(buddy: CLI) {
 
       const startTime = await intro('buddy cloud:diff')
 
-      const result = await runCommand('bunx cdk diff', {
+      const result = await runCommand('npx cdk diff', {
         cwd: p.frameworkCloudPath(),
         stdin: 'pipe'
       })
