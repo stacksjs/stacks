@@ -272,7 +272,7 @@ export class CdnStack {
 
     const origin = new origins.S3Origin(docsBucket, {
       originAccessIdentity: this.originAccessIdentity,
-      originPath: '/docs',
+      originPath: '/',
     })
 
     return {
