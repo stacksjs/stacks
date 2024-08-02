@@ -13,6 +13,14 @@ export interface SeedOptions {
   count: number
 }
 
+type LogAttribute = string
+
+type ActivityLogOption = {
+  exclude: LogAttribute[]
+  include: LogAttribute[] // default to “*”
+  logOnly: LogAttribute[]
+}
+
 interface BelongsToManyType {
   model: ModelNames
   firstForeignKey?: string
@@ -72,6 +80,7 @@ export interface ModelOptions extends Base {
     searchable?: boolean | SearchOptions // useSearch alias
     useApi?: ApiOptions | boolean
     observe?: string[] | boolean
+    useActivityLog?: boolean | ActivityLogOption
   }
 
   attributes: Attributes
