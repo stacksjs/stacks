@@ -345,11 +345,11 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   writer.write(actionString)
 }
 
-async function initiateModelGeneration(): Promise<void> {
-  await deleteExistingModels()
-  await deleteExistingOrmActions()
+async function initiateModelGeneration(modelStringFile?: string): Promise<void> {
+  await deleteExistingModels(modelStringFile)
+  await deleteExistingOrmActions(modelStringFile)
   await deleteExistingModelNameTypes()
-  await deleteExistingModelRequest()
+  await deleteExistingModelRequest(modelStringFile)
 
   await writeModelNames()
   await writeModelRequest()
@@ -359,6 +359,9 @@ async function initiateModelGeneration(): Promise<void> {
   await generateApiRoutes(modelFiles)
 
   for (const modelFile of modelFiles) {
+
+    if (modelStringFile && (modelStringFile !== modelFile)) continue
+
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
@@ -433,27 +436,45 @@ function hasRelations(obj: any, key: string): boolean {
   return key in obj
 }
 
-async function deleteExistingModels() {
+async function deleteExistingModels(modelStringFile?: string) {
+  const typePath = path.projectStoragePath(`framework/core/orm/src/generated/types.ts`)
+
+  if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
+
+  if (modelStringFile) {
+    const modelPath = path.projectStoragePath(`framework/orm/src/models/${modelStringFile}.ts`)
+
+    await Bun.$`rm ${modelPath}`
+
+    return
+  }
+
   const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models/*.ts`))
 
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
   }
-
-  const typePath = path.projectStoragePath(`framework/core/orm/src/generated/types.ts`)
-
-  if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
 }
 
-async function deleteExistingOrmActions() {
-  const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
+async function deleteExistingOrmActions(modelStringFile?: string) {
   const routes = path.projectStoragePath(`framework/orm/routes`)
+  if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
+
+  if (modelStringFile) {
+    const ormPath = path.projectStoragePath(`framework/orm/Actions/${modelStringFile}.ts`)
+
+     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
+
+     return
+  }
+
+  const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
   }
 
-  if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
+ 
 }
 
 async function deleteExistingModelNameTypes() {
@@ -462,15 +483,23 @@ async function deleteExistingModelNameTypes() {
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
-async function deleteExistingModelRequest() {
-  const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
+async function deleteExistingModelRequest(modelStringFile?: string) {
   const requestD = path.frameworkPath('types/requests.d.ts')
+  if (fs.existsSync(requestD)) await Bun.$`rm ${requestD}`
+
+  if (modelStringFile) {
+    const requestFile = path.projectStoragePath(`framework/requests/${modelStringFile}.ts`)
+
+    if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
+
+    return
+  }
+
+  const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
 
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
   }
-
-  if (fs.existsSync(requestD)) await Bun.$`rm ${requestD}`
 }
 
 async function setKyselyTypes() {
