@@ -83,7 +83,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/vite-plugin": "workspace:*",
-    "@vitejs/plugin-vue": "^5.1.1",
+    "@vitejs/plugin-vue": "^5.1.2",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.9.0",
     "unplugin-auto-import": "^0.18.2",
@@ -95,7 +95,7 @@
     "vite-plugin-pwa": "^0.20.1",
     "vite-plugin-vue-markdown": "^0.23.8",
     "vite-ssg": "^0.23.8",
-    "vite-ssg-sitemap": "^0.7.1"
+    "vite-ssg-sitemap": "^0.8.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "latest",
