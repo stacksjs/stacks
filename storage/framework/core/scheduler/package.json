@@ -36,10 +36,10 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "luxon": "^3.4.4"
+    "luxon": "^3.5.0"
   },
   "dependencies": {
-    "luxon": "^3.4.4"
+    "luxon": "^3.5.0"
   },
   "devDependencies": {
     "@fast-check/jest": "^2.0.1",
