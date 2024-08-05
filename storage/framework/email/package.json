@@ -1,5 +1,6 @@
 {
   "name": "stacks-email",
+  "version": "0.62.0",
   "type": "module",
   "private": true,
   "scripts": {

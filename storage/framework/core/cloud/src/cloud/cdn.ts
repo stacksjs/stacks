@@ -233,7 +233,6 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
-    console.log('shouldDeployApi', config.cloud.api?.deploy)
     return config.cloud.api?.deploy
   }
 
@@ -272,7 +271,6 @@ export class CdnStack {
 
     const origin = new origins.S3Origin(docsBucket, {
       originAccessIdentity: this.originAccessIdentity,
-      originPath: '/',
     })
 
     return {

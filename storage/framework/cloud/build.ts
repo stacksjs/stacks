@@ -3,6 +3,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { app, cloud as cloudConfig } from '@stacksjs/config'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
+import { $ } from 'bun'
 
 // import { slug } from '@stacksjs/strings'
 
@@ -31,6 +32,9 @@ async function useCustomOrDefaultServerConfig() {
 
 async function buildServer() {
   log.info('Preparing server...')
+
+  // TODO: the reason we delete the cdk.out folder is to ensure it won't be included in the build
+  await Bun.$`rm -rf ${frameworkPath('cloud/cdk.out')}`
 
   await cleanAndCopy(frameworkPath('core'), frameworkPath('cloud/core'))
   await cleanAndCopy(projectPath('config'), frameworkPath('cloud/config'))

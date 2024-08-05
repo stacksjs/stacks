@@ -1,5 +1,6 @@
 {
   "name": "stacks-docs",
+  "version": "0.62.0",
   "type": "module",
   "scripts": {
     "dev": "bunx --bun vitepress dev",
