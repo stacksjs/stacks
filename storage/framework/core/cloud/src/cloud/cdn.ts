@@ -111,7 +111,7 @@ export class CdnStack {
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(config.app.docMode ? props.docsBucket as s3.Bucket : props.publicBucket, {
+        origin: new origins.S3Origin(config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket, {
           originAccessIdentity: this.originAccessIdentity,
         }),
         edgeLambdas: [

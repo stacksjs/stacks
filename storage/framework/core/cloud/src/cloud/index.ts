@@ -110,10 +110,9 @@ export class Cloud extends Stack {
       })
 
       await this.queue.init()
-
     }
 
-     this.cdn = new CdnStack(this, {
+    this.cdn = new CdnStack(this, {
       ...props,
       publicBucket: this.storage.publicBucket,
       docsBucket: this.storage.docsBucket,
@@ -127,7 +126,6 @@ export class Cloud extends Stack {
       summarizeAiUrl: this.ai.summarizeAiUrl,
       lb: this.api?.lb,
     })
-
 
     this.deployment = new DeploymentStack(this, {
       ...props,

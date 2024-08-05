@@ -55,8 +55,7 @@ async function buildServer() {
 
 async function main() {
   useCustomOrDefaultServerConfig()
-  if (cloudConfig.api?.deploy)
-    await buildServer()
+  if (cloudConfig.api?.deploy) await buildServer()
 }
 
 main().catch((error) => {

@@ -2,8 +2,8 @@ import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
+import { dispatch } from '@stacksjs/events'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-import mitt from 'mitt'
 import Post from './Post'
 
 import Subscriber from './Subscriber'
@@ -275,8 +275,7 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
-    const emitter = mitt()
-    emitter.emit('user.created', model)
+    dispatch('user.created', model)
 
     return model
   }
@@ -289,8 +288,7 @@ export class UserModel {
 
     await db.deleteFrom('users').where('id', '=', id).execute()
 
-    const emitter = mitt()
-    emitter.emit('user.deleted', model)
+    dispatch('user.deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -454,8 +452,7 @@ export class UserModel {
 
     const model = this.find(Number(this.id))
 
-    const emitter = mitt()
-    emitter.emit('user.updated', model)
+    dispatch('user.updated', model)
 
     return model
   }
@@ -482,8 +479,7 @@ export class UserModel {
 
     await db.deleteFrom('users').where('id', '=', this.id).execute()
 
-    const emitter = mitt()
-    emitter.emit('user.deleted', this)
+    dispatch('user.deleted', this)
   }
 
   async post() {

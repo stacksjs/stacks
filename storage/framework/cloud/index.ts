@@ -30,9 +30,7 @@ if (process.env.QUEUE_WORKER) {
   process.exit(0)
 }
 
-const development =
-  process.env.APP_ENV?.toLowerCase() !== 'production' &&
-  process.env.APP_ENV?.toLowerCase() !== 'prod'
+const development = process.env.APP_ENV?.toLowerCase() !== 'production' && process.env.APP_ENV?.toLowerCase() !== 'prod'
 
 const server = Bun.serve({
   port: 3000,
@@ -65,11 +63,7 @@ const server = Bun.serve({
       console.log('WebSocket message', message)
     },
 
-    async close(
-      ws: ServerWebSocket,
-      code: number,
-      reason?: string,
-    ): Promise<void> {
+    async close(ws: ServerWebSocket, code: number, reason?: string): Promise<void> {
       console.log('WebSocket closed', { code, reason })
     },
   },

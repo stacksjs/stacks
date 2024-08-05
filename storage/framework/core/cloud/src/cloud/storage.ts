@@ -44,7 +44,6 @@ export class StorageStack {
       Tags.of(this.docsBucket).add('weekly-backup', 'true')
     }
 
-
     this.privateBucket = new s3.Bucket(scope, 'PrivateBucket', {
       bucketName: `${this.bucketPrefix}-private-${props.timestamp}`,
       versioned: true,

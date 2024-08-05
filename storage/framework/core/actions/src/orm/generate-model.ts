@@ -5,6 +5,7 @@ import { fs, glob } from '@stacksjs/storage'
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
+
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -359,8 +360,7 @@ async function initiateModelGeneration(modelStringFile?: string): Promise<void> 
   await generateApiRoutes(modelFiles)
 
   for (const modelFile of modelFiles) {
-
-    if (modelStringFile && (modelStringFile !== modelFile)) continue
+    if (modelStringFile && modelStringFile !== modelFile) continue
 
     log.debug(`Processing model file: ${modelFile}`)
 
@@ -463,9 +463,9 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
   if (modelStringFile) {
     const ormPath = path.projectStoragePath(`framework/orm/Actions/${modelStringFile}.ts`)
 
-     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
+    if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
 
-     return
+    return
   }
 
   const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
@@ -473,8 +473,6 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
   }
-
- 
 }
 
 async function deleteExistingModelNameTypes() {

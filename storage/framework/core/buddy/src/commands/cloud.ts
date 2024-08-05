@@ -112,11 +112,15 @@ export function cloud(buddy: CLI) {
       if (options.diff) {
         const result = await runCommand('npx cdk diff', {
           cwd: p.frameworkCloudPath(),
-          stdin: 'pipe'
+          stdin: 'pipe',
         })
 
         if (result.isErr()) {
-          await outro('While running the cloud diff command, there was an issue', { startTime, useSeconds: true }, result.error)
+          await outro(
+            'While running the cloud diff command, there was an issue',
+            { startTime, useSeconds: true },
+            result.error,
+          )
           process.exit(ExitCode.FatalError)
         }
 
@@ -506,11 +510,15 @@ export function cloud(buddy: CLI) {
 
       const result = await runCommand('npx cdk diff', {
         cwd: p.frameworkCloudPath(),
-        stdin: 'pipe'
+        stdin: 'pipe',
       })
 
       if (result.isErr()) {
-        await outro('While running the cloud diff command, there was an issue', { startTime, useSeconds: true }, result.error)
+        await outro(
+          'While running the cloud diff command, there was an issue',
+          { startTime, useSeconds: true },
+          result.error,
+        )
         process.exit(ExitCode.FatalError)
       }
 
