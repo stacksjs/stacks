@@ -1,6 +1,7 @@
 import { watch } from 'fs'
+import { path } from '@stacksjs/path'
 
-const watcher = watch('/Users/glennmichaeltorregosa/Documents/Projects/stacks/app/Models', async (event, filename) => {
+watch(path.userModelsPath(), async (event, filename) => {
   await Bun.$`bun ../orm/generate-model.ts`
 
   console.log('generated orm models')
