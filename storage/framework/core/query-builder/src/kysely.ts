@@ -1,4 +1,4 @@
-import { Kysely, MysqlDialect as qbMysqlDialect, PostgresDialect as qbPostgresql, sql as qbSql } from 'kysely'
+import { Kysely, MysqlDialect as qbMysqlDialect, PostgresDialect as qbPostgresql } from 'kysely'
 import type { Pool } from 'mysql2'
 import { createPool } from 'mysql2'
 
@@ -21,7 +21,6 @@ interface MysqlConfig {
 // }
 // export const Cursor = qbCursor
 
-export const sql = qbSql
 export const QueryBuilder = Kysely
 export const MysqlDialect = qbMysqlDialect
 export const PostgresDialect = qbPostgresql

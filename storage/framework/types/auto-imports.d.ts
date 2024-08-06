@@ -368,6 +368,7 @@ declare global {
   const fromSafePromise: typeof import('../core/error-handling/src/index')['fromSafePromise']
   const fromThrowable: typeof import('../core/error-handling/src/index')['fromThrowable']
   const fs: typeof import('../core/storage/src/fs')['fs']
+  const fsWatch: typeof import('../core/storage/src/fs')['fsWatch']
   const functions: typeof import('../core/build/src/index')['functions']
   const functionsPath: typeof import('../core/path/src/paths')['functionsPath']
   const generate: typeof import('../core/actions/src/generate/index')['generate']
@@ -749,7 +750,7 @@ declare global {
   const sort: typeof import('../core/search-engine/src/index')['sort']
   const sorts: typeof import('../core/search-engine/src/index')['sorts']
   const spyOn: typeof import('../core/testing/src/index')['spyOn']
-  const sql: typeof import('../core/query-builder/src/kysely')['sql']
+  const sql: typeof import('../core/database/src/types')['sql']
   const src: typeof import('../core/scheduler/src/index')['default']
   const stacks: typeof import('../core/build/src/index')['stacks']
   const stacksPath: typeof import('../core/path/src/paths')['stacksPath']
@@ -1042,7 +1043,7 @@ declare global {
   const wait: typeof import('../core/utils/src/sleep')['wait']
   const waitUntil: typeof import('../core/utils/src/sleep')['waitUntil']
   const waitWhile: typeof import('../core/utils/src/sleep')['waitWhile']
-  const watch: typeof import('../core/storage/src/fs')['watch']
+  const watch: typeof import('vue')['watch']
   const watchArray: typeof import('../core/utils/src/vendors')['watchArray']
   const watchAtMost: typeof import('../core/utils/src/vendors')['watchAtMost']
   const watchDebounced: typeof import('../core/utils/src/vendors')['watchDebounced']
@@ -1393,6 +1394,7 @@ declare module 'vue' {
     readonly fromSafePromise: UnwrapRef<typeof import('../core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('../core/error-handling/src/index')['fromThrowable']>
     readonly fs: UnwrapRef<typeof import('../core/storage/src/fs')['fs']>
+    readonly fsWatch: UnwrapRef<typeof import('../core/storage/src/fs')['fsWatch']>
     readonly functionsPath: UnwrapRef<typeof import('../core/path/src/paths')['functionsPath']>
     readonly generate: UnwrapRef<typeof import('../core/actions/src/generate/index')['generate']>
     readonly generateAppKey: UnwrapRef<typeof import('../core/security/src/key')['generateAppKey']>
@@ -1751,7 +1753,7 @@ declare module 'vue' {
     readonly sns: UnwrapRef<typeof import('../core/sms/src/drivers/index')['sns']>
     readonly sort: UnwrapRef<typeof import('../core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../core/search-engine/src/index')['sorts']>
-    readonly sql: UnwrapRef<typeof import('../core/query-builder/src/kysely')['sql']>
+    readonly sql: UnwrapRef<typeof import('../core/database/src/types')['sql']>
     readonly src: UnwrapRef<typeof import('../core/scheduler/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/paths')['stacksPath']>
     readonly sticky: UnwrapRef<typeof import('../core/utils/src/regex')['sticky']>
@@ -2029,7 +2031,7 @@ declare module 'vue' {
     readonly wait: UnwrapRef<typeof import('../core/utils/src/sleep')['wait']>
     readonly waitUntil: UnwrapRef<typeof import('../core/utils/src/sleep')['waitUntil']>
     readonly waitWhile: UnwrapRef<typeof import('../core/utils/src/sleep')['waitWhile']>
-    readonly watch: UnwrapRef<typeof import('../core/storage/src/fs')['watch']>
+    readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchArray: UnwrapRef<typeof import('../core/utils/src/vendors')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('../core/utils/src/vendors')['watchAtMost']>
     readonly watchDebounced: UnwrapRef<typeof import('../core/utils/src/vendors')['watchDebounced']>
@@ -2359,6 +2361,7 @@ declare module '@vue/runtime-core' {
     readonly fromSafePromise: UnwrapRef<typeof import('../core/error-handling/src/index')['fromSafePromise']>
     readonly fromThrowable: UnwrapRef<typeof import('../core/error-handling/src/index')['fromThrowable']>
     readonly fs: UnwrapRef<typeof import('../core/storage/src/fs')['fs']>
+    readonly fsWatch: UnwrapRef<typeof import('../core/storage/src/fs')['fsWatch']>
     readonly functionsPath: UnwrapRef<typeof import('../core/path/src/paths')['functionsPath']>
     readonly generate: UnwrapRef<typeof import('../core/actions/src/generate/index')['generate']>
     readonly generateAppKey: UnwrapRef<typeof import('../core/security/src/key')['generateAppKey']>
@@ -2717,7 +2720,7 @@ declare module '@vue/runtime-core' {
     readonly sns: UnwrapRef<typeof import('../core/sms/src/drivers/index')['sns']>
     readonly sort: UnwrapRef<typeof import('../core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../core/search-engine/src/index')['sorts']>
-    readonly sql: UnwrapRef<typeof import('../core/query-builder/src/kysely')['sql']>
+    readonly sql: UnwrapRef<typeof import('../core/database/src/types')['sql']>
     readonly src: UnwrapRef<typeof import('../core/scheduler/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/paths')['stacksPath']>
     readonly sticky: UnwrapRef<typeof import('../core/utils/src/regex')['sticky']>
@@ -2995,7 +2998,7 @@ declare module '@vue/runtime-core' {
     readonly wait: UnwrapRef<typeof import('../core/utils/src/sleep')['wait']>
     readonly waitUntil: UnwrapRef<typeof import('../core/utils/src/sleep')['waitUntil']>
     readonly waitWhile: UnwrapRef<typeof import('../core/utils/src/sleep')['waitWhile']>
-    readonly watch: UnwrapRef<typeof import('../core/storage/src/fs')['watch']>
+    readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchArray: UnwrapRef<typeof import('../core/utils/src/vendors')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('../core/utils/src/vendors')['watchAtMost']>
     readonly watchDebounced: UnwrapRef<typeof import('../core/utils/src/vendors')['watchDebounced']>
