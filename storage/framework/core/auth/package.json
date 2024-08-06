@@ -42,6 +42,6 @@
   "dependencies": {
     "@stacksjs/router": "workspace:*",
     "otplib": "^12.0.1",
-    "qrcode": "^1.5.3"
+    "qrcode": "^1.5.4"
   }
 }
