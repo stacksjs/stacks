@@ -49,20 +49,6 @@ export function getDialect() {
 
 export const now = sql`now()`
 
-export function getModelName(model: Model, modelPath: string): string {
-  if (model.name) return model.name
-
-  const baseName = path.basename(modelPath)
-
-  return baseName.replace(/\.ts$/, '')
-}
-
-export function getTableName(model: Model, modelPath: string): string {
-  if (model.table) return model.table
-
-  return snakeCase(plural(getModelName(model, modelPath)))
-}
-
 export const db = new Kysely<Database>({
   dialect: getDialect(),
 })
