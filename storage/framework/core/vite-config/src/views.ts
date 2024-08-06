@@ -47,6 +47,7 @@ export default defineConfig({
         '@stacksjs/logging',
         '@stacksjs/utils',
         '@stacksjs/cli',
+        'bun',
         'execa',
       ],
     },

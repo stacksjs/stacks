@@ -13,8 +13,8 @@ export type {
   Ranges,
   TimeUnit,
 } from './types/cron'
-export * from './types/utils'
 
+export * from './types/utils'
 export * from './schedule'
 
 export default Schedule

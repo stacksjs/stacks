@@ -3,9 +3,8 @@ import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
-import { glob, storage } from '@stacksjs/storage'
+import { glob } from '@stacksjs/storage'
 import type { ActionOptions } from '@stacksjs/types'
-import { Glob } from 'bun'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 type ActionName = string // TODO: narrow this by automating its generation
@@ -21,7 +20,7 @@ type Action = ActionPath | ActionName | string
 export async function runAction(action: Action, options?: ActionOptions) {
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
-  const glob = new Glob('**/*.ts')
+  const glob = new Bun.Glob('**/*.ts')
   const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true }
 
   for await (const file of glob.scan(scanOptions)) {
