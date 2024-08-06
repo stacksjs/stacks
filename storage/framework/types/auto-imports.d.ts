@@ -1042,12 +1042,13 @@ declare global {
   const wait: typeof import('../core/utils/src/sleep')['wait']
   const waitUntil: typeof import('../core/utils/src/sleep')['waitUntil']
   const waitWhile: typeof import('../core/utils/src/sleep')['waitWhile']
-  const watch: typeof import('vue')['watch']
+  const watch: typeof import('../core/storage/src/fs')['watch']
   const watchArray: typeof import('../core/utils/src/vendors')['watchArray']
   const watchAtMost: typeof import('../core/utils/src/vendors')['watchAtMost']
   const watchDebounced: typeof import('../core/utils/src/vendors')['watchDebounced']
   const watchDeep: typeof import('../core/utils/src/vendors')['watchDeep']
   const watchEffect: typeof import('vue')['watchEffect']
+  const watchFile: typeof import('../core/storage/src/fs')['watchFile']
   const watchIgnorable: typeof import('../core/utils/src/vendors')['watchIgnorable']
   const watchImmediate: typeof import('../core/utils/src/vendors')['watchImmediate']
   const watchOnce: typeof import('../core/utils/src/vendors')['watchOnce']
@@ -2028,12 +2029,13 @@ declare module 'vue' {
     readonly wait: UnwrapRef<typeof import('../core/utils/src/sleep')['wait']>
     readonly waitUntil: UnwrapRef<typeof import('../core/utils/src/sleep')['waitUntil']>
     readonly waitWhile: UnwrapRef<typeof import('../core/utils/src/sleep')['waitWhile']>
-    readonly watch: UnwrapRef<typeof import('vue')['watch']>
+    readonly watch: UnwrapRef<typeof import('../core/storage/src/fs')['watch']>
     readonly watchArray: UnwrapRef<typeof import('../core/utils/src/vendors')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('../core/utils/src/vendors')['watchAtMost']>
     readonly watchDebounced: UnwrapRef<typeof import('../core/utils/src/vendors')['watchDebounced']>
     readonly watchDeep: UnwrapRef<typeof import('../core/utils/src/vendors')['watchDeep']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
+    readonly watchFile: UnwrapRef<typeof import('../core/storage/src/fs')['watchFile']>
     readonly watchIgnorable: UnwrapRef<typeof import('../core/utils/src/vendors')['watchIgnorable']>
     readonly watchImmediate: UnwrapRef<typeof import('../core/utils/src/vendors')['watchImmediate']>
     readonly watchOnce: UnwrapRef<typeof import('../core/utils/src/vendors')['watchOnce']>
@@ -2993,12 +2995,13 @@ declare module '@vue/runtime-core' {
     readonly wait: UnwrapRef<typeof import('../core/utils/src/sleep')['wait']>
     readonly waitUntil: UnwrapRef<typeof import('../core/utils/src/sleep')['waitUntil']>
     readonly waitWhile: UnwrapRef<typeof import('../core/utils/src/sleep')['waitWhile']>
-    readonly watch: UnwrapRef<typeof import('vue')['watch']>
+    readonly watch: UnwrapRef<typeof import('../core/storage/src/fs')['watch']>
     readonly watchArray: UnwrapRef<typeof import('../core/utils/src/vendors')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('../core/utils/src/vendors')['watchAtMost']>
     readonly watchDebounced: UnwrapRef<typeof import('../core/utils/src/vendors')['watchDebounced']>
     readonly watchDeep: UnwrapRef<typeof import('../core/utils/src/vendors')['watchDeep']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
+    readonly watchFile: UnwrapRef<typeof import('../core/storage/src/fs')['watchFile']>
     readonly watchIgnorable: UnwrapRef<typeof import('../core/utils/src/vendors')['watchIgnorable']>
     readonly watchImmediate: UnwrapRef<typeof import('../core/utils/src/vendors')['watchImmediate']>
     readonly watchOnce: UnwrapRef<typeof import('../core/utils/src/vendors')['watchOnce']>

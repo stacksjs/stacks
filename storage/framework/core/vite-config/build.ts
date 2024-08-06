@@ -42,7 +42,6 @@ const result = await Bun.build({
     '@vitejs/plugin-vue',
     'unplugin-auto-import/vite',
     'unplugin-vue-components/vite',
-    'unplugin-vue-macros/vite',
     'unplugin-vue-markdown/vite',
     'unplugin-vue-router',
     'unplugin-vue-router/vite',

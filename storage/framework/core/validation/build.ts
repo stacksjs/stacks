@@ -10,7 +10,14 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
 
-  external: ['@vinejs/vine', '@stacksjs/strings', '@stacksjs/types', '@dinero.js/currencies', 'dinero.js'],
+  external: [
+    '@vinejs/vine',
+    '@stacksjs/strings',
+    '@stacksjs/types',
+    '@stacksjs/path',
+    '@dinero.js/currencies',
+    'dinero.js',
+  ],
 })
 
 await outro({

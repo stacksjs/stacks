@@ -5,7 +5,6 @@ import { components, cssEngine, i18n, layouts } from '@stacksjs/vite-plugin'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
-import VueMacros from 'unplugin-vue-macros/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
 import { defineConfig } from 'vite'
@@ -59,12 +58,8 @@ export default defineConfig({
   },
 
   plugins: [
-    VueMacros({
-      plugins: {
-        vue: Vue({
-          include: /\.(stx|vue|md)($|\?)/,
-        }),
-      },
+    Vue({
+      include: /\.(stx|vue|md)($|\?)/,
     }),
 
     VueRouter({

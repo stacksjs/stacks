@@ -13,7 +13,6 @@ import {
   router,
 } from '@stacksjs/vite-plugin'
 import Vue from '@vitejs/plugin-vue'
-import VueMacros from 'unplugin-vue-macros/vite'
 import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
@@ -102,12 +101,8 @@ export default defineConfig({
   },
 
   plugins: [
-    VueMacros({
-      plugins: {
-        vue: Vue({
-          include: /\.(stx|vue|md)($|\?)/,
-        }),
-      },
+    Vue({
+      include: /\.(stx|vue|md)($|\?)/,
     }),
 
     router({

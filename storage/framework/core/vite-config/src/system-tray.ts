@@ -4,7 +4,6 @@ import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { cssEngine, i18n, layouts, router } from '@stacksjs/vite-plugin'
 import Vue from '@vitejs/plugin-vue'
-import VueMacros from 'unplugin-vue-macros/vite'
 import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
@@ -42,12 +41,8 @@ export default defineConfig({
   },
 
   plugins: [
-    VueMacros({
-      plugins: {
-        vue: Vue({
-          include: /\.(stx|md)($|\?)/,
-        }),
-      },
+    Vue({
+      include: /\.(stx|md)($|\?)/,
     }),
 
     router({

@@ -99,7 +99,6 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "latest",
-    "@stacksjs/development": "workspace:*",
-    "unplugin-vue-macros": "^2.11.4"
+    "@stacksjs/development": "workspace:*"
   }
 }
