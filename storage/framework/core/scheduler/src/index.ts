@@ -17,4 +17,4 @@ export type {
 export * from './types/utils'
 export * from './schedule'
 
-export default Schedule
+// export default Schedule

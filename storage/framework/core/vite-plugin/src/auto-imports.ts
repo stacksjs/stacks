@@ -24,16 +24,15 @@ export function autoImports(options?: AutoImportsOptions) {
     ],
 
     dts: p.frameworkPath('types/auto-imports.d.ts'),
-
     dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
-
     vueTemplate: true,
 
-    // eslintrc: {
-    //   enabled: true,
-    //   filepath: './.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
-    //   globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
-    // },
+    // Generate corresponding .biomelintrc-auto-import.json file.
+    // biomejs extends Docs - https://biomejs.dev/guides/how-biome-works/#the-extends-option
+    biomelintrc: {
+      enabled: true, // Default `false`
+      filepath: './.biomelintrc-auto-import.json', // Default `./.biomelintrc-auto-import.json`
+    },
 
     ...options,
   } as AutoImportsOptions)

@@ -233,7 +233,6 @@ export class CdnStack {
   }
 
   shouldDeployApi() {
-    console.log('shouldDeployApi', config.cloud.api?.deploy)
     return config.cloud.api?.deploy
   }
 

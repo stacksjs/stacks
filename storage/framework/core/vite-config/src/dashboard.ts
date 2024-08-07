@@ -94,16 +94,8 @@ export default defineConfig({
       ],
 
       dts: p.frameworkPath('types/auto-imports.d.ts'),
-
       dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
-
       vueTemplate: true,
-
-      // eslintrc: {
-      //   enabled: true,
-      //   filepath: '../../.eslintrc-auto-import.json', // Default `./.eslintrc-auto-import.json`
-      //   globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
-      // },
     }),
 
     components(),

@@ -751,7 +751,7 @@ declare global {
   const sorts: typeof import('../core/search-engine/src/index')['sorts']
   const spyOn: typeof import('../core/testing/src/index')['spyOn']
   const sql: typeof import('../core/database/src/types')['sql']
-  const src: typeof import('../core/scheduler/src/index')['default']
+  const src: typeof import('../core/events/src/index')['default']
   const stacks: typeof import('../core/build/src/index')['stacks']
   const stacksPath: typeof import('../core/path/src/paths')['stacksPath']
   const sticky: typeof import('../core/utils/src/regex')['sticky']
@@ -1754,7 +1754,7 @@ declare module 'vue' {
     readonly sort: UnwrapRef<typeof import('../core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../core/search-engine/src/index')['sorts']>
     readonly sql: UnwrapRef<typeof import('../core/database/src/types')['sql']>
-    readonly src: UnwrapRef<typeof import('../core/scheduler/src/index')['default']>
+    readonly src: UnwrapRef<typeof import('../core/events/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/paths')['stacksPath']>
     readonly sticky: UnwrapRef<typeof import('../core/utils/src/regex')['sticky']>
     readonly storage: UnwrapRef<typeof import('../core/storage/src/index')['storage']>
@@ -2721,7 +2721,7 @@ declare module '@vue/runtime-core' {
     readonly sort: UnwrapRef<typeof import('../core/search-engine/src/index')['sort']>
     readonly sorts: UnwrapRef<typeof import('../core/search-engine/src/index')['sorts']>
     readonly sql: UnwrapRef<typeof import('../core/database/src/types')['sql']>
-    readonly src: UnwrapRef<typeof import('../core/scheduler/src/index')['default']>
+    readonly src: UnwrapRef<typeof import('../core/events/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/paths')['stacksPath']>
     readonly sticky: UnwrapRef<typeof import('../core/utils/src/regex')['sticky']>
     readonly storage: UnwrapRef<typeof import('../core/storage/src/index')['storage']>

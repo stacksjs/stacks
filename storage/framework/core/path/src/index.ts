@@ -1,5 +1,5 @@
-import { path } from './paths'
+// import { path } from './paths'
 
 export * from './paths'
 
-export default path
+// export default path

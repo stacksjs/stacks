@@ -134,7 +134,6 @@ export class Cloud extends Stack {
       docsBucket: this.storage.docsBucket,
       cdn: this.cdn.distribution,
     })
-    console.log('here6')
   }
 
   shouldDeployApi() {
