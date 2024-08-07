@@ -271,7 +271,6 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isObject(foundCallback)) {
-    console.log(foundCallback)
     return await new Response(JSON.stringify(foundCallback), {
       headers: {
         'Content-Type': 'json',

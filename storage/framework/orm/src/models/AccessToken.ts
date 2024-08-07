@@ -116,6 +116,16 @@ export class AccessTokenModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<AccessTokenModel[]> {
+    const query = db.selectFrom('personal_access_tokens').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
@@ -140,8 +150,6 @@ export class AccessTokenModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new AccessTokenModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
   }

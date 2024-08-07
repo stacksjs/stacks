@@ -15,6 +15,14 @@ export async function listRoutes() {
 export function extractModelFromAction(action: string): string {
   let model = ''
 
+  if (action.includes('IndexOrmAction')) {
+    const match = action.match(/\/([A-Z][a-z]+)IndexOrmAction/)
+
+    const modelString = match ? match[1] : ''
+
+    model = modelString as string
+  }
+
   if (action.includes('StoreOrmAction')) {
     const match = action.match(/\/([A-Z][a-z]+)StoreOrmAction/)
 

@@ -102,6 +102,16 @@ export class ReleaseModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<ReleaseModel[]> {
+    const query = db.selectFrom('releases').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel> {
     let query = db.selectFrom('releases').where('id', '=', id)
 
@@ -126,8 +136,6 @@ export class ReleaseModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new ReleaseModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }

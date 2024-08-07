@@ -283,10 +283,10 @@ export class Router implements RouterInterface {
 
     let actionModule = null
 
-    if (modulePath.includes('OrmAction'))
-      actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
-    else if (modulePath.includes('storage/framework/orm')) actionModule = await import(`${modulePath}`)
+    if (modulePath.includes('storage/framework/orm')) actionModule = await import(`${modulePath}`)
     else if (modulePath.includes('app/Actions')) actionModule = await import(`${modulePath}`)
+    else if (modulePath.includes('OrmAction'))
+      actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
     else actionModule = await import(importPathFunction(`${modulePath}.ts`))
 
     // Use custom path from action module if available
@@ -302,8 +302,11 @@ export class Router implements RouterInterface {
     // if fails, return validation error
     let requestInstance
 
-    if (modulePath.includes('OrmAction')) requestInstance = await extractModelRequest(modulePath)
-    else requestInstance = await extractDynamicRequest(modulePath)
+    if (modulePath.includes('OrmAction')) {
+      requestInstance = await extractModelRequest(modulePath)
+    } else requestInstance = await extractDynamicRequest(modulePath)
+
+    console.log(await actionModule.default.handle(requestInstance))
 
     try {
       return await actionModule.default.handle(requestInstance)

@@ -110,6 +110,16 @@ export class PostModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<PostModel[]> {
+    const query = db.selectFrom('posts').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof PostType)[]): Promise<PostModel> {
     let query = db.selectFrom('posts').where('id', '=', id)
 
@@ -134,8 +144,6 @@ export class PostModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new PostModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
   }

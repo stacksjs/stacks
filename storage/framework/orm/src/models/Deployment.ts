@@ -125,6 +125,16 @@ export class DeploymentModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<DeploymentModel[]> {
+    const query = db.selectFrom('deployments').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel> {
     let query = db.selectFrom('deployments').where('id', '=', id)
 
@@ -149,8 +159,6 @@ export class DeploymentModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new DeploymentModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
   }

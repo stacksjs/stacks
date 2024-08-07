@@ -133,6 +133,16 @@ export class TeamModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<TeamModel[]> {
+    const query = db.selectFrom('teams').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
     let query = db.selectFrom('teams').where('id', '=', id)
 
@@ -157,8 +167,6 @@ export class TeamModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new TeamModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
   }

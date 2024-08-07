@@ -1158,6 +1158,16 @@ async function generateModelString(
         return instance.parseResult(new this(model))
       }
 
+      static async all(): Promise<${modelName}Model[]> {
+        let query = db.selectFrom('${tableName}').selectAll()
+
+        const instance = new this(null)
+
+        const results = await query.execute()
+
+        return results.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
+      }
+
       static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
@@ -1188,8 +1198,6 @@ async function generateModelString(
           query = query.selectAll()
 
         const model = await query.execute()
-
-        instance.parseResult(new ${modelName}Model(modelItem))
 
         return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }

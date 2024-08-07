@@ -137,6 +137,16 @@ export class UserModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<UserModel[]> {
+    const query = db.selectFrom('users').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof UserType)[]): Promise<UserModel> {
     let query = db.selectFrom('users').where('id', '=', id)
 
@@ -161,8 +171,6 @@ export class UserModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new UserModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
   }

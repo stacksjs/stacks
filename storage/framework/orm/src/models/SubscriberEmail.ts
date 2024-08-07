@@ -108,6 +108,16 @@ export class SubscriberEmailModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<SubscriberEmailModel[]> {
+    const query = db.selectFrom('subscriber_emails').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel> {
     let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
@@ -132,8 +142,6 @@ export class SubscriberEmailModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new SubscriberEmailModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }

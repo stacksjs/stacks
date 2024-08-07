@@ -111,6 +111,16 @@ export class ProjectModel {
     return instance.parseResult(new this(model))
   }
 
+  static async all(): Promise<ProjectModel[]> {
+    const query = db.selectFrom('projects').selectAll()
+
+    const instance = new this(null)
+
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
+  }
+
   static async findOrFail(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel> {
     let query = db.selectFrom('projects').where('id', '=', id)
 
@@ -135,8 +145,6 @@ export class ProjectModel {
     else query = query.selectAll()
 
     const model = await query.execute()
-
-    instance.parseResult(new ProjectModel(modelItem))
 
     return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
   }
