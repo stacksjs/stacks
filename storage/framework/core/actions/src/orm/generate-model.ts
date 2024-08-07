@@ -61,9 +61,19 @@ async function generateApiRoutes(modelFiles: string[]) {
             //   console.log(`Route: ${route}, Path: ${apiRoutes[route]}`);
             // }
 
+            let path: string | null = ''
+
             await writeOrmActions(apiRoute as string, modelName)
 
-            const path = `${apiRoutes[apiRoute]}`
+            path = `${apiRoutes[apiRoute]}`
+
+            if (!path.includes('/')) {
+              path = await lookupFile(path)
+            }
+
+            if (!path) {
+              throw { message: 'Action Not Found!' }
+            }
 
             if (apiRoute === 'index') routeString += `await route.get('${uri}', '${path}')\n\n`
 
@@ -82,6 +92,31 @@ async function generateApiRoutes(modelFiles: string[]) {
 
   writer.write(routeString)
   await writer.end()
+}
+
+async function lookupFile(fileName: string): Promise<string | null> {
+  const ormDirectory = path.projectStoragePath('framework/orm/Actions')
+
+  const filePath = path.join(ormDirectory, fileName)
+
+  const pathExists = await fs.existsSync(filePath)
+
+  // Check if the directory exists
+  if (pathExists) {
+    return filePath
+  }
+
+  const actionDirectory = path.userActionsPath()
+
+  const actionFilePath = path.join(actionDirectory, fileName)
+
+  const fileExists = await fs.existsSync(actionFilePath)
+
+  if (fileExists) {
+    return actionFilePath
+  }
+
+  return null
 }
 
 async function writeModelNames() {
