@@ -37,6 +37,8 @@ async function generateApiRoutes(modelFiles: string[]) {
     if (model.traits?.useApi) {
       const apiRoutes = model.traits?.useApi?.routes
       const middlewares = model.traits.useApi?.middleware
+      const uri = model.traits.useApi?.uri || tableName
+
       if (middlewares) {
         middlewareString = `.middleware([`
         if (middlewares.length) {
@@ -52,24 +54,27 @@ async function generateApiRoutes(modelFiles: string[]) {
         middlewareString += `])`
       }
 
-      if (apiRoutes?.length) {
-        for (const apiRoute of apiRoutes) {
-          await writeOrmActions(apiRoute as string, modelName)
+      if (Object.keys(model.traits.useApi.routes).length > 0) {
+        if (apiRoutes) {
+          for (const apiRoute in apiRoutes) {
+            // if (Object.prototype.hasOwnProperty.call(apiRoutes, route)) {
+            //   console.log(`Route: ${route}, Path: ${apiRoutes[route]}`);
+            // }
 
-          if (apiRoute === 'index')
-            routeString += `await route.get('${tableName}', 'Actions/${modelName}IndexOrmAction')${middlewareString}\n\n`
+            await writeOrmActions(apiRoute as string, modelName)
 
-          if (apiRoute === 'store')
-            routeString += `await route.post('${tableName}', 'Actions/${modelName}StoreOrmAction')${middlewareString}\n\n`
+            const path = `${apiRoutes[apiRoute]}`
 
-          if (apiRoute === 'update')
-            routeString += `await route.patch('${tableName}/{id}', 'Actions/${modelName}UpdateOrmAction')${middlewareString}\n\n`
+            if (apiRoute === 'index') routeString += `await route.get('${uri}', '${path}')\n\n`
 
-          if (apiRoute === 'show')
-            routeString += `await route.get('${tableName}/{id}', 'Actions/${modelName}ShowOrmAction')${middlewareString}\n\n`
+            if (apiRoute === 'show') routeString += `await route.get('${uri}/{id}', '${path}')\n\n`
 
-          if (apiRoute === 'destroy')
-            routeString += `await route.delete('${tableName}/{id}', 'Actions/${modelName}DestroyOrmAction')${middlewareString}\n\n`
+            if (apiRoute === 'store') routeString += `await route.post('${uri}', '${path}')\n\n`
+
+            if (apiRoute === 'update') routeString += `await route.patch('${uri}/{id}', '${path}')\n\n`
+
+            if (apiRoute === 'destroy') routeString += `await route.delete('${uri}/{id}', '${path}')\n\n`
+          }
         }
       }
     }

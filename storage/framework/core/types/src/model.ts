@@ -6,6 +6,10 @@ export type AuthOptions = {
   useTwoFactor?: boolean
 }
 
+type ActionPath = string
+type ActionName = string
+type Action = ActionPath | ActionName
+
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
 export type VineType = VineString | VineNumber | VineBoolean | Date | Nullable<any>
@@ -32,7 +36,9 @@ interface BelongsToManyType {
 export interface ApiSettings {
   uri: string
   middleware: string[]
-  routes: ApiRoutes[]
+  routes: {
+    [key in ApiRoutes]: Action
+  }
 }
 
 type ApiOptions = DeepPartial<ApiSettings>

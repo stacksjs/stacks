@@ -1,5 +1,6 @@
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
+import { path } from '@stacksjs/path'
 import { capitalize } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
@@ -33,7 +34,10 @@ export default {
     useApi: {
       uri: 'users', // your-url.com/api/users
       middleware: ['Api'], // defaults to `[]`
-      routes: ['index', 'update', 'store', 'destroy', 'show'],
+      routes: {
+        index: path.projectStoragePath('framework/orm/Actions/UserIndexOrmAction.ts'),
+        show: path.projectStoragePath('framework/orm/Actions/UserShowOrmAction.ts'),
+      },
     },
 
     observe: true,
