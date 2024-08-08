@@ -391,6 +391,7 @@ async function initiateModelGeneration(modelStringFile?: string): Promise<void> 
   await deleteExistingOrmActions(modelStringFile)
   await deleteExistingModelNameTypes()
   await deleteExistingModelRequest(modelStringFile)
+  await deleteExistingOrmRoute()
 
   await writeModelNames()
   await writeModelRequest()
@@ -538,6 +539,12 @@ async function deleteExistingModelRequest(modelStringFile?: string) {
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
   }
+}
+
+async function deleteExistingOrmRoute() {
+  const ormRoute = path.projectStoragePath('framework/orm/routes.ts')
+
+  if (fs.existsSync(ormRoute)) await Bun.$`rm ${ormRoute}`
 }
 
 async function setKyselyTypes() {
@@ -766,11 +773,13 @@ function getHiddenAttributes(attributes: Attributes | undefined): string[] {
 function getFillableAttributes(attributes: Attributes | undefined): string[] {
   if (attributes === undefined) return []
 
-  return Object.keys(attributes).filter((key) => {
-    if (attributes === undefined) return false
+  return Object.keys(attributes)
+    .filter((key) => {
+      if (attributes === undefined) return false
 
-    return attributes[key]?.fillable === true
-  })
+      return attributes[key]?.fillable === true
+    })
+    .map((attribute) => snakeCase(attribute))
 }
 
 async function generateModelString(

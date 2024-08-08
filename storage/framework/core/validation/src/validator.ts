@@ -1,4 +1,5 @@
 import { path } from '@stacksjs/path'
+import { snakeCase } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import type { VineType } from '@stacksjs/types'
 import type { SchemaTypes } from '@vinejs/vine/types'
@@ -31,7 +32,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
-      ruleObject[key] = attributes[key]?.validation?.rule
+      ruleObject[snakeCase(key)] = attributes[key]?.validation?.rule
       const validatorMessages = attributes[key]?.validation?.message
 
       for (const validatorMessageKey in validatorMessages) {

@@ -82,7 +82,6 @@ export async function findRequestInstance(requestInstance: string) {
 
   const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
 
-
   const pathExists = await existsSync(filePath)
 
   // Check if the directory exists
@@ -106,8 +105,8 @@ export async function findRequestInstance(requestInstance: string) {
 }
 
 export async function extractDefaultRequest(action: string) {
-    const requestPath = path.projectStoragePath(`framework/core/router/src/request.ts`)
-    const requestInstance = await import(requestPath)
+  const requestPath = path.projectStoragePath(`framework/core/router/src/request.ts`)
+  const requestInstance = await import(requestPath)
 
-    return requestInstance.request
+  return requestInstance.request
 }

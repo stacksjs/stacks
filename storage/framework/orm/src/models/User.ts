@@ -67,7 +67,7 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = []
+  private fillable = ['name', 'email', 'job_title', 'password']
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
