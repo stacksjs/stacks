@@ -1,6 +1,6 @@
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { glob } from '@stacksjs/storage'
+import { existsSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
 
@@ -77,29 +77,37 @@ export async function extractModelRequest(action: string) {
   return requestInstance[requestIndex]
 }
 
-export async function extractDynamicRequest(action: string) {
-  const extractedModel = extractDynamicAction(action) || ''
+export async function findRequestInstance(requestInstance: string) {
+  const frameworkDirectory = path.projectStoragePath('framework/requests')
 
-  const lowerCaseModel = camelCase(extractedModel)
+  const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
 
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
 
-  const fileToCheck = `${extractedModel}.ts`
+  const pathExists = await existsSync(filePath)
 
-  const fileExists = modelFiles.some((file) => file.split('/').pop() === fileToCheck)
-
-  if (!fileExists) {
-    const requestPath = path.projectStoragePath(`framework/core/router/src/request.ts`)
-    const requestInstance = await import(requestPath)
+  // Check if the directory exists
+  if (pathExists) {
+    const requestInstance = await import(filePath)
 
     return requestInstance.request
   }
 
-  const requestPath = path.projectStoragePath(`framework/requests/${extractedModel}Request.ts`)
+  const defaultRequestPath = path.projectStoragePath('framework/core/router/src/request.ts')
 
-  const requestInstance = await import(requestPath)
+  const fileExists = await existsSync(defaultRequestPath)
 
-  const requestIndex = `${lowerCaseModel}Request`
+  if (fileExists) {
+    const requestInstance = await import(defaultRequestPath)
 
-  return requestInstance[requestIndex]
+    return requestInstance.request
+  }
+
+  return null
+}
+
+export async function extractDefaultRequest(action: string) {
+    const requestPath = path.projectStoragePath(`framework/core/router/src/request.ts`)
+    const requestInstance = await import(requestPath)
+
+    return requestInstance.request
 }

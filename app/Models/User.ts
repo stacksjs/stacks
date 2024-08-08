@@ -36,6 +36,7 @@ export default {
       routes: {
         index: 'UserIndexOrmAction.ts',
         show: 'UserShowOrmAction.ts',
+        store: 'UserStoreAction.ts',
       },
     },
 

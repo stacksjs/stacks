@@ -42,4 +42,4 @@ export class TeamRequest extends Request implements TeamRequestType {
   }
 }
 
-export const teamRequest = new TeamRequest()
+export const request = new TeamRequest()

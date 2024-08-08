@@ -36,4 +36,4 @@ export class ProjectRequest extends Request implements ProjectRequestType {
   }
 }
 
-export const projectRequest = new ProjectRequest()
+export const request = new ProjectRequest()

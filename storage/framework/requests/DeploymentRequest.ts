@@ -40,4 +40,4 @@ export class DeploymentRequest extends Request implements DeploymentRequestType 
   }
 }
 
-export const deploymentRequest = new DeploymentRequest()
+export const request = new DeploymentRequest()

@@ -33,4 +33,4 @@ export class ReleaseRequest extends Request implements ReleaseRequestType {
   }
 }
 
-export const releaseRequest = new ReleaseRequest()
+export const request = new ReleaseRequest()

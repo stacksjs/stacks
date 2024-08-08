@@ -34,4 +34,4 @@ export class SubscriberRequest extends Request implements SubscriberRequestType 
   }
 }
 
-export const subscriberRequest = new SubscriberRequest()
+export const request = new SubscriberRequest()

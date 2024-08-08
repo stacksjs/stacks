@@ -5,7 +5,7 @@ import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 
-import { extractDynamicRequest, extractModelRequest } from './utils'
+import { extractDefaultRequest, extractModelRequest, findRequestInstance } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 
@@ -283,8 +283,8 @@ export class Router implements RouterInterface {
 
     let actionModule = null
 
-    if (modulePath.includes('storage/framework/orm')) actionModule = await import(`${modulePath}`)
-    else if (modulePath.includes('app/Actions')) actionModule = await import(`${modulePath}`)
+    if (modulePath.includes('storage/framework/orm')) actionModule = await import(`${modulePath}.ts`)
+    else if (modulePath.includes('app/Actions')) actionModule = await import(`${modulePath}.ts`)
     else if (modulePath.includes('OrmAction'))
       actionModule = await import(importPathFunction(`/framework/orm/${modulePath}.ts`))
     else actionModule = await import(importPathFunction(`${modulePath}.ts`))
@@ -302,11 +302,13 @@ export class Router implements RouterInterface {
     // if fails, return validation error
     let requestInstance
 
-    if (modulePath.includes('OrmAction')) {
-      requestInstance = await extractModelRequest(modulePath)
-    } else requestInstance = await extractDynamicRequest(modulePath)
-
-    console.log(await actionModule.default.handle(requestInstance))
+    if (actionModule.default.requestFile) {
+      requestInstance = await findRequestInstance(actionModule.default.requestFile)
+    } else {
+      if (modulePath.includes('OrmAction')) {
+        requestInstance = await extractModelRequest(modulePath)
+      } else requestInstance = await extractDefaultRequest(modulePath)
+    }
 
     try {
       return await actionModule.default.handle(requestInstance)

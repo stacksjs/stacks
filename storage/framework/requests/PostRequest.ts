@@ -35,4 +35,4 @@ export class PostRequest extends Request implements PostRequestType {
   }
 }
 
-export const postRequest = new PostRequest()
+export const request = new PostRequest()

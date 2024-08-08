@@ -41,4 +41,4 @@ export class UserRequest extends Request implements UserRequestType {
   }
 }
 
-export const userRequest = new UserRequest()
+export const request = new UserRequest()

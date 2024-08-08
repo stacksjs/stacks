@@ -309,7 +309,7 @@ async function addRouteQuery(url: URL) {
     const modelNameLower = `${camelCase(modelName)}Request`
     const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
     const requestImport = await import(requestPath)
-    const requestInstance = requestImport[modelNameLower]
+    const requestInstance = requestImport.request
 
     if (requestInstance) {
       requestInstance.addQuery(url)
@@ -328,7 +328,7 @@ async function addBody(params: any) {
     const modelNameLower = `${camelCase(modelName)}Request`
     const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
     const requestImport = await import(requestPath)
-    const requestInstance = requestImport[modelNameLower]
+    const requestInstance = requestImport.request
 
     if (requestInstance) {
       requestInstance.addBodies(JSON.parse(params))
@@ -344,10 +344,9 @@ async function addRouteParam(param: RouteParam): Promise<void> {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
-    const modelNameLower = `${lowercase(modelName)}Request`
     const requestPath = path.projectStoragePath(`framework/requests/${modelName}Request.ts`)
     const requestImport = await import(requestPath)
-    const requestInstance = requestImport[modelNameLower]
+    const requestInstance = requestImport.request
 
     if (requestInstance) {
       requestInstance.addParam(param)

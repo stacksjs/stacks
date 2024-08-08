@@ -289,7 +289,7 @@ async function writeModelRequest() {
       }
     }
 
-    export const ${modelLowerCase}Request = new ${modelName}Request()
+    export const request = new ${modelName}Request()
     `
 
     const writer = requestFile.writer()

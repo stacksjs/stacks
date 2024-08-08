@@ -37,4 +37,4 @@ export class AccessTokenRequest extends Request implements AccessTokenRequestTyp
   }
 }
 
-export const accessTokenRequest = new AccessTokenRequest()
+export const request = new AccessTokenRequest()
