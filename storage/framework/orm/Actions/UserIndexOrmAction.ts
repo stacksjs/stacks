@@ -7,6 +7,6 @@ export default new Action({
   description: 'User Index ORM Action',
   method: 'GET',
   async handle(request: UserRequestType) {
-    return await User.get()
+    return await User.all()
   },
 })

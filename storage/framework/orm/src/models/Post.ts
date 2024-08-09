@@ -116,7 +116,6 @@ export class PostModel {
 
     const instance = new this(null)
 
-    // Check if soft deletes are enabled
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }

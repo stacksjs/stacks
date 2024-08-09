@@ -302,13 +302,15 @@ export class Router implements RouterInterface {
     // if fails, return validation error
     let requestInstance
 
+    console.log('actionModule', actionModule)
+
     if (actionModule.default.requestFile) {
       requestInstance = await findRequestInstance(actionModule.default.requestFile)
     } else {
-      if (modulePath.includes('OrmAction')) {
-        requestInstance = await extractModelRequest(modulePath)
-      } else requestInstance = await extractDefaultRequest(modulePath)
+      requestInstance = await extractDefaultRequest(modulePath)
     }
+
+    console.log(actionModule.default.requestFile)
 
     try {
       return await actionModule.default.handle(requestInstance)

@@ -37,6 +37,7 @@ export default {
         index: 'UserIndexOrmAction',
         show: 'UserShowOrmAction',
         store: 'UserStoreAction',
+        destroy: 'UserDestroyOrmAction',
       },
     },
 
