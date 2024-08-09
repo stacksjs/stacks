@@ -818,7 +818,7 @@ async function generateModelString(
     if (observer) {
       mittCreateStatement += `dispatch('${formattedModelName}.created', model)`
       mittUpdateStatement += `dispatch('${formattedModelName}.updated', model)`
-      mittDeleteStatement += `dispatch('${formattedModelName}.deleted', model)`
+      mittDeleteStatement += `dispatch('${formattedModelName}.deleted', this)`
     }
   }
 
@@ -1169,24 +1169,30 @@ async function generateModelString(
       }
 
       static async all(): Promise<${modelName}Model[]> {
-        let query = db.selectFrom('${tableName}').selectAll()
+        let query = db.selectFrom('${tableName}').selectAll();
 
-        const instance = new this(null)
+        // Check if soft deletes are enabled
+        if (this.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-        const results = await query.execute()
+        const instance = new this(null);
+        const results = await query.execute();
 
-        return results.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
+        return results.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)));
       }
 
-      static async findOrFail(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model> {
+
+      static async findOrFail(id: number): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
         const instance = new this(null)
 
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
+
+        query = query.selectAll()
 
         const model = await query.executeTakeFirst()
 
@@ -1197,15 +1203,16 @@ async function generateModelString(
         return instance.parseResult(new this(model))
       }
 
-      static async findMany(ids: number[], fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model[]> {
+      static async findMany(ids: number[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
         const instance = new this(null)
 
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
+
+        query = query.selectAll()
 
         const model = await query.execute()
 
@@ -1215,6 +1222,8 @@ async function generateModelString(
       // Method to get a ${modelName} by criteria
       static async fetch(criteria: Partial<${modelName}Type>, options: QueryOptions = {}): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}')
+
+         const instance = new this(null)
 
         // Apply sorting from options
         if (options.sort)
@@ -1227,25 +1236,45 @@ async function generateModelString(
         if (options.offset !== undefined)
           query = query.offset(options.offset)
 
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
+
         const model = await query.selectAll().execute()
         return model.map(modelItem => new ${modelName}Model(modelItem))
       }
 
       // Method to get a ${modelName} by criteria
       static async get(): Promise<${modelName}Model[]> {
-        const query = db.selectFrom('${tableName}')
+        let query = db.selectFrom('${tableName}');
 
-        const model = await query.selectAll().execute()
+        const instance = new this(null)
 
-        return model.map(modelItem => new ${modelName}Model(modelItem))
+        // Check if soft deletes are enabled
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
+
+        const model = await query.selectAll().execute();
+
+        return model.map(modelItem => new ${modelName}Model(modelItem));
       }
 
       // Method to get a ${modelName} by criteria
       async get(): Promise<${modelName}Model[]> {
         if (this.hasSelect) {
+
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
+
           const model = await this.query.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+        }
+        
+        if (this.softDeletes) {
+          this.query = this.query.where('deleted_at', 'is', null);
         }
 
         const model = await this.query.selectAll().execute()
@@ -1256,6 +1285,10 @@ async function generateModelString(
       static async count(): Promise<number> {
         const instance = new this(null)
 
+        if (instance.softDeletes) {
+          instance.query = instance.query.where('deleted_at', 'is', null);
+        }
+
         const results = await instance.query.selectAll().execute()
 
         return results.length
@@ -1263,6 +1296,11 @@ async function generateModelString(
 
       async count(): Promise<number> {
         if (this.hasSelect) {
+
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
+            
           const results = await this.query.execute()
 
           return results.length
@@ -1331,14 +1369,22 @@ async function generateModelString(
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
-       
         const instance = new this(null)
 
         const model = await instance.find(id)
         
-        await db.deleteFrom('${tableName}')
+       if (instance.softDeletes) {
+        await db.updateTable('${tableName}')
+          .set({
+            deleted_at: sql.raw('CURRENT_TIMESTAMP')
+          })
           .where('id', '=', id)
-          .execute()
+          .execute();
+        } else {
+          await db.deleteFrom('${tableName}')
+            .where('id', '=', id)
+            .execute();
+        }
 
         ${mittDeleteStatement}
       }
@@ -1465,14 +1511,14 @@ async function generateModelString(
       }
 
       // Method to update the ${tableName} instance
-      async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | null> {
+      async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
         if (this.id === undefined)
           throw new Error('${modelName} ID is undefined')
 
-        const filteredValues = Object.keys(new${modelName})
+        const filteredValues = Object.keys(${formattedModelName})
             .filter(key => this.fillable.includes(key))
             .reduce((obj, key) => {
-                obj[key] = new${modelName}[key];
+                obj[key] = ${formattedModelName}[key]
                 return obj;
             }, {});
 
@@ -1505,18 +1551,28 @@ async function generateModelString(
         }
       }
 
-      // Method to delete the ${formattedModelName} instance
+      // Method to delete (soft delete) the ${formattedModelName} instance
       async delete(): Promise<void> {
-        if (this.id === undefined)
-          throw new Error('${modelName} ID is undefined')
+          if (this.id === undefined)
+              throw new Error('${modelName} ID is undefined');
 
-        await db.deleteFrom('${tableName}')
-          .where('id', '=', this.id)
-          .execute()
+          // Check if soft deletes are enabled
+          if (this.softDeletes) {
+              // Update the deleted_at column with the current timestamp
+              await db.updateTable('${tableName}')
+                  .set({
+                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
+                  })
+                  .where('id', '=', this.id)
+                  .execute();
+          } else {
+              // Perform a hard delete
+              await db.deleteFrom('${tableName}')
+                .where('id', '=', this.id)
+                .execute();
+          }
 
-        const model = this
-
-        ${mittDeleteStatement}
+          ${mittDeleteStatement}
       }
 
       ${relationMethods}
@@ -1571,6 +1627,7 @@ async function generateModelString(
         delete model['fillable']
         delete model['two_factor_secret']
         delete model['hasSelect']
+        delete model['softDeletes']
 
         for (const hiddenAttribute of this.hidden) {
           delete model[hiddenAttribute]
@@ -1582,7 +1639,7 @@ async function generateModelString(
       ${twoFactorStatements}
     }
 
-    async function find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | null> {
+    async function find(id: number): Promise<${modelName}Model | null> {
       let query = db.selectFrom('${tableName}').where('id', '=', id)
 
       if (fields) query = query.select(fields)

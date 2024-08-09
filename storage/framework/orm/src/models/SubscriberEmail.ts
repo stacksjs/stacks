@@ -110,22 +110,29 @@ export class SubscriberEmailModel {
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {
-    const query = db.selectFrom('subscriber_emails').selectAll()
+    let query = db.selectFrom('subscriber_emails').selectAll()
+
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const instance = new this(null)
-
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
-  static async findOrFail(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel> {
+  static async findOrFail(id: number): Promise<SubscriberEmailModel> {
     let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -134,13 +141,16 @@ export class SubscriberEmailModel {
     return instance.parseResult(new this(model))
   }
 
-  static async findMany(ids: number[], fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel[]> {
+  static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
     let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.execute()
 
@@ -154,6 +164,8 @@ export class SubscriberEmailModel {
   ): Promise<SubscriberEmailModel[]> {
     let query = db.selectFrom('subscriber_emails')
 
+    const instance = new this(null)
+
     // Apply sorting from options
     if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
 
@@ -162,13 +174,24 @@ export class SubscriberEmailModel {
 
     if (options.offset !== undefined) query = query.offset(options.offset)
 
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
     const model = await query.selectAll().execute()
     return model.map((modelItem) => new SubscriberEmailModel(modelItem))
   }
 
   // Method to get a SubscriberEmail by criteria
   static async get(): Promise<SubscriberEmailModel[]> {
-    const query = db.selectFrom('subscriber_emails')
+    let query = db.selectFrom('subscriber_emails')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const model = await query.selectAll().execute()
 
@@ -178,9 +201,17 @@ export class SubscriberEmailModel {
   // Method to get a SubscriberEmail by criteria
   async get(): Promise<SubscriberEmailModel[]> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const model = await this.query.execute()
 
       return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
     }
 
     const model = await this.query.selectAll().execute()
@@ -191,6 +222,10 @@ export class SubscriberEmailModel {
   static async count(): Promise<number> {
     const instance = new this(null)
 
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
     const results = await instance.query.selectAll().execute()
 
     return results.length
@@ -198,6 +233,10 @@ export class SubscriberEmailModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const results = await this.query.execute()
 
       return results.length
@@ -227,7 +266,7 @@ export class SubscriberEmailModel {
       .execute()
 
     let nextCursor = null
-    if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: subscriber_emailsWithExtra,
@@ -267,7 +306,17 @@ export class SubscriberEmailModel {
 
     const model = await instance.find(id)
 
-    await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
+    if (instance.softDeletes) {
+      await db
+        .updateTable('subscriber_emails')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
+    }
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
@@ -393,13 +442,13 @@ export class SubscriberEmailModel {
   }
 
   // Method to update the subscriber_emails instance
-  async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | null> {
+  async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-    const filteredValues = Object.keys(newSubscriberEmail)
+    const filteredValues = Object.keys(subscriberemail)
       .filter((key) => this.fillable.includes(key))
       .reduce((obj, key) => {
-        obj[key] = newSubscriberEmail[key]
+        obj[key] = subscriberemail[key]
         return obj
       }, {})
 
@@ -426,11 +475,24 @@ export class SubscriberEmailModel {
     }
   }
 
-  // Method to delete the subscriberemail instance
+  // Method to delete (soft delete) the subscriberemail instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-    await db.deleteFrom('subscriber_emails').where('id', '=', this.id).execute()
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('subscriber_emails')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('subscriber_emails').where('id', '=', this.id).execute()
+    }
   }
 
   distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -487,10 +549,11 @@ export class SubscriberEmailModel {
   }
 
   parseResult(model: SubscriberEmailModel): SubscriberEmailModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
+    model.query = undefined
+    model.fillable = undefined
+    model.two_factor_secret = undefined
+    model.hasSelect = undefined
+    model.softDeletes = undefined
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
@@ -500,7 +563,7 @@ export class SubscriberEmailModel {
   }
 }
 
-async function find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | null> {
+async function find(id: number): Promise<SubscriberEmailModel | null> {
   let query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
   if (fields) query = query.select(fields)

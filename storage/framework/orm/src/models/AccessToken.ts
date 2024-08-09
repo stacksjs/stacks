@@ -118,22 +118,29 @@ export class AccessTokenModel {
   }
 
   static async all(): Promise<AccessTokenModel[]> {
-    const query = db.selectFrom('personal_access_tokens').selectAll()
+    let query = db.selectFrom('personal_access_tokens').selectAll()
+
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const instance = new this(null)
-
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
-  static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
+  static async findOrFail(id: number): Promise<AccessTokenModel> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -142,13 +149,16 @@ export class AccessTokenModel {
     return instance.parseResult(new this(model))
   }
 
-  static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
+  static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
     let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.execute()
 
@@ -159,6 +169,8 @@ export class AccessTokenModel {
   static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<AccessTokenModel[]> {
     let query = db.selectFrom('personal_access_tokens')
 
+    const instance = new this(null)
+
     // Apply sorting from options
     if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
 
@@ -167,13 +179,24 @@ export class AccessTokenModel {
 
     if (options.offset !== undefined) query = query.offset(options.offset)
 
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
     const model = await query.selectAll().execute()
     return model.map((modelItem) => new AccessTokenModel(modelItem))
   }
 
   // Method to get a AccessToken by criteria
   static async get(): Promise<AccessTokenModel[]> {
-    const query = db.selectFrom('personal_access_tokens')
+    let query = db.selectFrom('personal_access_tokens')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const model = await query.selectAll().execute()
 
@@ -183,9 +206,17 @@ export class AccessTokenModel {
   // Method to get a AccessToken by criteria
   async get(): Promise<AccessTokenModel[]> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const model = await this.query.execute()
 
       return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
     }
 
     const model = await this.query.selectAll().execute()
@@ -196,6 +227,10 @@ export class AccessTokenModel {
   static async count(): Promise<number> {
     const instance = new this(null)
 
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
     const results = await instance.query.selectAll().execute()
 
     return results.length
@@ -203,6 +238,10 @@ export class AccessTokenModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const results = await this.query.execute()
 
       return results.length
@@ -233,7 +272,7 @@ export class AccessTokenModel {
 
     let nextCursor = null
     if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
-      nextCursor = personal_access_tokensWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+      nextCursor = personal_access_tokensWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: personal_access_tokensWithExtra,
@@ -273,7 +312,17 @@ export class AccessTokenModel {
 
     const model = await instance.find(id)
 
-    await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
+    if (instance.softDeletes) {
+      await db
+        .updateTable('personal_access_tokens')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
+    }
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): AccessTokenModel {
@@ -423,13 +472,13 @@ export class AccessTokenModel {
   }
 
   // Method to update the personal_access_tokens instance
-  async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | null> {
+  async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
     if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
-    const filteredValues = Object.keys(newAccessToken)
+    const filteredValues = Object.keys(accesstoken)
       .filter((key) => this.fillable.includes(key))
       .reduce((obj, key) => {
-        obj[key] = newAccessToken[key]
+        obj[key] = accesstoken[key]
         return obj
       }, {})
 
@@ -456,11 +505,24 @@ export class AccessTokenModel {
     }
   }
 
-  // Method to delete the accesstoken instance
+  // Method to delete (soft delete) the accesstoken instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
-    await db.deleteFrom('personal_access_tokens').where('id', '=', this.id).execute()
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('personal_access_tokens')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('personal_access_tokens').where('id', '=', this.id).execute()
+    }
   }
 
   async team() {
@@ -528,10 +590,11 @@ export class AccessTokenModel {
   }
 
   parseResult(model: AccessTokenModel): AccessTokenModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
+    model.query = undefined
+    model.fillable = undefined
+    model.two_factor_secret = undefined
+    model.hasSelect = undefined
+    model.softDeletes = undefined
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
@@ -541,7 +604,7 @@ export class AccessTokenModel {
   }
 }
 
-async function find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
+async function find(id: number): Promise<AccessTokenModel | null> {
   let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
   if (fields) query = query.select(fields)

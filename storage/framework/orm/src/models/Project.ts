@@ -113,22 +113,29 @@ export class ProjectModel {
   }
 
   static async all(): Promise<ProjectModel[]> {
-    const query = db.selectFrom('projects').selectAll()
+    let query = db.selectFrom('projects').selectAll()
+
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const instance = new this(null)
-
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
-  static async findOrFail(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel> {
+  static async findOrFail(id: number): Promise<ProjectModel> {
     let query = db.selectFrom('projects').where('id', '=', id)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -137,13 +144,16 @@ export class ProjectModel {
     return instance.parseResult(new this(model))
   }
 
-  static async findMany(ids: number[], fields?: (keyof ProjectType)[]): Promise<ProjectModel[]> {
+  static async findMany(ids: number[]): Promise<ProjectModel[]> {
     let query = db.selectFrom('projects').where('id', 'in', ids)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.execute()
 
@@ -154,6 +164,8 @@ export class ProjectModel {
   static async fetch(criteria: Partial<ProjectType>, options: QueryOptions = {}): Promise<ProjectModel[]> {
     let query = db.selectFrom('projects')
 
+    const instance = new this(null)
+
     // Apply sorting from options
     if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
 
@@ -162,13 +174,24 @@ export class ProjectModel {
 
     if (options.offset !== undefined) query = query.offset(options.offset)
 
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
     const model = await query.selectAll().execute()
     return model.map((modelItem) => new ProjectModel(modelItem))
   }
 
   // Method to get a Project by criteria
   static async get(): Promise<ProjectModel[]> {
-    const query = db.selectFrom('projects')
+    let query = db.selectFrom('projects')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const model = await query.selectAll().execute()
 
@@ -178,9 +201,17 @@ export class ProjectModel {
   // Method to get a Project by criteria
   async get(): Promise<ProjectModel[]> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const model = await this.query.execute()
 
       return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
     }
 
     const model = await this.query.selectAll().execute()
@@ -191,6 +222,10 @@ export class ProjectModel {
   static async count(): Promise<number> {
     const instance = new this(null)
 
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
     const results = await instance.query.selectAll().execute()
 
     return results.length
@@ -198,6 +233,10 @@ export class ProjectModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const results = await this.query.execute()
 
       return results.length
@@ -227,7 +266,7 @@ export class ProjectModel {
       .execute()
 
     let nextCursor = null
-    if (projectsWithExtra.length > (options.limit ?? 10)) nextCursor = projectsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (projectsWithExtra.length > (options.limit ?? 10)) nextCursor = projectsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: projectsWithExtra,
@@ -267,7 +306,17 @@ export class ProjectModel {
 
     const model = await instance.find(id)
 
-    await db.deleteFrom('projects').where('id', '=', id).execute()
+    if (instance.softDeletes) {
+      await db
+        .updateTable('projects')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('projects').where('id', '=', id).execute()
+    }
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): ProjectModel {
@@ -417,13 +466,13 @@ export class ProjectModel {
   }
 
   // Method to update the projects instance
-  async update(project: ProjectUpdate): Promise<ProjectModel | null> {
+  async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
     if (this.id === undefined) throw new Error('Project ID is undefined')
 
-    const filteredValues = Object.keys(newProject)
+    const filteredValues = Object.keys(project)
       .filter((key) => this.fillable.includes(key))
       .reduce((obj, key) => {
-        obj[key] = newProject[key]
+        obj[key] = project[key]
         return obj
       }, {})
 
@@ -450,11 +499,24 @@ export class ProjectModel {
     }
   }
 
-  // Method to delete the project instance
+  // Method to delete (soft delete) the project instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Project ID is undefined')
 
-    await db.deleteFrom('projects').where('id', '=', this.id).execute()
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('projects')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('projects').where('id', '=', this.id).execute()
+    }
   }
 
   distinct(column: keyof ProjectType): ProjectModel {
@@ -512,10 +574,11 @@ export class ProjectModel {
   }
 
   parseResult(model: ProjectModel): ProjectModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
+    model.query = undefined
+    model.fillable = undefined
+    model.two_factor_secret = undefined
+    model.hasSelect = undefined
+    model.softDeletes = undefined
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
@@ -525,7 +588,7 @@ export class ProjectModel {
   }
 }
 
-async function find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel | null> {
+async function find(id: number): Promise<ProjectModel | null> {
   let query = db.selectFrom('projects').where('id', '=', id)
 
   if (fields) query = query.select(fields)

@@ -104,22 +104,29 @@ export class ReleaseModel {
   }
 
   static async all(): Promise<ReleaseModel[]> {
-    const query = db.selectFrom('releases').selectAll()
+    let query = db.selectFrom('releases').selectAll()
+
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const instance = new this(null)
-
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
-  static async findOrFail(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel> {
+  static async findOrFail(id: number): Promise<ReleaseModel> {
     let query = db.selectFrom('releases').where('id', '=', id)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -128,13 +135,16 @@ export class ReleaseModel {
     return instance.parseResult(new this(model))
   }
 
-  static async findMany(ids: number[], fields?: (keyof ReleaseType)[]): Promise<ReleaseModel[]> {
+  static async findMany(ids: number[]): Promise<ReleaseModel[]> {
     let query = db.selectFrom('releases').where('id', 'in', ids)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.execute()
 
@@ -145,6 +155,8 @@ export class ReleaseModel {
   static async fetch(criteria: Partial<ReleaseType>, options: QueryOptions = {}): Promise<ReleaseModel[]> {
     let query = db.selectFrom('releases')
 
+    const instance = new this(null)
+
     // Apply sorting from options
     if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
 
@@ -153,13 +165,24 @@ export class ReleaseModel {
 
     if (options.offset !== undefined) query = query.offset(options.offset)
 
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
     const model = await query.selectAll().execute()
     return model.map((modelItem) => new ReleaseModel(modelItem))
   }
 
   // Method to get a Release by criteria
   static async get(): Promise<ReleaseModel[]> {
-    const query = db.selectFrom('releases')
+    let query = db.selectFrom('releases')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const model = await query.selectAll().execute()
 
@@ -169,9 +192,17 @@ export class ReleaseModel {
   // Method to get a Release by criteria
   async get(): Promise<ReleaseModel[]> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const model = await this.query.execute()
 
       return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
     }
 
     const model = await this.query.selectAll().execute()
@@ -182,6 +213,10 @@ export class ReleaseModel {
   static async count(): Promise<number> {
     const instance = new this(null)
 
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
     const results = await instance.query.selectAll().execute()
 
     return results.length
@@ -189,6 +224,10 @@ export class ReleaseModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const results = await this.query.execute()
 
       return results.length
@@ -218,7 +257,7 @@ export class ReleaseModel {
       .execute()
 
     let nextCursor = null
-    if (releasesWithExtra.length > (options.limit ?? 10)) nextCursor = releasesWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (releasesWithExtra.length > (options.limit ?? 10)) nextCursor = releasesWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: releasesWithExtra,
@@ -258,7 +297,17 @@ export class ReleaseModel {
 
     const model = await instance.find(id)
 
-    await db.deleteFrom('releases').where('id', '=', id).execute()
+    if (instance.softDeletes) {
+      await db
+        .updateTable('releases')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('releases').where('id', '=', id).execute()
+    }
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
@@ -384,13 +433,13 @@ export class ReleaseModel {
   }
 
   // Method to update the releases instance
-  async update(release: ReleaseUpdate): Promise<ReleaseModel | null> {
+  async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
-    const filteredValues = Object.keys(newRelease)
+    const filteredValues = Object.keys(release)
       .filter((key) => this.fillable.includes(key))
       .reduce((obj, key) => {
-        obj[key] = newRelease[key]
+        obj[key] = release[key]
         return obj
       }, {})
 
@@ -417,11 +466,24 @@ export class ReleaseModel {
     }
   }
 
-  // Method to delete the release instance
+  // Method to delete (soft delete) the release instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
-    await db.deleteFrom('releases').where('id', '=', this.id).execute()
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('releases')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('releases').where('id', '=', this.id).execute()
+    }
   }
 
   distinct(column: keyof ReleaseType): ReleaseModel {
@@ -476,10 +538,11 @@ export class ReleaseModel {
   }
 
   parseResult(model: ReleaseModel): ReleaseModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
+    model.query = undefined
+    model.fillable = undefined
+    model.two_factor_secret = undefined
+    model.hasSelect = undefined
+    model.softDeletes = undefined
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
@@ -489,7 +552,7 @@ export class ReleaseModel {
   }
 }
 
-async function find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | null> {
+async function find(id: number): Promise<ReleaseModel | null> {
   let query = db.selectFrom('releases').where('id', '=', id)
 
   if (fields) query = query.select(fields)

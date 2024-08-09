@@ -127,22 +127,29 @@ export class DeploymentModel {
   }
 
   static async all(): Promise<DeploymentModel[]> {
-    const query = db.selectFrom('deployments').selectAll()
+    let query = db.selectFrom('deployments').selectAll()
+
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const instance = new this(null)
-
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
-  static async findOrFail(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel> {
+  static async findOrFail(id: number): Promise<DeploymentModel> {
     let query = db.selectFrom('deployments').where('id', '=', id)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -151,13 +158,16 @@ export class DeploymentModel {
     return instance.parseResult(new this(model))
   }
 
-  static async findMany(ids: number[], fields?: (keyof DeploymentType)[]): Promise<DeploymentModel[]> {
+  static async findMany(ids: number[]): Promise<DeploymentModel[]> {
     let query = db.selectFrom('deployments').where('id', 'in', ids)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.execute()
 
@@ -168,6 +178,8 @@ export class DeploymentModel {
   static async fetch(criteria: Partial<DeploymentType>, options: QueryOptions = {}): Promise<DeploymentModel[]> {
     let query = db.selectFrom('deployments')
 
+    const instance = new this(null)
+
     // Apply sorting from options
     if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
 
@@ -176,13 +188,24 @@ export class DeploymentModel {
 
     if (options.offset !== undefined) query = query.offset(options.offset)
 
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
     const model = await query.selectAll().execute()
     return model.map((modelItem) => new DeploymentModel(modelItem))
   }
 
   // Method to get a Deployment by criteria
   static async get(): Promise<DeploymentModel[]> {
-    const query = db.selectFrom('deployments')
+    let query = db.selectFrom('deployments')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const model = await query.selectAll().execute()
 
@@ -192,9 +215,17 @@ export class DeploymentModel {
   // Method to get a Deployment by criteria
   async get(): Promise<DeploymentModel[]> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const model = await this.query.execute()
 
       return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
     }
 
     const model = await this.query.selectAll().execute()
@@ -205,6 +236,10 @@ export class DeploymentModel {
   static async count(): Promise<number> {
     const instance = new this(null)
 
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
     const results = await instance.query.selectAll().execute()
 
     return results.length
@@ -212,6 +247,10 @@ export class DeploymentModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const results = await this.query.execute()
 
       return results.length
@@ -241,7 +280,7 @@ export class DeploymentModel {
       .execute()
 
     let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: deploymentsWithExtra,
@@ -281,7 +320,17 @@ export class DeploymentModel {
 
     const model = await instance.find(id)
 
-    await db.deleteFrom('deployments').where('id', '=', id).execute()
+    if (instance.softDeletes) {
+      await db
+        .updateTable('deployments')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('deployments').where('id', '=', id).execute()
+    }
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
@@ -455,13 +504,13 @@ export class DeploymentModel {
   }
 
   // Method to update the deployments instance
-  async update(deployment: DeploymentUpdate): Promise<DeploymentModel | null> {
+  async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
     if (this.id === undefined) throw new Error('Deployment ID is undefined')
 
-    const filteredValues = Object.keys(newDeployment)
+    const filteredValues = Object.keys(deployment)
       .filter((key) => this.fillable.includes(key))
       .reduce((obj, key) => {
-        obj[key] = newDeployment[key]
+        obj[key] = deployment[key]
         return obj
       }, {})
 
@@ -488,11 +537,24 @@ export class DeploymentModel {
     }
   }
 
-  // Method to delete the deployment instance
+  // Method to delete (soft delete) the deployment instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Deployment ID is undefined')
 
-    await db.deleteFrom('deployments').where('id', '=', this.id).execute()
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('deployments')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('deployments').where('id', '=', this.id).execute()
+    }
   }
 
   async user() {
@@ -563,10 +625,11 @@ export class DeploymentModel {
   }
 
   parseResult(model: DeploymentModel): DeploymentModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
+    model.query = undefined
+    model.fillable = undefined
+    model.two_factor_secret = undefined
+    model.hasSelect = undefined
+    model.softDeletes = undefined
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
@@ -576,7 +639,7 @@ export class DeploymentModel {
   }
 }
 
-async function find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | null> {
+async function find(id: number): Promise<DeploymentModel | null> {
   let query = db.selectFrom('deployments').where('id', '=', id)
 
   if (fields) query = query.select(fields)

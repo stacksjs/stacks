@@ -135,22 +135,29 @@ export class TeamModel {
   }
 
   static async all(): Promise<TeamModel[]> {
-    const query = db.selectFrom('teams').selectAll()
+    let query = db.selectFrom('teams').selectAll()
+
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const instance = new this(null)
-
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
   }
 
-  static async findOrFail(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel> {
+  static async findOrFail(id: number): Promise<TeamModel> {
     let query = db.selectFrom('teams').where('id', '=', id)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -159,13 +166,16 @@ export class TeamModel {
     return instance.parseResult(new this(model))
   }
 
-  static async findMany(ids: number[], fields?: (keyof TeamType)[]): Promise<TeamModel[]> {
+  static async findMany(ids: number[]): Promise<TeamModel[]> {
     let query = db.selectFrom('teams').where('id', 'in', ids)
 
     const instance = new this(null)
 
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
 
     const model = await query.execute()
 
@@ -176,6 +186,8 @@ export class TeamModel {
   static async fetch(criteria: Partial<TeamType>, options: QueryOptions = {}): Promise<TeamModel[]> {
     let query = db.selectFrom('teams')
 
+    const instance = new this(null)
+
     // Apply sorting from options
     if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
 
@@ -184,13 +196,24 @@ export class TeamModel {
 
     if (options.offset !== undefined) query = query.offset(options.offset)
 
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
     const model = await query.selectAll().execute()
     return model.map((modelItem) => new TeamModel(modelItem))
   }
 
   // Method to get a Team by criteria
   static async get(): Promise<TeamModel[]> {
-    const query = db.selectFrom('teams')
+    let query = db.selectFrom('teams')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     const model = await query.selectAll().execute()
 
@@ -200,9 +223,17 @@ export class TeamModel {
   // Method to get a Team by criteria
   async get(): Promise<TeamModel[]> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const model = await this.query.execute()
 
       return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
     }
 
     const model = await this.query.selectAll().execute()
@@ -213,6 +244,10 @@ export class TeamModel {
   static async count(): Promise<number> {
     const instance = new this(null)
 
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
     const results = await instance.query.selectAll().execute()
 
     return results.length
@@ -220,6 +255,10 @@ export class TeamModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
       const results = await this.query.execute()
 
       return results.length
@@ -249,7 +288,7 @@ export class TeamModel {
       .execute()
 
     let nextCursor = null
-    if (teamsWithExtra.length > (options.limit ?? 10)) nextCursor = teamsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (teamsWithExtra.length > (options.limit ?? 10)) nextCursor = teamsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
 
     return {
       data: teamsWithExtra,
@@ -289,7 +328,17 @@ export class TeamModel {
 
     const model = await instance.find(id)
 
-    await db.deleteFrom('teams').where('id', '=', id).execute()
+    if (instance.softDeletes) {
+      await db
+        .updateTable('teams')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('teams').where('id', '=', id).execute()
+    }
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
@@ -471,13 +520,13 @@ export class TeamModel {
   }
 
   // Method to update the teams instance
-  async update(team: TeamUpdate): Promise<TeamModel | null> {
+  async update(team: TeamUpdate): Promise<TeamModel | undefined> {
     if (this.id === undefined) throw new Error('Team ID is undefined')
 
-    const filteredValues = Object.keys(newTeam)
+    const filteredValues = Object.keys(team)
       .filter((key) => this.fillable.includes(key))
       .reduce((obj, key) => {
-        obj[key] = newTeam[key]
+        obj[key] = team[key]
         return obj
       }, {})
 
@@ -504,11 +553,24 @@ export class TeamModel {
     }
   }
 
-  // Method to delete the team instance
+  // Method to delete (soft delete) the team instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Team ID is undefined')
 
-    await db.deleteFrom('teams').where('id', '=', this.id).execute()
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('teams')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('teams').where('id', '=', this.id).execute()
+    }
   }
 
   async teamAccessTokens() {
@@ -602,10 +664,11 @@ export class TeamModel {
   }
 
   parseResult(model: TeamModel): TeamModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
+    model.query = undefined
+    model.fillable = undefined
+    model.two_factor_secret = undefined
+    model.hasSelect = undefined
+    model.softDeletes = undefined
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]
@@ -615,7 +678,7 @@ export class TeamModel {
   }
 }
 
-async function find(id: number, fields?: (keyof TeamType)[]): Promise<TeamModel | null> {
+async function find(id: number): Promise<TeamModel | null> {
   let query = db.selectFrom('teams').where('id', '=', id)
 
   if (fields) query = query.select(fields)
