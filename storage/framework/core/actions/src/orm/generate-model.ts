@@ -1169,14 +1169,14 @@ async function generateModelString(
       }
 
       static async all(): Promise<${modelName}Model[]> {
-        let query = db.selectFrom('${tableName}').selectAll();
+        let query = db.selectFrom('${tableName}').selectAll()
 
-        // Check if soft deletes are enabled
-        if (this.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
+        const instance = new this(null)
+
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null)
         }
 
-        const instance = new this(null);
         const results = await query.execute();
 
         return results.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)));

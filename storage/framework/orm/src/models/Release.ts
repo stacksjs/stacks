@@ -106,12 +106,13 @@ export class ReleaseModel {
   static async all(): Promise<ReleaseModel[]> {
     let query = db.selectFrom('releases').selectAll()
 
+    const instance = new this(null)
+
     // Check if soft deletes are enabled
-    if (this.softDeletes) {
+    if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
 
-    const instance = new this(null)
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))

@@ -115,12 +115,13 @@ export class ProjectModel {
   static async all(): Promise<ProjectModel[]> {
     let query = db.selectFrom('projects').selectAll()
 
+    const instance = new this(null)
+
     // Check if soft deletes are enabled
-    if (this.softDeletes) {
+    if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
 
-    const instance = new this(null)
     const results = await query.execute()
 
     return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
