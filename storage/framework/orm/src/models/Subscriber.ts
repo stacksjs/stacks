@@ -53,6 +53,7 @@ interface QueryOptions {
 export class SubscriberModel {
   private hidden = []
   private fillable = []
+  private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined

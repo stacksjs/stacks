@@ -65,7 +65,7 @@ async function generateApiRoutes(modelFiles: string[]) {
 
             await writeOrmActions(apiRoute as string, modelName)
 
-            path = `${apiRoutes[apiRoute]}`
+            path = `${apiRoutes[apiRoute]}.ts`
 
             if (!path.includes('/')) {
               path = await lookupFile(path)
@@ -1121,6 +1121,7 @@ async function generateModelString(
     export class ${modelName}Model {
       private hidden = ${hidden}
       private fillable = ${fillable}
+      private softDeletes = ${useSoftDeletes}
       protected query: any
       protected hasSelect: boolean
       ${declareFields}

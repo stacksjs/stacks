@@ -16,13 +16,6 @@ export default {
       // defaults to a count of 10, `seedable` used as an alias
       count: 100,
     },
-
-    useApi: {
-      uri: 'releases', // your-url.com/api/releases
-      middleware: ['Api'], // defaults to `[]`
-      routes: ['index', 'update', 'store', 'destroy', 'show'],
-    },
-
     // useUuid: true, // defaults to false
   },
 

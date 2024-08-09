@@ -34,9 +34,9 @@ export default {
       uri: 'users', // your-url.com/api/users
       middleware: ['Api'], // defaults to `[]`
       routes: {
-        index: 'UserIndexOrmAction.ts',
-        show: 'UserShowOrmAction.ts',
-        store: 'UserStoreAction.ts',
+        index: 'UserIndexOrmAction',
+        show: 'UserShowOrmAction',
+        store: 'UserStoreAction',
       },
     },
 

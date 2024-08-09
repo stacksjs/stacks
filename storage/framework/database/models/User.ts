@@ -33,8 +33,14 @@ export default {
     useApi: {
       uri: 'users', // your-url.com/api/users
       middleware: ['Api'], // defaults to `[]`
-      routes: ['index', 'update', 'store', 'destroy', 'show'],
+      routes: {
+        index: 'UserIndexOrmAction.ts',
+        show: 'UserShowOrmAction.ts',
+        store: 'UserStoreAction.ts',
+      },
     },
+
+    observe: true,
 
     // useUuid: true, // defaults to false
   },
@@ -48,7 +54,7 @@ export default {
     name: {
       required: true,
       order: 3,
-
+      fillable: true,
       validation: {
         rule: schema.string().minLength(3).maxLength(88),
         message: {
@@ -64,6 +70,7 @@ export default {
       unique: true,
       required: true,
       order: 1,
+      fillable: true,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -77,6 +84,7 @@ export default {
     jobTitle: {
       required: true,
       order: 5,
+      fillable: true,
       validation: {
         rule: schema.string().minLength(3).maxLength(255),
         message: {
@@ -91,6 +99,7 @@ export default {
       required: true,
       order: 2,
       hidden: true,
+      fillable: true,
       validation: {
         rule: schema.string().minLength(6).maxLength(255),
         message: {

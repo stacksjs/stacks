@@ -54,6 +54,7 @@ interface QueryOptions {
 export class SubscriberEmailModel {
   private hidden = []
   private fillable = ['email']
+  private softDeletes = true
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined

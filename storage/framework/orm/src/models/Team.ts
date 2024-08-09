@@ -64,6 +64,7 @@ interface QueryOptions {
 export class TeamModel {
   private hidden = []
   private fillable = []
+  private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
