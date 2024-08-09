@@ -36,7 +36,7 @@
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
     "highlight.js": "^11.10.0",
-    "vue": "^3.4.36",
+    "vue": "^3.4.37",
     "vue-sonner": "^1.1.4"
   },
   "devDependencies": {
@@ -46,6 +46,6 @@
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.5.1",
     "clean-css": "^5.3.3",
-    "unplugin-icons": "^0.19.1"
+    "unplugin-icons": "^0.19.2"
   }
 }
