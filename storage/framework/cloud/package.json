@@ -40,9 +40,7 @@
   "scripts": {
     "bootstrap": "npx cdk bootstrap",
     "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../cloud && npx cdk deploy --require-approval never",
-    "dev": "./dev local",
-    "dev:cloud": "docker run -d -p 3000:3000 stacks",
-    "build": "bun build.ts"
+    "dev": "./dev local"
   },
   "peerDependencies": {
     "@aws-sdk/client-bedrock": "^3.624.0",
