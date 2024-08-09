@@ -1,7 +1,7 @@
 {
   "name": "stacks-cloud",
   "type": "module",
-  "version": "0.58.60",
+  "version": "0.62.0",
   "description": "The Stacks cloud/serverless integration & implementation.",
   "author": "Chris Breuer",
   "license": "MIT",
