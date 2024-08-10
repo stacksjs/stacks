@@ -1,27 +1,24 @@
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { app, cloud as cloudConfig } from '@stacksjs/config'
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
+import { $ } from 'bun'
 
 // import { slug } from '@stacksjs/strings'
 
 async function cleanAndCopy(sourcePath: string, targetPath: string) {
-  await runCommand(`rm -rf ${targetPath}`, {
-    cwd: frameworkPath('cloud'),
-  })
-
-  await runCommand(`cp -r ${sourcePath} ${targetPath}`, {
-    cwd: frameworkPath('cloud'),
-  })
+  $.cwd(frameworkPath('cloud'))
+  await $`rm -rf ${targetPath}`
+  await $`cp -r ${sourcePath} ${targetPath}`
 }
 
 async function useCustomOrDefaultServerConfig() {
   if (hasFiles(projectPath('server'))) {
+    $.cwd(frameworkPath('cloud'))
+
     // if we have a custom server configuration, use it by copying it to the server directory
-    await runCommand(`cp -r ../../../server .`, {
-      cwd: frameworkPath('cloud'),
-    })
+    await $`cp -r ../../../server .`
 
     return log.info('Using custom server configuration')
   }
@@ -32,12 +29,12 @@ async function useCustomOrDefaultServerConfig() {
 async function buildServer() {
   log.info('Preparing server...')
 
-  await cleanAndCopy(frameworkPath('core'), frameworkPath('cloud/core'))
-  await cleanAndCopy(projectPath('config'), frameworkPath('cloud/config'))
-  await cleanAndCopy(projectPath('routes'), frameworkPath('cloud/routes'))
-  await cleanAndCopy(projectPath('app'), frameworkPath('cloud/app'))
-  await cleanAndCopy(projectPath('docs'), frameworkPath('cloud/docs'))
-  await cleanAndCopy(projectPath('storage'), frameworkPath('cloud/storage'))
+  await cleanAndCopy(frameworkPath('core'), frameworkCloudPath('core'))
+  await cleanAndCopy(projectPath('config'), frameworkCloudPath('config'))
+  await cleanAndCopy(projectPath('routes'), frameworkCloudPath('routes'))
+  await cleanAndCopy(projectPath('app'), frameworkCloudPath('app'))
+  await cleanAndCopy(projectPath('docs'), frameworkCloudPath('docs'))
+  await cleanAndCopy(projectPath('storage'), frameworkCloudPath('storage'))
 
   if (!app.name) {
     log.error('Please provide a name for your app in your config file')
@@ -54,7 +51,7 @@ async function buildServer() {
 }
 
 async function main() {
-  useCustomOrDefaultServerConfig()
+  await useCustomOrDefaultServerConfig()
   if (cloudConfig.api?.deploy) await buildServer()
 }
 
