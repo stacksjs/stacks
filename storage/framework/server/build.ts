@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
-import { buildServer, useCustomOrDefaultServerConfig } from './src/build'
+import { buildServer, useCustomOrDefaultServerConfig } from './src/utils'
 
 async function main() {
   await useCustomOrDefaultServerConfig()

@@ -6,14 +6,15 @@ import { hasFiles } from '@stacksjs/storage'
 import { $ } from 'bun'
 
 export async function cleanAndCopy(sourcePath: string, targetPath: string) {
-  $.cwd(frameworkPath('cloud'))
+  $.cwd(frameworkPath('server'))
+
   await $`rm -rf ${targetPath}`
   await $`cp -r ${sourcePath} ${targetPath}`
 }
 
 export async function useCustomOrDefaultServerConfig() {
   if (hasFiles(projectPath('server'))) {
-    $.cwd(frameworkPath('cloud'))
+    $.cwd(frameworkPath('server'))
 
     // if we have a custom server configuration, use it by copying it to the server directory
     await $`cp -r ../../../server .`
