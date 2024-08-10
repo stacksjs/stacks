@@ -43,63 +43,25 @@
     "build": "bun build.ts"
   },
   "peerDependencies": {
-    "@aws-sdk/client-bedrock": "^3.624.0",
-    "@aws-sdk/client-cloudformation": "^3.624.0",
-    "@aws-sdk/client-cloudfront": "^3.624.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.624.0",
-    "@aws-sdk/client-ec2": "^3.627.0",
-    "@aws-sdk/client-efs": "^3.624.0",
-    "@aws-sdk/client-iam": "^3.624.0",
-    "@aws-sdk/client-lambda": "^3.624.0",
-    "@aws-sdk/client-route-53-domains": "^3.624.0",
-    "@aws-sdk/client-s3": "^3.627.0",
-    "@aws-sdk/client-ses": "^3.624.0",
-    "@aws-sdk/client-sesv2": "^3.624.0",
-    "@aws-sdk/client-ssm": "^3.624.0",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/utils": "workspace:*"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "^3.624.0",
-    "@aws-sdk/client-cloudformation": "^3.624.0",
-    "@aws-sdk/client-cloudfront": "^3.624.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.624.0",
-    "@aws-sdk/client-dynamodb": "3.624.0",
-    "@aws-sdk/client-ec2": "^3.627.0",
-    "@aws-sdk/client-efs": "^3.624.0",
-    "@aws-sdk/client-iam": "^3.624.0",
-    "@aws-sdk/client-lambda": "^3.624.0",
-    "@aws-sdk/client-route-53-domains": "^3.624.0",
-    "@aws-sdk/client-s3": "^3.627.0",
-    "@aws-sdk/client-ses": "^3.624.0",
-    "@aws-sdk/client-sesv2": "^3.624.0",
-    "@aws-sdk/client-ssm": "^3.624.0",
-    "@stacksjs/queue": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/dns": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "aws-cdk": "^2.151.0",
-    "aws-cdk-lib": "^2.151.0",
-    "aws4fetch": "^1.0.19",
-    "constructs": "^10.3.0"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/env": "workspace:*",
-    "source-map-support": "^0.5.21"
-  },
-  "workspaces": ["core/*"]
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
+  }
 }
