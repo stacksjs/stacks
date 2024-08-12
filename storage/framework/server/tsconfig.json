@@ -43,5 +43,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./*.ts", "./*.d.ts"]
+  "include": ["./*.ts", "./src/*.ts", "./*.d.ts"]
 }

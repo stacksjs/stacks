@@ -73,7 +73,6 @@ export default defineConfig({
       ...alias,
       '~/config/ai': p.projectConfigPath('ai.ts'),
       '~/config/analytics': p.projectConfigPath('analytics.ts'),
-      '~/config/api': p.projectConfigPath('api.ts'),
       '~/config/app': p.projectConfigPath('app.ts'),
       '~/config/cache': p.projectConfigPath('cache.ts'),
       '~/config/cli': p.projectConfigPath('cli.ts'),

@@ -62,6 +62,13 @@
     "buddy": "bunx ./src/cli.ts",
     "build": "bun --bun build.ts && bun run compile",
     "compile": "bun build ./bin/cli.ts --compile --minify --sourcemap --outfile dist/stacks",
+    "compile:linux:x64-modern": "bun build ./bin/cli.ts --compile --target=bun-linux-x64-modern --minify --sourcemap --outfile dist/stacks",
+    "compile:linux:x64-baseline": "bun build ./bin/cli.ts --compile --target=bun-linux-x64-baseline --minify --sourcemap --outfile dist/stacks",
+    "compile:linux:arm64": "bun build ./bin/cli.ts --compile --target=bun-linux-arm64 --minify --sourcemap --outfile dist/stacks",
+    "compile:windows:x64-modern": "bun build ./bin/cli.ts --compile --target=bun-windows-x64-modern --minify --sourcemap --outfile dist/stacks",
+    "compile:windows:x64-baseline": "bun build ./bin/cli.ts --compile --target=bun-windows-x64-baseline --minify --sourcemap --outfile dist/stacks",
+    "compile:mac:arm64": "bun build ./bin/cli.ts --compile --target=bun-darwin-arm64 --minify --sourcemap --outfile dist/stacks",
+    "compile:mac:x64": "bun build ./bin/cli.ts --compile --target=bun-darwin-x64 --minify --sourcemap --outfile dist/stacks",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
