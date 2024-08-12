@@ -1,15 +1,15 @@
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
-import { app, cloud as cloudConfig } from '@stacksjs/config'
+import { log, runCommand } from '@stacksjs/cli'
+import { app } from '@stacksjs/config'
 import { frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
+import { slug } from '@stacksjs/strings'
 import { $ } from 'bun'
 
 export async function cleanAndCopy(sourcePath: string, targetPath: string) {
   $.cwd(frameworkPath('server'))
-
-  await $`rm -rf ${targetPath}`
-  await $`cp -r ${sourcePath} ${targetPath}`
+  const r = await $`rm -rf ${targetPath}`.text()
+  await $`cp -r ${sourcePath} ${targetPath}`.text()
 }
 
 export async function useCustomOrDefaultServerConfig() {
@@ -26,9 +26,13 @@ export async function useCustomOrDefaultServerConfig() {
 }
 
 export async function buildServer() {
-  log.info('Preparing server...')
+  log.info('Preparing build...')
 
-  await cleanAndCopy(frameworkPath('core'), frameworkCloudPath('core'))
+  // delete old CDK relating files, to always build fresh
+  await $`rm -rf ${frameworkCloudPath('cdk.out/')}`
+  await $`rm -rf ${frameworkCloudPath('cdk.context.json')}`
+  await $`rm -rf ${frameworkCloudPath('dist.zip')}`
+
   await cleanAndCopy(projectPath('config'), frameworkCloudPath('config'))
   await cleanAndCopy(projectPath('routes'), frameworkCloudPath('routes'))
   await cleanAndCopy(projectPath('app'), frameworkCloudPath('app'))
@@ -41,12 +45,13 @@ export async function buildServer() {
   }
 
   // TODO: need to build index.ts into index.js and then run that from within the Dockerfile
+  $.cwd(frameworkPath('server'))
 
   // TODO: also allow for a custom container name via a config option
   // this currently does not need to be enabled because our CDK deployment handles the docker build process
-  // await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
-  //   cwd: frameworkPath('cloud'),
-  // })
+  await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
+    cwd: frameworkPath('cloud'),
+  })
 
   log.success('Server ready to be built')
 }
