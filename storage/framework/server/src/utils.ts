@@ -8,7 +8,7 @@ import { $ } from 'bun'
 
 export async function cleanCopy(sourcePath: string, targetPath: string) {
   $.cwd(frameworkPath('server'))
-  const r = await $`rm -rf ${targetPath}`.text()
+  await $`rm -rf ${targetPath}`.text()
   await $`cp -r ${sourcePath} ${targetPath}`.text()
 }
 

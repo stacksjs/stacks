@@ -75,13 +75,12 @@
     "../node_modules",
     "../**/node_modules",
     "../**/out", // not needed by us, but potentially by the user
-    "../cloud/app",
-    "../cloud/config",
-    "../cloud/core",
-    "../cloud/docs",
-    "../cloud/routes",
-    "../cloud/storage",
-    "../../../.stacks",
-    "../**/cdk.out"
+    "../server/app",
+    "../server/config",
+    "../server/core",
+    "../server/docs",
+    "../server/routes",
+    "../server/storage",
+    "../../../.stacks"
   ]
 }
