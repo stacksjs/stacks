@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
@@ -8,8 +8,11 @@ import { $ } from 'bun'
 
 export async function cleanCopy(sourcePath: string, targetPath: string) {
   $.cwd(frameworkPath('server'))
+  log.debug(`Deleting ${targetPath} ...`)
   await $`rm -rf ${targetPath}`.text()
+  log.debug(`Copying ${sourcePath} to ${targetPath} ...`)
   await $`cp -r ${sourcePath} ${targetPath}`.text()
+  log.debug(`Done copying ${sourcePath} to ${targetPath}`)
 }
 
 export async function useCustomOrDefaultServerConfig() {
@@ -29,10 +32,14 @@ export async function buildDockerImage() {
   log.info('Preparing build...')
 
   // delete old CDK relating files, to always build fresh
-  await $`rm -rf ${frameworkCloudPath('cdk.out/')}`
-  await $`rm -rf ${frameworkCloudPath('cdk.context.json')}`
-  await $`rm -rf ${frameworkCloudPath('dist.zip')}`
+  log.debug('Deleting old CDK files...')
+  await $`rm -rf ${frameworkCloudPath('cdk.out/')}`.text()
+  log.debug('Deleting old CDK context file...')
+  await $`rm -rf ${frameworkCloudPath('cdk.context.json')}`.text()
+  log.debug('Deleting old dist.zip file...')
+  await $`rm -rf ${frameworkCloudPath('dist.zip')}`.text()
 
+  log.info('Copying project files...')
   await cleanCopy(projectPath('config'), frameworkPath('server/config'))
   await cleanCopy(projectPath('routes'), frameworkPath('server/routes'))
   await cleanCopy(projectPath('app'), frameworkPath('server/app'))
@@ -45,7 +52,8 @@ export async function buildDockerImage() {
   }
 
   $.cwd(frameworkPath('server'))
-  // TODO: need to build index.ts into index.js and then run that from within the Dockerfile
+
+  // build index.ts into index.js, to then use within the Dockerfile
   await $`bun run build`.text()
 
   // this currently does not need to be enabled because our CDK deployment handles the docker build process
