@@ -25,7 +25,7 @@ export async function useCustomOrDefaultServerConfig() {
   log.info('Using default server configuration')
 }
 
-export async function buildServer() {
+export async function buildDockerImage() {
   log.info('Preparing build...')
 
   // delete old CDK relating files, to always build fresh
@@ -44,15 +44,13 @@ export async function buildServer() {
     process.exit(1)
   }
 
-  // TODO: need to build index.ts into index.js and then run that from within the Dockerfile
   $.cwd(frameworkPath('server'))
+  // TODO: need to build index.ts into index.js and then run that from within the Dockerfile
+  await $`bun run build`.text()
+
+  // this currently does not need to be enabled because our CDK deployment handles the docker build process
   await $`docker build --pull -t ${slug(app.name)} .`.text()
 
-  // TODO: also allow for a custom container name via a config option
-  // this currently does not need to be enabled because our CDK deployment handles the docker build process
-  // await runCommand(`docker build --pull -t ${slug(app.name)} .`, {
-  //   cwd: frameworkPath('server'),
-  // })
-
   log.success('Server ready to be built')
+  // log.success('Docker image built successfully')
 }
