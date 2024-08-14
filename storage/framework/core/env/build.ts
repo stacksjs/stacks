@@ -9,6 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+  sourcemap: 'linked',
 
   external: ['fs-extra', '@stacksjs/path', '@stacksjs/validation'],
 })

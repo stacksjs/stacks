@@ -14,18 +14,19 @@ async function main() {
     outdir: './dist',
     format: 'esm',
     target: 'bun',
+    sourcemap: 'linked',
   })
-
-  await useCustomOrDefaultServerConfig()
-
-  if (cloud.api?.deploy)
-    await buildDockerImage()
 
   await outro({
     dir: import.meta.dir,
     startTime,
     result,
   })
+
+  await useCustomOrDefaultServerConfig()
+
+  if (cloud.api?.deploy)
+    await buildDockerImage()
 }
 
 main().catch((error) => {

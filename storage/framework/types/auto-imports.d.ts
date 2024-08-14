@@ -337,6 +337,7 @@ declare global {
   const expo: typeof import('../core/push/src/drivers/index')['expo']
   const extendRef: typeof import('../core/utils/src/vendors')['extendRef']
   const extname: typeof import('../core/path/src/paths')['extname']
+  const extractDefaultRequest: typeof import('../core/router/src/utils')['extractDefaultRequest']
   const extractDynamicAction: typeof import('../core/router/src/utils')['extractDynamicAction']
   const extractDynamicRequest: typeof import('../core/router/src/utils')['extractDynamicRequest']
   const extractFieldsFromModel: typeof import('../core/orm/src/utils')['extractFieldsFromModel']
@@ -356,6 +357,7 @@ declare global {
   const findHostedZone: typeof import('../core/dns/src/drivers/aws')['findHostedZone']
   const findMany: typeof import('../core/orm/src/generated/User')['findMany']
   const findProjectPath: typeof import('../core/path/src/paths')['findProjectPath']
+  const findRequestInstance: typeof import('../core/router/src/utils')['findRequestInstance']
   const findStacksProjects: typeof import('../core/utils/src/find')['findStacksProjects']
   const first: typeof import('../core/orm/src/generated/User')['first']
   const folders: typeof import('../core/storage/src/folders')['folders']
@@ -1368,8 +1370,8 @@ declare module 'vue' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
+    readonly extractDefaultRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDefaultRequest']>
     readonly extractDynamicAction: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicAction']>
-    readonly extractDynamicRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicRequest']>
     readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
     readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
     readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
@@ -1384,6 +1386,7 @@ declare module 'vue' {
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
     readonly findHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['findHostedZone']>
     readonly findProjectPath: UnwrapRef<typeof import('../core/path/src/paths')['findProjectPath']>
+    readonly findRequestInstance: UnwrapRef<typeof import('../core/router/src/utils')['findRequestInstance']>
     readonly findStacksProjects: UnwrapRef<typeof import('../core/utils/src/find')['findStacksProjects']>
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/utils/src/vendors')['formatTimeAgo']>
@@ -2335,8 +2338,8 @@ declare module '@vue/runtime-core' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/paths')['extname']>
+    readonly extractDefaultRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDefaultRequest']>
     readonly extractDynamicAction: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicAction']>
-    readonly extractDynamicRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicRequest']>
     readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
     readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
     readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
@@ -2351,6 +2354,7 @@ declare module '@vue/runtime-core' {
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
     readonly findHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['findHostedZone']>
     readonly findProjectPath: UnwrapRef<typeof import('../core/path/src/paths')['findProjectPath']>
+    readonly findRequestInstance: UnwrapRef<typeof import('../core/router/src/utils')['findRequestInstance']>
     readonly findStacksProjects: UnwrapRef<typeof import('../core/utils/src/find')['findStacksProjects']>
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/utils/src/vendors')['formatTimeAgo']>

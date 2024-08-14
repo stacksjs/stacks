@@ -4,6 +4,7 @@ await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+  sourcemap: 'linked',
   splitting: true,
 
   external: [

@@ -73,7 +73,7 @@ async function generateOpenAPISpec() {
 
 const openAPISpec = await generateOpenAPISpec()
 
-const file = Bun.file(path.projectStoragePath(`framework/api/openapi.json`))
+const file = Bun.file(path.frameworkPath(`api/openapi.json`))
 
 const writer = file.writer()
 

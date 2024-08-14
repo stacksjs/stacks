@@ -8,7 +8,7 @@ const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
-
+  sourcemap: 'linked',
   external: ['change-case', 'title-case', 'validator', 'pluralize', 'slugify', 'detect-indent', 'detect-newline'],
 })
 

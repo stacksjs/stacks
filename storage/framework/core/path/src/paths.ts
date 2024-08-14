@@ -615,7 +615,7 @@ export function fakerPath(path?: string): string {
  * @returns The absolute or relative path to the specified file or directory within the framework directory.
  */
 export function frameworkPath(path?: string, options?: { relative?: boolean; cwd?: string }): string {
-  const absolutePath = projectStoragePath(`framework/${path || ''}`)
+  const absolutePath = frameworkPath(`/${path || ''}`)
 
   if (options?.relative) return relative(options.cwd || process.cwd(), absolutePath)
 

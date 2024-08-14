@@ -68,7 +68,7 @@ export async function extractModelRequest(action: string) {
 
   const lowerCaseModel = camelCase(extractedModel)
 
-  const requestPath = path.projectStoragePath(`framework/requests/${extractedModel}Request.ts`)
+  const requestPath = path.frameworkPath(`requests/${extractedModel}Request.ts`)
 
   const requestInstance = await import(requestPath)
 
@@ -105,7 +105,7 @@ export async function findRequestInstance(requestInstance: string) {
 }
 
 export async function extractDefaultRequest(action: string) {
-  const requestPath = path.projectStoragePath(`framework/core/router/src/request.ts`)
+  const requestPath = path.frameworkPath(`core/router/src/request.ts`)
   const requestInstance = await import(requestPath)
 
   return requestInstance.request

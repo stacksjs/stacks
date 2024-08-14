@@ -9,6 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+  sourcemap: 'linked',
 
   external: ['@stacksjs/config', 'unocss', '@headlessui/vue', '@julr/unocss-preset-forms', 'vue', 'pinia'],
 })

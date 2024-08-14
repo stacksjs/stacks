@@ -13,16 +13,15 @@ RUN apt-get update && apt-get install -y curl
 
 # copy production dependencies and source code into final image
 FROM base AS release
-COPY /usr/src/app/app ./app
-COPY /usr/src/app/config ./config
-COPY /usr/src/app/docs ./docs
-COPY /usr/src/app/routes ./routes
-# TODO: need to exclude all ignored files and folders from the build
-COPY /usr/src/app/storage ./storage
-COPY /usr/src/app/dist/* ./
+COPY ./app ./app
+COPY ./storage ./storage
+COPY ./config ./config
+COPY ./docs ./docs
+COPY ./routes ./routes
+COPY ./dist/* ./
 
 # Add volume for logs
-VOLUME ["/mnt/efs"]
+VOLUME ["/usr/src/storage"]
 
 # run the app
 USER bun

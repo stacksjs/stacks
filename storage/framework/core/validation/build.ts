@@ -9,14 +9,13 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+  sourcemap: 'linked',
 
   external: [
     '@vinejs/vine',
     '@stacksjs/strings',
     '@stacksjs/types',
     '@stacksjs/path',
-    '@dinero.js/currencies',
-    'dinero.js',
   ],
 })
 

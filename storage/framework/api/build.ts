@@ -1,17 +1,15 @@
-import { intro, outro } from '../build/src'
+import { intro, outro } from '../core/build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
+  entrypoints: ['./dev.ts'],
   outdir: './dist',
   format: 'esm',
-  target: 'bun',
   sourcemap: 'linked',
-
-  external: ['vite', 'bun', '@stacksjs/utils'],
+  target: 'bun'
 })
 
 await outro({

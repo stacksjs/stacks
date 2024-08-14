@@ -9,6 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+  sourcemap: 'linked',
 
   entrypoints: [
     './src/build/component-libs.ts',

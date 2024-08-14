@@ -23,7 +23,7 @@ await initiateModelGeneration()
 await setKyselyTypes()
 
 async function generateApiRoutes(modelFiles: string[]) {
-  const file = Bun.file(path.projectStoragePath(`framework/orm/routes.ts`))
+  const file = Bun.file(path.frameworkPath(`orm/routes.ts`))
   const writer = file.writer()
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
@@ -130,7 +130,7 @@ async function writeModelNames() {
     const model = (await import(modeFileElement)).default as Model
     const modelName = getModelName(model, modeFileElement)
 
-    const typeFile = Bun.file(path.projectStoragePath(`framework/core/types/src/model-names.ts`))
+    const typeFile = Bun.file(path.corePath(`types/src/model-names.ts`))
 
     fileString += `'${modelName}'`
 
@@ -242,7 +242,7 @@ async function writeModelRequest() {
 
     const modelLowerCase = camelCase(modelName)
 
-    const requestFile = Bun.file(path.projectStoragePath(`framework/requests/${modelName}Request.ts`))
+    const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
     importTypes = `${modelName}RequestType`
     importTypesString += `${importTypes}`
@@ -379,7 +379,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
     })
   `
 
-  const file = Bun.file(path.projectStoragePath(`framework/orm/Actions/${modelName}${formattedApiRoute}OrmAction.ts`))
+  const file = Bun.file(path.frameworkPath(`orm/Actions/${modelName}${formattedApiRoute}OrmAction.ts`))
 
   const writer = file.writer()
 
@@ -409,7 +409,7 @@ async function initiateModelGeneration(modelStringFile?: string): Promise<void> 
     const tableName = await getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
 
-    const file = Bun.file(path.projectStoragePath(`framework/orm/src/models/${modelName}.ts`))
+    const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
     const classString = await generateModelString(tableName, modelName, model, fields)
 
@@ -478,19 +478,19 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function deleteExistingModels(modelStringFile?: string) {
-  const typePath = path.projectStoragePath(`framework/core/orm/src/generated/types.ts`)
+  const typePath = path.corePath(`orm/src/generated/types.ts`)
 
   if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
 
   if (modelStringFile) {
-    const modelPath = path.projectStoragePath(`framework/orm/src/models/${modelStringFile}.ts`)
+    const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
 
     await Bun.$`rm ${modelPath}`
 
     return
   }
 
-  const modelPaths = glob.sync(path.projectStoragePath(`framework/orm/src/models/*.ts`))
+  const modelPaths = glob.sync(path.frameworkPath(`orm/src/models/*.ts`))
 
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
@@ -498,18 +498,18 @@ async function deleteExistingModels(modelStringFile?: string) {
 }
 
 async function deleteExistingOrmActions(modelStringFile?: string) {
-  const routes = path.projectStoragePath(`framework/orm/routes`)
+  const routes = path.frameworkPath(`orm/routes`)
   if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 
   if (modelStringFile) {
-    const ormPath = path.projectStoragePath(`framework/orm/Actions/${modelStringFile}.ts`)
+    const ormPath = path.frameworkPath(`orm/Actions/${modelStringFile}.ts`)
 
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
 
     return
   }
 
-  const ormPaths = glob.sync(path.projectStoragePath(`framework/orm/Actions/*.ts`))
+  const ormPaths = glob.sync(path.frameworkPath(`orm/Actions/*.ts`))
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
@@ -517,7 +517,7 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
 }
 
 async function deleteExistingModelNameTypes() {
-  const typeFile = path.projectStoragePath(`framework/core/types/src/model-names.ts`)
+  const typeFile = path.corePath(`types/src/model-names.ts`)
 
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
@@ -527,14 +527,14 @@ async function deleteExistingModelRequest(modelStringFile?: string) {
   if (fs.existsSync(requestD)) await Bun.$`rm ${requestD}`
 
   if (modelStringFile) {
-    const requestFile = path.projectStoragePath(`framework/requests/${modelStringFile}.ts`)
+    const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
 
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
 
     return
   }
 
-  const requestFiles = glob.sync(path.projectStoragePath(`framework/requests/*.ts`))
+  const requestFiles = glob.sync(path.frameworkPath(`requests/*.ts`))
 
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
@@ -603,7 +603,7 @@ async function setKyselyTypes() {
 
   text += `}`
 
-  const file = Bun.file(path.projectStoragePath(`framework/core/orm/src/generated/types.ts`))
+  const file = Bun.file(path.frameworkPath(`core/orm/src/generated/types.ts`))
 
   const writer = file.writer()
 
@@ -1272,7 +1272,7 @@ async function generateModelString(
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
-        
+
         if (this.softDeletes) {
           this.query = this.query.where('deleted_at', 'is', null);
         }
@@ -1300,7 +1300,7 @@ async function generateModelString(
           if (this.softDeletes) {
             this.query = this.query.where('deleted_at', 'is', null);
           }
-            
+
           const results = await this.query.execute()
 
           return results.length
@@ -1372,7 +1372,7 @@ async function generateModelString(
         const instance = new this(null)
 
         const model = await instance.find(id)
-        
+
        if (instance.softDeletes) {
         await db.updateTable('${tableName}')
           .set({
@@ -1445,7 +1445,7 @@ async function generateModelString(
         if (! model) {
           return undefined
         }
-        
+
         return this.parseResult(new ${modelName}Model(model))
       }
 

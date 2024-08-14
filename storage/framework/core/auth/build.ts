@@ -3,6 +3,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
+  sourcemap: 'linked',
 })
 
 if (!result.success) console.log(result)
