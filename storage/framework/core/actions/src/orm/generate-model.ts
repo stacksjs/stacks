@@ -95,7 +95,7 @@ async function generateApiRoutes(modelFiles: string[]) {
 }
 
 async function lookupFile(fileName: string): Promise<string | null> {
-  const ormDirectory = path.builtUserActionsPath()
+  const ormDirectory = path.builtUserActionsPath('src')
   const filePath = path.join(ormDirectory, fileName)
   const pathExists = await fs.existsSync(filePath)
 
@@ -365,7 +365,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
     })
   `
 
-  const file = Bun.file(path.builtUserActionsPath(`${modelName}${formattedApiRoute}OrmAction.ts`))
+  const file = Bun.file(path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`))
 
   const writer = file.writer()
 
@@ -488,14 +488,14 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
   if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 
   if (modelStringFile) {
-    const ormPath = path.builtUserActionsPath(`${modelStringFile}.ts`)
+    const ormPath = path.builtUserActionsPath(`src/${modelStringFile}.ts`)
 
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
 
     return
   }
 
-  const ormPaths = glob.sync(path.builtUserActionsPath(`*.ts`))
+  const ormPaths = glob.sync(path.builtUserActionsPath(`**/*.ts`))
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`

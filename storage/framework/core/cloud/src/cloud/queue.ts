@@ -25,7 +25,7 @@ export class QueueStack {
   async init() {
     const jobsDir = path.jobsPath()
     const actionsDir = path.appPath('Actions')
-    const ormActionDir = path.builtUserActionsPath()
+    const ormActionDir = path.builtUserActionsPath('src')
 
     const jobFiles = await fs.readdir(jobsDir)
     const actionFiles = await fs.readdir(actionsDir)
