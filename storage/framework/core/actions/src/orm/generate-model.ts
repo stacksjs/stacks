@@ -464,7 +464,7 @@ function hasRelations(obj: any, key: string): boolean {
 }
 
 async function deleteExistingModels(modelStringFile?: string) {
-  const typePath = path.corePath(`orm/src/generated/types.ts`)
+  const typePath = path.frameworkPath(`orm/src/types.ts`)
 
   if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
 
@@ -589,7 +589,7 @@ async function setKyselyTypes() {
 
   text += `}`
 
-  const file = Bun.file(path.frameworkPath(`core/orm/src/generated/types.ts`))
+  const file = Bun.file(path.frameworkPath(`orm/src/types.ts`))
 
   const writer = file.writer()
 
