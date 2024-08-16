@@ -280,7 +280,7 @@ export class DeploymentModel {
       .execute()
 
     let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: deploymentsWithExtra,
@@ -625,11 +625,11 @@ export class DeploymentModel {
   }
 
   parseResult(model: DeploymentModel): DeploymentModel {
-    model.query = undefined
-    model.fillable = undefined
-    model.two_factor_secret = undefined
-    model.hasSelect = undefined
-    model.softDeletes = undefined
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+    delete model['softDeletes']
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]

@@ -9,7 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   sourcemap: 'linked',
-  target: 'bun'
+  target: 'bun',
 })
 
 await outro({

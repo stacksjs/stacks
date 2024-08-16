@@ -265,7 +265,7 @@ export class PostModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: postsWithExtra,
@@ -565,11 +565,11 @@ export class PostModel {
   }
 
   parseResult(model: PostModel): PostModel {
-    model.query = undefined
-    model.fillable = undefined
-    model.two_factor_secret = undefined
-    model.hasSelect = undefined
-    model.softDeletes = undefined
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+    delete model['softDeletes']
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]

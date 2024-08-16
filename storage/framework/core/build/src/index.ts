@@ -40,7 +40,7 @@ export async function outro(options: {
   log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
-export async function intro(options: { dir: string, pkgName?: string }) {
+export async function intro(options: { dir: string; pkgName?: string }) {
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
   log.info(`Building ${italic(pkgName)}...`)

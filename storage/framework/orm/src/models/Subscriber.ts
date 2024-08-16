@@ -261,7 +261,7 @@ export class SubscriberModel {
       .execute()
 
     let nextCursor = null
-    if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()?.id // Use the ID of the extra record as the next cursor
+    if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
 
     return {
       data: subscribersWithExtra,
@@ -542,11 +542,11 @@ export class SubscriberModel {
   }
 
   parseResult(model: SubscriberModel): SubscriberModel {
-    model.query = undefined
-    model.fillable = undefined
-    model.two_factor_secret = undefined
-    model.hasSelect = undefined
-    model.softDeletes = undefined
+    delete model['query']
+    delete model['fillable']
+    delete model['two_factor_secret']
+    delete model['hasSelect']
+    delete model['softDeletes']
 
     for (const hiddenAttribute of this.hidden) {
       delete model[hiddenAttribute]

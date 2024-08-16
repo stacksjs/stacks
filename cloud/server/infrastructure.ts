@@ -55,7 +55,8 @@ export const servers = {
   //   bunVersion: '1.1.22',
   // },
 
-  cache: { // redis or memcached
+  cache: {
+    // redis or memcached
     name: 'cache-server',
     domain: 'stacksjs.org',
     region: 'us-east-1',
