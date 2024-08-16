@@ -13,8 +13,14 @@ const result = await Bun.build({
   outdir: path.frameworkPath('api/dist'),
   format: 'esm',
   target: 'bun',
+  minify: true,
   sourcemap: 'linked',
+  splitting: true,
 })
+
+// TODO: this is a bundler issue and those files should not need to be copied
+await Bun.$`cp -r ${path.projectStoragePath('app')} ${path.projectPath('storage/framework/api/dist')}`.text()
+await Bun.$`rm -rf ${path.projectStoragePath('app')}`.text()
 
 await outro({
   dir: import.meta.dir,
