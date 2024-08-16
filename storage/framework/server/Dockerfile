@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y curl
 
 # copy production dependencies and source code into final image
 FROM base AS release
-COPY ./app ./app
 COPY ./storage ./storage
 COPY ./config ./config
 COPY ./docs ./docs
