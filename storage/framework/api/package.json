@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.62.0",
   "scripts": {
+    "build": "bun build.ts",
     "dev": "bun --hot run dev.ts",
     "prod": "bun --hot run dist/dev.js"
   },

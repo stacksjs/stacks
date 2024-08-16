@@ -10,11 +10,11 @@ declare global {
   let counter: number
 }
 
-// @ts-expect-error - somehow type is not recognized
+// @ts-expect-error - type is not recognized but is present
 globalThis.counter ??= 0
-// @ts-expect-error - somehow type is not recognized
+// @ts-expect-error - type is not recognized but is present
 log.debug(`Reloaded ${globalThis.counter} times`)
-// @ts-expect-error - somehow type is not recognized
+// @ts-expect-error - type is not recognized but is present
 globalThis.counter++
 
 async function watchFolders() {
