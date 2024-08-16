@@ -65,6 +65,7 @@
   },
   "files": {
     "ignore": [
+      "**/.vite-ssg-temp/*",
       "components.d.ts",
       "database/migrations/*",
       "storage/framework/types/*",
