@@ -95,10 +95,8 @@ async function generateApiRoutes(modelFiles: string[]) {
 }
 
 async function lookupFile(fileName: string): Promise<string | null> {
-  const ormDirectory = path.projectStoragePath('framework/orm/Actions')
-
+  const ormDirectory = path.builtUserActionsPath()
   const filePath = path.join(ormDirectory, fileName)
-
   const pathExists = await fs.existsSync(filePath)
 
   // Check if the directory exists
@@ -107,9 +105,7 @@ async function lookupFile(fileName: string): Promise<string | null> {
   }
 
   const actionDirectory = path.userActionsPath()
-
   const actionFilePath = path.join(actionDirectory, fileName)
-
   const fileExists = await fs.existsSync(actionFilePath)
 
   if (fileExists) {
@@ -121,15 +117,12 @@ async function lookupFile(fileName: string): Promise<string | null> {
 
 async function writeModelNames() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
   let fileString = `export type ModelNames = `
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modeFileElement = modelFiles[i] as string
-
     const model = (await import(modeFileElement)).default as Model
     const modelName = getModelName(model, modeFileElement)
-
     const typeFile = Bun.file(path.corePath(`types/src/model-names.ts`))
 
     fileString += `'${modelName}'`
@@ -146,8 +139,8 @@ async function writeModelNames() {
 
 async function writeModelRequest() {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+
   let importTypes = ``
   let importTypesString = ``
   let typeString = `import { Request } from '../core/router/src/request'\n\n`
@@ -173,14 +166,10 @@ async function writeModelRequest() {
     let fileString = `import { Request } from '@stacksjs/router'\nimport type { VineType } from '@stacksjs/types'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = modelFiles[i] as string
-
     const model = (await import(modeFileElement)).default as Model
     const modelName = getModelName(model, modeFileElement)
-
     const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
-
     const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
-
     const attributes = await extractFields(model, modeFileElement)
 
     fieldString += ` id?: number\n`
@@ -192,20 +181,18 @@ async function writeModelRequest() {
     const otherModelRelations = await fetchOtherModelRelations(model, modelName)
 
     for (const attribute of attributes) {
-      let defaultValue: any = `''`
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+      let defaultValue: any = `''`
 
       if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
-
       if (attribute.fieldArray?.entity === 'number') defaultValue = 0
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
-
       fieldStringType += `'${attribute.field}'`
+
       if (keyCounter < attributes.length - 1) fieldStringType += ' |'
 
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
-
       keyCounter++
     }
 
@@ -220,7 +207,6 @@ async function writeModelRequest() {
       //   fieldStringType += ' |'
 
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
-
       keyCounterForeign++
     }
 
@@ -379,7 +365,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
     })
   `
 
-  const file = Bun.file(path.frameworkPath(`orm/Actions/${modelName}${formattedApiRoute}OrmAction.ts`))
+  const file = Bun.file(path.builtUserActionsPath(`${modelName}${formattedApiRoute}OrmAction.ts`))
 
   const writer = file.writer()
 
@@ -502,14 +488,14 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
   if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 
   if (modelStringFile) {
-    const ormPath = path.frameworkPath(`orm/Actions/${modelStringFile}.ts`)
+    const ormPath = path.builtUserActionsPath(`${modelStringFile}.ts`)
 
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
 
     return
   }
 
-  const ormPaths = glob.sync(path.frameworkPath(`orm/Actions/*.ts`))
+  const ormPaths = glob.sync(path.builtUserActionsPath(`*.ts`))
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`

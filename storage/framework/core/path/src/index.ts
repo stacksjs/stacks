@@ -42,6 +42,10 @@ export function userActionsPath(path?: string) {
   return appPath(`Actions/${path || ''}`)
 }
 
+export function builtUserActionsPath(path?: string) {
+  return frameworkPath(`actions/${path || ''}`)
+}
+
 export function userComponentsPath(path?: string) {
   return libsPath(`components/${path || ''}`)
 }
@@ -1267,6 +1271,7 @@ export function homeDir(path?: string) {
 export const path = {
   actionsPath,
   userActionsPath,
+  builtUserActionsPath,
   userComponentsPath,
   userViewsPath,
   userFunctionsPath,

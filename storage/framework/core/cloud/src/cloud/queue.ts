@@ -25,7 +25,7 @@ export class QueueStack {
   async init() {
     const jobsDir = path.jobsPath()
     const actionsDir = path.appPath('Actions')
-    const ormActionDir = path.projectStoragePath('framework/orm/Actions')
+    const ormActionDir = path.builtUserActionsPath()
 
     const jobFiles = await fs.readdir(jobsDir)
     const actionFiles = await fs.readdir(actionsDir)
@@ -47,7 +47,7 @@ export class QueueStack {
     for (const ormFile of ormActionFiles) {
       if (!ormFile.endsWith('.ts')) continue
 
-      const ormActionPath = path.frameworkPath(`orm/Actions/${ormFile}`)
+      const ormActionPath = path.builtUserActionsPath(ormFile)
 
       // Await the loading of the job module
       const ormAction = await this.loadModule(ormActionPath)
