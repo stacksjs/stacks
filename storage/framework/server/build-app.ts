@@ -20,7 +20,7 @@ const result = await Bun.build({
 })
 
 // TODO: this is a bundler issue and those files should not need to be copied
-await Bun.$`cp -r ${path.projectStoragePath('app')} ${path.serverPath('storage/framework/server/dist')}`.text()
+await Bun.$`cp -r ${path.projectStoragePath('app')} ${path.userServerPath('dist')}`.text()
 await Bun.$`rm -rf ${path.projectStoragePath('app')}`.text()
 
 await outro({
