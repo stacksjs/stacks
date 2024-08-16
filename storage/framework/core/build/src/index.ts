@@ -7,10 +7,11 @@ export async function outro(options: {
   dir: string
   startTime: number
   result: any
+  pkgName?: string
 }) {
   const endTime = Date.now()
   const timeTaken = endTime - options.startTime
-  const pkgName = `@stacksjs/${p.basename(options.dir)}`
+  const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
   if (!options.result.success) {
     console.log(options.result.logs[0])
@@ -19,6 +20,7 @@ export async function outro(options: {
 
   // loop over all the files in the dist directory and log them and their size
   const files = await glob(p.resolve(options.dir, 'dist', '**/*'))
+  console.log('files is ', files)
   for (const file of files) {
     const stats = await fs.stat(file)
 
@@ -38,8 +40,8 @@ export async function outro(options: {
   log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
-export async function intro(options: { dir: string }) {
-  const pkgName = `@stacksjs/${p.basename(options.dir)}`
+export async function intro(options: { dir: string, pkgName?: string }) {
+  const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
   log.info(`Building ${italic(pkgName)}...`)
   const startTime = Date.now()
