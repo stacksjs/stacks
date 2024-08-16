@@ -1,4 +1,4 @@
-import { Schedule } from './schedule'
+export { Schedule } from './schedule'
 
 export { CronJob as BunCronJob } from './job'
 export { CronTime } from './time'
