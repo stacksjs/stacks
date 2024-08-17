@@ -1,4 +1,3 @@
-export * from './money'
 export {
   VineEnum as ValidationEnum,
   VineBoolean as ValidationBoolean,

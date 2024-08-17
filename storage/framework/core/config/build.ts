@@ -20,8 +20,6 @@ const result = await Bun.build({
     '@vinejs/compiler',
     'pluralize',
     '@stacksjs/strings',
-    'dinero.js',
-    '@dinero.js/currencies',
     'validator',
     '@vinejs/vine',
   ],

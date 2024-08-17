@@ -41,6 +41,7 @@ const sidebar = {
         { text: 'Release Notes', link: '/release-notes' },
         { text: 'Upgrade Guide', link: '/upgrade-guide' },
         { text: 'Contribution Guide', link: '/contribution-guide' },
+        { text: 'Sponsors', link: '/sponsors' },
       ],
     },
 

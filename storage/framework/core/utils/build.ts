@@ -27,8 +27,6 @@ const result = await Bun.build({
     '@stacksjs/validation',
     '@stacksjs/strings',
     'bun',
-    'dinero.js',
-    '@dinero.js/currencies',
     'export-size',
     'hookable',
     'js-yaml',

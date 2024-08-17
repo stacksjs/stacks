@@ -1,7 +1,6 @@
 export * from './base'
 export * from './clean'
 export * from './config'
-export * from './currency'
 export * from './debounce'
 export * from './equal'
 export * from './export-size'

@@ -82,7 +82,6 @@ Descryption
 dessant
 destructurable
 devs
-dinero
 DMARC
 dmarcreports
 docgen

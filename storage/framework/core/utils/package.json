@@ -67,7 +67,6 @@
     "yaml": "^2.5.0"
   },
   "dependencies": {
-    "@dinero.js/currencies": "2.0.0-alpha.14",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
@@ -86,7 +85,6 @@
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
-    "dinero.js": "2.0.0-alpha.14",
     "export-size": "^0.7.0",
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",

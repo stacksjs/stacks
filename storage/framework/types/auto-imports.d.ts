@@ -295,7 +295,6 @@ declare global {
   const determineResetPreset: typeof import('../core/utils/src/helpers')['determineResetPreset']
   const developmentPath: typeof import('../core/path/src/paths')['developmentPath']
   const digit: typeof import('../core/utils/src/regex')['digit']
-  const dinero: typeof import('../core/utils/src/currency')['dinero']
   const dirname: typeof import('../core/path/src/paths')['dirname']
   const dispatch: typeof import('../core/events/src/index')['dispatch']
   const dnsPath: typeof import('../core/path/src/paths')['dnsPath']
@@ -1331,7 +1330,6 @@ declare module 'vue' {
     readonly determineResetPreset: UnwrapRef<typeof import('../core/utils/src/helpers')['determineResetPreset']>
     readonly developmentPath: UnwrapRef<typeof import('../core/path/src/paths')['developmentPath']>
     readonly digit: UnwrapRef<typeof import('../core/utils/src/regex')['digit']>
-    readonly dinero: UnwrapRef<typeof import('../core/utils/src/currency')['dinero']>
     readonly dirname: UnwrapRef<typeof import('../core/path/src/paths')['dirname']>
     readonly dispatch: UnwrapRef<typeof import('../core/events/src/index')['dispatch']>
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/paths')['dnsPath']>
@@ -2299,7 +2297,6 @@ declare module '@vue/runtime-core' {
     readonly determineResetPreset: UnwrapRef<typeof import('../core/utils/src/helpers')['determineResetPreset']>
     readonly developmentPath: UnwrapRef<typeof import('../core/path/src/paths')['developmentPath']>
     readonly digit: UnwrapRef<typeof import('../core/utils/src/regex')['digit']>
-    readonly dinero: UnwrapRef<typeof import('../core/utils/src/currency')['dinero']>
     readonly dirname: UnwrapRef<typeof import('../core/path/src/paths')['dirname']>
     readonly dispatch: UnwrapRef<typeof import('../core/events/src/index')['dispatch']>
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/paths')['dnsPath']>
