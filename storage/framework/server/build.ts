@@ -1,7 +1,6 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
-import { path as p } from '@stacksjs/path'
 import { intro, outro } from '../core/build/src'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 

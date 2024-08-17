@@ -7,7 +7,6 @@ import { slug } from '@stacksjs/strings'
 import { $ } from 'bun'
 
 export async function cleanCopy(sourcePath: string, targetPath: string) {
-  $.cwd(frameworkPath('server'))
   try {
     log.debug(`Deleting ${targetPath} ...`)
     await runCommand(`rm -rf ${targetPath}`)
