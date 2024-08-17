@@ -22,6 +22,7 @@ const result = await build({
 })
 
 // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
+
 await runCommand(`cp -r ${path.projectStoragePath('app')} ${path.userServerPath('dist')}`)
 await runCommand(`rm -rf ${path.projectStoragePath('app')}`)
 

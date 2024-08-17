@@ -1,4 +1,4 @@
-import { appendFile, mkdir } from 'node:fs/promises'
+import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import type { Prompt } from '@stacksjs/cli'
@@ -45,16 +45,20 @@ export { consola }
 
 export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
+
   try {
+    const logFilePath = logsPath('console.log')
+
     try {
-      const logFilePath = logsPath('console.log')
-      // Ensure the directory exists
+      // Check if the file exists
+      await access(logFilePath)
+    } catch {
+      // File doesn't exist, create the directory
       await mkdir(dirname(logFilePath), { recursive: true })
-      // Append the message to the log file
-      await appendFile(logFilePath, formattedMessage)
-    } catch (error) {
-      console.error('Failed to write to log file:', error)
     }
+
+    // Append the message to the log file
+    await appendFile(logFilePath, formattedMessage)
   } catch (error) {
     console.error('Failed to write to log file:', error)
   }

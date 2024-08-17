@@ -1,7 +1,7 @@
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
 FROM oven/bun:1.1.24-debian AS base
-WORKDIR /usr/src/app
+WORKDIR /usr/src
 
 # Install curl - I wonder if there is a better way to do this, because it is only needed for the healthcheck — is wget installed by default?
 RUN apt-get update && apt-get install -y curl
@@ -18,6 +18,9 @@ COPY ./config ./config
 COPY ./docs ./docs
 COPY ./routes ./routes
 COPY ./dist/* ./
+
+# Create log directory and set permissions
+RUN chown -R bun:bun ./storage
 
 # Add volume for logs
 VOLUME ["/usr/src/storage"]
