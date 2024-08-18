@@ -39,7 +39,7 @@
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "unplugin-vue-router": "^0.10.6",
+    "unplugin-vue-router": "^0.10.7",
     "vue-router": "^4.4.3"
   },
   "devDependencies": {
