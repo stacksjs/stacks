@@ -51,15 +51,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "^1.6.0",
-    "@tauri-apps/cli": "^1.6.0",
-    "unified-network": "^0.6.4",
-    "unstorage": "^1.10.2",
-    "vue": "^3.4.38"
-  },
   "dependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",

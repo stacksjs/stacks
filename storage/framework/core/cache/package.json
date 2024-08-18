@@ -42,10 +42,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.632.0",
-    "@stacksjs/config": "workspace:*"
-  },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.632.0",
     "@stacksjs/config": "workspace:*"

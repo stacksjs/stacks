@@ -47,16 +47,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/chat": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/push": "workspace:*",
-    "@stacksjs/sms": "workspace:*",
-    "@stacksjs/types": "workspace:*"
-  },
   "dependencies": {
     "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",

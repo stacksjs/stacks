@@ -42,13 +42,6 @@
     "dev:cloud": "docker run -d -p 3000:3000 stacks",
     "build": "bun build.ts"
   },
-  "peerDependencies": {
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/router": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
-  },
   "dependencies": {
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",

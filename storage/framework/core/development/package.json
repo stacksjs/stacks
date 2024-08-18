@@ -43,18 +43,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/lint": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/testing": "workspace:*",
-    "@stacksjs/tinker": "workspace:*",
-    "@stacksjs/tunnel": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "bun-plugin-dts-auto": "^0.11.1",
-    "typescript": "^5.5.4"
-  },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/lint": "workspace:*",

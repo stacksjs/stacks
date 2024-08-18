@@ -35,14 +35,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "vitepress": "1.3.3",
-    "vitepress-plugin-twoslash": "^0.10.2"
-  },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",

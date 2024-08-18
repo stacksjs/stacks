@@ -42,9 +42,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/utils": "workspace:*"
-  },
   "dependencies": {
     "@stacksjs/utils": "workspace:*"
   },

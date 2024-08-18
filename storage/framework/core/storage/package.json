@@ -44,16 +44,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@types/archiver": "^6.0.2",
-    "archiver": "^7.0.1"
-  },
   "dependencies": {
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

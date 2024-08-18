@@ -43,12 +43,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/router": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
-  },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",

@@ -33,10 +33,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/validation": "workspace:*",
-    "neverthrow": "^7.0.1"
-  },
   "dependencies": {
     "@mdit-vue/plugin-component": "^2.1.3",
     "@mdit-vue/plugin-frontmatter": "^2.1.3",

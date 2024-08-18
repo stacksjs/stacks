@@ -15,6 +15,7 @@ async function main() {
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',
+    minify: true,
   })
 
   await outro({

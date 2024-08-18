@@ -50,21 +50,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@antfu/install-pkg": "^0.3.5",
-    "@clack/prompts": "^0.7.0",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "@types/prompts": "^2.4.9",
-    "cac": "^6.7.14",
-    "ora": "^8.0.1",
-    "prompts": "^2.4.2"
-  },
   "dependencies": {
     "@antfu/install-pkg": "^0.3.5",
     "@clack/prompts": "^0.7.0",

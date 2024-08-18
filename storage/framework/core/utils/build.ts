@@ -10,6 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
   sourcemap: 'linked',
+  minify: true,
 
   external: [
     '@stacksjs/cli',
@@ -27,22 +28,6 @@ const result = await Bun.build({
     '@stacksjs/validation',
     '@stacksjs/strings',
     'bun',
-    'export-size',
-    'hookable',
-    'js-yaml',
-    'macroable',
-    'neverthrow',
-    'perfect-debounce',
-    'vue',
-    'vueuse',
-    '@vueuse/core',
-    '@vueuse/math',
-    '@vueuse/head',
-    '@vueuse/shared',
-    // 'pretty-bytes',
-    'yaml',
-    'magic-regexp',
-    'vue-demi',
   ],
 })
 

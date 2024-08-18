@@ -37,7 +37,7 @@
     "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@stacksjs/desktop": "workspace:*",
     "@stacksjs/logging": "workspace:*"
   },

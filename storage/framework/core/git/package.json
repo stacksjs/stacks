@@ -35,14 +35,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "bumpp": "^9.5.1",
-    "changelogen": "^0.5.5",
-    "commitizen": "^4.3.0",
-    "cz-git": "^1.9.4",
-    "giget": "^1.2.3",
-    "simple-git-hooks": "^2.11.1"
-  },
   "dependencies": {
     "bumpp": "^9.5.1",
     "changelogen": "^0.5.5",

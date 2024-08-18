@@ -5,6 +5,7 @@ await Bun.build({
   format: 'esm',
   target: 'bun',
   sourcemap: 'linked',
+  minify: true,
   splitting: true,
 
   external: [

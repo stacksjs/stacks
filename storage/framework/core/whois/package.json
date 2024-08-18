@@ -41,10 +41,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "node-fetch": "^3.3.2",
-    "socks": "^2.8.3"
-  },
   "dependencies": {
     "node-fetch": "^3.3.2",
     "socks": "^2.8.3"

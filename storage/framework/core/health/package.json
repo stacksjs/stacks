@@ -35,9 +35,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/notifications": "workspace:*"
-  },
   "dependencies": {
     "@stacksjs/notifications": "workspace:*"
   },

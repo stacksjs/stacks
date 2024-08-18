@@ -41,9 +41,6 @@
     "prepublishOnly": "bun run build",
     "typecheck": "bun --bun tsc --noEmit"
   },
-  "peerDependencies": {
-    "@stacksjs/desktop": "workspace:*"
-  },
   "devDependencies": {
     "@stacksjs/desktop": "workspace:*",
     "@stacksjs/development": "workspace:*"

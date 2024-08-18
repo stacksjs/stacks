@@ -18,6 +18,7 @@ const result = await build({
   target: 'bun',
   minify: true,
   sourcemap: 'linked',
+  minify: true,
   splitting: true,
 })
 

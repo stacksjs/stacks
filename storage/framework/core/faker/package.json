@@ -35,10 +35,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*"
-  },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
     "@stacksjs/cli": "workspace:*",

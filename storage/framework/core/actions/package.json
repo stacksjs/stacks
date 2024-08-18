@@ -45,25 +45,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/cloud": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
-    "@stacksjs/dns": "workspace:*",
-    "@stacksjs/enums": "workspace:*",
-    "@stacksjs/env": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/security": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "markdown-it": "^14.1.0",
-    "vue-component-meta": "^2.0.29"
-  },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",

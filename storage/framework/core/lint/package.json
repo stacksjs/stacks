@@ -42,12 +42,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@biomejs/biome": "^1.8.3",
-    "@commitlint/cli": "^19.4.0",
-    "lint-staged": "^15.2.9",
-    "publint": "^0.2.10"
-  },
   "dependencies": {
     "@biomejs/biome": "^1.8.3",
     "@commitlint/cli": "^19.4.0",

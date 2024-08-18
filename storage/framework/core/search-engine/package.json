@@ -47,10 +47,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/ui": "workspace:*"
-  },
   "dependencies": {
     "@opensearch-project/opensearch": "^2.11.0",
     "meilisearch": "^0.41.0"

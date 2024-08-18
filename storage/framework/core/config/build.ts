@@ -10,6 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
   sourcemap: 'linked',
+  minify: true,
 
   external: [
     '@stacksjs/types',

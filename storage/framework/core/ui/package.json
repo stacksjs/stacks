@@ -43,17 +43,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@headlessui/vue": "^1.7.22",
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/router": "workspace:*",
-    "pinia": "^2.2.2",
-    "unocss": "0.62.2",
-    "vite-plugin-vue-layouts": "^0.11.0",
-    "vue": "^3.4.38",
-    "vue-tsc": "^2.0.29"
-  },
   "dependencies": {
     "@headlessui/vue": "^1.7.22",
     "@iconify-json/heroicons": "^1.1.24",

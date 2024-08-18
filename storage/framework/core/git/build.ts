@@ -10,8 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
   sourcemap: 'linked',
-
-  external: ['changelogen'],
+  minify: true,
 })
 
 await outro({

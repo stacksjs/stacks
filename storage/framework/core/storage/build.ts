@@ -10,6 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
   sourcemap: 'linked',
+  minify: true,
 
   external: [
     '@stacksjs/cli',
@@ -23,8 +24,6 @@ const result = await Bun.build({
     '@stacksjs/error-handling',
     '@stacksjs/whois',
     '@stacksjs/arrays',
-    'fast-glob',
-    'fs-extra',
     'bun',
   ],
 })

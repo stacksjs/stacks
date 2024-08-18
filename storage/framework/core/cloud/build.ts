@@ -9,6 +9,7 @@ const result = await Bun.build({
   outdir: './dist',
   target: 'bun',
   sourcemap: 'linked',
+  minify: true,
 
   external: [
     '@aws-sdk/client-cloudformation',

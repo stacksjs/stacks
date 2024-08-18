@@ -30,13 +30,6 @@
     "preview": "vite preview",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/search-engine": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "meilisearch": "^0.41.0"
-  },
   "dependencies": {
     "@vueform/multiselect": "^2.6.9"
   },

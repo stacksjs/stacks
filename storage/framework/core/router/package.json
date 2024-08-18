@@ -36,11 +36,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.10.6",
-    "vue-router": "^4.4.3"
-  },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",

@@ -43,16 +43,6 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/faker": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.6.2"
-  },
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
