@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/realtime",
   "type": "module",
-  "version": "0.62.0",
+  "version": "0.63.0",
   "description": "The Stacks realtime integration.",
   "author": "Chris Breuer",
   "license": "MIT",
