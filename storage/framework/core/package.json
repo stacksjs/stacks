@@ -10,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework"
+    "directory": "./storage/framework/core"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
