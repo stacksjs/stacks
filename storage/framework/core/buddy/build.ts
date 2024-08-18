@@ -23,7 +23,6 @@ await Bun.build({
     '@stacksjs/path',
     '@stacksjs/storage',
     '@stacksjs/types',
-    '@aws-sdk/client-route-53',
     'bun',
   ],
 })

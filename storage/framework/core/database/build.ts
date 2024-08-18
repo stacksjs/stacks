@@ -22,8 +22,6 @@ const result = await Bun.build({
     '@stacksjs/storage',
     '@stacksjs/strings',
     '@stacksjs/utils',
-    'kysely',
-    'mysql2',
     'bun',
   ],
 })

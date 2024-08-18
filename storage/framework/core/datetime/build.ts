@@ -12,7 +12,7 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
 
-  external: ['vite', 'bun', '@stacksjs/utils'],
+  external: ['bun', '@stacksjs/utils'],
 })
 
 await outro({

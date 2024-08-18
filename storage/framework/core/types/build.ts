@@ -11,7 +11,6 @@ const result = await Bun.build({
   target: 'node',
   sourcemap: 'linked',
   minify: true,
-
   external: ['@stacksjs/validation', 'consola', 'unocss', '@unocss/core'],
 })
 

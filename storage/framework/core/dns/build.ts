@@ -13,10 +13,7 @@ const result = await Bun.build({
   minify: true,
 
   external: [
-    'aws-cdk-lib',
     '@stacksjs/enums',
-    '@aws-sdk/client-route-53',
-    'constructs',
     '@stacksjs/config',
     '@stacksjs/storage',
     '@stacksjs/error-handling',
@@ -26,7 +23,6 @@ const result = await Bun.build({
     '@stacksjs/path',
     '@stacksjs/error-handling',
     '@stacksjs/whois',
-    '@aws-sdk/client-route-53-domains',
     '@stacksjs/types',
   ],
 })

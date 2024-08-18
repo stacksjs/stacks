@@ -11,8 +11,6 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
-  external: ['@playwright/test'],
 })
 
 await outro({

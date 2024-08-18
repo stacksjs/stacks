@@ -11,8 +11,7 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
-  external: ['@stacksjs/config', 'unocss', '@headlessui/vue', '@julr/unocss-preset-forms', 'vue', 'pinia'],
+  external: ['@stacksjs/config'],
 })
 
 await outro({

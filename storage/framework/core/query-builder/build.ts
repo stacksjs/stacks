@@ -11,8 +11,6 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
-  external: ['mysql2', 'kysely'],
 })
 
 await outro({

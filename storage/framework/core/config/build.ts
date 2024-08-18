@@ -18,11 +18,7 @@ const result = await Bun.build({
     '@stacksjs/env',
     '@stacksjs/path',
     '@stacksjs/validation',
-    '@vinejs/compiler',
-    'pluralize',
     '@stacksjs/strings',
-    'validator',
-    '@vinejs/vine',
   ],
 })
 

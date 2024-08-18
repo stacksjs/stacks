@@ -11,7 +11,6 @@ const result = await Bun.build({
   format: 'esm',
   sourcemap: 'linked',
   minify: true,
-  external: ['@aws-sdk/client-bedrock-runtime', '@aws-sdk/client-bedrock'],
 })
 
 await outro({

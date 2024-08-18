@@ -11,8 +11,7 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
-  external: ['@stacksjs/cli', '@faker-js/faker'],
+  external: ['@stacksjs/cli'],
 })
 
 await outro({

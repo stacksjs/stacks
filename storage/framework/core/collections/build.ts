@@ -10,7 +10,6 @@ const result = await Bun.build({
   format: 'esm',
   sourcemap: 'linked',
   minify: true,
-  external: ['collect.js'],
 })
 
 await outro({

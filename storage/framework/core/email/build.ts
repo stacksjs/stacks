@@ -11,17 +11,12 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
   external: [
     '@stacksjs/cli',
     '@stacksjs/config',
     '@stacksjs/error-handling',
     '@stacksjs/types',
-    'vue-email',
-    '@vue-email/compiler',
-    'json5',
     '@stacksjs/path',
-    '@aws-sdk/client-ses',
   ],
 })
 

@@ -11,7 +11,6 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
   entrypoints: [
     './src/build/component-libs.ts',
     './src/build/core.ts',
@@ -68,8 +67,6 @@ const result = await Bun.build({
     '@stacksjs/enums',
     '@stacksjs/storage',
     '@stacksjs/utils',
-    'markdown-it',
-    'vue-component-meta',
     '@stacksjs/strings',
     '@stacksjs/config',
     '@stacksjs/error-handling',

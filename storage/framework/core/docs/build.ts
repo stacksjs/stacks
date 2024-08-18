@@ -11,17 +11,13 @@ const result = await Bun.build({
   target: 'node',
   sourcemap: 'linked',
   minify: true,
-
   external: [
-    'vitepress',
     '@stacksjs/config',
     '@stacksjs/alias',
     '@stacksjs/path',
     '@stacksjs/server',
     '@stacksjs/env',
     '@stacksjs/cli',
-    '@vite-pwa/vitepress',
-    'vitepress-plugin-twoslash',
   ],
 })
 

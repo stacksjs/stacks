@@ -10,21 +10,14 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
   external: [
-    'vite',
-    '@antfu/install-pkg',
     '@stacksjs/config',
     '@stacksjs/types',
     '@stacksjs/tunnel',
     '@stacksjs/logging',
-    'prompts',
     '@stacksjs/utils',
     '@stacksjs/validation',
     '@stacksjs/error-handling',
-    'ora',
-    'kolorist',
-    'cac',
     '@stacksjs/collections',
   ],
 })

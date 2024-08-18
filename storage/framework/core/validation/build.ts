@@ -11,8 +11,7 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-
-  external: ['@vinejs/vine', '@stacksjs/strings', '@stacksjs/types', '@stacksjs/path'],
+  external: ['@stacksjs/strings', '@stacksjs/types', '@stacksjs/path'],
 })
 
 await outro({
