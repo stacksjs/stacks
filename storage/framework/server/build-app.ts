@@ -1,7 +1,7 @@
 import { runCommand } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
-import { $, build } from 'bun'
+import { build } from 'bun'
 import { intro, outro } from '../core/build/src'
 
 const { startTime } = await intro({

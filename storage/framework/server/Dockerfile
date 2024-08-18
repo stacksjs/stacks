@@ -18,6 +18,7 @@ COPY ./config ./config
 COPY ./docs ./docs
 COPY ./routes ./routes
 COPY ./dist/* ./
+COPY ./tsconfig.json ./
 
 # Create log directory and set permissions
 RUN chown -R bun:bun ./storage

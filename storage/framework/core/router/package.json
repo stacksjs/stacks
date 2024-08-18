@@ -32,6 +32,7 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun --bun build.ts",
+    "build:user": "bun --bun build2.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun --bun run build"
   },
