@@ -31,7 +31,7 @@ export async function logLevel() {
 }
 
 export const logger = createConsola({
-  level: await logLevel(),
+  level: 3, 
   // fancy: true,
   // formatOptions: {
   //     columns: 80,
@@ -82,7 +82,6 @@ export interface Log {
 
 export const log: Log = {
   async info(...arg: any) {
-    // @ts-expect-error intentional
     logger.info(...arg)
     await writeToLogFile(`INFO: ${arg}`)
   },

@@ -1,4 +1,5 @@
 import { route } from '@stacksjs/router'
+// const { route } = await import('@stacksjs/router')
 
 /**
  * This file is the entry point for your application's API routes.
@@ -8,21 +9,21 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
-await route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/api/hello/world
-await route.get('/', () => 'hello world') // $APP_URL/api
-await route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/api/hello/world
+route.get('/', () => 'hello world') // $APP_URL/api
+route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
 
-await route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
+route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
 
-await route.post('/login', 'Actions/LoginAction')
+route.post('/login', 'Actions/LoginAction')
 
-await route.email('/welcome')
-await route.health() // adds a GET `/api/health` route
+route.email('/welcome')
+route.health() // adds a GET `/api/health` route
 
-// await route.group('/some-path', async () => {...})
-// await route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
+// route.group('/some-path', async () => {...})
+// route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 
-// await route.action('Dashboard/GetProjects')
-// await route.action('Dashboard/Settings/UpdateAiConfig')
+// route.action('Dashboard/GetProjects')
+// route.action('Dashboard/Settings/UpdateAiConfig')
 
-// await route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`
+// route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`

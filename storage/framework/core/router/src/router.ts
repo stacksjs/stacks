@@ -1,10 +1,10 @@
 import type { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
-import { path as p, projectStoragePath, routesPath } from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
-import { extractDefaultRequest, extractModelRequest, findRequestInstance } from './utils'
+import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 

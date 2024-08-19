@@ -30,4 +30,6 @@ async function importMiddlewares(directory: string) {
   return [directory] // fix this: return array of middlewares
 }
 
-export const middlewares = await importMiddlewares(userMiddlewarePath())
+export const middlewares = async() => {
+  return await importMiddlewares(userMiddlewarePath())
+}
