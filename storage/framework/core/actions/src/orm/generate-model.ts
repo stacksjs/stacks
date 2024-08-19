@@ -253,7 +253,8 @@ async function writeModelRequest() {
 
     const types = `export interface ${modelName}RequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: ${fieldStringType}): string | number | undefined;
+      get(key: ${fieldStringType}): string | number | undefined
+      all(): RequestData${modelName}
       ${fieldString}
     }\n\n`
 
@@ -1041,7 +1042,7 @@ async function generateModelString(
   }
 
   if (useTwoFactor) {
-    fieldString += `two_factor_secret: string \n`
+    fieldString += `two_factor_secret?: string \n`
   }
 
   if (useTimestamps) {

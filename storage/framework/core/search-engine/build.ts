@@ -11,13 +11,7 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-  external: [
-    '@stacksjs/config',
-    '@stacksjs/ui',
-    '@stacksjs/utils',
-    '@stacksjs/logging',
-    '@stacksjs/validation',
-  ],
+  external: ['@stacksjs/config', '@stacksjs/ui', '@stacksjs/utils', '@stacksjs/logging', '@stacksjs/validation'],
 })
 
 await outro({

@@ -25,7 +25,7 @@ export interface UsersTable {
   team_id: number
   deployment_id: number
   post_id: number
-  two_factor_secret: string
+  two_factor_secret?: string
 
   created_at: ColumnType<Date, string | undefined, never>
 

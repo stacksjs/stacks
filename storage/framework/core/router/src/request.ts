@@ -4,7 +4,7 @@ import type { VineType } from '@stacksjs/types'
 import { customValidate, validateField } from '@stacksjs/validation'
 
 interface RequestData {
-  [key: string]: string
+  [key: string]: any
 }
 
 interface ValidationType {

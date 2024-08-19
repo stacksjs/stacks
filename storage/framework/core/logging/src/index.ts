@@ -31,7 +31,7 @@ export async function logLevel() {
 }
 
 export const logger = createConsola({
-  level: 3, 
+  level: 3,
   // fancy: true,
   // formatOptions: {
   //     columns: 80,
