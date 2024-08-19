@@ -75,7 +75,7 @@ export class Router implements RouterInterface {
   }
 
   public async health(): Promise<this> {
-    const healthModule = (await import(p.userActionsPath('HealthAction.ts'))).default as Action
+    const healthModule = (await import(p.userActionsPath('HealthAction'))).default as Action
     const callback = healthModule.handle
     const path = healthModule.path ?? `${this.apiPrefix}/health`
 
@@ -107,7 +107,7 @@ export class Router implements RouterInterface {
     path = pascalCase(path) // actions are PascalCase
 
     try {
-      const action = (await import(p.userActionsPath(`${path}.ts`))).default as Action
+      const action = (await import(p.userActionsPath(path))).default as Action
 
       return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
     } catch (error) {

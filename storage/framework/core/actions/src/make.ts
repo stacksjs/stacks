@@ -50,7 +50,7 @@ export async function makeComponent(options: MakeOptions) {
 export async function createAction(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: p.userActionsPath(`${name}.ts`),
+    path: p.userActionsPath(name),
     data: `import { Action } from '@stacksjs/actions'
 
 export default new Action({
