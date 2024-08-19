@@ -1,6 +1,5 @@
 import type { JobOptions, Nullable } from '@stacksjs/types'
 import type { ValidationBoolean, ValidationNumber, ValidationString } from '@stacksjs/validation'
-import type { ModelRequest } from '../../../types/requests'
 
 type ValidationKey = string
 interface ValidationValue {
@@ -19,7 +18,8 @@ interface ActionOptions {
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
   enabled?: JobOptions['enabled']
-  handle: (request: ModelRequest) => Promise<any> | object | string
+  requestFile?: string
+  handle: (request: any) => Promise<any>
 }
 
 export class Action {
@@ -33,7 +33,7 @@ export class Action {
   method?: ActionOptions['method']
   validations?: Record<ValidationKey, ValidationValue>
   requestFile?: string
-  handle: (request: ModelRequest) => Promise<any> | object | string
+  handle: ActionOptions['handle']
 
   constructor({
     name,
