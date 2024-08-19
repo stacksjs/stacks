@@ -223,8 +223,8 @@ export class Router implements RouterInterface {
   }
 
   public async getRoutes(): Promise<Route[]> {
-    await import(routesPath('api.ts'))
-    await import(projectStoragePath('framework/orm/routes.ts'))
+    await import('../../../../../routes/api') // user routes
+    await import('../../../orm/routes') // auto-generated routes
 
     return this.routes
   }

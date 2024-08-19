@@ -56,7 +56,6 @@ export async function serverResponse(req: Request, body: string) {
 
   const routesList: Route[] = await route.getRoutes()
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
-
   log.info(`URL: ${JSON.stringify(url)}`)
 
   if (req.method === 'OPTIONS') {
