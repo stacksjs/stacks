@@ -75,15 +75,15 @@ async function generateApiRoutes(modelFiles: string[]) {
               throw { message: 'Action Not Found!' }
             }
 
-            if (apiRoute === 'index') routeString += `await route.get('${uri}', '${path}')\n\n`
+            if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}')\n\n`
 
-            if (apiRoute === 'show') routeString += `await route.get('${uri}/{id}', '${path}')\n\n`
+            if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}')\n\n`
 
-            if (apiRoute === 'store') routeString += `await route.post('${uri}', '${path}')\n\n`
+            if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}')\n\n`
 
-            if (apiRoute === 'update') routeString += `await route.patch('${uri}/{id}', '${path}')\n\n`
+            if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}')\n\n`
 
-            if (apiRoute === 'destroy') routeString += `await route.delete('${uri}/{id}', '${path}')\n\n`
+            if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}')\n\n`
           }
         }
       }
