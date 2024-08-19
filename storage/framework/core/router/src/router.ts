@@ -66,7 +66,7 @@ export class Router implements RouterInterface {
   public async email(path: Route['url']): Promise<this> {
     path = pascalCase(path)
 
-    const emailModule = (await import(p.userNotificationsPath(`${path}.ts`))).default as Action
+    const emailModule = (await import(p.userNotificationsPath(path))).default as Action
     const callback = emailModule.handle
     const uri = this.prepareUri(path)
     this.addRoute('GET', uri, callback, 200)

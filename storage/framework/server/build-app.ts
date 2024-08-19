@@ -16,7 +16,6 @@ const result = await build({
   outdir: path.frameworkPath('server/dist'),
   format: 'esm',
   target: 'bun',
-  minify: true,
   sourcemap: 'linked',
   minify: true,
   splitting: true,
