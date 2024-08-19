@@ -803,22 +803,22 @@ async function generateModelString(
 
   if (typeof observer === 'boolean') {
     if (observer) {
-      mittCreateStatement += `dispatch('${formattedModelName}.created', model)`
-      mittUpdateStatement += `dispatch('${formattedModelName}.updated', model)`
-      mittDeleteStatement += `dispatch('${formattedModelName}.deleted', this)`
+      mittCreateStatement += `dispatch('${formattedModelName}:created', model)`
+      mittUpdateStatement += `dispatch('${formattedModelName}:updated', model)`
+      mittDeleteStatement += `dispatch('${formattedModelName}:deleted', this)`
     }
   }
 
   if (Array.isArray(observer)) {
     // Iterate through the array and append statements based on its contents
     if (observer.includes('create')) {
-      mittCreateStatement += `dispatch('${formattedModelName}.created', model);`
+      mittCreateStatement += `dispatch('${formattedModelName}:created', model);`
     }
     if (observer.includes('update')) {
-      mittUpdateStatement += `dispatch('${formattedModelName}.updated', model);`
+      mittUpdateStatement += `dispatch('${formattedModelName}:updated', model);`
     }
     if (observer.includes('delete')) {
-      mittDeleteStatement += `dispatch('${formattedModelName}.deleted', model);`
+      mittDeleteStatement += `dispatch('${formattedModelName}:deleted', model);`
     }
   }
 

@@ -138,6 +138,7 @@ type StacksEvents = {
   'user:logged-in': { name: string }
   'user:logged-out': { name: string }
   'user:updated': { name: string }
+  'user:created': { name: string }
   'user:deleted': { name: string }
   'user:password-reset': { name: string }
   'user:password-changed': { name: string }

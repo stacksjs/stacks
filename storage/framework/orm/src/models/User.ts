@@ -323,7 +323,7 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
-    dispatch('user.created', model)
+    dispatch('user:created', model)
 
     return model
   }
@@ -346,7 +346,7 @@ export class UserModel {
       await db.deleteFrom('users').where('id', '=', id).execute()
     }
 
-    dispatch('user.deleted', this)
+    dispatch('user:deleted', this)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -510,7 +510,7 @@ export class UserModel {
 
     const model = this.find(Number(this.id))
 
-    dispatch('user.updated', model)
+    dispatch('user:updated', model)
 
     return model
   }
@@ -550,7 +550,7 @@ export class UserModel {
       await db.deleteFrom('users').where('id', '=', this.id).execute()
     }
 
-    dispatch('user.deleted', this)
+    dispatch('user:deleted', this)
   }
 
   async post() {
