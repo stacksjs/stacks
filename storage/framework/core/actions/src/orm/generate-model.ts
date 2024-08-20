@@ -978,7 +978,7 @@ async function generateModelString(
   for (const attribute of attributes) {
     const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
-    fieldString += ` ${attribute.field}: ${entity}\n     `
+    fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
 
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
 

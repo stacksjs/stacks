@@ -14,7 +14,7 @@ export interface PersonalAccessTokensTable {
   id: Generated<number>
   name: string
   token: string
-  plainTextToken: string
+  plain_text_token: string
   abilities: string[]
   team_id: number
 

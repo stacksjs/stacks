@@ -20,7 +20,7 @@ export interface UsersTable {
   id: Generated<number>
   name: string
   email: string
-  jobTitle: string
+  job_title: string
   password: string
   team_id: number
   deployment_id: number
