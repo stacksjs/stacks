@@ -23,7 +23,7 @@ await initiateModelGeneration()
 await setKyselyTypes()
 
 async function generateApiRoutes(modelFiles: string[]) {
-  const file = Bun.file(path.frameworkPath(`orm/routes`))
+  const file = Bun.file(path.frameworkPath(`orm/routes.ts`))
   const writer = file.writer()
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
@@ -489,7 +489,7 @@ async function deleteExistingModels(modelStringFile?: string) {
 }
 
 async function deleteExistingOrmActions(modelStringFile?: string) {
-  const routes = path.frameworkPath(`orm/routes`)
+  const routes = path.frameworkPath(`orm/routes.ts`)
   if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
 
   if (modelStringFile) {

@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
-import { frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
-import { hasFiles } from '@stacksjs/storage'
+import { path, frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { fs, hasFiles } from '@stacksjs/storage'
 import { slug } from '@stacksjs/strings'
 import { $ } from 'bun'
 
@@ -36,12 +36,15 @@ export async function buildDockerImage() {
 
   // delete old CDK relating files, to always build fresh
   log.info('Deleting old CDK files...')
-  log.debug('Deleting old cdk.out ...')
+  log.info('Deleting old cdk.out ...')
   await runCommand(`rm -rf ${frameworkCloudPath('cdk.out/')}`)
-  log.debug('Deleting old CDK context file...')
+  log.success('Deleted old cdk.out')
+  log.info('Deleting old CDK context file...')
   await runCommand(`rm -rf ${frameworkCloudPath('cdk.context.json')}`)
-  log.debug('Deleting old dist.zip file...')
+  log.success('Deleted old cdk.context.json')
+  log.info('Deleting old dist.zip file...')
   await runCommand(`rm -rf ${frameworkCloudPath('dist.zip')}`)
+  log.success('Deleted old dist.zip')
 
   log.info('Copying project files...')
   log.info('Copying config files...')
@@ -53,6 +56,28 @@ export async function buildDockerImage() {
   log.info('Copying storage files...')
   await cleanCopy(projectPath('storage'), frameworkPath('server/storage'))
   log.success('Copied storage files')
+
+  // move files out of the frameworkPath('server/storage/dist') folder to the frameworkPath('server/storage') folder
+  if (fs.existsSync(frameworkPath('server/storage/dist'))) {
+    log.info('Moving files...')
+    const sourceDir = frameworkPath('server/storage/dist')
+    const targetDir = frameworkPath('server/storage')
+
+    // Read all items in the source directory
+    const items = await fs.readdir(sourceDir)
+
+    // Move each item to the target directory
+    for (const item of items) {
+      const srcPath = path.join(sourceDir, item)
+      const destPath = path.join(targetDir, item)
+      await fs.move(srcPath, destPath, { overwrite: true })
+    }
+
+    // Remove the now-empty dist folder
+    await fs.remove(sourceDir)
+    log.success('Moved files')
+  }
+
   log.info('Copying .env file...')
   await cleanCopy(projectPath('.env'), frameworkPath('server/.env'))
   log.success('Copied .env file')
