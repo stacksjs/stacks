@@ -6,7 +6,7 @@ import type { SchemaTypes } from '@vinejs/vine/types'
 import { SimpleMessagesProvider, VineError, reportError, schema } from './'
 
 interface RequestData {
-  [key: string]: string | number | null | undefined | boolean
+  [key: string]: any
 }
 
 interface ValidationType {

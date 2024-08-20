@@ -23,22 +23,13 @@ interface CustomAttributes {
 
 type RouteParams = { [key: string]: string } | null
 
-export class Request implements RequestInstance {
-  private static instance: Request
-  private query: RequestData = {}
-  private params: RouteParams = null
-  private headers: any = {}
-
-  // An attempt to singleston instance, might be needed at some point
-  public static getInstance(): Request {
-    if (!Request.instance) {
-      Request.instance = new Request()
-    }
-    return Request.instance
-  }
+export class Request<T extends RequestData = RequestData> implements RequestInstance {
+  public query: T = {} as T;
+  public params: RouteParams = null
+  public headers: any = {}
 
   public addQuery(url: URL): void {
-    this.query = Object.fromEntries(url.searchParams)
+    this.query = Object.fromEntries(url.searchParams) as any
   }
 
   public addBodies(params: any): void {
@@ -46,7 +37,7 @@ export class Request implements RequestInstance {
   }
 
   public addParam(param: RouteParam): void {
-    this.params = param
+    this.params = param as any
   }
 
   public addHeaders(headerParams: Headers): void {
@@ -57,7 +48,7 @@ export class Request implements RequestInstance {
     return this.query[element]
   }
 
-  public all(): RequestData {
+  public all(): T {
     return this.query
   }
 
