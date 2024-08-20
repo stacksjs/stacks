@@ -18,7 +18,21 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class DeploymentRequest extends Request implements DeploymentRequestType {
+interface RequestDataDeployment {
+  id?: number
+  commitSha: string
+  commitMessage: string
+  branch: string
+  status: string
+  executionTime: number
+  deployScript: string
+  terminalOutput: string
+  user_id: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class DeploymentRequest extends Request<RequestDataDeployment> implements DeploymentRequestType {
   public id = 1
   public commitSha = ''
   public commitMessage = ''

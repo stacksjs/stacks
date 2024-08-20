@@ -18,7 +18,15 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class SubscriberRequest extends Request implements SubscriberRequestType {
+interface RequestDataSubscriber {
+  id?: number
+  subscribed: boolean
+  user_id: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class SubscriberRequest extends Request<RequestDataSubscriber> implements SubscriberRequestType {
   public id = 1
   public subscribed = false
   public user_id = 0

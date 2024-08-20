@@ -18,21 +18,19 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-
 interface RequestDataUser {
   id?: number
-name: string
- email: string
- jobTitle: string
- password: string
- team_id: number
- deployment_id: number
- post_id: number
-created_at?: string
- updated_at?: string
- deleted_at?: string
+  name: string
+  email: string
+  jobTitle: string
+  password: string
+  team_id: number
+  deployment_id: number
+  post_id: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
-
 export class UserRequest extends Request<RequestDataUser> implements UserRequestType {
   public id = 1
   public name = ''
@@ -53,10 +51,6 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
     } else {
       await customValidate(attributes, this.all())
     }
-  }
-
-  public all(): RequestDataUser {
-    return this.query
   }
 }
 

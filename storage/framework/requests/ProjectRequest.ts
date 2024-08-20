@@ -18,7 +18,17 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class ProjectRequest extends Request implements ProjectRequestType {
+interface RequestDataProject {
+  id?: number
+  name: string
+  description: string
+  url: string
+  status: string
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class ProjectRequest extends Request<RequestDataProject> implements ProjectRequestType {
   public id = 1
   public name = ''
   public description = ''

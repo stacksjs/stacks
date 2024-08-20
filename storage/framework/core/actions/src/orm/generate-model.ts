@@ -249,7 +249,7 @@ async function writeModelRequest() {
 
     fileString += `interface CustomAttributes {
       [key: string]: ValidationField
-    }`
+    }\n`
 
     const types = `export interface ${modelName}RequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -262,9 +262,13 @@ async function writeModelRequest() {
       ${fieldString}
     }\n`
 
+    fileString += `interface RequestData${modelName} {
+      ${fieldString}
+    }\n`
+
     typeString += types
 
-    fileString += `export class ${modelName}Request extends Request implements ${modelName}RequestType {
+    fileString += `export class ${modelName}Request extends Request<RequestData${modelName}> implements ${modelName}RequestType {
       ${fieldStringInt}
       public async validate(attributes?: CustomAttributes): Promise<void> {
         if (attributes === undefined || attributes === null) {

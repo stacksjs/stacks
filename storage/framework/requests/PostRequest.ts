@@ -18,7 +18,16 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class PostRequest extends Request implements PostRequestType {
+interface RequestDataPost {
+  id?: number
+  title: string
+  body: string
+  user_id: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class PostRequest extends Request<RequestDataPost> implements PostRequestType {
   public id = 1
   public title = ''
   public body = ''

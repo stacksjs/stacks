@@ -24,7 +24,7 @@ interface CustomAttributes {
 type RouteParams = { [key: string]: string } | null
 
 export class Request<T extends RequestData = RequestData> implements RequestInstance {
-  public query: T = {} as T;
+  public query: T = {} as T
   public params: RouteParams = null
   public headers: any = {}
 

@@ -18,7 +18,18 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class AccessTokenRequest extends Request implements AccessTokenRequestType {
+interface RequestDataAccessToken {
+  id?: number
+  name: string
+  token: string
+  plainTextToken: string
+  abilities: string[]
+  team_id: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class AccessTokenRequest extends Request<RequestDataAccessToken> implements AccessTokenRequestType {
   public id = 1
   public name = ''
   public token = ''

@@ -18,7 +18,14 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class ReleaseRequest extends Request implements ReleaseRequestType {
+interface RequestDataRelease {
+  id?: number
+  version: string
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class ReleaseRequest extends Request<RequestDataRelease> implements ReleaseRequestType {
   public id = 1
   public version = ''
   public created_at = ''

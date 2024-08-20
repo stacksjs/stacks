@@ -18,7 +18,23 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-export class TeamRequest extends Request implements TeamRequestType {
+interface RequestDataTeam {
+  id?: number
+  name: string
+  companyName: string
+  email: string
+  billingEmail: string
+  status: string
+  description: string
+  path: string
+  isPersonal: boolean
+  accesstoken_id: number
+  user_id: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+}
+export class TeamRequest extends Request<RequestDataTeam> implements TeamRequestType {
   public id = 1
   public name = ''
   public companyName = ''
