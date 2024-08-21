@@ -8,6 +8,7 @@ import { logsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 import { consola, createConsola } from 'consola'
+import color from 'picocolors'
 
 export async function logLevel() {
   /**
@@ -66,68 +67,96 @@ export async function writeToLogFile(message: string) {
 
 export interface Log {
   info: (...args: any[]) => void
-  success: (msg: string) => void
+  success: (message: string) => void
   error: (err: string | Error | unknown, options?: any | Error) => void
-  warn: (arg: string) => void
+  warn: (message: string) => void
+  warning: (message: string) => void
   debug: (...args: any[]) => void
+  message: (message: string, options?: LogMessageOptions) => void
+  step: (message: string) => void
   // start: logger.Start
   // box: logger.Box
   start: any
   box: any
-  prompt: Prompt
+  prompt: () => Prompt
   dump: (...args: any[]) => void
   dd: (...args: any[]) => void
   echo: (...args: any[]) => void
 }
 
+const s = (c: string, fallback: string) => (unicode ? c : fallback)
+const S_INFO = s('●', '•')
+const S_SUCCESS = s('◆', '*')
+const S_WARN = s('▲', '!')
+const S_ERROR = s('■', 'x')
+const S_BAR = s('│', '|')
+const S_STEP_SUBMIT = s('◇', 'o')
+
+export type LogMessageOptions = {
+  symbol?: string
+}
+
 export const log: Log = {
-  async info(...arg: any) {
-    logger.info(...arg)
-    await writeToLogFile(`INFO: ${arg}`)
+  message: (message = '', { symbol = color.gray(S_BAR) }: LogMessageOptions = {}) => {
+    const parts = [`${color.gray(S_BAR)}`]
+
+    if (message) {
+      const [firstLine, ...lines] = message.split('\n')
+      parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln) => `${color.gray(S_BAR)}  ${ln}`))
+    }
+
+    process.stdout.write(`${parts.join('\n')}\n`)
   },
 
-  async success(msg: string) {
-    logger.success(msg)
-    await writeToLogFile(`SUCCESS: ${msg}`)
+  info: async (message: string) => {
+    log.message(message, { symbol: color.blue(S_INFO) })
+    await writeToLogFile(`INFO: ${message}`)
   },
 
-  async error(err: unknown, options?: any | Error) {
-    if (err instanceof Error) handleError(err, options)
-    else if (options instanceof Error) handleError(options)
+  success: async (message: string) => {
+    log.message(message, { symbol: color.green(S_SUCCESS) })
+    await writeToLogFile(`SUCCESS: ${message}`)
+  },
+
+  step: async (message: string) => {
+    log.message(message, { symbol: color.green(S_STEP_SUBMIT) })
+    await writeToLogFile(`STEP: ${message}`)
+  },
+
+  warn: async (message: string) => {
+    log.message(message, { symbol: color.yellow(S_WARN) })
+    await writeToLogFile(`WARN: ${message}`)
+  },
+
+  /** alias for `log.warn()`. */
+  warning: (message: string) => {
+    log.warn(message)
+  },
+
+  error: (message: string | Error | unknown) => {
+    if (message instanceof Error) handleError(err, options)
+    else if (message instanceof Error) handleError(options)
     else handleError(err, options)
 
-    await writeToLogFile(`ERROR: ${err}`)
+    const errorMessage = isString(message) ? message : message instanceof Error ? message.message : String(message)
+    log.message(errorMessage, { symbol: color.red(S_ERROR) })
+    writeToLogFile(`ERROR: ${errorMessage}`)
   },
 
-  async warn(arg: string) {
-    logger.warn(arg)
-    await writeToLogFile(`WARN: ${arg}`)
+  debug: (...args: any[]) => {
+    console.debug(...args)
+    writeToLogFile(`DEBUG: ${args.join(' ')}`)
   },
 
-  async debug(...arg: any) {
-    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
-      return await writeToLogFile(`DEBUG: ${arg}`)
-
-    logger.debug(arg)
-
-    if (isString(arg)) await writeToLogFile(`DEBUG: ${arg}`)
-    else await writeToLogFile(`DEBUG: ${JSON.stringify(arg)}`)
+  start: consola.start,
+  box: consola.box,
+  prompt: getPrompt,
+  dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
+  dd: (...args: any[]) => {
+    args.forEach((arg) => console.log(arg))
+    process.exit(ExitCode.FatalError)
   },
-
-  async start(...arg: any) {
-    logger.start(arg)
-    await writeToLogFile(`START: ${arg}`)
-  },
-
-  box: logger.box,
-
-  get prompt() {
-    return getPrompt()
-  },
-
-  dump,
-  dd,
-  echo,
+  echo: (...args: any[]) => console.log(...args),
 }
 
 export function dump(...args: any[]) {
