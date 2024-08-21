@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { bold, dim, green, italic, log } from '@stacksjs/cli'
+import { bold, dim, green, italic } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 
@@ -36,13 +36,13 @@ export async function outro(options: {
     console.log(`${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`)
   }
 
-  log.success(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
+  console.log(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
 export async function intro(options: { dir: string; pkgName?: string }) {
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
-  log.info(`Building ${italic(pkgName)}...`)
+  console.log(`Building ${italic(pkgName)}...`)
   const startTime = Date.now()
 
   return { startTime }
