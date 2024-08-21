@@ -133,12 +133,12 @@ export const log: Log = {
     log.warn(message)
   },
 
-  error: (message: string | Error | unknown) => {
-    if (message instanceof Error) handleError(err, options)
-    else if (message instanceof Error) handleError(options)
+  error: (err: unknown, options?: any | Error) => {
+    if (err instanceof Error) handleError(err, options)
+    else if (err instanceof Error) handleError(options)
     else handleError(err, options)
 
-    const errorMessage = isString(message) ? message : message instanceof Error ? message.message : String(message)
+    const errorMessage = isString(err) ? err : err instanceof Error ? err.message : String(err)
     log.message(errorMessage, { symbol: color.red(S_ERROR) })
     writeToLogFile(`ERROR: ${errorMessage}`)
   },
