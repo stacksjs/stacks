@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@antfu/install-pkg": "^0.3.5",
+    "@antfu/install-pkg": "^0.4.0",
     "@clack/prompts": "^0.7.0",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
