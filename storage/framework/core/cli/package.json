@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@antfu/install-pkg": "^0.4.0",
-    "@clack/prompts": "^0.7.0",
+    "@clack/core": "^0.3.4",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

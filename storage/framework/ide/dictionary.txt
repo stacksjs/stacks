@@ -221,6 +221,7 @@ peasy
 pflannery
 phpcs
 phpunit
+picocolors
 pinia
 pkgjson
 pkgx
@@ -268,6 +269,7 @@ shikiji
 showcaseable
 singleline
 singlestore
+sisteransi
 sizecheck
 solana
 sonner
