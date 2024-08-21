@@ -8,6 +8,7 @@ import { logsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 import { consola, createConsola } from 'consola'
+import isUnicodeSupported from 'is-unicode-supported'
 import color from 'picocolors'
 
 export async function logLevel() {
@@ -84,6 +85,7 @@ export interface Log {
   echo: (...args: any[]) => void
 }
 
+const unicode = isUnicodeSupported()
 const s = (c: string, fallback: string) => (unicode ? c : fallback)
 const S_INFO = s('●', '•')
 const S_SUCCESS = s('◆', '*')
@@ -150,7 +152,7 @@ export const log: Log = {
 
   start: consola.start,
   box: consola.box,
-  prompt: getPrompt,
+  prompt: () => getPrompt(),
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
   dd: (...args: any[]) => {
     args.forEach((arg) => console.log(arg))
