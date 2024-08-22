@@ -92,6 +92,7 @@ dotenv
 Doyon
 dprint
 Drasner
+ecommerce
 elasticloadbalancingv
 elbv
 encrypter
