@@ -8,11 +8,11 @@ import { $ } from 'bun'
 
 export async function cleanCopy(sourcePath: string, targetPath: string) {
   try {
-    log.info(`Deleting ${targetPath} ...`)
+    log.debug(`Deleting ${targetPath} ...`)
     await runCommand(`rm -rf ${targetPath}`)
-    log.info(`Copying ${sourcePath} to ${targetPath} ...`)
+    log.debug(`Copying ${sourcePath} to ${targetPath} ...`)
     await runCommand(`cp -r ${sourcePath} ${targetPath}`)
-    log.info(`Done copying ${sourcePath} to ${targetPath}`)
+    log.debug(`Done copying ${sourcePath} to ${targetPath}`)
   } catch (error) {
     log.error(`Error copying ${sourcePath} to ${targetPath}: ${error}`)
   }

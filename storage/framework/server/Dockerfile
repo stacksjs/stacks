@@ -16,7 +16,6 @@ FROM base AS release
 COPY ./storage ./storage
 COPY ./config ./config
 COPY ./docs ./docs
-COPY ./dist/* ./
 COPY ./tsconfig.json ./
 
 # Create log directory and set permissions

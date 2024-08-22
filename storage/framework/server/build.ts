@@ -11,7 +11,7 @@ async function main() {
   })
 
   log.debug('Deleting old server files...')
-  await runCommand(`rm -rf ${userServerPath('chunk-*')}`)
+  await runCommand(`rm -rf ${userServerPath('index.js*')}`)
   log.debug('Deleted old server files')
   log.debug('Deleting old *.node files...')
   await runCommand(`rm -rf ${userServerPath('*.node')}`)
@@ -19,7 +19,7 @@ async function main() {
 
   const result = await Bun.build({
     entrypoints: ['./src/index.ts'],
-    outdir: './dist',
+    outdir: './',
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',

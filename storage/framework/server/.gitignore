@@ -13,3 +13,4 @@ cdk.context.json
 cdk.out
 chunk-*
 *.node
+index.js*
