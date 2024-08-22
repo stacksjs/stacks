@@ -146,19 +146,24 @@ export const log: Log = {
   },
 
   debug: (...args: any[]) => {
-    console.debug(...args)
+    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
+      return writeToLogFile(`DEBUG: ${args.join(' ')}`)
+
     writeToLogFile(`DEBUG: ${args.join(' ')}`)
+    logger.debug(...args)
   },
 
-  start: consola.start,
-  box: consola.box,
   prompt: () => getPrompt(),
+
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
   dd: (...args: any[]) => {
     args.forEach((arg) => console.log(arg))
     process.exit(ExitCode.FatalError)
   },
   echo: (...args: any[]) => console.log(...args),
+
+  start: consola.start,
+  box: consola.box,
 }
 
 export function dump(...args: any[]) {

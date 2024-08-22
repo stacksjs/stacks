@@ -11,3 +11,5 @@ storage
 env.ts
 cdk.context.json
 cdk.out
+chunk-*
+*.node

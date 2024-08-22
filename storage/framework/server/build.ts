@@ -1,6 +1,7 @@
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
+import { userServerPath } from '@stacksjs/path'
 import { intro, outro } from '../core/build/src'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 
@@ -9,13 +10,20 @@ async function main() {
     dir: import.meta.dir,
   })
 
+  log.debug('Deleting old server files...')
+  await runCommand(`rm -rf ${userServerPath('chunk-*')}`)
+  log.debug('Deleted old server files')
+  log.debug('Deleting old *.node files...')
+  await runCommand(`rm -rf ${userServerPath('*.node')}`)
+  log.debug('Deleted old *.node files')
+
   const result = await Bun.build({
     entrypoints: ['./src/index.ts'],
     outdir: './dist',
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',
-    minify: true,
+    // minify: true,
   })
 
   await outro({
@@ -26,7 +34,7 @@ async function main() {
 
   await useCustomOrDefaultServerConfig()
 
-  log.info('Building app...')
+  log.debug('Building app...')
 
   await import('./build-app.ts')
 

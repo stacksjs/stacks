@@ -40,12 +40,12 @@ export async function serve(options: ServeOptions = {}) {
 }
 
 export async function serverResponse(req: Request, body: string) {
-  log.info(`Incoming Request: ${req.method} ${req.url}`)
-  log.info(`Headers: ${JSON.stringify(req.headers)}`)
-  log.info(`Body: ${JSON.stringify(req.body)}`)
-  // log.info(`Query: ${JSON.stringify(req.query)}`)
-  // log.info(`Params: ${JSON.stringify(req.params)}`)
-  // log.info(`Cookies: ${JSON.stringify(req.cookies)}`)
+  log.debug(`Incoming Request: ${req.method} ${req.url}`)
+  log.debug(`Headers: ${JSON.stringify(req.headers)}`)
+  log.debug(`Body: ${JSON.stringify(req.body)}`)
+  // log.debug(`Query: ${JSON.stringify(req.query)}`)
+  // log.debug(`Params: ${JSON.stringify(req.params)}`)
+  // log.debug(`Cookies: ${JSON.stringify(req.cookies)}`)
 
   // Trim trailing slash from the URL if it's not the root '/'
   // This automatically allows for route definitions, like
@@ -55,8 +55,8 @@ export async function serverResponse(req: Request, body: string) {
   const url = new URL(trimmedUrl)
 
   const routesList: Route[] = await route.getRoutes()
-  log.info(`Routes List: ${JSON.stringify(routesList)}`)
-  log.info(`URL: ${JSON.stringify(url)}`)
+  log.debug(`Routes List: ${JSON.stringify(routesList)}`)
+  log.debug(`URL: ${JSON.stringify(url)}`)
 
   if (req.method === 'OPTIONS') {
     return handleOptions(req)
