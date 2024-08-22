@@ -1,3 +1,9 @@
+type PrinterDriver = {
+  print: (receipt: Receipt) => void
+  cleanUp: () => void
+  checkStatus: () => void
+}
+
 type Receipt = {
   id: string
   name: string
@@ -6,16 +12,16 @@ type Receipt = {
   image: string
 }
 
-const printer = {
+const printer: PrinterDriver = {
   print(receipt: Receipt) {
     console.log(receipt)
   },
 
-  cleanUpPrintJob() {
+  cleanUp() {
     console.log('Cleaning up print job...')
   },
 
-  checkOnlineStatus() {
+  checkStatus() {
     console.log('Checking online status...')
   },
 }
