@@ -1,1 +1,1 @@
-export * as dynamodb from './dynamodb'
+export { dynamodb } from './dynamodb'

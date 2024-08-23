@@ -91,7 +91,13 @@ export interface CacheOptions {
 
     memcached?: object
 
-    dynamodb?: object
+    dynamodb?: {
+      key: string
+      secret: string
+      region: string
+      table: string
+      endpoint: string
+    }
   }
 }
 

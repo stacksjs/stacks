@@ -1,119 +1,112 @@
-export type {}
+import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
+import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
+import { cache } from '@stacksjs/config'
 
-// import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
-// import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-// import { cache } from '@stacksjs/config'
+type CacheDriver = {
+  createTable: () => Promise<void>
+  set: (key: string, value: string | number) => Promise<void>
+  get: (key: string) => Promise<string | undefined | null>
+  remove: (key: string) => Promise<void>
+  del: (key: string) => Promise<void>
+  client: DynamoDB
+}
 
-// const valueAttribute = 'value'
-// const keyAttribute = 'key'
+const valueAttribute = 'value'
+const keyAttribute = 'key'
+const tableName = cache.drivers?.dynamodb?.table
 
-// const tableName = cache.dynamodb.table
+const client = new DynamoDB({ region: cache.drivers?.dynamodb?.region })
 
-// const dynamodb = new DynamoDB({ region: cache.dynamodb.region })
+function getValueType(value: string | number) {
+  if (typeof value === 'string') return 'S'
+  if (typeof value === 'number') return 'N'
+  return 'S'
+}
 
-// async function createTable() {
-//   const tables = await dynamodb.send(new ListTablesCommand({}))
+function serialize(value: string | number) {
+  return String(value)
+}
 
-//   const tableExists = tables.TableNames?.includes('cache')
+export const dynamodb: CacheDriver = {
+  async createTable() {
+    const tables = await client.send(new ListTablesCommand({}))
 
-//   if (tableExists)
-//     return
+    const tableExists = tables.TableNames?.includes('cache')
 
-//   const params = {
-//     AttributeDefinitions: [
-//       {
-//         AttributeName: 'key',
-//         AttributeType: 'S',
-//       },
-//     ],
-//     KeySchema: [
-//       {
-//         AttributeName: 'key',
-//         KeyType: 'HASH',
-//       },
-//     ],
-//     ProvisionedThroughput: {
-//       ReadCapacityUnits: 5,
-//       WriteCapacityUnits: 5,
-//     },
-//     TableName: tableName,
-//   }
+    if (tableExists) return
 
-//   await dynamodb.createTable(params)
-// }
+    const params = {
+      AttributeDefinitions: [
+        {
+          AttributeName: 'key',
+          AttributeType: 'S',
+        },
+      ],
+      KeySchema: [
+        {
+          AttributeName: 'key',
+          KeyType: 'HASH',
+        },
+      ],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+      TableName: tableName,
+    }
 
-// async function set(key: string, value: string | number): Promise<void> {
-//   const params: PutItemCommandInput = {
-//     TableName: tableName,
-//     Item: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//       [valueAttribute]: {
-//         [getValueType(value)]: serialize(value),
-//       },
-//     },
-//   }
+    client.createTable(params)
+  },
 
-//   await dynamodb.putItem(params)
-// }
+  async set(key: string, value: string | number): Promise<void> {
+    const params: PutItemCommandInput = {
+      TableName: tableName,
+      Item: {
+        [keyAttribute]: {
+          S: key,
+        },
+        [valueAttribute]: {
+          [getValueType(value)]: serialize(value),
+        },
+      },
+    }
 
-// async function get(key: string): Promise<string | undefined | null> {
-//   const params = {
-//     TableName: tableName,
-//     Key: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//     },
-//   }
+    await client.putItem(params)
+  },
 
-//   const response = await dynamodb.getItem(params)
+  async get(key: string): Promise<string | undefined | null> {
+    const params = {
+      TableName: tableName,
+      Key: {
+        [keyAttribute]: {
+          S: key,
+        },
+      },
+    }
 
-//   if (!response.Item)
-//     return null
+    const response = await client.getItem(params)
 
-//   return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
-// }
+    if (!response.Item) return null
 
-// function getValueType(value: string | number) {
-//   if (typeof value === 'string')
-//     return 'S'
+    return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
+  },
 
-//   if (typeof value === 'number')
-//     return 'N'
+  async remove(key: string): Promise<void> {
+    const params = {
+      TableName: tableName,
+      Key: {
+        [keyAttribute]: {
+          S: key,
+        },
+      },
+    }
 
-//   return 'S'
-// }
+    await client.deleteItem(params)
+  },
 
-// async function remove(key: string): Promise<void> {
-//   const params = {
-//     TableName: tableName,
-//     Key: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//     },
-//   }
+  del(key: string): Promise<void> {
+    return this.remove(key)
+  },
 
-//   await dynamodb.deleteItem(params)
-// }
-
-// async function del(key: string): Promise<void> {
-//   const params = {
-//     TableName: tableName,
-//     Key: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//     },
-//   }
-
-//   await dynamodb.deleteItem(params)
-// }
-
-// function serialize(value: string | number) {
-//   return String(value)
-// }
-
-// export { set, get, remove, del, createTable }
+  client,
+}
