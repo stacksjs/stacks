@@ -67,14 +67,14 @@ export async function writeToLogFile(message: string) {
 }
 
 export interface Log {
-  info: (...args: any[]) => void
-  success: (message: string) => void
+  info: (message: string, options?: LogMessageOptions) => void
+  success: (message: string, options?: LogMessageOptions) => void
   error: (err: string | Error | unknown, options?: any | Error) => void
-  warn: (message: string) => void
-  warning: (message: string) => void
-  debug: (...args: any[]) => void
+  warn: (message: string, options?: LogMessageOptions) => void
+  warning: (message: string, options?: LogMessageOptions) => void
+  debug: (message: string, options?: LogMessageOptions) => void
   message: (message: string, options?: LogMessageOptions) => void
-  step: (message: string) => void
+  step: (message: string, options?: LogMessageOptions) => void
   // start: logger.Start
   // box: logger.Box
   start: any
@@ -96,10 +96,13 @@ const S_STEP_SUBMIT = s('◇', 'o')
 
 export type LogMessageOptions = {
   symbol?: string
+  styled?: boolean
 }
 
 export const log: Log = {
-  message: (message = '', { symbol = color.gray(S_BAR) }: LogMessageOptions = {}) => {
+  message: (message = '', { symbol = color.gray(S_BAR), styled = true }: LogMessageOptions = {}) => {
+    if (!styled) return process.stdout.write(`${message}\n`)
+
     const parts = [`${color.gray(S_BAR)}`]
 
     if (message) {
@@ -110,29 +113,29 @@ export const log: Log = {
     process.stdout.write(`${parts.join('\n')}\n`)
   },
 
-  info: async (message: string) => {
-    log.message(message, { symbol: color.blue(S_INFO) })
+  info: async (message: string, options?: LogMessageOptions) => {
+    log.message(message, { symbol: color.blue(S_INFO), ...options })
     await writeToLogFile(`INFO: ${message}`)
   },
 
-  success: async (message: string) => {
-    log.message(message, { symbol: color.green(S_SUCCESS) })
+  success: async (message: string, options?: LogMessageOptions) => {
+    log.message(message, { symbol: color.green(S_SUCCESS), ...options })
     await writeToLogFile(`SUCCESS: ${message}`)
   },
 
-  step: async (message: string) => {
-    log.message(message, { symbol: color.green(S_STEP_SUBMIT) })
+  step: async (message: string, options?: LogMessageOptions) => {
+    log.message(message, { symbol: color.green(S_STEP_SUBMIT), ...options })
     await writeToLogFile(`STEP: ${message}`)
   },
 
-  warn: async (message: string) => {
-    log.message(message, { symbol: color.yellow(S_WARN) })
+  warn: async (message: string, options?: LogMessageOptions) => {
+    log.message(message, { symbol: color.yellow(S_WARN), ...options })
     await writeToLogFile(`WARN: ${message}`)
   },
 
   /** alias for `log.warn()`. */
-  warning: (message: string) => {
-    log.warn(message)
+  warning: (message: string, options?: LogMessageOptions) => {
+    log.warn(message, options)
   },
 
   error: (err: unknown, options?: any | Error) => {

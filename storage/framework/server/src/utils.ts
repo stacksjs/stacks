@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
-import { path, frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
-import { fs, hasFiles } from '@stacksjs/storage'
+import { frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { hasFiles } from '@stacksjs/storage'
 import { slug } from '@stacksjs/strings'
 import { $ } from 'bun'
 
@@ -32,6 +32,9 @@ export async function useCustomOrDefaultServerConfig() {
 }
 
 export async function buildDockerImage() {
+  console.log('cl Preparing build...')
+  log.info('styled Preparing build...')
+  log.info('unstyled Preparing build...', { styled: false })
   log.debug('Preparing build...')
 
   // delete old CDK relating files, to always build fresh
@@ -39,23 +42,41 @@ export async function buildDockerImage() {
   log.debug('Deleting old cdk.out ...')
   await runCommand(`rm -rf ${frameworkCloudPath('cdk.out/')}`)
   log.debug('Deleted old cdk.out')
+
   log.debug('Deleting old CDK context file...')
   await runCommand(`rm -rf ${frameworkCloudPath('cdk.context.json')}`)
   log.debug('Deleted old cdk.context.json')
+
   log.debug('Deleting old dist.zip file...')
   await runCommand(`rm -rf ${frameworkCloudPath('dist.zip')}`)
   log.debug('Deleted old dist.zip')
+
+  log.debug('Deleting .DS_Store files...')
+  await runCommand(`rm -rf ${frameworkPath('**/.DS_Store')}`)
+  log.debug('Deleted .DS_Store files')
+
+  log.debug('Deleting sourcemaps...')
+  await runCommand(`rm -rf ${frameworkPath('**/*.map')}`)
+  log.debug('Deleted sourcemaps')
+
+  log.debug('Deleting cache files...')
+  await runCommand(`rm -rf ${frameworkPath('cache/dashboard')}`)
+  await runCommand(`rm -rf ${frameworkPath('cache/docs')}`)
+  log.debug('Deleted cache files')
 
   log.debug('Copying project files...')
   log.debug('Copying config files...')
   await cleanCopy(projectPath('config'), frameworkPath('server/config'))
   log.debug('Copied config files')
+
   log.debug('Copying docs files...')
   await cleanCopy(projectPath('docs'), frameworkPath('server/docs'))
   log.debug('Copied docs files')
+
   log.debug('Copying storage files...')
   await cleanCopy(projectPath('storage'), frameworkPath('server/storage'))
   log.debug('Copied storage files')
+
   log.debug('Copying .env file...')
   await cleanCopy(projectPath('.env'), frameworkPath('server/.env'))
   log.debug('Copied .env file')
