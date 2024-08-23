@@ -1,15 +1,7 @@
 import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
 import { cache } from '@stacksjs/config'
-
-type CacheDriver = {
-  createTable: () => Promise<void>
-  set: (key: string, value: string | number) => Promise<void>
-  get: (key: string) => Promise<string | undefined | null>
-  remove: (key: string) => Promise<void>
-  del: (key: string) => Promise<void>
-  client: DynamoDB
-}
+import type { CacheDriver } from './type'
 
 const valueAttribute = 'value'
 const keyAttribute = 'key'
