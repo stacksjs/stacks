@@ -32,10 +32,7 @@ export async function useCustomOrDefaultServerConfig() {
 }
 
 export async function buildDockerImage() {
-  console.log('cl Preparing build...')
-  log.info('styled Preparing build...')
-  log.info('unstyled Preparing build...', { styled: false })
-  log.debug('Preparing build...')
+  log.info('Preparing build...', { styled: false })
 
   // delete old CDK relating files, to always build fresh
   log.debug('Deleting old CDK files...')
