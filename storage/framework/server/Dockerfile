@@ -13,21 +13,19 @@ RUN apt-get update && apt-get install -y curl
 
 # copy production dependencies and source code into final image
 FROM base AS release
-COPY ./storage ./storage
+COPY ./app ./app
 COPY ./config ./config
 COPY ./docs ./docs
 COPY ./dist ./dist
-COPY ./index.js ./
-COPY ./index.js.map ./
+COPY ./storage ./storage
 COPY ./tsconfig.json ./
 
-# Create log directory and set permissions
 RUN chown -R bun:bun ./storage
 
-# Add volume for logs
+# Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]
 
 # run the app
 USER bun
 EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "run", "index.js" ]
+ENTRYPOINT [ "bun", "run", "dist/index.js" ]

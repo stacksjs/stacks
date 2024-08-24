@@ -70,7 +70,7 @@ export async function serverResponse(req: Request, body: string) {
     })
     .find((route: Route) => route.method === req.method)
 
-  log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
+  log.info(`Found Route: ${JSON.stringify(foundRoute)}`, { styled: false })
 
   if (!foundRoute) {
     return new Response('Pretty 404 page coming soon', {
