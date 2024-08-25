@@ -90,6 +90,7 @@ const isFocusWithinRef = ref(false)
 const hotkeyLabel = props.hotkey.join('+').replace(/Key/g, '').replace(/Digit/g, '')
 
 function removeToast(toast: ToastT) {
+  heights.value = heights.value.filter(({ toastId }) => toastId !== toast.id)
   toasts.value = toasts.value.filter(({ id }) => id !== toast.id)
 }
 
