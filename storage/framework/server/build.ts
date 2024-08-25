@@ -3,7 +3,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { userServerPath } from '@stacksjs/path'
 import { path } from '@stacksjs/path'
-import { glob } from '@stacksjs/storage'
+import { fs, glob } from '@stacksjs/storage'
 import { build } from 'bun'
 import { intro, outro } from '../core/build/src'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
@@ -48,18 +48,28 @@ async function main() {
 
   const r2 = await build({
     entrypoints,
-    outdir: './dist',
+    outdir: path.frameworkPath('server/dist'),
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',
-    minify: true,
+    // minify: true,
     splitting: true,
   })
 
   // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
-
   await runCommand(`cp -r ${path.projectStoragePath('app')} ${path.userServerPath()}`)
   await runCommand(`rm -rf ${path.projectStoragePath('app')}`)
+
+  // Process files in the ./app folder
+  const appFiles = await glob([path.userServerPath('app/**/*.js')])
+  for (const file of appFiles) {
+    let content = await fs.readFile(file, 'utf-8')
+    if (content.includes('storage/framework/server')) {
+      content = content.replace(/storage\/framework\/server/g, 'dist')
+      await fs.writeFile(file, content, 'utf-8')
+      log.info(`Updated imports in ${file}`, { styled: false })
+    }
+  }
 
   await outro({
     dir: import.meta.dir,

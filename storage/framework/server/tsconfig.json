@@ -9,7 +9,6 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "../../storage/framework/*": ["./storage/framework/dist/*"],
       "@stacksjs/*": ["./storage/framework/core/*/src"],
       "stacks/*": ["./storage/framework/core/*/src"],
       "buddy": ["./storage/framework/core/buddy/src/index.ts"],

@@ -55,8 +55,8 @@ export async function serverResponse(req: Request, body: string) {
   const url = new URL(trimmedUrl)
 
   const routesList: Route[] = await route.getRoutes()
-  log.debug(`Routes List: ${JSON.stringify(routesList)}`)
-  log.debug(`URL: ${JSON.stringify(url)}`)
+  log.info(`Routes List: ${JSON.stringify(routesList)}`, { styled: false })
+  log.info(`URL: ${JSON.stringify(url)}`, { styled: false })
 
   if (req.method === 'OPTIONS') {
     return handleOptions(req)
@@ -73,6 +73,7 @@ export async function serverResponse(req: Request, body: string) {
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`, { styled: false })
 
   if (!foundRoute) {
+    // TODO: create a pretty 404 page
     return new Response('Pretty 404 page coming soon', {
       status: 404,
       headers: {
@@ -80,7 +81,7 @@ export async function serverResponse(req: Request, body: string) {
         'Access-Control-Allow-Headers': '*',
         'Content-Type': 'json',
       },
-    }) // TODO: create a pretty 404 page
+    })
   }
 
   const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname)
