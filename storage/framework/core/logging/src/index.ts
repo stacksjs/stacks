@@ -13,7 +13,7 @@ export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
 
   try {
-    const logFilePath = config.logger.logsPath ?? 'storage/logs/stacks.log'
+    const logFilePath = config.logging.logsPath ?? 'storage/logs/stacks.log'
 
     try {
       // Check if the file exists

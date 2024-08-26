@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { userServerPath } from '@stacksjs/path'
 import { path } from '@stacksjs/path'
@@ -14,11 +14,11 @@ async function main() {
   })
 
   // if stacks-container is running, stop it
-  const stacksContainer = await runCommand(`docker ps -a --filter name=stacks-container --format "{{.ID}}"`)
+  const stacksContainer = await runCommandSync(`docker ps -a --filter name=stacks-server --format "{{.ID}}"`)
 
   if (stacksContainer) {
     log.info('Stopping stacks-server container...', { styled: false })
-    await runCommand(`docker stop ${stacksContainer}`)
+    await runCommand(`docker stop stacks-server`)
     log.info('Stopped stacks-server container', { styled: false })
   }
 
