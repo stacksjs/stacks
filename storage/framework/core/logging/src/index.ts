@@ -13,18 +13,19 @@ export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
 
   try {
-    const logFilePath = config.logging.logsPath ?? 'storage/logs/stacks.log'
+    const logFile = config.logging.logsPath ?? 'storage/logs/stacks.log'
 
     try {
       // Check if the file exists
-      await access(logFilePath)
+      await access(logFile)
     } catch {
       // File doesn't exist, create the directory
-      await mkdir(dirname(logFilePath), { recursive: true })
+      console.log('Creating log file directory...', logFile)
+      await mkdir(dirname(logFile), { recursive: true })
     }
 
     // Append the message to the log file
-    await appendFile(logFilePath, formattedMessage)
+    await appendFile(logFile, formattedMessage)
   } catch (error) {
     console.error('Failed to write to log file:', error)
   }

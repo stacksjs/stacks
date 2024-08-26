@@ -17,7 +17,6 @@ export function extractModelFromAction(action: string): string {
 
   if (action.includes('IndexOrmAction')) {
     const match = action.match(/\/([A-Z][a-z]+)IndexOrmAction/)
-
     const modelString = match ? match[1] : ''
 
     model = modelString as string
@@ -25,7 +24,6 @@ export function extractModelFromAction(action: string): string {
 
   if (action.includes('StoreOrmAction')) {
     const match = action.match(/\/([A-Z][a-z]+)StoreOrmAction/)
-
     const modelString = match ? match[1] : ''
 
     model = modelString as string
@@ -57,7 +55,6 @@ export function extractModelFromAction(action: string): string {
 
 export function extractDynamicAction(action: string): string | undefined {
   const regex = /Actions\/(.*?)Action/
-
   const match = action.match(regex)
 
   return match ? match[1] : ''
@@ -65,23 +62,17 @@ export function extractDynamicAction(action: string): string | undefined {
 
 export async function extractModelRequest(action: string) {
   const extractedModel = extractModelFromAction(action)
-
   const lowerCaseModel = camelCase(extractedModel)
-
   const requestPath = path.frameworkPath(`requests/${extractedModel}Request.ts`)
-
   const requestInstance = await import(requestPath)
-
   const requestIndex = `${lowerCaseModel}Request`
 
   return requestInstance[requestIndex]
 }
 
 export async function findRequestInstance(requestInstance: string) {
-  const frameworkDirectory = path.projectStoragePath('framework/requests')
-
+  const frameworkDirectory = path.storagePath('framework/requests')
   const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
-
   const pathExists = await existsSync(filePath)
 
   // Check if the directory exists
@@ -91,8 +82,7 @@ export async function findRequestInstance(requestInstance: string) {
     return requestInstance.request
   }
 
-  const defaultRequestPath = path.projectStoragePath('framework/core/router/src/request.ts')
-
+  const defaultRequestPath = path.storagePath('framework/core/router/src/request.ts')
   const fileExists = await existsSync(defaultRequestPath)
 
   if (fileExists) {

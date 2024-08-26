@@ -294,6 +294,7 @@ templating
 termii
 terserrc
 textlint
+Thhmmss
 timestampable
 treeshaking
 triggerable

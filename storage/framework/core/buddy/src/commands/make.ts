@@ -330,13 +330,13 @@ export function make(buddy: CLI) {
 
       log.info(`Creating SSL certificate...`)
       await runCommand(`tlsx ${domain}`, {
-        cwd: p.projectStoragePath('keys'),
+        cwd: p.storagePath('keys'),
       })
       log.success('Certificate created')
 
       log.info(`Installing SSL certificate...`)
       await runCommand(`tlsx -install`, {
-        cwd: p.projectStoragePath('keys'),
+        cwd: p.storagePath('keys'),
       })
       log.success('Certificate installed')
     })

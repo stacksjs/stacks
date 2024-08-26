@@ -619,7 +619,7 @@ export function fakerPath(path?: string): string {
  * @returns The absolute or relative path to the specified file or directory within the framework directory.
  */
 export function frameworkPath(path?: string, options?: { relative?: boolean; cwd?: string }): string {
-  const absolutePath = projectStoragePath(`framework/${path || ''}`)
+  const absolutePath = storagePath(`framework/${path || ''}`)
 
   if (options?.relative) return relative(options.cwd || process.cwd(), absolutePath)
 
@@ -740,7 +740,7 @@ export function loggingPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the `logs` directory.
  */
 export function logsPath(path?: string): string {
-  return projectStoragePath(`logs/${path || ''}`)
+  return storagePath(`logs/${path || ''}`)
 }
 
 /**
@@ -908,7 +908,7 @@ export function projectConfigPath(path?: string): string {
  * @param path - The relative path to the file or directory within the storage directory.
  * @returns The absolute path to the specified file or directory within the storage directory.
  */
-export function projectStoragePath(path?: string): string {
+export function storagePath(path?: string): string {
   return projectPath(`storage/${path || ''}`)
 }
 
@@ -971,7 +971,7 @@ export function realtimePath(path?: string) {
  * @returns The absolute or relative path to the specified file or directory within the `resources` directory.
  */
 export function resourcesPath(path?: string, options?: { relative?: boolean }) {
-  const absolutePath = projectStoragePath(`resources/${path || ''}`)
+  const absolutePath = coreStoragePath(`resources/${path || ''}`)
 
   if (options?.relative) return relative(process.cwd(), absolutePath)
 
@@ -1080,7 +1080,7 @@ export function smsPath(path?: string) {
  * @param path - The relative path to the file or directory within the storage directory.
  * @returns The absolute path to the specified file or directory within the storage directory.
  */
-export function storagePath(path?: string) {
+export function coreStoragePath(path?: string) {
   return corePath(`storage/${path || ''}`)
 }
 
@@ -1338,7 +1338,7 @@ export const path = {
   paymentsPath,
   projectPath,
   findProjectPath,
-  projectStoragePath,
+  coreStoragePath,
   publicPath,
   pushPath,
   queryBuilderPath,

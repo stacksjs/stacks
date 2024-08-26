@@ -1,4 +1,4 @@
-import { projectStoragePath, routesPath } from '@stacksjs/path'
+import { storagePath, routesPath } from '@stacksjs/path'
 import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -6,7 +6,7 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: [routesPath('api.ts'), projectStoragePath('framework/orm/routes.ts')],
+  entrypoints: [routesPath('api.ts'), storagePath('framework/orm/routes.ts')],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

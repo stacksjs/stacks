@@ -66,8 +66,8 @@ async function main() {
   })
 
   // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
-  await runCommand(`cp -r ${path.projectStoragePath('app')} ${path.userServerPath()}`)
-  await runCommand(`rm -rf ${path.projectStoragePath('app')}`)
+  await runCommand(`cp -r ${path.storagePath('app')} ${path.userServerPath()}`)
+  await runCommand(`rm -rf ${path.storagePath('app')}`)
 
   // Process files in the ./app folder
   const appFiles = await glob([path.userServerPath('app/**/*.js')])
@@ -95,7 +95,7 @@ async function main() {
   }
 
   // Process the storage folder and remove the .DS_Store files
-  const storageFolder = path.projectStoragePath()
+  const storageFolder = path.storagePath()
   const storageFiles = await glob([storageFolder, '**/*.DS_Store'])
 
   for (const file of storageFiles) {

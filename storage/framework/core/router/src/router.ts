@@ -275,7 +275,7 @@ export class Router implements RouterInterface {
 
     if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
 
-    if (modulePath.includes('OrmAction')) importPathFunction = p.projectStoragePath
+    if (modulePath.includes('OrmAction')) importPathFunction = p.coreStoragePath
 
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
