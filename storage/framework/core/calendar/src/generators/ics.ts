@@ -1,12 +1,10 @@
 import md5 from 'crypto-js/md5'
 import type { CalendarLink } from '../types'
 
-const dateFormat = 'YYYYMMDD'
-const timeFormat = 'YYYYMMDDThhmmss'
+export function generateIcs(link: CalendarLink): string {
+  const dateFormat = 'YYYYMMDD'
+  const timeFormat = 'YYYYMMDDThhmmss'
 
-const atomicFormat = 'YYYY-MM-DDThh:mm:ss+00:00'
-
-function generateIcs(link: CalendarLink): string {
   const uid = `UID:${generateEventUid(link)}`
   const summary = `SUMMARY:${link.title}`
 
@@ -20,9 +18,7 @@ function generateIcs(link: CalendarLink): string {
   ]
 
   const timezone = link.timezone || 'PST'
-
   const formatTime = `${timezone}:${timeFormat}`
-
   const dateTimeFormat = link.allDay ? dateFormat : formatTime
 
   if (link.allDay) {
@@ -36,7 +32,6 @@ function generateIcs(link: CalendarLink): string {
   }
 
   if (link.description) url.push(`X-ALT-DESC;FMTTYPE=text/html:${link.description}`)
-
   if (link.address) url.push(`LOCATION:${link.address}`)
 
   url.push('END:VEVENT')
@@ -61,6 +56,7 @@ function dateDiffInDays(from: Date, to: Date): number {
 }
 
 function generateEventUid(link: any): string {
+  const atomicFormat = 'YYYY-MM-DDThh:mm:ss+00:00'
   const from = useDateFormat(link.from, atomicFormat).value
   const to = useDateFormat(link.to, atomicFormat).value
 
@@ -70,5 +66,3 @@ function generateEventUid(link: any): string {
 // function escapeString(field: string): string {
 //   return addcslashes(field, '\r\n,;')
 // }
-
-export default generateIcs

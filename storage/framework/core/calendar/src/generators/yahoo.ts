@@ -1,9 +1,8 @@
 import type { CalendarLink } from '../types'
 
-const dateFormat = 'YYYYMMDD'
-const timeFormat = 'YYYYMMDDThhmmss'
-
-function generateYahoo(link: CalendarLink): string {
+export function generateYahoo(link: CalendarLink): string {
+  const dateFormat = 'YYYYMMDD'
+  const timeFormat = 'YYYYMMDDThhmmss'
   let url = 'https://calendar.yahoo.com/?v=60&view=d&type=20'
 
   const utcStartDateTime = convertTZ(link.from, 'UTC') // set timezone to UTC
@@ -22,7 +21,6 @@ function generateYahoo(link: CalendarLink): string {
   url = `${url}&TITLE=${encodeURIComponent(link.title)}`
 
   if (link.description) url = `${url}&DESC=${encodeURIComponent(link.description)}`
-
   if (link.address) url = `${url}&in_loc=${encodeURIComponent(link.address)}`
 
   return url

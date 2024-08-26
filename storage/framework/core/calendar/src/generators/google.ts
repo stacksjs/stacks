@@ -3,9 +3,8 @@ import type { CalendarLink } from '../types'
 const dateFormat = 'YYYYMMDD'
 const timeFormat = 'YYYYMMDDThhmmss'
 
-function generateGoogle(link: CalendarLink): string {
+export function generateGoogle(link: CalendarLink): string {
   // 20221020T170000Z/20221020T173000Z
-
   let url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 
   const utcStartDateTime = convertTZ(link.from, 'UTC') // set timezone to UTC
@@ -21,7 +20,6 @@ function generateGoogle(link: CalendarLink): string {
   url = `${url}&text=${encodeURIComponent(link.title)}`
 
   if (link.description) url = `${url}&details=${encodeURIComponent(link.description)}`
-
   if (link.address) url = `${url}&location=${encodeURIComponent(link.address)}`
 
   return url
@@ -30,5 +28,3 @@ function generateGoogle(link: CalendarLink): string {
 function convertTZ(date: Date | string, tzString: string): Date {
   return new Date((typeof date === 'string' ? new Date(date) : date).toLocaleString('en-US', { timeZone: tzString }))
 }
-
-export default generateGoogle
