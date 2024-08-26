@@ -13,12 +13,13 @@ async function main() {
     dir: import.meta.dir,
   })
 
-  log.info('Deleting old server files...', { styled: false })
-  await runCommand(`rm -rf ${userServerPath('index.js*')}`)
-  log.info('Deleted old server files', { styled: false })
-  log.info('Deleting old *.node files...', { styled: false })
-  await runCommand(`rm -rf ${userServerPath('*.node')}`)
-  log.info('Deleted old *.node files', { styled: false })
+  log.info('Deleting old files...', { styled: false })
+  await runCommand(`rm -rf ${userServerPath('app')}`)
+  await runCommand(`rm -rf ${userServerPath('config')}`)
+  await runCommand(`rm -rf ${userServerPath('dist')}`)
+  await runCommand(`rm -rf ${userServerPath('docs')}`)
+  await runCommand(`rm -rf ${userServerPath('storage')}`)
+  log.info('Deleted old files', { styled: false })
 
   const result = await Bun.build({
     entrypoints: ['./src/index.ts'],
