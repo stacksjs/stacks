@@ -45,16 +45,15 @@ async function main() {
     pkgName: 'server',
   })
 
-  const entrypoints = await glob([path.appPath('*.ts'), path.appPath('**/*.ts')])
-
   const r2 = await build({
-    entrypoints,
+    entrypoints: await glob([path.appPath('*.ts'), path.appPath('**/*.ts')]),
     outdir: path.frameworkPath('server/dist'),
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',
     // minify: true,
     splitting: true,
+    external: ['@swc/wasm'],
   })
 
   // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
@@ -69,6 +68,20 @@ async function main() {
       content = content.replace(/storage\/framework\/server/g, 'dist')
       await fs.writeFile(file, content, 'utf-8')
       log.info(`Updated imports in ${file}`, { styled: false })
+    }
+  }
+
+  // Process files in the ./dist folder
+  // need to remove export `{ ENV_KEY, ENV_SECRET, fromEnv };` from whatever file that contains it in the dist/*
+  // TODO: test later, potentially a bundler issue
+  const distFiles = await glob([path.userServerPath('dist/*.js')])
+  for (const file of distFiles) {
+    let content = await fs.readFile(file, 'utf-8')
+    if (content.includes('export { ENV_KEY, ENV_SECRET, fromEnv };')) {
+      content = content.replace(/export { ENV_KEY, ENV_SECRET, fromEnv };/g, '')
+      await fs.writeFile(file, content, 'utf-8')
+      log.info(`Updated imports in ${file}`, { styled: false })
+      break
     }
   }
 

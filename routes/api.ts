@@ -1,5 +1,4 @@
 import { route } from '@stacksjs/router'
-// const { route } = await import('@stacksjs/router')
 
 /**
  * This file is the entry point for your application's API routes.

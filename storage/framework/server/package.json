@@ -39,7 +39,7 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "./dev local",
-    "dev:cloud": "docker run -d -p 3000:3000 stacks",
+    "dev:cloud": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",
     "build": "bun build.ts"
   },
   "dependencies": {

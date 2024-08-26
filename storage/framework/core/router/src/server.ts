@@ -51,10 +51,9 @@ export async function serverResponse(req: Request, body: string) {
   // This automatically allows for route definitions, like
   // '/about' and '/about/' to be treated as the same
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
-
   const url = new URL(trimmedUrl)
-
   const routesList: Route[] = await route.getRoutes()
+
   log.info(`Routes List: ${JSON.stringify(routesList)}`, { styled: false })
   log.info(`URL: ${JSON.stringify(url)}`, { styled: false })
 
@@ -145,7 +144,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
     const { status, ...payloadWithoutStatus } = middlewarePayload
 
-    return await new Response(JSON.stringify(payloadWithoutStatus), {
+    return new Response(JSON.stringify(payloadWithoutStatus), {
       headers: {
         'Content-Type': 'json',
         'Access-Control-Allow-Origin': '*',
@@ -161,7 +160,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     const callback = String(foundCallback)
     const response = Response.redirect(callback, statusCode)
 
-    return await noCache(response)
+    return noCache(response)
   }
 
   if (foundRoute?.method !== req.method) {
@@ -179,7 +178,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     try {
       const fileContent = Bun.file(foundCallback)
 
-      return await new Response(fileContent, {
+      return new Response(fileContent, {
         headers: {
           'Content-Type': 'text/html',
           'Access-Control-Allow-Origin': '*',
@@ -187,7 +186,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         },
       })
     } catch (error) {
-      return await new Response('Error reading the HTML file', {
+      return new Response('Error reading the HTML file', {
         status: 500,
         headers: {
           'Access-Control-Allow-Origin': '*',
@@ -198,7 +197,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isString(foundCallback))
-    return await new Response(foundCallback, {
+    return new Response(foundCallback, {
       headers: {
         'Content-Type': 'json',
         'Access-Control-Allow-Origin': '*',
@@ -210,7 +209,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   if (isFunction(foundCallback)) {
     const result = foundCallback()
 
-    return await new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -223,7 +222,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     if (foundCallback.status === 401) {
       const { status, ...rest } = foundCallback
 
-      return await new Response(JSON.stringify(rest), {
+      return new Response(JSON.stringify(rest), {
         headers: {
           'Content-Type': 'json',
           'Access-Control-Allow-Origin': '*',
@@ -236,7 +235,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     if (foundCallback.status === 403) {
       const { status, ...rest } = foundCallback
 
-      return await new Response(JSON.stringify(rest), {
+      return new Response(JSON.stringify(rest), {
         headers: {
           'Content-Type': 'json',
           'Access-Control-Allow-Origin': '*',
@@ -249,7 +248,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     if (foundCallback.status === 422) {
       const { status, ...rest } = foundCallback
 
-      return await new Response(JSON.stringify(rest), {
+      return new Response(JSON.stringify(rest), {
         headers: {
           'Content-Type': 'json',
           'Access-Control-Allow-Origin': '*',
@@ -262,7 +261,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     if (foundCallback.status === 500) {
       const { status, ...rest } = foundCallback
 
-      return await new Response(JSON.stringify(rest), {
+      return new Response(JSON.stringify(rest), {
         headers: { 'Content-Type': 'json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' },
         status: 500,
       })
@@ -270,7 +269,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isObject(foundCallback)) {
-    return await new Response(JSON.stringify(foundCallback), {
+    return new Response(JSON.stringify(foundCallback), {
       headers: {
         'Content-Type': 'json',
         'Access-Control-Allow-Origin': '*',
@@ -281,7 +280,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   // If no known type matched, return a generic error.
-  return await new Response('Unknown callback type.', {
+  return new Response('Unknown callback type.', {
     headers: {
       'Content-Type': 'json',
       'Access-Control-Allow-Origin': '*',
