@@ -34,13 +34,13 @@ export class ErrorHandler {
     }
 
     const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
-    const errorsLogFilePath = path.logsPath('errors.log')
+    const logFilePath = path.logsPath('stacks.log') ?? path.logsPath('errors.log')
 
     try {
       // Ensure the directory exists
-      await fs.mkdir(path.dirname(errorsLogFilePath), { recursive: true })
+      await fs.mkdir(path.dirname(logFilePath), { recursive: true })
       // Append the message to the log file
-      await fs.appendFile(errorsLogFilePath, formattedError)
+      await fs.appendFile(logFilePath, formattedError)
     } catch (error) {
       console.error('Failed to write to error file:', error)
     }
