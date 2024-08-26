@@ -1,4 +1,4 @@
-import { path as p } from '@stacksjs/path'
+import { storagePath } from '@stacksjs/path'
 import type { LoggingConfig } from '@stacksjs/types'
 
 /**
@@ -17,5 +17,5 @@ export default {
    *
    * @default 'storage/logs/stacks.log'
    */
-  logsPath: p.storagePath('logs/stacks.log'),
+  logsPath: storagePath('logs/stacks.log'),
 } satisfies LoggingConfig
