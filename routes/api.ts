@@ -8,21 +8,17 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
-route.get('/foo/bar/{id}', () => 'hello world, foo bar') // stacksjs.org/api/hello/world
+route.get('/foo/bar/{id}', () => 'hello world, foo bar') // $APP_URL/api/hello/world
 route.get('/', () => 'hello world') // $APP_URL/api
-route.get('/hello/world', () => 'hello world, buddy') // stacksjs.org/api/hello/world
+route.get('/hello/world', () => 'hello world, buddy') // $APP_URL/api/hello/world
 
 route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
-
 route.post('/login', 'Actions/LoginAction')
-
 route.email('/welcome')
 route.health() // adds a GET `/api/health` route
 
 // route.group('/some-path', async () => {...})
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
-
 // route.action('Dashboard/GetProjects')
 // route.action('Dashboard/Settings/UpdateAiConfig')
-
 // route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`

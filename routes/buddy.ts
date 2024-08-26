@@ -8,5 +8,5 @@ import { route } from '@stacksjs/router'
  * @see https://stacksjs.org/docs/routing
  */
 
-await route.get('/versions', 'Actions/Buddy/VersionsAction') // your-domain.com/api/buddy/versions
-await route.get('/commands', 'Actions/Buddy/CommandsAction') // your-domain.com/api/buddy/commands
+route.get('/versions', 'Actions/Buddy/VersionsAction') // your-domain.com/api/buddy/versions
+route.get('/commands', 'Actions/Buddy/CommandsAction') // your-domain.com/api/buddy/commands

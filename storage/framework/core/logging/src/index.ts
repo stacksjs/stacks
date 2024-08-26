@@ -2,54 +2,19 @@ import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import type { Prompt } from '@stacksjs/cli'
-import { buddyOptions, prompt as getPrompt } from '@stacksjs/cli'
+import { prompt as getPrompt } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
-import { logsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import { consola, createConsola } from 'consola'
 import isUnicodeSupported from 'is-unicode-supported'
 import color from 'picocolors'
-
-export async function logLevel() {
-  /**
-   * This regex checks for:
-   *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
-   *   - --verbose - followed by optional spaces at the end.
-   *   - --verbose followed by optional spaces at the end.
-   *
-   * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
-   */
-  const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
-  const opts = buddyOptions()
-
-  if (verboseRegex.test(opts)) return 4
-
-  // const config = await import('@stacksjs/config')
-  // console.log('config', config)
-
-  return 3
-  // return config.logger.level
-}
-
-export const logger = createConsola({
-  level: 3,
-  // fancy: true,
-  // formatOptions: {
-  //     columns: 80,
-  //     colors: false,
-  //     compact: false,
-  //     date: false,
-  // },
-})
-
-export { consola }
 
 export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
 
   try {
-    const logFilePath = logsPath('console.log')
+    const logFilePath = config.logger.logsPath ?? 'storage/logs/stacks.log'
 
     try {
       // Check if the file exists
@@ -164,9 +129,6 @@ export const log: Log = {
     process.exit(ExitCode.FatalError)
   },
   echo: (...args: any[]) => console.log(...args),
-
-  start: consola.start,
-  box: consola.box,
 }
 
 export function dump(...args: any[]) {
