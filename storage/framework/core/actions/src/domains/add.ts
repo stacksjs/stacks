@@ -3,7 +3,6 @@ import { italic, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { createHostedZone, getNameservers, updateNameservers } from '@stacksjs/dns'
 import { handleError } from '@stacksjs/error-handling'
-import { logger } from '@stacksjs/logging'
 import { projectConfigPath } from '@stacksjs/path'
 import { whois } from '@stacksjs/whois'
 
@@ -42,28 +41,28 @@ if (registrar.includes('Amazon')) {
   if (options.deploy) {
     await runCommand('buddy deploy')
   } else {
-    logger.log('')
-    logger.log('You can now continue your deployment process by re-running:')
-    logger.log('')
-    logger.log(`  ➡️  ${italic('buddy deploy')}`)
-    logger.log('')
+    log.info('', { styled: false })
+    log.info('You can now continue your deployment process by re-running:', { styled: false })
+    log.info('', { styled: false })
+    log.info(`  ➡️  ${italic('buddy deploy')}`, { styled: false })
+    log.info('', { styled: false })
   }
   process.exit(0)
 }
 
-logger.log('')
-logger.log('ℹ️  Please note, before continuing your deployment process,')
-logger.log(`   update your ${registrar} nameservers to the following:`)
+log.info('', { styled: false })
+log.info('ℹ️  Please note, before continuing your deployment process,', { styled: false })
+log.info(`   update your ${registrar} nameservers to the following:`, { styled: false })
 
 const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
-logger.log('')
+log.info('', { styled: false })
 nameServers.forEach((nameserver: string, index: number) => {
-  logger.log(`  ${emojis[index]}  Nameserver: ${nameserver}`)
+  log.info(`  ${emojis[index]}  Nameserver: ${nameserver}`, { styled: false })
 })
-logger.log('')
-logger.log(italic(`stored in ${projectConfigPath('dns.ts')}`))
-logger.log('')
-logger.log('Once the nameservers have been updated, re-run the following command:')
-logger.log('')
-logger.log(`  ➡️  ${italic('buddy deploy')}`)
-logger.log('')
+log.info('', { styled: false })
+log.info(italic(`stored in ${projectConfigPath('dns.ts')}`), { styled: false })
+log.info('', { styled: false })
+log.info('Once the nameservers have been updated, re-run the following command:', { styled: false })
+log.info('', { styled: false })
+log.info(`  ➡️  ${italic('buddy deploy')}`, { styled: false })
+log.info('', { styled: false })

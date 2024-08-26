@@ -14,7 +14,7 @@ import type {
   GitConfig,
   HashingConfig,
   LibraryConfig,
-  LoggerConfig,
+  LoggingConfig,
   NotificationConfig,
   PaymentConfig,
   Ports,
@@ -155,13 +155,13 @@ export interface StacksOptions {
   library: LibraryConfig
 
   /**
-   * **Logger Options**
+   * **Logging Options**
    *
-   * This configuration defines all of your Logger options. Because Stacks is fully-typed, you
+   * This configuration defines all of your logging options. Because Stacks is fully-typed, you
    * may hover any of the options below and the definitions will be provided. In case you
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  logger: LoggerConfig
+  logging: LoggingConfig
 
   /**
    * **Notification Options**

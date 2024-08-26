@@ -12,7 +12,7 @@ import errors from '~/config/errors'
 import git from '~/config/git'
 import hashing from '~/config/hashing'
 import library from '~/config/library'
-import logger from '~/config/logger'
+import logging from '~/config/logging'
 import notification from '~/config/notification'
 import payment from '~/config/payment'
 import ports from '~/config/ports'
@@ -41,7 +41,7 @@ export default {
   git,
   hashing,
   library,
-  logger,
+  logging,
   notification,
   queue,
   payment,

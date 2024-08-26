@@ -3,7 +3,7 @@ import { parseOptions } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { deleteHostedZoneRecords } from '@stacksjs/dns'
 import { handleError } from '@stacksjs/error-handling'
-import { logger } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging'
 
 interface RemoveOptions {
   domain?: string
@@ -25,7 +25,7 @@ if (!options.domain) {
   }
 }
 
-if (options.verbose) logger.log(`Removing domain: ${options.domain}`)
+if (options.verbose) log.info(`Removing domain: ${options.domain}`, { styled: false })
 
 // const result = await deleteHostedZone(options.domain)
 const result = await deleteHostedZoneRecords(options.domain)

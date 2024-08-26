@@ -9,7 +9,7 @@ export const servers = {
     privateNetwork: 'vpc-123456789', // or create new
     subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
-    bunVersion: '1.1.22',
+    bunVersion: '1.1.26',
     database: 'sqlite',
     databaseName: 'stacks',
     // This is the "post provision recipe" that is executed on the server after the server is provisioned
@@ -39,7 +39,7 @@ export const servers = {
     privateNetwork: 'vpc-123456789', // or create new
     subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
-    bunVersion: '1.1.22',
+    bunVersion: '1.1.26',
   },
 
   // worker: {
@@ -52,7 +52,7 @@ export const servers = {
   //   privateNetwork: 'vpc-123456789', // or create new
   //   subnet: 'subnet-123456789',
   //   serverOS: 'ubuntu-20-lts-x86_64',
-  //   bunVersion: '1.1.22',
+  //   bunVersion: '1.1.26',
   // },
 
   cache: {
@@ -66,7 +66,7 @@ export const servers = {
     privateNetwork: 'vpc-123456789', // or create new
     subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
-    bunVersion: '1.1.22',
+    bunVersion: '1.1.26',
   },
 
   // search: {

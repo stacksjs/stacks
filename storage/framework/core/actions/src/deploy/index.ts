@@ -38,7 +38,7 @@ log.info('Preparing Deployment...')
 
 const profile = process.env.AWS_PROFILE ?? 'stacks'
 
-const result = await runCommand(`npx cdk deploy --require-approval never --profile="${profile}"`, {
+const result = await runCommand(`bunx cdk deploy --require-approval never --profile="${profile}"`, {
   cwd: p.frameworkCloudPath(),
 })
 
@@ -48,4 +48,10 @@ if (result.isErr()) {
 }
 
 const t = result.value as Subprocess
-const x = await t.exited
+await t.exited
+
+try {
+  await import('../../../../../../cloud/deploy-script.ts')
+} catch (error) {
+  log.error(error)
+}

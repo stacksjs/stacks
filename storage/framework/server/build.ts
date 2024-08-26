@@ -13,6 +13,15 @@ async function main() {
     dir: import.meta.dir,
   })
 
+  // if stacks-container is running, stop it
+  const stacksContainer = await runCommand(`docker ps -a --filter name=stacks-container --format "{{.ID}}"`)
+
+  if (stacksContainer) {
+    log.info('Stopping stacks-server container...', { styled: false })
+    await runCommand(`docker stop ${stacksContainer}`)
+    log.info('Stopped stacks-server container', { styled: false })
+  }
+
   log.info('Deleting old files...', { styled: false })
   await runCommand(`rm -rf ${userServerPath('app')}`)
   await runCommand(`rm -rf ${userServerPath('config')}`)
@@ -83,6 +92,14 @@ async function main() {
       log.info(`Updated imports in ${file}`, { styled: false })
       break
     }
+  }
+
+  // Process the storage folder and remove the .DS_Store files
+  const storageFolder = path.projectStoragePath()
+  const storageFiles = await glob([storageFolder, '**/*.DS_Store'])
+
+  for (const file of storageFiles) {
+    await fs.unlink(file)
   }
 
   await outro({

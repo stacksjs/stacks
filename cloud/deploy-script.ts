@@ -1,5 +1,5 @@
-console.log('Deploying...')
+import { log } from '@stacksjs/logging'
 
-// trigger some custom logic here
+log.info('Triggering custom Deploy Script...')
 
-console.log('Deployed!')
+log.success('Deployed!')

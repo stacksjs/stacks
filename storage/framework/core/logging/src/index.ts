@@ -1,8 +1,7 @@
 import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
-import type { Prompt } from '@stacksjs/cli'
-import { prompt as getPrompt } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
@@ -40,11 +39,6 @@ export interface Log {
   debug: (message: string, options?: LogMessageOptions) => void
   message: (message: string, options?: LogMessageOptions) => void
   step: (message: string, options?: LogMessageOptions) => void
-  // start: logger.Start
-  // box: logger.Box
-  start: any
-  box: any
-  prompt: () => Prompt
   dump: (...args: any[]) => void
   dd: (...args: any[]) => void
   echo: (...args: any[]) => void
@@ -118,10 +112,8 @@ export const log: Log = {
       return writeToLogFile(`DEBUG: ${args.join(' ')}`)
 
     writeToLogFile(`DEBUG: ${args.join(' ')}`)
-    logger.debug(...args)
+    log.debug(...args)
   },
-
-  prompt: () => getPrompt(),
 
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
   dd: (...args: any[]) => {

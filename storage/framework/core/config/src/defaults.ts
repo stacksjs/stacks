@@ -460,10 +460,8 @@ export default {
     },
   },
 
-  logger: {
-    level: 3,
-    logFilePath: 'storage/logs/console.log',
-    errorsPath: 'storage/logs/errors.log',
+  logging: {
+    logsPath: 'storage/logs/console.log',
   },
 
   notification: {

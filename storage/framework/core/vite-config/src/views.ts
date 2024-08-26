@@ -86,7 +86,7 @@ export default defineConfig({
       '~/config/git': p.projectConfigPath('git.ts'),
       '~/config/hashing': p.projectConfigPath('hashing.ts'),
       '~/config/library': p.projectConfigPath('library.ts'),
-      '~/config/logger': p.projectConfigPath('logger.ts'),
+      '~/config/logging': p.projectConfigPath('logging.ts'),
       '~/config/notification': p.projectConfigPath('notification.ts'),
       '~/config/payment': p.projectConfigPath('payment.ts'),
       '~/config/ports': p.projectConfigPath('ports.ts'),
