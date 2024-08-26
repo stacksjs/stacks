@@ -61,13 +61,14 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@types/prompts": "^2.4.9",
     "cac": "^6.7.14",
+    "consola": "^3.2.3",
     "kolorist": "1.8.0",
     "ora": "^8.1.0",
     "prompts": "^2.4.2"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/prompts": "^2.4.9"
   }
 }

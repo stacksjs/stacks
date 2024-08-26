@@ -1,4 +1,10 @@
-await Bun.build({
+import { intro, outro } from '../build/src'
+
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
+
+const result = await Bun.build({
   entrypoints: ['./src/index.ts', './src/cli.ts'],
 
   outdir: './dist',
@@ -25,4 +31,10 @@ await Bun.build({
     '@stacksjs/types',
     'bun',
   ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

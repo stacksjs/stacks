@@ -38,9 +38,9 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "consola": "^3.2.3"
+    "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
