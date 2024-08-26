@@ -875,14 +875,15 @@ export function projectPath(filePath = '', options?: { relative: boolean }): str
  */
 export async function findProjectPath(project: string): Promise<string> {
   const projectList = await runCommandSync('buddy projects:list --quiet')
-  log.debug('ProjectList in findProjectPath', projectList)
+  log.debug(`ProjectList in findProjectPath ${projectList}`)
 
   // get the list of all Stacks project paths (on the system)
   const projects = projectList
     .split('\n')
     .filter((line: string) => line.startsWith('   - '))
     .map((line: string) => line.trim().substring(4))
-  log.debug('Projects in findProjectPath:', projects)
+
+  log.debug(`Projects in findProjectPath ${projects}`)
 
   // since we are targeting a specific project, find its path
   const projectPath = projects.find((proj: string) => proj.includes(project))
@@ -971,9 +972,10 @@ export function realtimePath(path?: string) {
  * @returns The absolute or relative path to the specified file or directory within the `resources` directory.
  */
 export function resourcesPath(path?: string, options?: { relative?: boolean }) {
-  const absolutePath = coreStoragePath(`resources/${path || ''}`)
-
-  if (options?.relative) return relative(process.cwd(), absolutePath)
+  if (options?.relative) {
+    const absolutePath = projectPath(`resources/${path || ''}`)
+    return relative(process.cwd(), absolutePath)
+  }
 
   return projectPath(`resources/${path || ''}`)
 }

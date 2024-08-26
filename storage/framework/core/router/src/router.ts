@@ -274,8 +274,7 @@ export class Router implements RouterInterface {
     let importPathFunction = p.appPath // Default import path function
 
     if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
-
-    if (modulePath.includes('OrmAction')) importPathFunction = p.coreStoragePath
+    if (modulePath.includes('OrmAction')) importPathFunction = p.storagePath
 
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath

@@ -113,7 +113,6 @@ export const log: Log = {
       return writeToLogFile(`DEBUG: ${args.join(' ')}`)
 
     writeToLogFile(`DEBUG: ${args.join(' ')}`)
-    log.debug(...args)
   },
 
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
