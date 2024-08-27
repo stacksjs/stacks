@@ -1,4 +1,4 @@
-import { generateGoogle} from './generators/google'
+import { generateGoogle } from './generators/google'
 import { generateIcs } from './generators/ics'
 import { generateOutlook } from './generators/weboutlook'
 import { generateYahoo } from './generators/yahoo'

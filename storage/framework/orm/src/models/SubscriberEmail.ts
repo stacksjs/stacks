@@ -564,10 +564,9 @@ export class SubscriberEmailModel {
 }
 
 async function find(id: number): Promise<SubscriberEmailModel | null> {
-  let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+  const query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
-  if (fields) query = query.select(fields)
-  else query = query.selectAll()
+  query.selectAll()
 
   const model = await query.executeTakeFirst()
 

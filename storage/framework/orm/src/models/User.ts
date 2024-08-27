@@ -682,10 +682,9 @@ export class UserModel {
 }
 
 async function find(id: number): Promise<UserModel | null> {
-  let query = db.selectFrom('users').where('id', '=', id)
+  const query = db.selectFrom('users').where('id', '=', id)
 
-  if (fields) query = query.select(fields)
-  else query = query.selectAll()
+  query.selectAll()
 
   const model = await query.executeTakeFirst()
 

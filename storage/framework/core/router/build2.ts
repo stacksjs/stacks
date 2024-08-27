@@ -1,4 +1,4 @@
-import { storagePath, routesPath } from '@stacksjs/path'
+import { routesPath, storagePath } from '@stacksjs/path'
 import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({

@@ -1,4 +1,4 @@
-import type { DynamoDB  } from '@aws-sdk/client-dynamodb'
+import type { DynamoDB } from '@aws-sdk/client-dynamodb'
 
 export type CacheDriver = {
   createTable: () => Promise<void>

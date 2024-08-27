@@ -605,10 +605,9 @@ export class AccessTokenModel {
 }
 
 async function find(id: number): Promise<AccessTokenModel | null> {
-  let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+  const query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
-  if (fields) query = query.select(fields)
-  else query = query.selectAll()
+  query.selectAll()
 
   const model = await query.executeTakeFirst()
 

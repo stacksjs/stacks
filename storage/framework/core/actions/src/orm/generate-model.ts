@@ -36,30 +36,29 @@ async function generateApiRoutes(modelFiles: string[]) {
 
     if (model.traits?.useApi) {
       if (model.traits?.useApi && typeof model.traits.useApi === 'object') {
-     
-      const middlewares = model.traits.useApi?.middleware
-      const uri = model.traits.useApi?.uri || tableName
+        const middlewares = model.traits.useApi?.middleware
+        const uri = model.traits.useApi?.uri || tableName
 
-      if (middlewares) {
-        middlewareString = `.middleware([`
-        if (middlewares.length) {
-          for (let i = 0; i < middlewares.length; i++) {
-            middlewareString += `'${middlewares[i]}'`
+        if (middlewares) {
+          middlewareString = `.middleware([`
+          if (middlewares.length) {
+            for (let i = 0; i < middlewares.length; i++) {
+              middlewareString += `'${middlewares[i]}'`
 
-            if (i < middlewares.length - 1) {
-              middlewareString += ','
+              if (i < middlewares.length - 1) {
+                middlewareString += ','
+              }
             }
           }
+
+          middlewareString += `])`
         }
 
-        middlewareString += `])`
-      }
-
-      if (model.traits.useApi.routes && Object.keys(model.traits.useApi.routes).length > 0) {
-        const apiRoutes = model.traits.useApi.routes
-        for (const apiRoute in apiRoutes) {
-          if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
-            // console.log(`Route: ${apiRoute}, Path: ${apiRoutes[apiRoute]}`);
+        if (model.traits.useApi.routes && Object.keys(model.traits.useApi.routes).length > 0) {
+          const apiRoutes = model.traits.useApi.routes
+          for (const apiRoute in apiRoutes) {
+            if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
+              // console.log(`Route: ${apiRoute}, Path: ${apiRoutes[apiRoute]}`);
               // }
 
               let path: string | null = ''
@@ -424,8 +423,7 @@ async function getRelations(model: Model, modelName: string): Promise<RelationCo
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
-
-      for (const relationInstance of (model[relation as keyof Model] as any[] || [])) {
+      for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
         let relationModel = relationInstance.model
 
         if (isString(relationInstance)) {
@@ -718,21 +716,24 @@ async function getPivotTables(
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = modelName.toLowerCase()
 
-      const firstForeignKey = typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
-        ? belongsToManyRelation.firstForeignKey
-        : `${modelName.toLowerCase()}_${model.primaryKey}`
-        
-      const secondForeignKey = typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
-        ? belongsToManyRelation.secondForeignKey
-        : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
-        
-        pivotTable.push({
-          table: (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
+      const firstForeignKey =
+        typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
+          ? belongsToManyRelation.firstForeignKey
+          : `${modelName.toLowerCase()}_${model.primaryKey}`
+
+      const secondForeignKey =
+        typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
+          ? belongsToManyRelation.secondForeignKey
+          : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+
+      pivotTable.push({
+        table:
+          (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
             ? belongsToManyRelation.pivotTable
             : undefined) ?? `${formattedModelName}_${modelRelation.table}`,
-          firstForeignKey,
-          secondForeignKey,
-        })
+        firstForeignKey,
+        secondForeignKey,
+      })
     }
 
     return pivotTable
@@ -1647,8 +1648,7 @@ async function generateModelString(
     async function find(id: number): Promise<${modelName}Model | null> {
       let query = db.selectFrom('${tableName}').where('id', '=', id)
 
-      if (fields) query = query.select(fields)
-      else query = query.selectAll()
+      query.selectAll()
 
       const model = await query.executeTakeFirst()
 

@@ -553,10 +553,9 @@ export class ReleaseModel {
 }
 
 async function find(id: number): Promise<ReleaseModel | null> {
-  let query = db.selectFrom('releases').where('id', '=', id)
+  const query = db.selectFrom('releases').where('id', '=', id)
 
-  if (fields) query = query.select(fields)
-  else query = query.selectAll()
+  query.selectAll()
 
   const model = await query.executeTakeFirst()
 

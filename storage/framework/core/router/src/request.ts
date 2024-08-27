@@ -21,7 +21,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 
-type RouteParams = { [key: string]: string | number } | null;
+type RouteParams = { [key: string]: string | number } | null
 
 export class Request<T extends RequestData = RequestData> implements RequestInstance {
   public query: T = {} as T
@@ -29,7 +29,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public headers: any = {}
 
   public addQuery(url: URL): void {
-    this.query = Object.fromEntries(url.searchParams) as unknown as T;
+    this.query = Object.fromEntries(url.searchParams) as unknown as T
   }
 
   public addBodies(params: any): void {

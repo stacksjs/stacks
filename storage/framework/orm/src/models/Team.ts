@@ -679,10 +679,9 @@ export class TeamModel {
 }
 
 async function find(id: number): Promise<TeamModel | null> {
-  let query = db.selectFrom('teams').where('id', '=', id)
+  const query = db.selectFrom('teams').where('id', '=', id)
 
-  if (fields) query = query.select(fields)
-  else query = query.selectAll()
+  query.selectAll()
 
   const model = await query.executeTakeFirst()
 

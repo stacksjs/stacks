@@ -4,7 +4,7 @@ interface RequestData {
   [key: string]: string
 }
 
-type RouteParams = { [key: string]: string | number } | null;
+type RouteParams = { [key: string]: string | number } | null
 
 interface ValidationType {
   rule: VineType
