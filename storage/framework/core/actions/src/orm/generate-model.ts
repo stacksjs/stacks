@@ -151,14 +151,9 @@ async function writeModelRequest() {
   let importTypesString = ``
   let typeString = `import { Request } from '../core/router/src/request'\n\n`
 
-  typeString += `interface ValidationType {
-    rule: VineType;
-    message: { [key: string]: string };
-  }\n\n`
-
   typeString += `interface ValidationField {
-    [key: string]: string | ValidationType;
-    validation: ValidationType;
+   rule: ReturnType<typeof schema.string>
+    message: Record<string, string>
   }\n\n`
 
   typeString += `interface CustomAttributes {
@@ -232,8 +227,6 @@ async function writeModelRequest() {
       updated_at?: string
       deleted_at?: string`
 
-    const modelLowerCase = camelCase(modelName)
-
     const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
     importTypes = `${modelName}RequestType`
@@ -243,14 +236,9 @@ async function writeModelRequest() {
 
     fileString += `import type { ${importTypes} } from '../types/requests'\n\n`
 
-    fileString += `interface ValidationType {
-      rule: VineType;
-      message: { [key: string]: string };
-    }\n\n`
-
     fileString += `interface ValidationField {
-      [key: string]: string | ValidationType;
-      validation: ValidationType;
+      rule: ReturnType<typeof schema.string>
+      message: Record<string, string>
     }\n\n`
 
     fileString += `interface CustomAttributes {

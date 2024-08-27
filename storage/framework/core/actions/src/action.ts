@@ -7,12 +7,18 @@ interface ValidationValue {
   message: string
 }
 
+interface ActionValidations {
+  [key: string]: {
+    rule: ReturnType<typeof schema.string>
+    message?: string | Record<string, string>
+  }
+}
+
 interface ActionOptions {
   name?: string
   description?: string
   apiResponse?: boolean
-  validations?: Record<ValidationKey, ValidationValue>
-  path?: string
+  validations?: ActionValidations
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   rate?: JobOptions['rate']
   tries?: JobOptions['tries']

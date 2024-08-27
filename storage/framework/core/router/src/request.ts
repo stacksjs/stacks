@@ -7,14 +7,9 @@ interface RequestData {
   [key: string]: any
 }
 
-interface ValidationType {
+interface ValidationField {
   rule: VineType
   message: { [key: string]: string }
-}
-
-interface ValidationField {
-  [key: string]: string | ValidationType
-  validation: ValidationType
 }
 
 interface CustomAttributes {

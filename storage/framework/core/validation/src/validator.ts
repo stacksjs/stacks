@@ -3,20 +3,15 @@ import { snakeCase } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import type { VineType } from '@stacksjs/types'
 import type { SchemaTypes } from '@vinejs/vine/types'
-import { SimpleMessagesProvider, VineError, reportError, schema } from './'
+import { SimpleMessagesProvider, VineError, VineString, reportError, schema } from './'
 
 interface RequestData {
   [key: string]: any
 }
 
-interface ValidationType {
-  rule: VineType
-  message: { [key: string]: string }
-}
-
 interface ValidationField {
-  [key: string]: string | ValidationType
-  validation: ValidationType
+  rule: ReturnType<typeof schema.string>
+  message: Record<string, string>
 }
 
 interface CustomAttributes {
@@ -61,12 +56,14 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
-      ruleObject[key] = attributes[key]?.validation?.rule
-      const validatorMessages = attributes[key]?.validation?.message
+      const rule = attributes[key]?.rule
+      if (rule) ruleObject[key] = rule as SchemaTypes
+
+      const validatorMessages = attributes[key]?.message
 
       for (const validatorMessageKey in validatorMessages) {
         const validatorMessageString = `${key}.${validatorMessageKey}`
-        messageObject[validatorMessageString] = attributes[key]?.validation?.message[validatorMessageKey] || ''
+        messageObject[validatorMessageString] = attributes[key]?.message[validatorMessageKey] || ''
       }
     }
   }

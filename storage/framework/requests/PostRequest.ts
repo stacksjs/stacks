@@ -5,14 +5,9 @@ import { customValidate } from '@stacksjs/validation'
 
 import type { PostRequestType } from '../types/requests'
 
-interface ValidationType {
-  rule: VineType
-  message: { [key: string]: string }
-}
-
 interface ValidationField {
-  [key: string]: string | ValidationType
-  validation: ValidationType
+  rule: ReturnType<typeof schema.string>
+  message: Record<string, string>
 }
 
 interface CustomAttributes {
