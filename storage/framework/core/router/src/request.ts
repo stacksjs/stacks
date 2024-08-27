@@ -106,8 +106,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public getParamAsInt(key: string): number | null {
-    const value = this.params ? this.params[key] || null : null
-    return value ? Number.parseInt(value) : null
+    const value = this.getParam(key)
+    return value ? Number.parseInt(value.toString()) : null
   }
 }
 
