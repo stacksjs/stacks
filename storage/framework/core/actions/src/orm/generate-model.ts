@@ -35,7 +35,8 @@ async function generateApiRoutes(modelFiles: string[]) {
     const tableName = getTableName(model, modelFile)
 
     if (model.traits?.useApi) {
-      const apiRoutes = model.traits?.useApi?.routes
+      if (model.traits?.useApi && typeof model.traits.useApi === 'object') {
+     
       const middlewares = model.traits.useApi?.middleware
       const uri = model.traits.useApi?.uri || tableName
 
@@ -54,36 +55,42 @@ async function generateApiRoutes(modelFiles: string[]) {
         middlewareString += `])`
       }
 
-      if (Object.keys(model.traits.useApi.routes).length > 0) {
-        if (apiRoutes) {
-          for (const apiRoute in apiRoutes) {
-            // if (Object.prototype.hasOwnProperty.call(apiRoutes, route)) {
-            //   console.log(`Route: ${route}, Path: ${apiRoutes[route]}`);
-            // }
+      if (model.traits.useApi.routes && Object.keys(model.traits.useApi.routes).length > 0) {
+        const apiRoutes = model.traits.useApi.routes
+        for (const apiRoute in apiRoutes) {
+          if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
+            // console.log(`Route: ${apiRoute}, Path: ${apiRoutes[apiRoute]}`);
+              // }
 
-            let path: string | null = ''
+              let path: string | null = ''
 
-            await writeOrmActions(apiRoute as string, modelName)
+              await writeOrmActions(apiRoute as string, modelName)
 
-            path = `${apiRoutes[apiRoute]}.ts`
+              const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
+              if (typeof routePath !== 'string') {
+                throw new Error(`Invalid route path for ${apiRoute}`)
+              }
 
-            if (!path.includes('/')) {
-              path = await lookupFile(path)
+              path = `${routePath}.ts`
+
+              if (!path.includes('/')) {
+                path = await lookupFile(path)
+              }
+
+              if (!path) {
+                throw { message: 'Action Not Found!' }
+              }
+
+              if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}')\n\n`
+
+              if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}')\n\n`
+
+              if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}')\n\n`
+
+              if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}')\n\n`
+
+              if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}')\n\n`
             }
-
-            if (!path) {
-              throw { message: 'Action Not Found!' }
-            }
-
-            if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}')\n\n`
-
-            if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}')\n\n`
-
-            if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}')\n\n`
-
-            if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}')\n\n`
-
-            if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}')\n\n`
           }
         }
       }
@@ -417,7 +424,8 @@ async function getRelations(model: Model, modelName: string): Promise<RelationCo
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation]) {
+
+      for (const relationInstance of (model[relation as keyof Model] as any[] || [])) {
         let relationModel = relationInstance.model
 
         if (isString(relationInstance)) {
@@ -710,15 +718,21 @@ async function getPivotTables(
       const modelRelation = (await import(modelRelationPath)).default as Model
       const formattedModelName = modelName.toLowerCase()
 
-      const firstForeignKey = belongsToManyRelation.firstForeignKey || `${modelName.toLowerCase()}_${model.primaryKey}`
-      const secondForeignKey =
-        belongsToManyRelation.secondForeignKey || `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
-
-      pivotTable.push({
-        table: belongsToManyRelation?.pivotTable || `${formattedModelName}_${modelRelation.table}`,
-        firstForeignKey: firstForeignKey,
-        secondForeignKey: secondForeignKey,
-      })
+      const firstForeignKey = typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
+        ? belongsToManyRelation.firstForeignKey
+        : `${modelName.toLowerCase()}_${model.primaryKey}`
+        
+      const secondForeignKey = typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
+        ? belongsToManyRelation.secondForeignKey
+        : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+        
+        pivotTable.push({
+          table: (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
+            ? belongsToManyRelation.pivotTable
+            : undefined) ?? `${formattedModelName}_${modelRelation.table}`,
+          firstForeignKey,
+          secondForeignKey,
+        })
     }
 
     return pivotTable
@@ -950,7 +964,7 @@ async function generateModelString(
 
   constructorFields += `this.id = ${formattedModelName}?.id\n   `
 
-  const useTwoFactor = model.traits?.useAuth?.useTwoFactor
+  const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
 
   if (useTwoFactor) {
     declareFields += `public two_factor_secret: string | undefined \n`

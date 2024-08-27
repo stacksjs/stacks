@@ -155,7 +155,7 @@ export type Model = Partial<ModelOptions>
 export interface RelationConfig {
   relationship: string
   model: string
-  table: string
+  table: string | undefined
   relationModel?: string
   relationTable?: string
   foreignKey: string
