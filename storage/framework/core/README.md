@@ -360,7 +360,7 @@ For casual chit-chat with others using this package:
 
 Two things are true: Stacks OSS will always stay open-source, and we do/would love to receive postcards from wherever Stacks is used! 🌍 _And we also publish them on our website. -Thank you, Spatie_
 
-Our address: Stacks.js, 5710 Crescent Park #107, Playa Vista 90094, CA, USA
+Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094, United States
 
 ## Sponsors
 
