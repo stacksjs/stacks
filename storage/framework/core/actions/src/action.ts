@@ -14,6 +14,7 @@ interface ActionValidations {
   }
 }
 
+type Request = any
 interface ActionOptions {
   name?: string
   description?: string
@@ -24,8 +25,9 @@ interface ActionOptions {
   tries?: JobOptions['tries']
   backoff?: JobOptions['backoff']
   enabled?: JobOptions['enabled']
+  path?: string
   requestFile?: string
-  handle: (request: any) => Promise<any>
+  handle: (options?: Request) => Promise<any>
 }
 
 export class Action {
