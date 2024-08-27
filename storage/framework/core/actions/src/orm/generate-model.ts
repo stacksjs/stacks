@@ -434,12 +434,13 @@ async function getRelations(model: Model, modelName: string): Promise<RelationCo
 
         const modelRelation = (await import(modelRelationPath)).default as Model
 
+        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const formattedModelName = modelName.toLowerCase()
 
         relationships.push({
           relationship: relation,
           model: relationModel,
-          table: modelRelation.table,
+          table: modelRelationTable,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',

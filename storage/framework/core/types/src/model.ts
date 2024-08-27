@@ -155,7 +155,7 @@ export interface Attributes {
 export interface RelationConfig {
   relationship: string
   model: string
-  table: string | undefined
+  table: string
   relationModel?: string
   relationTable?: string
   foreignKey: string
