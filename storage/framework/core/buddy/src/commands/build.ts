@@ -29,15 +29,16 @@ export function build(buddy: CLI) {
   buddy
     .command('build [type]', descriptions.build)
     .option('-c, --components', descriptions.components)
-    .option('-v, --vue-components', descriptions.vueComponents) // these are automatically built with your -c option as well
-    .option('-w, --web-components', descriptions.webComponents) // these are automatically built with your -c option as well
-    .option('-e, --elements', descriptions.elements)
+    .option('-v, --vue-components', descriptions.vueComponents) // also automatically built via the -c flag
+    .option('-w, --web-components', descriptions.webComponents) // also automatically built via the -c flag
+    .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
     .option('-p, --views', descriptions.pages)
+    .option('--pages', descriptions.pages) // alias for --views
     .option('-d, --docs', descriptions.docs)
     .option('-b, --buddy', descriptions.buddy, { default: false })
     .option('-s, --stacks', descriptions.framework, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--project [project]', descriptions.project, { default: false })
     .option('--server', descriptions.server, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: BuildOptions) => {

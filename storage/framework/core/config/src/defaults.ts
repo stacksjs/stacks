@@ -461,7 +461,8 @@ export default {
   },
 
   logging: {
-    logsPath: 'storage/logs/console.log',
+    logsPath: 'storage/logs/stacks.log',
+    deploymentsPath: 'storage/logs/deployments.log',
   },
 
   notification: {

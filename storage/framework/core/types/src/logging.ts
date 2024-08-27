@@ -15,6 +15,16 @@ export interface LoggingOptions {
    * @default 'storage/logs/console.log'
    */
   logsPath: string
+
+  /**
+   * **Deployments Path**
+   *
+   * The path to the deployments folder. This will be used to write deployment logs to a file.
+   * If you do not want to write deployment logs to a file, you may set this to `null`.
+   *
+   * @default 'storage/logs/deployments.log'
+   */
+  deploymentsPath: string
 }
 
 export type LoggingConfig = Partial<LoggingOptions>

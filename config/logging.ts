@@ -18,4 +18,14 @@ export default {
    * @default 'storage/logs/stacks.log'
    */
   logsPath: storagePath('logs/stacks.log'),
+
+  /**
+   * **Deployments Path**
+   *
+   * The path to the deployments folder. This will be used to write deployment logs to a file.
+   * If you do not want to write deployment logs to a file, you may set this to `null`.
+   *
+   * @default 'storage/logs/deployments.log'
+   */
+  deploymentsPath: storagePath('logs/deployments.log'),
 } satisfies LoggingConfig
