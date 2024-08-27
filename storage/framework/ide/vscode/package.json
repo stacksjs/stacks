@@ -39,20 +39,21 @@
     "theme": "light"
   },
   "extensionPack": [
-    "vue.volar",
-    "biomejs.biome",
-    "streetsidesoftware.code-spell-checker",
-    "antfu.unocss",
-    "davidanson.vscode-markdownlint",
-    "christian-kohler.npm-intellisense",
-    "mattpocock.ts-error-translator",
     "amazonwebservices.aws-toolkit-vscode",
+    "antfu.unocss",
     "antfu.goto-alias",
-    "mikestead.dotenv",
+    "biomejs.biome",
+    "christian-kohler.npm-intellisense",
+    "davidanson.vscode-markdownlint",
     "foxundermoon.shell-format",
+    "mattpocock.ts-error-translator",
+    "mikestead.dotenv",
     "mylesmurphy.prettify-ts",
+    "nhoizey.gremlins",
     "Orta.vscode-twoslash-queries",
-    "nhoizey.gremlins"
+    "streetsidesoftware.code-spell-checker",
+    "vitest.explorer",
+    "vue.volar"
   ],
   "devDependencies": {
     "@vscode/vsce": "^3.0.0"
