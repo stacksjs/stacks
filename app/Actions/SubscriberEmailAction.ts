@@ -9,7 +9,7 @@ export default new Action({
   method: 'POST',
   validations: {
     status: {
-      rule: schema.string().minLength(3).maxLength(88),
+      rule: schema.string().minLength(5).maxLength(255),
       message: {
         minLength: 'Name must have a minimum of 3 characters',
         maxLength: 'Name must have a maximum of 255 characters',
