@@ -177,13 +177,11 @@ export async function getRelations(model: Model, modelPath: string): Promise<Rel
           relationModel = relationInstance
         }
 
-        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+        const modelRelationPath = path.userModelsPath(relationModel)
         const modelRelation = (await import(modelRelationPath)).default
-
         const modelName = getModelName(model, modelPath)
         const formattedModelName = modelName.toLowerCase()
         const tableName = getTableName(model, modelPath)
-
         const modelRelationTable = getModelName(modelRelation, modelRelationPath)
 
         relationships.push({
@@ -207,17 +205,13 @@ export async function getRelations(model: Model, modelPath: string): Promise<Rel
 
 export async function fetchOtherModelRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modelFileElement = modelFiles[i] as string
-
     const modelFile = (await import(modelFileElement)).default as Model
-
     const tableName = getTableName(model, modelPath)
     const modelName = getModelName(model, modelPath)
-
     const modelFileName = getTableName(modelFile, modelFileElement)
 
     if (tableName === modelFileName) continue

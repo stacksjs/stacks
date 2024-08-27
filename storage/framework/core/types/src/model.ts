@@ -65,15 +65,20 @@ type Base = {}
  * Model.
  */
 export interface ModelOptions extends Base {
+  /**
+   * The name of the model.
+   *
+   * @default string - The file name of the model.
+   */
   name: string // defaults to the file name of the model
-  table: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
+  table?: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true
   dashboard?: {
     highlight?: boolean | number // defaults to undefined
   }
 
-  traits: {
+  traits?: {
     useUuid?: boolean // defaults to false
     useTimestamps?: boolean | TimestampOptions // defaults to true
     timestampable?: boolean | TimestampOptions // useTimestamps alias
@@ -91,32 +96,32 @@ export interface ModelOptions extends Base {
     useActivityLog?: boolean | ActivityLogOption
   }
 
-  attributes: Attributes
+  attributes?: Attributes
 
   // relationships
-  hasOne:
+  hasOne?:
     | {
         model: ModelNames
         foreignKey?: string
         relationName?: string
       }[]
     | string[]
-  hasMany:
+  hasMany?:
     | {
         model: ModelNames // should be typed as ModelName
         foreignKey?: string
         relationName?: string
       }[]
     | ModelNames[]
-  belongsTo:
+  belongsTo?:
     | {
         model: ModelNames // should be typed as ModelName
         foreignKey?: string
         relationName?: string
       }[]
     | ModelNames[] // belongsTo: 'User'
-  belongsToMany: BelongsToManyType[] | ModelNames[]
-  hasOneThrough: {
+  belongsToMany?: BelongsToManyType[] | ModelNames[]
+  hasOneThrough?: {
     model: ModelNames
     through: ModelNames
     foreignKey?: string
@@ -124,11 +129,11 @@ export interface ModelOptions extends Base {
     relationName?: string
   }[]
 
-  get: {
+  get?: {
     [key: string]: (value: any) => any
   }
 
-  set: {
+  set?: {
     [key: string]: (value: any) => any
   }
 }
