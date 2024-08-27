@@ -49,7 +49,7 @@
     "@vinejs/vine": "^2.1.0",
     "cac": "^6.7.14",
     "markdown-it": "^14.1.0",
-    "meilisearch": "^0.41.0",
+    "meilisearch": "^0.42.0",
     "neverthrow": "^7.0.1",
     "ora": "^8.1.0",
     "unocss": "0.62.3",
