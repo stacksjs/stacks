@@ -3,19 +3,23 @@ import { snakeCase } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import type { VineType } from '@stacksjs/types'
 import type { SchemaTypes } from '@vinejs/vine/types'
-import { SimpleMessagesProvider, VineError, VineString, reportError, schema } from './'
+import { SimpleMessagesProvider, VineError, reportError, schema } from './'
 
 interface RequestData {
   [key: string]: any
 }
 
 interface ValidationField {
-  rule: ReturnType<typeof schema.string>
+  rule: VineType
   message: Record<string, string>
 }
 
 interface CustomAttributes {
   [key: string]: ValidationField
+}
+
+export function isObjectNotEmpty(obj: object): boolean {
+  return Object.keys(obj).length > 0
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {

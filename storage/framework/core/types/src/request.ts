@@ -6,14 +6,9 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string | number } | null
 
-interface ValidationType {
-  rule: VineType
-  message: { [key: string]: string }
-}
-
 interface ValidationField {
-  [key: string]: string | ValidationType
-  validation: ValidationType
+  rule: VineType
+  message: Record<string, string>
 }
 
 interface CustomAttributes {

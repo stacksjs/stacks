@@ -37,7 +37,7 @@ async function watchFolders() {
 
         log.info(`Detected ${event} in ./core/${filename}`)
         log.info(`Rebuilding package ...`)
-        log.debug(`Rebuilding:`, process.cwd(), srcPath, filename)
+        log.debug(`Rebuilding:`, process.cwd())
 
         runCommandSync('bun run build', {
           cwd: path.corePath(dir.name),

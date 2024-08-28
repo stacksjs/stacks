@@ -9,7 +9,7 @@ interface RequestData {
 
 interface ValidationField {
   rule: VineType
-  message: { [key: string]: string }
+  message: Record<string, string>
 }
 
 interface CustomAttributes {

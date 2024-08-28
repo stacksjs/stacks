@@ -1,13 +1,14 @@
 import { Request } from '../core/router/src/request'
+import type { VineType } from '@stacksjs/types'
 
 interface ValidationField {
-   rule: ReturnType<typeof schema.string>
-    message: Record<string, string>
-  }
+  rule: VineType
+  message: Record<string, string>
+}
 
 interface CustomAttributes {
-    [key: string]: ValidationField
-  }
+  [key: string]: ValidationField
+}
 
 interface RequestDataProject {
        id?: number

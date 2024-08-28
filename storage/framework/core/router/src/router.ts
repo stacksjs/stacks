@@ -4,6 +4,7 @@ import { path as p } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import type { Job } from '@stacksjs/types'
 import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string // TODO: narrow this by automating its generation
@@ -300,17 +301,16 @@ export class Router implements RouterInterface {
     // if fails, return validation error
     let requestInstance
 
-    console.log('actionModule', actionModule)
-
     if (actionModule.default.requestFile) {
       requestInstance = await findRequestInstance(actionModule.default.requestFile)
     } else {
       requestInstance = await extractDefaultRequest(modulePath)
     }
 
-    console.log(actionModule.default.requestFile)
-
     try {
+      if (isObjectNotEmpty(actionModule.default.validations))
+        await customValidate(actionModule.default.validations, requestInstance.all())
+
       return await actionModule.default.handle(requestInstance)
     } catch (error: any) {
       return { status: error.status, errors: error.errors }
