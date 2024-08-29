@@ -1,11 +1,11 @@
-import { path as p } from '@stacksjs/path'
+// import { path as p } from '@stacksjs/path'
 import UnoCSS from 'unocss/vite'
 
 export function cssEngine() {
   // export function cssEngine(isWebComponent = false) {
   // return UnoCSS()
   return UnoCSS({
-    configFile: p.uiPath('src/uno.config.ts'),
+    configFile: '../../ui/src/unocss.config.ts',
     // mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
     // content: {
     //   pipeline: {

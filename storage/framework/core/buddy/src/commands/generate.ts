@@ -8,9 +8,10 @@ import {
   generateTypes,
   generateVsCodeCustomData,
   generateWebTypes,
+  // generateOpenApiSpec,
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
-import { log } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
 
 export function generate(buddy: CLI) {
@@ -25,6 +26,7 @@ export function generate(buddy: CLI) {
     componentMeta: 'Generate component meta information',
     coreSymlink: 'Generate symlink of the core framework to the project root',
     pkgx: 'Generate the pkgx configuration file',
+    openApi: 'Generate the OpenAPI specification',
     select: 'What are you trying to generate?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -133,6 +135,23 @@ export function generate(buddy: CLI) {
     .action((options: GeneratorOptions) => {
       log.debug('Running `buddy generate:pkgx-config` ...', options)
       generatePkgxConfig()
+    })
+
+  buddy
+    .command('generate:openapi-spec', descriptions.openApi)
+    .alias('generate:openapi')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:openapi-spec` ...', options)
+      const perf = await intro('buddy generate:openapi-spec')
+
+      // await generateOpenApiSpec()
+
+      outro('Generated OpenAPI specification', {
+        startTime: perf,
+        useSeconds: true,
+      })
     })
 
   buddy.command('generate:migrations', 'Generate Migrations').action((options: GeneratorOptions) => {

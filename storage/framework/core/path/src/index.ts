@@ -1210,8 +1210,14 @@ export function typesPath(path?: string) {
  * @param path - The relative path to the file or directory within the ui directory.
  * @returns The absolute path to the specified file or directory within the ui directory.
  */
-export function uiPath(path?: string) {
-  return corePath(`ui/${path || ''}`)
+export function uiPath(path?: string, options?: { relative?: boolean }) {
+  const absolutePath = corePath(`ui/${path || ''}`)
+
+  if (options?.relative) {
+    return relative(process.cwd(), absolutePath)
+  }
+
+  return absolutePath
 }
 
 /**

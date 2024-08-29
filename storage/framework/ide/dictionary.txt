@@ -206,6 +206,7 @@ oclif
 ofetch
 ohmyzsh
 openai
+openapi
 opensearch
 opensearchservice
 openweb
