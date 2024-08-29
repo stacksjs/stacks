@@ -6,10 +6,10 @@ import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { cleanProject } from '@stacksjs/utils'
 
-log.info('Cleaning project...', { styled: false })
+log.info('Cleaning project...')
 await cleanProject()
 
-log.info('Installing dependencies...', { styled: false })
+log.info('Installing dependencies...')
 const result = await runCommand('bun install', {
   cwd: projectPath(),
 })

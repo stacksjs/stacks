@@ -54,8 +54,8 @@ export async function serverResponse(req: Request, body: string) {
   const url = new URL(trimmedUrl)
   const routesList: Route[] = await route.getRoutes()
 
-  log.info(`Routes List: ${JSON.stringify(routesList)}`, { styled: false })
-  log.info(`URL: ${JSON.stringify(url)}`, { styled: false })
+  log.info(`Routes List: ${JSON.stringify(routesList)}`)
+  log.info(`URL: ${JSON.stringify(url)}`)
 
   if (req.method === 'OPTIONS') {
     return handleOptions(req)
@@ -69,7 +69,7 @@ export async function serverResponse(req: Request, body: string) {
     })
     .find((route: Route) => route.method === req.method)
 
-  log.info(`Found Route: ${JSON.stringify(foundRoute)}`, { styled: false })
+  log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
 
   if (!foundRoute) {
     // TODO: create a pretty 404 page

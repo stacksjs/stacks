@@ -4,7 +4,7 @@ import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { envKeys } from '../../../../env'
 
-log.info('Generating type env files...', { styled: false })
+log.info('Generating type env files...')
 
 // generate ./storage/framework/types/env.d.ts file from .env
 const envTypes = `
@@ -63,7 +63,7 @@ declare module 'bun' {
 
 await storage.writeFile(p.frameworkPath('types/env.d.ts'), envTypes)
 
-log.info('  - ./storage/framework/env.ts', { styled: false })
+log.info('  - ./storage/framework/env.ts')
 
 // generate ./storage/framework/env.ts file based on Bun.env
 const env = `
@@ -81,4 +81,4 @@ export type EnvKey = typeof envKeys[number]
 
 await storage.writeFile(p.frameworkPath('env.ts'), env)
 
-log.info('  - ./storage/framework/env.d.ts', { styled: false })
+log.info('  - ./storage/framework/env.d.ts')

@@ -17,18 +17,18 @@ async function main() {
   const stacksContainer = await runCommandSync(`docker ps -a --filter name=stacks-server --format "{{.ID}}"`)
 
   if (stacksContainer) {
-    log.info('Stopping stacks-server container...', { styled: false })
+    log.info('Stopping stacks-server container...')
     await runCommand(`docker stop stacks-server`)
-    log.info('Stopped stacks-server container', { styled: false })
+    log.info('Stopped stacks-server container')
   }
 
-  log.info('Deleting old files...', { styled: false })
+  log.info('Deleting old files...')
   await runCommand(`rm -rf ${userServerPath('app')}`)
   await runCommand(`rm -rf ${userServerPath('config')}`)
   await runCommand(`rm -rf ${userServerPath('dist')}`)
   await runCommand(`rm -rf ${userServerPath('docs')}`)
   await runCommand(`rm -rf ${userServerPath('storage')}`)
-  log.info('Deleted old files', { styled: false })
+  log.info('Deleted old files')
 
   const result = await Bun.build({
     entrypoints: ['./src/index.ts'],
@@ -47,7 +47,7 @@ async function main() {
 
   await useCustomOrDefaultServerConfig()
 
-  log.info('Building app...', { styled: false })
+  log.info('Building app...')
 
   const { startTime: perf } = await intro({
     dir: import.meta.dir,
@@ -76,7 +76,7 @@ async function main() {
     if (content.includes('storage/framework/server')) {
       content = content.replace(/storage\/framework\/server/g, 'dist')
       await fs.writeFile(file, content, 'utf-8')
-      log.info(`Updated imports in ${file}`, { styled: false })
+      log.info(`Updated imports in ${file}`)
     }
   }
 
@@ -89,7 +89,7 @@ async function main() {
     if (content.includes('export { ENV_KEY, ENV_SECRET, fromEnv };')) {
       content = content.replace(/export { ENV_KEY, ENV_SECRET, fromEnv };/g, '')
       await fs.writeFile(file, content, 'utf-8')
-      log.info(`Updated imports in ${file}`, { styled: false })
+      log.info(`Updated imports in ${file}`)
       break
     }
   }

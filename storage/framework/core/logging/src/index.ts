@@ -1,13 +1,48 @@
 import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
-import { prompts } from '@stacksjs/cli'
+import { buddyOptions } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import isUnicodeSupported from 'is-unicode-supported'
-import color from 'picocolors'
+import { consola, createConsola } from 'consola'
+
+// import type { Prompt } from '@stacksjs/cli'
+
+export async function logLevel() {
+  /**
+   * This regex checks for:
+   *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
+   *   - --verbose - followed by optional spaces at the end.
+   *   - --verbose followed by optional spaces at the end.
+   *
+   * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
+   */
+  const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
+  const opts = buddyOptions()
+
+  if (verboseRegex.test(opts)) return 4
+
+  // const config = await import('@stacksjs/config')
+  // console.log('config', config)
+
+  return 3
+  // return config.logger.level
+}
+
+export const logger = createConsola({
+  level: await logLevel(),
+  // fancy: true,
+  // formatOptions: {
+  //     columns: 80,
+  //     colors: false,
+  //     compact: false,
+  //     date: false,
+  // },
+})
+
+export { consola }
 
 export async function writeToLogFile(message: string) {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
@@ -32,27 +67,21 @@ export async function writeToLogFile(message: string) {
 }
 
 export interface Log {
-  info: (message: string, options?: LogMessageOptions) => void
-  success: (message: string, options?: LogMessageOptions) => void
+  info: (...args: any[]) => void
+  success: (msg: string) => void
   error: (err: string | Error | unknown, options?: any | Error) => void
-  warn: (message: string, options?: LogMessageOptions) => void
-  warning: (message: string, options?: LogMessageOptions) => void
-  debug: (message: string, options?: LogMessageOptions) => void
-  message: (message: string, options?: LogMessageOptions) => void
-  step: (message: string, options?: LogMessageOptions) => void
+  warn: (arg: string) => void
+  warning: (arg: string) => void
+  debug: (...args: any[]) => void
+  // prompt: Prompt
+  // start: logger.Start
+  // box: logger.Box
+  start: any
+  box: any
   dump: (...args: any[]) => void
   dd: (...args: any[]) => void
   echo: (...args: any[]) => void
 }
-
-const unicode = isUnicodeSupported()
-const s = (c: string, fallback: string) => (unicode ? c : fallback)
-const S_INFO = s('●', '•')
-const S_SUCCESS = s('◆', '*')
-const S_WARN = s('▲', '!')
-const S_ERROR = s('■', 'x')
-const S_BAR = s('│', '|')
-const S_STEP_SUBMIT = s('◇', 'o')
 
 export type LogMessageOptions = {
   symbol?: string
@@ -60,42 +89,24 @@ export type LogMessageOptions = {
 }
 
 export const log: Log = {
-  message: (message = '', { symbol = color.gray(S_BAR), styled = true }: LogMessageOptions = {}) => {
-    if (!styled) return process.stdout.write(`${message}\n`)
-
-    const parts = [`${color.gray(S_BAR)}`]
-
-    if (message) {
-      const [firstLine, ...lines] = message.split('\n')
-      parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln) => `${color.gray(S_BAR)}  ${ln}`))
-    }
-
-    process.stdout.write(`${parts.join('\n')}\n`)
-  },
-
-  info: async (message: string, options?: LogMessageOptions) => {
-    log.message(message, { symbol: color.blue(S_INFO), ...options })
+  info: async (message: string) => {
+    logger.info(message)
     await writeToLogFile(`INFO: ${message}`)
   },
 
-  success: async (message: string, options?: LogMessageOptions) => {
-    log.message(message, { symbol: color.green(S_SUCCESS), ...options })
+  success: async (message: string) => {
+    logger.success(message)
     await writeToLogFile(`SUCCESS: ${message}`)
   },
 
-  step: async (message: string, options?: LogMessageOptions) => {
-    log.message(message, { symbol: color.green(S_STEP_SUBMIT), ...options })
-    await writeToLogFile(`STEP: ${message}`)
-  },
-
-  warn: async (message: string, options?: LogMessageOptions) => {
-    log.message(message, { symbol: color.yellow(S_WARN), ...options })
+  warn: async (message: string) => {
+    logger.warn(message)
     await writeToLogFile(`WARN: ${message}`)
   },
 
   /** alias for `log.warn()`. */
-  warning: (message: string, options?: LogMessageOptions) => {
-    log.warn(message, options)
+  warning: (message: string) => {
+    log.warn(message)
   },
 
   error: (err: unknown, options?: any | Error) => {
@@ -104,7 +115,7 @@ export const log: Log = {
     else handleError(err, options)
 
     const errorMessage = isString(err) ? err : err instanceof Error ? err.message : String(err)
-    log.message(errorMessage, { symbol: color.red(S_ERROR) })
+    logger.error(errorMessage)
     writeToLogFile(`ERROR: ${errorMessage}`)
   },
 

@@ -41,28 +41,28 @@ if (registrar.includes('Amazon')) {
   if (options.deploy) {
     await runCommand('buddy deploy')
   } else {
-    log.info('', { styled: false })
-    log.info('You can now continue your deployment process by re-running:', { styled: false })
-    log.info('', { styled: false })
-    log.info(`  ➡️  ${italic('buddy deploy')}`, { styled: false })
-    log.info('', { styled: false })
+    log.info('')
+    log.info('You can now continue your deployment process by re-running:')
+    log.info('')
+    log.info(`  ➡️  ${italic('buddy deploy')}`)
+    log.info('')
   }
   process.exit(0)
 }
 
-log.info('', { styled: false })
-log.info('ℹ️  Please note, before continuing your deployment process,', { styled: false })
-log.info(`   update your ${registrar} nameservers to the following:`, { styled: false })
+log.info('')
+log.info('ℹ️  Please note, before continuing your deployment process,')
+log.info(`   update your ${registrar} nameservers to the following:`)
 
 const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
-log.info('', { styled: false })
+log.info('')
 nameServers.forEach((nameserver: string, index: number) => {
-  log.info(`  ${emojis[index]}  Nameserver: ${nameserver}`, { styled: false })
+  log.info(`  ${emojis[index]}  Nameserver: ${nameserver}`)
 })
-log.info('', { styled: false })
-log.info(italic(`stored in ${projectConfigPath('dns.ts')}`), { styled: false })
-log.info('', { styled: false })
-log.info('Once the nameservers have been updated, re-run the following command:', { styled: false })
-log.info('', { styled: false })
-log.info(`  ➡️  ${italic('buddy deploy')}`, { styled: false })
-log.info('', { styled: false })
+log.info('')
+log.info(italic(`stored in ${projectConfigPath('dns.ts')}`))
+log.info('')
+log.info('Once the nameservers have been updated, re-run the following command:')
+log.info('')
+log.info(`  ➡️  ${italic('buddy deploy')}`)
+log.info('')

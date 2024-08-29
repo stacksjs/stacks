@@ -25,7 +25,7 @@ if (!options.domain) {
   }
 }
 
-if (options.verbose) log.info(`Removing domain: ${options.domain}`, { styled: false })
+if (options.verbose) log.info(`Removing domain: ${options.domain}`)
 
 // const result = await deleteHostedZone(options.domain)
 const result = await deleteHostedZoneRecords(options.domain)

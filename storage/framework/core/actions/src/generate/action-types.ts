@@ -3,7 +3,7 @@ import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 
-log.info('Generating action types...', { styled: false })
+log.info('Generating action types...')
 
 const domain = 'Actions'
 const files = await readdir(p.appPath(domain), { recursive: true })
