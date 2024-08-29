@@ -90,7 +90,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@vitejs/plugin-vue": "^5.1.2",
+    "@vitejs/plugin-vue": "^5.1.3",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.9.0",
     "unplugin-auto-import": "^0.18.2",
@@ -99,7 +99,7 @@
     "vite-plugin-full-reload": "^1.2.0",
     "vite-plugin-inspect": "^0.8.7",
     "vite-plugin-pages": "^0.32.3",
-    "vite-plugin-pwa": "^0.20.1",
+    "vite-plugin-pwa": "^0.20.2",
     "vite-plugin-vue-markdown": "^0.23.8",
     "vite-ssg": "^0.23.8",
     "vite-ssg-sitemap": "^0.8.1"
