@@ -13,7 +13,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "aws4fetch": "^1.0.19"
+    "aws4fetch": "^1.0.20"
   },
   "workspaces": ["../core/*"]
 }
