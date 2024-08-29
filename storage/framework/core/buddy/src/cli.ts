@@ -63,6 +63,7 @@ async function main() {
   cmd.list(buddy)
   cmd.make(buddy)
   cmd.migrate(buddy)
+  cmd.outdated(buddy)
   cmd.release(buddy)
   cmd.route(buddy)
   cmd.seed(buddy)
