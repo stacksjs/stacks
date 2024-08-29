@@ -22,7 +22,9 @@
     "typescript",
     "javascript"
   ],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,12 +35,16 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist", "src"],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "vite build -c ../build/web-components.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "stacks": "workspace:*"
+    "stacks": "latest"
   }
 }

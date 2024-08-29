@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.64.3...v0.64.4
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.64.3...v0.64.4)
+
+### 🏡 Chore
+
+- Wip ([9809f04f4](https://github.com/stacksjs/stacks/commit/9809f04f4))
+- Release v0.64.4 ([1858572b9](https://github.com/stacksjs/stacks/commit/1858572b9))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 ## v0.64.2...v0.64.3
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.64.2...v0.64.3)

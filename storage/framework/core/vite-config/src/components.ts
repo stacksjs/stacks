@@ -49,11 +49,9 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
     lib: {
       entry: p.libraryEntryPath('vue-components'),
       name: c.library.vueComponents?.name,
-      formats: ['cjs', 'es'],
+      formats: ['es'],
       fileName: (format: string) => {
-        if (format === 'es') return 'index.mjs'
-
-        if (format === 'cjs') return 'index.cjs'
+        if (format === 'es') return 'index.js'
 
         return 'index.?.js'
       },

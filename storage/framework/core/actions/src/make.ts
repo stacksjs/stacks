@@ -68,7 +68,7 @@ export default new Action({
 export async function createComponent(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: p.userComponentsPath(`${name}.stx`),
+    path: p.userComponentsPath(`${name}.vue`),
     data: `<script setup lang="ts">
 console.log('Hello World component created')
 </script>
@@ -141,7 +141,7 @@ export async function makePage(options: MakeOptions) {
 export async function createPage(options: MakeOptions) {
   const name = options.name
   await writeTextFile({
-    path: p.userViewsPath(`${name}.stx`),
+    path: p.userViewsPath(`${name}.vue`),
     data: `<script setup lang="ts">
 console.log('Hello World page created')
 </script>

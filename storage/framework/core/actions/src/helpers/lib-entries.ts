@@ -104,8 +104,8 @@ export function generateEntryPointData(type: LibraryType): string {
 
     for (const component of library.vueComponents.tags.map((tag) => tag.name)) {
       if (Array.isArray(component))
-        arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.stx'`)
-      else arr.push(`export { default as ${component} } from '${componentsPath(component)}.stx'`)
+        arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.vue'`)
+      else arr.push(`export { default as ${component} } from '${componentsPath(component)}.vue'`)
     }
 
     // join the array into a string with each element being on a new line
@@ -129,11 +129,11 @@ export function generateEntryPointData(type: LibraryType): string {
 
   for (const component of library.webComponents.tags.map((tag) => tag.name)) {
     if (Array.isArray(component)) {
-      imports.push(`import ${component[1]} from '${componentsPath(component[0])}.stx'`)
+      imports.push(`import ${component[1]} from '${componentsPath(component[0])}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1] as string)}', ${component[1]}CustomElement)`)
     } else {
-      imports.push(`import ${component} from '${componentsPath(component)}.stx'`)
+      imports.push(`import ${component} from '${componentsPath(component)}.vue'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }

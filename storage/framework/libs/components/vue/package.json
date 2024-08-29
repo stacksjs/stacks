@@ -34,11 +34,11 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "dev": "bunx --bun vite -c ../../../core/vite-config/src/components.ts",
+    "dev": "bunx vite -c ../../../core/vite-config/src/components.ts",
     "build": "bunx --bun vite build -c ../../../core/vite-config/src/components.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "stacks": "workspace:*"
+    "stacks": "latest"
   }
 }

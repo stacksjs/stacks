@@ -160,7 +160,7 @@ useHead({
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      ./resources/components/component-a.stx
+                      ./resources/components/component-a.vue
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
@@ -186,7 +186,7 @@ useHead({
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      ./resources/components/component-b.stx
+                      ./resources/components/component-b.vue
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
@@ -212,7 +212,7 @@ useHead({
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      ./resources/components/component-c.stx
+                      ./resources/components/component-c.vue
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">

@@ -4,8 +4,6 @@ import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
-// import { autoImports } from '.'
-
 export const functionsConfig: UserConfig = {
   root: functionsPath(),
   envDir: projectPath(),
@@ -32,11 +30,9 @@ export function functionsBuildOptions(): ViteBuildOptions {
       entry: libraryEntryPath('functions'),
       name: 'test-name',
       // name: library.functions?.name,
-      formats: ['cjs', 'es'],
+      formats: ['es'],
       fileName: (format: string) => {
         if (format === 'es') return 'index.mjs'
-
-        if (format === 'cjs') return 'index.cjs'
 
         return 'index.?.js'
       },

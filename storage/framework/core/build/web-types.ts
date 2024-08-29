@@ -7,7 +7,7 @@ import library from '~/config/library'
 export default {
   cwd: process.cwd(),
   componentsRoot: componentsPath(),
-  components: '**/[a-zA-Z]*.stx',
+  components: '**/[a-zA-Z]*.vue',
   outFile: frameworkPath('web-types.json'),
   packageName: library.name || 'stacks',
   packageVersion: await frameworkVersion(),

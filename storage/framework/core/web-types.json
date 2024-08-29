@@ -11,14 +11,14 @@
           "name": "Counter",
           "description": "",
           "source": {
-            "module": "../components/Buttons/Counter.stx"
+            "module": "../components/Buttons/Counter.vue"
           }
         },
         {
           "name": "Demo",
           "description": "",
           "source": {
-            "module": "../components/Demo.stx"
+            "module": "../components/Demo.vue"
           }
         },
         {
@@ -43,7 +43,7 @@
             }
           ],
           "source": {
-            "module": "../components/HelloWorld.stx",
+            "module": "../components/HelloWorld.vue",
             "symbol": "default"
           }
         },
@@ -51,14 +51,14 @@
           "name": "Logo",
           "description": "",
           "source": {
-            "module": "../components/Logo.stx"
+            "module": "../components/Logo.vue"
           }
         },
         {
           "name": "ToggleDark",
           "description": "",
           "source": {
-            "module": "../components/Buttons/ToggleDark.stx"
+            "module": "../components/Buttons/ToggleDark.vue"
           }
         }
       ]
