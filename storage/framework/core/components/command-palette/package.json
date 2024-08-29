@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/command-palette",
   "type": "module",
-  "version": "0.64.1",
+  "version": "0.64.2",
   "private": true,
   "exports": {
     ".": {
