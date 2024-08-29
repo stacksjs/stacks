@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ecommerce",
   "type": "module",
-  "version": "0.64.5",
+  "version": "0.64.6",
   "description": "Stacks ecommerce utilities.",
   "author": "Chris Breuer",
   "license": "MIT",

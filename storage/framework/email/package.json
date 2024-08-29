@@ -1,7 +1,7 @@
 {
   "name": "stacks-email",
   "type": "module",
-  "version": "0.64.5",
+  "version": "0.64.6",
   "private": true,
   "scripts": {
     "build": "wip",

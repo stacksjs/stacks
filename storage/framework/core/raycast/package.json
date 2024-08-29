@@ -32,5 +32,5 @@
     "@stacksjs/development": "workspace:*",
     "typescript": "^5.5.4"
   },
-  "version": "0.64.5"
+  "version": "0.64.6"
 }
