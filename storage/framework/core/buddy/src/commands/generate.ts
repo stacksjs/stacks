@@ -41,6 +41,7 @@ export function generate(buddy: CLI) {
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-p, --pkgx', descriptions.pkgx)
+    .option('-o, --openapi', descriptions.openApi)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--core-symlink', descriptions.coreSymlink)
     .option('--verbose', descriptions.verbose, { default: false })
