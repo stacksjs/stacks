@@ -35,7 +35,8 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "build": "vite build -c ../build/web-components.ts",
+    "dev": "bunx vite -c ../../../core/vite-config/src/web-components.ts",
+    "build": "bunx vite build -c ../../../core/vite-config/src/web-components.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {

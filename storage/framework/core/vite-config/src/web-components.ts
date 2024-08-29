@@ -1,23 +1,27 @@
 import { alias } from '@stacksjs/alias'
-import { path as p } from '@stacksjs/path'
+import { config as c } from '@stacksjs/config'
+import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
+import type { ViteConfig } from '@stacksjs/types'
+import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
-// import { autoImports, components, cssEngine, inspect, uiEngine } from '.'
-
-// const isWebComponent = true
-
-export const webComponentsConfig = {
-  root: p.frameworkPath('libs/components/web'),
-  envDir: p.projectPath(),
+const config = {
+  root: libsPath('components/web'),
+  envDir: projectPath(),
   envPrefix: 'FRONTEND_',
+  publicDir: publicPath(),
+  base: '/libs/',
+
+  assetsInclude: [publicPath('**/*'), resourcesPath('assets/*'), resourcesPath('assets/**/*')],
 
   server: server({
     type: 'library',
   }),
 
   resolve: {
+    dedupe: ['vue'],
     alias,
   },
 
@@ -26,38 +30,47 @@ export const webComponentsConfig = {
   },
 
   plugins: [
-    // inspect(),
-    // uiEngine(isWebComponent),
-    // cssEngine(isWebComponent),
-    // autoImports(),
-    // components(),
+    uiEngine(true),
+    autoImports(),
+    cssEngine(),
+    inspect(),
+    components(),
+    devtools(),
+    // stacks(),
   ],
 
   build: webComponentsBuildOptions(),
-}
+} satisfies ViteConfig
 
 export function webComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: p.frameworkPath('components/web/dist'),
+    outDir: libsPath('components/web/dist'),
     emptyOutDir: true,
     lib: {
-      entry: p.libraryEntryPath('web-components'),
-      name: 'web-components',
-      formats: ['cjs', 'es'],
+      entry: libraryEntryPath('web-components'),
+      name: c.library.webComponents?.name,
+      formats: ['es'],
       fileName: (format: string) => {
-        if (format === 'es') return 'index.mjs'
-
-        if (format === 'cjs') return 'index.cjs'
+        if (format === 'es') return 'index.js'
 
         return 'index.?.js'
       },
     },
+
+    // rollupOptions: {
+    //   external: ['vue', '@stacksjs/path'],
+    //   input: libraryEntryPath('web-components'),
+    //   output: {
+    //     globals: {
+    //       vue: 'Vue',
+    //     },
+    //   },
+    // },
   }
 }
 
 export default defineConfig(({ command }) => {
-  if (command === 'serve') return webComponentsConfig
+  if (command === 'serve') return config
 
-  // command === 'build'
-  return webComponentsConfig
+  return config
 })
