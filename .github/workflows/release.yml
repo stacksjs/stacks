@@ -48,12 +48,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       # temporary workaround until npm publish is replaced with bun publish
-      - name: Install VS Code Extension Dependencies
-        run: cd storage/framework/ide/vscode && npm install && cd ../../../../
+      - name: Update npm and install vsce
+        run: |
+          npm install -g npm@latest
+          npm install -g @vscode/vsce@latest
 
-      # TODO: remove npm once bun publish is available
       - name: Publish VS Code Extension
-        run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
+        run: |
+          cd storage/framework/ide/vscode
+          npm ci
+          vsce publish
+          cd ../../../../
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
