@@ -18,7 +18,7 @@ export default new Action({
     },
   },
   async handle(request: SubscriberEmailRequestType) {
-    const email = request.get('email') as string
+    const email = request.get('email')
 
     const model = await SubscriberEmail.create({ email })
 

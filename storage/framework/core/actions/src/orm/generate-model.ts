@@ -175,11 +175,13 @@ async function writeModelRequest() {
 
     fieldString += ` id?: number\n`
     fieldStringInt += `public id = 1\n`
-    fieldStringType += `'id' |`
+
     let keyCounter = 0
     let keyCounterForeign = 0
 
     const otherModelRelations = await fetchOtherModelRelations(model, modelName)
+
+    fieldStringType += ` get(key: 'id'): number\n`
 
     for (const attribute of attributes) {
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
@@ -189,9 +191,8 @@ async function writeModelRequest() {
       if (attribute.fieldArray?.entity === 'number') defaultValue = 0
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
-      fieldStringType += `'${attribute.field}'`
 
-      if (keyCounter < attributes.length - 1) fieldStringType += ' |'
+      fieldStringType += ` get(key: '${attribute.field}'): ${entity}\n`
 
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
       keyCounter++
@@ -200,12 +201,7 @@ async function writeModelRequest() {
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
 
-      if (keyCounter >= attributes.length - 1) fieldStringType += ' |'
-
-      fieldStringType += `'${otherModel.foreignKey}'`
-
-      // if (keyCounterForeign < otherModelRelations.length - 1)
-      //   fieldStringType += ' |'
+      fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
 
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
       keyCounterForeign++
@@ -247,7 +243,7 @@ async function writeModelRequest() {
 
     const types = `export interface ${modelName}RequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: ${fieldStringType}): string | number | undefined
+      ${fieldStringType}
       all(): RequestData${modelName}
       ${fieldString}
     }\n\n`

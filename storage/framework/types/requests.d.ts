@@ -1,14 +1,13 @@
 import { Request } from '../core/router/src/request'
-import type { VineType } from '@stacksjs/types'
 
 interface ValidationField {
-  rule: VineType
-  message: Record<string, string>
-}
+   rule: ReturnType<typeof schema.string>
+    message: Record<string, string>
+  }
 
 interface CustomAttributes {
-  [key: string]: ValidationField
-}
+    [key: string]: ValidationField
+  }
 
 interface RequestDataProject {
        id?: number
@@ -22,7 +21,12 @@ interface RequestDataProject {
     }
 export interface ProjectRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'name' |'description' |'url' |'status'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'name'): string
+ get(key: 'description'): string
+ get(key: 'url'): string
+ get(key: 'status'): string
+
       all(): RequestDataProject
        id?: number
  name: string
@@ -43,7 +47,9 @@ interface RequestDataSubscriberEmail {
     }
 export interface SubscriberEmailRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'email'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'email'): string
+
       all(): RequestDataSubscriberEmail
        id?: number
  email: string
@@ -65,7 +71,13 @@ interface RequestDataAccessToken {
     }
 export interface AccessTokenRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'name' |'token' |'plainTextToken' |'abilities' |'team_id'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'name'): string
+ get(key: 'token'): string
+ get(key: 'plainTextToken'): string
+ get(key: 'abilities'): string[]
+ get(key: 'team_id'): string 
+
       all(): RequestDataAccessToken
        id?: number
  name: string
@@ -96,7 +108,18 @@ interface RequestDataTeam {
     }
 export interface TeamRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'name' |'companyName' |'email' |'billingEmail' |'status' |'description' |'path' |'isPersonal' |'accesstoken_id' |'user_id'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'name'): string
+ get(key: 'companyName'): string
+ get(key: 'email'): string
+ get(key: 'billingEmail'): string
+ get(key: 'status'): string
+ get(key: 'description'): string
+ get(key: 'path'): string
+ get(key: 'isPersonal'): boolean
+ get(key: 'accesstoken_id'): string 
+ get(key: 'user_id'): string 
+
       all(): RequestDataTeam
        id?: number
  name: string
@@ -124,7 +147,10 @@ interface RequestDataSubscriber {
     }
 export interface SubscriberRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'subscribed' |'user_id'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'subscribed'): boolean
+ get(key: 'user_id'): string 
+
       all(): RequestDataSubscriber
        id?: number
  subscribed: boolean
@@ -150,7 +176,16 @@ interface RequestDataDeployment {
     }
 export interface DeploymentRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'commitSha' |'commitMessage' |'branch' |'status' |'executionTime' |'deployScript' |'terminalOutput' |'user_id'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'commitSha'): string
+ get(key: 'commitMessage'): string
+ get(key: 'branch'): string
+ get(key: 'status'): string
+ get(key: 'executionTime'): number
+ get(key: 'deployScript'): string
+ get(key: 'terminalOutput'): string
+ get(key: 'user_id'): string 
+
       all(): RequestDataDeployment
        id?: number
  commitSha: string
@@ -175,7 +210,9 @@ interface RequestDataRelease {
     }
 export interface ReleaseRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'version'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'version'): string
+
       all(): RequestDataRelease
        id?: number
  version: string
@@ -199,7 +236,15 @@ interface RequestDataUser {
     }
 export interface UserRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'name' |'email' |'jobTitle' |'password' |'team_id' |'deployment_id' |'post_id'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'name'): string
+ get(key: 'email'): string
+ get(key: 'jobTitle'): string
+ get(key: 'password'): string
+ get(key: 'team_id'): string 
+ get(key: 'deployment_id'): string 
+ get(key: 'post_id'): string 
+
       all(): RequestDataUser
        id?: number
  name: string
@@ -225,7 +270,11 @@ interface RequestDataPost {
     }
 export interface PostRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-      get(key: 'id' |'title' |'body' |'user_id'): string | number | undefined
+       get(key: 'id'): number
+ get(key: 'title'): string
+ get(key: 'body'): string
+ get(key: 'user_id'): string 
+
       all(): RequestDataPost
        id?: number
  title: string
