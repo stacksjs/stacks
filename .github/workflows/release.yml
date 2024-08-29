@@ -56,7 +56,7 @@ jobs:
       - name: Publish VS Code Extension
         run: |
           cd storage/framework/ide/vscode
-          npm ci
+          npm install
           vsce publish
           cd ../../../../
         env:
