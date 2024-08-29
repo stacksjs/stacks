@@ -282,7 +282,7 @@
       "extname",
       "extractDefaultRequest",
       "extractDynamicAction",
-      "extractFieldsFromModel",
+      "extractAttributesFromModel",
       "extractModelFromAction",
       "extractModelRequest",
       "faker",

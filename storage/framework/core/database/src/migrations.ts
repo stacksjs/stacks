@@ -1,7 +1,7 @@
 import { dim, italic, log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
 import { err, ok } from '@stacksjs/error-handling'
-import { extractFieldsFromModel } from '@stacksjs/orm'
+import { extractAttributesFromModel } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import type { Attribute, Attributes } from '@stacksjs/types'
@@ -169,5 +169,5 @@ export async function getLastMigrationFields(modelName: string): Promise<Attribu
 }
 
 export async function getCurrentMigrationFields(modelPath: string): Promise<Attribute | undefined> {
-  return extractFieldsFromModel(modelPath)
+  return extractAttributesFromModel(modelPath)
 }

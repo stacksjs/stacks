@@ -341,7 +341,7 @@ declare global {
   const extractDefaultRequest: typeof import('../core/router/src/utils')['extractDefaultRequest']
   const extractDynamicAction: typeof import('../core/router/src/utils')['extractDynamicAction']
   const extractDynamicRequest: typeof import('../core/router/src/utils')['extractDynamicRequest']
-  const extractFieldsFromModel: typeof import('../core/orm/src/utils')['extractFieldsFromModel']
+  const extractAttributesFromModel: typeof import('../core/orm/src/utils')['extractAttributesFromModel']
   const extractModelFromAction: typeof import('../core/router/src/utils')['extractModelFromAction']
   const extractModelRequest: typeof import('../core/router/src/utils')['extractModelRequest']
   const faker: typeof import('../core/faker/src/index')['faker']
@@ -1366,7 +1366,7 @@ declare module 'vue' {
     readonly extname: UnwrapRef<typeof import('../core/path/src/index')['extname']>
     readonly extractDefaultRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDefaultRequest']>
     readonly extractDynamicAction: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicAction']>
-    readonly extractFieldsFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractFieldsFromModel']>
+    readonly extractAttributesFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractAttributesFromModel']>
     readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
     readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
     readonly faker: UnwrapRef<typeof import('../core/faker/src/index')['faker']>

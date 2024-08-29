@@ -264,7 +264,7 @@ declare global {
   const extname: typeof import('../../path/src/paths')['extname']
   const extractDynamicAction: typeof import('../../router/src/utils')['extractDynamicAction']
   const extractDynamicRequest: typeof import('../../router/src/utils')['extractDynamicRequest']
-  const extractFieldsFromModel: typeof import('../../orm/src/utils')['extractFieldsFromModel']
+  const extractAttributesFromModel: typeof import('../../orm/src/utils')['extractAttributesFromModel']
   const extractModelFromAction: typeof import('../../router/src/utils')['extractModelFromAction']
   const extractModelRequest: typeof import('../../router/src/utils')['extractModelRequest']
   const faker: typeof import('../../faker/src/index')['faker']

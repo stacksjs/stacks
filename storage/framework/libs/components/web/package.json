@@ -1,5 +1,5 @@
 {
-  "name": "hello-world-elements",
+  "name": "@stacksjs/hello-world-elements",
   "type": "module",
   "version": "",
   "description": "Your framework agnostic web component library description.",

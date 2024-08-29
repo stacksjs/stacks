@@ -29,7 +29,7 @@ export function getTableName(model: Model, modelPath: string): string {
   return snakeCase(plural(getModelName(model, modelPath)))
 }
 
-export async function extractFieldsFromModel(filePath: string) {
+export async function extractAttributesFromModel(filePath: string) {
   // Read the TypeScript file
   const content = fs.readFileSync(filePath, 'utf8')
 

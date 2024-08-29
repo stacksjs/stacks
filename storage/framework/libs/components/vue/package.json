@@ -1,5 +1,5 @@
 {
-  "name": "hello-world-vue",
+  "name": "@stacksjs/hello-world-vue",
   "type": "module",
   "version": "",
   "description": "Your Vue component library description",
