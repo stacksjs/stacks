@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/sms",
   "type": "module",
-  "version": "0.64.3",
+  "version": "0.64.4",
   "description": "The Stacks SMS integration. Painlessly create & manage your inboxes, templates, and send sms.",
   "author": "Chris Breuer",
   "license": "MIT",
