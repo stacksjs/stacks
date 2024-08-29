@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@raycast/api": "^1.81.2",
-    "@raycast/utils": "^1.16.5"
+    "@raycast/utils": "^1.17.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
