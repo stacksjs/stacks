@@ -149,10 +149,10 @@ async function writeModelRequest() {
 
   let importTypes = ``
   let importTypesString = ``
-  let typeString = `import { Request } from '../core/router/src/request'\n\n`
+  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType } from '@stacksjs/types'\n\n`
 
   typeString += `interface ValidationField {
-   rule: ReturnType<typeof schema.string>
+    rule: VineType
     message: Record<string, string>
   }\n\n`
 

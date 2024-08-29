@@ -1,4 +1,5 @@
 import { Request } from '../core/router/src/request'
+import type { VineType } from '@stacksjs/types'
 
 interface ValidationField {
    rule: ReturnType<typeof schema.string>
