@@ -1,7 +1,7 @@
 {
   "name": "stacks-docs",
   "type": "module",
-  "version": "0.64.0",
+  "version": "0.64.1",
   "scripts": {
     "dev": "bunx --bun vitepress dev",
     "build": "bunx --bun vitepress build",

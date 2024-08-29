@@ -1,7 +1,7 @@
 {
   "name": "@bun-examples/stx",
   "type": "module",
-  "version": "0.64.0",
+  "version": "0.64.1",
   "description": "Your project description.",
   "author": "your-name <your-email>",
   "license": "MIT",

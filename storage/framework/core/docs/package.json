@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.64.0",
+  "version": "0.64.1",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "license": "MIT",
