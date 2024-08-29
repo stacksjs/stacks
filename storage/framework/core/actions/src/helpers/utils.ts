@@ -20,17 +20,27 @@ type Action = ActionPath | ActionName | string
 export async function runAction(action: Action, options?: ActionOptions) {
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
-  const glob = new Bun.Glob('**/*.ts')
+  const glob = new Bun.Glob('**/*.{ts,js}')
   const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true }
 
   for await (const file of glob.scan(scanOptions)) {
-    log.debug('file', file)
     if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
       return ((await import(/* @vite-ignore */ p.userActionsPath(file))).default as ActionType).handle()
 
+    if (file === `${action}.js` || file.endsWith(`${action}.js`))
+      return ((await import(/* @vite-ignore */ p.userActionsPath(file))).default as ActionType).handle()
+
     // if a custom model name is used, we need to check for it
-    const a = await import(/* @vite-ignore */ p.userActionsPath(file))
-    if (a.name === action) return await a.handle()
+    try {
+      const a = await import(/* @vite-ignore */ p.userActionsPath(file))
+      if (a.name === action) {
+        console.log('a.name matches', a.name)
+        return await a.handle()
+      }
+    } catch (error) {
+      console.log('error', error)
+      process.exit()
+    }
   }
 
   // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath

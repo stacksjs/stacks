@@ -5,9 +5,7 @@ import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { generateLibEntry } from '../helpers/lib-entries'
 
 export async function generateLibEntries() {
-  console.log('generateLibEntries')
   log.info('Generating library entry points...')
-  console.log('generateLibEntries2')
 
   if (library.releaseable && hasComponents()) {
     await generateLibEntry('vue-components')
