@@ -38,12 +38,16 @@ export function relativeActionsPath(path?: string) {
   return relative(projectPath(), actionsPath(path))
 }
 
-export function userActionsPath(path?: string) {
+export function userActionsPath(path?: string, options?: { relative: true }) {
   return appPath(`Actions/${path || ''}`)
 }
 
-export function builtUserActionsPath(path?: string) {
-  return frameworkPath(`actions/${path || ''}`)
+export function builtUserActionsPath(path?: string, options?: { relative: boolean }) {
+  const absolutePath = frameworkPath(`actions/${path || ''}`)
+
+  if (options?.relative) return relative(process.cwd(), absolutePath)
+
+  return absolutePath
 }
 
 export function userComponentsPath(path?: string) {

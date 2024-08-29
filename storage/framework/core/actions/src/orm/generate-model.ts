@@ -58,9 +58,6 @@ async function generateApiRoutes(modelFiles: string[]) {
           const apiRoutes = model.traits.useApi.routes
           for (const apiRoute in apiRoutes) {
             if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
-              // console.log(`Route: ${apiRoute}, Path: ${apiRoutes[apiRoute]}`);
-              // }
-
               let path: string | null = ''
 
               await writeOrmActions(apiRoute as string, modelName)
@@ -101,7 +98,7 @@ async function generateApiRoutes(modelFiles: string[]) {
 }
 
 async function lookupFile(fileName: string): Promise<string | null> {
-  const ormDirectory = path.builtUserActionsPath('src')
+  const ormDirectory = path.builtUserActionsPath('src', { relative: true })
   const filePath = path.join(ormDirectory, fileName)
   const pathExists = await fs.existsSync(filePath)
 
@@ -287,9 +284,10 @@ async function writeModelRequest() {
 
 async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
+
   let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../src/models/${modelName}'\n`
+  actionString += `import ${modelName} from '../../orm/src/models/${modelName}'\n`
 
   let handleString = ``
 
