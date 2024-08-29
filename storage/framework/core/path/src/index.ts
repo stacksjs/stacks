@@ -1213,9 +1213,7 @@ export function typesPath(path?: string) {
 export function uiPath(path?: string, options?: { relative?: boolean }) {
   const absolutePath = corePath(`ui/${path || ''}`)
 
-  if (options?.relative) {
-    return relative(process.cwd(), absolutePath)
-  }
+  if (options?.relative) return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }

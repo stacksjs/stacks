@@ -1,6 +1,6 @@
 import { alias } from '@stacksjs/alias'
 import { config as c } from '@stacksjs/config'
-import { path as p } from '@stacksjs/path'
+import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import type { ViteConfig } from '@stacksjs/types'
 import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
@@ -8,13 +8,13 @@ import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
 const config = {
-  root: p.libsPath('components/vue'),
-  envDir: p.projectPath(),
+  root: libsPath('components/vue'),
+  envDir: projectPath(),
   envPrefix: 'FRONTEND_',
-  publicDir: p.publicPath(),
+  publicDir: publicPath(),
   base: '/libs/',
 
-  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+  assetsInclude: [publicPath('**/*'), resourcesPath('assets/*'), resourcesPath('assets/**/*')],
 
   server: server({
     type: 'library',
@@ -44,10 +44,10 @@ const config = {
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: p.libsPath('components/vue/dist'),
+    outDir: libsPath('components/vue/dist'),
     emptyOutDir: true,
     lib: {
-      entry: p.libraryEntryPath('vue-components'),
+      entry: libraryEntryPath('vue-components'),
       name: c.library.vueComponents?.name,
       formats: ['es'],
       fileName: (format: string) => {
@@ -59,7 +59,7 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
 
     rollupOptions: {
       external: ['vue', '@stacksjs/path'],
-      input: p.libraryEntryPath('vue-components'),
+      input: libraryEntryPath('vue-components'),
       output: {
         globals: {
           vue: 'Vue',
