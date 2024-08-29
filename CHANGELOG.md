@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+## v0.64.4...v0.64.5
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.64.4...v0.64.5)
+
+### 🏡 Chore
+
+- Wip ([cea883b74](https://github.com/stacksjs/stacks/commit/cea883b74))
+- Wip ([bfb433817](https://github.com/stacksjs/stacks/commit/bfb433817))
+- Wip ([3a07df4bb](https://github.com/stacksjs/stacks/commit/3a07df4bb))
+- Wip ([45c355856](https://github.com/stacksjs/stacks/commit/45c355856))
+- Wip ([ad4666db2](https://github.com/stacksjs/stacks/commit/ad4666db2))
+- Wip ([cb2d6dcff](https://github.com/stacksjs/stacks/commit/cb2d6dcff))
+- Wip ([b45462df3](https://github.com/stacksjs/stacks/commit/b45462df3))
+- Wip ([3d8200eda](https://github.com/stacksjs/stacks/commit/3d8200eda))
+- Wip ([e1f8d10e5](https://github.com/stacksjs/stacks/commit/e1f8d10e5))
+- Release v0.64.5 ([1b6d04a01](https://github.com/stacksjs/stacks/commit/1b6d04a01))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Glennmichael123 <gtorregosa@gmail.com>
+
 ## v0.64.3...v0.64.4
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.64.3...v0.64.4)
