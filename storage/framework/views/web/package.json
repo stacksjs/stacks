@@ -35,7 +35,7 @@
     "@vue/test-utils": "^2.4.6",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shikiji": "^0.10.2",
-    "rollup": "^4.21.1",
+    "rollup": "^4.21.2",
     "shikiji": "^0.10.2",
     "taze": "^0.16.7",
     "unocss": "0.62.3",
