@@ -1638,17 +1638,34 @@ export async function generateModelString(
 }
 
 export async function generateModelFiles(modelStringFile?: string): Promise<void> {
+  log.info('Generating model files...')
+  log.info('Deleting old model files...')
   await deleteExistingModels(modelStringFile)
+  log.success('Deleted old model files')
+  log.info('Deleting old model actions...')
   await deleteExistingOrmActions(modelStringFile)
+  log.success('Deleted old model actions')
+  log.info('Deleting old model name types...')
   await deleteExistingModelNameTypes()
+  log.success('Deleted old model name types')
+  log.info('Deleting old model request...')
   await deleteExistingModelRequest(modelStringFile)
+  log.success('Deleted old model request')
+  log.info('Deleting old model routes...')
   await deleteExistingOrmRoute()
+  log.success('Deleted old model routes')
 
+  log.info('Writing model names...')
   await writeModelNames()
+  log.success('Wrote model names')
+  log.info('Writing model request...')
   await writeModelRequest()
+  log.success('Wrote model request')
 
   const modelFiles = glob.sync(path.userModelsPath('**/*.ts'))
+  log.info('Generating API routes...')
   await generateApiRoutes(modelFiles)
+  log.success('Generated API routes')
 
   for (const modelFile of modelFiles) {
     if (modelStringFile && modelStringFile !== modelFile) continue
@@ -1662,10 +1679,13 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     const fields = await extractFields(model, modelFile)
     const classString = await generateModelString(tableName, modelName, model, fields)
     const writer = file.writer()
-
+    log.info(`Writing API endpoints for: ${modelName}`)
     writer.write(classString)
+    log.success(`Wrote API endpoints for: ${modelName}`)
     await writer.end()
   }
 
+  log.info('Generating Query Builder types...')
   await generateKyselyTypes()
+  log.success('Generated Query Builder types')
 }
