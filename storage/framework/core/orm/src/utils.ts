@@ -1,9 +1,10 @@
 import { generator, parser, traverse } from '@stacksjs/build'
-import { log } from '@stacksjs/logging'
+import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { plural, singular, snakeCase } from '@stacksjs/strings'
+import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import type { Attributes, FieldArrayElement, Model, ModelElement, RelationConfig } from '@stacksjs/types'
+import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
 
@@ -554,7 +555,7 @@ export async function generateApiRoutes(modelFiles: string[]) {
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
   for (const modelFile of modelFiles) {
-    log.info(`Processing model file: ${modelFile}`)
+    log.info(`Generating API Routes for: ${italic(modelFile)}`)
     let middlewareString = ''
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
@@ -634,9 +635,9 @@ export async function deleteExistingModels(modelStringFile?: string) {
   await Promise.all(
     modelPaths.map(async (modelPath) => {
       if (fs.existsSync(modelPath)) {
-        log.info(`Deleting Model: ${modelPath}`)
+        log.info(`Deleting Model: ${italic(modelPath)}`)
         await fs.promises.unlink(modelPath)
-        log.success(`Deleted Model: ${modelPath}`)
+        log.success(`Deleted Model: ${italic(modelPath)}`)
       }
     }),
   )
@@ -729,7 +730,7 @@ export async function generateKyselyTypes() {
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
-    const tableName = await getTableName(model, modelFile)
+    const tableName = getTableName(model, modelFile)
     const pivotTables = await getPivotTables(model, modelName)
 
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
@@ -1683,7 +1684,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
 
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile) continue
-      log.info(`Processing Model: ${modelFile}`)
+      log.info(`Processing Model: ${italic(modelFile)}`)
 
       const model = (await import(modelFile)).default as Model
       const tableName = getTableName(model, modelFile)
@@ -1693,9 +1694,9 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       const classString = await generateModelString(tableName, modelName, model, fields)
 
       const writer = file.writer()
-      log.info(`Writing API Endpoints for: ${modelName}`)
+      log.info(`Writing API Endpoints for: ${italic(modelName)}`)
       writer.write(classString)
-      log.success(`Wrote API endpoints for: ${modelName}`)
+      log.success(`Wrote API endpoints for: ${italic(modelName)}`)
       await writer.end()
     }
 

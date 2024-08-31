@@ -151,7 +151,7 @@ export function generate(buddy: CLI) {
       try {
         await generateModelFiles()
 
-        outro('Generated model files', {
+        outro('Generated Model files', {
           startTime: perf,
           useSeconds: true,
         })
