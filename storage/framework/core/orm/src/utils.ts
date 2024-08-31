@@ -646,11 +646,11 @@ export async function deleteExistingModels(modelStringFile?: string) {
 
 export async function deleteExistingOrmActions(modelStringFile?: string) {
   const routes = path.frameworkPath(`orm/routes.ts`)
-  if (fs.existsSync(routes)) await Bun.$`rm ${routes}`
+  if (fs.existsSync(routes)) await fs.promises.unlink(routes)
 
   if (modelStringFile) {
     const ormPath = path.builtUserActionsPath(`src/${modelStringFile}.ts`)
-    if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
+    if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
 
     return
   }
@@ -658,7 +658,7 @@ export async function deleteExistingOrmActions(modelStringFile?: string) {
   const ormPaths = glob.sync(path.builtUserActionsPath(`**/*.ts`))
 
   for (const ormPath of ormPaths) {
-    if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
+    if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
   }
 }
 
