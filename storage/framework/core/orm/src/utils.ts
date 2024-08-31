@@ -664,29 +664,29 @@ export async function deleteExistingOrmActions(modelStringFile?: string) {
 
 export async function deleteExistingModelNameTypes() {
   const typeFile = path.corePath(`types/src/model-names.ts`)
-  if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
+  if (fs.existsSync(typeFile)) await fs.promises.unlink(typeFile)
 }
 
 export async function deleteExistingModelRequest(modelStringFile?: string) {
   const requestD = path.frameworkPath('types/requests.d.ts')
-  if (fs.existsSync(requestD)) await Bun.$`rm ${requestD}`
+  if (fs.existsSync(requestD)) await fs.promises.unlink(requestD)
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
-    if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
+    if (fs.existsSync(requestFile)) await fs.promises.unlink(requestFile)
 
     return
   }
 
   const requestFiles = glob.sync(path.frameworkPath(`requests/*.ts`))
   for (const requestFile of requestFiles) {
-    if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
+    if (fs.existsSync(requestFile)) await fs.promises.unlink(requestFile)
   }
 }
 
 export async function deleteExistingOrmRoute() {
   const ormRoute = path.storagePath('framework/orm/routes')
-  if (fs.existsSync(ormRoute)) await Bun.$`rm ${ormRoute}`
+  if (fs.existsSync(ormRoute)) await fs.promises.unlink(ormRoute)
 }
 
 export async function generateKyselyTypes() {
@@ -1652,11 +1652,11 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await deleteExistingModels(modelStringFile)
     log.success('Deleted Models')
 
-    log.debug('Deleting old ORM Actions...')
+    log.info('Deleting old ORM Actions...')
     await deleteExistingOrmActions(modelStringFile)
     log.success('Deleted ORM Actions')
 
-    log.debug('Deleting old Model Name types...')
+    log.info('Deleting old Model Name types...')
     await deleteExistingModelNameTypes()
     log.success('Deleted Model Name types')
 
