@@ -2,6 +2,7 @@ import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
+import { generateModelFiles } from '@stacksjs/orm'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
@@ -18,6 +19,7 @@ export async function invoke(options?: GeneratorOptions) {
   else if (options?.ideHelpers) await generateIdeHelpers(options)
   else if (options?.componentMeta) await generateComponentMeta(options)
   else if (options?.coreSymlink) await generateCoreSymlink()
+  else if (options?.modelFiles) await generateModelFiles()
   // else if (options?.openApiSpec) await generateOpenApiSpec()
 }
 

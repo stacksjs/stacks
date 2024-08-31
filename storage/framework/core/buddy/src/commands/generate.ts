@@ -12,6 +12,7 @@ import {
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
+import { generateModelFiles } from '@stacksjs/orm'
 import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
 
 export function generate(buddy: CLI) {
@@ -26,6 +27,7 @@ export function generate(buddy: CLI) {
     componentMeta: 'Generate component meta information',
     coreSymlink: 'Generate symlink of the core framework to the project root',
     pkgx: 'Generate the pkgx configuration file',
+    modelFiles: 'Generate the model files',
     openApi: 'Generate the OpenAPI specification',
     select: 'What are you trying to generate?',
     project: 'Target a specific project',
@@ -41,6 +43,7 @@ export function generate(buddy: CLI) {
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-p, --pkgx', descriptions.pkgx)
+    .option('-m, --model-files', descriptions.modelFiles)
     .option('-o, --openapi', descriptions.openApi)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--core-symlink', descriptions.coreSymlink)
@@ -136,6 +139,21 @@ export function generate(buddy: CLI) {
     .action((options: GeneratorOptions) => {
       log.debug('Running `buddy generate:pkgx-config` ...', options)
       generatePkgxConfig()
+    })
+
+  buddy
+    .command('generate:model-files', descriptions.modelFiles)
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: GeneratorOptions) => {
+      const perf = await intro('buddy generate:model-files')
+
+      await generateModelFiles()
+
+      outro('Generated model files', {
+        startTime: perf,
+        useSeconds: true,
+      })
     })
 
   buddy

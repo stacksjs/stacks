@@ -258,6 +258,7 @@ export type GeneratorOption =
   | 'coreSymlink'
   | 'pkgxConfig'
   | 'openapi'
+  | 'modelFiles'
 export type GeneratorOptions = {
   [key in GeneratorOption]?: boolean
 } & CliOptions
