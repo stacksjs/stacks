@@ -309,7 +309,6 @@ export class AccessTokenModel {
   // Method to remove a AccessToken
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -638,7 +637,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))
@@ -646,7 +644,6 @@ export async function whereName(value: string | number | boolean | undefined | n
 
 export async function whereToken(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('token', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))
@@ -656,7 +653,6 @@ export async function wherePlainTextToken(
   value: string | number | boolean | undefined | null,
 ): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('plainTextToken', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))
@@ -664,7 +660,6 @@ export async function wherePlainTextToken(
 
 export async function whereAbilities(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('abilities', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))

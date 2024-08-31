@@ -303,7 +303,6 @@ export class SubscriberEmailModel {
   // Method to remove a SubscriberEmail
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -597,7 +596,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereEmail(value: string | number | boolean | undefined | null): Promise<SubscriberEmailModel[]> {
   const query = db.selectFrom('subscriber_emails').where('email', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new SubscriberEmailModel(modelItem))

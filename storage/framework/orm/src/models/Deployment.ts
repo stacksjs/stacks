@@ -317,7 +317,6 @@ export class DeploymentModel {
   // Method to remove a Deployment
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -673,7 +672,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereCommitSha(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('commitSha', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
@@ -683,7 +681,6 @@ export async function whereCommitMessage(
   value: string | number | boolean | undefined | null,
 ): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('commitMessage', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
@@ -691,7 +688,6 @@ export async function whereCommitMessage(
 
 export async function whereBranch(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('branch', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
@@ -699,7 +695,6 @@ export async function whereBranch(value: string | number | boolean | undefined |
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('status', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
@@ -709,7 +704,6 @@ export async function whereExecutionTime(
   value: string | number | boolean | undefined | null,
 ): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('executionTime', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
@@ -719,7 +713,6 @@ export async function whereDeployScript(
   value: string | number | boolean | undefined | null,
 ): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('deployScript', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
@@ -729,7 +722,6 @@ export async function whereTerminalOutput(
   value: string | number | boolean | undefined | null,
 ): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('terminalOutput', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))

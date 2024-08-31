@@ -331,7 +331,6 @@ export class UserModel {
   // Method to remove a User
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -715,7 +714,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('name', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
@@ -723,7 +721,6 @@ export async function whereName(value: string | number | boolean | undefined | n
 
 export async function whereEmail(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('email', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
@@ -731,7 +728,6 @@ export async function whereEmail(value: string | number | boolean | undefined | 
 
 export async function whereJobTitle(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('jobTitle', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
@@ -739,7 +735,6 @@ export async function whereJobTitle(value: string | number | boolean | undefined
 
 export async function wherePassword(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('password', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))

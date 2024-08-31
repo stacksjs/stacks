@@ -303,7 +303,6 @@ export class ProjectModel {
   // Method to remove a Project
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -622,7 +621,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('name', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
@@ -630,7 +628,6 @@ export async function whereName(value: string | number | boolean | undefined | n
 
 export async function whereDescription(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('description', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
@@ -638,7 +635,6 @@ export async function whereDescription(value: string | number | boolean | undefi
 
 export async function whereUrl(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('url', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
@@ -646,7 +642,6 @@ export async function whereUrl(value: string | number | boolean | undefined | nu
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('status', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))

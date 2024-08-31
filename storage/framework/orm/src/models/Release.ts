@@ -294,7 +294,6 @@ export class ReleaseModel {
   // Method to remove a Release
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -586,7 +585,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereVersion(value: string | number | boolean | undefined | null): Promise<ReleaseModel[]> {
   const query = db.selectFrom('releases').where('version', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new ReleaseModel(modelItem))

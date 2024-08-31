@@ -302,7 +302,6 @@ export class PostModel {
   // Method to remove a Post
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
-
     const model = await instance.find(id)
 
     if (instance.softDeletes) {
@@ -613,7 +612,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereTitle(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('title', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new PostModel(modelItem))
@@ -621,7 +619,6 @@ export async function whereTitle(value: string | number | boolean | undefined | 
 
 export async function whereBody(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('body', '=', value)
-
   const results = await query.execute()
 
   return results.map((modelItem) => new PostModel(modelItem))
