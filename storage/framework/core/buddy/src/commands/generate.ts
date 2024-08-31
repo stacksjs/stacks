@@ -148,12 +148,17 @@ export function generate(buddy: CLI) {
     .action(async (options: GeneratorOptions) => {
       const perf = await intro('buddy generate:model-files')
 
-      await generateModelFiles()
+      try {
+        await generateModelFiles()
 
-      outro('Generated model files', {
-        startTime: perf,
-        useSeconds: true,
-      })
+        outro('Generated model files', {
+          startTime: perf,
+          useSeconds: true,
+        })
+      } catch (error) {
+        log.error('There was an error generating your model files', error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy

@@ -1,6 +1,7 @@
 import { generator, parser, traverse } from '@stacksjs/build'
+import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs, glob } from '@stacksjs/storage'
 import { plural, singular, snakeCase } from '@stacksjs/strings'
 import type { Attributes, FieldArrayElement, Model, ModelElement, RelationConfig } from '@stacksjs/types'
 
@@ -553,7 +554,7 @@ export async function generateApiRoutes(modelFiles: string[]) {
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
 
   for (const modelFile of modelFiles) {
-    log.debug(`Processing model file: ${modelFile}`)
+    log.info(`Processing model file: ${modelFile}`)
     let middlewareString = ''
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
@@ -620,19 +621,27 @@ export async function generateApiRoutes(modelFiles: string[]) {
 
 export async function deleteExistingModels(modelStringFile?: string) {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
-  if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
+  if (fs.existsSync(typePath)) await fs.promises.unlink(typePath)
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
-    await Bun.$`rm ${modelPath}`
+    if (fs.existsSync(modelPath)) await fs.promises.unlink(modelPath)
 
     return
   }
 
-  const modelPaths = glob.sync(path.frameworkPath(`orm/src/models/*.ts`))
-  for (const modelPath of modelPaths) {
-    if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
-  }
+  const modelPaths = glob.sync(path.frameworkPath(`orm/src/models/*.ts`)).sort() // handle them alphabetically
+  await Promise.all(
+    modelPaths.map(async (modelPath) => {
+      if (fs.existsSync(modelPath)) {
+        log.info(`Deleting Model: ${modelPath}`)
+        await fs.promises.unlink(modelPath)
+        log.success(`Deleted Model: ${modelPath}`)
+      }
+    }),
+  )
+
+  return
 }
 
 export async function deleteExistingOrmActions(modelStringFile?: string) {
@@ -1638,54 +1647,63 @@ export async function generateModelString(
 }
 
 export async function generateModelFiles(modelStringFile?: string): Promise<void> {
-  log.info('Generating model files...')
-  log.info('Deleting old model files...')
-  await deleteExistingModels(modelStringFile)
-  log.success('Deleted old model files')
-  log.info('Deleting old model actions...')
-  await deleteExistingOrmActions(modelStringFile)
-  log.success('Deleted old model actions')
-  log.info('Deleting old model name types...')
-  await deleteExistingModelNameTypes()
-  log.success('Deleted old model name types')
-  log.info('Deleting old model request...')
-  await deleteExistingModelRequest(modelStringFile)
-  log.success('Deleted old model request')
-  log.info('Deleting old model routes...')
-  await deleteExistingOrmRoute()
-  log.success('Deleted old model routes')
+  try {
+    log.info('Cleanup of older Models...')
+    await deleteExistingModels(modelStringFile)
+    log.success('Deleted Models')
 
-  log.info('Writing model names...')
-  await writeModelNames()
-  log.success('Wrote model names')
-  log.info('Writing model request...')
-  await writeModelRequest()
-  log.success('Wrote model request')
+    log.debug('Deleting old ORM Actions...')
+    await deleteExistingOrmActions(modelStringFile)
+    log.success('Deleted ORM Actions')
 
-  const modelFiles = glob.sync(path.userModelsPath('**/*.ts'))
-  log.info('Generating API routes...')
-  await generateApiRoutes(modelFiles)
-  log.success('Generated API routes')
+    log.debug('Deleting old Model Name types...')
+    await deleteExistingModelNameTypes()
+    log.success('Deleted Model Name types')
 
-  for (const modelFile of modelFiles) {
-    if (modelStringFile && modelStringFile !== modelFile) continue
+    log.info('Deleting old Model Requests...')
+    await deleteExistingModelRequest(modelStringFile)
+    log.success('Deleted Model Requests')
 
-    log.debug(`Processing model file: ${modelFile}`)
+    log.info('Deleting old Model Routes...')
+    await deleteExistingOrmRoute()
+    log.success('Deleted Model Routes')
 
-    const model = (await import(modelFile)).default as Model
-    const tableName = getTableName(model, modelFile)
-    const modelName = getModelName(model, modelFile)
-    const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
-    const fields = await extractFields(model, modelFile)
-    const classString = await generateModelString(tableName, modelName, model, fields)
-    const writer = file.writer()
-    log.info(`Writing API endpoints for: ${modelName}`)
-    writer.write(classString)
-    log.success(`Wrote API endpoints for: ${modelName}`)
-    await writer.end()
+    log.info('Writing Model Names...')
+    await writeModelNames()
+    log.success('Wrote Model Names')
+
+    log.info('Writing Model Requests...')
+    await writeModelRequest()
+    log.success('Wrote Rodel Requests')
+
+    log.info('Generating API Routes...')
+    const modelFiles = glob.sync(path.userModelsPath('**/*.ts'))
+    await generateApiRoutes(modelFiles)
+    log.success('Generated API Routes')
+
+    for (const modelFile of modelFiles) {
+      if (modelStringFile && modelStringFile !== modelFile) continue
+      log.info(`Processing Model: ${modelFile}`)
+
+      const model = (await import(modelFile)).default as Model
+      const tableName = getTableName(model, modelFile)
+      const modelName = getModelName(model, modelFile)
+      const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
+      const fields = await extractFields(model, modelFile)
+      const classString = await generateModelString(tableName, modelName, model, fields)
+
+      const writer = file.writer()
+      log.info(`Writing API Endpoints for: ${modelName}`)
+      writer.write(classString)
+      log.success(`Wrote API endpoints for: ${modelName}`)
+      await writer.end()
+    }
+
+    log.info('Generating Query Builder types...')
+    await generateKyselyTypes()
+    log.success('Generated Query Builder types')
+  } catch (error) {
+    log.error('There was an error generating your model files', error)
+    process.exit(ExitCode.FatalError)
   }
-
-  log.info('Generating Query Builder types...')
-  await generateKyselyTypes()
-  log.success('Generated Query Builder types')
 }

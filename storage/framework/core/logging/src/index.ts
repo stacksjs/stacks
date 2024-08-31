@@ -76,8 +76,8 @@ export interface Log {
   // prompt: Prompt
   // start: logger.Start
   // box: logger.Box
-  start: any
-  box: any
+  // start: any
+  // box: any
   dump: (...args: any[]) => void
   dd: (...args: any[]) => void
   echo: (...args: any[]) => void
