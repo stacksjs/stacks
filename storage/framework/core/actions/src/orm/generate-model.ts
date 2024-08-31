@@ -78,13 +78,9 @@ async function generateApiRoutes(modelFiles: string[]) {
               }
 
               if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}')\n\n`
-
               if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}')\n\n`
-
               if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}')\n\n`
-
               if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}')\n\n`
-
               if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}')\n\n`
             }
           }
@@ -100,7 +96,7 @@ async function generateApiRoutes(modelFiles: string[]) {
 async function lookupFile(fileName: string): Promise<string | null> {
   const ormDirectory = path.builtUserActionsPath('src', { relative: true })
   const filePath = path.join(ormDirectory, fileName)
-  const pathExists = await fs.existsSync(filePath)
+  const pathExists = fs.existsSync(filePath)
 
   // Check if the directory exists
   if (pathExists) {
@@ -109,7 +105,7 @@ async function lookupFile(fileName: string): Promise<string | null> {
 
   const actionDirectory = path.userActionsPath()
   const actionFilePath = path.join(actionDirectory, fileName)
-  const fileExists = await fs.existsSync(actionFilePath)
+  const fileExists = fs.existsSync(actionFilePath)
 
   if (fileExists) {
     return actionFilePath
@@ -188,18 +184,14 @@ async function writeModelRequest() {
       if (attribute.fieldArray?.entity === 'number') defaultValue = 0
 
       fieldString += ` ${attribute.field}: ${entity}\n     `
-
       fieldStringType += ` get(key: '${attribute.field}'): ${entity}\n`
-
       fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
       keyCounter++
     }
 
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
-
       fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
-
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
       keyCounterForeign++
     }
@@ -288,9 +280,7 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
   let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
   actionString += `import ${modelName} from '../../orm/src/models/${modelName}'\n`
-
   let handleString = ``
-
   actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
 
   if (apiRoute === 'index') {
@@ -341,7 +331,6 @@ async function writeOrmActions(apiRoute: string, modelName: String): Promise<voi
         await request.validate()
 
         const id = request.getParam('id')
-
         const model = await ${modelName}.findOrFail(Number(id))
 
         return model.update(request.all())
@@ -371,7 +360,6 @@ async function initiateModelGeneration(modelStringFile?: string): Promise<void> 
   await deleteExistingModelNameTypes()
   await deleteExistingModelRequest(modelStringFile)
   await deleteExistingOrmRoute()
-
   await writeModelNames()
   await writeModelRequest()
 
