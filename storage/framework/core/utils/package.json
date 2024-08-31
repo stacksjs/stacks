@@ -71,7 +71,7 @@
     "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
-    "ace-builds": "^1.36.1",
+    "ace-builds": "^1.36.2",
     "resize-observer-polyfill": "^1.5.1",
     "vue3-ace-editor": "^2.2.4",
     "yaml": "^2.5.0"

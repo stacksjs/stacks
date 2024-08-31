@@ -50,7 +50,7 @@
     "cac": "^6.7.14",
     "markdown-it": "^14.1.0",
     "meilisearch": "^0.42.0",
-    "neverthrow": "^7.0.1",
+    "neverthrow": "^7.1.0",
     "ora": "^8.1.0",
     "unocss": "0.62.3",
     "unplugin-auto-import": "^0.18.2",
@@ -63,7 +63,7 @@
     "vue": "^3.4.38"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.154.1",
+    "aws-cdk-lib": "^2.155.0",
     "typescript": "^5.5.4"
   }
 }
