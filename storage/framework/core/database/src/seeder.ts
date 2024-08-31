@@ -1,14 +1,12 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { modelTableName } from '@stacksjs/orm'
-import { getModelName, getTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
-import { fs, glob } from '@stacksjs/storage'
-import { plural, singular, snakeCase } from '@stacksjs/strings'
+import { fs } from '@stacksjs/storage'
+import { singular, snakeCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
-
 import { generateMigrations, resetDatabase, runDatabaseMigration } from './migrations'
 
 async function seedModel(name: string, model?: Model) {
@@ -126,87 +124,6 @@ async function seedModelRelation(modelName: string): Promise<BigInt | number> {
   const data = await db.insertInto(table).values(record).executeTakeFirstOrThrow()
 
   return data.insertId || 1
-}
-
-export async function getRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
-  const relationships = []
-
-  const modelName = getModelName(model, modelPath)
-  const tableName = getTableName(model, modelPath)
-
-  for (const relation of relationsArray) {
-    if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation]) {
-        let relationModel = relationInstance.model
-
-        if (isString(relationInstance)) {
-          relationModel = relationInstance
-        }
-
-        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-        const modelRelation = (await import(modelRelationPath)).default
-        const formattedModelName = modelName?.toLowerCase()
-
-        relationships.push({
-          relationship: relation,
-          model: relationModel,
-          table: modelRelation.table,
-          relationModel: modelName,
-          relationTable: tableName,
-          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          relationName: relationInstance.relationName,
-          throughModel: relationInstance.through,
-          throughForeignKey: relationInstance.throughForeignKey,
-          pivotTable: relationInstance?.pivotTable || getPivotTableName(formattedModelName || '', modelRelation.table),
-        })
-      }
-    }
-  }
-
-  return relationships
-}
-
-function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  // Create an array of the model names
-  const models = [formattedModelName, modelRelationTable]
-
-  // Sort the array alphabetically
-  models.sort()
-
-  models[0] = singular(models[0] || '')
-  models[1] = plural(models[1] || '')
-
-  // Join the sorted array with an underscore
-  const pivotTableName = models.join('_')
-
-  return pivotTableName
-}
-
-export async function fetchOtherModelRelations(model: Model): Promise<RelationConfig[]> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const modelRelations = []
-
-  for (let i = 0; i < modelFiles.length; i++) {
-    const modelFileElement = modelFiles[i] as string
-    const modelFile = await import(modelFileElement)
-
-    if (model.name === modelFile.default.name) continue
-
-    const relations = await getRelations(modelFile.default, modelFileElement)
-
-    if (!relations.length) continue
-
-    const relation = relations.find((relation) => relation.model === model.name)
-
-    if (relation) modelRelations.push(relation)
-  }
-
-  return modelRelations
-}
-
-function hasRelations(obj: any, key: string): boolean {
-  return key in obj
 }
 
 export async function seed() {

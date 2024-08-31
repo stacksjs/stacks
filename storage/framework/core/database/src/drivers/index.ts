@@ -1,11 +1,9 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, glob } from '@stacksjs/storage'
-import { plural, singular, snakeCase } from '@stacksjs/strings'
-import type { Attributes, Model, RelationConfig, VineType } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
+import { fs } from '@stacksjs/storage'
+import { plural, snakeCase } from '@stacksjs/strings'
+import type { Attributes, Model, VineType } from '@stacksjs/types'
 
 export * from './mysql'
 export * from './postgres'
@@ -74,9 +72,7 @@ export function mapFieldTypeToColumnType(rule: VineType): string {
     return prepareTextColumnType(rule)
 
   if (rule[Symbol.for('schema_name')].includes('number')) return `'integer'`
-
   if (rule[Symbol.for('schema_name')].includes('boolean')) return `'boolean'`
-
   if (rule[Symbol.for('schema_name')].includes('date')) return `'date'`
 
   // need to now handle all other types
@@ -162,144 +158,6 @@ export async function checkPivotMigration(dynamicPart: string): Promise<boolean>
     // Test if the input string matches the pattern
     return pattern.test(migrationFile)
   })
-}
-
-export async function getRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'hasMany', 'belongsToMany', 'hasOneThrough']
-  const relationships = []
-
-  for (const relation of relationsArray) {
-    if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation]) {
-        let relationModel = relationInstance.model
-
-        if (isString(relationInstance)) {
-          relationModel = relationInstance
-        }
-
-        const modelRelationPath = path.userModelsPath(relationModel)
-        const modelRelation = (await import(modelRelationPath)).default
-        const modelName = getModelName(model, modelPath)
-        const formattedModelName = modelName.toLowerCase()
-        const tableName = getTableName(model, modelPath)
-        const modelRelationTable = getModelName(modelRelation, modelRelationPath)
-
-        relationships.push({
-          relationship: relation,
-          model: relationModel,
-          table: modelRelationTable,
-          relationModel: modelName,
-          relationTable: tableName,
-          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          relationName: relationInstance.relationName || '',
-          throughModel: relationInstance.through || '',
-          throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable: relationInstance?.pivotTable || getPivotTableName(formattedModelName, modelRelationTable),
-        })
-      }
-    }
-  }
-
-  return relationships
-}
-
-export async function fetchOtherModelRelations(model: Model, modelPath: string): Promise<RelationConfig[]> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const modelRelations = []
-
-  for (let i = 0; i < modelFiles.length; i++) {
-    const modelFileElement = modelFiles[i] as string
-    const modelFile = (await import(modelFileElement)).default as Model
-    const tableName = getTableName(model, modelPath)
-    const modelName = getModelName(model, modelPath)
-    const modelFileName = getTableName(modelFile, modelFileElement)
-
-    if (tableName === modelFileName) continue
-
-    const relations = await getRelations(modelFile, modelFileElement)
-
-    if (!relations.length) continue
-
-    const relation = relations.find((relation) => relation.model === modelName)
-
-    if (relation) modelRelations.push(relation)
-  }
-
-  return modelRelations
-}
-
-export async function getPivotTables(
-  model: Model,
-  modelPath: string,
-): Promise<{ table: string; firstForeignKey: string | undefined; secondForeignKey: string | undefined }[]> {
-  const pivotTable = []
-
-  const tableName = getTableName(model, modelPath)
-
-  let firstForeignKey = ''
-  let secondForeignKey = ''
-  let table = ''
-  let modelRelationPath = ''
-
-  if (model.belongsToMany) {
-    if ('belongsToMany' in model) {
-      for (const belongsToManyRelation of model.belongsToMany) {
-        if (typeof belongsToManyRelation === 'string') {
-          modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
-        } else {
-          modelRelationPath = path.userModelsPath(`${belongsToManyRelation.model}.ts`)
-        }
-
-        const modelRelation = (await import(modelRelationPath)).default
-        const formattedTableName = tableName.toLowerCase()
-
-        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
-        // const modelRelationModelName = getModelName(modelRelation, modelRelationPath)
-
-        if (typeof belongsToManyRelation === 'string') {
-          firstForeignKey = `${singular(tableName.toLowerCase())}_${model.primaryKey}`
-          secondForeignKey = `${singular(modelRelationTable)}_${model.primaryKey}`
-          table = getPivotTableName(formattedTableName, modelRelationTable)
-        } else {
-          firstForeignKey =
-            belongsToManyRelation.firstForeignKey || `${singular(tableName.toLowerCase())}_${model.primaryKey}`
-          secondForeignKey =
-            belongsToManyRelation.secondForeignKey || `${singular(modelRelationTable)}_${model.primaryKey}`
-          table = belongsToManyRelation?.pivotTable || getPivotTableName(formattedTableName, modelRelationTable)
-        }
-
-        pivotTable.push({
-          table,
-          firstForeignKey,
-          secondForeignKey,
-        })
-      }
-
-      return pivotTable
-    }
-  }
-
-  return []
-}
-
-function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  // Create an array of the model names
-  const models = [formattedModelName, modelRelationTable]
-
-  // Sort the array alphabetically
-  models.sort()
-
-  models[0] = singular(models[0] || '')
-  models[1] = plural(models[1] || '')
-
-  // Join the sorted array with an underscore
-  const pivotTableName = models.join('_')
-
-  return pivotTableName
-}
-
-function hasRelations(obj: any, key: string): boolean {
-  return key in obj
 }
 
 export function pluckChanges(array1: string[], array2: string[]): { added: string[]; removed: string[] } | null {

@@ -4,6 +4,19 @@ import type { DeepPartial, Nullable, SearchOptions } from '.'
 
 export type Model = Partial<ModelOptions>
 
+export interface FieldArrayElement {
+  entity: string
+  charValue?: string | null
+  // Add other properties as needed
+}
+
+export interface ModelElement {
+  field: string
+  default: string | number | boolean | Date | undefined | null
+  unique: boolean
+  fieldArray: FieldArrayElement | null
+}
+
 export type AuthOptions = {
   useTwoFactor?: boolean
 }

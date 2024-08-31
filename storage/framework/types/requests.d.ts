@@ -77,7 +77,7 @@ export interface AccessTokenRequestType extends Request {
  get(key: 'token'): string
  get(key: 'plainTextToken'): string
  get(key: 'abilities'): string[]
- get(key: 'team_id'): string 
+ get(key: 'team_id'): string
 
       all(): RequestDataAccessToken
        id?: number
@@ -118,8 +118,8 @@ export interface TeamRequestType extends Request {
  get(key: 'description'): string
  get(key: 'path'): string
  get(key: 'isPersonal'): boolean
- get(key: 'accesstoken_id'): string 
- get(key: 'user_id'): string 
+ get(key: 'accesstoken_id'): string
+ get(key: 'user_id'): string
 
       all(): RequestDataTeam
        id?: number
@@ -150,7 +150,7 @@ export interface SubscriberRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
  get(key: 'subscribed'): boolean
- get(key: 'user_id'): string 
+ get(key: 'user_id'): string
 
       all(): RequestDataSubscriber
        id?: number
@@ -185,7 +185,7 @@ export interface DeploymentRequestType extends Request {
  get(key: 'executionTime'): number
  get(key: 'deployScript'): string
  get(key: 'terminalOutput'): string
- get(key: 'user_id'): string 
+ get(key: 'user_id'): string
 
       all(): RequestDataDeployment
        id?: number
@@ -242,9 +242,9 @@ export interface UserRequestType extends Request {
  get(key: 'email'): string
  get(key: 'jobTitle'): string
  get(key: 'password'): string
- get(key: 'team_id'): string 
- get(key: 'deployment_id'): string 
- get(key: 'post_id'): string 
+ get(key: 'team_id'): string
+ get(key: 'deployment_id'): string
+ get(key: 'post_id'): string
 
       all(): RequestDataUser
        id?: number
@@ -274,7 +274,7 @@ export interface PostRequestType extends Request {
        get(key: 'id'): number
  get(key: 'title'): string
  get(key: 'body'): string
- get(key: 'user_id'): string 
+ get(key: 'user_id'): string
 
       all(): RequestDataPost
        id?: number

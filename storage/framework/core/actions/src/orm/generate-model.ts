@@ -1,25 +1,24 @@
 import { log } from '@stacksjs/logging'
-import { getModelName, getTableName } from '@stacksjs/orm'
+import {
+  fetchOtherModelRelations,
+  getFillableAttributes,
+  getHiddenAttributes,
+  getModelName,
+  getPivotTables,
+  getRelationCount,
+  getRelationType,
+  getRelations,
+  getTableName,
+  writeModelNames,
+  writeModelRequest,
+  writeOrmActions,
+} from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
-import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
-import type { Attributes, Model, RelationConfig } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
+import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
+import type { Model } from '@stacksjs/types'
 
-export interface FieldArrayElement {
-  entity: string
-  charValue?: string | null
-  // Add other properties as needed
-}
-
-export interface ModelElement {
-  field: string
-  default: string | number | boolean | Date | undefined | null
-  unique: boolean
-  fieldArray: FieldArrayElement | null
-}
-
-await initiateModelGeneration()
+await generateModelFiles()
 await setKyselyTypes()
 
 async function generateApiRoutes(modelFiles: string[]) {
@@ -114,257 +113,17 @@ async function lookupFile(fileName: string): Promise<string | null> {
   return null
 }
 
-async function writeModelNames() {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  let fileString = `export type ModelNames = `
-
-  for (let i = 0; i < modelFiles.length; i++) {
-    const modeFileElement = modelFiles[i] as string
-    const model = (await import(modeFileElement)).default as Model
-    const modelName = getModelName(model, modeFileElement)
-    const typeFile = Bun.file(path.corePath(`types/src/model-names.ts`))
-
-    fileString += `'${modelName}'`
-
-    if (i < modelFiles.length - 1) {
-      fileString += ' | '
-    }
-
-    const writer = typeFile.writer()
-
-    writer.write(fileString)
-  }
-}
-
-async function writeModelRequest() {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
-
-  let importTypes = ``
-  let importTypesString = ``
-  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType } from '@stacksjs/types'\n\n`
-
-  typeString += `interface ValidationField {
-    rule: VineType
-    message: Record<string, string>
-  }\n\n`
-
-  typeString += `interface CustomAttributes {
-    [key: string]: ValidationField
-  }\n\n`
-
-  for (let i = 0; i < modelFiles.length; i++) {
-    let fieldStringType = ``
-    let fieldString = ``
-    let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport type { VineType } from '@stacksjs/types'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
-
-    const modeFileElement = modelFiles[i] as string
-    const model = (await import(modeFileElement)).default as Model
-    const modelName = getModelName(model, modeFileElement)
-    const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
-    const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
-    const attributes = await extractFields(model, modeFileElement)
-
-    fieldString += ` id?: number\n`
-    fieldStringInt += `public id = 1\n`
-
-    let keyCounter = 0
-    let keyCounterForeign = 0
-
-    const otherModelRelations = await fetchOtherModelRelations(model, modelName)
-
-    fieldStringType += ` get(key: 'id'): number\n`
-
-    for (const attribute of attributes) {
-      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
-      let defaultValue: any = `''`
-
-      if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
-      if (attribute.fieldArray?.entity === 'number') defaultValue = 0
-
-      fieldString += ` ${attribute.field}: ${entity}\n     `
-      fieldStringType += ` get(key: '${attribute.field}'): ${entity}\n`
-      fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
-      keyCounter++
-    }
-
-    for (const otherModel of otherModelRelations) {
-      fieldString += ` ${otherModel.foreignKey}: number\n     `
-      fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
-      fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
-      keyCounterForeign++
-    }
-
-    if (useTimestamps) {
-      fieldStringInt += `public created_at = ''
-        public updated_at = ''
-      `
-    }
-
-    if (useSoftDeletes) {
-      fieldStringInt += `
-        public deleted_at = ''
-      `
-    }
-
-    fieldString += `created_at?: string
-      updated_at?: string
-      deleted_at?: string`
-
-    const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
-
-    importTypes = `${modelName}RequestType`
-    importTypesString += `${importTypes}`
-
-    if (i < modelFiles.length - 1) importTypesString += ` | `
-
-    fileString += `import type { ${importTypes} } from '../types/requests'\n\n`
-
-    fileString += `interface ValidationField {
-      rule: ReturnType<typeof schema.string>
-      message: Record<string, string>
-    }\n\n`
-
-    fileString += `interface CustomAttributes {
-      [key: string]: ValidationField
-    }\n`
-
-    const types = `export interface ${modelName}RequestType extends Request {
-      validate(attributes?: CustomAttributes): void
-      ${fieldStringType}
-      all(): RequestData${modelName}
-      ${fieldString}
-    }\n\n`
-
-    typeString += `interface RequestData${modelName} {
-      ${fieldString}
-    }\n`
-
-    fileString += `interface RequestData${modelName} {
-      ${fieldString}
-    }\n`
-
-    typeString += types
-
-    fileString += `export class ${modelName}Request extends Request<RequestData${modelName}> implements ${modelName}RequestType {
-      ${fieldStringInt}
-      public async validate(attributes?: CustomAttributes): Promise<void> {
-        if (attributes === undefined || attributes === null) {
-          await validateField('${modelName}', this.all())
-        } else {
-          await customValidate(attributes, this.all())
-        }
-
-      }
-    }
-
-    export const request = new ${modelName}Request()
-    `
-
-    const writer = requestFile.writer()
-
-    writer.write(fileString)
-  }
-
-  typeString += `export type ModelRequest = ${importTypesString}`
-
-  const requestWrite = requestD.writer()
-
-  requestWrite.write(typeString)
-}
-
-async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
-  const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
-
-  let method = 'GET'
-  let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import ${modelName} from '../../orm/src/models/${modelName}'\n`
-  let handleString = ``
-  actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
-
-  if (apiRoute === 'index') {
-    handleString += `async handle(request: ${modelName}RequestType) {
-        return await ${modelName}.all()
-      },`
-
-    method = 'GET'
-  }
-
-  if (apiRoute === 'show') {
-    handleString += `async handle(request: ${modelName}RequestType) {
-        const id = await request.getParam('id')
-
-        return await ${modelName}.findOrFail(Number(id))
-      },`
-
-    method = 'GET'
-  }
-
-  if (apiRoute === 'destroy') {
-    handleString += `async handle(request: ${modelName}RequestType) {
-        const id = request.getParam('id')
-
-        const model = await ${modelName}.findOrFail(Number(id))
-
-        model.delete()
-
-        return 'Model deleted!'
-      },`
-
-    method = 'DELETE'
-  }
-
-  if (apiRoute === 'store') {
-    handleString += `async handle(request: ${modelName}RequestType) {
-        await request.validate()
-        const model = await ${modelName}.create(request.all())
-
-        return model
-      },`
-
-    method = 'POST'
-  }
-
-  if (apiRoute === 'update') {
-    handleString += `async handle(request: ${modelName}RequestType) {
-        await request.validate()
-
-        const id = request.getParam('id')
-        const model = await ${modelName}.findOrFail(Number(id))
-
-        return model.update(request.all())
-      },`
-
-    method = 'PATCH'
-  }
-
-  actionString += `export default new Action({
-      name: '${modelName} ${formattedApiRoute}',
-      description: '${modelName} ${formattedApiRoute} ORM Action',
-      method: '${method}',
-      ${handleString}
-    })
-  `
-
-  const file = Bun.file(path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`))
-
-  const writer = file.writer()
-
-  writer.write(actionString)
-}
-
-async function initiateModelGeneration(modelStringFile?: string): Promise<void> {
+async function generateModelFiles(modelStringFile?: string): Promise<void> {
   await deleteExistingModels(modelStringFile)
   await deleteExistingOrmActions(modelStringFile)
   await deleteExistingModelNameTypes()
   await deleteExistingModelRequest(modelStringFile)
   await deleteExistingOrmRoute()
+
   await writeModelNames()
   await writeModelRequest()
 
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
+  const modelFiles = glob.sync(path.userModelsPath('**/*.ts'))
   await generateApiRoutes(modelFiles)
 
   for (const modelFile of modelFiles) {
@@ -373,93 +132,30 @@ async function initiateModelGeneration(modelStringFile?: string): Promise<void> 
     log.debug(`Processing model file: ${modelFile}`)
 
     const model = (await import(modelFile)).default as Model
-    const tableName = await getTableName(model, modelFile)
+    const tableName = getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
-
     const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
     const fields = await extractFields(model, modelFile)
     const classString = await generateModelString(tableName, modelName, model, fields)
-
     const writer = file.writer()
+
     writer.write(classString)
     await writer.end()
   }
 }
 
-async function getRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
-
-  const relationships = []
-
-  for (const relation of relationsArray) {
-    if (hasRelations(model, relation)) {
-      for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
-        let relationModel = relationInstance.model
-
-        if (isString(relationInstance)) {
-          relationModel = relationInstance
-        }
-
-        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-
-        const modelRelation = (await import(modelRelationPath)).default as Model
-
-        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
-        const formattedModelName = modelName.toLowerCase()
-
-        relationships.push({
-          relationship: relation,
-          model: relationModel,
-          table: modelRelationTable,
-          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          relationName: relationInstance.relationName || '',
-          throughModel: relationInstance.through || '',
-          throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotTable:
-            relationInstance?.pivotTable ||
-            getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
-        })
-      }
-    }
-  }
-
-  return relationships
-}
-
-function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  // Create an array of the model names
-  const models = [formattedModelName, modelRelationTable]
-
-  // Sort the array alphabetically
-  models.sort()
-
-  models[0] = singular(models[0] || '')
-
-  // Join the sorted array with an underscore
-  const pivotTableName = models.join('_')
-
-  return pivotTableName
-}
-
-function hasRelations(obj: any, key: string): boolean {
-  return key in obj
-}
-
 async function deleteExistingModels(modelStringFile?: string) {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
-
   if (fs.existsSync(typePath)) await Bun.$`rm ${typePath}`
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
-
     await Bun.$`rm ${modelPath}`
 
     return
   }
 
   const modelPaths = glob.sync(path.frameworkPath(`orm/src/models/*.ts`))
-
   for (const modelPath of modelPaths) {
     if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
   }
@@ -471,7 +167,6 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
 
   if (modelStringFile) {
     const ormPath = path.builtUserActionsPath(`src/${modelStringFile}.ts`)
-
     if (fs.existsSync(ormPath)) await Bun.$`rm ${ormPath}`
 
     return
@@ -486,7 +181,6 @@ async function deleteExistingOrmActions(modelStringFile?: string) {
 
 async function deleteExistingModelNameTypes() {
   const typeFile = path.corePath(`types/src/model-names.ts`)
-
   if (fs.existsSync(typeFile)) await Bun.$`rm ${typeFile}`
 }
 
@@ -496,14 +190,12 @@ async function deleteExistingModelRequest(modelStringFile?: string) {
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
-
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
 
     return
   }
 
   const requestFiles = glob.sync(path.frameworkPath(`requests/*.ts`))
-
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await Bun.$`rm ${requestFile}`
   }
@@ -511,21 +203,18 @@ async function deleteExistingModelRequest(modelStringFile?: string) {
 
 async function deleteExistingOrmRoute() {
   const ormRoute = path.storagePath('framework/orm/routes')
-
   if (fs.existsSync(ormRoute)) await Bun.$`rm ${ormRoute}`
 }
 
 async function setKyselyTypes() {
-  let text = ``
   const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  let text = ``
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
-    const tableName = await getTableName(model, modelFile)
+    const tableName = getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
-
     const words = tableName.split('_')
-
     const pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
 
     text += `import type { ${pivotFormatted}Table } from '../../../../orm/src/models/${modelName}'\n`
@@ -563,7 +252,6 @@ async function setKyselyTypes() {
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
     const words = tableName.split('_')
-
     const formattedTableName = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
     text += `  ${tableName}: ${formattedTableName}\n`
@@ -572,191 +260,11 @@ async function setKyselyTypes() {
   text += `}`
 
   const file = Bun.file(path.frameworkPath(`orm/src/types.ts`))
-
   const writer = file.writer()
 
   writer.write(text)
 
   await writer.end()
-}
-
-async function extractFields(model: Model, modelFile: string): Promise<ModelElement[]> {
-  // TODO: we can improve this type
-  let fields: Record<string, any> | undefined = model.attributes
-
-  if (!fields) fields = {}
-
-  const fieldKeys = Object.keys(fields)
-
-  const rules: string[] = []
-
-  const file = Bun.file(modelFile) // Assuming Bun is imported properly
-
-  const code = await file.text()
-
-  const regex = /rule:.*$/gm
-
-  let match: RegExpExecArray | null
-  match = regex.exec(code)
-
-  while (match !== null) {
-    rules.push(match[0])
-    match = regex.exec(code)
-  }
-
-  const input: ModelElement[] = fieldKeys.map((field, index) => {
-    const fieldExist = fields[field]
-    let defaultValue = null
-    let uniqueValue = false
-
-    if (fieldExist) {
-      defaultValue = fieldExist || null
-      uniqueValue = fieldExist.unique || false
-    }
-
-    return {
-      field,
-      default: defaultValue,
-      unique: uniqueValue,
-      fieldArray: parseRule(rules[index] ?? ''),
-    }
-  })
-
-  return input
-}
-
-function parseRule(rule: string): FieldArrayElement | null {
-  const parts = rule.split('rule: schema.')
-
-  if (parts.length !== 2) return null
-
-  if (!parts[1]) parts[1] = ''
-
-  const extractedString = parts[1].replace(/,/g, '')
-
-  if (!extractedString) return null
-
-  const extractedParts = extractedString.split('.')
-  const regex = /\(([^)]+)\)/
-
-  return (
-    extractedParts.map((input) => {
-      const match = regex.exec(input)
-      const value = match ? match[1] : null
-      const field = input.replace(regex, '').replace(/\(|\)/g, '')
-      return { entity: field, charValue: value }
-    })[0] || null
-  )
-}
-
-function getRelationType(relation: string): string {
-  const belongToType = /belongs/
-  const hasType = /has/
-  const throughType = /Through/
-
-  if (throughType.test(relation)) return 'throughType'
-
-  if (belongToType.test(relation)) return 'belongsType'
-
-  if (hasType.test(relation)) return 'hasType'
-
-  return ''
-}
-
-function getRelationCount(relation: string): string {
-  const singular = /One/
-  const plural = /Many/
-
-  if (plural.test(relation)) return 'many'
-
-  if (singular.test(relation)) return 'one'
-
-  return ''
-}
-
-async function getPivotTables(
-  model: Model,
-  modelName: string,
-): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
-  const pivotTable = []
-
-  if ('belongsToMany' in model) {
-    const belongsToManyArr = model.belongsToMany || []
-    for (const belongsToManyRelation of belongsToManyArr) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
-      const modelRelation = (await import(modelRelationPath)).default as Model
-      const formattedModelName = modelName.toLowerCase()
-
-      const firstForeignKey =
-        typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
-          ? belongsToManyRelation.firstForeignKey
-          : `${modelName.toLowerCase()}_${model.primaryKey}`
-
-      const secondForeignKey =
-        typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
-          ? belongsToManyRelation.secondForeignKey
-          : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
-
-      pivotTable.push({
-        table:
-          (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
-            ? belongsToManyRelation.pivotTable
-            : undefined) ?? `${formattedModelName}_${modelRelation.table}`,
-        firstForeignKey,
-        secondForeignKey,
-      })
-    }
-
-    return pivotTable
-  }
-
-  return []
-}
-
-export async function fetchOtherModelRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-  const modelRelations = []
-
-  for (let i = 0; i < modelFiles.length; i++) {
-    const modelFileElement = modelFiles[i] as string
-    const modelFile = await import(modelFileElement)
-
-    if (modelName === modelFile.default.name) continue
-
-    const otherModelName = getModelName(modelFile, modelFileElement)
-
-    const relations = await getRelations(modelFile.default, otherModelName)
-
-    if (!relations.length) continue
-
-    const relation = relations.find((relation) => relation.model === modelName)
-
-    if (relation) modelRelations.push(relation)
-  }
-
-  return modelRelations
-}
-
-function getHiddenAttributes(attributes: Attributes | undefined): string[] {
-  if (attributes === undefined) return []
-
-  return Object.keys(attributes).filter((key) => {
-    if (attributes === undefined) return false
-
-    return attributes[key]?.hidden === true
-  })
-}
-
-function getFillableAttributes(attributes: Attributes | undefined): string[] {
-  if (attributes === undefined) return []
-
-  return Object.keys(attributes)
-    .filter((key) => {
-      if (attributes === undefined) return false
-
-      return attributes[key]?.fillable === true
-    })
-    .map((attribute) => snakeCase(attribute))
 }
 
 async function generateModelString(
@@ -818,7 +326,6 @@ async function generateModelString(
     const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
-
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
@@ -965,9 +472,7 @@ async function generateModelString(
     const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
     fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
-
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
-
     constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
@@ -981,7 +486,6 @@ async function generateModelString(
 
     whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): Promise<${modelName}Model[]> {
         const query = db.selectFrom('${tableName}').where('${attribute.field}', '=', value)
-
         const results = await query.execute()
 
         return results.map(modelItem => new ${modelName}Model(modelItem))
@@ -1347,7 +851,6 @@ async function generateModelString(
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
         const instance = new this(null)
-
         const model = await instance.find(id)
 
        if (instance.softDeletes) {
