@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import type { CLI, LintOptions } from '@stacksjs/types'
 
@@ -21,13 +21,9 @@ export function lint(buddy: CLI) {
       log.debug('Running `buddy lint` ...', options)
 
       const startTime = await intro('buddy lint')
-      // const result = await runAction(Action.Lint, options)
-      //
-      // // console.log('res', result)
-      // if (result.isErr()) {
-      //   await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)
-      //   process.exit()
-      // }
+
+      if (options.fix) await runAction(Action.LintFix, { ...options })
+      else await runCommand('bunx biome check')
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })

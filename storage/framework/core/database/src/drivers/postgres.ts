@@ -2,6 +2,7 @@ import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { getTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
@@ -9,9 +10,7 @@ import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   arrangeColumns,
   checkPivotMigration,
-  fetchOtherModelRelations,
   getLastMigrationFields,
-  getPivotTables,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
   pluckChanges,

@@ -2,6 +2,7 @@ import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
@@ -9,11 +10,8 @@ import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   arrangeColumns,
   checkPivotMigration,
-  fetchOtherModelRelations,
-  findCharacterLength,
   findDifferingKeys,
   getLastMigrationFields,
-  getPivotTables,
   hasTableBeenMigrated,
   isArrayEqual,
   mapFieldTypeToColumnType,
@@ -30,7 +28,6 @@ export async function resetMysqlDatabase() {
 
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-
   const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const userModel of userModelFiles) {
@@ -84,7 +81,7 @@ export async function generateMysqlMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
-  const tableName = await getTableName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
   const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
@@ -128,7 +125,7 @@ async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  const tableName = await getTableName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
 
@@ -230,7 +227,7 @@ export async function createAlterTableMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
-  const tableName = await getTableName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
   let hasChanged = false
 
   // Assuming you have a function to get the fields from the last migration
@@ -339,7 +336,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
 
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default as Model
-    const tableName = await getTableName(model, modelPath)
+    const tableName = getTableName(model, modelPath)
 
     tables.push(tableName)
   }
