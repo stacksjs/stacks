@@ -304,7 +304,9 @@ export type ExamplesOptions = {
   [key in ExamplesBoolean]: boolean
 } & CliOptions
 export type TestOptions = CliOptions & {
-  showReport?: boolean
+  ui?: boolean
+  feature?: boolean
+  unit?: boolean
 }
 export type DomainsOptions = CliOptions & {
   domain?: string

@@ -19,11 +19,10 @@ export enum NpmScript {
   LintFix = 'bunx biome check --fix',
   LintPackageJson = 'publint',
   MakeStack = 'make:stack',
-  Test = 'bun test',
-  TestUnit = 'bun test 2',
-  TestFeature = 'playwright test --config playwright.config.ts',
+  Test = 'bun test ./tests/feature/** ./tests/unit/**',
+  TestUnit = 'bun test ./tests/unit/**',
+  TestFeature = 'bun test ./tests/feature/**',
   TestUi = 'bun test 3',
-  TestCoverage = 'bun test 4',
   TestTypes = 'vue-tsc --noEmit',
   Generate = 'generate',
   GenerateTypes = 'generate:types',
@@ -86,12 +85,10 @@ export enum Action {
   Prepublish = 'prepublish',
   Release = 'release', // ✅
   RouteList = 'route/list', // ✅
-  ShowFeatureTestReport = 'show-feature-test-report',
   Test = 'test',
   TestUi = 'test-ui',
   TestUnit = 'test-unit',
   TestFeature = 'test-feature',
-  TestCoverage = 'test-coverage',
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
   UpgradeBinary = 'upgrade/binary', // the `stacks` binary

@@ -20,6 +20,8 @@ export function test(buddy: CLI) {
 
   buddy
     .command('test', descriptions.command)
+    .option('-f, --feature', descriptions.feature, { default: false })
+    .option('-u, --unit', descriptions.unit, { default: false })
     .option('--ui', descriptions.ui, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: true })
@@ -73,24 +75,16 @@ export function test(buddy: CLI) {
 
   buddy
     .command('test:feature', descriptions.feature)
-    .option('--show-report', descriptions.showReport, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:feature')
       let result
 
-      if (options.showReport)
-        result = await runAction(Action.ShowFeatureTestReport, {
-          ...options,
-          verbose: true,
-          cwd: projectPath(),
-        })
-      else
-        result = await runAction(Action.TestFeature, {
-          ...options,
-          verbose: true,
-          cwd: projectPath(),
-        })
+      result = await runAction(Action.TestFeature, {
+        ...options,
+        verbose: true,
+        cwd: projectPath(),
+      })
 
       if (result.isErr()) {
         await outro(
@@ -159,30 +153,6 @@ export function test(buddy: CLI) {
         useSeconds: true,
       })
     })
-
-  buddy.command('test:coverage', descriptions.coverage).action(async (options: TestOptions) => {
-    const perf = await intro('buddy test:coverage')
-    const result = await runAction(Action.TestCoverage, {
-      ...options,
-      cwd: projectPath(),
-      verbose: true,
-    })
-
-    if (result.isErr()) {
-      await outro(
-        'While running `buddy test:coverage`, there was an issue',
-        { startTime: perf, useSeconds: true },
-        result.error,
-      )
-      process.exit()
-    }
-
-    await outro('Generated the test coverage report', {
-      startTime: perf,
-      useSeconds: true,
-    })
-    process.exit()
-  })
 
   buddy.on('test:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))

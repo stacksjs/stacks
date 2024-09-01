@@ -1,5 +1,6 @@
 import { runCommand } from '@stacksjs/cli'
 import { NpmScript } from '@stacksjs/enums'
-import { frameworkPath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
 
-await runCommand(NpmScript.Test, { verbose: true, cwd: frameworkPath() })
+console.log('Running Test...', NpmScript.Test)
+await runCommand(NpmScript.Test, { verbose: true, cwd: projectPath() })
