@@ -254,7 +254,6 @@ export async function createAlterTableMigration(modelPath: string) {
   }
 
   const fieldValidations = findDifferingKeys(lastFields, currentFields)
-
   for (const fieldValidation of fieldValidations) {
     hasChanged = true
     const fieldNameFormatted = snakeCase(fieldValidation.key)

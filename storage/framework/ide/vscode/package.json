@@ -51,8 +51,8 @@
     "mylesmurphy.prettify-ts",
     "nhoizey.gremlins",
     "Orta.vscode-twoslash-queries",
+    "oven.bun-vscode",
     "streetsidesoftware.code-spell-checker",
-    "vitest.explorer",
     "vue.volar"
   ],
   "devDependencies": {

@@ -19,7 +19,7 @@ export async function invoke(options?: GeneratorOptions) {
   else if (options?.ideHelpers) await generateIdeHelpers(options)
   else if (options?.componentMeta) await generateComponentMeta(options)
   else if (options?.coreSymlink) await generateCoreSymlink()
-  else if (options?.modelFiles) await generateModelFiles()
+  else if (options?.modelFiles) await generateModelFiles(undefined, options)
   // else if (options?.openApiSpec) await generateOpenApiSpec()
 }
 

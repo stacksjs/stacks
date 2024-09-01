@@ -32,8 +32,8 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   log.debug('exec:', Array.isArray(command) ? command.join(' ') : command)
   log.debug('cmd:', cmd)
   log.debug('exec options:', options)
-  const cwd = options?.cwd || process.cwd()
 
+  const cwd = options?.cwd || process.cwd()
   const proc = Bun.spawn(cmd, {
     ...options,
     stdout:

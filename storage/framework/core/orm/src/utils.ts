@@ -1,9 +1,16 @@
 import { generator, parser, traverse } from '@stacksjs/build'
-import { italic, log } from '@stacksjs/cli'
+import { italic, log, runCommand } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
-import type { Attributes, FieldArrayElement, Model, ModelElement, RelationConfig } from '@stacksjs/types'
+import type {
+  Attributes,
+  FieldArrayElement,
+  GeneratorOptions,
+  Model,
+  ModelElement,
+  RelationConfig,
+} from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
@@ -1647,7 +1654,7 @@ export async function generateModelString(
     `
 }
 
-export async function generateModelFiles(modelStringFile?: string): Promise<void> {
+export async function generateModelFiles(modelStringFile?: string, options?: GeneratorOptions): Promise<void> {
   try {
     log.info('Cleanup of older Models...')
     await deleteExistingModels(modelStringFile)
@@ -1675,7 +1682,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
 
     log.info('Writing Model Requests...')
     await writeModelRequest()
-    log.success('Wrote Rodel Requests')
+    log.success('Wrote Model Requests')
 
     log.info('Generating API Routes...')
     const modelFiles = glob.sync(path.userModelsPath('**/*.ts'))
@@ -1703,6 +1710,16 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Generating Query Builder types...')
     await generateKyselyTypes()
     log.success('Generated Query Builder types')
+
+    log.info('Ensuring Code Style...')
+    try {
+      await runCommand('bunx biome check', { quiet: true })
+    } catch (error) {
+      // log.error('There was an error fixing your code style.', error)
+      // process.exit(ExitCode.FatalError)
+    }
+    // await runCommand('bunx biome check --fix', { quiet: true })
+    log.success('Linted')
   } catch (error) {
     log.error('There was an error generating your model files', error)
     process.exit(ExitCode.FatalError)

@@ -123,6 +123,7 @@ export const log: Log = {
     if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
       return writeToLogFile(`DEBUG: ${args.join(' ')}`)
 
+    logger.debug(`DEBUG: ${args.join(' ')}`)
     writeToLogFile(`DEBUG: ${args.join(' ')}`)
   },
 
