@@ -61,7 +61,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
-    "vue-component-meta": "^2.1.2"
+    "vue-component-meta": "^2.1.4"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

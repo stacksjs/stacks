@@ -60,7 +60,7 @@
     "unocss-preset-primitives": "0.0.2-beta.1",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.4.38",
-    "vue-tsc": "^2.1.2"
+    "vue-tsc": "^2.1.4"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
