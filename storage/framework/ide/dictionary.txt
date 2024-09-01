@@ -246,6 +246,7 @@ pyrightconfig
 qrcode
 rangav
 raycast
+Registrator
 releaseable
 releaserc
 resx

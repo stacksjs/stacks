@@ -3,6 +3,7 @@ preload = [ "./resources/preloader/main.ts" ]
 
 [test]
 preload = [ "./resources/preloader/test.ts" ]
+coverage = true
 
 [install]
 # To configure Bun's package auto-install behavior.
