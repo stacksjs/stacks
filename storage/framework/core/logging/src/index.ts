@@ -120,11 +120,13 @@ export const log: Log = {
   },
 
   debug: (...args: any[]) => {
-    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
-      return writeToLogFile(`DEBUG: ${args.join(' ')}`)
+    const formattedArgs = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
+    const message = `DEBUG: ${formattedArgs.join(' ')}`
 
-    logger.debug(`DEBUG: ${args.join(' ')}`)
-    writeToLogFile(`DEBUG: ${args.join(' ')}`)
+    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod') return writeToLogFile(message)
+
+    logger.debug(message)
+    writeToLogFile(message)
   },
 
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
