@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { generateOpenApi } from '@stacksjs/api'
 import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
@@ -20,7 +21,7 @@ export async function invoke(options?: GeneratorOptions) {
   else if (options?.componentMeta) await generateComponentMeta(options)
   else if (options?.coreSymlink) await generateCoreSymlink()
   else if (options?.modelFiles) await generateModelFiles(undefined, options)
-  // else if (options?.openApiSpec) await generateOpenApiSpec()
+  else if (options?.openApiSpec) await generateOpenApiSpec()
 }
 
 export function generate(options: GeneratorOptions) {
@@ -116,4 +117,10 @@ export async function generateSeeder() {
 
 export async function generateCoreSymlink() {
   await runCommand(`ln -s ${frameworkPath()} ${projectPath('.stacks')}`)
+}
+
+export async function generateOpenApiSpec() {
+  await generateOpenApi()
+
+  log.success('Successfully generated Open API Spec')
 }

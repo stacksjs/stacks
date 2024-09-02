@@ -256,6 +256,7 @@ export type GeneratorOption =
   | 'ideHelpers'
   | 'componentMeta'
   | 'coreSymlink'
+  | 'openApiSpec'
   | 'pkgxConfig'
   | 'openapi'
   | 'modelFiles'

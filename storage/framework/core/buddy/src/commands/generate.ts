@@ -4,11 +4,11 @@ import {
   generateCoreSymlink,
   generateIdeHelpers,
   generateLibEntries,
+  generateOpenApiSpec,
   generatePkgxConfig,
   generateTypes,
   generateVsCodeCustomData,
   generateWebTypes,
-  // generateOpenApiSpec,
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
@@ -170,7 +170,7 @@ export function generate(buddy: CLI) {
       log.debug('Running `buddy generate:openapi-spec` ...', options)
       const perf = await intro('buddy generate:openapi-spec')
 
-      // await generateOpenApiSpec()
+      await generateOpenApiSpec()
 
       outro('Generated OpenAPI specification', {
         startTime: perf,
