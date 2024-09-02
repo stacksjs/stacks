@@ -1,8 +1,6 @@
-"[object Object]".0.0",
-  "info": {
-    "title": "Generated API",
-    "version": "1.0.0"
-  },
+{
+  "openapi": "3.0.0",
+  "info": { "title": "Generated API", "version": "1.0.0" },
   "paths": {
     "/api/foo/bar/{id}": {
       "get": {
@@ -13,10 +11,7 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
+                "schema": { "type": "object", "properties": {} }
               }
             }
           }
@@ -32,10 +27,7 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
+                "schema": { "type": "object", "properties": {} }
               }
             }
           }
@@ -51,10 +43,7 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
+                "schema": { "type": "object", "properties": {} }
               }
             }
           }
@@ -71,29 +60,73 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
+                "schema": { "type": "object", "properties": {} }
               }
             }
           }
         }
       }
     },
-    "/api/Welcome": {
+    "/api/login": {
+      "post": {
+        "summary": ".api.login",
+        "operationId": "Actions/LoginAction",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
       "get": {
-        "summary": ".api.Welcome",
+        "summary": ".api.users",
+        "operationId": "storage/framework/actions/src/UserIndexOrmAction.ts",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "summary": ".api.users.{id}",
+        "operationId": "storage/framework/actions/src/UserShowOrmAction.ts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": ".api.users.{id}",
+        "operationId": "storage/framework/actions/src/UserDestroyOrmAction.ts",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
               }
             }
           }
@@ -109,297 +142,13 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/subscribers": {
-      "get": {
-        "summary": ".api.subscribers",
-        "operationId": "Actions/SubscriberIndexOrmAction",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": ".api.subscribers",
-        "operationId": "Actions/SubscriberStoreOrmAction",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/subscribers/{id}": {
-      "patch": {
-        "summary": ".api.subscribers.{id}",
-        "operationId": "Actions/SubscriberUpdateOrmAction",
-        "parameters": [],
-        "responses": {
-          "202": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": ".api.subscribers.{id}",
-        "operationId": "Actions/SubscriberDestroyOrmAction",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "summary": ".api.subscribers.{id}",
-        "operationId": "Actions/SubscriberShowOrmAction",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/releases": {
-      "get": {
-        "summary": ".api.releases",
-        "operationId": "Actions/ReleaseIndexOrmAction",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": ".api.releases",
-        "operationId": "Actions/ReleaseStoreOrmAction",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/releases/{id}": {
-      "patch": {
-        "summary": ".api.releases.{id}",
-        "operationId": "Actions/ReleaseUpdateOrmAction",
-        "parameters": [],
-        "responses": {
-          "202": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": ".api.releases.{id}",
-        "operationId": "Actions/ReleaseDestroyOrmAction",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "summary": ".api.releases.{id}",
-        "operationId": "Actions/ReleaseShowOrmAction",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users": {
-      "get": {
-        "summary": ".api.users",
-        "operationId": "Actions/UserIndexOrmAction",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": ".api.users",
-        "operationId": "Actions/UserStoreOrmAction",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/{id}": {
-      "patch": {
-        "summary": ".api.users.{id}",
-        "operationId": "Actions/UserUpdateOrmAction",
-        "parameters": [],
-        "responses": {
-          "202": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": ".api.users.{id}",
-        "operationId": "Actions/UserDestroyOrmAction",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "summary": ".api.users.{id}",
-        "operationId": "Actions/UserShowOrmAction",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
+                "schema": { "type": "object", "properties": {} }
               }
             }
           }
         }
       }
     }
-  }
+  },
+  "components": { "schemas": {} }
 }
