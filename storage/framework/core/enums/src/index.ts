@@ -85,10 +85,10 @@ export enum Action {
   Prepublish = 'prepublish',
   Release = 'release', // ✅
   RouteList = 'route/list', // ✅
-  Test = 'test',
-  TestUi = 'test-ui',
-  TestUnit = 'test-unit',
-  TestFeature = 'test-feature',
+  Test = 'test/index',
+  TestUi = 'test/ui',
+  TestUnit = 'test/unit',
+  TestFeature = 'test/feature',
   Typecheck = 'typecheck',
   Upgrade = 'upgrade/index',
   UpgradeBinary = 'upgrade/binary', // the `stacks` binary

@@ -69,7 +69,7 @@ export async function writeToLogFile(message: string) {
 export interface Log {
   info: (...args: any[]) => void
   success: (msg: string) => void
-  error: (err: string | Error | unknown, options?: any | Error) => void
+  error: (err: string | Error | object | unknown, options?: any | Error) => void
   warn: (arg: string) => void
   warning: (arg: string) => void
   debug: (...args: any[]) => void
@@ -112,10 +112,10 @@ export const log: Log = {
   error: (err: unknown, options?: any | Error) => {
     if (err instanceof Error) handleError(err, options)
     else if (err instanceof Error) handleError(options)
+    else if (err instanceof Object) handleError(options)
     else handleError(err, options)
 
     const errorMessage = isString(err) ? err : err instanceof Error ? err.message : String(err)
-    logger.error(errorMessage)
     writeToLogFile(`ERROR: ${errorMessage}`)
   },
 

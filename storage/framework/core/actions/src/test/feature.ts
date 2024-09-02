@@ -1,8 +1,15 @@
-import { runCommand } from '@stacksjs/cli'
-import { NpmScript } from '@stacksjs/enums'
-import { frameworkPath } from '@stacksjs/path'
+import { log } from '@stacksjs/cli'
+import { projectPath } from '@stacksjs/path'
 
-await runCommand(NpmScript.TestFeature, {
-  verbose: true,
-  cwd: frameworkPath(),
+const process = Bun.spawn(['sh', '-c', 'bun test ./tests/feature/**'], {
+  cwd: projectPath(),
+  stdio: ['inherit', 'inherit', 'inherit'], // Inherit stdio to see the output in the console
+  // env: process.env, // Pass the environment variables
 })
+
+const exitCode = await process.exited
+
+if (exitCode !== 0) {
+  log.error('Tests failed')
+  process.exit(exitCode)
+}

@@ -10,13 +10,13 @@ import * as cmd from './commands'
 
 // setup global error handlers
 process.on('uncaughtException', (error: Error) => {
-  log.debug('uncaughtException')
+  log.debug('Buddy uncaughtException')
   log.error(error)
   process.exit(1)
 })
 
 process.on('unhandledRejection', (error: Error) => {
-  log.debug('unhandledRejection', error)
+  log.debug('Buddy unhandledRejection')
   log.error(error)
   process.exit(1)
 })

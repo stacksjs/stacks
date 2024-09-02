@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'
 import type { CLI, TestOptions } from '@stacksjs/types'
@@ -22,23 +22,78 @@ export function test(buddy: CLI) {
     .command('test', descriptions.command)
     .option('-f, --feature', descriptions.feature, { default: false })
     .option('-u, --unit', descriptions.unit, { default: false })
-    .option('--ui', descriptions.ui, { default: false })
+    // .option('--ui', descriptions.ui, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: true })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test')
-      const result = await runAction(Action.Test, {
-        ...options,
-        cwd: projectPath(),
-      })
 
-      if (result.isErr()) {
-        await outro(
-          'While running `buddy test`, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
-        )
-        process.exit()
+      if (options.feature && options.unit) {
+        const result = await runAction(Action.Test, {
+          ...options,
+          cwd: projectPath(),
+        })
+
+        if (result.isErr()) {
+          await outro(
+            'While running `buddy test`, there was an issue',
+            { startTime: perf, useSeconds: true },
+            result.error,
+          )
+          process.exit()
+        }
+      }
+
+      if (options.feature && !options.unit) {
+        log.info('Running Feature tests...')
+
+        const result = await runAction(Action.TestFeature, {
+          ...options,
+          cwd: projectPath(),
+        })
+
+        if (result.isErr()) {
+          await outro(
+            'While running `buddy test`, there was an issue',
+            { startTime: perf, useSeconds: true },
+            result.error,
+          )
+          process.exit()
+        }
+      }
+
+      if (!options.feature && options.unit) {
+        log.info('Running Unit tests...')
+
+        const result = await runAction(Action.TestUnit, {
+          ...options,
+          cwd: projectPath(),
+        })
+
+        if (result.isErr()) {
+          await outro(
+            'While running `buddy test`, there was an issue',
+            { startTime: perf, useSeconds: true },
+            result.error,
+          )
+          process.exit()
+        }
+      }
+
+      if (!options.feature && !options.unit) {
+        const result = await runAction(Action.Test, {
+          ...options,
+          cwd: projectPath(),
+        })
+
+        if (result.isErr()) {
+          await outro(
+            'While running `buddy test`, there was an issue',
+            { startTime: perf, useSeconds: true },
+            result.error,
+          )
+          process.exit()
+        }
       }
 
       await outro('Finished running tests', {
