@@ -11,6 +11,7 @@ import type {
   ModelElement,
   RelationConfig,
 } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
@@ -1717,29 +1718,37 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       // the reason we run it in background is because we don't care whether it fails or not, given there
       // is a chance that the codebase has lint issues unrelating to our auto-generated code
       const process = Bun.spawn(['bunx', 'biome', 'check', '--fix'], {
-        stdio: ['inherit', 'pipe', 'pipe'],
+        stdio: ['pipe', 'pipe', 'pipe'],
       })
 
+      const reader = process.stdout.getReader()
       let output = ''
 
-      // @ts-expect-error - unsure why this errors, but it works
-      process.stdout.on('data', (chunk: any) => {
-        output += chunk
-      })
-      // @ts-expect-error - same here
-      process.stderr.on('data', (chunk: any) => {
-        output += chunk
-      })
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        output += new TextDecoder().decode(value)
+      }
+
+      const stderrReader = process.stderr.getReader()
+      while (true) {
+        const { done, value } = await stderrReader.read()
+        if (done) break
+        // Collect stderr output but do not log it
+        output += new TextDecoder().decode(value)
+      }
 
       const exitCode = await process.exited
 
       if (exitCode !== 0) {
-        log.error('There was an error fixing your code style.')
+        log.debug(
+          'There was an error fixing your code style but we are ignoring it because we fixed the auto-generated code already.',
+        )
       } else {
         log.success('Code style fixed successfully.')
       }
     } catch (error) {
-      log.error('There was an error fixing your code style.', error)
+      log.error('There was an error fixing your code style.')
       process.exit(ExitCode.FatalError)
     }
 
