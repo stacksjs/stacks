@@ -10,6 +10,7 @@ const result = await Bun.build({
   format: 'esm',
   sourcemap: 'linked',
   minify: true,
+  target: 'bun',
 })
 
 await outro({
