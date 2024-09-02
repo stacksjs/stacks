@@ -1714,6 +1714,8 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.info('Ensuring Code Style...')
     try {
       // we run this in background in background, because we simply need to lint:fix the auto-generated code
+      // the reason we run it in background is because we don't care whether it fails or not, given there
+      // is a chance that the codebase has lint issues unrelating to our auto-generated code
       const process = Bun.spawn(['bunx', 'biome', 'check', '--fix'], {
         stdio: ['inherit', 'pipe', 'pipe'],
       })
@@ -1733,7 +1735,6 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
 
       if (exitCode !== 0) {
         log.error('There was an error fixing your code style.')
-        // log.error(output)
       } else {
         log.success('Code style fixed successfully.')
       }
