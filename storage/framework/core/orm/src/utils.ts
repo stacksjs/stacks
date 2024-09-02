@@ -466,7 +466,11 @@ export async function writeOrmActions(apiRoute: string, modelName: String): Prom
     })
   `
 
-  const file = Bun.file(path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`))
+  const actionFile = path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`)
+
+  if (fs.existsSync(actionFile)) return
+
+  const file = Bun.file(actionFile)
 
   const writer = file.writer()
 
@@ -1660,10 +1664,6 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.info('Cleanup of older Models...')
     await deleteExistingModels(modelStringFile)
     log.success('Deleted Models')
-
-    log.info('Deleting old ORM Actions...')
-    await deleteExistingOrmActions(modelStringFile)
-    log.success('Deleted ORM Actions')
 
     log.info('Deleting old Model Name types...')
     await deleteExistingModelNameTypes()
