@@ -1713,12 +1713,35 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
 
     log.info('Ensuring Code Style...')
     try {
-      await runCommand('bunx biome check', { quiet: true })
+      // we run this in background in background, because we simply need to lint:fix the auto-generated code
+      const process = Bun.spawn(['bunx', 'biome', 'check', '--fix'], {
+        stdio: ['inherit', 'pipe', 'pipe'],
+      })
+
+      let output = ''
+
+      // @ts-expect-error - unsure why this errors, but it works
+      process.stdout.on('data', (chunk: any) => {
+        output += chunk
+      })
+      // @ts-expect-error - same here
+      process.stderr.on('data', (chunk: any) => {
+        output += chunk
+      })
+
+      const exitCode = await process.exited
+
+      if (exitCode !== 0) {
+        log.error('There was an error fixing your code style.')
+        // log.error(output)
+      } else {
+        log.success('Code style fixed successfully.')
+      }
     } catch (error) {
-      // log.error('There was an error fixing your code style.', error)
-      // process.exit(ExitCode.FatalError)
+      log.error('There was an error fixing your code style.', error)
+      process.exit(ExitCode.FatalError)
     }
-    // await runCommand('bunx biome check --fix', { quiet: true })
+
     log.success('Linted')
   } catch (error) {
     log.error('There was an error generating your model files', error)
