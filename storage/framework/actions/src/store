@@ -1,0 +1,11 @@
+import { Action } from '@stacksjs/actions'
+import User from '../../orm/src/models/User'
+  import type { UserRequestType } from '../../types/requests'
+
+export default new Action({
+      name: 'User 1',
+      description: 'User 1 ORM Action',
+      method: 'GET',
+      
+    })
+  

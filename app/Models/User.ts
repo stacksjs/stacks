@@ -29,7 +29,12 @@ export default {
       count: 100,
     },
 
-    useApi: true,
+    useApi: {
+      uri: 'users', // your-url.com/api/users
+      middleware: ['Api'], // defaults to `[]`
+
+      routes: ['index', 'store'],
+    },
 
     observe: true,
 

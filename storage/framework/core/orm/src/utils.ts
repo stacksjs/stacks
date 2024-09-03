@@ -577,24 +577,51 @@ export async function generateApiRoutes(modelFiles: string[]) {
         if (model.traits.useApi.routes && Object.keys(model.traits.useApi.routes).length > 0) {
           const apiRoutes = model.traits.useApi.routes
 
-          for (const apiRoute in apiRoutes) {
-            if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
-              const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
+          if (Array.isArray(apiRoutes)) {
+            if (apiRoutes.length) {
+              for (const apiRoute of apiRoutes) {
+                if (typeof apiRoute === 'string') {
+                  await writeOrmActions(apiRoute, modelName)
 
-              await writeOrmActions(apiRoute as string, modelName, routePath)
+                  const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
-              if (typeof routePath !== 'string') {
-                throw new Error(`Invalid route path for ${apiRoute}`)
+                  const pathAction = path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`, {
+                    relative: true,
+                  })
+
+                  if (apiRoute === 'index')
+                    routeString += `route.get('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+                  if (apiRoute === 'show')
+                    routeString += `route.get('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+                  if (apiRoute === 'store')
+                    routeString += `route.post('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+                  if (apiRoute === 'update')
+                    routeString += `route.patch('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+                  if (apiRoute === 'destroy')
+                    routeString += `route.delete('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+                }
               }
+            }
+          }
 
-              const path = `${routePath}.ts`
-
-              if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}').${middlewareString}\n\n`
-              if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}').${middlewareString}\n\n`
-              if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}').${middlewareString}\n\n`
-              if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}').${middlewareString}\n\n`
-              if (apiRoute === 'destroy')
-                routeString += `route.delete('${uri}/{id}', '${path}').${middlewareString}\n\n`
+          if (typeof apiRoutes === 'object') {
+            for (const apiRoute in apiRoutes) {
+              if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
+                const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
+                await writeOrmActions(apiRoute, modelName, routePath)
+                if (typeof routePath !== 'string') {
+                  throw new Error(`Invalid route path for ${apiRoute}`)
+                }
+                const pathAction = `${routePath}.ts`
+                if (apiRoute === 'index') routeString += `route.get('${uri}', '${pathAction}').${middlewareString}\n\n`
+                if (apiRoute === 'show')
+                  routeString += `route.get('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
+                if (apiRoute === 'store') routeString += `route.post('${uri}', '${pathAction}').${middlewareString}\n\n`
+                if (apiRoute === 'update')
+                  routeString += `route.patch('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
+                if (apiRoute === 'destroy')
+                  routeString += `route.delete('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
+              }
             }
           }
         }
@@ -608,11 +635,19 @@ export async function generateApiRoutes(modelFiles: string[]) {
         for (const apiRoute of apiRoutes) {
           await writeOrmActions(apiRoute as string, modelName)
 
-          if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}').middleware(['Api'])\n\n`
-          if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}').middleware(['Api'])\n\n`
-          if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}').middleware(['Api'])\n\n`
-          if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}').middleware(['Api'])\n\n`
-          if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}').middleware(['Api'])\n\n`
+          const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
+
+          const pathAction = path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`, {
+            relative: true,
+          })
+
+          if (apiRoute === 'index') routeString += `route.get('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'store') routeString += `route.post('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'update')
+            routeString += `route.patch('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'destroy')
+            routeString += `route.delete('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
         }
       }
     }

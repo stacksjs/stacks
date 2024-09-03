@@ -51,9 +51,11 @@ interface BelongsToManyType {
 export interface ApiSettings {
   uri: string
   middleware: string[]
-  routes: {
-    [key in ApiRoutes]: Action
-  }
+  routes:
+    | {
+        [key in ApiRoutes]: Action
+      }
+    | string[]
   openApi: boolean
 }
 
