@@ -393,7 +393,7 @@ export async function writeModelRequest() {
   requestWrite.write(typeString)
 }
 
-export async function writeOrmActions(apiRoute: string, modelName: String): Promise<void> {
+export async function writeOrmActions(apiRoute: string, modelName: String, actionPath?: string): Promise<void> {
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let method = 'GET'
@@ -466,7 +466,9 @@ export async function writeOrmActions(apiRoute: string, modelName: String): Prom
     })
   `
 
-  const actionFile = path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`)
+  const actionName = actionPath || `${modelName}${formattedApiRoute}OrmAction.ts`
+
+  const actionFile = path.builtUserActionsPath(`src/${actionName}`)
 
   if (fs.existsSync(actionFile)) return
 
@@ -540,27 +542,6 @@ function parseRule(rule: string): FieldArrayElement | null {
   )
 }
 
-export async function lookupFile(fileName: string): Promise<string | null> {
-  const ormDirectory = path.builtUserActionsPath('src', { relative: true })
-  const filePath = path.join(ormDirectory, fileName)
-  const pathExists = fs.existsSync(filePath)
-
-  // Check if the directory exists
-  if (pathExists) {
-    return filePath
-  }
-
-  const actionDirectory = path.userActionsPath()
-  const actionFilePath = path.join(actionDirectory, fileName)
-  const fileExists = fs.existsSync(actionFilePath)
-
-  if (fileExists) {
-    return actionFilePath
-  }
-
-  return null
-}
-
 export async function generateApiRoutes(modelFiles: string[]) {
   const file = Bun.file(path.frameworkPath(`orm/routes.ts`))
   const writer = file.writer()
@@ -595,34 +576,43 @@ export async function generateApiRoutes(modelFiles: string[]) {
 
         if (model.traits.useApi.routes && Object.keys(model.traits.useApi.routes).length > 0) {
           const apiRoutes = model.traits.useApi.routes
+
           for (const apiRoute in apiRoutes) {
             if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
-              let path: string | null = ''
-
-              await writeOrmActions(apiRoute as string, modelName)
-
               const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
+
+              await writeOrmActions(apiRoute as string, modelName, routePath)
+
               if (typeof routePath !== 'string') {
                 throw new Error(`Invalid route path for ${apiRoute}`)
               }
 
-              path = `${routePath}.ts`
+              const path = `${routePath}.ts`
 
-              if (!path.includes('/')) {
-                path = await lookupFile(path)
-              }
-
-              if (!path) {
-                throw { message: 'Action Not Found!' }
-              }
-
-              if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}')\n\n`
-              if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}')\n\n`
-              if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}')\n\n`
-              if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}')\n\n`
-              if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}')\n\n`
+              if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}').${middlewareString}\n\n`
+              if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}').${middlewareString}\n\n`
+              if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}').${middlewareString}\n\n`
+              if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}').${middlewareString}\n\n`
+              if (apiRoute === 'destroy')
+                routeString += `route.delete('${uri}/{id}', '${path}').${middlewareString}\n\n`
             }
           }
+        }
+      }
+
+      if (typeof model.traits.useApi === 'boolean' && model.traits?.useApi) {
+        const uri = tableName
+
+        const apiRoutes = ['index', 'show', 'store', 'update', 'destroy']
+
+        for (const apiRoute of apiRoutes) {
+          await writeOrmActions(apiRoute as string, modelName)
+
+          if (apiRoute === 'index') routeString += `route.get('${uri}', '${path}').middleware(['Api'])\n\n`
+          if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${path}').middleware(['Api'])\n\n`
+          if (apiRoute === 'store') routeString += `route.post('${uri}', '${path}').middleware(['Api'])\n\n`
+          if (apiRoute === 'update') routeString += `route.patch('${uri}/{id}', '${path}').middleware(['Api'])\n\n`
+          if (apiRoute === 'destroy') routeString += `route.delete('${uri}/{id}', '${path}').middleware(['Api'])\n\n`
         }
       }
     }

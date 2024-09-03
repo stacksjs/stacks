@@ -3,7 +3,6 @@ import { faker } from '@stacksjs/faker'
 import { capitalize } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
-import type { User } from 'actions/src/orm/user'
 
 export default {
   name: 'User', // defaults to the sanitized file name
@@ -30,16 +29,7 @@ export default {
       count: 100,
     },
 
-    useApi: {
-      uri: 'users', // your-url.com/api/users
-      middleware: ['Api'], // defaults to `[]`
-
-      routes: {
-        index: 'UserIndexOrmAction',
-        show: 'UserShowOrmAction',
-        destroy: 'UserDestroyOrmAction',
-      },
-    },
+    useApi: true,
 
     observe: true,
 

@@ -1,7 +1,11 @@
 import { route } from '@stacksjs/router'
 
-route.get('users', 'storage/framework/actions/src/UserIndexOrmAction.ts')
+route.get('users', '[object Object]').middleware(['Api'])
 
-route.get('users/{id}', 'storage/framework/actions/src/UserShowOrmAction.ts')
+route.get('users/{id}', '[object Object]').middleware(['Api'])
 
-route.delete('users/{id}', 'storage/framework/actions/src/UserDestroyOrmAction.ts')
+route.post('users', '[object Object]').middleware(['Api'])
+
+route.patch('users/{id}', '[object Object]').middleware(['Api'])
+
+route.delete('users/{id}', '[object Object]').middleware(['Api'])

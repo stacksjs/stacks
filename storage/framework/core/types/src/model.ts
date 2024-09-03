@@ -23,7 +23,7 @@ export type AuthOptions = {
 
 type ActionPath = string
 type ActionName = string
-type Action = ActionPath | ActionName
+type Action = ActionPath | ActionName | undefined
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
