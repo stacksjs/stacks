@@ -29,13 +29,13 @@ interface RequestDataDeployment {
 }
 export class DeploymentRequest extends Request<RequestDataDeployment> implements DeploymentRequestType {
   public id = 1
-  public commitSha = ''
-  public commitMessage = ''
+  public commit_sha = ''
+  public commit_message = ''
   public branch = ''
   public status = ''
-  public executionTime = 0
-  public deployScript = ''
-  public terminalOutput = ''
+  public execution_time = 0
+  public deploy_script = ''
+  public terminal_output = ''
   public user_id = 0
   public created_at = ''
   public updated_at = ''

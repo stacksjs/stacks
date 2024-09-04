@@ -28,7 +28,7 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   public id = 1
   public name = ''
   public token = ''
-  public plainTextToken = ''
+  public plain_text_token = ''
   public abilities = ''
   public team_id = 0
   public created_at = ''

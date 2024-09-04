@@ -1,5 +1,5 @@
 import { generator, parser, traverse } from '@stacksjs/build'
-import { italic, log, runCommand } from '@stacksjs/cli'
+import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { fs, glob } from '@stacksjs/storage'
 import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
@@ -296,6 +296,9 @@ export async function writeModelRequest() {
     let keyCounterForeign = 0
     fieldStringType += ` get(key: 'id'): number\n`
 
+    const entityGroups: Record<string, string[]> = {}
+
+    // Group attributes by their entity type
     for (const attribute of attributes) {
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
       let defaultValue: any = `''`
@@ -303,10 +306,26 @@ export async function writeModelRequest() {
       if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
       if (attribute.fieldArray?.entity === 'number') defaultValue = 0
 
-      fieldString += ` ${attribute.field}: ${entity}\n     `
-      fieldStringType += ` get(key: '${attribute.field}'): ${entity}\n`
-      fieldStringInt += `public ${attribute.field} = ${defaultValue}\n`
-      keyCounter++
+      // Convert the field name to snake_case
+      const snakeField = snakeCase(attribute.field)
+
+      if (typeof entity === 'string') {
+        if (entityGroups[entity]) {
+          entityGroups[entity].push(`'${snakeField}'`)
+        } else {
+          entityGroups[entity] = [`'${snakeField}'`]
+        }
+
+        fieldString += ` ${attribute.field}: ${entity}\n     `
+        fieldStringInt += `public ${snakeField} = ${defaultValue}\n`
+        keyCounter++
+      }
+    }
+
+    // Generate fieldStringType with grouped fields
+    for (const [entity, fields] of Object.entries(entityGroups)) {
+      const concatenatedFields = fields.join(' | ')
+      fieldStringType += ` get(key: ${concatenatedFields}): ${entity}\n`
     }
 
     const otherModelRelations = await fetchOtherModelRelations(model, modelName)

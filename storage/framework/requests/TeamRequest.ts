@@ -32,13 +32,13 @@ interface RequestDataTeam {
 export class TeamRequest extends Request<RequestDataTeam> implements TeamRequestType {
   public id = 1
   public name = ''
-  public companyName = ''
+  public company_name = ''
   public email = ''
-  public billingEmail = ''
+  public billing_email = ''
   public status = ''
   public description = ''
   public path = ''
-  public isPersonal = false
+  public is_personal = false
   public accesstoken_id = 0
   public user_id = 0
   public created_at = ''

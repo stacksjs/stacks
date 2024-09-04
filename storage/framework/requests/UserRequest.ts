@@ -30,7 +30,7 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   public id = 1
   public name = ''
   public email = ''
-  public jobTitle = ''
+  public job_title = ''
   public password = ''
   public team_id = 0
   public deployment_id = 0

@@ -23,10 +23,7 @@ interface RequestDataProject {
 export interface ProjectRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
- get(key: 'name'): string
- get(key: 'description'): string
- get(key: 'url'): string
- get(key: 'status'): string
+ get(key: 'name' | 'description' | 'url' | 'status'): string
 
       all(): RequestDataProject
        id?: number
@@ -73,9 +70,7 @@ interface RequestDataAccessToken {
 export interface AccessTokenRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
- get(key: 'name'): string
- get(key: 'token'): string
- get(key: 'plainTextToken'): string
+ get(key: 'name' | 'token' | 'plain_text_token'): string
  get(key: 'abilities'): string[]
  get(key: 'team_id'): string 
 
@@ -110,14 +105,8 @@ interface RequestDataTeam {
 export interface TeamRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
- get(key: 'name'): string
- get(key: 'companyName'): string
- get(key: 'email'): string
- get(key: 'billingEmail'): string
- get(key: 'status'): string
- get(key: 'description'): string
- get(key: 'path'): string
- get(key: 'isPersonal'): boolean
+ get(key: 'name' | 'company_name' | 'email' | 'billing_email' | 'status' | 'description' | 'path'): string
+ get(key: 'is_personal'): boolean
  get(key: 'accesstoken_id'): string 
  get(key: 'user_id'): string 
 
@@ -178,13 +167,8 @@ interface RequestDataDeployment {
 export interface DeploymentRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
- get(key: 'commitSha'): string
- get(key: 'commitMessage'): string
- get(key: 'branch'): string
- get(key: 'status'): string
- get(key: 'executionTime'): number
- get(key: 'deployScript'): string
- get(key: 'terminalOutput'): string
+ get(key: 'commit_sha' | 'commit_message' | 'branch' | 'status' | 'deploy_script' | 'terminal_output'): string
+ get(key: 'execution_time'): number
  get(key: 'user_id'): string 
 
       all(): RequestDataDeployment
@@ -238,10 +222,7 @@ interface RequestDataUser {
 export interface UserRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
- get(key: 'name'): string
- get(key: 'email'): string
- get(key: 'jobTitle'): string
- get(key: 'password'): string
+ get(key: 'name' | 'email' | 'job_title' | 'password'): string
  get(key: 'team_id'): string 
  get(key: 'deployment_id'): string 
  get(key: 'post_id'): string 
@@ -272,8 +253,7 @@ interface RequestDataPost {
 export interface PostRequestType extends Request {
       validate(attributes?: CustomAttributes): void
        get(key: 'id'): number
- get(key: 'title'): string
- get(key: 'body'): string
+ get(key: 'title' | 'body'): string
  get(key: 'user_id'): string 
 
       all(): RequestDataPost
