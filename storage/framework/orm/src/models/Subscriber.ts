@@ -14,9 +14,9 @@ export interface SubscribersTable {
   subscribed: boolean
   user_id: number
 
-  created_at: ColumnType<Date, string | undefined, never>
+  created_at: Date
 
-  updated_at: ColumnType<Date, string | undefined, never>
+  updated_at: Date
 }
 
 interface SubscriberResponse {

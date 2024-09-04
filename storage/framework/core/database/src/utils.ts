@@ -1,8 +1,6 @@
 import { database } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { Database } from '@stacksjs/orm'
-import { plural, snakeCase } from '@stacksjs/strings'
-import type { Model } from '@stacksjs/types'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'

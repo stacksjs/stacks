@@ -18,9 +18,9 @@ export interface PersonalAccessTokensTable {
   abilities: string[]
   team_id: number
 
-  created_at: ColumnType<Date, string | undefined, never>
+  created_at: Date
 
-  updated_at: ColumnType<Date, string | undefined, never>
+  updated_at: Date
 }
 
 interface AccessTokenResponse {

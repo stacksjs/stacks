@@ -27,11 +27,11 @@ export interface UsersTable {
   post_id: number
   two_factor_secret?: string
 
-  created_at: ColumnType<Date, string | undefined, never>
+  created_at: Date
 
-  updated_at: ColumnType<Date, string | undefined, never>
+  updated_at: Date
 
-  deleted_at: ColumnType<Date, string | undefined, never>
+  deleted_at: Date
 }
 
 interface UserResponse {

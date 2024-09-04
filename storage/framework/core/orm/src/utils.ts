@@ -756,7 +756,7 @@ export async function generateKyselyTypes() {
     const words = tableName.split('_')
     const pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
 
-    text += `import type { ${pivotFormatted}Table } from '../../../../orm/src/models/${modelName}'\n`
+    text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
   }
 
   text += `import type { Generated } from 'kysely'\n\n`
@@ -1080,14 +1080,14 @@ export async function generateModelString(
 
   if (useTimestamps) {
     fieldString += `
-      created_at: ColumnType<Date, string | undefined, never>\n
-      updated_at: ColumnType<Date, string | undefined, never>
+      created_at: Date\n
+      updated_at: Date
     `
   }
 
   if (useSoftDeletes) {
     fieldString += `
-      deleted_at: ColumnType<Date, string | undefined, never>\n
+      deleted_at: Date
     `
   }
 
