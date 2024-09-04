@@ -331,7 +331,7 @@ export function authPath(path?: string): string {
  * ```
  */
 export function coreApiPath(path?: string): string {
-  return coreApiPath(`auth/${path || ''}`)
+  return corePath(`api/${path || ''}`)
 }
 
 /**
