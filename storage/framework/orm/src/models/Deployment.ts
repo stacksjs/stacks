@@ -280,13 +280,13 @@ export class DeploymentModel {
       .execute()
 
     let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
 
     return {
       data: deploymentsWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page,
+        page: options.page || 1,
         total_pages: totalPages,
       },
       next_cursor: nextCursor,
@@ -623,15 +623,9 @@ export class DeploymentModel {
     return output as Deployment
   }
 
-  parseResult(model: DeploymentModel): DeploymentModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
-    delete model['softDeletes']
-
+  parseResult(model: UserModel): UserModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute]
+      delete model[hiddenAttribute as keyof UserModel]
     }
 
     return model

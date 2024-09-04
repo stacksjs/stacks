@@ -271,14 +271,13 @@ export class AccessTokenModel {
       .execute()
 
     let nextCursor = null
-    if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
-      nextCursor = personal_access_tokensWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
 
     return {
       data: personal_access_tokensWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page,
+        page: options.page || 1,
         total_pages: totalPages,
       },
       next_cursor: nextCursor,
@@ -588,15 +587,9 @@ export class AccessTokenModel {
     return output as AccessToken
   }
 
-  parseResult(model: AccessTokenModel): AccessTokenModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
-    delete model['softDeletes']
-
+  parseResult(model: UserModel): UserModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute]
+      delete model[hiddenAttribute as keyof UserModel]
     }
 
     return model

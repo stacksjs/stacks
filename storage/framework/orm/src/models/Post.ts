@@ -265,13 +265,13 @@ export class PostModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
 
     return {
       data: postsWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page,
+        page: options.page || 1,
         total_pages: totalPages,
       },
       next_cursor: nextCursor,
@@ -282,11 +282,16 @@ export class PostModel {
   static async create(newPost: NewPost): Promise<PostModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newPost)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newPost[key]
-        return obj
-      }, {})
+      .filter((key) => {
+        if (instance.fillable.length) instance.fillable.includes(key)
+      })
+      .reduce(
+        (obj, key) => {
+          obj[key as keyof NewPost] = newPost[key as keyof NewPost] as any
+          return obj
+        },
+        {} as Partial<NewPost>,
+      )
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined
@@ -563,15 +568,9 @@ export class PostModel {
     return output as Post
   }
 
-  parseResult(model: PostModel): PostModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
-    delete model['softDeletes']
-
+  parseResult(model: UserModel): UserModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute]
+      delete model[hiddenAttribute as keyof UserModel]
     }
 
     return model

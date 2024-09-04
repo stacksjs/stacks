@@ -292,13 +292,13 @@ export class UserModel {
       .execute()
 
     let nextCursor = null
-    if (usersWithExtra.length > (options.limit ?? 10)) nextCursor = usersWithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
 
     return {
       data: usersWithExtra,
       paging: {
         total_records: totalRecords,
-        page: options.page,
+        page: options.page || 1,
         total_pages: totalPages,
       },
       next_cursor: nextCursor,
@@ -651,14 +651,8 @@ export class UserModel {
   }
 
   parseResult(model: UserModel): UserModel {
-    delete model['query']
-    delete model['fillable']
-    delete model['two_factor_secret']
-    delete model['hasSelect']
-    delete model['softDeletes']
-
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute]
+      delete model[hiddenAttribute as keyof UserModel]
     }
 
     return model

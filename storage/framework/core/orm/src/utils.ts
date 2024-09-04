@@ -1348,15 +1348,15 @@ export async function generateModelString(
           .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
           .execute()
 
-        let nextCursor = null
-        if (${tableName}WithExtra.length > (options.limit ?? 10))
-          nextCursor = ${tableName}WithExtra.pop()!.id // Use the ID of the extra record as the next cursor
+       
+          let nextCursor = null
+          if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
 
         return {
           data: ${tableName}WithExtra,
           paging: {
             total_records: totalRecords,
-            page: options.page,
+            page: options.page || 1,
             total_pages: totalPages,
           },
           next_cursor: nextCursor,
@@ -1642,19 +1642,13 @@ export async function generateModelString(
         return output as ${modelName}
       }
 
-      parseResult(model: ${modelName}Model): ${modelName}Model {
-        delete model['query']
-        delete model['fillable']
-        delete model['two_factor_secret']
-        delete model['hasSelect']
-        delete model['softDeletes']
+        parseResult(model: UserModel): UserModel {
+          for (const hiddenAttribute of this.hidden) {
+            delete model[hiddenAttribute as keyof UserModel]
+          }
 
-        for (const hiddenAttribute of this.hidden) {
-          delete model[hiddenAttribute]
+          return model
         }
-
-        return model
-      }
 
       ${twoFactorStatements}
     }

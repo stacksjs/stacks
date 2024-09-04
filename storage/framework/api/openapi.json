@@ -1,4 +1,10 @@
-{"openapi":"3.0.0","info":{"title":"Generated API","version":"1.0.0"},"paths":{"/api/foo/bar/{id}":{"get":{"summary":".api.foo.bar.{id}","parameters":[],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api":{"get":{"summary":".api","parameters":[],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api/hello/world":{"get":{"summary":".api.hello.world","parameters":[],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api/email/subscribe":{"post":{"summary":".api.email.subscribe","operationId":"Actions/SubscriberEmailAction","parameters":[],"responses":{"201":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api/login":{"post":{"summary":".api.login","operationId":"Actions/LoginAction","parameters":[],"responses":{"201":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api/users":{"get":{"summary":".api.users","operationId":"storage/framework/actions/src/UserIndexOrmAction.ts","parameters":[],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api/users/{id}":{"get":{"summary":".api.users.{id}","operationId":"storage/framework/actions/src/UserShowOrmAction.ts","parameters":[],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}},"delete":{"summary":".api.users.{id}","operationId":"storage/framework/actions/src/UserDestroyOrmAction.ts","parameters":[],"responses":{"204":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}},"/api/health":{"get":{"summary":".api.health","parameters":[],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{}}}}}}}}},"components":{"schemas":{}}}      "operationId": "storage/framework/actions/src/UserIndexOrmAction.ts",
+{
+  "openapi": "3.0.0",
+  "info": { "title": "Generated API", "version": "1.0.0" },
+  "paths": {
+    "/api/foo/bar/{id}": {
+      "get": {
+        "summary": ".api.foo.bar.{id}",
         "parameters": [],
         "responses": {
           "200": {
@@ -12,10 +18,76 @@
         }
       }
     },
-    "/api/users/{id}": {
+    "/api": {
       "get": {
-        "summary": ".api.users.{id}",
-        "operationId": "storage/framework/actions/src/UserShowOrmAction.ts",
+        "summary": ".api",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hello/world": {
+      "get": {
+        "summary": ".api.hello.world",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/email/subscribe": {
+      "post": {
+        "summary": ".api.email.subscribe",
+        "operationId": "Actions/SubscriberEmailAction",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "summary": ".api.login",
+        "operationId": "Actions/LoginAction",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": {} }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "summary": ".api.users",
+        "operationId": "storage/framework/actions/src/UserIndexOrmAction.ts",
         "parameters": [],
         "responses": {
           "200": {
@@ -28,12 +100,12 @@
           }
         }
       },
-      "delete": {
-        "summary": ".api.users.{id}",
-        "operationId": "storage/framework/actions/src/UserDestroyOrmAction.ts",
+      "post": {
+        "summary": ".api.users",
+        "operationId": "storage/framework/actions/src/UserStoreOrmAction.ts",
         "parameters": [],
         "responses": {
-          "204": {
+          "201": {
             "description": "Successful response",
             "content": {
               "application/json": {
