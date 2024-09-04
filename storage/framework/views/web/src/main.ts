@@ -1,6 +1,6 @@
 import { setupLayouts } from 'virtual:generated-layouts'
 import '@unocss/reset/tailwind.css'
-import 'uno.css'
+import 'unocss'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import '../../../../../resources/assets/styles/main.css'

@@ -67,3 +67,7 @@ disableManifest = false
 
 # whether to save the lockfile to disk
 save = true
+
+[run]
+# equivalent to `bun --bun` for all `bun run` commands
+bun = true

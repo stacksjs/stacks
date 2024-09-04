@@ -4,8 +4,8 @@
   "version": "0.64.6",
   "private": true,
   "scripts": {
-    "build": "bunx vite-ssg build -c ../../core/vite-config/src/views.ts",
-    "dev": "bunx vite serve -c ../../core/vite-config/src/views.ts",
+    "build": "bunx --bun vite-ssg build -c ../../core/vite-config/src/views.ts",
+    "dev": "bunx --bun vite serve -c ../../core/vite-config/src/views.ts",
     "preview": "bunx --bun vite preview",
     "typecheck": "bunx --bun vue-tsc --noEmit",
     "up": "bunx taze major -I",

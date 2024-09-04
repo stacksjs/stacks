@@ -25,7 +25,7 @@ import { log } from '@stacksjs/logging'
  * @returns The absolute path to the file or directory.
  * @example
  * ```ts
- * import { actionsPath } from '@stacksjs/paths'
+ * import { actionsPath } from '@stacksjs/path'
  *
  * console.log(actionsPath('path/to/action.ts')) // Outputs the absolute path to 'path/to/action.ts' within the `actions` directory
  * ```
@@ -69,7 +69,7 @@ export function userFunctionsPath(path?: string) {
  * @returns The absolute path to the specified file or directory within the user-defined `Jobs` directory.
  * @example
  * ```ts
- * import { userJobsPath } from '@stacksjs/paths'
+ * import { userJobsPath } from '@stacksjs/path'
  *
  * console.log(userJobsPath('MyJob.ts')) // Outputs the absolute path to 'MyJob.ts' within the user-defined `Jobs` directory.
  * ```
@@ -85,7 +85,7 @@ export function userJobsPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the user-defined `Listeners` directory.
  * @example
  * ```ts
- * import { userListenersPath } from '@stacksjs/paths'
+ * import { userListenersPath } from '@stacksjs/path'
  *
  * console.log(userListenersPath('MyListener.ts')) // Outputs the absolute path to 'MyListener.ts' within the user-defined `Listeners` directory.
  * ```
@@ -101,7 +101,7 @@ export function userListenersPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the user-defined Middleware directory.
  * @example
  * ```ts
- * import { userMiddlewarePath } from '@stacksjs/paths'
+ * import { userMiddlewarePath } from '@stacksjs/path'
  *
  * console.log(userMiddlewarePath('MyMiddleware.ts')) // Outputs the absolute path to 'MyMiddleware.ts' within the user-defined Middleware directory.
  * ```
@@ -117,7 +117,7 @@ export function userMiddlewarePath(path?: string) {
  * @returns The absolute path to the specified file or directory within the user-defined `Models` directory.
  * @example
  * ```ts
- * import { userModelsPath } from '@stacksjs/paths'
+ * import { userModelsPath } from '@stacksjs/path'
  *
  * console.log(userModelsPath('MyModel.ts')) // Outputs the absolute path to 'MyModel.ts' within the user-defined `Models` directory.
  * ```
@@ -133,7 +133,7 @@ export function userModelsPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the user-defined `Notifications` directory.
  * @example
  * ```ts
- * import { userNotificationsPath } from '@stacksjs/paths'
+ * import { userNotificationsPath } from '@stacksjs/path'
  *
  * console.log(userNotificationsPath('MyNotification.ts')) // Outputs the absolute path to 'MyNotification.ts' within the user-defined `Notifications` directory.
  * ```
@@ -156,7 +156,7 @@ export function userMigrationsPath(path?: string) {
  * @returns The absolute path to the `Events.ts` file within the user-defined directory.
  * @example
  * ```ts
- * import { userEventsPath } from '@stacksjs/paths'
+ * import { userEventsPath } from '@stacksjs/path'
  *
  * console.log(userEventsPath()) // Outputs the absolute path to 'Events.ts' within the user-defined directory.
  * ```
@@ -175,7 +175,7 @@ export function userEventsPath(): string {
  *
  * @example
  * ```ts
- * import { aiPath } from '@stacksjs/paths'
+ * import { aiPath } from '@stacksjs/path'
  *
  * console.log(aiPath('src/drivers/example.ts')) // Outputs the absolute path to 'openai.ts' within the AI directory
  * ```
@@ -191,7 +191,7 @@ export function aiPath(path?: string) {
  * @returns The absolute path to the specified file or directory within the `assets` directory.
  * @example
  * ```ts
- * import { assetsPath } from '@stacksjs/paths'
+ * import { assetsPath } from '@stacksjs/path'
  *
  * console.log(assetsPath('images/logo.png')) // Outputs the absolute path to 'images/logo.png' within the `assets` directory.
  * ```
@@ -206,7 +206,7 @@ export function assetsPath(path?: string) {
  * @returns The absolute path to the `alias` directory.
  * @example
  * ```ts
- * import { aliasPath } from '@stacksjs/paths'
+ * import { aliasPath } from '@stacksjs/path'
  *
  * console.log(aliasPath()) // Outputs the absolute path to the `alias` directory.
  * ```
@@ -224,7 +224,7 @@ export function aliasPath() {
  * @returns The absolute or relative path to the specified file or directory within the buddy  * @returns The absolute or relative path to the specified file or directory within the buddy directory.
  * @example
  * ```ts
- * import { buddyPath } from '@stacksjs/paths'
+ * import { buddyPath } from '@stacksjs/path'
  *
  * console.log(buddyPath('config/buddy.json')) // Outputs the absolute path to 'config/buddy.json' within the buddy directory.
  * console.log(buddyPath('config/buddy.json', { relative: true })) // Outputs the relative path to 'config/buddy.json' within the buddy directory.
@@ -245,7 +245,7 @@ export function buddyPath(path?: string, options?: { relative?: boolean }) {
  * @returns The absolute path to the specified file or directory within the runtime directory.
  * @example
  * ```ts
- * import { runtimePath } from '@stacksjs/paths'
+ * import { runtimePath } from '@stacksjs/path'
  *
  * console.log(runtimePath('runtime-config.json')) // Outputs the absolute path to 'runtime-config.json' within the runtime directory.
  * ```
@@ -261,7 +261,7 @@ export function runtimePath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the `analytics` directory.
  * @example
  * ```ts
- * import { analyticsPath } from '@stacksjs/paths'
+ * import { analyticsPath } from '@stacksjs/path'
  *
  * console.log(analyticsPath('data/report.csv')) // Outputs the absolute path to 'data/report.csv' within the `analytics` directory.
  * ```
@@ -277,7 +277,7 @@ export function analyticsPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the `arrays` directory.
  * @example
  * ```ts
- * import { arraysPath } from '@stacksjs/paths'
+ * import { arraysPath } from '@stacksjs/path'
  *
  * console.log(arraysPath('list.txt')) // Outputs the absolute path to 'list.txt' within the `arrays` directory.
  * ```
@@ -293,7 +293,7 @@ export function arraysPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the app directory.
  * @example
  * ```ts
- * import { appPath } from '@stacksjs/paths'
+ * import { appPath } from '@stacksjs/path'
  *
  * console.log(appPath('Actions/DummyAction.ts')) // Outputs the absolute path to 'Actions/DummyAction.ts' within the app directory.
  * ```
@@ -309,13 +309,29 @@ export function appPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the auth directory.
  * @example
  * ```ts
- * import { authPath } from '@stacksjs/paths'
+ * import { authPath } from '@stacksjs/path'
  *
  * console.log(authPath('login.ts')) // Outputs the absolute path to 'login.ts' within the auth directory.
  * ```
  */
 export function authPath(path?: string): string {
   return corePath(`auth/${path || ''}`)
+}
+
+/**
+ * Returns the path to the `auth` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the auth directory.
+ * @returns The absolute path to the specified file or directory within the auth directory.
+ * @example
+ * ```ts
+ * import { coreApiPath } from '@stacksjs/path'
+ *
+ * console.log(coreApiPath('login.ts')) // Outputs the absolute path to 'login.ts' within the auth directory.
+ * ```
+ */
+export function coreApiPath(path?: string): string {
+  return coreApiPath(`auth/${path || ''}`)
 }
 
 /**
@@ -1293,6 +1309,7 @@ export const path = {
   arraysPath,
   appPath,
   authPath,
+  coreApiPath,
   buddyPath,
   buildEnginePath,
   libsEntriesPath,

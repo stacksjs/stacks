@@ -59,6 +59,7 @@ const result = await Bun.build({
   ],
 
   external: [
+    '@stacksjs/api',
     '@stacksjs/path',
     '@stacksjs/cli',
     '@stacksjs/types',

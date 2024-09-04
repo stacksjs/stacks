@@ -24,32 +24,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: [
-        'path',
-        'fs',
-        'net',
-        'tls',
-        'stream',
-        'node:process',
-        'constants',
-        'node:dns/promises',
-        'node:util',
-        'node:os',
-        'node:path',
-        'node:fs',
-        'node:module',
-        'node:url',
-        'node:assert',
-        'node:v8',
-        'pkg-types',
-        'fsevents',
-        'c12',
-        '@stacksjs/logging',
-        '@stacksjs/utils',
-        '@stacksjs/cli',
-        'bun',
-        'execa',
-      ],
+      external: ['stacks'],
     },
   },
 
@@ -61,7 +36,7 @@ export default defineConfig({
   assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
+    exclude: ['@stacksjs/ui', '@stacksjs/api', '@stacksjs/router', '@stacksjs/database', 'stacks'],
   },
 
   server: server({
@@ -115,12 +90,12 @@ export default defineConfig({
     }),
 
     autoImports(),
-    components(),
-    cssEngine(),
-    markdown(),
+    // components(),
+    // cssEngine(),
+    // markdown(),
     pwa(),
-    devtools(),
-    i18n(),
+    // devtools(),
+    // i18n(),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
     // fonts(),

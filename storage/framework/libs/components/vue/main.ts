@@ -1,4 +1,4 @@
-import 'uno.css'
+import 'unocss'
 import { createApp } from 'vue'
 
 // import Previewer from 'virtual:vue-component-preview'

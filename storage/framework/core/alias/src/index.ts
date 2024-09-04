@@ -15,6 +15,8 @@ export const alias: Record<string, string> = {
   '@stacksjs/arrays': p.arraysPath('src/index.ts'),
   '@stacksjs/arrays/*': p.arraysPath('src/*'),
   '@stacksjs/auth': p.authPath('src/index.ts'),
+  '@stacksjs/api/*': p.coreApiPath('src/*'),
+  '@stacksjs/api': p.coreApiPath('src/index.ts'),
   '@stacksjs/auth/*': p.authPath('src/*'),
   '@stacksjs/build': p.buildPath('src/index.ts'),
   '@stacksjs/build/*': p.buildPath('src/*'),

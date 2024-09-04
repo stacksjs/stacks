@@ -34,7 +34,7 @@ declare global {
   const ErrorHandler: typeof import('../core/error-handling/src/handler')['ErrorHandler']
   const Every: typeof import('../core/types/src/cron-jobs')['Every']
   const ExitCode: typeof import('../core/types/src/exit-code')['ExitCode']
-  const Fetch: typeof import('../core/api/src/index')['Fetch']
+  const Fetch: typeof import('../core/api/src/ofetch')['Fetch']
   const Head: typeof import('../core/utils/src/vendors')['Head']
   const HeadVuePlugin: typeof import('../core/utils/src/vendors')['HeadVuePlugin']
   const LogLevels: typeof import('../core/types/src/logger')['LogLevels']
@@ -283,6 +283,11 @@ declare global {
   const delay: typeof import('../core/utils/src/sleep')['delay']
   const deleteEmptyFolder: typeof import('../core/storage/src/delete')['deleteEmptyFolder']
   const deleteEmptyFolders: typeof import('../core/storage/src/delete')['deleteEmptyFolders']
+  const deleteExistingModelNameTypes: typeof import('../core/orm/src/utils')['deleteExistingModelNameTypes']
+  const deleteExistingModelRequest: typeof import('../core/orm/src/utils')['deleteExistingModelRequest']
+  const deleteExistingModels: typeof import('../core/orm/src/utils')['deleteExistingModels']
+  const deleteExistingOrmActions: typeof import('../core/orm/src/utils')['deleteExistingOrmActions']
+  const deleteExistingOrmRoute: typeof import('../core/orm/src/utils')['deleteExistingOrmRoute']
   const deleteFile: typeof import('../core/storage/src/delete')['deleteFile']
   const deleteFiles: typeof import('../core/storage/src/files')['deleteFiles']
   const deleteFolder: typeof import('../core/storage/src/delete')['deleteFolder']
@@ -338,10 +343,11 @@ declare global {
   const expo: typeof import('../core/push/src/drivers/index')['expo']
   const extendRef: typeof import('../core/utils/src/vendors')['extendRef']
   const extname: typeof import('../core/path/src/index')['extname']
+  const extractAttributesFromModel: typeof import('../core/orm/src/utils')['extractAttributesFromModel']
   const extractDefaultRequest: typeof import('../core/router/src/utils')['extractDefaultRequest']
   const extractDynamicAction: typeof import('../core/router/src/utils')['extractDynamicAction']
   const extractDynamicRequest: typeof import('../core/router/src/utils')['extractDynamicRequest']
-  const extractAttributesFromModel: typeof import('../core/orm/src/utils')['extractAttributesFromModel']
+  const extractFields: typeof import('../core/orm/src/utils')['extractFields']
   const extractModelFromAction: typeof import('../core/router/src/utils')['extractModelFromAction']
   const extractModelRequest: typeof import('../core/router/src/utils')['extractModelRequest']
   const faker: typeof import('../core/faker/src/index')['faker']
@@ -349,7 +355,7 @@ declare global {
   const fathomWip: typeof import('../core/analytics/src/drivers/fathom')['fathomWip']
   const fcm: typeof import('../core/push/src/drivers/index')['fcm']
   const feature: typeof import('../core/testing/src/index')['feature']
-  const fetchOtherModelRelations: typeof import('../core/database/src/seeder')['fetchOtherModelRelations']
+  const fetchOtherModelRelations: typeof import('../core/orm/src/utils')['fetchOtherModelRelations']
   const files: typeof import('../core/storage/src/files')['files']
   const filterName: typeof import('../core/search-engine/src/index')['filterName']
   const filters: typeof import('../core/search-engine/src/index')['filters']
@@ -375,14 +381,20 @@ declare global {
   const functions: typeof import('../core/build/src/index')['functions']
   const functionsPath: typeof import('../core/path/src/index')['functionsPath']
   const generate: typeof import('../core/actions/src/generate/index')['generate']
+  const generateApiRoutes: typeof import('../core/orm/src/utils')['generateApiRoutes']
   const generateAppKey: typeof import('../core/security/src/key')['generateAppKey']
   const generateComponentMeta: typeof import('../core/actions/src/generate/index')['generateComponentMeta']
   const generateCoreSymlink: typeof import('../core/actions/src/generate/index')['generateCoreSymlink']
   const generateIdeHelpers: typeof import('../core/actions/src/generate/index')['generateIdeHelpers']
+  const generateKyselyTypes: typeof import('../core/orm/src/utils')['generateKyselyTypes']
   const generateLibEntries: typeof import('../core/actions/src/generate/index')['generateLibEntries']
   const generateMigration: typeof import('../core/database/src/migrations')['generateMigration']
   const generateMigrationFile: typeof import('../core/database/src/migrations')['generateMigrationFile']
   const generateMigrations: typeof import('../core/database/src/migrations')['generateMigrations']
+  const generateModelFiles: typeof import('../core/orm/src/utils')['generateModelFiles']
+  const generateModelString: typeof import('../core/orm/src/utils')['generateModelString']
+  const generateOpenApi: typeof import('../core/api/src/generate-openapi')['generateOpenApi']
+  const generateOpenApiSpec: typeof import('../core/actions/src/generate/index')['generateOpenApiSpec']
   const generatePkgxConfig: typeof import('../core/actions/src/generate/index')['generatePkgxConfig']
   const generateQrCode: typeof import('../core/auth/src/authenticator')['generateQrCode']
   const generateSeeder: typeof import('../core/actions/src/generate/index')['generateSeeder']
@@ -403,12 +415,18 @@ declare global {
   const getExecutedMigrations: typeof import('../core/database/src/migrations')['getExecutedMigrations']
   const getExportsSize: typeof import('../core/utils/src/export-size')['getExportsSize']
   const getFiles: typeof import('../core/storage/src/files')['getFiles']
+  const getFillableAttributes: typeof import('../core/orm/src/utils')['getFillableAttributes']
   const getFolders: typeof import('../core/storage/src/folders')['getFolders']
+  const getHiddenAttributes: typeof import('../core/orm/src/utils')['getHiddenAttributes']
   const getLastMigrationFields: typeof import('../core/database/src/migrations')['getLastMigrationFields']
   const getModelCustomizationJob: typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']
   const getModelName: typeof import('../core/orm/src/utils')['getModelName']
   const getNameservers: typeof import('../core/dns/src/drivers/aws')['getNameservers']
-  const getRelations: typeof import('../core/database/src/seeder')['getRelations']
+  const getPivotTableName: typeof import('../core/orm/src/utils')['getPivotTableName']
+  const getPivotTables: typeof import('../core/orm/src/utils')['getPivotTables']
+  const getRelationCount: typeof import('../core/orm/src/utils')['getRelationCount']
+  const getRelationType: typeof import('../core/orm/src/utils')['getRelationType']
+  const getRelations: typeof import('../core/orm/src/utils')['getRelations']
   const getSSRHandler: typeof import('../core/utils/src/vendors')['getSSRHandler']
   const getTableName: typeof import('../core/orm/src/utils')['getTableName']
   const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
@@ -430,6 +448,7 @@ declare global {
   const hasFiles: typeof import('../core/storage/src/files')['hasFiles']
   const hasFunctions: typeof import('../core/storage/src/files')['hasFunctions']
   const hasOwnProperty: typeof import('../core/objects/src/index')['hasOwnProperty']
+  const hasRelations: typeof import('../core/orm/src/utils')['hasRelations']
   const hasScript: typeof import('../core/utils/src/helpers')['hasScript']
   const hasSubUnits: typeof import('../core/utils/src/currency')['hasSubUnits']
   const hasTableBeenMigrated: typeof import('../core/database/src/migrations')['hasTableBeenMigrated']
@@ -1081,7 +1100,10 @@ declare global {
   const writeFile: typeof import('../core/storage/src/files')['writeFile']
   const writeFileSync: typeof import('../core/storage/src/fs')['writeFileSync']
   const writeJsonFile: typeof import('../core/storage/src/files')['writeJsonFile']
+  const writeModelNames: typeof import('../core/orm/src/utils')['writeModelNames']
+  const writeModelRequest: typeof import('../core/orm/src/utils')['writeModelRequest']
   const writeNameserversToConfig: typeof import('../core/dns/src/drivers/aws')['writeNameserversToConfig']
+  const writeOrmActions: typeof import('../core/orm/src/utils')['writeOrmActions']
   const writeTextFile: typeof import('../core/storage/src/files')['writeTextFile']
   const writeToLogFile: typeof import('../core/logging/src/index')['writeToLogFile']
   const xRayPath: typeof import('../core/path/src/index')['xRayPath']
@@ -1117,7 +1139,7 @@ declare module 'vue' {
     readonly ErrorHandler: UnwrapRef<typeof import('../core/error-handling/src/handler')['ErrorHandler']>
     readonly Every: UnwrapRef<typeof import('../core/types/src/cron-jobs')['Every']>
     readonly ExitCode: UnwrapRef<typeof import('../core/types/src/exit-code')['ExitCode']>
-    readonly Fetch: UnwrapRef<typeof import('../core/api/src/index')['Fetch']>
+    readonly Fetch: UnwrapRef<typeof import('../core/api/src/ofetch')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/utils/src/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/utils/src/vendors')['HeadVuePlugin']>
     readonly Macroable: UnwrapRef<typeof import('../core/utils/src/macroable')['Macroable']>
@@ -1314,6 +1336,11 @@ declare module 'vue' {
     readonly delay: UnwrapRef<typeof import('../core/utils/src/sleep')['delay']>
     readonly deleteEmptyFolder: UnwrapRef<typeof import('../core/storage/src/delete')['deleteEmptyFolder']>
     readonly deleteEmptyFolders: UnwrapRef<typeof import('../core/storage/src/delete')['deleteEmptyFolders']>
+    readonly deleteExistingModelNameTypes: UnwrapRef<typeof import('../core/orm/src/utils')['deleteExistingModelNameTypes']>
+    readonly deleteExistingModelRequest: UnwrapRef<typeof import('../core/orm/src/utils')['deleteExistingModelRequest']>
+    readonly deleteExistingModels: UnwrapRef<typeof import('../core/orm/src/utils')['deleteExistingModels']>
+    readonly deleteExistingOrmActions: UnwrapRef<typeof import('../core/orm/src/utils')['deleteExistingOrmActions']>
+    readonly deleteExistingOrmRoute: UnwrapRef<typeof import('../core/orm/src/utils')['deleteExistingOrmRoute']>
     readonly deleteFile: UnwrapRef<typeof import('../core/storage/src/delete')['deleteFile']>
     readonly deleteFiles: UnwrapRef<typeof import('../core/storage/src/files')['deleteFiles']>
     readonly deleteFolder: UnwrapRef<typeof import('../core/storage/src/delete')['deleteFolder']>
@@ -1364,17 +1391,17 @@ declare module 'vue' {
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
     readonly extendRef: UnwrapRef<typeof import('../core/utils/src/vendors')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/index')['extname']>
+    readonly extractAttributesFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractAttributesFromModel']>
     readonly extractDefaultRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDefaultRequest']>
     readonly extractDynamicAction: UnwrapRef<typeof import('../core/router/src/utils')['extractDynamicAction']>
-    readonly extractAttributesFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractAttributesFromModel']>
+    readonly extractFields: UnwrapRef<typeof import('../core/orm/src/utils')['extractFields']>
     readonly extractModelFromAction: UnwrapRef<typeof import('../core/router/src/utils')['extractModelFromAction']>
     readonly extractModelRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractModelRequest']>
     readonly faker: UnwrapRef<typeof import('../core/faker/src/index')['faker']>
     readonly fakerPath: UnwrapRef<typeof import('../core/path/src/index')['fakerPath']>
     readonly fathomWip: UnwrapRef<typeof import('../core/analytics/src/drivers/fathom')['fathomWip']>
     readonly fcm: UnwrapRef<typeof import('../core/push/src/drivers/index')['fcm']>
-    readonly feature: UnwrapRef<typeof import('../core/testing/src/index')['feature']>
-    readonly fetchOtherModelRelations: UnwrapRef<typeof import('../core/database/src/seeder')['fetchOtherModelRelations']>
+    readonly fetchOtherModelRelations: UnwrapRef<typeof import('../core/orm/src/utils')['fetchOtherModelRelations']>
     readonly files: UnwrapRef<typeof import('../core/storage/src/files')['files']>
     readonly filterName: UnwrapRef<typeof import('../core/search-engine/src/index')['filterName']>
     readonly filters: UnwrapRef<typeof import('../core/search-engine/src/index')['filters']>
@@ -1394,13 +1421,19 @@ declare module 'vue' {
     readonly fsWatch: UnwrapRef<typeof import('../core/storage/src/fs')['fsWatch']>
     readonly functionsPath: UnwrapRef<typeof import('../core/path/src/index')['functionsPath']>
     readonly generate: UnwrapRef<typeof import('../core/actions/src/generate/index')['generate']>
+    readonly generateApiRoutes: UnwrapRef<typeof import('../core/orm/src/utils')['generateApiRoutes']>
     readonly generateAppKey: UnwrapRef<typeof import('../core/security/src/key')['generateAppKey']>
     readonly generateComponentMeta: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateComponentMeta']>
     readonly generateCoreSymlink: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateCoreSymlink']>
     readonly generateIdeHelpers: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateIdeHelpers']>
+    readonly generateKyselyTypes: UnwrapRef<typeof import('../core/orm/src/utils')['generateKyselyTypes']>
     readonly generateLibEntries: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateLibEntries']>
     readonly generateMigration: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigration']>
     readonly generateMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['generateMigrations']>
+    readonly generateModelFiles: UnwrapRef<typeof import('../core/orm/src/utils')['generateModelFiles']>
+    readonly generateModelString: UnwrapRef<typeof import('../core/orm/src/utils')['generateModelString']>
+    readonly generateOpenApi: UnwrapRef<typeof import('../core/api/src/generate-openapi')['generateOpenApi']>
+    readonly generateOpenApiSpec: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateOpenApiSpec']>
     readonly generatePkgxConfig: UnwrapRef<typeof import('../core/actions/src/generate/index')['generatePkgxConfig']>
     readonly generateQrCode: UnwrapRef<typeof import('../core/auth/src/authenticator')['generateQrCode']>
     readonly generateSeeder: UnwrapRef<typeof import('../core/actions/src/generate/index')['generateSeeder']>
@@ -1421,12 +1454,18 @@ declare module 'vue' {
     readonly getExecutedMigrations: UnwrapRef<typeof import('../core/database/src/migrations')['getExecutedMigrations']>
     readonly getExportsSize: UnwrapRef<typeof import('../core/utils/src/export-size')['getExportsSize']>
     readonly getFiles: UnwrapRef<typeof import('../core/storage/src/files')['getFiles']>
+    readonly getFillableAttributes: UnwrapRef<typeof import('../core/orm/src/utils')['getFillableAttributes']>
     readonly getFolders: UnwrapRef<typeof import('../core/storage/src/folders')['getFolders']>
+    readonly getHiddenAttributes: UnwrapRef<typeof import('../core/orm/src/utils')['getHiddenAttributes']>
     readonly getLastMigrationFields: UnwrapRef<typeof import('../core/database/src/migrations')['getLastMigrationFields']>
     readonly getModelCustomizationJob: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['getModelCustomizationJob']>
     readonly getModelName: UnwrapRef<typeof import('../core/orm/src/utils')['getModelName']>
     readonly getNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['getNameservers']>
-    readonly getRelations: UnwrapRef<typeof import('../core/database/src/seeder')['getRelations']>
+    readonly getPivotTableName: UnwrapRef<typeof import('../core/orm/src/utils')['getPivotTableName']>
+    readonly getPivotTables: UnwrapRef<typeof import('../core/orm/src/utils')['getPivotTables']>
+    readonly getRelationCount: UnwrapRef<typeof import('../core/orm/src/utils')['getRelationCount']>
+    readonly getRelationType: UnwrapRef<typeof import('../core/orm/src/utils')['getRelationType']>
+    readonly getRelations: UnwrapRef<typeof import('../core/orm/src/utils')['getRelations']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/utils/src/vendors')['getSSRHandler']>
     readonly getTableName: UnwrapRef<typeof import('../core/orm/src/utils')['getTableName']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
@@ -1446,6 +1485,7 @@ declare module 'vue' {
     readonly hasFiles: UnwrapRef<typeof import('../core/storage/src/files')['hasFiles']>
     readonly hasFunctions: UnwrapRef<typeof import('../core/storage/src/files')['hasFunctions']>
     readonly hasOwnProperty: UnwrapRef<typeof import('../core/objects/src/index')['hasOwnProperty']>
+    readonly hasRelations: UnwrapRef<typeof import('../core/orm/src/utils')['hasRelations']>
     readonly hasScript: UnwrapRef<typeof import('../core/utils/src/helpers')['hasScript']>
     readonly hasUserDomainBeenAddedToCloud: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['hasUserDomainBeenAddedToCloud']>
     readonly hashDirectory: UnwrapRef<typeof import('../core/storage/src/hash')['hashDirectory']>
@@ -2038,7 +2078,10 @@ declare module 'vue' {
     readonly writeFile: UnwrapRef<typeof import('../core/storage/src/files')['writeFile']>
     readonly writeFileSync: UnwrapRef<typeof import('../core/storage/src/fs')['writeFileSync']>
     readonly writeJsonFile: UnwrapRef<typeof import('../core/storage/src/files')['writeJsonFile']>
+    readonly writeModelNames: UnwrapRef<typeof import('../core/orm/src/utils')['writeModelNames']>
+    readonly writeModelRequest: UnwrapRef<typeof import('../core/orm/src/utils')['writeModelRequest']>
     readonly writeNameserversToConfig: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['writeNameserversToConfig']>
+    readonly writeOrmActions: UnwrapRef<typeof import('../core/orm/src/utils')['writeOrmActions']>
     readonly writeTextFile: UnwrapRef<typeof import('../core/storage/src/files')['writeTextFile']>
     readonly writeToLogFile: UnwrapRef<typeof import('../core/logging/src/index')['writeToLogFile']>
     readonly xRayPath: UnwrapRef<typeof import('../core/path/src/index')['xRayPath']>
