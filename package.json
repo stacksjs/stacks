@@ -71,8 +71,7 @@
     "storage/framework/email",
     "storage/framework/libs/*",
     "storage/framework/libs/functions",
-    "storage/framework/libs/components/vue",
-    "storage/framework/libs/components/web",
+    "storage/framework/libs/components/*",
     "storage/framework/views/*",
     "storage/framework/server"
   ]
