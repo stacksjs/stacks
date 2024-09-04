@@ -316,7 +316,7 @@ export async function writeModelRequest() {
           entityGroups[entity] = [`'${snakeField}'`]
         }
 
-        fieldString += ` ${attribute.field}: ${entity}\n     `
+        fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
         fieldStringInt += `public ${snakeField} = ${defaultValue}\n`
         keyCounter++
       }

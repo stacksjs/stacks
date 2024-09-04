@@ -15,13 +15,13 @@ interface CustomAttributes {
 }
 interface RequestDataDeployment {
   id?: number
-  commitSha: string
-  commitMessage: string
+  commit_sha: string
+  commit_message: string
   branch: string
   status: string
-  executionTime: number
-  deployScript: string
-  terminalOutput: string
+  execution_time: number
+  deploy_script: string
+  terminal_output: string
   user_id: number
   created_at?: string
   updated_at?: string

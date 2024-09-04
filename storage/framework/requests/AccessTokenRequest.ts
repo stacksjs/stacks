@@ -17,7 +17,7 @@ interface RequestDataAccessToken {
   id?: number
   name: string
   token: string
-  plainTextToken: string
+  plain_text_token: string
   abilities: string[]
   team_id: number
   created_at?: string

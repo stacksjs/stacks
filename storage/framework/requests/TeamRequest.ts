@@ -16,13 +16,13 @@ interface CustomAttributes {
 interface RequestDataTeam {
   id?: number
   name: string
-  companyName: string
+  company_name: string
   email: string
-  billingEmail: string
+  billing_email: string
   status: string
   description: string
   path: string
-  isPersonal: boolean
+  is_personal: boolean
   accesstoken_id: number
   user_id: number
   created_at?: string

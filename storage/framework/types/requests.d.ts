@@ -60,7 +60,7 @@ interface RequestDataAccessToken {
        id?: number
  name: string
       token: string
-      plainTextToken: string
+      plain_text_token: string
       abilities: string[]
       team_id: number
      created_at?: string
@@ -78,7 +78,7 @@ export interface AccessTokenRequestType extends Request {
        id?: number
  name: string
       token: string
-      plainTextToken: string
+      plain_text_token: string
       abilities: string[]
       team_id: number
      created_at?: string
@@ -89,13 +89,13 @@ export interface AccessTokenRequestType extends Request {
 interface RequestDataTeam {
        id?: number
  name: string
-      companyName: string
+      company_name: string
       email: string
-      billingEmail: string
+      billing_email: string
       status: string
       description: string
       path: string
-      isPersonal: boolean
+      is_personal: boolean
       accesstoken_id: number
       user_id: number
      created_at?: string
@@ -113,13 +113,13 @@ export interface TeamRequestType extends Request {
       all(): RequestDataTeam
        id?: number
  name: string
-      companyName: string
+      company_name: string
       email: string
-      billingEmail: string
+      billing_email: string
       status: string
       description: string
       path: string
-      isPersonal: boolean
+      is_personal: boolean
       accesstoken_id: number
       user_id: number
      created_at?: string
@@ -152,13 +152,13 @@ export interface SubscriberRequestType extends Request {
 
 interface RequestDataDeployment {
        id?: number
- commitSha: string
-      commitMessage: string
+ commit_sha: string
+      commit_message: string
       branch: string
       status: string
-      executionTime: number
-      deployScript: string
-      terminalOutput: string
+      execution_time: number
+      deploy_script: string
+      terminal_output: string
       user_id: number
      created_at?: string
       updated_at?: string
@@ -173,13 +173,13 @@ export interface DeploymentRequestType extends Request {
 
       all(): RequestDataDeployment
        id?: number
- commitSha: string
-      commitMessage: string
+ commit_sha: string
+      commit_message: string
       branch: string
       status: string
-      executionTime: number
-      deployScript: string
-      terminalOutput: string
+      execution_time: number
+      deploy_script: string
+      terminal_output: string
       user_id: number
      created_at?: string
       updated_at?: string
@@ -210,7 +210,7 @@ interface RequestDataUser {
        id?: number
  name: string
       email: string
-      jobTitle: string
+      job_title: string
       password: string
       team_id: number
       deployment_id: number
@@ -231,7 +231,7 @@ export interface UserRequestType extends Request {
        id?: number
  name: string
       email: string
-      jobTitle: string
+      job_title: string
       password: string
       team_id: number
       deployment_id: number
