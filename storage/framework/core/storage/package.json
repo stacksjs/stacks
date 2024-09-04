@@ -54,7 +54,7 @@
     "archiver": "^7.0.1",
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
-    "unstorage": "^1.10.2"
+    "unstorage": "^1.11.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
