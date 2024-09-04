@@ -621,25 +621,27 @@ export async function generateApiRoutes(modelFiles: string[]) {
                 }
               }
             }
-          }
-
-          if (typeof apiRoutes === 'object') {
-            for (const apiRoute in apiRoutes) {
-              if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
-                const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
-                await writeOrmActions(apiRoute, modelName, routePath)
-                if (typeof routePath !== 'string') {
-                  throw new Error(`Invalid route path for ${apiRoute}`)
+          } else {
+            if (typeof apiRoutes === 'object') {
+              for (const apiRoute in apiRoutes) {
+                if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
+                  const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
+                  await writeOrmActions(apiRoute, modelName, routePath)
+                  if (typeof routePath !== 'string') {
+                    throw new Error(`Invalid route path for ${apiRoute}`)
+                  }
+                  const pathAction = `${routePath}.ts`
+                  if (apiRoute === 'index')
+                    routeString += `route.get('${uri}', '${pathAction}').${middlewareString}\n\n`
+                  if (apiRoute === 'show')
+                    routeString += `route.get('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
+                  if (apiRoute === 'store')
+                    routeString += `route.post('${uri}', '${pathAction}').${middlewareString}\n\n`
+                  if (apiRoute === 'update')
+                    routeString += `route.patch('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
+                  if (apiRoute === 'destroy')
+                    routeString += `route.delete('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
                 }
-                const pathAction = `${routePath}.ts`
-                if (apiRoute === 'index') routeString += `route.get('${uri}', '${pathAction}').${middlewareString}\n\n`
-                if (apiRoute === 'show')
-                  routeString += `route.get('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
-                if (apiRoute === 'store') routeString += `route.post('${uri}', '${pathAction}').${middlewareString}\n\n`
-                if (apiRoute === 'update')
-                  routeString += `route.patch('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
-                if (apiRoute === 'destroy')
-                  routeString += `route.delete('${uri}/{id}', '${pathAction}').${middlewareString}\n\n`
               }
             }
           }
@@ -702,9 +704,6 @@ export async function deleteExistingModels(modelStringFile?: string) {
 }
 
 export async function deleteExistingOrmActions(modelStringFile?: string) {
-  const routes = path.frameworkPath(`orm/routes.ts`)
-  if (fs.existsSync(routes)) await fs.promises.unlink(routes)
-
   if (modelStringFile) {
     const ormPath = path.builtUserActionsPath(`src/${modelStringFile}.ts`)
     if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
@@ -742,7 +741,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string) {
 }
 
 export async function deleteExistingOrmRoute() {
-  const ormRoute = path.storagePath('framework/orm/routes')
+  const ormRoute = path.frameworkPath('orm/routes.ts')
   if (fs.existsSync(ormRoute)) await fs.promises.unlink(ormRoute)
 }
 

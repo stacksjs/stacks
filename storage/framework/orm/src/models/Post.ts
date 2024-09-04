@@ -282,16 +282,11 @@ export class PostModel {
   static async create(newPost: NewPost): Promise<PostModel | undefined> {
     const instance = new this(null)
     const filteredValues = Object.keys(newPost)
-      .filter((key) => {
-        if (instance.fillable.length) instance.fillable.includes(key)
-      })
-      .reduce(
-        (obj, key) => {
-          obj[key as keyof NewPost] = newPost[key as keyof NewPost] as any
-          return obj
-        },
-        {} as Partial<NewPost>,
-      )
+      .filter((key) => instance.fillable.includes(key))
+      .reduce((obj: any, key) => {
+        obj[key] = newPost[key]
+        return obj
+      }, {})
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined
