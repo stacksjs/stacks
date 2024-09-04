@@ -27,8 +27,8 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "dev": "vite --config ./vite.config.ts",
-    "build": "echo 'wip vite build --mode lib'",
+    "dev": "bunx --bun vite -c ./vite.config.ts",
+    "build": "bunx --bun vite build --mode lib",
     "build:demo": "bunx --bun vite build",
     "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
     "preview": "bunx --bun vite preview"

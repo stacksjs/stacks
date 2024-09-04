@@ -1,29 +1,26 @@
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
-import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
+
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
 import UnoCSS from 'unocss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 
-const cleanCssInstance = new CleanCSS({})
 function minify(code: string) {
+  const cleanCssInstance = new CleanCSS({})
   return cleanCssInstance.minify(code).styles
 }
 
-let cssCodeStr = ''
-
 export default defineConfig(({ command, mode }) => {
+  let cssCodeStr = ''
   const userConfig: UserConfig = {
     optimizeDeps: {
-      exclude: ['fsevents'],
+      exclude: ['@stacksjs/notification'],
     },
   }
 
@@ -32,7 +29,7 @@ export default defineConfig(({ command, mode }) => {
       include: /\.(stx|vue|md)($|\?)/,
     }),
 
-    UnoCSS(),
+    // UnoCSS(),
 
     Components({
       extensions: ['stx', 'vue', 'md'],
@@ -45,24 +42,6 @@ export default defineConfig(({ command, mode }) => {
     }),
 
     Icons(),
-
-    AutoImport({
-      include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
-      imports: [
-        'pinia',
-        'vue',
-        'vue-i18n',
-        VueHeadImports,
-        VueRouterAutoImports,
-        {
-          'vue-router/auto': ['useLink'],
-        },
-      ],
-
-      // dts: p.frameworkPath('types/auto-imports.d.ts'),
-
-      vueTemplate: true,
-    }),
   ]
 
   if (mode === 'lib') {
@@ -79,10 +58,6 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         external: ['vue'],
         output: [
-          // {
-          //   format: 'cjs',
-          //   entryFileNames: `stacks-notification.cjs`,
-          // },
           {
             format: 'es',
             entryFileNames: `index.js`,
@@ -91,6 +66,7 @@ export default defineConfig(({ command, mode }) => {
         ],
       },
     }
+
     userConfig.plugins = [
       ...commonPlugins,
       {
