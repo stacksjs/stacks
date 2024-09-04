@@ -80,11 +80,8 @@ export class SubscriberEmailModel {
   }
 
   // Method to find a SubscriberEmail by ID
-  async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | undefined> {
-    let query = db.selectFrom('subscriber_emails').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -94,13 +91,10 @@ export class SubscriberEmailModel {
   }
 
   // Method to find a SubscriberEmail by ID
-  static async find(id: number, fields?: (keyof SubscriberEmailType)[]): Promise<SubscriberEmailModel | undefined> {
-    let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+  static async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -155,31 +149,6 @@ export class SubscriberEmailModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
-  }
-
-  // Method to get a SubscriberEmail by criteria
-  static async fetch(
-    criteria: Partial<SubscriberEmailType>,
-    options: QueryOptions = {},
-  ): Promise<SubscriberEmailModel[]> {
-    let query = db.selectFrom('subscriber_emails')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -266,7 +235,8 @@ export class SubscriberEmailModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
+      nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
 
     return {
       data: subscriber_emailsWithExtra,
@@ -282,12 +252,10 @@ export class SubscriberEmailModel {
   // Method to create a new subscriberemail
   static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newSubscriberEmail)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newSubscriberEmail[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewSubscriberEmail
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined

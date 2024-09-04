@@ -74,11 +74,8 @@ export class ReleaseModel {
   }
 
   // Method to find a Release by ID
-  async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | undefined> {
-    let query = db.selectFrom('releases').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<ReleaseModel | undefined> {
+    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -88,13 +85,10 @@ export class ReleaseModel {
   }
 
   // Method to find a Release by ID
-  static async find(id: number, fields?: (keyof ReleaseType)[]): Promise<ReleaseModel | undefined> {
-    let query = db.selectFrom('releases').where('id', '=', id)
+  static async find(id: number): Promise<ReleaseModel | undefined> {
+    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -149,28 +143,6 @@ export class ReleaseModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
-  }
-
-  // Method to get a Release by criteria
-  static async fetch(criteria: Partial<ReleaseType>, options: QueryOptions = {}): Promise<ReleaseModel[]> {
-    let query = db.selectFrom('releases')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new ReleaseModel(modelItem))
   }
 
   // Method to get a Release by criteria
@@ -257,7 +229,7 @@ export class ReleaseModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (releasesWithExtra.length > (options.limit ?? 10)) nextCursor = releasesWithExtra.pop()?.id ?? null
 
     return {
       data: releasesWithExtra,
@@ -273,12 +245,10 @@ export class ReleaseModel {
   // Method to create a new release
   static async create(newRelease: NewRelease): Promise<ReleaseModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newRelease)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newRelease[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewRelease
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined

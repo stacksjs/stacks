@@ -842,7 +842,7 @@ export async function generateModelString(
     if (observer) {
       mittCreateStatement += `dispatch('${formattedModelName}:created', model)`
       mittUpdateStatement += `dispatch('${formattedModelName}:updated', model)`
-      mittDeleteStatement += `dispatch('${formattedModelName}:deleted', this)`
+      mittDeleteStatement += `dispatch('${formattedModelName}:deleted', model)`
     }
   }
 
@@ -1153,13 +1153,8 @@ export async function generateModelString(
       }
 
       // Method to find a ${modelName} by ID
-      async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | undefined> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
+      async find(id: number): Promise<${modelName}Model | undefined> {
+        let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
         const model = await query.executeTakeFirst()
 
@@ -1170,15 +1165,10 @@ export async function generateModelString(
       }
 
       // Method to find a ${modelName} by ID
-      static async find(id: number, fields?: (keyof ${modelName}Type)[]): Promise<${modelName}Model | undefined> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id)
+      static async find(id: number): Promise<${modelName}Model | undefined> {
+        let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
         const instance = new this(null)
-
-        if (fields)
-          query = query.select(fields)
-        else
-          query = query.selectAll()
 
         const model = await query.executeTakeFirst()
 
@@ -1237,31 +1227,6 @@ export async function generateModelString(
         const model = await query.execute()
 
         return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
-      }
-
-      // Method to get a ${modelName} by criteria
-      static async fetch(criteria: Partial<${modelName}Type>, options: QueryOptions = {}): Promise<${modelName}Model[]> {
-        let query = db.selectFrom('${tableName}')
-
-         const instance = new this(null)
-
-        // Apply sorting from options
-        if (options.sort)
-          query = query.orderBy(options.sort.column, options.sort.order)
-
-        // Apply limit and offset from options
-        if (options.limit !== undefined)
-          query = query.limit(options.limit)
-
-        if (options.offset !== undefined)
-          query = query.offset(options.offset)
-
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
-
-        const model = await query.selectAll().execute()
-        return model.map(modelItem => new ${modelName}Model(modelItem))
       }
 
       // Method to get a ${modelName} by criteria
@@ -1349,7 +1314,7 @@ export async function generateModelString(
 
        
           let nextCursor = null
-          if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+          if (${tableName}WithExtra.length > (options.limit ?? 10)) nextCursor = ${tableName}WithExtra.pop()?.id ?? null
 
         return {
           data: ${tableName}WithExtra,
@@ -1365,12 +1330,10 @@ export async function generateModelString(
       // Method to create a new ${formattedModelName}
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model | undefined> {
         const instance = new this(null)
-        const filteredValues = Object.keys(new${modelName})
-          .filter(key => instance.fillable.includes(key))
-          .reduce((obj: any, key) => {
-              obj[key] = new${modelName}[key];
-              return obj
-          }, {})
+
+         const filteredValues = Object.fromEntries(
+          Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+        ) as New${modelName}
 
         if (Object.keys(filteredValues).length === 0) {
           return undefined

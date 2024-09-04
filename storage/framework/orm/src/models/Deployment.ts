@@ -97,11 +97,8 @@ export class DeploymentModel {
   }
 
   // Method to find a Deployment by ID
-  async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | undefined> {
-    let query = db.selectFrom('deployments').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<DeploymentModel | undefined> {
+    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -111,13 +108,10 @@ export class DeploymentModel {
   }
 
   // Method to find a Deployment by ID
-  static async find(id: number, fields?: (keyof DeploymentType)[]): Promise<DeploymentModel | undefined> {
-    let query = db.selectFrom('deployments').where('id', '=', id)
+  static async find(id: number): Promise<DeploymentModel | undefined> {
+    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -172,28 +166,6 @@ export class DeploymentModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
-  }
-
-  // Method to get a Deployment by criteria
-  static async fetch(criteria: Partial<DeploymentType>, options: QueryOptions = {}): Promise<DeploymentModel[]> {
-    let query = db.selectFrom('deployments')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new DeploymentModel(modelItem))
   }
 
   // Method to get a Deployment by criteria
@@ -280,7 +252,7 @@ export class DeploymentModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id ?? null
 
     return {
       data: deploymentsWithExtra,
@@ -296,12 +268,10 @@ export class DeploymentModel {
   // Method to create a new deployment
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newDeployment)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newDeployment[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewDeployment
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined

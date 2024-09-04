@@ -82,11 +82,8 @@ export class PostModel {
   }
 
   // Method to find a Post by ID
-  async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | undefined> {
-    let query = db.selectFrom('posts').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<PostModel | undefined> {
+    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -96,13 +93,10 @@ export class PostModel {
   }
 
   // Method to find a Post by ID
-  static async find(id: number, fields?: (keyof PostType)[]): Promise<PostModel | undefined> {
-    let query = db.selectFrom('posts').where('id', '=', id)
+  static async find(id: number): Promise<PostModel | undefined> {
+    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -157,28 +151,6 @@ export class PostModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
-  }
-
-  // Method to get a Post by criteria
-  static async fetch(criteria: Partial<PostType>, options: QueryOptions = {}): Promise<PostModel[]> {
-    let query = db.selectFrom('posts')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new PostModel(modelItem))
   }
 
   // Method to get a Post by criteria
@@ -281,12 +253,10 @@ export class PostModel {
   // Method to create a new post
   static async create(newPost: NewPost): Promise<PostModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newPost)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newPost[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewPost
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined

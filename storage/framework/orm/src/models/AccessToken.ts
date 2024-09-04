@@ -88,11 +88,8 @@ export class AccessTokenModel {
   }
 
   // Method to find a AccessToken by ID
-  async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | undefined> {
-    let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<AccessTokenModel | undefined> {
+    const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -102,13 +99,10 @@ export class AccessTokenModel {
   }
 
   // Method to find a AccessToken by ID
-  static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | undefined> {
-    let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+  static async find(id: number): Promise<AccessTokenModel | undefined> {
+    const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -163,28 +157,6 @@ export class AccessTokenModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
-  }
-
-  // Method to get a AccessToken by criteria
-  static async fetch(criteria: Partial<AccessTokenType>, options: QueryOptions = {}): Promise<AccessTokenModel[]> {
-    let query = db.selectFrom('personal_access_tokens')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
   }
 
   // Method to get a AccessToken by criteria
@@ -271,7 +243,8 @@ export class AccessTokenModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
+      nextCursor = personal_access_tokensWithExtra.pop()?.id ?? null
 
     return {
       data: personal_access_tokensWithExtra,
@@ -287,12 +260,10 @@ export class AccessTokenModel {
   // Method to create a new accesstoken
   static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newAccessToken)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newAccessToken[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewAccessToken
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined

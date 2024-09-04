@@ -109,11 +109,8 @@ export class UserModel {
   }
 
   // Method to find a User by ID
-  async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | undefined> {
-    let query = db.selectFrom('users').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<UserModel | undefined> {
+    const query = db.selectFrom('users').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -123,13 +120,10 @@ export class UserModel {
   }
 
   // Method to find a User by ID
-  static async find(id: number, fields?: (keyof UserType)[]): Promise<UserModel | undefined> {
-    let query = db.selectFrom('users').where('id', '=', id)
+  static async find(id: number): Promise<UserModel | undefined> {
+    const query = db.selectFrom('users').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -184,28 +178,6 @@ export class UserModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
-  }
-
-  // Method to get a User by criteria
-  static async fetch(criteria: Partial<UserType>, options: QueryOptions = {}): Promise<UserModel[]> {
-    let query = db.selectFrom('users')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new UserModel(modelItem))
   }
 
   // Method to get a User by criteria
@@ -292,7 +264,7 @@ export class UserModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (usersWithExtra.length > (options.limit ?? 10)) nextCursor = usersWithExtra.pop()?.id ?? null
 
     return {
       data: usersWithExtra,
@@ -308,12 +280,10 @@ export class UserModel {
   // Method to create a new user
   static async create(newUser: NewUser): Promise<UserModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newUser)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newUser[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewUser
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined
@@ -345,7 +315,7 @@ export class UserModel {
       await db.deleteFrom('users').where('id', '=', id).execute()
     }
 
-    dispatch('user:deleted', this)
+    dispatch('user:deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -549,7 +519,7 @@ export class UserModel {
       await db.deleteFrom('users').where('id', '=', this.id).execute()
     }
 
-    dispatch('user:deleted', this)
+    dispatch('user:deleted', model)
   }
 
   async post() {

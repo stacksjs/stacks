@@ -83,11 +83,8 @@ export class ProjectModel {
   }
 
   // Method to find a Project by ID
-  async find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel | undefined> {
-    let query = db.selectFrom('projects').where('id', '=', id)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
+  async find(id: number): Promise<ProjectModel | undefined> {
+    const query = db.selectFrom('projects').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -97,13 +94,10 @@ export class ProjectModel {
   }
 
   // Method to find a Project by ID
-  static async find(id: number, fields?: (keyof ProjectType)[]): Promise<ProjectModel | undefined> {
-    let query = db.selectFrom('projects').where('id', '=', id)
+  static async find(id: number): Promise<ProjectModel | undefined> {
+    const query = db.selectFrom('projects').where('id', '=', id).selectAll()
 
     const instance = new this(null)
-
-    if (fields) query = query.select(fields)
-    else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -158,28 +152,6 @@ export class ProjectModel {
     const model = await query.execute()
 
     return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
-  }
-
-  // Method to get a Project by criteria
-  static async fetch(criteria: Partial<ProjectType>, options: QueryOptions = {}): Promise<ProjectModel[]> {
-    let query = db.selectFrom('projects')
-
-    const instance = new this(null)
-
-    // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
-
-    // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
-
-    if (options.offset !== undefined) query = query.offset(options.offset)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-    return model.map((modelItem) => new ProjectModel(modelItem))
   }
 
   // Method to get a Project by criteria
@@ -266,7 +238,7 @@ export class ProjectModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (projectsWithExtra.length > (options.limit ?? 10)) nextCursor = projectsWithExtra.pop()?.id ?? null
 
     return {
       data: projectsWithExtra,
@@ -282,12 +254,10 @@ export class ProjectModel {
   // Method to create a new project
   static async create(newProject: NewProject): Promise<ProjectModel | undefined> {
     const instance = new this(null)
-    const filteredValues = Object.keys(newProject)
-      .filter((key) => instance.fillable.includes(key))
-      .reduce((obj: any, key) => {
-        obj[key] = newProject[key]
-        return obj
-      }, {})
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewProject
 
     if (Object.keys(filteredValues).length === 0) {
       return undefined

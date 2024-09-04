@@ -313,7 +313,7 @@ function reArrangeColumns(attributes: Attributes | undefined, tableName: string)
   let migrationContent = ''
 
   let previousField = ''
-  for (const [fieldName, options] of fields) {
+  for (const [fieldName] of fields) {
     const fieldNameFormatted = snakeCase(fieldName)
 
     if (previousField) {
