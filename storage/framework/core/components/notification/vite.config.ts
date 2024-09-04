@@ -29,7 +29,7 @@ export default defineConfig(({ command, mode }) => {
       include: /\.(stx|vue|md)($|\?)/,
     }),
 
-    // UnoCSS(),
+    UnoCSS(),
 
     Components({
       extensions: ['stx', 'vue', 'md'],

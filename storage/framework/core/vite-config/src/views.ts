@@ -24,7 +24,19 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['stacks'],
+      external: [
+        'stacks',
+        'fsevents',
+        'sharp',
+        '@stacksjs/router',
+        '@stacksjs/orm',
+        '@stacksjs/dns',
+        '@stacksjs/build',
+        '@stacksjs/database',
+        '@stacksjs/cloud',
+        '@stacksjs/buddy',
+        'storage/framework/core',
+      ],
     },
   },
 
@@ -36,7 +48,22 @@ export default defineConfig({
   assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: ['@stacksjs/ui', '@stacksjs/api', '@stacksjs/router', '@stacksjs/database', 'stacks'],
+    exclude: [
+      '@stacksjs/ui',
+      '@stacksjs/api',
+      '@stacksjs/router',
+      '@stacksjs/database',
+      'stacks',
+      'fsevents',
+      'sharp',
+      '@stacksjs/orm',
+      '@stacksjs/dns',
+      '@stacksjs/build',
+      '@stacksjs/cloud',
+      '@stacksjs/sms',
+      '@stacksjs/buddy',
+      'storage/framework/core',
+    ],
   },
 
   server: server({

@@ -1312,7 +1312,7 @@ export async function generateModelString(
           .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
           .execute()
 
-       
+
           let nextCursor = null
           if (${tableName}WithExtra.length > (options.limit ?? 10)) nextCursor = ${tableName}WithExtra.pop()?.id ?? null
 

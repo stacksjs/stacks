@@ -188,6 +188,7 @@ declare global {
   const copy: typeof import('../core/storage/src/copy')['copy']
   const copyFile: typeof import('../core/storage/src/copy')['copyFile']
   const copyFolder: typeof import('../core/storage/src/copy')['copyFolder']
+  const coreApiPath: typeof import('../core/path/src/index')['coreApiPath']
   const coreEnvPath: typeof import('../core/path/src/index')['coreEnvPath']
   const corePath: typeof import('../core/path/src/index')['corePath']
   const coreStoragePath: typeof import('../core/path/src/index')['coreStoragePath']
@@ -1250,6 +1251,7 @@ declare module 'vue' {
     readonly copy: UnwrapRef<typeof import('../core/storage/src/copy')['copy']>
     readonly copyFile: UnwrapRef<typeof import('../core/storage/src/copy')['copyFile']>
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
+    readonly coreApiPath: UnwrapRef<typeof import('../core/path/src/index')['coreApiPath']>
     readonly coreEnvPath: UnwrapRef<typeof import('../core/path/src/index')['coreEnvPath']>
     readonly corePath: UnwrapRef<typeof import('../core/path/src/index')['corePath']>
     readonly coreStoragePath: UnwrapRef<typeof import('../core/path/src/index')['coreStoragePath']>

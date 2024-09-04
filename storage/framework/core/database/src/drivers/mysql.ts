@@ -31,7 +31,7 @@ export async function resetMysqlDatabase() {
   const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const userModel of userModelFiles) {
-    const model = (await import(userModel)).default as Model
+    const model = (await import(/* @vite-ignore */ userModel)).default as Model
     const pivotTables = await getPivotTables(model, userModel)
 
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
@@ -79,7 +79,7 @@ export async function generateMysqlMigration(modelPath: string) {
   //   }
   // }
 
-  const model = (await import(modelPath)).default as Model
+  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = getTableName(model, modelPath)
 
@@ -124,7 +124,7 @@ export async function generateMysqlMigration(modelPath: string) {
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
-  const model = (await import(modelPath)).default as Model
+  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
@@ -225,7 +225,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
-  const model = (await import(modelPath)).default as Model
+  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
   let hasChanged = false
@@ -334,7 +334,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {
-    const model = (await import(modelPath)).default as Model
+    const model = (await import(/* @vite-ignore */ modelPath)).default as Model
     const tableName = getTableName(model, modelPath)
 
     tables.push(tableName)

@@ -136,6 +136,7 @@
       "copy",
       "copyFile",
       "copyFolder",
+      "coreApiPath",
       "coreEnvPath",
       "corePath",
       "coreStoragePath",

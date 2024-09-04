@@ -36,6 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/types": "workspace:*"

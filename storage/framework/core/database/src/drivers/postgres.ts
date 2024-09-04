@@ -30,7 +30,7 @@ export async function resetPostgresDatabase() {
   const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const userModel of userModelFiles) {
-    const userModelPath = (await import(userModel)).default
+    const userModelPath = (await import(/* @vite-ignore */ userModel)).default
 
     const pivotTables = await getPivotTables(userModelPath, userModelPath)
 
@@ -79,7 +79,7 @@ export async function generatePostgresMigration(modelPath: string) {
     }
   }
 
-  const model = (await import(modelPath)).default as Model
+  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = getTableName(model, modelPath)
 
@@ -124,7 +124,7 @@ export async function generatePostgresMigration(modelPath: string) {
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
-  const model = (await import(modelPath)).default as Model
+  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
   await createPivotTableMigration(model, modelPath)
@@ -221,7 +221,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
-  const model = (await import(modelPath)).default as Model
+  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
   const modelName = path.basename(modelPath)
   const tableName = await getTableName(model, modelPath)
 
@@ -270,7 +270,7 @@ export async function fetchMysqlTables(): Promise<string[]> {
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {
-    const model = (await import(modelPath)).default
+    const model = (await import(/* @vite-ignore */ modelPath)).default
 
     const tableName = await getTableName(model, modelPath)
 

@@ -148,7 +148,7 @@ const events = mitt<StacksEvents>
 const emitter = events()
 const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
 const useEvents = events()
-// const dispatch: typeof emitter.emit = emitter.emit.bind(emitter)
+const dispatch: typeof emitter.emit = emitter.emit.bind(emitter)
 
 const listen: typeof emitter.on = emitter.on.bind(emitter)
 const off: typeof emitter.off = emitter.off.bind(emitter)

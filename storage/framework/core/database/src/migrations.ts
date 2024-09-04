@@ -119,7 +119,7 @@ export async function getExecutedMigrations() {
 export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {
   log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
 
-  // const model = await import(modelPath)
+  // const model = await import(/* @vite-ignore */ modelPath)
   // const tableName = model.default.table
   // const lastMigration = await lastMigrationDate()
 
