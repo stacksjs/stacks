@@ -74,7 +74,7 @@
     "ace-builds": "^1.36.2",
     "resize-observer-polyfill": "^1.5.1",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
