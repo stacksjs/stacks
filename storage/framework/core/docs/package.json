@@ -46,6 +46,6 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@vite-pwa/assets-generator": "^0.2.6",
-    "@vite-pwa/vitepress": "^0.5.2"
+    "@vite-pwa/vitepress": "^0.5.3"
   }
 }
