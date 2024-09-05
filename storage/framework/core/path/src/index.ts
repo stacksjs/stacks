@@ -647,6 +647,16 @@ export function frameworkPath(path?: string, options?: { relative?: boolean; cwd
 }
 
 /**
+ * Returns the path to the `frontend` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the health directory.
+ * @returns The absolute path to the specified file or directory within the health directory.
+ */
+export function browserPath(path?: string): string {
+  return corePath(`browser/${path || ''}`)
+}
+
+/**
  * Returns the path to the `health` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the health directory.
@@ -1341,6 +1351,7 @@ export const path = {
   examplesPath,
   fakerPath,
   frameworkPath,
+  browserPath,
   storagePath,
   functionsPath,
   gitPath,

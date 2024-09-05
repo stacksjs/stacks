@@ -6,7 +6,7 @@ import { VueRouterAutoImports } from 'unplugin-vue-router'
 
 export function autoImports(options?: AutoImportsOptions) {
   return AutoImport({
-    include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
+    include: /\.(stx|vue|js|ts|mdx?|html)($|\?)/,
     imports: [
       'pinia',
       'vue',
@@ -24,7 +24,8 @@ export function autoImports(options?: AutoImportsOptions) {
     ],
 
     dts: p.frameworkPath('types/auto-imports.d.ts'),
-    dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
+    dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.browserPath('src')],
+    // dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
     vueTemplate: true,
 
     // Generate corresponding .biomelintrc-auto-import.json file.

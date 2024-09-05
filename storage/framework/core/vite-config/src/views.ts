@@ -6,6 +6,7 @@ import {
   components,
   cssEngine,
   devtools,
+  fonts,
   i18n,
   layouts,
   markdown,
@@ -117,16 +118,15 @@ export default defineConfig({
     }),
 
     autoImports(),
-    // components(),
-    // cssEngine(),
-    // markdown(),
+    components(),
+    cssEngine(),
+    markdown(),
     pwa(),
-    // devtools(),
-    // i18n(),
+    devtools(),
+    i18n(),
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
-    // fonts(),
-    // webfontDownload(),
+    fonts(),
   ],
 
   // https://github.com/antfu/vite-ssg

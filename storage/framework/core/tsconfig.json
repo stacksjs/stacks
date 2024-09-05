@@ -10,6 +10,7 @@
     "moduleResolution": "bundler",
     "paths": {
       "@stacksjs/*": ["./*/src"],
+      "@stacksjs/utils/*": ["./utils/src/*"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
       "buddy/*": ["./buddy/src/*"],
