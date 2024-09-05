@@ -25,19 +25,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: [
-        'stacks',
-        'fsevents',
-        'sharp',
-        '@stacksjs/router',
-        '@stacksjs/orm',
-        '@stacksjs/dns',
-        '@stacksjs/build',
-        '@stacksjs/database',
-        '@stacksjs/cloud',
-        '@stacksjs/buddy',
-        'storage/framework/core',
-      ],
+      external: ['fsevents'],
     },
   },
 
@@ -49,22 +37,7 @@ export default defineConfig({
   assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: [
-      '@stacksjs/ui',
-      '@stacksjs/api',
-      '@stacksjs/router',
-      '@stacksjs/database',
-      'stacks',
-      'fsevents',
-      'sharp',
-      '@stacksjs/orm',
-      '@stacksjs/dns',
-      '@stacksjs/build',
-      '@stacksjs/cloud',
-      '@stacksjs/sms',
-      '@stacksjs/buddy',
-      'storage/framework/core',
-    ],
+    exclude: ['vue'],
   },
 
   server: server({
@@ -72,35 +45,7 @@ export default defineConfig({
   }),
 
   resolve: {
-    alias: {
-      ...alias,
-      '~/config/ai': p.projectConfigPath('ai.ts'),
-      '~/config/analytics': p.projectConfigPath('analytics.ts'),
-      '~/config/app': p.projectConfigPath('app.ts'),
-      '~/config/cache': p.projectConfigPath('cache.ts'),
-      '~/config/cli': p.projectConfigPath('cli.ts'),
-      '~/config/cloud': p.projectConfigPath('cloud.ts'),
-      '~/config/database': p.projectConfigPath('database.ts'),
-      '~/config/env': p.projectConfigPath('env.ts'),
-      '~/config/errors': p.projectConfigPath('errors.ts'),
-      '~/config/dns': p.projectConfigPath('dns.ts'),
-      '~/config/docs': p.projectConfigPath('docs.ts'),
-      '~/config/email': p.projectConfigPath('email.ts'),
-      '~/config/git': p.projectConfigPath('git.ts'),
-      '~/config/hashing': p.projectConfigPath('hashing.ts'),
-      '~/config/library': p.projectConfigPath('library.ts'),
-      '~/config/logging': p.projectConfigPath('logging.ts'),
-      '~/config/notification': p.projectConfigPath('notification.ts'),
-      '~/config/payment': p.projectConfigPath('payment.ts'),
-      '~/config/ports': p.projectConfigPath('ports.ts'),
-      '~/config/queue': p.projectConfigPath('queue.ts'),
-      '~/config/search-engine': p.projectConfigPath('search-engine.ts'),
-      '~/config/security': p.projectConfigPath('security.ts'),
-      '~/config/services': p.projectConfigPath('services.ts'),
-      '~/config/storage': p.projectConfigPath('storage.ts'),
-      '~/config/team': p.projectConfigPath('team.ts'),
-      '~/config/ui': p.projectConfigPath('ui.ts'),
-    },
+    alias,
   },
 
   plugins: [
