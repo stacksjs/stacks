@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, italic, log, outro, runCommand } from '@stacksjs/cli'
+import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
@@ -71,9 +71,13 @@ export function deploy(buddy: CLI) {
 }
 
 async function confirmProductionDeployment() {
-  const answer = await log.prompt.require().confirm('Are you sure you want to deploy to production?')
+  const { confirmed } = await prompts({
+    type: 'confirm',
+    name: 'confirmed',
+    message: 'Are you sure you want to deploy to production?',
+  })
 
-  if (!answer) {
+  if (!confirmed) {
     log.info('Aborting deployment...')
     process.exit(ExitCode.InvalidArgument)
   }
