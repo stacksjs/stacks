@@ -298,6 +298,16 @@ export class UserModel {
     return model
   }
 
+  static async forceCreate(newUser: NewUser): Promise<UserModel | undefined> {
+    const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
+
+    const model = (await find(Number(result.insertId))) as UserModel
+
+    dispatch('user:created', model)
+
+    return model
+  }
+
   // Method to remove a User
   static async remove(id: number): Promise<void> {
     const instance = new this(null)
@@ -315,7 +325,7 @@ export class UserModel {
       await db.deleteFrom('users').where('id', '=', id).execute()
     }
 
-    dispatch('user:deleted', model)
+    if (model) dispatch('user:deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -464,35 +474,42 @@ export class UserModel {
     return this
   }
 
-  // Method to update the users instance
   async update(user: UserUpdate): Promise<UserModel | undefined> {
     if (this.id === undefined) throw new Error('User ID is undefined')
 
-    const filteredValues = Object.keys(user)
-      .filter((key) => this.fillable.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = user[key]
-        return obj
-      }, {})
+    const filteredValues = Object.fromEntries(
+      Object.entries(user).filter(([key]) => this.fillable.includes(key)),
+    ) as NewUser
 
     await db.updateTable('users').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-    const model = this.find(Number(this.id))
+    const model = await this.find(Number(this.id))
 
-    dispatch('user:updated', model)
+    if (model) dispatch('user:updated', model)
 
     return model
   }
 
-  // Method to save (insert or update) the user instance
-  async save(): Promise<void> {
-    if (!this.user) throw new Error('User data is undefined')
+  async forceUpdate(user: UserUpdate): Promise<UserModel | undefined> {
+    if (this.id === undefined) throw new Error('User ID is undefined')
 
-    if (this.user.id === undefined) {
+    await db.updateTable('users').set(user).where('id', '=', this.id).executeTakeFirst()
+
+    const model = await this.find(Number(this.id))
+
+    if (model) dispatch('user:updated', model)
+
+    return model
+  }
+
+  async save(): Promise<void> {
+    if (!this) throw new Error('User data is undefined')
+
+    if (this.id === undefined) {
       // Insert new user
       const newModel = await db
         .insertInto('users')
-        .values(this.user as NewUser)
+        .values(this as NewUser)
         .executeTakeFirstOrThrow()
     } else {
       // Update existing user

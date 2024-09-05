@@ -1,593 +1,670 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-import User from './User'
+    import { verifyTwoFactorCode } from '@stacksjs/auth'
+    import { db } from '@stacksjs/database'
+    import { sql } from '@stacksjs/database'
+    import { dispatch } from '@stacksjs/events'
+    import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+    import User from './User'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
-// TODO: we need an action that auto-generates these table interfaces
-export interface PostsTable {
-  id: Generated<number>
-  title: string
-  body: string
-  user_id: number
+    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+    // import { Pool } from 'pg'
 
-  created_at: Date
+    // TODO: we need an action that auto-generates these table interfaces
+    export interface PostsTable {
+      id: Generated<number>
+      title: string
+      body: string
+      user_id: number 
 
-  updated_at: Date
-}
+      created_at: Date
 
-interface PostResponse {
-  data: Posts
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
+      updated_at: Date
+    
+    }
 
-export type PostType = Selectable<PostsTable>
-export type NewPost = Insertable<PostsTable>
-export type PostUpdate = Updateable<PostsTable>
-export type Posts = PostType[]
+    interface PostResponse {
+      data: Posts
+      paging: {
+        total_records: number
+        page: number
+        total_pages: number
+      }
+      next_cursor: number | null
+    }
 
-export type PostColumn = Posts
-export type PostColumns = Array<keyof Posts>
+    export type PostType = Selectable<PostsTable>
+    export type NewPost = Insertable<PostsTable>
+    export type PostUpdate = Updateable<PostsTable>
+    export type Posts = PostType[]
 
-type SortDirection = 'asc' | 'desc'
-interface SortOptions {
-  column: PostType
-  order: SortDirection
-}
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
+    export type PostColumn = Posts
+    export type PostColumns = Array<keyof Posts>
 
-export class PostModel {
-  private hidden = []
-  private fillable = []
-  private softDeletes = false
-  protected query: any
-  protected hasSelect: boolean
-  public id: number | undefined
-  public title: string | undefined
-  public body: string | undefined
+    type SortDirection = 'asc' | 'desc'
+    interface SortOptions { column: PostType, order: SortDirection }
+    // Define a type for the options parameter
+    interface QueryOptions {
+      sort?: SortOptions
+      limit?: number
+      offset?: number
+      page?: number
+    }
 
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-  public user_id: number | undefined
+    export class PostModel {
+      private hidden = []
+      private fillable = []
+      private softDeletes = false
+      protected query: any
+      protected hasSelect: boolean
+      public id: number | undefined 
+   public title: string | undefined 
+   public body: string | undefined 
+   
+      public created_at: Date | undefined
+      public updated_at: Date | undefined
+    public user_id: number | undefined 
+   
+      constructor(post: Partial<PostType> | null) {
+        this.id = post?.id
+   this.title = post?.title
+   this.body = post?.body
+   
+      this.created_at = user?.created_at
 
-  constructor(post: Partial<PostType> | null) {
-    this.id = post?.id
-    this.title = post?.title
-    this.body = post?.body
-
-    this.created_at = user?.created_at
-
-    this.updated_at = user?.updated_at
+      this.updated_at = user?.updated_at
 
     this.user_id = post?.user_id
+   
 
-    this.query = db.selectFrom('posts')
-    this.hasSelect = false
-  }
-
-  // Method to find a Post by ID
-  async find(id: number): Promise<PostModel | undefined> {
-    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) return undefined
-
-    return this.parseResult(new PostModel(model))
-  }
-
-  // Method to find a Post by ID
-  static async find(id: number): Promise<PostModel | undefined> {
-    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
-
-    const instance = new this(null)
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) return undefined
-
-    return instance.parseResult(new this(model))
-  }
-
-  static async all(): Promise<PostModel[]> {
-    let query = db.selectFrom('posts').selectAll()
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const results = await query.execute()
-
-    return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
-  }
-
-  static async findOrFail(id: number): Promise<PostModel> {
-    let query = db.selectFrom('posts').where('id', '=', id)
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) throw `No model results found for ${id} `
-
-    return instance.parseResult(new this(model))
-  }
-
-  static async findMany(ids: number[]): Promise<PostModel[]> {
-    let query = db.selectFrom('posts').where('id', 'in', ids)
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    query = query.selectAll()
-
-    const model = await query.execute()
-
-    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
-  }
-
-  // Method to get a Post by criteria
-  static async get(): Promise<PostModel[]> {
-    let query = db.selectFrom('posts')
-
-    const instance = new this(null)
-
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-
-    return model.map((modelItem) => new PostModel(modelItem))
-  }
-
-  // Method to get a Post by criteria
-  async get(): Promise<PostModel[]> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.query = db.selectFrom('posts')
+        this.hasSelect = false
       }
 
-      const model = await this.query.execute()
+      // Method to find a Post by ID
+      async find(id: number): Promise<PostModel | undefined> {
+        const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
-      return model.map((modelItem: PostModel) => new PostModel(modelItem))
-    }
+        const model = await query.executeTakeFirst()
 
-    if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
-    }
+        if (!model)
+          return undefined
 
-    const model = await this.query.selectAll().execute()
-
-    return model.map((modelItem: PostModel) => new PostModel(modelItem))
-  }
-
-  static async count(): Promise<number> {
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
-    }
-
-    const results = await instance.query.selectAll().execute()
-
-    return results.length
-  }
-
-  async count(): Promise<number> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        return this.parseResult(new PostModel(model))
       }
 
-      const results = await this.query.execute()
-
-      return results.length
-    }
-
-    const results = await this.query.selectAll().execute()
-
-    return results.length
-  }
-
-  // Method to get all posts
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
-    const totalRecordsResult = await db
-      .selectFrom('posts')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const postsWithExtra = await db
-      .selectFrom('posts')
-      .selectAll()
-      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-      .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
-
-    return {
-      data: postsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to create a new post
-  static async create(newPost: NewPost): Promise<PostModel | undefined> {
-    const instance = new this(null)
-
-    const filteredValues = Object.fromEntries(
-      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-    ) as NewPost
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
-
-    const result = await db.insertInto('posts').values(filteredValues).executeTakeFirstOrThrow()
-
-    const model = (await find(Number(result.insertId))) as PostModel
-
-    return model
-  }
+      // Method to find a Post by ID
+      static async find(id: number): Promise<PostModel | undefined> {
+        const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
-  // Method to remove a Post
-  static async remove(id: number): Promise<void> {
-    const instance = new this(null)
-    const model = await instance.find(id)
-
-    if (instance.softDeletes) {
-      await db
-        .updateTable('posts')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    } else {
-      await db.deleteFrom('posts').where('id', '=', id).execute()
-    }
-  }
+        const instance = new this(null)
 
-  where(...args: (string | number | boolean | undefined | null)[]): PostModel {
-    let column: any
-    let operator: any
-    let value: any
+        const model = await query.executeTakeFirst()
 
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
+        if (!model)
+          return undefined
 
-    this.query = this.query.where(column, operator, value)
+        return instance.parseResult(new this(model))
+      }
 
-    return this
-  }
+      static async all(): Promise<PostModel[]> {
+        let query = db.selectFrom('posts').selectAll()
 
-  static where(...args: (string | number | boolean | undefined | null)[]): PostModel {
-    let column: any
-    let operator: any
-    let value: any
+        const instance = new this(null)
 
-    const instance = new this(null)
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null)
+        }
 
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
+        const results = await query.execute();
 
-    instance.query = instance.query.where(column, operator, value)
+        return results.map(modelItem => instance.parseResult(new PostModel(modelItem)));
+      }
 
-    return instance
-  }
 
-  static whereTitle(value: string | number | boolean | undefined | null): PostModel {
-    const instance = new this(null)
+      static async findOrFail(id: number): Promise<PostModel> {
+        let query = db.selectFrom('posts').where('id', '=', id)
 
-    instance.query = instance.query.where('title', '=', value)
+        const instance = new this(null)
 
-    return instance
-  }
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-  static whereBody(value: string | number | boolean | undefined | null): PostModel {
-    const instance = new this(null)
+        query = query.selectAll()
 
-    instance.query = instance.query.where('body', '=', value)
+        const model = await query.executeTakeFirst()
 
-    return instance
-  }
+        if (!model)
+          throw(`No model results found for ${id} `)
 
-  static whereIn(column: keyof PostType, values: any[]): PostModel {
-    const instance = new this(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+        return instance.parseResult(new this(model))
+      }
 
-    return instance
-  }
+      static async findMany(ids: number[]): Promise<PostModel[]> {
+        let query = db.selectFrom('posts').where('id', 'in', ids)
 
-  async first(): Promise<PostModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+        const instance = new this(null)
 
-    if (!model) {
-      return undefined
-    }
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-    return this.parseResult(new PostModel(model))
-  }
+        query = query.selectAll()
 
-  async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+        const model = await query.execute()
 
-    return model !== null || model !== undefined
-  }
+        return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
+      }
 
-  static async first(): Promise<PostType | undefined> {
-    return await db.selectFrom('posts').selectAll().executeTakeFirst()
-  }
+      // Method to get a Post by criteria
+      static async get(): Promise<PostModel[]> {
+        let query = db.selectFrom('posts');
 
-  async last(): Promise<PostType | undefined> {
-    return await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
-  }
+        const instance = new this(null)
 
-  static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    const instance = new this(null)
+        // Check if soft deletes are enabled
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-    instance.query = instance.orderBy(column, order)
+        const model = await query.selectAll().execute();
 
-    return instance
-  }
+        return model.map(modelItem => new PostModel(modelItem));
+      }
 
-  orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    this.query = this.query.orderBy(column, order)
+      // Method to get a Post by criteria
+      async get(): Promise<PostModel[]> {
+        if (this.hasSelect) {
 
-    return this
-  }
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
 
-  static orderByDesc(column: keyof PostType): PostModel {
-    const instance = new this(null)
+          const model = await this.query.execute()
 
-    instance.query = instance.query.orderBy(column, 'desc')
+          return model.map((modelItem: PostModel) => new PostModel(modelItem))
+        }
 
-    return instance
-  }
+        if (this.softDeletes) {
+          this.query = this.query.where('deleted_at', 'is', null);
+        }
 
-  orderByDesc(column: keyof PostType): PostModel {
-    this.query = this.orderBy(column, 'desc')
+        const model = await this.query.selectAll().execute()
 
-    return this
-  }
+        return model.map((modelItem: PostModel) => new PostModel(modelItem))
+      }
 
-  static orderByAsc(column: keyof PostType): PostModel {
-    const instance = new this(null)
+      static async count(): Promise<number> {
+        const instance = new this(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+        if (instance.softDeletes) {
+          instance.query = instance.query.where('deleted_at', 'is', null);
+        }
 
-    return instance
-  }
+        const results = await instance.query.selectAll().execute()
 
-  orderByAsc(column: keyof PostType): PostModel {
-    this.query = this.query.orderBy(column, 'desc')
+        return results.length
+      }
 
-    return this
-  }
+      async count(): Promise<number> {
+        if (this.hasSelect) {
 
-  // Method to update the posts instance
-  async update(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined) throw new Error('Post ID is undefined')
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
 
-    const filteredValues = Object.keys(post)
-      .filter((key) => this.fillable.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = post[key]
-        return obj
-      }, {})
+          const results = await this.query.execute()
 
-    await db.updateTable('posts').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
+          return results.length
+        }
 
-    const model = this.find(Number(this.id))
+        const results = await this.query.selectAll().execute()
 
-    return model
-  }
+        return results.length
+      }
+
+      // Method to get all posts
+      static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
+        const totalRecordsResult = await db.selectFrom('posts')
+          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+          .executeTakeFirst()
+
+        const totalRecords = Number(totalRecordsResult?.total) || 0
+        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-  // Method to save (insert or update) the post instance
-  async save(): Promise<void> {
-    if (!this.post) throw new Error('Post data is undefined')
+        const postsWithExtra = await db.selectFrom('posts')
+          .selectAll()
+          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+          .limit((options.limit ?? 10) + 1) // Fetch one extra record
+          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+          .execute()
 
-    if (this.post.id === undefined) {
-      // Insert new post
-      const newModel = await db
-        .insertInto('posts')
-        .values(this.post as NewPost)
-        .executeTakeFirstOrThrow()
-    } else {
-      // Update existing post
-      await this.update(this.post)
-    }
-  }
 
-  // Method to delete (soft delete) the post instance
-  async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Post ID is undefined')
+          let nextCursor = null
+          if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+
+        return {
+          data: postsWithExtra,
+          paging: {
+            total_records: totalRecords,
+            page: options.page || 1,
+            total_pages: totalPages,
+          },
+          next_cursor: nextCursor,
+        }
+      }
+
+      // Method to create a new post
+      static async create(newPost: NewPost): Promise<PostModel | undefined> {
+        const instance = new this(null)
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db
-        .updateTable('posts')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    } else {
-      // Perform a hard delete
-      await db.deleteFrom('posts').where('id', '=', this.id).execute()
-    }
-  }
+         const filteredValues = Object.fromEntries(
+          Object.entries(newPost).filter(([key]) => instance.fillable.includes(key)),
+        ) as NewPost
 
-  async user() {
-    if (this.post_id === undefined) throw new Error('Relation Error!')
+        if (Object.keys(filteredValues).length === 0) {
+          return undefined
+        }
 
-    const model = await User.where('id', '=', post_id).first()
+        const result = await db.insertInto('posts')
+          .values(filteredValues)
+          .executeTakeFirstOrThrow()
 
-    if (!model) throw new Error('Model Relation Not Found!')
+        const model = await find(Number(result.insertId)) as PostModel
 
-    return model
-  }
+        
 
-  distinct(column: keyof PostType): PostModel {
-    this.query = this.query.distinctOn(column)
+        return model
+      }
 
-    return this
-  }
+      static async forceCreate(newPost: NewPost): Promise<PostModel | undefined> {
+        const result = await db.insertInto('posts')
+          .values(newPost)
+          .executeTakeFirstOrThrow()
 
-  static distinct(column: keyof PostType): PostModel {
-    const instance = new this(null)
+        const model = await find(Number(result.insertId)) as PostModel
 
-    instance.query = instance.query.distinctOn(column)
+        
 
-    return instance
-  }
+        return model
+      }
 
-  join(table: string, firstCol: string, secondCol: string): PostModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+      // Method to remove a Post
+      static async remove(id: number): Promise<void> {
+        const instance = new this(null)
+        const model = await instance.find(id)
 
-    return this
-  }
+       if (instance.softDeletes) {
+        await db.updateTable('posts')
+          .set({
+            deleted_at: sql.raw('CURRENT_TIMESTAMP')
+          })
+          .where('id', '=', id)
+          .execute();
+        } else {
+          await db.deleteFrom('posts')
+            .where('id', '=', id)
+            .execute();
+        }
 
-  static join(table: string, firstCol: string, secondCol: string): PostModel {
-    const instance = new this(null)
+        if (model)
+          
+      }
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+      where(...args: (string | number | boolean | undefined | null)[]): PostModel {
+        let column: any
+        let operator: any
+        let value: any
 
-    return instance
-  }
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
-  }
+        this.query = this.query.where(column, operator, value)
 
-  toJSON() {
-    const output: Partial<PostType> = {
-      id: this.id,
-      title: this.title,
-      body: this.body,
+        return this
+      }
 
+      static where(...args: (string | number | boolean | undefined | null)[]): PostModel {
+        let column: any
+        let operator: any
+        let value: any
+
+        const instance = new this(null)
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
+        instance.query = instance.query.where(column, operator, value)
+
+        return instance
+      }
+
+       static whereTitle(value: string | number | boolean | undefined | null): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where('title', '=', value)
+
+        return instance
+      } 
+
+static whereBody(value: string | number | boolean | undefined | null): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where('body', '=', value)
+
+        return instance
+      } 
+
+
+
+      static whereIn(column: keyof PostType, values: any[]): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where(column, 'in', values)
+
+        return instance
+      }
+
+      async first(): Promise<PostModel | undefined> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        if (! model) {
+          return undefined
+        }
+
+        return this.parseResult(new PostModel(model))
+      }
+
+      async exists(): Promise<boolean> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        return model !== null || model !== undefined
+      }
+
+      static async first(): Promise<PostType | undefined> {
+        return await db.selectFrom('posts')
+          .selectAll()
+          .executeTakeFirst()
+      }
+
+      async last(): Promise<PostType | undefined> {
+        return await db.selectFrom('posts')
+          .selectAll()
+          .orderBy('id', 'desc')
+          .executeTakeFirst()
+      }
+
+      static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.orderBy(column, order)
+
+        return instance
+      }
+
+      orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
+        this.query = this.query.orderBy(column, order)
+
+        return this
+      }
+
+      static orderByDesc(column: keyof PostType): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByDesc(column: keyof PostType): PostModel {
+        this.query = this.orderBy(column, 'desc')
+
+        return this
+      }
+
+      static orderByAsc(column: keyof PostType): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByAsc(column: keyof PostType): PostModel {
+        this.query = this.query.orderBy(column, 'desc')
+
+        return this
+      }
+
+      async update(post: PostUpdate): Promise<PostModel | undefined> {
+        if (this.id === undefined)
+          throw new Error('Post ID is undefined')
+
+        const filteredValues = Object.fromEntries(
+          Object.entries(post).filter(([key]) => this.fillable.includes(key)),
+        ) as NewPost
+
+        await db.updateTable('posts')
+          .set(filteredValues)
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          
+
+        return model
+      }
+
+      async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
+        if (this.id === undefined)
+          throw new Error('Post ID is undefined')
+
+        await db.updateTable('posts')
+          .set(post)
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          
+
+        return model
+      }
+
+      async save(): Promise<void> {
+        if (!this)
+          throw new Error('Post data is undefined')
+
+        if (this.id === undefined) {
+          // Insert new post
+          const newModel = await db.insertInto('posts')
+            .values(this as NewPost)
+            .executeTakeFirstOrThrow()
+        }
+        else {
+          // Update existing post
+          await this.update(this.post)
+        }
+      }
+
+      // Method to delete (soft delete) the post instance
+      async delete(): Promise<void> {
+          if (this.id === undefined)
+              throw new Error('Post ID is undefined');
+
+          // Check if soft deletes are enabled
+          if (this.softDeletes) {
+              // Update the deleted_at column with the current timestamp
+              await db.updateTable('posts')
+                  .set({
+                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
+                  })
+                  .where('id', '=', this.id)
+                  .execute();
+          } else {
+              // Perform a hard delete
+              await db.deleteFrom('posts')
+                .where('id', '=', this.id)
+                .execute();
+          }
+
+          
+      }
+
+      
+      async user() {
+        if (this.post_id === undefined)
+          throw new Error('Relation Error!')
+
+        const model = await User
+          .where('id', '=', post_id)
+          .first()
+
+        if (! model)
+          throw new Error('Model Relation Not Found!')
+
+        return model
+      }
+
+
+
+      distinct(column: keyof PostType): PostModel {
+        this.query = this.query.distinctOn(column)
+
+        return this
+      }
+
+      static distinct(column: keyof PostType): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.distinctOn(column)
+
+        return instance
+      }
+
+      join(table: string, firstCol: string, secondCol: string): PostModel {
+        this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+        return this
+      }
+
+      static join(table: string, firstCol: string, secondCol: string): PostModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+        return instance
+      }
+
+      static async rawQuery(rawQuery: string): Promise<any> {
+        return await sql`${rawQuery}`.execute(db)
+      }
+
+      toJSON() {
+        const output: Partial<PostType> = {
+
+id: this.id,
+title: this.title,
+   body: this.body,
+   
       created_at: this.created_at,
 
       updated_at: this.updated_at,
+
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<PostType>]
-    })
+        this.hidden.forEach((attr) => {
+          if (attr in output)
+            delete output[attr as keyof Partial<PostType>]
+        })
 
-    type Post = Omit<PostType, 'password'>
+        type Post = Omit<PostType, 'password'>
 
-    return output as Post
-  }
+        return output as Post
+      }
 
-  parseResult(model: UserModel): UserModel {
-    for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof UserModel]
+        parseResult(model: UserModel): UserModel {
+          for (const hiddenAttribute of this.hidden) {
+            delete model[hiddenAttribute as keyof UserModel]
+          }
+
+          return model
+        }
+
+      
     }
 
-    return model
-  }
-}
+    async function find(id: number): Promise<PostModel | null> {
+      const query = db.selectFrom('posts').where('id', '=', id)
 
-async function find(id: number): Promise<PostModel | null> {
-  const query = db.selectFrom('posts').where('id', '=', id)
+      query.selectAll()
 
-  query.selectAll()
+      const model = await query.executeTakeFirst()
 
-  const model = await query.executeTakeFirst()
+      if (!model) return null
 
-  if (!model) return null
+      return new PostModel(model)
+    }
 
-  return new PostModel(model)
-}
+    export async function count(): Promise<number> {
+      const results = await PostModel.count()
 
-export async function count(): Promise<number> {
-  const results = await PostModel.count()
+      return results
+    }
 
-  return results
-}
+    export async function create(newPost: NewPost): Promise<PostModel> {
 
-export async function create(newPost: NewPost): Promise<PostModel> {
-  const result = await db.insertInto('posts').values(newPost).executeTakeFirstOrThrow()
+      const result = await db.insertInto('posts')
+        .values(newPost)
+        .executeTakeFirstOrThrow()
 
-  return (await find(Number(result.insertId))) as PostModel
-}
+      return await find(Number(result.insertId)) as PostModel
+    }
 
-export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
-}
+    export async function rawQuery(rawQuery: string): Promise<any> {
+      return await sql`${rawQuery}`.execute(db)
+    }
 
-export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('posts').where('id', '=', id).execute()
-}
+    export async function remove(id: number): Promise<void> {
+      await db.deleteFrom('posts')
+        .where('id', '=', id)
+        .execute()
+    }
 
-export async function whereTitle(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
-  const query = db.selectFrom('posts').where('title', '=', value)
-  const results = await query.execute()
+    export async function whereTitle(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
+        const query = db.selectFrom('posts').where('title', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new PostModel(modelItem))
-}
+        return results.map(modelItem => new PostModel(modelItem))
+      } 
 
 export async function whereBody(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
-  const query = db.selectFrom('posts').where('body', '=', value)
-  const results = await query.execute()
+        const query = db.selectFrom('posts').where('body', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new PostModel(modelItem))
-}
+        return results.map(modelItem => new PostModel(modelItem))
+      } 
 
-const Post = PostModel
 
-export default Post
+
+    const Post = PostModel
+
+    export default Post
+    

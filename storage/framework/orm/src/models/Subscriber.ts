@@ -1,563 +1,634 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+    import { verifyTwoFactorCode } from '@stacksjs/auth'
+    import { db } from '@stacksjs/database'
+    import { sql } from '@stacksjs/database'
+    import { dispatch } from '@stacksjs/events'
+    import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+    
+    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+    // import { Pool } from 'pg'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
+    // TODO: we need an action that auto-generates these table interfaces
+    export interface SubscribersTable {
+      id: Generated<number>
+      subscribed: boolean
+      user_id: number 
 
-// TODO: we need an action that auto-generates these table interfaces
-export interface SubscribersTable {
-  id: Generated<number>
-  subscribed: boolean
-  user_id: number
+      created_at: Date
 
-  created_at: Date
+      updated_at: Date
+    
+    }
 
-  updated_at: Date
-}
+    interface SubscriberResponse {
+      data: Subscribers
+      paging: {
+        total_records: number
+        page: number
+        total_pages: number
+      }
+      next_cursor: number | null
+    }
 
-interface SubscriberResponse {
-  data: Subscribers
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
+    export type SubscriberType = Selectable<SubscribersTable>
+    export type NewSubscriber = Insertable<SubscribersTable>
+    export type SubscriberUpdate = Updateable<SubscribersTable>
+    export type Subscribers = SubscriberType[]
 
-export type SubscriberType = Selectable<SubscribersTable>
-export type NewSubscriber = Insertable<SubscribersTable>
-export type SubscriberUpdate = Updateable<SubscribersTable>
-export type Subscribers = SubscriberType[]
+    export type SubscriberColumn = Subscribers
+    export type SubscriberColumns = Array<keyof Subscribers>
 
-export type SubscriberColumn = Subscribers
-export type SubscriberColumns = Array<keyof Subscribers>
+    type SortDirection = 'asc' | 'desc'
+    interface SortOptions { column: SubscriberType, order: SortDirection }
+    // Define a type for the options parameter
+    interface QueryOptions {
+      sort?: SortOptions
+      limit?: number
+      offset?: number
+      page?: number
+    }
 
-type SortDirection = 'asc' | 'desc'
-interface SortOptions {
-  column: SubscriberType
-  order: SortDirection
-}
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
+    export class SubscriberModel {
+      private hidden = []
+      private fillable = []
+      private softDeletes = false
+      protected query: any
+      protected hasSelect: boolean
+      public id: number | undefined 
+   public subscribed: boolean | undefined 
+   
+      public created_at: Date | undefined
+      public updated_at: Date | undefined
+    public user_id: number | undefined 
+   
+      constructor(subscriber: Partial<SubscriberType> | null) {
+        this.id = subscriber?.id
+   this.subscribed = subscriber?.subscribed
+   
+      this.created_at = user?.created_at
 
-export class SubscriberModel {
-  private hidden = []
-  private fillable = []
-  private softDeletes = false
-  protected query: any
-  protected hasSelect: boolean
-  public id: number | undefined
-  public subscribed: boolean | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-  public user_id: number | undefined
-
-  constructor(subscriber: Partial<SubscriberType> | null) {
-    this.id = subscriber?.id
-    this.subscribed = subscriber?.subscribed
-
-    this.created_at = user?.created_at
-
-    this.updated_at = user?.updated_at
+      this.updated_at = user?.updated_at
 
     this.user_id = subscriber?.user_id
+   
 
-    this.query = db.selectFrom('subscribers')
-    this.hasSelect = false
-  }
-
-  // Method to find a Subscriber by ID
-  async find(id: number): Promise<SubscriberModel | undefined> {
-    const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) return undefined
-
-    return this.parseResult(new SubscriberModel(model))
-  }
-
-  // Method to find a Subscriber by ID
-  static async find(id: number): Promise<SubscriberModel | undefined> {
-    const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
-
-    const instance = new this(null)
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) return undefined
-
-    return instance.parseResult(new this(model))
-  }
-
-  static async all(): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers').selectAll()
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const results = await query.execute()
-
-    return results.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
-  }
-
-  static async findOrFail(id: number): Promise<SubscriberModel> {
-    let query = db.selectFrom('subscribers').where('id', '=', id)
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) throw `No model results found for ${id} `
-
-    return instance.parseResult(new this(model))
-  }
-
-  static async findMany(ids: number[]): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers').where('id', 'in', ids)
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    query = query.selectAll()
-
-    const model = await query.execute()
-
-    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
-  }
-
-  // Method to get a Subscriber by criteria
-  static async get(): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers')
-
-    const instance = new this(null)
-
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-
-    return model.map((modelItem) => new SubscriberModel(modelItem))
-  }
-
-  // Method to get a Subscriber by criteria
-  async get(): Promise<SubscriberModel[]> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.query = db.selectFrom('subscribers')
+        this.hasSelect = false
       }
 
-      const model = await this.query.execute()
+      // Method to find a Subscriber by ID
+      async find(id: number): Promise<SubscriberModel | undefined> {
+        const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
-      return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
-    }
+        const model = await query.executeTakeFirst()
 
-    if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
-    }
+        if (!model)
+          return undefined
 
-    const model = await this.query.selectAll().execute()
-
-    return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
-  }
-
-  static async count(): Promise<number> {
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
-    }
-
-    const results = await instance.query.selectAll().execute()
-
-    return results.length
-  }
-
-  async count(): Promise<number> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        return this.parseResult(new SubscriberModel(model))
       }
 
-      const results = await this.query.execute()
-
-      return results.length
-    }
-
-    const results = await this.query.selectAll().execute()
-
-    return results.length
-  }
-
-  // Method to get all subscribers
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
-    const totalRecordsResult = await db
-      .selectFrom('subscribers')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const subscribersWithExtra = await db
-      .selectFrom('subscribers')
-      .selectAll()
-      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-      .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()?.id ?? null
-
-    return {
-      data: subscribersWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to create a new subscriber
-  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel | undefined> {
-    const instance = new this(null)
-
-    const filteredValues = Object.fromEntries(
-      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-    ) as NewSubscriber
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
-
-    const result = await db.insertInto('subscribers').values(filteredValues).executeTakeFirstOrThrow()
-
-    const model = (await find(Number(result.insertId))) as SubscriberModel
-
-    return model
-  }
-
-  // Method to remove a Subscriber
-  static async remove(id: number): Promise<void> {
-    const instance = new this(null)
-    const model = await instance.find(id)
-
-    if (instance.softDeletes) {
-      await db
-        .updateTable('subscribers')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    } else {
-      await db.deleteFrom('subscribers').where('id', '=', id).execute()
-    }
-  }
+      // Method to find a Subscriber by ID
+      static async find(id: number): Promise<SubscriberModel | undefined> {
+        const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
-  where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
-    let column: any
-    let operator: any
-    let value: any
+        const instance = new this(null)
 
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
+        const model = await query.executeTakeFirst()
 
-    this.query = this.query.where(column, operator, value)
+        if (!model)
+          return undefined
 
-    return this
-  }
+        return instance.parseResult(new this(model))
+      }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
-    let column: any
-    let operator: any
-    let value: any
+      static async all(): Promise<SubscriberModel[]> {
+        let query = db.selectFrom('subscribers').selectAll()
 
-    const instance = new this(null)
+        const instance = new this(null)
 
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null)
+        }
 
-    instance.query = instance.query.where(column, operator, value)
+        const results = await query.execute();
 
-    return instance
-  }
+        return results.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)));
+      }
 
-  static whereSubscribed(value: string | number | boolean | undefined | null): SubscriberModel {
-    const instance = new this(null)
 
-    instance.query = instance.query.where('subscribed', '=', value)
+      static async findOrFail(id: number): Promise<SubscriberModel> {
+        let query = db.selectFrom('subscribers').where('id', '=', id)
 
-    return instance
-  }
+        const instance = new this(null)
 
-  static whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
-    const instance = new this(null)
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-    instance.query = instance.query.where(column, 'in', values)
+        query = query.selectAll()
 
-    return instance
-  }
+        const model = await query.executeTakeFirst()
 
-  async first(): Promise<SubscriberModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+        if (!model)
+          throw(`No model results found for ${id} `)
 
-    if (!model) {
-      return undefined
-    }
 
-    return this.parseResult(new SubscriberModel(model))
-  }
+        return instance.parseResult(new this(model))
+      }
 
-  async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+      static async findMany(ids: number[]): Promise<SubscriberModel[]> {
+        let query = db.selectFrom('subscribers').where('id', 'in', ids)
 
-    return model !== null || model !== undefined
-  }
+        const instance = new this(null)
 
-  static async first(): Promise<SubscriberType | undefined> {
-    return await db.selectFrom('subscribers').selectAll().executeTakeFirst()
-  }
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-  async last(): Promise<SubscriberType | undefined> {
-    return await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
-  }
+        query = query.selectAll()
 
-  static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
-    const instance = new this(null)
+        const model = await query.execute()
 
-    instance.query = instance.orderBy(column, order)
+        return model.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
+      }
 
-    return instance
-  }
+      // Method to get a Subscriber by criteria
+      static async get(): Promise<SubscriberModel[]> {
+        let query = db.selectFrom('subscribers');
 
-  orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
-    this.query = this.query.orderBy(column, order)
+        const instance = new this(null)
 
-    return this
-  }
+        // Check if soft deletes are enabled
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-  static orderByDesc(column: keyof SubscriberType): SubscriberModel {
-    const instance = new this(null)
+        const model = await query.selectAll().execute();
 
-    instance.query = instance.query.orderBy(column, 'desc')
+        return model.map(modelItem => new SubscriberModel(modelItem));
+      }
 
-    return instance
-  }
+      // Method to get a Subscriber by criteria
+      async get(): Promise<SubscriberModel[]> {
+        if (this.hasSelect) {
 
-  orderByDesc(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.orderBy(column, 'desc')
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
 
-    return this
-  }
+          const model = await this.query.execute()
 
-  static orderByAsc(column: keyof SubscriberType): SubscriberModel {
-    const instance = new this(null)
+          return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+        }
 
-    instance.query = instance.query.orderBy(column, 'desc')
+        if (this.softDeletes) {
+          this.query = this.query.where('deleted_at', 'is', null);
+        }
 
-    return instance
-  }
+        const model = await this.query.selectAll().execute()
 
-  orderByAsc(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.query.orderBy(column, 'desc')
+        return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+      }
 
-    return this
-  }
+      static async count(): Promise<number> {
+        const instance = new this(null)
 
-  // Method to update the subscribers instance
-  async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
-    if (this.id === undefined) throw new Error('Subscriber ID is undefined')
+        if (instance.softDeletes) {
+          instance.query = instance.query.where('deleted_at', 'is', null);
+        }
 
-    const filteredValues = Object.keys(subscriber)
-      .filter((key) => this.fillable.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = subscriber[key]
-        return obj
-      }, {})
+        const results = await instance.query.selectAll().execute()
 
-    await db.updateTable('subscribers').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
+        return results.length
+      }
 
-    const model = this.find(Number(this.id))
+      async count(): Promise<number> {
+        if (this.hasSelect) {
 
-    return model
-  }
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
 
-  // Method to save (insert or update) the subscriber instance
-  async save(): Promise<void> {
-    if (!this.subscriber) throw new Error('Subscriber data is undefined')
+          const results = await this.query.execute()
 
-    if (this.subscriber.id === undefined) {
-      // Insert new subscriber
-      const newModel = await db
-        .insertInto('subscribers')
-        .values(this.subscriber as NewSubscriber)
-        .executeTakeFirstOrThrow()
-    } else {
-      // Update existing subscriber
-      await this.update(this.subscriber)
-    }
-  }
+          return results.length
+        }
 
-  // Method to delete (soft delete) the subscriber instance
-  async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Subscriber ID is undefined')
+        const results = await this.query.selectAll().execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db
-        .updateTable('subscribers')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    } else {
-      // Perform a hard delete
-      await db.deleteFrom('subscribers').where('id', '=', this.id).execute()
-    }
-  }
+        return results.length
+      }
+
+      // Method to get all subscribers
+      static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
+        const totalRecordsResult = await db.selectFrom('subscribers')
+          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+          .executeTakeFirst()
+
+        const totalRecords = Number(totalRecordsResult?.total) || 0
+        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-  distinct(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.query.distinctOn(column)
+        const subscribersWithExtra = await db.selectFrom('subscribers')
+          .selectAll()
+          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+          .limit((options.limit ?? 10) + 1) // Fetch one extra record
+          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+          .execute()
 
-    return this
-  }
 
-  static distinct(column: keyof SubscriberType): SubscriberModel {
-    const instance = new this(null)
+          let nextCursor = null
+          if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()?.id ?? null
+
+        return {
+          data: subscribersWithExtra,
+          paging: {
+            total_records: totalRecords,
+            page: options.page || 1,
+            total_pages: totalPages,
+          },
+          next_cursor: nextCursor,
+        }
+      }
+
+      // Method to create a new subscriber
+      static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel | undefined> {
+        const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+         const filteredValues = Object.fromEntries(
+          Object.entries(newSubscriber).filter(([key]) => instance.fillable.includes(key)),
+        ) as NewSubscriber
 
-    return instance
-  }
+        if (Object.keys(filteredValues).length === 0) {
+          return undefined
+        }
 
-  join(table: string, firstCol: string, secondCol: string): SubscriberModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+        const result = await db.insertInto('subscribers')
+          .values(filteredValues)
+          .executeTakeFirstOrThrow()
 
-    return this
-  }
+        const model = await find(Number(result.insertId)) as SubscriberModel
 
-  static join(table: string, firstCol: string, secondCol: string): SubscriberModel {
-    const instance = new this(null)
+        
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+        return model
+      }
 
-    return instance
-  }
+      static async forceCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel | undefined> {
+        const result = await db.insertInto('subscribers')
+          .values(newSubscriber)
+          .executeTakeFirstOrThrow()
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
-  }
+        const model = await find(Number(result.insertId)) as SubscriberModel
 
-  toJSON() {
-    const output: Partial<SubscriberType> = {
-      id: this.id,
-      subscribed: this.subscribed,
+        
 
+        return model
+      }
+
+      // Method to remove a Subscriber
+      static async remove(id: number): Promise<void> {
+        const instance = new this(null)
+        const model = await instance.find(id)
+
+       if (instance.softDeletes) {
+        await db.updateTable('subscribers')
+          .set({
+            deleted_at: sql.raw('CURRENT_TIMESTAMP')
+          })
+          .where('id', '=', id)
+          .execute();
+        } else {
+          await db.deleteFrom('subscribers')
+            .where('id', '=', id)
+            .execute();
+        }
+
+        if (model)
+          
+      }
+
+      where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
+        let column: any
+        let operator: any
+        let value: any
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
+        this.query = this.query.where(column, operator, value)
+
+        return this
+      }
+
+      static where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
+        let column: any
+        let operator: any
+        let value: any
+
+        const instance = new this(null)
+
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
+
+        instance.query = instance.query.where(column, operator, value)
+
+        return instance
+      }
+
+       static whereSubscribed(value: string | number | boolean | undefined | null): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where('subscribed', '=', value)
+
+        return instance
+      } 
+
+
+
+      static whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where(column, 'in', values)
+
+        return instance
+      }
+
+      async first(): Promise<SubscriberModel | undefined> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        if (! model) {
+          return undefined
+        }
+
+        return this.parseResult(new SubscriberModel(model))
+      }
+
+      async exists(): Promise<boolean> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        return model !== null || model !== undefined
+      }
+
+      static async first(): Promise<SubscriberType | undefined> {
+        return await db.selectFrom('subscribers')
+          .selectAll()
+          .executeTakeFirst()
+      }
+
+      async last(): Promise<SubscriberType | undefined> {
+        return await db.selectFrom('subscribers')
+          .selectAll()
+          .orderBy('id', 'desc')
+          .executeTakeFirst()
+      }
+
+      static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.orderBy(column, order)
+
+        return instance
+      }
+
+      orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+        this.query = this.query.orderBy(column, order)
+
+        return this
+      }
+
+      static orderByDesc(column: keyof SubscriberType): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByDesc(column: keyof SubscriberType): SubscriberModel {
+        this.query = this.orderBy(column, 'desc')
+
+        return this
+      }
+
+      static orderByAsc(column: keyof SubscriberType): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByAsc(column: keyof SubscriberType): SubscriberModel {
+        this.query = this.query.orderBy(column, 'desc')
+
+        return this
+      }
+
+      async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
+        if (this.id === undefined)
+          throw new Error('Subscriber ID is undefined')
+
+        const filteredValues = Object.fromEntries(
+          Object.entries(subscriber).filter(([key]) => this.fillable.includes(key)),
+        ) as NewSubscriber
+
+        await db.updateTable('subscribers')
+          .set(filteredValues)
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          
+
+        return model
+      }
+
+      async forceUpdate(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
+        if (this.id === undefined)
+          throw new Error('Subscriber ID is undefined')
+
+        await db.updateTable('subscribers')
+          .set(subscriber)
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          
+
+        return model
+      }
+
+      async save(): Promise<void> {
+        if (!this)
+          throw new Error('Subscriber data is undefined')
+
+        if (this.id === undefined) {
+          // Insert new subscriber
+          const newModel = await db.insertInto('subscribers')
+            .values(this as NewSubscriber)
+            .executeTakeFirstOrThrow()
+        }
+        else {
+          // Update existing subscriber
+          await this.update(this.subscriber)
+        }
+      }
+
+      // Method to delete (soft delete) the subscriber instance
+      async delete(): Promise<void> {
+          if (this.id === undefined)
+              throw new Error('Subscriber ID is undefined');
+
+          // Check if soft deletes are enabled
+          if (this.softDeletes) {
+              // Update the deleted_at column with the current timestamp
+              await db.updateTable('subscribers')
+                  .set({
+                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
+                  })
+                  .where('id', '=', this.id)
+                  .execute();
+          } else {
+              // Perform a hard delete
+              await db.deleteFrom('subscribers')
+                .where('id', '=', this.id)
+                .execute();
+          }
+
+          
+      }
+
+      
+
+      distinct(column: keyof SubscriberType): SubscriberModel {
+        this.query = this.query.distinctOn(column)
+
+        return this
+      }
+
+      static distinct(column: keyof SubscriberType): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.distinctOn(column)
+
+        return instance
+      }
+
+      join(table: string, firstCol: string, secondCol: string): SubscriberModel {
+        this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+        return this
+      }
+
+      static join(table: string, firstCol: string, secondCol: string): SubscriberModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+        return instance
+      }
+
+      static async rawQuery(rawQuery: string): Promise<any> {
+        return await sql`${rawQuery}`.execute(db)
+      }
+
+      toJSON() {
+        const output: Partial<SubscriberType> = {
+
+id: this.id,
+subscribed: this.subscribed,
+   
       created_at: this.created_at,
 
       updated_at: this.updated_at,
+
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<SubscriberType>]
-    })
+        this.hidden.forEach((attr) => {
+          if (attr in output)
+            delete output[attr as keyof Partial<SubscriberType>]
+        })
 
-    type Subscriber = Omit<SubscriberType, 'password'>
+        type Subscriber = Omit<SubscriberType, 'password'>
 
-    return output as Subscriber
-  }
+        return output as Subscriber
+      }
 
-  parseResult(model: UserModel): UserModel {
-    for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof UserModel]
+        parseResult(model: UserModel): UserModel {
+          for (const hiddenAttribute of this.hidden) {
+            delete model[hiddenAttribute as keyof UserModel]
+          }
+
+          return model
+        }
+
+      
     }
 
-    return model
-  }
-}
+    async function find(id: number): Promise<SubscriberModel | null> {
+      const query = db.selectFrom('subscribers').where('id', '=', id)
 
-async function find(id: number): Promise<SubscriberModel | null> {
-  const query = db.selectFrom('subscribers').where('id', '=', id)
+      query.selectAll()
 
-  query.selectAll()
+      const model = await query.executeTakeFirst()
 
-  const model = await query.executeTakeFirst()
+      if (!model) return null
 
-  if (!model) return null
+      return new SubscriberModel(model)
+    }
 
-  return new SubscriberModel(model)
-}
+    export async function count(): Promise<number> {
+      const results = await SubscriberModel.count()
 
-export async function count(): Promise<number> {
-  const results = await SubscriberModel.count()
+      return results
+    }
 
-  return results
-}
+    export async function create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
 
-export async function create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-  const result = await db.insertInto('subscribers').values(newSubscriber).executeTakeFirstOrThrow()
+      const result = await db.insertInto('subscribers')
+        .values(newSubscriber)
+        .executeTakeFirstOrThrow()
 
-  return (await find(Number(result.insertId))) as SubscriberModel
-}
+      return await find(Number(result.insertId)) as SubscriberModel
+    }
 
-export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
-}
+    export async function rawQuery(rawQuery: string): Promise<any> {
+      return await sql`${rawQuery}`.execute(db)
+    }
 
-export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('subscribers').where('id', '=', id).execute()
-}
+    export async function remove(id: number): Promise<void> {
+      await db.deleteFrom('subscribers')
+        .where('id', '=', id)
+        .execute()
+    }
 
-export async function whereSubscribed(value: string | number | boolean | undefined | null): Promise<SubscriberModel[]> {
-  const query = db.selectFrom('subscribers').where('subscribed', '=', value)
-  const results = await query.execute()
+    export async function whereSubscribed(value: string | number | boolean | undefined | null): Promise<SubscriberModel[]> {
+        const query = db.selectFrom('subscribers').where('subscribed', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new SubscriberModel(modelItem))
-}
+        return results.map(modelItem => new SubscriberModel(modelItem))
+      } 
 
-const Subscriber = SubscriberModel
 
-export default Subscriber
+
+    const Subscriber = SubscriberModel
+
+    export default Subscriber
+    

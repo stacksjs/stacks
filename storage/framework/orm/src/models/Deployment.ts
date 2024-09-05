@@ -1,696 +1,765 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-import User from './User'
+    import { verifyTwoFactorCode } from '@stacksjs/auth'
+    import { db } from '@stacksjs/database'
+    import { sql } from '@stacksjs/database'
+    import { dispatch } from '@stacksjs/events'
+    import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+    import User from './User'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
-// TODO: we need an action that auto-generates these table interfaces
-export interface DeploymentsTable {
-  id: Generated<number>
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  user_id: number
+    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+    // import { Pool } from 'pg'
 
-  created_at: Date
+    // TODO: we need an action that auto-generates these table interfaces
+    export interface DeploymentsTable {
+      id: Generated<number>
+      commit_sha: string
+      commit_message: string
+      branch: string
+      status: string
+      execution_time: number
+      deploy_script: string
+      terminal_output: string
+      user_id: number 
 
-  updated_at: Date
-}
+      created_at: Date
 
-interface DeploymentResponse {
-  data: Deployments
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
+      updated_at: Date
+    
+    }
 
-export type DeploymentType = Selectable<DeploymentsTable>
-export type NewDeployment = Insertable<DeploymentsTable>
-export type DeploymentUpdate = Updateable<DeploymentsTable>
-export type Deployments = DeploymentType[]
+    interface DeploymentResponse {
+      data: Deployments
+      paging: {
+        total_records: number
+        page: number
+        total_pages: number
+      }
+      next_cursor: number | null
+    }
 
-export type DeploymentColumn = Deployments
-export type DeploymentColumns = Array<keyof Deployments>
+    export type DeploymentType = Selectable<DeploymentsTable>
+    export type NewDeployment = Insertable<DeploymentsTable>
+    export type DeploymentUpdate = Updateable<DeploymentsTable>
+    export type Deployments = DeploymentType[]
 
-type SortDirection = 'asc' | 'desc'
-interface SortOptions {
-  column: DeploymentType
-  order: SortDirection
-}
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
+    export type DeploymentColumn = Deployments
+    export type DeploymentColumns = Array<keyof Deployments>
 
-export class DeploymentModel {
-  private hidden = []
-  private fillable = []
-  private softDeletes = false
-  protected query: any
-  protected hasSelect: boolean
-  public id: number | undefined
-  public commit_sha: string | undefined
-  public commit_message: string | undefined
-  public branch: string | undefined
-  public status: string | undefined
-  public execution_time: number | undefined
-  public deploy_script: string | undefined
-  public terminal_output: string | undefined
+    type SortDirection = 'asc' | 'desc'
+    interface SortOptions { column: DeploymentType, order: SortDirection }
+    // Define a type for the options parameter
+    interface QueryOptions {
+      sort?: SortOptions
+      limit?: number
+      offset?: number
+      page?: number
+    }
 
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-  public user_id: number | undefined
+    export class DeploymentModel {
+      private hidden = []
+      private fillable = []
+      private softDeletes = false
+      protected query: any
+      protected hasSelect: boolean
+      public id: number | undefined 
+   public commit_sha: string | undefined 
+   public commit_message: string | undefined 
+   public branch: string | undefined 
+   public status: string | undefined 
+   public execution_time: number | undefined 
+   public deploy_script: string | undefined 
+   public terminal_output: string | undefined 
+   
+      public created_at: Date | undefined
+      public updated_at: Date | undefined
+    public user_id: number | undefined 
+   
+      constructor(deployment: Partial<DeploymentType> | null) {
+        this.id = deployment?.id
+   this.commit_sha = deployment?.commit_sha
+   this.commit_message = deployment?.commit_message
+   this.branch = deployment?.branch
+   this.status = deployment?.status
+   this.execution_time = deployment?.execution_time
+   this.deploy_script = deployment?.deploy_script
+   this.terminal_output = deployment?.terminal_output
+   
+      this.created_at = user?.created_at
 
-  constructor(deployment: Partial<DeploymentType> | null) {
-    this.id = deployment?.id
-    this.commit_sha = deployment?.commit_sha
-    this.commit_message = deployment?.commit_message
-    this.branch = deployment?.branch
-    this.status = deployment?.status
-    this.execution_time = deployment?.execution_time
-    this.deploy_script = deployment?.deploy_script
-    this.terminal_output = deployment?.terminal_output
-
-    this.created_at = user?.created_at
-
-    this.updated_at = user?.updated_at
+      this.updated_at = user?.updated_at
 
     this.user_id = deployment?.user_id
+   
 
-    this.query = db.selectFrom('deployments')
-    this.hasSelect = false
-  }
-
-  // Method to find a Deployment by ID
-  async find(id: number): Promise<DeploymentModel | undefined> {
-    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) return undefined
-
-    return this.parseResult(new DeploymentModel(model))
-  }
-
-  // Method to find a Deployment by ID
-  static async find(id: number): Promise<DeploymentModel | undefined> {
-    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
-
-    const instance = new this(null)
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) return undefined
-
-    return instance.parseResult(new this(model))
-  }
-
-  static async all(): Promise<DeploymentModel[]> {
-    let query = db.selectFrom('deployments').selectAll()
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const results = await query.execute()
-
-    return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
-  }
-
-  static async findOrFail(id: number): Promise<DeploymentModel> {
-    let query = db.selectFrom('deployments').where('id', '=', id)
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model) throw `No model results found for ${id} `
-
-    return instance.parseResult(new this(model))
-  }
-
-  static async findMany(ids: number[]): Promise<DeploymentModel[]> {
-    let query = db.selectFrom('deployments').where('id', 'in', ids)
-
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    query = query.selectAll()
-
-    const model = await query.execute()
-
-    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
-  }
-
-  // Method to get a Deployment by criteria
-  static async get(): Promise<DeploymentModel[]> {
-    let query = db.selectFrom('deployments')
-
-    const instance = new this(null)
-
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const model = await query.selectAll().execute()
-
-    return model.map((modelItem) => new DeploymentModel(modelItem))
-  }
-
-  // Method to get a Deployment by criteria
-  async get(): Promise<DeploymentModel[]> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.query = db.selectFrom('deployments')
+        this.hasSelect = false
       }
 
-      const model = await this.query.execute()
+      // Method to find a Deployment by ID
+      async find(id: number): Promise<DeploymentModel | undefined> {
+        const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
-      return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
-    }
+        const model = await query.executeTakeFirst()
 
-    if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
-    }
+        if (!model)
+          return undefined
 
-    const model = await this.query.selectAll().execute()
-
-    return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
-  }
-
-  static async count(): Promise<number> {
-    const instance = new this(null)
-
-    if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
-    }
-
-    const results = await instance.query.selectAll().execute()
-
-    return results.length
-  }
-
-  async count(): Promise<number> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        return this.parseResult(new DeploymentModel(model))
       }
 
-      const results = await this.query.execute()
-
-      return results.length
-    }
-
-    const results = await this.query.selectAll().execute()
-
-    return results.length
-  }
-
-  // Method to get all deployments
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
-    const totalRecordsResult = await db
-      .selectFrom('deployments')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const deploymentsWithExtra = await db
-      .selectFrom('deployments')
-      .selectAll()
-      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-      .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id ?? null
-
-    return {
-      data: deploymentsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to create a new deployment
-  static async create(newDeployment: NewDeployment): Promise<DeploymentModel | undefined> {
-    const instance = new this(null)
-
-    const filteredValues = Object.fromEntries(
-      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-    ) as NewDeployment
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
-
-    const result = await db.insertInto('deployments').values(filteredValues).executeTakeFirstOrThrow()
+      // Method to find a Deployment by ID
+      static async find(id: number): Promise<DeploymentModel | undefined> {
+        const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
-    const model = (await find(Number(result.insertId))) as DeploymentModel
+        const instance = new this(null)
 
-    return model
-  }
+        const model = await query.executeTakeFirst()
 
-  // Method to remove a Deployment
-  static async remove(id: number): Promise<void> {
-    const instance = new this(null)
-    const model = await instance.find(id)
+        if (!model)
+          return undefined
 
-    if (instance.softDeletes) {
-      await db
-        .updateTable('deployments')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    } else {
-      await db.deleteFrom('deployments').where('id', '=', id).execute()
-    }
-  }
+        return instance.parseResult(new this(model))
+      }
 
-  where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
-    let column: any
-    let operator: any
-    let value: any
+      static async all(): Promise<DeploymentModel[]> {
+        let query = db.selectFrom('deployments').selectAll()
 
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
+        const instance = new this(null)
 
-    this.query = this.query.where(column, operator, value)
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null)
+        }
 
-    return this
-  }
+        const results = await query.execute();
 
-  static where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
-    let column: any
-    let operator: any
-    let value: any
+        return results.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)));
+      }
 
-    const instance = new this(null)
 
-    if (args.length === 2) {
-      ;[column, value] = args
-      operator = '='
-    } else if (args.length === 3) {
-      ;[column, operator, value] = args
-    } else {
-      throw new Error('Invalid number of arguments')
-    }
+      static async findOrFail(id: number): Promise<DeploymentModel> {
+        let query = db.selectFrom('deployments').where('id', '=', id)
 
-    instance.query = instance.query.where(column, operator, value)
+        const instance = new this(null)
 
-    return instance
-  }
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-  static whereCommitSha(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
+        query = query.selectAll()
 
-    instance.query = instance.query.where('commitSha', '=', value)
+        const model = await query.executeTakeFirst()
 
-    return instance
-  }
+        if (!model)
+          throw(`No model results found for ${id} `)
 
-  static whereCommitMessage(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
 
-    instance.query = instance.query.where('commitMessage', '=', value)
+        return instance.parseResult(new this(model))
+      }
 
-    return instance
-  }
+      static async findMany(ids: number[]): Promise<DeploymentModel[]> {
+        let query = db.selectFrom('deployments').where('id', 'in', ids)
 
-  static whereBranch(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
+        const instance = new this(null)
 
-    instance.query = instance.query.where('branch', '=', value)
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-    return instance
-  }
+        query = query.selectAll()
 
-  static whereStatus(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
+        const model = await query.execute()
 
-    instance.query = instance.query.where('status', '=', value)
+        return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
+      }
 
-    return instance
-  }
+      // Method to get a Deployment by criteria
+      static async get(): Promise<DeploymentModel[]> {
+        let query = db.selectFrom('deployments');
 
-  static whereExecutionTime(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
+        const instance = new this(null)
 
-    instance.query = instance.query.where('executionTime', '=', value)
+        // Check if soft deletes are enabled
+        if (instance.softDeletes) {
+          query = query.where('deleted_at', 'is', null);
+        }
 
-    return instance
-  }
+        const model = await query.selectAll().execute();
 
-  static whereDeployScript(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
+        return model.map(modelItem => new DeploymentModel(modelItem));
+      }
 
-    instance.query = instance.query.where('deployScript', '=', value)
+      // Method to get a Deployment by criteria
+      async get(): Promise<DeploymentModel[]> {
+        if (this.hasSelect) {
 
-    return instance
-  }
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
 
-  static whereTerminalOutput(value: string | number | boolean | undefined | null): DeploymentModel {
-    const instance = new this(null)
+          const model = await this.query.execute()
 
-    instance.query = instance.query.where('terminalOutput', '=', value)
+          return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+        }
 
-    return instance
-  }
+        if (this.softDeletes) {
+          this.query = this.query.where('deleted_at', 'is', null);
+        }
 
-  static whereIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
-    const instance = new this(null)
+        const model = await this.query.selectAll().execute()
 
-    instance.query = instance.query.where(column, 'in', values)
+        return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+      }
 
-    return instance
-  }
+      static async count(): Promise<number> {
+        const instance = new this(null)
 
-  async first(): Promise<DeploymentModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+        if (instance.softDeletes) {
+          instance.query = instance.query.where('deleted_at', 'is', null);
+        }
 
-    if (!model) {
-      return undefined
-    }
+        const results = await instance.query.selectAll().execute()
 
-    return this.parseResult(new DeploymentModel(model))
-  }
+        return results.length
+      }
 
-  async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+      async count(): Promise<number> {
+        if (this.hasSelect) {
 
-    return model !== null || model !== undefined
-  }
+          if (this.softDeletes) {
+            this.query = this.query.where('deleted_at', 'is', null);
+          }
 
-  static async first(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments').selectAll().executeTakeFirst()
-  }
+          const results = await this.query.execute()
 
-  async last(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
-  }
+          return results.length
+        }
 
-  static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
-    const instance = new this(null)
+        const results = await this.query.selectAll().execute()
 
-    instance.query = instance.orderBy(column, order)
+        return results.length
+      }
+
+      // Method to get all deployments
+      static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+        const totalRecordsResult = await db.selectFrom('deployments')
+          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+          .executeTakeFirst()
+
+        const totalRecords = Number(totalRecordsResult?.total) || 0
+        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    return instance
-  }
+        const deploymentsWithExtra = await db.selectFrom('deployments')
+          .selectAll()
+          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+          .limit((options.limit ?? 10) + 1) // Fetch one extra record
+          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+          .execute()
 
-  orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
-    this.query = this.query.orderBy(column, order)
 
-    return this
-  }
+          let nextCursor = null
+          if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id ?? null
+
+        return {
+          data: deploymentsWithExtra,
+          paging: {
+            total_records: totalRecords,
+            page: options.page || 1,
+            total_pages: totalPages,
+          },
+          next_cursor: nextCursor,
+        }
+      }
+
+      // Method to create a new deployment
+      static async create(newDeployment: NewDeployment): Promise<DeploymentModel | undefined> {
+        const instance = new this(null)
 
-  static orderByDesc(column: keyof DeploymentType): DeploymentModel {
-    const instance = new this(null)
+         const filteredValues = Object.fromEntries(
+          Object.entries(newDeployment).filter(([key]) => instance.fillable.includes(key)),
+        ) as NewDeployment
 
-    instance.query = instance.query.orderBy(column, 'desc')
+        if (Object.keys(filteredValues).length === 0) {
+          return undefined
+        }
 
-    return instance
-  }
+        const result = await db.insertInto('deployments')
+          .values(filteredValues)
+          .executeTakeFirstOrThrow()
 
-  orderByDesc(column: keyof DeploymentType): DeploymentModel {
-    this.query = this.orderBy(column, 'desc')
+        const model = await find(Number(result.insertId)) as DeploymentModel
 
-    return this
-  }
+        
 
-  static orderByAsc(column: keyof DeploymentType): DeploymentModel {
-    const instance = new this(null)
+        return model
+      }
 
-    instance.query = instance.query.orderBy(column, 'desc')
+      static async forceCreate(newDeployment: NewDeployment): Promise<DeploymentModel | undefined> {
+        const result = await db.insertInto('deployments')
+          .values(newDeployment)
+          .executeTakeFirstOrThrow()
 
-    return instance
-  }
+        const model = await find(Number(result.insertId)) as DeploymentModel
 
-  orderByAsc(column: keyof DeploymentType): DeploymentModel {
-    this.query = this.query.orderBy(column, 'desc')
+        
 
-    return this
-  }
+        return model
+      }
 
-  // Method to update the deployments instance
-  async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
-    if (this.id === undefined) throw new Error('Deployment ID is undefined')
+      // Method to remove a Deployment
+      static async remove(id: number): Promise<void> {
+        const instance = new this(null)
+        const model = await instance.find(id)
 
-    const filteredValues = Object.keys(deployment)
-      .filter((key) => this.fillable.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = deployment[key]
-        return obj
-      }, {})
+       if (instance.softDeletes) {
+        await db.updateTable('deployments')
+          .set({
+            deleted_at: sql.raw('CURRENT_TIMESTAMP')
+          })
+          .where('id', '=', id)
+          .execute();
+        } else {
+          await db.deleteFrom('deployments')
+            .where('id', '=', id)
+            .execute();
+        }
 
-    await db.updateTable('deployments').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
+        if (model)
+          
+      }
 
-    const model = this.find(Number(this.id))
+      where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
+        let column: any
+        let operator: any
+        let value: any
 
-    return model
-  }
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
 
-  // Method to save (insert or update) the deployment instance
-  async save(): Promise<void> {
-    if (!this.deployment) throw new Error('Deployment data is undefined')
+        this.query = this.query.where(column, operator, value)
 
-    if (this.deployment.id === undefined) {
-      // Insert new deployment
-      const newModel = await db
-        .insertInto('deployments')
-        .values(this.deployment as NewDeployment)
-        .executeTakeFirstOrThrow()
-    } else {
-      // Update existing deployment
-      await this.update(this.deployment)
-    }
-  }
+        return this
+      }
 
-  // Method to delete (soft delete) the deployment instance
-  async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Deployment ID is undefined')
+      static where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
+        let column: any
+        let operator: any
+        let value: any
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db
-        .updateTable('deployments')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    } else {
-      // Perform a hard delete
-      await db.deleteFrom('deployments').where('id', '=', this.id).execute()
-    }
-  }
+        const instance = new this(null)
 
-  async user() {
-    if (this.deployment_id === undefined) throw new Error('Relation Error!')
+        if (args.length === 2) {
+          [column, value] = args
+          operator = '='
+        } else if (args.length === 3) {
+            [column, operator, value] = args
+        } else {
+            throw new Error("Invalid number of arguments")
+        }
 
-    const model = await User.where('id', '=', deployment_id).first()
+        instance.query = instance.query.where(column, operator, value)
 
-    if (!model) throw new Error('Model Relation Not Found!')
+        return instance
+      }
 
-    return model
-  }
+       static whereCommitSha(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
 
-  distinct(column: keyof DeploymentType): DeploymentModel {
-    this.query = this.query.distinctOn(column)
+        instance.query = instance.query.where('commitSha', '=', value)
 
-    return this
-  }
+        return instance
+      } 
 
-  static distinct(column: keyof DeploymentType): DeploymentModel {
-    const instance = new this(null)
+static whereCommitMessage(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+        instance.query = instance.query.where('commitMessage', '=', value)
 
-    return instance
-  }
+        return instance
+      } 
 
-  join(table: string, firstCol: string, secondCol: string): DeploymentModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+static whereBranch(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
 
-    return this
-  }
+        instance.query = instance.query.where('branch', '=', value)
 
-  static join(table: string, firstCol: string, secondCol: string): DeploymentModel {
-    const instance = new this(null)
+        return instance
+      } 
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+static whereStatus(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
 
-    return instance
-  }
+        instance.query = instance.query.where('status', '=', value)
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
-  }
+        return instance
+      } 
 
-  toJSON() {
-    const output: Partial<DeploymentType> = {
-      id: this.id,
-      commit_sha: this.commit_sha,
-      commit_message: this.commit_message,
-      branch: this.branch,
-      status: this.status,
-      execution_time: this.execution_time,
-      deploy_script: this.deploy_script,
-      terminal_output: this.terminal_output,
+static whereExecutionTime(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
 
+        instance.query = instance.query.where('executionTime', '=', value)
+
+        return instance
+      } 
+
+static whereDeployScript(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where('deployScript', '=', value)
+
+        return instance
+      } 
+
+static whereTerminalOutput(value: string | number | boolean | undefined | null): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where('terminalOutput', '=', value)
+
+        return instance
+      } 
+
+
+
+      static whereIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.where(column, 'in', values)
+
+        return instance
+      }
+
+      async first(): Promise<DeploymentModel | undefined> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        if (! model) {
+          return undefined
+        }
+
+        return this.parseResult(new DeploymentModel(model))
+      }
+
+      async exists(): Promise<boolean> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        return model !== null || model !== undefined
+      }
+
+      static async first(): Promise<DeploymentType | undefined> {
+        return await db.selectFrom('deployments')
+          .selectAll()
+          .executeTakeFirst()
+      }
+
+      async last(): Promise<DeploymentType | undefined> {
+        return await db.selectFrom('deployments')
+          .selectAll()
+          .orderBy('id', 'desc')
+          .executeTakeFirst()
+      }
+
+      static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.orderBy(column, order)
+
+        return instance
+      }
+
+      orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
+        this.query = this.query.orderBy(column, order)
+
+        return this
+      }
+
+      static orderByDesc(column: keyof DeploymentType): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByDesc(column: keyof DeploymentType): DeploymentModel {
+        this.query = this.orderBy(column, 'desc')
+
+        return this
+      }
+
+      static orderByAsc(column: keyof DeploymentType): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.orderBy(column, 'desc')
+
+        return instance
+      }
+
+      orderByAsc(column: keyof DeploymentType): DeploymentModel {
+        this.query = this.query.orderBy(column, 'desc')
+
+        return this
+      }
+
+      async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
+        if (this.id === undefined)
+          throw new Error('Deployment ID is undefined')
+
+        const filteredValues = Object.fromEntries(
+          Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
+        ) as NewDeployment
+
+        await db.updateTable('deployments')
+          .set(filteredValues)
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          
+
+        return model
+      }
+
+      async forceUpdate(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
+        if (this.id === undefined)
+          throw new Error('Deployment ID is undefined')
+
+        await db.updateTable('deployments')
+          .set(deployment)
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          
+
+        return model
+      }
+
+      async save(): Promise<void> {
+        if (!this)
+          throw new Error('Deployment data is undefined')
+
+        if (this.id === undefined) {
+          // Insert new deployment
+          const newModel = await db.insertInto('deployments')
+            .values(this as NewDeployment)
+            .executeTakeFirstOrThrow()
+        }
+        else {
+          // Update existing deployment
+          await this.update(this.deployment)
+        }
+      }
+
+      // Method to delete (soft delete) the deployment instance
+      async delete(): Promise<void> {
+          if (this.id === undefined)
+              throw new Error('Deployment ID is undefined');
+
+          // Check if soft deletes are enabled
+          if (this.softDeletes) {
+              // Update the deleted_at column with the current timestamp
+              await db.updateTable('deployments')
+                  .set({
+                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
+                  })
+                  .where('id', '=', this.id)
+                  .execute();
+          } else {
+              // Perform a hard delete
+              await db.deleteFrom('deployments')
+                .where('id', '=', this.id)
+                .execute();
+          }
+
+          
+      }
+
+      
+      async user() {
+        if (this.deployment_id === undefined)
+          throw new Error('Relation Error!')
+
+        const model = await User
+          .where('id', '=', deployment_id)
+          .first()
+
+        if (! model)
+          throw new Error('Model Relation Not Found!')
+
+        return model
+      }
+
+
+
+      distinct(column: keyof DeploymentType): DeploymentModel {
+        this.query = this.query.distinctOn(column)
+
+        return this
+      }
+
+      static distinct(column: keyof DeploymentType): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.distinctOn(column)
+
+        return instance
+      }
+
+      join(table: string, firstCol: string, secondCol: string): DeploymentModel {
+        this.query = this.query.innerJoin(table, firstCol, secondCol)
+
+        return this
+      }
+
+      static join(table: string, firstCol: string, secondCol: string): DeploymentModel {
+        const instance = new this(null)
+
+        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+
+        return instance
+      }
+
+      static async rawQuery(rawQuery: string): Promise<any> {
+        return await sql`${rawQuery}`.execute(db)
+      }
+
+      toJSON() {
+        const output: Partial<DeploymentType> = {
+
+id: this.id,
+commit_sha: this.commit_sha,
+   commit_message: this.commit_message,
+   branch: this.branch,
+   status: this.status,
+   execution_time: this.execution_time,
+   deploy_script: this.deploy_script,
+   terminal_output: this.terminal_output,
+   
       created_at: this.created_at,
 
       updated_at: this.updated_at,
+
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<DeploymentType>]
-    })
+        this.hidden.forEach((attr) => {
+          if (attr in output)
+            delete output[attr as keyof Partial<DeploymentType>]
+        })
 
-    type Deployment = Omit<DeploymentType, 'password'>
+        type Deployment = Omit<DeploymentType, 'password'>
 
-    return output as Deployment
-  }
+        return output as Deployment
+      }
 
-  parseResult(model: UserModel): UserModel {
-    for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof UserModel]
+        parseResult(model: UserModel): UserModel {
+          for (const hiddenAttribute of this.hidden) {
+            delete model[hiddenAttribute as keyof UserModel]
+          }
+
+          return model
+        }
+
+      
     }
 
-    return model
-  }
-}
+    async function find(id: number): Promise<DeploymentModel | null> {
+      const query = db.selectFrom('deployments').where('id', '=', id)
 
-async function find(id: number): Promise<DeploymentModel | null> {
-  const query = db.selectFrom('deployments').where('id', '=', id)
+      query.selectAll()
 
-  query.selectAll()
+      const model = await query.executeTakeFirst()
 
-  const model = await query.executeTakeFirst()
+      if (!model) return null
 
-  if (!model) return null
+      return new DeploymentModel(model)
+    }
 
-  return new DeploymentModel(model)
-}
+    export async function count(): Promise<number> {
+      const results = await DeploymentModel.count()
 
-export async function count(): Promise<number> {
-  const results = await DeploymentModel.count()
+      return results
+    }
 
-  return results
-}
+    export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
 
-export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-  const result = await db.insertInto('deployments').values(newDeployment).executeTakeFirstOrThrow()
+      const result = await db.insertInto('deployments')
+        .values(newDeployment)
+        .executeTakeFirstOrThrow()
 
-  return (await find(Number(result.insertId))) as DeploymentModel
-}
+      return await find(Number(result.insertId)) as DeploymentModel
+    }
 
-export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
-}
+    export async function rawQuery(rawQuery: string): Promise<any> {
+      return await sql`${rawQuery}`.execute(db)
+    }
 
-export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('deployments').where('id', '=', id).execute()
-}
+    export async function remove(id: number): Promise<void> {
+      await db.deleteFrom('deployments')
+        .where('id', '=', id)
+        .execute()
+    }
 
-export async function whereCommitSha(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commitSha', '=', value)
-  const results = await query.execute()
+    export async function whereCommitSha(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+        const query = db.selectFrom('deployments').where('commitSha', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
-export async function whereCommitMessage(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commitMessage', '=', value)
-  const results = await query.execute()
+export async function whereCommitMessage(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+        const query = db.selectFrom('deployments').where('commitMessage', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
 export async function whereBranch(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('branch', '=', value)
-  const results = await query.execute()
+        const query = db.selectFrom('deployments').where('branch', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
 export async function whereStatus(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('status', '=', value)
-  const results = await query.execute()
+        const query = db.selectFrom('deployments').where('status', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
-export async function whereExecutionTime(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('executionTime', '=', value)
-  const results = await query.execute()
+export async function whereExecutionTime(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+        const query = db.selectFrom('deployments').where('executionTime', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
-export async function whereDeployScript(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('deployScript', '=', value)
-  const results = await query.execute()
+export async function whereDeployScript(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+        const query = db.selectFrom('deployments').where('deployScript', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
-export async function whereTerminalOutput(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('terminalOutput', '=', value)
-  const results = await query.execute()
+export async function whereTerminalOutput(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+        const query = db.selectFrom('deployments').where('terminalOutput', '=', value)
+        const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
-}
+        return results.map(modelItem => new DeploymentModel(modelItem))
+      } 
 
-const Deployment = DeploymentModel
 
-export default Deployment
+
+    const Deployment = DeploymentModel
+
+    export default Deployment
+    

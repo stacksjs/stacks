@@ -1332,7 +1332,7 @@ export async function generateModelString(
         const instance = new this(null)
 
          const filteredValues = Object.fromEntries(
-          Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+          Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
         ) as New${modelName}
 
         if (Object.keys(filteredValues).length === 0) {
@@ -1341,6 +1341,18 @@ export async function generateModelString(
 
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)
+          .executeTakeFirstOrThrow()
+
+        const model = await find(Number(result.insertId)) as ${modelName}Model
+
+        ${mittCreateStatement}
+
+        return model
+      }
+
+      static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model | undefined> {
+        const result = await db.insertInto('${tableName}')
+          .values(new${modelName})
           .executeTakeFirstOrThrow()
 
         const model = await find(Number(result.insertId)) as ${modelName}Model
@@ -1368,7 +1380,8 @@ export async function generateModelString(
             .execute();
         }
 
-        ${mittDeleteStatement}
+        if (model)
+          ${mittDeleteStatement}
       }
 
       where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
@@ -1492,39 +1505,52 @@ export async function generateModelString(
         return this
       }
 
-      // Method to update the ${tableName} instance
       async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
         if (this.id === undefined)
           throw new Error('${modelName} ID is undefined')
 
-        const filteredValues = Object.keys(${formattedModelName})
-            .filter(key => this.fillable.includes(key))
-            .reduce((obj, key) => {
-                obj[key] = ${formattedModelName}[key]
-                return obj;
-            }, {});
+        const filteredValues = Object.fromEntries(
+          Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
+        ) as New${modelName}
 
         await db.updateTable('${tableName}')
           .set(filteredValues)
           .where('id', '=', this.id)
           .executeTakeFirst()
 
-        const model = this.find(Number(this.id))
+        const model = await this.find(Number(this.id))
 
-        ${mittUpdateStatement}
+        if (model)
+          ${mittUpdateStatement}
 
         return model
       }
 
-      // Method to save (insert or update) the ${formattedModelName} instance
+      async forceUpdate(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
+        if (this.id === undefined)
+          throw new Error('${modelName} ID is undefined')
+
+        await db.updateTable('${tableName}')
+          .set(${formattedModelName})
+          .where('id', '=', this.id)
+          .executeTakeFirst()
+
+        const model = await this.find(Number(this.id))
+
+        if (model)
+          ${mittUpdateStatement}
+
+        return model
+      }
+
       async save(): Promise<void> {
-        if (!this.${formattedModelName})
+        if (!this)
           throw new Error('${modelName} data is undefined')
 
-        if (this.${formattedModelName}.id === undefined) {
+        if (this.id === undefined) {
           // Insert new ${formattedModelName}
           const newModel = await db.insertInto('${tableName}')
-            .values(this.${formattedModelName} as New${modelName})
+            .values(this as New${modelName})
             .executeTakeFirstOrThrow()
         }
         else {
@@ -1634,6 +1660,7 @@ export async function generateModelString(
     }
 
     export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+
       const result = await db.insertInto('${tableName}')
         .values(new${modelName})
         .executeTakeFirstOrThrow()

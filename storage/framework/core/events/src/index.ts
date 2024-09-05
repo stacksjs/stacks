@@ -1,5 +1,7 @@
 // thanks to mitt for the base of this wonderful functional event emitter
 
+import type { UserModel } from '../../../orm/src/models/User'
+
 export type EventType = string | symbol
 
 // An event handler can take an optional event argument
@@ -137,9 +139,9 @@ type StacksEvents = {
   'user:registered': object
   'user:logged-in': object
   'user:logged-out': object
-  'user:updated': object
-  'user:created': object
-  'user:deleted': object
+  'user:updated': UserModel
+  'user:created': UserModel
+  'user:deleted': UserModel
   'user:password-reset': object
   'user:password-changed': object
 }
