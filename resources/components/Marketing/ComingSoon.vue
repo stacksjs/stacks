@@ -1,15 +1,12 @@
 <script setup>
-import { ref } from 'vue'
-import BaseButton from '../Buttons/BaseButton.vue'
+// import BaseButton from '../Buttons/BaseButton.vue'
 
 // Reactive state for the email input
 const email = ref('')
-
 const loading = ref(false)
-
 const errors = ref([])
-
 const successMessage = ref('')
+
 // Method to handle email submission
 async function submitEmail() {
   const body = {
@@ -17,7 +14,6 @@ async function submitEmail() {
   }
 
   errors.value = []
-
   successMessage.value = ''
 
   const url = 'http://localhost:3008/api/email/subscribe'
@@ -42,7 +38,6 @@ async function submitEmail() {
   }
 
   email.value = ''
-
   loading.value = false
 }
 </script>
@@ -68,7 +63,7 @@ async function submitEmail() {
             <span class="rounded-full bg-blue-600/10 px-3 py-1 text-sm font-semibold leading-6 text-blue-600 ring-1 ring-inset ring-blue-600/10">Coming soon</span>
             <span class="inline-flex items-center space-x-2 text-sm font-medium leading-6 text-gray-600">
               <!-- <span>Just shipped v1.0</span> -->
-              <ChevronRightIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+               <div class="i-chevron-right"></div>
             </span>
           </a>
         </div>
@@ -95,7 +90,7 @@ async function submitEmail() {
                   <div class="i-heroicons-envelope h-5 w-5 text-gray-400" />
                 </div>
 
-                <input id="email" v-model="email" type="email" name="email" class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6" placeholder="may-we-ask-your@email.org">
+                <input id="email" v-model="email" type="email" name="email" class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6" placeholder="may-we-ask@your-email.org">
               </div>
 
               <BaseButton buttonText="Stay in Touch" classString="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 w-120px" :loading="loading" @click.native="submitEmail" />
