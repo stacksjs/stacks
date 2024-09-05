@@ -87,7 +87,7 @@ export class QueueStack {
   }
 
   async loadModule(filePath: string) {
-    const jobModule = await import(/* @vite-ignore */ filePath)
+    const jobModule = await import(filePath)
 
     return jobModule
   }

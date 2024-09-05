@@ -29,7 +29,7 @@ export async function resetSqliteDatabase() {
   const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
 
   for (const userModel of userModelFiles) {
-    const userModelPath = (await import(/* @vite-ignore */ userModel)).default
+    const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
@@ -76,7 +76,7 @@ export async function generateSqliteMigration(modelPath: string) {
     }
   }
 
-  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
+  const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = await getTableName(model, modelPath)
 
@@ -121,7 +121,7 @@ export async function generateSqliteMigration(modelPath: string) {
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
-  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
+  const model = (await import(modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
@@ -222,7 +222,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 export async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
-  const model = (await import(/* @vite-ignore */ modelPath)).default as Model
+  const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
   let hasChanged = false

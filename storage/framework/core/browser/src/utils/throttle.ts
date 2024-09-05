@@ -17,7 +17,6 @@
  * )
  * ```
  */
-
 export function throttle(fn: Function, wait = 300) {
   let inThrottle: boolean
   let lastFn: ReturnType<typeof setTimeout>

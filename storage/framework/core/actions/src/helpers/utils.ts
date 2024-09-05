@@ -25,14 +25,14 @@ export async function runAction(action: Action, options?: ActionOptions) {
 
   for await (const file of glob.scan(scanOptions)) {
     if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
-      return ((await import(/* @vite-ignore */ p.userActionsPath(file))).default as ActionType).handle()
+      return ((await import(p.userActionsPath(file))).default as ActionType).handle()
 
     if (file === `${action}.js` || file.endsWith(`${action}.js`))
-      return ((await import(/* @vite-ignore */ p.userActionsPath(file))).default as ActionType).handle()
+      return ((await import(p.userActionsPath(file))).default as ActionType).handle()
 
     // if a custom model name is used, we need to check for it
     try {
-      const a = await import(/* @vite-ignore */ p.userActionsPath(file))
+      const a = await import(p.userActionsPath(file))
       if (a.name === action) {
         console.log('a.name matches', a.name)
         return await a.handle()

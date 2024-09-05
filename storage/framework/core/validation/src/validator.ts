@@ -23,7 +23,7 @@ export function isObjectNotEmpty(obj: object): boolean {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  const model = (await import(/* @vite-ignore */ path.userModelsPath(`${modelFile}.ts`))).default as Model
+  const model = (await import(path.userModelsPath(`${modelFile}.ts`))).default as Model
   const attributes = model.attributes
 
   const ruleObject: Record<string, SchemaTypes> = {}

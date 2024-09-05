@@ -157,7 +157,7 @@ export async function seed() {
 
   for (const file of modelFiles) {
     const modelPath = path.join(modelsDir, file)
-    const model = await import(/* @vite-ignore */ modelPath)
+    const model = await import(modelPath)
     await seedModel(file, model.default)
   }
 }
