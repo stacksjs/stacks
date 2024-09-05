@@ -33,7 +33,9 @@ export default defineConfig({
     presetIcons({
       prefix: 'i-',
       warn: true,
-      // collections: ui.icons,
+      collections: {
+        heroicons: () => import('@iconify-json/heroicons-solid/icons.json').then((i) => i.default as any),
+      },
       extraProperties: {
         display: 'inline-block',
         'vertical-align': 'middle',

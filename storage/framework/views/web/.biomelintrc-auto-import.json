@@ -62,7 +62,6 @@
       "executeTransition",
       "extendRef",
       "formatTimeAgo",
-      "frontend",
       "getActiveHead",
       "getActivePinia",
       "getCurrentInstance",

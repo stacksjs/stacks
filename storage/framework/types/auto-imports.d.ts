@@ -1172,7 +1172,6 @@ declare module 'vue' {
     readonly executeTransition: UnwrapRef<typeof import('../core/browser/src/index')['executeTransition']>
     readonly extendRef: UnwrapRef<typeof import('../core/browser/src/index')['extendRef']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/index')['formatTimeAgo']>
-    readonly frontend: UnwrapRef<typeof import('../core/browser/src/index')['frontend']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
