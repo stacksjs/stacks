@@ -840,22 +840,22 @@ export async function generateModelString(
 
   if (typeof observer === 'boolean') {
     if (observer) {
-      mittCreateStatement += `dispatch('${formattedModelName}:created', model)`
-      mittUpdateStatement += `dispatch('${formattedModelName}:updated', model)`
-      mittDeleteStatement += `dispatch('${formattedModelName}:deleted', model)`
+      mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model)`
+      mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
+      mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
     }
   }
 
   if (Array.isArray(observer)) {
     // Iterate through the array and append statements based on its contents
     if (observer.includes('create')) {
-      mittCreateStatement += `dispatch('${formattedModelName}:created', model);`
+      mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model);`
     }
     if (observer.includes('update')) {
-      mittUpdateStatement += `dispatch('${formattedModelName}:updated', model);`
+      mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model);`
     }
     if (observer.includes('delete')) {
-      mittDeleteStatement += `dispatch('${formattedModelName}:deleted', model);`
+      mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model);`
     }
   }
 
@@ -1038,8 +1038,8 @@ export async function generateModelString(
     `
 
     constructorFields += `
-      this.created_at = user?.created_at\n
-      this.updated_at = user?.updated_at\n
+      this.created_at = ${formattedModelName}?.created_at\n
+      this.updated_at = ${formattedModelName}?.updated_at\n
     `
 
     jsonFields += `
@@ -1054,7 +1054,7 @@ export async function generateModelString(
     `
 
     constructorFields += `
-      this.deleted_at = user?.deleted_at\n
+      this.deleted_at = ${formattedModelName}?.deleted_at\n
     `
 
     jsonFields += `
@@ -1380,8 +1380,8 @@ export async function generateModelString(
             .execute();
         }
 
-        if (model)
-          ${mittDeleteStatement}
+      
+        ${mittDeleteStatement}
       }
 
       where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
@@ -1520,7 +1520,7 @@ export async function generateModelString(
 
         const model = await this.find(Number(this.id))
 
-        if (model)
+      
           ${mittUpdateStatement}
 
         return model
@@ -1537,7 +1537,7 @@ export async function generateModelString(
 
         const model = await this.find(Number(this.id))
 
-        if (model)
+      
           ${mittUpdateStatement}
 
         return model
@@ -1548,14 +1548,12 @@ export async function generateModelString(
           throw new Error('${modelName} data is undefined')
 
         if (this.id === undefined) {
-          // Insert new ${formattedModelName}
           const newModel = await db.insertInto('${tableName}')
             .values(this as New${modelName})
             .executeTakeFirstOrThrow()
         }
         else {
-          // Update existing ${formattedModelName}
-          await this.update(this.${formattedModelName})
+          await this.update(this)
         }
       }
 
@@ -1580,7 +1578,8 @@ export async function generateModelString(
                 .execute();
           }
 
-          ${mittDeleteStatement}
+        
+            ${mittDeleteStatement}
       }
 
       ${relationMethods}
@@ -1630,9 +1629,9 @@ export async function generateModelString(
         return output as ${modelName}
       }
 
-        parseResult(model: UserModel): UserModel {
+        parseResult(model: ${modelName}Model): ${modelName}Model {
           for (const hiddenAttribute of this.hidden) {
-            delete model[hiddenAttribute as keyof UserModel]
+            delete model[hiddenAttribute as keyof ${modelName}Model]
           }
 
           return model

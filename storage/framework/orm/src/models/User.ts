@@ -293,7 +293,7 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
-    dispatch('user:created', model)
+    if (model) dispatch('user:created', model)
 
     return model
   }
@@ -303,7 +303,7 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
-    dispatch('user:created', model)
+    if (model) dispatch('user:created', model)
 
     return model
   }
@@ -506,14 +506,12 @@ export class UserModel {
     if (!this) throw new Error('User data is undefined')
 
     if (this.id === undefined) {
-      // Insert new user
       const newModel = await db
         .insertInto('users')
         .values(this as NewUser)
         .executeTakeFirstOrThrow()
     } else {
-      // Update existing user
-      await this.update(this.user)
+      await this.update(this)
     }
   }
 
@@ -536,7 +534,7 @@ export class UserModel {
       await db.deleteFrom('users').where('id', '=', this.id).execute()
     }
 
-    dispatch('user:deleted', model)
+    if (model) dispatch('user:deleted', model)
   }
 
   async post() {

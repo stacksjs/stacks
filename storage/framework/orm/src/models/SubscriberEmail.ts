@@ -1,641 +1,579 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
-    import { verifyTwoFactorCode } from '@stacksjs/auth'
-    import { db } from '@stacksjs/database'
-    import { sql } from '@stacksjs/database'
-    import { dispatch } from '@stacksjs/events'
-    import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-    
-    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-    // import { Pool } from 'pg'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { db } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
+import { dispatch } from '@stacksjs/events'
+import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
-    // TODO: we need an action that auto-generates these table interfaces
-    export interface SubscriberEmailsTable {
-      id: Generated<number>
-      email: string
-     
-      created_at: Date
+// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+// import { Pool } from 'pg'
 
-      updated_at: Date
-    
-      deleted_at: Date
-    
+// TODO: we need an action that auto-generates these table interfaces
+export interface SubscriberEmailsTable {
+  id: Generated<number>
+  email: string
+
+  created_at: Date
+
+  updated_at: Date
+
+  deleted_at: Date
+}
+
+interface SubscriberEmailResponse {
+  data: SubscriberEmails
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
+export type NewSubscriberEmail = Insertable<SubscriberEmailsTable>
+export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
+export type SubscriberEmails = SubscriberEmailType[]
+
+export type SubscriberEmailColumn = SubscriberEmails
+export type SubscriberEmailColumns = Array<keyof SubscriberEmails>
+
+type SortDirection = 'asc' | 'desc'
+interface SortOptions {
+  column: SubscriberEmailType
+  order: SortDirection
+}
+// Define a type for the options parameter
+interface QueryOptions {
+  sort?: SortOptions
+  limit?: number
+  offset?: number
+  page?: number
+}
+
+export class SubscriberEmailModel {
+  private hidden = []
+  private fillable = ['email']
+  private softDeletes = true
+  protected query: any
+  protected hasSelect: boolean
+  public id: number | undefined
+  public email: string | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
+
+  public deleted_at: Date | undefined
+
+  constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
+    this.id = subscriberemail?.id
+    this.email = subscriberemail?.email
+
+    this.created_at = subscriberemail?.created_at
+
+    this.updated_at = subscriberemail?.updated_at
+
+    this.deleted_at = subscriberemail?.deleted_at
+
+    this.query = db.selectFrom('subscriber_emails')
+    this.hasSelect = false
+  }
+
+  // Method to find a SubscriberEmail by ID
+  async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return undefined
+
+    return this.parseResult(new SubscriberEmailModel(model))
+  }
+
+  // Method to find a SubscriberEmail by ID
+  static async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+
+    const instance = new this(null)
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) return undefined
+
+    return instance.parseResult(new this(model))
+  }
+
+  static async all(): Promise<SubscriberEmailModel[]> {
+    let query = db.selectFrom('subscriber_emails').selectAll()
+
+    const instance = new this(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
     }
 
-    interface SubscriberEmailResponse {
-      data: SubscriberEmails
+    const results = await query.execute()
+
+    return results.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+  }
+
+  static async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+
+    const instance = new this(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model) throw `No model results found for ${id} `
+
+    return instance.parseResult(new this(model))
+  }
+
+  static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
+    let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
+
+    const instance = new this(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
+
+    const model = await query.execute()
+
+    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+  }
+
+  // Method to get a SubscriberEmail by criteria
+  static async get(): Promise<SubscriberEmailModel[]> {
+    let query = db.selectFrom('subscriber_emails')
+
+    const instance = new this(null)
+
+    // Check if soft deletes are enabled
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    const model = await query.selectAll().execute()
+
+    return model.map((modelItem) => new SubscriberEmailModel(modelItem))
+  }
+
+  // Method to get a SubscriberEmail by criteria
+  async get(): Promise<SubscriberEmailModel[]> {
+    if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
+      const model = await this.query.execute()
+
+      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+    }
+
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
+    }
+
+    const model = await this.query.selectAll().execute()
+
+    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+  }
+
+  static async count(): Promise<number> {
+    const instance = new this(null)
+
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
+      }
+
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
+  // Method to get all subscriber_emails
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
+    const totalRecordsResult = await db
+      .selectFrom('subscriber_emails')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    const subscriber_emailsWithExtra = await db
+      .selectFrom('subscriber_emails')
+      .selectAll()
+      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+      .limit((options.limit ?? 10) + 1) // Fetch one extra record
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
+      nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
+
+    return {
+      data: subscriber_emailsWithExtra,
       paging: {
-        total_records: number
-        page: number
-        total_pages: number
-      }
-      next_cursor: number | null
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
+  // Method to create a new subscriberemail
+  static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel | undefined> {
+    const instance = new this(null)
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newSubscriberEmail).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewSubscriberEmail
+
+    if (Object.keys(filteredValues).length === 0) {
+      return undefined
     }
 
-    export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
-    export type NewSubscriberEmail = Insertable<SubscriberEmailsTable>
-    export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
-    export type SubscriberEmails = SubscriberEmailType[]
+    const result = await db.insertInto('subscriber_emails').values(filteredValues).executeTakeFirstOrThrow()
 
-    export type SubscriberEmailColumn = SubscriberEmails
-    export type SubscriberEmailColumns = Array<keyof SubscriberEmails>
+    const model = (await find(Number(result.insertId))) as SubscriberEmailModel
 
-    type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: SubscriberEmailType, order: SortDirection }
-    // Define a type for the options parameter
-    interface QueryOptions {
-      sort?: SortOptions
-      limit?: number
-      offset?: number
-      page?: number
+    return model
+  }
+
+  static async forceCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel | undefined> {
+    const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
+
+    const model = (await find(Number(result.insertId))) as SubscriberEmailModel
+
+    return model
+  }
+
+  // Method to remove a SubscriberEmail
+  static async remove(id: number): Promise<void> {
+    const instance = new this(null)
+    const model = await instance.find(id)
+
+    if (instance.softDeletes) {
+      await db
+        .updateTable('subscriber_emails')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    } else {
+      await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
+    }
+  }
+
+  where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
     }
 
-    export class SubscriberEmailModel {
-      private hidden = []
-      private fillable = ["email"]
-      private softDeletes = true
-      protected query: any
-      protected hasSelect: boolean
-      public id: number | undefined 
-   public email: string | undefined 
-   
-      public created_at: Date | undefined
-      public updated_at: Date | undefined
-    
-      public deleted_at: Date | undefined
-    
-      constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
-        this.id = subscriberemail?.id
-   this.email = subscriberemail?.email
-   
-      this.created_at = user?.created_at
+    this.query = this.query.where(column, operator, value)
 
-      this.updated_at = user?.updated_at
+    return this
+  }
 
-    
-      this.deleted_at = user?.deleted_at
+  static where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
+    let column: any
+    let operator: any
+    let value: any
 
-    
+    const instance = new this(null)
 
-        this.query = db.selectFrom('subscriber_emails')
-        this.hasSelect = false
-      }
+    if (args.length === 2) {
+      ;[column, value] = args
+      operator = '='
+    } else if (args.length === 3) {
+      ;[column, operator, value] = args
+    } else {
+      throw new Error('Invalid number of arguments')
+    }
 
-      // Method to find a SubscriberEmail by ID
-      async find(id: number): Promise<SubscriberEmailModel | undefined> {
-        const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+    instance.query = instance.query.where(column, operator, value)
 
-        const model = await query.executeTakeFirst()
+    return instance
+  }
 
-        if (!model)
-          return undefined
+  static whereEmail(value: string | number | boolean | undefined | null): SubscriberEmailModel {
+    const instance = new this(null)
 
-        return this.parseResult(new SubscriberEmailModel(model))
-      }
+    instance.query = instance.query.where('email', '=', value)
 
-      // Method to find a SubscriberEmail by ID
-      static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-        const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+    return instance
+  }
 
-        const instance = new this(null)
+  static whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+    const instance = new this(null)
 
-        const model = await query.executeTakeFirst()
+    instance.query = instance.query.where(column, 'in', values)
 
-        if (!model)
-          return undefined
+    return instance
+  }
 
-        return instance.parseResult(new this(model))
-      }
+  async first(): Promise<SubscriberEmailModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
 
-      static async all(): Promise<SubscriberEmailModel[]> {
-        let query = db.selectFrom('subscriber_emails').selectAll()
+    if (!model) {
+      return undefined
+    }
 
-        const instance = new this(null)
+    return this.parseResult(new SubscriberEmailModel(model))
+  }
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null)
-        }
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
 
-        const results = await query.execute();
+    return model !== null || model !== undefined
+  }
 
-        return results.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)));
-      }
+  static async first(): Promise<SubscriberEmailType | undefined> {
+    return await db.selectFrom('subscriber_emails').selectAll().executeTakeFirst()
+  }
 
+  async last(): Promise<SubscriberEmailType | undefined> {
+    return await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
 
-      static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-        let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+  static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
+    const instance = new this(null)
 
-        const instance = new this(null)
+    instance.query = instance.orderBy(column, order)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+    return instance
+  }
 
-        query = query.selectAll()
+  orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
+    this.query = this.query.orderBy(column, order)
 
-        const model = await query.executeTakeFirst()
+    return this
+  }
 
-        if (!model)
-          throw(`No model results found for ${id} `)
+  static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    const instance = new this(null)
 
+    instance.query = instance.query.orderBy(column, 'desc')
 
-        return instance.parseResult(new this(model))
-      }
+    return instance
+  }
 
-      static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-        let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
+  orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.query = this.orderBy(column, 'desc')
 
-        const instance = new this(null)
+    return this
+  }
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+  static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    const instance = new this(null)
 
-        query = query.selectAll()
+    instance.query = instance.query.orderBy(column, 'desc')
 
-        const model = await query.execute()
+    return instance
+  }
 
-        return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
-      }
+  orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.query = this.query.orderBy(column, 'desc')
 
-      // Method to get a SubscriberEmail by criteria
-      static async get(): Promise<SubscriberEmailModel[]> {
-        let query = db.selectFrom('subscriber_emails');
+    return this
+  }
 
-        const instance = new this(null)
+  async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-        // Check if soft deletes are enabled
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+    const filteredValues = Object.fromEntries(
+      Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
+    ) as NewSubscriberEmail
 
-        const model = await query.selectAll().execute();
+    await db.updateTable('subscriber_emails').set(filteredValues).where('id', '=', this.id).executeTakeFirst()
 
-        return model.map(modelItem => new SubscriberEmailModel(modelItem));
-      }
+    const model = await this.find(Number(this.id))
 
-      // Method to get a SubscriberEmail by criteria
-      async get(): Promise<SubscriberEmailModel[]> {
-        if (this.hasSelect) {
+    return model
+  }
 
-          if (this.softDeletes) {
-            this.query = this.query.where('deleted_at', 'is', null);
-          }
+  async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-          const model = await this.query.execute()
+    await db.updateTable('subscriber_emails').set(subscriberemail).where('id', '=', this.id).executeTakeFirst()
 
-          return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
-        }
+    const model = await this.find(Number(this.id))
 
-        if (this.softDeletes) {
-          this.query = this.query.where('deleted_at', 'is', null);
-        }
+    return model
+  }
 
-        const model = await this.query.selectAll().execute()
+  async save(): Promise<void> {
+    if (!this) throw new Error('SubscriberEmail data is undefined')
 
-        return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
-      }
+    if (this.id === undefined) {
+      const newModel = await db
+        .insertInto('subscriber_emails')
+        .values(this as NewSubscriberEmail)
+        .executeTakeFirstOrThrow()
+    } else {
+      await this.update(this)
+    }
+  }
 
-      static async count(): Promise<number> {
-        const instance = new this(null)
+  // Method to delete (soft delete) the subscriberemail instance
+  async delete(): Promise<void> {
+    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-        if (instance.softDeletes) {
-          instance.query = instance.query.where('deleted_at', 'is', null);
-        }
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db
+        .updateTable('subscriber_emails')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    } else {
+      // Perform a hard delete
+      await db.deleteFrom('subscriber_emails').where('id', '=', this.id).execute()
+    }
+  }
 
-        const results = await instance.query.selectAll().execute()
+  distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.query = this.query.distinctOn(column)
 
-        return results.length
-      }
+    return this
+  }
 
-      async count(): Promise<number> {
-        if (this.hasSelect) {
+  static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    const instance = new this(null)
 
-          if (this.softDeletes) {
-            this.query = this.query.where('deleted_at', 'is', null);
-          }
+    instance.query = instance.query.distinctOn(column)
 
-          const results = await this.query.execute()
+    return instance
+  }
 
-          return results.length
-        }
+  join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
 
-        const results = await this.query.selectAll().execute()
+    return this
+  }
 
-        return results.length
-      }
+  static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
+    const instance = new this(null)
 
-      // Method to get all subscriber_emails
-      static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
-        const totalRecordsResult = await db.selectFrom('subscriber_emails')
-          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-          .executeTakeFirst()
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
 
-        const totalRecords = Number(totalRecordsResult?.total) || 0
-        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+    return instance
+  }
 
-        const subscriber_emailsWithExtra = await db.selectFrom('subscriber_emails')
-          .selectAll()
-          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-          .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-          .execute()
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
 
+  toJSON() {
+    const output: Partial<SubscriberEmailType> = {
+      id: this.id,
+      email: this.email,
 
-          let nextCursor = null
-          if (subscriber_emailsWithExtra.length > (options.limit ?? 10)) nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
-
-        return {
-          data: subscriber_emailsWithExtra,
-          paging: {
-            total_records: totalRecords,
-            page: options.page || 1,
-            total_pages: totalPages,
-          },
-          next_cursor: nextCursor,
-        }
-      }
-
-      // Method to create a new subscriberemail
-      static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel | undefined> {
-        const instance = new this(null)
-
-         const filteredValues = Object.fromEntries(
-          Object.entries(newSubscriberEmail).filter(([key]) => instance.fillable.includes(key)),
-        ) as NewSubscriberEmail
-
-        if (Object.keys(filteredValues).length === 0) {
-          return undefined
-        }
-
-        const result = await db.insertInto('subscriber_emails')
-          .values(filteredValues)
-          .executeTakeFirstOrThrow()
-
-        const model = await find(Number(result.insertId)) as SubscriberEmailModel
-
-        
-
-        return model
-      }
-
-      static async forceCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel | undefined> {
-        const result = await db.insertInto('subscriber_emails')
-          .values(newSubscriberEmail)
-          .executeTakeFirstOrThrow()
-
-        const model = await find(Number(result.insertId)) as SubscriberEmailModel
-
-        
-
-        return model
-      }
-
-      // Method to remove a SubscriberEmail
-      static async remove(id: number): Promise<void> {
-        const instance = new this(null)
-        const model = await instance.find(id)
-
-       if (instance.softDeletes) {
-        await db.updateTable('subscriber_emails')
-          .set({
-            deleted_at: sql.raw('CURRENT_TIMESTAMP')
-          })
-          .where('id', '=', id)
-          .execute();
-        } else {
-          await db.deleteFrom('subscriber_emails')
-            .where('id', '=', id)
-            .execute();
-        }
-
-        if (model)
-          
-      }
-
-      where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
-        let column: any
-        let operator: any
-        let value: any
-
-        if (args.length === 2) {
-          [column, value] = args
-          operator = '='
-        } else if (args.length === 3) {
-            [column, operator, value] = args
-        } else {
-            throw new Error("Invalid number of arguments")
-        }
-
-        this.query = this.query.where(column, operator, value)
-
-        return this
-      }
-
-      static where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
-        let column: any
-        let operator: any
-        let value: any
-
-        const instance = new this(null)
-
-        if (args.length === 2) {
-          [column, value] = args
-          operator = '='
-        } else if (args.length === 3) {
-            [column, operator, value] = args
-        } else {
-            throw new Error("Invalid number of arguments")
-        }
-
-        instance.query = instance.query.where(column, operator, value)
-
-        return instance
-      }
-
-       static whereEmail(value: string | number | boolean | undefined | null): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.query.where('email', '=', value)
-
-        return instance
-      } 
-
-
-
-      static whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.query.where(column, 'in', values)
-
-        return instance
-      }
-
-      async first(): Promise<SubscriberEmailModel | undefined> {
-        const model = await this.query.selectAll().executeTakeFirst()
-
-        if (! model) {
-          return undefined
-        }
-
-        return this.parseResult(new SubscriberEmailModel(model))
-      }
-
-      async exists(): Promise<boolean> {
-        const model = await this.query.selectAll().executeTakeFirst()
-
-        return model !== null || model !== undefined
-      }
-
-      static async first(): Promise<SubscriberEmailType | undefined> {
-        return await db.selectFrom('subscriber_emails')
-          .selectAll()
-          .executeTakeFirst()
-      }
-
-      async last(): Promise<SubscriberEmailType | undefined> {
-        return await db.selectFrom('subscriber_emails')
-          .selectAll()
-          .orderBy('id', 'desc')
-          .executeTakeFirst()
-      }
-
-      static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.orderBy(column, order)
-
-        return instance
-      }
-
-      orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-        this.query = this.query.orderBy(column, order)
-
-        return this
-      }
-
-      static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.query.orderBy(column, 'desc')
-
-        return instance
-      }
-
-      orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-        this.query = this.orderBy(column, 'desc')
-
-        return this
-      }
-
-      static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.query.orderBy(column, 'desc')
-
-        return instance
-      }
-
-      orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-        this.query = this.query.orderBy(column, 'desc')
-
-        return this
-      }
-
-      async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
-        if (this.id === undefined)
-          throw new Error('SubscriberEmail ID is undefined')
-
-        const filteredValues = Object.fromEntries(
-          Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
-        ) as NewSubscriberEmail
-
-        await db.updateTable('subscriber_emails')
-          .set(filteredValues)
-          .where('id', '=', this.id)
-          .executeTakeFirst()
-
-        const model = await this.find(Number(this.id))
-
-        if (model)
-          
-
-        return model
-      }
-
-      async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
-        if (this.id === undefined)
-          throw new Error('SubscriberEmail ID is undefined')
-
-        await db.updateTable('subscriber_emails')
-          .set(subscriberemail)
-          .where('id', '=', this.id)
-          .executeTakeFirst()
-
-        const model = await this.find(Number(this.id))
-
-        if (model)
-          
-
-        return model
-      }
-
-      async save(): Promise<void> {
-        if (!this)
-          throw new Error('SubscriberEmail data is undefined')
-
-        if (this.id === undefined) {
-          // Insert new subscriberemail
-          const newModel = await db.insertInto('subscriber_emails')
-            .values(this as NewSubscriberEmail)
-            .executeTakeFirstOrThrow()
-        }
-        else {
-          // Update existing subscriberemail
-          await this.update(this.subscriberemail)
-        }
-      }
-
-      // Method to delete (soft delete) the subscriberemail instance
-      async delete(): Promise<void> {
-          if (this.id === undefined)
-              throw new Error('SubscriberEmail ID is undefined');
-
-          // Check if soft deletes are enabled
-          if (this.softDeletes) {
-              // Update the deleted_at column with the current timestamp
-              await db.updateTable('subscriber_emails')
-                  .set({
-                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
-                  })
-                  .where('id', '=', this.id)
-                  .execute();
-          } else {
-              // Perform a hard delete
-              await db.deleteFrom('subscriber_emails')
-                .where('id', '=', this.id)
-                .execute();
-          }
-
-          
-      }
-
-      
-
-      distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
-        this.query = this.query.distinctOn(column)
-
-        return this
-      }
-
-      static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.query.distinctOn(column)
-
-        return instance
-      }
-
-      join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-        this.query = this.query.innerJoin(table, firstCol, secondCol)
-
-        return this
-      }
-
-      static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-        const instance = new this(null)
-
-        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
-
-        return instance
-      }
-
-      static async rawQuery(rawQuery: string): Promise<any> {
-        return await sql`${rawQuery}`.execute(db)
-      }
-
-      toJSON() {
-        const output: Partial<SubscriberEmailType> = {
-
-id: this.id,
-email: this.email,
-   
       created_at: this.created_at,
 
       updated_at: this.updated_at,
 
-    
       deleted_at: this.deleted_at,
-
     }
 
-        this.hidden.forEach((attr) => {
-          if (attr in output)
-            delete output[attr as keyof Partial<SubscriberEmailType>]
-        })
+    this.hidden.forEach((attr) => {
+      if (attr in output) delete output[attr as keyof Partial<SubscriberEmailType>]
+    })
 
-        type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
+    type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
 
-        return output as SubscriberEmail
-      }
+    return output as SubscriberEmail
+  }
 
-        parseResult(model: UserModel): UserModel {
-          for (const hiddenAttribute of this.hidden) {
-            delete model[hiddenAttribute as keyof UserModel]
-          }
-
-          return model
-        }
-
-      
+  parseResult(model: SubscriberEmailModel): SubscriberEmailModel {
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute as keyof SubscriberEmailModel]
     }
 
-    async function find(id: number): Promise<SubscriberEmailModel | null> {
-      const query = db.selectFrom('subscriber_emails').where('id', '=', id)
+    return model
+  }
+}
 
-      query.selectAll()
+async function find(id: number): Promise<SubscriberEmailModel | null> {
+  const query = db.selectFrom('subscriber_emails').where('id', '=', id)
 
-      const model = await query.executeTakeFirst()
+  query.selectAll()
 
-      if (!model) return null
+  const model = await query.executeTakeFirst()
 
-      return new SubscriberEmailModel(model)
-    }
+  if (!model) return null
 
-    export async function count(): Promise<number> {
-      const results = await SubscriberEmailModel.count()
+  return new SubscriberEmailModel(model)
+}
 
-      return results
-    }
+export async function count(): Promise<number> {
+  const results = await SubscriberEmailModel.count()
 
-    export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+  return results
+}
 
-      const result = await db.insertInto('subscriber_emails')
-        .values(newSubscriberEmail)
-        .executeTakeFirstOrThrow()
+export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
+  const result = await db.insertInto('subscriber_emails').values(newSubscriberEmail).executeTakeFirstOrThrow()
 
-      return await find(Number(result.insertId)) as SubscriberEmailModel
-    }
+  return (await find(Number(result.insertId))) as SubscriberEmailModel
+}
 
-    export async function rawQuery(rawQuery: string): Promise<any> {
-      return await sql`${rawQuery}`.execute(db)
-    }
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
+}
 
-    export async function remove(id: number): Promise<void> {
-      await db.deleteFrom('subscriber_emails')
-        .where('id', '=', id)
-        .execute()
-    }
+export async function remove(id: number): Promise<void> {
+  await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
+}
 
-    export async function whereEmail(value: string | number | boolean | undefined | null): Promise<SubscriberEmailModel[]> {
-        const query = db.selectFrom('subscriber_emails').where('email', '=', value)
-        const results = await query.execute()
+export async function whereEmail(value: string | number | boolean | undefined | null): Promise<SubscriberEmailModel[]> {
+  const query = db.selectFrom('subscriber_emails').where('email', '=', value)
+  const results = await query.execute()
 
-        return results.map(modelItem => new SubscriberEmailModel(modelItem))
-      } 
+  return results.map((modelItem) => new SubscriberEmailModel(modelItem))
+}
 
+const SubscriberEmail = SubscriberEmailModel
 
-
-    const SubscriberEmail = SubscriberEmailModel
-
-    export default SubscriberEmail
-    
+export default SubscriberEmail
