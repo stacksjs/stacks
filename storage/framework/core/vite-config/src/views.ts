@@ -25,7 +25,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['fsevents'],
+      external: ['fsevents', 'tinyexec', '@iconify/utils', '@antfu/install-pkg', 'local-pkg', 'mlly', 'fs'],
     },
   },
 

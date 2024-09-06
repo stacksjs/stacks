@@ -63,7 +63,7 @@ async function submitEmail() {
             <span class="rounded-full bg-blue-600/10 px-3 py-1 text-sm font-semibold leading-6 text-blue-600 ring-1 ring-inset ring-blue-600/10">Coming soon</span>
             <span class="inline-flex items-center space-x-2 text-sm font-medium leading-6 text-gray-600">
               <!-- <span>Just shipped v1.0</span> -->
-               <div class="i-chevron-right"></div>
+               <div class="i-heroicons-chevron-right"></div>
             </span>
           </a>
         </div>
