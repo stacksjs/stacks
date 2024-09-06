@@ -32,7 +32,7 @@ export function autoImports(options?: AutoImportsOptions) {
     // biomejs extends Docs - https://biomejs.dev/guides/how-biome-works/#the-extends-option
     biomelintrc: {
       enabled: true, // Default `false`
-      filepath: './.biomelintrc-auto-import.json', // Default `./.biomelintrc-auto-import.json`
+      filepath: p.frameworkPath('.biomelintrc-auto-import.json'), // Default `./.biomelintrc-auto-import.json`
     },
 
     ...options,

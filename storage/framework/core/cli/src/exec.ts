@@ -2,7 +2,7 @@ import process from 'node:process'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import type { CliOptions, Subprocess } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { log } from './'
+import { italic, log } from './'
 
 /**
  * Execute a command.
@@ -61,7 +61,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   const exited = await proc.exited
   if (exited === ExitCode.Success) return ok(proc)
 
-  return err(handleError(`Failed to execute command: ${cmd.join(' ')}`))
+  return err(handleError(`Failed to execute command: ${italic(cmd.join(' '))} in ${italic(cwd)}`))
 }
 
 /**
