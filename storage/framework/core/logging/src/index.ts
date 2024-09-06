@@ -10,7 +10,7 @@ import { consola, createConsola } from 'consola'
 
 // import type { Prompt } from '@stacksjs/cli'
 
-export async function logLevel() {
+export function logLevel() {
   /**
    * This regex checks for:
    *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
@@ -27,12 +27,12 @@ export async function logLevel() {
   // const config = await import('@stacksjs/config')
   // console.log('config', config)
 
-  return 3
   // return config.logger.level
+  return 3
 }
 
 export const logger = createConsola({
-  level: await logLevel(),
+  level: logLevel(),
   // fancy: true,
   // formatOptions: {
   //     columns: 80,

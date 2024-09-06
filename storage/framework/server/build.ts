@@ -112,7 +112,11 @@ async function main() {
   if (cloud.api?.deploy) await buildDockerImage()
 }
 
-main().catch((error) => {
-  log.error(`Build failed: ${error}`)
-  process.exit(1)
-})
+main()
+  .catch((error) => {
+    log.error(`Build failed: ${error}`)
+    process.exit(1)
+  })
+  .then(() => {
+    process.exit(0)
+  })
