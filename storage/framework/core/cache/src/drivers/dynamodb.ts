@@ -1,4 +1,4 @@
-import type { PutItemCommandInput } from '@aws-sdk/client-dynamodb'
+import type { KeyType, PutItemCommandInput, ScalarAttributeType } from '@aws-sdk/client-dynamodb'
 import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
 import { cache } from '@stacksjs/config'
 import type { CacheDriver } from './type'
@@ -8,16 +8,6 @@ const keyAttribute = 'key'
 const tableName = cache.drivers?.dynamodb?.table
 
 const client = new DynamoDB({ region: cache.drivers?.dynamodb?.region })
-
-function getValueType(value: string | number) {
-  if (typeof value === 'string') return 'S'
-  if (typeof value === 'number') return 'N'
-  return 'S'
-}
-
-function serialize(value: string | number) {
-  return String(value)
-}
 
 export const dynamodb: CacheDriver = {
   async createTable() {
@@ -31,13 +21,13 @@ export const dynamodb: CacheDriver = {
       AttributeDefinitions: [
         {
           AttributeName: 'key',
-          AttributeType: 'S',
+          AttributeType: 'S' as ScalarAttributeType, // Use 'as const' to specify the type
         },
       ],
       KeySchema: [
         {
           AttributeName: 'key',
-          KeyType: 'HASH',
+          KeyType: 'HASH' as KeyType,
         },
       ],
       ProvisionedThroughput: {
@@ -47,18 +37,15 @@ export const dynamodb: CacheDriver = {
       TableName: tableName,
     }
 
-    client.createTable(params)
+    await client.createTable(params)
   },
 
-  async set(key: string, value: string | number): Promise<void> {
+  async set(key: string, value: string): Promise<void> {
     const params: PutItemCommandInput = {
       TableName: tableName,
       Item: {
-        [keyAttribute]: {
-          S: key,
-        },
-        [valueAttribute]: {
-          [getValueType(value)]: serialize(value),
+        [key]: {
+          S: value,
         },
       },
     }
@@ -80,7 +67,7 @@ export const dynamodb: CacheDriver = {
 
     if (!response.Item) return null
 
-    return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
+    return response.Item[valueAttribute]?.S
   },
 
   async remove(key: string): Promise<void> {
