@@ -56,7 +56,7 @@ export class ComputeStack {
     const container = this.taskDefinition.addContainer('WebServerContainer', {
       containerName: `${props.appName}-${props.appEnv}-api`,
       // image: ecs.ContainerImage.fromDockerImageAsset(assetImage),
-      image: ecs.ContainerImage.fromAsset(p.frameworkCloudPath()),
+      image: ecs.ContainerImage.fromAsset(p.frameworkPath('server')),
       logging: new ecs.AwsLogDriver({
         streamPrefix: `${props.appName}-${props.appEnv}-web-server-logs`,
         logGroup: new LogGroup(scope, 'StacksApiLogs', {

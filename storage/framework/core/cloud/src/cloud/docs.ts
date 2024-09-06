@@ -28,7 +28,7 @@ export class DocsStack {
       description: 'The Stacks Origin Request function that prettifies URLs',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'dist/origin-request.handler',
-      code: lambda.Code.fromAsset(p.frameworkCloudPath('dist.zip'), {
+      code: lambda.Code.fromAsset(p.cloudPath('dist.zip'), {
         assetHash: originRequestFunctionHash(),
         assetHashType: AssetHashType.CUSTOM,
       }),

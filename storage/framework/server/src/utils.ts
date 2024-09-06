@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
-import { frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { cloudPath, frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import { slug } from '@stacksjs/strings'
 import { $ } from 'bun'
@@ -45,7 +45,7 @@ export async function buildDockerImage() {
   log.success('Deleted old cdk.context.json')
 
   log.info('Deleting old dist.zip file...')
-  await runCommand(`rm -rf ${frameworkCloudPath('dist.zip')}`)
+  await runCommand(`rm -rf ${cloudPath('dist.zip')}`)
   log.success('Deleted old dist.zip')
 
   log.info('Deleting .DS_Store files...')

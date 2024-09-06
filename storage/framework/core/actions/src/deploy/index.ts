@@ -31,7 +31,7 @@ await runCommand('bun build.ts', {
 })
 
 await runCommand('bun zip.ts', {
-  cwd: p.cloudPath(),
+  cwd: p.corePath('cloud'),
 })
 
 log.info('Preparing Deployment...')

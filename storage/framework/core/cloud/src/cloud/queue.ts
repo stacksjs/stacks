@@ -47,7 +47,7 @@ export class QueueStack {
     for (const ormFile of ormActionFiles) {
       if (!ormFile.endsWith('.ts')) continue
 
-      const ormActionPath = path.builtUserActionsPath(ormFile)
+      const ormActionPath = path.builtUserActionsPath(`src/${ormFile}`)
 
       // Await the loading of the job module
       const ormAction = await this.loadModule(ormActionPath)

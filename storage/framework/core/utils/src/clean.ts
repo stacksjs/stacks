@@ -11,5 +11,5 @@ export async function cleanProject() {
   await $`rm -rf ${p.frameworkPath('**/node_modules')}`
   await $`rm -rf ${p.frameworkCloudPath('cdk.out/')}`
   await $`rm -rf ${p.frameworkCloudPath('cdk.context.json')}`
-  await $`rm -rf ${p.frameworkCloudPath('dist.zip')}`
+  await $`rm -rf ${p.cloudPath('dist.zip')}`
 }
