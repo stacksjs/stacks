@@ -34,7 +34,7 @@ export default defineConfig({
       prefix: 'i-',
       warn: true,
       collections: {
-        heroicons: () => import('@iconify-json/heroicons-solid/icons.json').then((i) => i.default as any),
+        heroicons: () => import('@iconify-json/heroicons/icons.json').then((i) => i.default as any),
       },
       extraProperties: {
         display: 'inline-block',
