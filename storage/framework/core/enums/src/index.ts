@@ -46,15 +46,16 @@ export enum NpmScript {
 
 export enum Action {
   Bump = 'bump',
+  BuildViews = 'build/views',
   BuildStacks = 'build/stacks',
   BuildComponentLibs = 'build/component-libs',
   BuildVueComponentLib = 'build-vue-component-lib',
   BuildWebComponentLib = 'build-web-component-lib',
+  BuildFunctionLib = 'build-function-lib',
   BuildCli = 'build/cli',
   BuildCore = 'build/core',
   BuildDesktop = 'build/desktop',
   BuildDocs = 'build/docs',
-  BuildFunctionLib = 'build-function-lib',
   BuildServer = 'build/server',
   Changelog = 'changelog',
   CheckPorts = 'check/ports',

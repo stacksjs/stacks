@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
@@ -73,38 +73,48 @@ export function build(buddy: CLI) {
           options.stacks = true
           break
         case 'server':
-          options.stacks = true
+          options.server = true
           break
         default:
           break
       }
 
+      console.log('server', server, options)
+
       // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
-        let answers = await log.prompt.require().multiselect(descriptions.select, {
-          options: [
-            { label: 'Components', value: 'components' },
+        // eslint-disable-next-line no-console
+        console.log('has no')
+        const answers = await prompts({
+          type: 'multiselect',
+          name: 'build',
+          message: descriptions.select,
+          choices: [
+            { title: 'Components', value: 'components' },
             // { label: 'Vue Components', value: 'vue-components' },
-            { label: 'Web Components', value: 'web-components' },
-            { label: 'Functions', value: 'functions' },
-            { label: 'Views', value: 'views' },
-            { label: 'Documentation', value: 'docs' },
+            { title: 'Web Components', value: 'web-components' },
+            { title: 'Functions', value: 'functions' },
+            { title: 'Views', value: 'views' },
+            { title: 'Documentation', value: 'docs' },
           ],
         })
 
+        console.log('answers', answers)
         if (answers !== null) process.exit(ExitCode.InvalidArgument)
-
-        if (isString(answers)) answers = [answers]
-
-        // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => {
-          a[v] = true
-          return a
-        }, {})
+      } else {
+        // eslint-disable-next-line no-console
+        console.log('has op')
       }
 
-      await runAction(Action.BuildStacks, options)
-
+      if (options.docs) await runAction(Action.BuildDocs)
+      if (options.components) await runAction(Action.BuildComponentLibs)
+      if (options.vueComponents) await runAction(Action.BuildVueComponentLib)
+      if (options.webComponents) await runAction(Action.BuildWebComponentLib)
+      if (options.functions) await runAction(Action.BuildFunctionLib)
+      if (options.views) await runAction(Action.BuildViews)
+      if (options.stacks) await runAction(Action.BuildStacks)
+      if (options.buddy) await runAction(Action.BuildCli)
+      if (options.server) await runAction(Action.BuildServer)
       process.exit(ExitCode.Success)
     })
 

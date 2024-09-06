@@ -1,0 +1,50 @@
+Code Style and Structure:
+
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes unless needed
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content, types
+
+Naming Conventions:
+
+- Use lowercase with dashes for directories (e.g., components/auth-wizard), except the ./app dir which uses camelcasing
+- Favor named exports for components
+
+TypeScript Usage:
+
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use maps instead
+- Use functional components with TypeScript interfaces
+
+Syntax and Formatting:
+
+- Use the "function" keyword for pure functions
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+
+Error Handling and Validation:
+
+- Prioritize error handling: handle errors and edge cases early
+- Use early returns and guard clauses
+- Implement proper error logging and user-friendly messages
+- use nerverthrow to handle errors and responses
+- Use Zod for form validation
+- Use error boundaries for unexpected errors
+
+UI and Styling:
+
+- Use Vue.js and Tailwind for components and styling
+- Implement responsive design with Tailwind CSS; use a mobile-first approach
+
+Performance Optimization:
+
+- Optimize images: use WebP format, include size data, implement lazy loading
+
+Key Conventions:
+
+- Optimize Web Vitals (LCP, CLS, FID)
+- Use vueuse functions where possible because they are auto-imported
+- Use Composition API
+- Use setup script
+
+Follow Vue.js docs for where makes sense
