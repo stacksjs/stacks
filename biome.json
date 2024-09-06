@@ -80,5 +80,6 @@
     "clientKind": "git",
     "useIgnoreFile": true,
     "defaultBranch": "main"
-  }
+  },
+  "extends": ["./storage/framework/.biomelintrc-auto-import.json"]
 }
