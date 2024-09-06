@@ -1,10 +1,10 @@
 Code Style and Structure:
 
 - Write concise, technical TypeScript code with accurate examples
+- If Bun native modules are available, use them
 - Use functional and declarative programming patterns; avoid classes unless needed
 - Prefer iteration and modularization over code duplication
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
-- Structure files: exported component, subcomponents, helpers, static content, types
 
 Naming Conventions:
 
@@ -33,8 +33,8 @@ Error Handling and Validation:
 
 UI and Styling:
 
-- Use Vue.js and Tailwind for components and styling
-- Implement responsive design with Tailwind CSS; use a mobile-first approach
+- Use Vue.js Single File Components for components
+- Implement styling & responsive design with Tailwind CSS; use a mobile-first approach
 
 Performance Optimization:
 
@@ -44,6 +44,8 @@ Key Conventions:
 
 - Optimize Web Vitals (LCP, CLS, FID)
 - Use vueuse functions where possible because they are auto-imported
+- If there are two equally valid implementations, the browser version should be preferred
+- Aim for 100% test coverage
 - Use Composition API
 - Use setup script
 
