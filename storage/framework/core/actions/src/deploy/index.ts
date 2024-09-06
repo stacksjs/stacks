@@ -27,7 +27,7 @@ if (config.app.docMode !== true) {
 // })
 
 await runCommand('bun build.ts', {
-  cwd: p.frameworkCloudPath(),
+  cwd: p.frameworkPath('server'),
 })
 
 await runCommand('bun zip.ts', {

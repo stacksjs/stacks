@@ -35,49 +35,49 @@ export async function buildDockerImage() {
   log.info('Preparing build...')
 
   // delete old CDK relating files, to always build fresh
-  log.debug('Deleting old CDK files...')
-  log.debug('Deleting old cdk.out ...')
+  log.info('Deleting old CDK files...')
+  log.info('Deleting old cdk.out ...')
   await runCommand(`rm -rf ${frameworkCloudPath('cdk.out/')}`)
-  log.debug('Deleted old cdk.out')
+  log.success('Deleted old cdk.out')
 
-  log.debug('Deleting old CDK context file...')
+  log.info('Deleting old CDK context file...')
   await runCommand(`rm -rf ${frameworkCloudPath('cdk.context.json')}`)
-  log.debug('Deleted old cdk.context.json')
+  log.success('Deleted old cdk.context.json')
 
-  log.debug('Deleting old dist.zip file...')
+  log.info('Deleting old dist.zip file...')
   await runCommand(`rm -rf ${frameworkCloudPath('dist.zip')}`)
-  log.debug('Deleted old dist.zip')
+  log.success('Deleted old dist.zip')
 
-  log.debug('Deleting .DS_Store files...')
+  log.info('Deleting .DS_Store files...')
   await runCommand(`rm -rf ${frameworkPath('**/.DS_Store')}`)
-  log.debug('Deleted .DS_Store files')
+  log.success('Deleted .DS_Store files')
 
-  log.debug('Deleting sourcemaps...')
+  log.info('Deleting sourcemaps...')
   await runCommand(`rm -rf ${frameworkPath('**/*.map')}`)
-  log.debug('Deleted sourcemaps')
+  log.success('Deleted sourcemaps')
 
-  log.debug('Deleting cache files...')
+  log.info('Deleting cache files...')
   await runCommand(`rm -rf ${frameworkPath('cache/dashboard')}`)
   await runCommand(`rm -rf ${frameworkPath('cache/docs')}`)
-  log.debug('Deleted cache files')
+  log.success('Deleted cache files')
 
-  log.debug('Copying project files...')
-  log.debug('Copying config files...')
+  log.info('Copying project files...')
+  log.info('Copying config files...')
   await cleanCopy(projectPath('config'), frameworkPath('server/config'))
-  log.debug('Copied config files')
+  log.success('Copied config files')
 
-  log.debug('Copying docs files...')
+  log.info('Copying docs files...')
   await cleanCopy(projectPath('docs'), frameworkPath('server/docs'))
-  log.debug('Copied docs files')
+  log.success('Copied docs files')
 
-  log.debug('Copying storage files...')
+  log.info('Copying storage files...')
   await cleanCopy(projectPath('storage'), frameworkPath('server/storage'))
-  log.debug('Copied storage files')
+  log.success('Copied storage files')
 
-  log.debug('Copying .env file...')
+  log.info('Copying .env file...')
   await cleanCopy(projectPath('.env'), frameworkPath('server/.env'))
-  log.debug('Copied .env file')
-  log.debug('Server ready to be built')
+  log.success('Copied .env file')
+  log.success('Server ready to be built')
 
   if (!app.name) {
     log.error('Please provide a name for your app in your config file')

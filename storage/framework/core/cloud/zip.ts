@@ -6,11 +6,7 @@ const result = await runCommand('zip -r ./dist.zip dist/origin-request.js packag
 
 if (result.isErr()) {
   log.error(result.error)
-} else {
-  // need to move the file to ../../cloud/dist.zip
-  await runCommand('mv -f dist.zip ../../cloud/dist.zip', {
-    cwd: import.meta.dir,
-  })
-
-  log.success('dist is zipped & moved')
+  process.exit(1)
 }
+
+log.success('dist is zipped')
