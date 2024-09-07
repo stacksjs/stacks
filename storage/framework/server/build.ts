@@ -1,9 +1,8 @@
 import process from 'node:process'
 import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
-import { userServerPath } from '@stacksjs/path'
 import { path } from '@stacksjs/path'
-import { fs, glob } from '@stacksjs/storage'
+import { fs, deleteFolder, glob } from '@stacksjs/storage'
 import { build } from 'bun'
 import { intro, outro } from '../core/build/src'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
@@ -11,10 +10,12 @@ import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 async function main() {
   const { startTime } = await intro({
     dir: import.meta.dir,
+    pkgName: 'Server Docker Image',
   })
 
   // if stacks-container is running, stop it
   const stacksContainer = await runCommandSync(`docker ps -a --filter name=stacks-server --format "{{.ID}}"`)
+  console.log(stacksContainer)
 
   if (stacksContainer) {
     log.info('Stopping stacks-server container...')
@@ -23,11 +24,11 @@ async function main() {
   }
 
   log.info('Deleting old files...')
-  await runCommand(`rm -rf ${userServerPath('app')}`)
-  await runCommand(`rm -rf ${userServerPath('config')}`)
-  await runCommand(`rm -rf ${userServerPath('dist')}`)
-  await runCommand(`rm -rf ${userServerPath('docs')}`)
-  await runCommand(`rm -rf ${userServerPath('storage')}`)
+  await deleteFolder(path.userServerPath('app'))
+  await deleteFolder(path.userServerPath('config'))
+  await deleteFolder(path.userServerPath('dist'))
+  await deleteFolder(path.userServerPath('docs'))
+  await deleteFolder(path.userServerPath('storage'))
   log.info('Deleted old files')
 
   const result = await Bun.build({

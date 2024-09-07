@@ -298,6 +298,7 @@ terserrc
 textlint
 Thhmmss
 timestampable
+tinyglobby
 tlsx
 treeshaking
 triggerable

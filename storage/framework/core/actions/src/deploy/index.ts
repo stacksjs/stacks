@@ -50,8 +50,8 @@ if (result.isErr()) {
 const t = result.value as Subprocess
 await t.exited
 
-try {
-  await import('../../../../../../cloud/deploy-script.ts')
-} catch (error) {
-  log.error(error)
-}
+// try {
+//   await import('../../../../../../cloud/deploy-script.ts')
+// } catch (error) {
+//   log.error(error)
+// }

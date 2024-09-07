@@ -52,8 +52,8 @@
     "@stacksjs/types": "workspace:*",
     "@types/archiver": "^6.0.2",
     "archiver": "^7.0.1",
-    "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
+    "tinyglobby": "^0.2.5",
     "unstorage": "^1.11.1"
   },
   "devDependencies": {
