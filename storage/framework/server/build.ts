@@ -3,7 +3,7 @@ import { intro, outro } from '@stacksjs/build'
 import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { fs, deleteFolder, glob } from '@stacksjs/storage'
+import { fs, deleteFolder } from '@stacksjs/storage'
 import { build } from 'bun'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 
@@ -61,10 +61,19 @@ async function main() {
     pkgName: 'server',
   })
 
-  const files = await glob([path.appPath('*.ts'), path.appPath('**/*.ts')])
-  console.log('fillllles', files)
-  log.info(`Found ${files.length} files`)
+  const glob = new Bun.Glob('**/*.{ts,js}')
+  const root = path.appPath()
+  const scanOptions = { cwd: root, onlyFiles: true }
+  const files: string[] = []
+
+  for await (const file of glob.scan(scanOptions)) {
+    files.push(file)
+  }
+
+  console.log('asdasdass', files)
+
   const r2 = await build({
+    root,
     entrypoints: files,
     outdir: path.frameworkPath('server/dist/app'),
     format: 'esm',
@@ -80,8 +89,11 @@ async function main() {
   // await runCommand(`rm -rf ${path.storagePath('app')}`)
 
   // Process files in the ./app folder
-  const appFiles = await glob([path.userServerPath('app/**/*.js')])
-  for (const file of appFiles) {
+  // const appFiles = await glob([path.userServerPath('app/**/*.js')])
+  const glob2 = new Bun.Glob('app/**/*.js')
+  const scanOptions2 = { cwd: path.userServerPath('app'), onlyFiles: true }
+
+  for await (const file of glob2.scan(scanOptions2)) {
     let content = await fs.readFile(file, 'utf-8')
     if (content.includes('storage/framework/server')) {
       content = content.replace(/storage\/framework\/server/g, 'dist')
@@ -93,8 +105,11 @@ async function main() {
   // Process files in the ./dist folder
   // need to remove export `{ ENV_KEY, ENV_SECRET, fromEnv };` from whatever file that contains it in the dist/*
   // TODO: test later, potentially a bundler issue
-  const distFiles = await glob([path.userServerPath('dist/*.js')])
-  for (const file of distFiles) {
+  // const distFiles = await glob([path.userServerPath('dist/*.js')])
+  const glob3 = new Bun.Glob('dist/**/*.js')
+  const scanOptions3 = { cwd: path.userServerPath('dist'), onlyFiles: true }
+
+  for await (const file of glob3.scan(scanOptions3)) {
     let content = await fs.readFile(file, 'utf-8')
     if (content.includes('export { ENV_KEY, ENV_SECRET, fromEnv };')) {
       content = content.replace(/export { ENV_KEY, ENV_SECRET, fromEnv };/g, '')
@@ -105,11 +120,11 @@ async function main() {
   }
 
   // Process the storage folder and remove the .DS_Store files
-  const storageFolder = path.storagePath()
-  const storageFiles = await glob([storageFolder, '**/*.DS_Store'])
+  const glob4 = new Bun.Glob('**/*.DS_Store')
+  const scanOptions4 = { cwd: path.storagePath(), onlyFiles: true }
 
-  for (const file of storageFiles) {
-    await fs.unlink(file)
+  for await (const file of glob4.scan(scanOptions4)) {
+    fs.unlink(file)
   }
 
   await outro({
