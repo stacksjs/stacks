@@ -3,7 +3,7 @@ import { database } from '@stacksjs/config'
 import { err, ok } from '@stacksjs/error-handling'
 import { extractAttributesFromModel } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, glob } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import type { Attribute, Attributes } from '@stacksjs/types'
 import { $ } from 'bun'
 import { FileMigrationProvider, Migrator } from 'kysely'
@@ -84,7 +84,7 @@ export async function generateMigrations() {
   try {
     log.info('Generating migrations...')
 
-    const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+    const modelFiles = globSync([path.userModelsPath('*.ts')])
 
     for (const file of modelFiles) {
       log.debug('Generating migration for:', file)

@@ -1,7 +1,7 @@
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
-import { fs, glob } from '@stacksjs/storage'
+import { fs, glob, globSync } from '@stacksjs/storage'
 import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import type {
   Attributes,
@@ -193,7 +193,7 @@ export async function getPivotTables(
 }
 
 export async function fetchOtherModelRelations(model: Model, modelName?: string): Promise<RelationConfig[]> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
@@ -238,7 +238,7 @@ export function getFillableAttributes(attributes: Attributes | undefined): strin
 }
 
 export async function writeModelNames() {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
   let fileString = `export type ModelNames = `
 
   for (let i = 0; i < modelFiles.length; i++) {
@@ -260,7 +260,7 @@ export async function writeModelNames() {
 }
 
 export async function writeModelRequest() {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
   let importTypes = ``
@@ -689,7 +689,7 @@ export async function deleteExistingModels(modelStringFile?: string) {
     return
   }
 
-  const modelPaths = glob.sync(path.frameworkPath(`orm/src/models/*.ts`)).sort() // handle them alphabetically
+  const modelPaths = globSync([path.frameworkPath(`orm/src/models/*.ts`)].sort()) // handle them alphabetically
   await Promise.all(
     modelPaths.map(async (modelPath) => {
       if (fs.existsSync(modelPath)) {
@@ -711,7 +711,7 @@ export async function deleteExistingOrmActions(modelStringFile?: string) {
     return
   }
 
-  const ormPaths = glob.sync(path.builtUserActionsPath(`**/*.ts`))
+  const ormPaths = globSync([path.builtUserActionsPath(`**/*.ts`)])
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
@@ -734,7 +734,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string) {
     return
   }
 
-  const requestFiles = glob.sync(path.frameworkPath(`requests/*.ts`))
+  const requestFiles = globSync([path.frameworkPath(`requests/*.ts`)])
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await fs.promises.unlink(requestFile)
   }
@@ -746,7 +746,7 @@ export async function deleteExistingOrmRoute() {
 }
 
 export async function generateKyselyTypes() {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
   let text = ``
 
   for (const modelFile of modelFiles) {
@@ -1380,7 +1380,7 @@ export async function generateModelString(
             .execute();
         }
 
-      
+
         ${mittDeleteStatement}
       }
 
@@ -1520,7 +1520,7 @@ export async function generateModelString(
 
         const model = await this.find(Number(this.id))
 
-      
+
           ${mittUpdateStatement}
 
         return model
@@ -1537,7 +1537,7 @@ export async function generateModelString(
 
         const model = await this.find(Number(this.id))
 
-      
+
           ${mittUpdateStatement}
 
         return model
@@ -1578,7 +1578,7 @@ export async function generateModelString(
                 .execute();
           }
 
-        
+
             ${mittDeleteStatement}
       }
 
@@ -1712,7 +1712,7 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.success('Wrote Model Requests')
 
     log.info('Generating API Routes...')
-    const modelFiles = glob.sync(path.userModelsPath('**/*.ts'))
+    const modelFiles = globSync([path.userModelsPath('**/*.ts')])
     await generateApiRoutes(modelFiles)
     log.success('Generated API Routes')
 

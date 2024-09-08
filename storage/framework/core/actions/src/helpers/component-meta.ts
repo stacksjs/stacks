@@ -1,5 +1,5 @@
 import { path, frameworkPath, join, projectPath } from '@stacksjs/path'
-import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
+import { existsSync, globSync, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
 import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
 
@@ -51,7 +51,7 @@ export function generateComponentMeta() {
     }
   }
 
-  const components = glob.sync(['components/*.stx', 'components/**/*.stx', 'components/*.vue', 'components/**/*.vue'], {
+  const components = globSync(['components/*.stx', 'components/**/*.stx', 'components/*.vue', 'components/**/*.vue'], {
     cwd: projectPath(),
     absolute: true,
   })

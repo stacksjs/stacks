@@ -2,7 +2,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { path, extname } from '@stacksjs/path'
-import { glob } from '@stacksjs/storage'
+import { globSync } from '@stacksjs/storage'
 import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
@@ -299,8 +299,8 @@ function noCache(response: Response) {
 }
 
 async function addRouteQuery(url: URL) {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
-
+  // const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
     const modelName = getModelName(model, modelFile)
@@ -317,7 +317,7 @@ async function addRouteQuery(url: URL) {
 }
 
 async function addBody(params: any) {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
@@ -335,7 +335,7 @@ async function addBody(params: any) {
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -353,7 +353,7 @@ async function addRouteParam(param: RouteParam): Promise<void> {
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = glob.sync(path.userModelsPath('*.ts'))
+  const modelFiles = globSync([path.userModelsPath('*.ts')])
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model

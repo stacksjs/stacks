@@ -4,7 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, glob } from '@stacksjs/storage'
+import { fs, glob, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
@@ -26,8 +26,7 @@ export async function resetSqliteDatabase() {
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
-  const userModelFiles = glob.sync(path.userModelsPath('*.ts'))
-
+  const userModelFiles = globSync([path.userModelsPath('*.ts')])
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)

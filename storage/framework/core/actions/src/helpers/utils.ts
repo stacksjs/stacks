@@ -3,7 +3,7 @@ import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
-import { glob } from '@stacksjs/storage'
+import { globSync } from '@stacksjs/storage'
 import type { ActionOptions } from '@stacksjs/types'
 
 type ActionPath = string // TODO: narrow this by automating its generation
@@ -105,10 +105,10 @@ export function hasAction(action: Action) {
   const actionPatterns = [`src/${action}.ts`, `src/${action}`, `${action}.ts`, `${action}`]
 
   // Check user actions path with its specific patterns
-  const userActionFiles = glob.sync(userActionPatterns.map((pattern) => p.userActionsPath(pattern)))
+  const userActionFiles = globSync(userActionPatterns.map((pattern) => p.userActionsPath(pattern)))
 
   // Check actions path with its specific patterns
-  const actionFiles = glob.sync(actionPatterns.map((pattern) => p.actionsPath(pattern)))
+  const actionFiles = globSync(actionPatterns.map((pattern) => p.actionsPath(pattern)))
 
   return userActionFiles.length > 0 || actionFiles.length > 0
 
