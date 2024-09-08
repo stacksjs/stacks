@@ -1,10 +1,10 @@
 import process from 'node:process'
+import { intro, outro } from '@stacksjs/build'
 import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { fs, deleteFolder, glob } from '@stacksjs/storage'
 import { build } from 'bun'
-import { intro, outro } from '../core/build/src'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 
 async function main() {
@@ -14,7 +14,7 @@ async function main() {
   })
 
   // if stacks-container is running, stop it
-  const stacksContainer = await runCommandSync(`docker ps -a --filter name=stacks-server --format "{{.ID}}"`)
+  const stacksContainer = await runCommandSync(`timeout 2s docker ps -a --filter name=stacks-server --format "{{.ID}}"`)
   console.log(stacksContainer)
 
   if (stacksContainer) {
@@ -24,14 +24,20 @@ async function main() {
   }
 
   log.info('Deleting old files...')
+  log.info(`  ${path.userServerPath('app')}`, { styled: false })
   await deleteFolder(path.userServerPath('app'))
+  log.info(`  ${path.userServerPath('config')}`, { styled: false })
   await deleteFolder(path.userServerPath('config'))
+  log.info(`  ${path.userServerPath('dist')}`, { styled: false })
   await deleteFolder(path.userServerPath('dist'))
+  log.info(`  ${path.userServerPath('docs')}`, { styled: false })
   await deleteFolder(path.userServerPath('docs'))
+  log.info(`  ${path.userServerPath('storage')}`, { styled: false })
   await deleteFolder(path.userServerPath('storage'))
   log.info('Deleted old files')
 
-  const result = await Bun.build({
+  log.info('Building...')
+  const result = await build({
     entrypoints: ['./src/index.ts'],
     outdir: './dist',
     format: 'esm',
@@ -55,9 +61,12 @@ async function main() {
     pkgName: 'server',
   })
 
+  const files = await glob([path.appPath('*.ts'), path.appPath('**/*.ts')])
+  console.log('fillllles', files)
+  log.info(`Found ${files.length} files`)
   const r2 = await build({
-    entrypoints: await glob([path.appPath('*.ts'), path.appPath('**/*.ts')]),
-    outdir: path.frameworkPath('server/dist'),
+    entrypoints: files,
+    outdir: path.frameworkPath('server/dist/app'),
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',
@@ -67,8 +76,8 @@ async function main() {
   })
 
   // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
-  await runCommand(`cp -r ${path.storagePath('app')} ${path.userServerPath()}`)
-  await runCommand(`rm -rf ${path.storagePath('app')}`)
+  // await runCommand(`cp -r ${path.storagePath('app')} ${path.userServerPath()}`)
+  // await runCommand(`rm -rf ${path.storagePath('app')}`)
 
   // Process files in the ./app folder
   const appFiles = await glob([path.userServerPath('app/**/*.js')])

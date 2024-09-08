@@ -61,7 +61,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   const exited = await proc.exited
   if (exited === ExitCode.Success) return ok(proc)
 
-  return err(handleError(`Failed to execute command: ${italic(cmd.join(' '))} in ${italic(cwd)}`))
+  return err(handleError(`Failed to execute command: ${italic(cmd.join(' '))} in ${italic(cwd)}`, options))
 }
 
 /**

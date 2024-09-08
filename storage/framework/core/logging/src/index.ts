@@ -83,50 +83,54 @@ export interface Log {
   echo: (...args: any[]) => void
 }
 
-export type LogMessageOptions = {
-  symbol?: string
+export type LogOptions = {
   styled?: boolean
 }
 
 export const log: Log = {
-  info: async (message: string) => {
-    logger.info(message)
+  info: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false) console.log(message)
+    else logger.info(message)
     await writeToLogFile(`INFO: ${message}`)
   },
 
-  success: async (message: string) => {
-    logger.success(message)
+  success: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false) console.log(message)
+    else logger.success(message)
     await writeToLogFile(`SUCCESS: ${message}`)
   },
 
-  warn: async (message: string) => {
-    logger.warn(message)
+  warn: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false) console.log(message)
+    else logger.warn(message)
     await writeToLogFile(`WARN: ${message}`)
   },
 
   /** alias for `log.warn()`. */
-  warning: (message: string) => {
-    log.warn(message)
+  warning: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false) console.log(message)
+    else logger.warn(message)
+    await writeToLogFile(`WARN: ${message}`)
   },
 
-  error: (err: unknown, options?: any | Error) => {
+  error: async (err: unknown, options?: any | Error) => {
     if (err instanceof Error) handleError(err, options)
     else if (err instanceof Error) handleError(options)
     else if (err instanceof Object) handleError(options)
     else handleError(err, options)
 
     const errorMessage = isString(err) ? err : err instanceof Error ? err.message : String(err)
-    writeToLogFile(`ERROR: ${errorMessage}`)
+    await writeToLogFile(`ERROR: ${errorMessage}`)
   },
 
-  debug: (...args: any[]) => {
+  debug: async (...args: any[]) => {
     const formattedArgs = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
     const message = `DEBUG: ${formattedArgs.join(' ')}`
 
     if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod') return writeToLogFile(message)
 
     logger.debug(message)
-    writeToLogFile(message)
+    await writeToLogFile(message)
   },
 
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),

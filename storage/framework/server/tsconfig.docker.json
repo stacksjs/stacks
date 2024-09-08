@@ -21,7 +21,6 @@
     "resolveJsonModule": true,
     "types": [
       "vite/client",
-      // "vue/ref-macros",
       "vite-plugin-pages/client",
       "vite-plugin-pwa/client",
       "vite-plugin-vue-layouts/client",
@@ -43,5 +42,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./*.ts", "./*.d.ts"]
+  "include": ["./*.ts", "./src/*.ts", "./*.d.ts"]
 }

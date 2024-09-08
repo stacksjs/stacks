@@ -18,7 +18,7 @@ COPY ./config ./config
 COPY ./docs ./docs
 COPY ./dist ./dist
 COPY ./storage ./storage
-COPY ./tsconfig.json ./
+COPY ./tsconfig.docker.json ./tsconfig.json
 
 RUN chown -R bun:bun ./storage
 
