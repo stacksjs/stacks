@@ -34,7 +34,7 @@ async function main() {
   await deleteFolder(path.userServerPath('docs'))
   log.info(`  ${path.userServerPath('storage')}`, { styled: false })
   await deleteFolder(path.userServerPath('storage'))
-  log.info('Deleted old files')
+  log.success('Deleted old files')
 
   log.info('Building...')
   const result = await build({
@@ -46,11 +46,18 @@ async function main() {
     // minify: true,
   })
 
-  await outro({
-    dir: import.meta.dir,
-    startTime,
-    result,
-  })
+  if (result.success) {
+    log.success('Server built')
+  } else {
+    log.error('Build failed')
+    process.exit(1)
+  }
+
+  // await outro({
+  //   dir: import.meta.dir,
+  //   startTime,
+  //   result,
+  // })
 
   await useCustomOrDefaultServerConfig()
 
@@ -70,11 +77,9 @@ async function main() {
     files.push(file)
   }
 
-  console.log('asdasdass', files)
-
-  const r2 = await build({
+  const r2 = await Bun.build({
     root,
-    entrypoints: files,
+    entrypoints: files.map((file) => path.resolve(root, file)),
     outdir: path.frameworkPath('server/dist/app'),
     format: 'esm',
     target: 'bun',
@@ -83,6 +88,15 @@ async function main() {
     splitting: true,
     external: ['@swc/wasm'],
   })
+
+  if (r2.success) {
+    log.success('App built')
+  } else {
+    log.error('Build failed')
+    console.log(r2)
+    console.log(r2.logs)
+    process.exit(1)
+  }
 
   // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
   // await runCommand(`cp -r ${path.storagePath('app')} ${path.userServerPath()}`)
