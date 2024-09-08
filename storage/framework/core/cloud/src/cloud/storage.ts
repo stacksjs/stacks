@@ -28,6 +28,10 @@ export class StorageStack {
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      websiteIndexDocument: 'index.html',
+      websiteErrorDocument: 'index.html',
+      publicReadAccess: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
     })
 
     Tags.of(this.publicBucket).add('daily-backup', 'true')
@@ -39,6 +43,10 @@ export class StorageStack {
         autoDeleteObjects: true,
         removalPolicy: RemovalPolicy.DESTROY,
         encryption: s3.BucketEncryption.S3_MANAGED,
+        websiteIndexDocument: 'index.html',
+        websiteErrorDocument: 'index.html',
+        publicReadAccess: true,
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
       })
 
       Tags.of(this.docsBucket).add('weekly-backup', 'true')
