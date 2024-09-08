@@ -1,7 +1,7 @@
 import { globSync as gs } from 'tinyglobby'
 export { glob } from 'tinyglobby'
 
-interface GlobOptions {
+export interface GlobOptions {
   absolute?: boolean
   cwd?: string
   patterns?: string[]
