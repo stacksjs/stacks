@@ -111,9 +111,9 @@ export class CdnStack {
       enableIpv6: true,
 
       defaultBehavior: {
-        origin: new origins.S3Origin(config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket, {
-          originAccessIdentity: this.originAccessIdentity,
-        }),
+        origin: new origins.S3StaticWebsiteOrigin(
+          config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket,
+        ),
         edgeLambdas: [
           {
             eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
@@ -269,8 +269,7 @@ export class CdnStack {
   docsBehaviorOptions(docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
 
-    const origin = new origins.S3Origin(docsBucket, {
-      originAccessIdentity: this.originAccessIdentity,
+    const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
       originPath: '/',
     })
 
