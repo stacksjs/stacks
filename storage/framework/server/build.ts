@@ -93,22 +93,26 @@ async function main() {
     log.success('App built')
   } else {
     log.error('Build failed')
-    console.log(r2)
     console.log(r2.logs)
     process.exit(1)
   }
 
-  // TODO: this is a bundler issue and those files should not need to be copied, and that's why we handle the cleanup here as well
-  // await runCommand(`cp -r ${path.storagePath('app')} ${path.userServerPath()}`)
-  // await runCommand(`rm -rf ${path.storagePath('app')}`)
+  // delete the app folder if it exists
+  log.info(`Deleting old app folder...`)
+  await deleteFolder(path.userServerPath('app'))
+  log.success('Deleted old app folder')
+
+  log.info(`Copying new app folder...`)
+  await runCommand(`cp -r ${path.userServerPath('dist/app')} ${path.userServerPath()}`)
+  log.success('Copied new app folder')
 
   // Process files in the ./app folder
-  // const appFiles = await glob([path.userServerPath('app/**/*.js')])
-  const glob2 = new Bun.Glob('app/**/*.js')
-  const scanOptions2 = { cwd: path.userServerPath('app'), onlyFiles: true }
+  const glob2 = new Bun.Glob('**/*.js')
+  const appPath = path.userServerPath('app')
+  const scanOptions2 = { cwd: appPath, onlyFiles: true }
 
   for await (const file of glob2.scan(scanOptions2)) {
-    let content = await fs.readFile(file, 'utf-8')
+    let content = await fs.readFile(path.resolve(appPath, file), 'utf-8')
     if (content.includes('storage/framework/server')) {
       content = content.replace(/storage\/framework\/server/g, 'dist')
       await fs.writeFile(file, content, 'utf-8')
@@ -119,12 +123,12 @@ async function main() {
   // Process files in the ./dist folder
   // need to remove export `{ ENV_KEY, ENV_SECRET, fromEnv };` from whatever file that contains it in the dist/*
   // TODO: test later, potentially a bundler issue
-  // const distFiles = await glob([path.userServerPath('dist/*.js')])
-  const glob3 = new Bun.Glob('dist/**/*.js')
-  const scanOptions3 = { cwd: path.userServerPath('dist'), onlyFiles: true }
+  const glob3 = new Bun.Glob('**/*.js')
+  const distPath = path.userServerPath('dist')
+  const scanOptions3 = { cwd: distPath, onlyFiles: true }
 
   for await (const file of glob3.scan(scanOptions3)) {
-    let content = await fs.readFile(file, 'utf-8')
+    let content = await fs.readFile(path.resolve(distPath, file), 'utf-8')
     if (content.includes('export { ENV_KEY, ENV_SECRET, fromEnv };')) {
       content = content.replace(/export { ENV_KEY, ENV_SECRET, fromEnv };/g, '')
       await fs.writeFile(file, content, 'utf-8')

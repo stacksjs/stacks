@@ -17,10 +17,11 @@ COPY ./app ./app
 COPY ./config ./config
 COPY ./docs ./docs
 COPY ./dist ./dist
-COPY ./storage ./storage
 COPY ./tsconfig.docker.json ./tsconfig.json
 
-RUN chown -R bun:bun ./storage
+# Combine COPY and chown for storage
+RUN mkdir -p ./storage && chown -R bun:bun ./storage
+COPY --chown=bun:bun ./storage ./storage
 
 # Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]
