@@ -1097,7 +1097,7 @@ export async function generateModelString(
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model.attributes))
 
-  return `import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+  return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { db } from '@stacksjs/database'
     import { sql } from '@stacksjs/database'
     import { dispatch } from '@stacksjs/events'
