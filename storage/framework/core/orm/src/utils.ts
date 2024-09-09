@@ -1013,7 +1013,7 @@ export async function generateModelString(
   for (const attribute of attributes) {
     const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
-    fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
+    fieldString += ` ${snakeCase(attribute.field)}?: ${entity}\n     `
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
     constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
@@ -1070,7 +1070,7 @@ export async function generateModelString(
   const otherModelRelations = await fetchOtherModelRelations(model, modelName)
 
   for (const otherModelRelation of otherModelRelations) {
-    fieldString += ` ${otherModelRelation.foreignKey}: number \n`
+    fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
 
     declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
 
@@ -1083,14 +1083,14 @@ export async function generateModelString(
 
   if (useTimestamps) {
     fieldString += `
-      created_at: Date\n
-      updated_at: Date
+      created_at?: Date\n
+      updated_at?: Date
     `
   }
 
   if (useSoftDeletes) {
     fieldString += `
-      deleted_at: Date
+      deleted_at?: Date
     `
   }
 

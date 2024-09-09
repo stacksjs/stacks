@@ -14,20 +14,20 @@ import User from './User'
 // TODO: we need an action that auto-generates these table interfaces
 export interface TeamsTable {
   id: Generated<number>
-  name: string
-  company_name: string
-  email: string
-  billing_email: string
-  status: string
-  description: string
-  path: string
-  is_personal: boolean
-  accesstoken_id: number
-  user_id: number
+  name?: string
+  company_name?: string
+  email?: string
+  billing_email?: string
+  status?: string
+  description?: string
+  path?: string
+  is_personal?: boolean
+  accesstoken_id?: number
+  user_id?: number
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 }
 
 interface TeamResponse {

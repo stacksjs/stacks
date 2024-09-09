@@ -12,13 +12,13 @@ import User from './User'
 // TODO: we need an action that auto-generates these table interfaces
 export interface PostsTable {
   id: Generated<number>
-  title: string
-  body: string
-  user_id: number
+  title?: string
+  body?: string
+  user_id?: number
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 }
 
 interface PostResponse {

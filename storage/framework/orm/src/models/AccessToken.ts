@@ -12,15 +12,15 @@ import Team from './Team'
 // TODO: we need an action that auto-generates these table interfaces
 export interface PersonalAccessTokensTable {
   id: Generated<number>
-  name: string
-  token: string
-  plain_text_token: string
-  abilities: string[]
-  team_id: number
+  name?: string
+  token?: string
+  plain_text_token?: string
+  abilities?: string[]
+  team_id?: number
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 }
 
 interface AccessTokenResponse {

@@ -12,18 +12,18 @@ import User from './User'
 // TODO: we need an action that auto-generates these table interfaces
 export interface DeploymentsTable {
   id: Generated<number>
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  user_id: number
+  commit_sha?: string
+  commit_message?: string
+  branch?: string
+  status?: string
+  execution_time?: number
+  deploy_script?: string
+  terminal_output?: string
+  user_id?: number
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 }
 
 interface DeploymentResponse {

@@ -11,13 +11,13 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 // TODO: we need an action that auto-generates these table interfaces
 export interface SubscriberEmailsTable {
   id: Generated<number>
-  email: string
+  email?: string
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 
-  deleted_at: Date
+  deleted_at?: Date
 }
 
 interface SubscriberEmailResponse {

@@ -11,14 +11,14 @@ import type { ColumnType, Generated, Insertable, Selectable, Updateable } from '
 // TODO: we need an action that auto-generates these table interfaces
 export interface ProjectsTable {
   id: Generated<number>
-  name: string
-  description: string
-  url: string
-  status: string
+  name?: string
+  description?: string
+  url?: string
+  status?: string
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 }
 
 interface ProjectResponse {

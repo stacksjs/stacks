@@ -18,20 +18,20 @@ import Team from './Team'
 // TODO: we need an action that auto-generates these table interfaces
 export interface UsersTable {
   id: Generated<number>
-  name: string
-  email: string
-  job_title: string
-  password: string
-  team_id: number
-  deployment_id: number
-  post_id: number
+  name?: string
+  email?: string
+  job_title?: string
+  password?: string
+  team_id?: number
+  deployment_id?: number
+  post_id?: number
   two_factor_secret?: string
 
-  created_at: Date
+  created_at?: Date
 
-  updated_at: Date
+  updated_at?: Date
 
-  deleted_at: Date
+  deleted_at?: Date
 }
 
 interface UserResponse {
