@@ -1,7 +1,7 @@
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
-import { fs, glob, globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import type {
   Attributes,
@@ -193,7 +193,7 @@ export async function getPivotTables(
 }
 
 export async function fetchOtherModelRelations(model: Model, modelName?: string): Promise<RelationConfig[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
@@ -238,29 +238,32 @@ export function getFillableAttributes(attributes: Attributes | undefined): strin
 }
 
 export async function writeModelNames() {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
   let fileString = `export type ModelNames = `
 
-  for (let i = 0; i < modelFiles.length; i++) {
-    const modeFileElement = modelFiles[i] as string
-    const model = (await import(modeFileElement)).default as Model
-    const modelName = getModelName(model, modeFileElement)
-    const typeFile = Bun.file(path.corePath(`types/src/model-names.ts`))
+  for (let i = 0; i < models.length; i++) {
+    const modelPath = models[i] as string
+    const model = (await import(modelPath)).default as Model
+    const modelName = getModelName(model, modelPath)
 
     fileString += `'${modelName}'`
 
-    if (i < modelFiles.length - 1) {
+    if (i < models.length - 1) {
       fileString += ' | '
     }
 
-    const writer = typeFile.writer()
+    // Ensure the directory exists
+    const typesDir = path.dirname(path.typesPath(`src/model-names.ts`))
+    await fs.promises.mkdir(typesDir, { recursive: true })
 
-    writer.write(fileString)
+    // Write to the file
+    const typeFilePath = path.typesPath(`src/model-names.ts`)
+    await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
   }
 }
 
 export async function writeModelRequest() {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
   let importTypes = ``
@@ -689,7 +692,7 @@ export async function deleteExistingModels(modelStringFile?: string) {
     return
   }
 
-  const modelPaths = globSync([path.frameworkPath(`orm/src/models/*.ts`)].sort()) // handle them alphabetically
+  const modelPaths = globSync([path.frameworkPath(`orm/src/models/*.ts`)], { absolute: true })
   await Promise.all(
     modelPaths.map(async (modelPath) => {
       if (fs.existsSync(modelPath)) {
@@ -711,7 +714,7 @@ export async function deleteExistingOrmActions(modelStringFile?: string) {
     return
   }
 
-  const ormPaths = globSync([path.builtUserActionsPath(`**/*.ts`)])
+  const ormPaths = globSync([path.builtUserActionsPath(`**/*.ts`)], { absolute: true })
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
@@ -734,7 +737,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string) {
     return
   }
 
-  const requestFiles = globSync([path.frameworkPath(`requests/*.ts`)])
+  const requestFiles = globSync([path.frameworkPath(`requests/*.ts`)], { absolute: true })
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile)) await fs.promises.unlink(requestFile)
   }
@@ -746,7 +749,7 @@ export async function deleteExistingOrmRoute() {
 }
 
 export async function generateKyselyTypes() {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   let text = ``
 
   for (const modelFile of modelFiles) {
@@ -1704,15 +1707,25 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.success('Deleted Model Routes')
 
     log.info('Writing Model Names...')
-    await writeModelNames()
-    log.success('Wrote Model Names')
+    try {
+      await writeModelNames()
+    } catch (error) {
+      console.log('error', error)
+      process.exit(ExitCode.FatalError)
+    }
 
+    log.success('Wrote Model Names')
     log.info('Writing Model Requests...')
-    await writeModelRequest()
+    try {
+      await writeModelRequest()
+    } catch (error) {
+      console.log('error', error)
+      process.exit(ExitCode.FatalError)
+    }
     log.success('Wrote Model Requests')
 
     log.info('Generating API Routes...')
-    const modelFiles = globSync([path.userModelsPath('**/*.ts')])
+    const modelFiles = globSync([path.userModelsPath('**/*.ts')], { absolute: true })
     await generateApiRoutes(modelFiles)
     log.success('Generated API Routes')
 
@@ -1743,7 +1756,7 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       // we run this in background in background, because we simply need to lint:fix the auto-generated code
       // the reason we run it in background is because we don't care whether it fails or not, given there
       // is a chance that the codebase has lint issues unrelating to our auto-generated code
-      const process = Bun.spawn(['bunx', 'biome', 'check', '--fix'], {
+      const process = Bun.spawn(['timeout', '2', 'bunx', 'biome', 'check', '--fix'], {
         stdio: ['pipe', 'pipe', 'pipe'],
       })
 

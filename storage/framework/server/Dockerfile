@@ -4,7 +4,11 @@ FROM oven/bun:1.1.26-debian AS base
 WORKDIR /usr/src
 
 # Install curl - I wonder if there is a better way to do this, because it is only needed for the healthcheck — is wget installed by default?
+USER root
 RUN apt-get update && apt-get install -y curl
+USER bun
+
+# RUN apt-get update && apt-get install -y curl
 
 # [optional] tests & build
 # ENV NODE_ENV=production

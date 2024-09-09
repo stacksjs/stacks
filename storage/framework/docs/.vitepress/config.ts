@@ -18,7 +18,7 @@ export default withPwa(
     srcDir: p.projectPath('docs'),
     outDir: p.frameworkPath('docs/dist'),
     cacheDir: p.frameworkPath('cache/docs'),
-    assetsDir: p.assetsPath(),
+    assetsDir: 'assets',
 
     // sitemap: {
     //   hostname: 'stacks.localhost',
@@ -26,6 +26,14 @@ export default withPwa(
 
     vite: {
       publicDir: p.publicPath(),
+      build: {
+        assetsDir: 'assets',
+        rollupOptions: {
+          output: {
+            assetFileNames: 'assets/[name].[hash][extname]',
+          },
+        },
+      },
 
       server: server({
         type: 'docs',

@@ -35,7 +35,6 @@ export interface CdnStackProps extends NestedCloudProps {
 
 export class CdnStack {
   distribution: cloudfront.Distribution
-  originAccessIdentity: cloudfront.OriginAccessIdentity
   cdnCachePolicy: cloudfront.CachePolicy
   apiCachePolicy: cloudfront.CachePolicy | undefined
   vanityUrl: string
@@ -44,8 +43,6 @@ export class CdnStack {
 
   constructor(scope: Construct, props: CdnStackProps) {
     this.props = props
-
-    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, 'OAI')
 
     this.cdnCachePolicy = new cloudfront.CachePolicy(scope, 'CdnCachePolicy', {
       comment: 'Stacks CDN Cache Policy',
@@ -162,7 +159,6 @@ export class CdnStack {
       description: 'The vanity URL of the deployed application',
     })
 
-    // this.originAccessIdentity = originAccessIdentity
     // this.cdnCachePolicy = cdnCachePolicy
   }
 
@@ -266,33 +262,31 @@ export class CdnStack {
     }
   }
 
-  docsBehaviorOptions(docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
+  docsBehaviorOptions(scope: Construct, docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
 
     const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
       originPath: '/',
     })
 
-    return {
-      '/docs': {
-        origin,
-        compress: true,
-        allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
-        cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
+    const commonBehavior = {
+      origin,
+      compress: true,
+      allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
+      cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
+      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      realtimeLogConfig: this.realtimeLogConfig,
+      originRequestPolicy: new cloudfront.OriginRequestPolicy(scope, 'DocsOriginRequestPolicy', {
+        queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
+        headerBehavior: cloudfront.OriginRequestHeaderBehavior.none(),
+        cookieBehavior: cloudfront.OriginRequestCookieBehavior.none(),
+      }),
+    }
 
-      '/docs/*': {
-        origin,
-        compress: true,
-        allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
-        cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
+    return {
+      '/docs': commonBehavior,
+      '/docs/*': commonBehavior,
     }
   }
 
@@ -406,8 +400,9 @@ export class CdnStack {
     // if docMode is used, we don't need to add a behavior for the docs
     // because the docs will be the root of the site
     if (this.shouldDeployDocs()) {
+      const docsBehaviors = this.docsBehaviorOptions(scope, props.docsBucket)
       behaviorOptions = {
-        ...this.docsBehaviorOptions(props.docsBucket),
+        ...docsBehaviors,
         ...behaviorOptions,
       }
     }

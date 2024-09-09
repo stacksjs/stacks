@@ -13,4 +13,4 @@
 // }
 
 export * from './utils'
-export * from '../../../orm/src/types'
+export * from '../../orm/src/types'

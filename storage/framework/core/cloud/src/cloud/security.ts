@@ -6,6 +6,7 @@ import {
   RemovalPolicy,
   Tags,
   aws_certificatemanager as acm,
+  aws_cloudfront as cloudfront,
   aws_kms as kms,
   aws_wafv2 as wafv2,
 } from 'aws-cdk-lib'
@@ -20,6 +21,7 @@ export class SecurityStack {
   firewall: wafv2.CfnWebACL
   kmsKey: kms.Key
   certificate: acm.Certificate
+  originAccessIdentity: cloudfront.OriginAccessIdentity
 
   constructor(scope: Construct, props: StorageStackProps) {
     const firewallOptions = config.cloud.firewall
@@ -57,6 +59,8 @@ export class SecurityStack {
       validation: acm.CertificateValidation.fromDns(props.zone),
       subjectAlternativeNames: [`www.${props.domain}`, `api.${props.domain}`],
     })
+
+    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, 'OAI')
   }
 
   getFirewallRules(scope: Construct): wafv2.CfnWebACL.RuleProperty[] {

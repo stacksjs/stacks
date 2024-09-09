@@ -1,12 +1,13 @@
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-import type { aws_kms as kms } from 'aws-cdk-lib'
+import type { aws_cloudfront as cloudfront, aws_kms as kms } from 'aws-cdk-lib'
 import { RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
 
 export interface StorageStackProps extends NestedCloudProps {
   kmsKey: kms.Key
+  originAccessIdentity: cloudfront.OriginAccessIdentity
 }
 
 export class StorageStack {
@@ -48,6 +49,17 @@ export class StorageStack {
         publicReadAccess: true,
         blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
       })
+
+      // Make sure the bucket has the correct permissions
+      this.docsBucket.addToResourcePolicy(
+        new iam.PolicyStatement({
+          actions: ['s3:GetObject'],
+          resources: [this.docsBucket.arnForObjects('*')],
+          principals: [
+            new iam.CanonicalUserPrincipal(props.originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId),
+          ],
+        }),
+      )
 
       Tags.of(this.docsBucket).add('weekly-backup', 'true')
     }

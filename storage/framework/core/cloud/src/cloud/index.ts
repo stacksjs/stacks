@@ -56,6 +56,7 @@ export class Cloud extends Stack {
     this.storage = new StorageStack(this, {
       ...props,
       kmsKey: this.security.kmsKey,
+      originAccessIdentity: this.security.originAccessIdentity,
     })
 
     this.network = new NetworkStack(this, props)
