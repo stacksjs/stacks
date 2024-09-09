@@ -38,7 +38,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "neverthrow": "^7.1.0"
+    "neverthrow": "^8.0.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
