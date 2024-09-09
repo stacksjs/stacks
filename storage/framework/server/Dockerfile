@@ -1,36 +1,46 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1.1.26-debian AS base
+# Build stage
+FROM oven/bun:1.1.27-debian AS builder
 WORKDIR /usr/src
 
-# Install curl - I wonder if there is a better way to do this, because it is only needed for the healthcheck — is wget installed by default?
+# Install curl and build dependencies if needed
 USER root
-RUN apt-get update && apt-get install -y curl
-USER bun
+RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# RUN apt-get update && apt-get install -y curl
-
-# [optional] tests & build
-# ENV NODE_ENV=production
-# RUN bun test
-# RUN bun run build
-
-# copy production dependencies and source code into final image
-FROM base AS release
+# Copy source files
 COPY ./app ./app
 COPY ./config ./config
 COPY ./docs ./docs
 COPY ./dist ./dist
 COPY ./tsconfig.docker.json ./tsconfig.json
 
-# Combine COPY and chown for storage
-RUN mkdir -p ./storage && chown -R bun:bun ./storage
+# [optional] Run tests and build
+# ENV NODE_ENV=production
+# RUN bun test
+# RUN bun run build
+
+# Final stage
+FROM oven/bun:1.1.27-debian AS release
+WORKDIR /usr/src
+
+# Copy built files from builder stage
+COPY --from=builder /usr/src/app ./app
+COPY --from=builder /usr/src/config ./config
+COPY --from=builder /usr/src/docs ./docs
+COPY --from=builder /usr/src/dist ./dist
+COPY --from=builder /usr/src/tsconfig.json ./tsconfig.json
+
+# Set up storage directory
+USER root
+RUN mkdir -p ./storage && chown -R bun:bun ./storage && apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY --chown=bun:bun ./storage ./storage
 
 # Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]
 
-# run the app
+# Switch to non-root user
 USER bun
+
+# Expose port and set entrypoint
 EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "run", "dist/index.js" ]
+ENTRYPOINT ["bun", "run", "dist/index.js"]
