@@ -13,4 +13,5 @@ export interface DeployOptions extends CliOptions {
   prod?: boolean
   dev?: boolean
   staging?: boolean
+  yes?: boolean
 }

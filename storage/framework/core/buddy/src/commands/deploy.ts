@@ -16,6 +16,7 @@ export function deploy(buddy: CLI) {
     production: 'Deploy to production',
     development: 'Deploy to development',
     staging: 'Deploy to staging',
+    yes: 'Confirm all prompts by default',
     domain: 'Specify a domain to deploy to',
     verbose: 'Enable verbose output',
   }
@@ -26,6 +27,7 @@ export function deploy(buddy: CLI) {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--prod', descriptions.production, { default: true })
     .option('--dev', descriptions.development, { default: false })
+    .option('--yes', descriptions.yes, { default: false })
     .option('--staging', descriptions.staging, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (env: string | undefined, options: DeployOptions) => {
@@ -34,7 +36,7 @@ export function deploy(buddy: CLI) {
       const startTime = await intro('buddy deploy')
       const domain = options.domain || app.url
 
-      if (options.prod || env === 'production' || env === 'prod') await confirmProductionDeployment()
+      if ((options.prod || env === 'production' || env === 'prod') && !options.yes) await confirmProductionDeployment()
 
       if (!domain) {
         log.info('No domain found in your .env or ./config/app.ts')
