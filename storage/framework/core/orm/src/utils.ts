@@ -776,7 +776,7 @@ export async function generateKyselyTypes() {
       pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
-        id: Generated<number>
+        id?: Generated<number>
         ${pivotTable.firstForeignKey}: number
         ${pivotTable.secondForeignKey}: number
       }`
