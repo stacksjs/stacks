@@ -1,19 +1,20 @@
 import { BentoCache, bentostore } from 'bentocache'
-import { redisDriver } from 'bentocache/drivers/redis'
+import { memoryDriver } from 'bentocache/drivers/memory'
 import type { CacheDriver } from './type'
 
 const client = new BentoCache({
-  default: 'redis',
+  default: 'memory',
   stores: {
-    redis: bentostore().useL2Layer(
-      redisDriver({
-        connection: { host: '127.0.0.1', port: 6379 },
+    memory: bentostore().useL1Layer(
+      memoryDriver({
+        maxSize: 10 * 1024 * 1024,
+        maxItems: 1000,
       }),
     ),
   },
 })
 
-export const redis: CacheDriver = {
+export const memory: CacheDriver = {
   async set(key: string, value: string, ttl?: number): Promise<void> {
     await client.set({
       key,

@@ -1,91 +1,74 @@
-import type { KeyType, PutItemCommandInput, ScalarAttributeType } from '@aws-sdk/client-dynamodb'
-import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-import { cache } from '@stacksjs/config'
+import { BentoCache, bentostore } from 'bentocache'
+import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 import type { CacheDriver } from './type'
 
-const valueAttribute = 'value'
-const keyAttribute = 'key'
-const tableName = cache.drivers?.dynamodb?.table
+const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID || ''
+const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || ''
+const dynamoEndpoint = process.env.AWS_DYNAMODB_ENDPOINT || ''
+const tableName = process.env.AWS_DYNAMODB_TABLE || ''
 
-const client = new DynamoDB({ region: cache.drivers?.dynamodb?.region })
-
-export const dynamodb: CacheDriver = {
-  async createTable() {
-    const tables = await client.send(new ListTablesCommand({}))
-
-    const tableExists = tables.TableNames?.includes('cache')
-
-    if (tableExists) return
-
-    const params = {
-      AttributeDefinitions: [
-        {
-          AttributeName: 'key',
-          AttributeType: 'S' as ScalarAttributeType, // Use 'as const' to specify the type
+const client = new BentoCache({
+  default: 'dynamo',
+  stores: {
+    dynamo: bentostore().useL2Layer(
+      dynamoDbDriver({
+        endpoint: dynamoEndpoint,
+        region: 'eu-west-3',
+        table: {
+          name: tableName,
         },
-      ],
-      KeySchema: [
-        {
-          AttributeName: 'key',
-          KeyType: 'HASH' as KeyType,
+        credentials: {
+          accessKeyId: awsAccessKeyId,
+          secretAccessKey: awsSecretAccessKey,
         },
-      ],
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 5,
-        WriteCapacityUnits: 5,
-      },
-      TableName: tableName,
-    }
-
-    await client.createTable(params)
+      }),
+    ),
   },
+})
 
-  async set(key: string, value: string): Promise<void> {
-    const params: PutItemCommandInput = {
-      TableName: tableName,
-      Item: {
-        [key]: {
-          S: value,
-        },
-      },
-    }
-
-    await client.putItem(params)
+export const dynamoDb: CacheDriver = {
+  async set(key: string, value: string, ttl?: number): Promise<void> {
+    await client.set({
+      key,
+      value,
+      gracePeriod: { enabled: true, duration: '5m' },
+    })
   },
-
+  async setForever(key: string, value: string, ttl?: number): Promise<void> {
+    await client.setForever({
+      key,
+      value,
+      gracePeriod: { enabled: true, duration: '5m' },
+    })
+  },
   async get(key: string): Promise<string | undefined | null> {
-    const params = {
-      TableName: tableName,
-      Key: {
-        [keyAttribute]: {
-          S: key,
-        },
-      },
-    }
+    const items = await client.get<string>(key)
 
-    const response = await client.getItem(params)
-
-    if (!response.Item) return null
-
-    return response.Item[valueAttribute]?.S
+    return items
   },
-
+  async del(key: string): Promise<void> {
+    await client.delete({ key })
+  },
+  async deleteMany(keys: string[]): Promise<void> {
+    await client.deleteMany({ keys })
+  },
   async remove(key: string): Promise<void> {
-    const params = {
-      TableName: tableName,
-      Key: {
-        [keyAttribute]: {
-          S: key,
-        },
-      },
-    }
-
-    await client.deleteItem(params)
+    await client.delete({ key })
   },
-
-  del(key: string): Promise<void> {
-    return this.remove(key)
+  async has(key: string): Promise<boolean> {
+    return await client.has({ key })
   },
-
+  async missing(key: string): Promise<boolean> {
+    return await client.has({ key })
+  },
+  async deleteAll(): Promise<void> {
+    await client.clear()
+  },
+  async clear(): Promise<void> {
+    await client.clear()
+  },
+  async disconnect(): Promise<void> {
+    await client.disconnect()
+  },
   client,
 }

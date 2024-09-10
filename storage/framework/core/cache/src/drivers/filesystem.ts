@@ -1,19 +1,20 @@
 import { BentoCache, bentostore } from 'bentocache'
-import { redisDriver } from 'bentocache/drivers/redis'
+import { fileDriver } from 'bentocache/drivers/file'
 import type { CacheDriver } from './type'
 
 const client = new BentoCache({
   default: 'redis',
   stores: {
     redis: bentostore().useL2Layer(
-      redisDriver({
-        connection: { host: '127.0.0.1', port: 6379 },
+      fileDriver({
+        directory: './cache',
+        pruneInterval: '1h',
       }),
     ),
   },
 })
 
-export const redis: CacheDriver = {
+export const fileSystem: CacheDriver = {
   async set(key: string, value: string, ttl?: number): Promise<void> {
     await client.set({
       key,
