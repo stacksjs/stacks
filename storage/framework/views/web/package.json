@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.2.1",
-    "@intlify/unplugin-vue-i18n": "^4.0.0",
+    "@intlify/unplugin-vue-i18n": "^5.0.0",
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^5.1.3",
