@@ -1,12 +1,4 @@
-import type { JobOptions, Nullable } from '@stacksjs/types'
-import type { ValidationBoolean, ValidationNumber, ValidationString } from '@stacksjs/validation'
-
-type ValidationKey = string
-interface ValidationValue {
-  rule: ValidationString | ValidationNumber | ValidationBoolean | Date | Nullable<any>
-  message: string
-}
-
+import type { JobOptions } from '@stacksjs/types'
 interface ActionValidations {
   [key: string]: {
     rule: ReturnType<typeof schema.string>
@@ -39,7 +31,7 @@ export class Action {
   enabled?: ActionOptions['enabled']
   path?: ActionOptions['path']
   method?: ActionOptions['method']
-  validations?: Record<ValidationKey, ValidationValue>
+  validations?: ActionOptions['validations']
   requestFile?: string
   handle: ActionOptions['handle']
 

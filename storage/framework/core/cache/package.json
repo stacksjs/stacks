@@ -45,7 +45,8 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.645.0",
     "@stacksjs/config": "workspace:*",
-    "bentocache": "^1.0.0-beta.9"
+    "bentocache": "^1.0.0-beta.9",
+    "ioredis": "^5.4.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

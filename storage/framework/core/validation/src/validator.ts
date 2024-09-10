@@ -18,7 +18,9 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 
-export function isObjectNotEmpty(obj: object): boolean {
+export function isObjectNotEmpty(obj: object | undefined): boolean {
+  if (obj === undefined) return false
+
   return Object.keys(obj).length > 0
 }
 
