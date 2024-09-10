@@ -4,7 +4,7 @@ import { exists, glob } from '@stacksjs/storage'
 
 // import { $ } from 'bun'
 
-const dirs = await glob(p.resolve('./', '*'), { onlyDirectories: true })
+const dirs = await glob([p.resolve('./', '*')], { onlyDirectories: true, absolute: true })
 dirs.sort((a, b) => a.localeCompare(b))
 
 const startTime = Date.now()
