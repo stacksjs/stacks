@@ -1,9 +1,10 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { cache } from '@stacksjs/cache'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import { dispatch } from '@stacksjs/events'
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -81,6 +82,8 @@ export class ReleaseModel {
 
     if (!model) return undefined
 
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
     return this.parseResult(new ReleaseModel(model))
   }
 
@@ -93,6 +96,8 @@ export class ReleaseModel {
     const model = await query.executeTakeFirst()
 
     if (!model) return undefined
+
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
     return instance.parseResult(new this(model))
   }
@@ -125,6 +130,8 @@ export class ReleaseModel {
     const model = await query.executeTakeFirst()
 
     if (!model) throw `No model results found for ${id} `
+
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
     return instance.parseResult(new this(model))
   }

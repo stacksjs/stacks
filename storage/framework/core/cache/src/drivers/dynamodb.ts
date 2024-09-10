@@ -26,7 +26,7 @@ const client = new BentoCache({
   },
 })
 
-export const dynamoDb: CacheDriver = {
+export const dynamodb: CacheDriver = {
   async set(key: string, value: string, ttl?: number): Promise<void> {
     await client.set({
       key,
@@ -43,6 +43,11 @@ export const dynamoDb: CacheDriver = {
   },
   async get(key: string): Promise<string | undefined | null> {
     const items = await client.get<string>(key)
+
+    return items
+  },
+  async getOrSet(key: string, value: string): Promise<string | undefined | null> {
+    const items = await client.getOrSet(key, () => value)
 
     return items
   },

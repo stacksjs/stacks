@@ -34,6 +34,11 @@ export const fileSystem: CacheDriver = {
 
     return items
   },
+  async getOrSet(key: string, value: string): Promise<string | undefined | null> {
+    const items = await client.getOrSet(key, () => value)
+
+    return items
+  },
   async del(key: string): Promise<void> {
     await client.delete({ key })
   },

@@ -1,9 +1,10 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { cache } from '@stacksjs/cache'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import { dispatch } from '@stacksjs/events'
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import AccessToken from './AccessToken'
 
 import User from './User'
@@ -112,6 +113,8 @@ export class TeamModel {
 
     if (!model) return undefined
 
+    cache.getOrSet(`team:${id}`, JSON.stringify(model))
+
     return this.parseResult(new TeamModel(model))
   }
 
@@ -124,6 +127,8 @@ export class TeamModel {
     const model = await query.executeTakeFirst()
 
     if (!model) return undefined
+
+    cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
     return instance.parseResult(new this(model))
   }
@@ -156,6 +161,8 @@ export class TeamModel {
     const model = await query.executeTakeFirst()
 
     if (!model) throw `No model results found for ${id} `
+
+    cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
     return instance.parseResult(new this(model))
   }

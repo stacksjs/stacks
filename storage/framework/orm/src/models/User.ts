@@ -1,9 +1,10 @@
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { cache } from '@stacksjs/cache'
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
 import { dispatch } from '@stacksjs/events'
-import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import Post from './Post'
 
 import Subscriber from './Subscriber'
@@ -116,6 +117,8 @@ export class UserModel {
 
     if (!model) return undefined
 
+    cache.getOrSet(`user:${id}`, JSON.stringify(model))
+
     return this.parseResult(new UserModel(model))
   }
 
@@ -128,6 +131,8 @@ export class UserModel {
     const model = await query.executeTakeFirst()
 
     if (!model) return undefined
+
+    cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
     return instance.parseResult(new this(model))
   }
@@ -160,6 +165,8 @@ export class UserModel {
     const model = await query.executeTakeFirst()
 
     if (!model) throw `No model results found for ${id} `
+
+    cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
     return instance.parseResult(new this(model))
   }

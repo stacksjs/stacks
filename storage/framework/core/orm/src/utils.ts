@@ -1103,6 +1103,7 @@ export async function generateModelString(
     import { dispatch } from '@stacksjs/events'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
     import { verifyTwoFactorCode } from '@stacksjs/auth'
+    import { cache } from '@stacksjs/cache'
     ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
@@ -1164,6 +1165,8 @@ export async function generateModelString(
         if (!model)
           return undefined
 
+        cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
+
         return this.parseResult(new ${modelName}Model(model))
       }
 
@@ -1177,6 +1180,8 @@ export async function generateModelString(
 
         if (!model)
           return undefined
+
+        cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
         return instance.parseResult(new this(model))
       }
@@ -1212,7 +1217,8 @@ export async function generateModelString(
         if (!model)
           throw(\`No model results found for \${id}\ \`)
 
-
+        cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
+        
         return instance.parseResult(new this(model))
       }
 

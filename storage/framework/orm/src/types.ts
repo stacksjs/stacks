@@ -10,17 +10,17 @@ import type { TeamsTable } from '../src/models/Team'
 import type { UsersTable } from '../src/models/User'
 
 export interface TeamPersonalAccessTokensTable {
-  id: Generated<number>
+  id?: Generated<number>
   team_id: number
   accesstoken_id: number
 }
 export interface TeamUsersTable {
-  id: Generated<number>
+  id?: Generated<number>
   team_id: number
   user_id: number
 }
 export interface UserTeamsTable {
-  id: Generated<number>
+  id?: Generated<number>
   user_id: number
   team_id: number
 }
