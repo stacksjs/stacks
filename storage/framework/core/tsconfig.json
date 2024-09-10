@@ -30,13 +30,16 @@
       "vite-plugin-pages/client",
       "vite-plugin-pwa/client",
       "vite-plugin-vue-layouts/client",
-      "@intlify/unplugin-vue-i18n/messages"
+      "@intlify/unplugin-vue-i18n/messages",
+      "@vite-pwa/vitepress",
+      "vitepress"
     ],
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "strict": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
     "noUnusedLocals": true,
     "declaration": true,
     "declarationMap": true,
@@ -46,6 +49,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+    "isolatedDeclaration": true,
     "skipLibCheck": true
   },
   "vueCompilerOptions": {

@@ -36,6 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/cache": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*"
   },

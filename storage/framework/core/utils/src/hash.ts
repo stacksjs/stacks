@@ -13,8 +13,9 @@ export function originRequestFunctionHash() {
   }
 }
 
+const docsSrc = [p.projectPath('docs'), p.frameworkPath('docs/dist')]
+
 export function websiteSourceHash() {
-  const docsSrc = [p.projectPath('docs')]
   const websiteSrc = [
     p.projectPath('resources/views'),
     p.projectPath('resources/assets'),
@@ -29,7 +30,5 @@ export function websiteSourceHash() {
 }
 
 export function docsSourceHash() {
-  const docsSrc = [p.projectPath('docs')]
-
   return hashPaths(docsSrc)
 }

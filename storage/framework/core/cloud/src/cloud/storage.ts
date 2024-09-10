@@ -50,17 +50,6 @@ export class StorageStack {
         blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
       })
 
-      // Make sure the bucket has the correct permissions
-      this.docsBucket.addToResourcePolicy(
-        new iam.PolicyStatement({
-          actions: ['s3:GetObject'],
-          resources: [this.docsBucket.arnForObjects('*')],
-          principals: [
-            new iam.CanonicalUserPrincipal(props.originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId),
-          ],
-        }),
-      )
-
       Tags.of(this.docsBucket).add('weekly-backup', 'true')
     }
 

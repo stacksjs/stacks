@@ -18,7 +18,7 @@ export default withPwa(
     srcDir: p.projectPath('docs'),
     outDir: p.frameworkPath('docs/dist'),
     cacheDir: p.frameworkPath('cache/docs'),
-    assetsDir: 'assets',
+    assetsDir: '/assets',
 
     // sitemap: {
     //   hostname: 'stacks.localhost',

@@ -15,7 +15,7 @@ export const frameworkDefaults = {
   srcDir: p.projectPath('docs'),
   outDir: p.storagePath('framework/docs'),
   cacheDir: p.storagePath('framework/cache/docs'),
-  assetsDir: 'assets',
+  assetsDir: '/assets',
   // sitemap: {
   //   hostname: 'stacks.localhost',
   // },

@@ -92,6 +92,12 @@ export class CdnStack {
     //   samplingRate: 100, // Adjust the sampling rate as needed
     // })
 
+    const frontendOriginAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
+      description: 'Access from CloudFront to the bucket.',
+      originAccessControlName: `${props.slug}-${props.appEnv}-web-oac`,
+      signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
+    })
+
     // the actual CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
       domainNames: [props.domain],
@@ -106,10 +112,15 @@ export class CdnStack {
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
       webAclId: props.firewall.attrArn,
       enableIpv6: true,
+      additionalBehaviors: this.additionalBehaviors(scope, props),
 
       defaultBehavior: {
-        origin: new origins.S3StaticWebsiteOrigin(
+        origin: origins.S3BucketOrigin.withOriginAccessControl(
           config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket,
+          {
+            originPath: '/',
+            originAccessControl: frontendOriginAccessControl,
+          },
         ),
         edgeLambdas: [
           {
@@ -125,15 +136,19 @@ export class CdnStack {
         // realtimeLogConfig: this.realtimeLogConfig,
       },
 
-      additionalBehaviors: this.additionalBehaviors(scope, props),
-
       // Add custom error responses
       errorResponses: [
+        {
+          httpStatus: 404,
+          responsePagePath: '/index.html',
+          responseHttpStatus: 200,
+          ttl: Duration.millis(0),
+        },
         {
           httpStatus: 403,
           responsePagePath: '/index.html',
           responseHttpStatus: 200,
-          ttl: Duration.seconds(0),
+          ttl: Duration.millis(0),
         },
       ],
     })
@@ -265,23 +280,46 @@ export class CdnStack {
   docsBehaviorOptions(scope: Construct, docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
 
-    const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
-      originPath: '/',
+    const origin = origins.S3BucketOrigin.withOriginAccessControl(docsBucket, {
+      originAccessControl: new cloudfront.S3OriginAccessControl(scope, 'DocsOAC', {
+        originAccessControlName: `${this.props.slug}-${this.props.appEnv}-docs-oac`,
+        description: 'Access from CloudFront to the docs bucket.',
+        signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
+      }),
     })
 
-    const commonBehavior = {
+    const docsFunction = new cloudfront.Function(scope, 'DocsViewerRequestFunction', {
+      code: cloudfront.FunctionCode.fromInline(`
+      function handler(event) {
+        var request = event.request;
+        console.log('Original URI:', request.uri);
+        if (request.uri.startsWith('/docs')) {
+          request.uri = '/index.html';
+        }
+        console.log('Modified URI:', request.uri);
+        return request;
+      }
+      `),
+    })
+
+    const commonBehavior: cloudfront.BehaviorOptions = {
       origin,
       compress: true,
       allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
       cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-      realtimeLogConfig: this.realtimeLogConfig,
       originRequestPolicy: new cloudfront.OriginRequestPolicy(scope, 'DocsOriginRequestPolicy', {
         queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
-        headerBehavior: cloudfront.OriginRequestHeaderBehavior.none(),
+        headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('Host'),
         cookieBehavior: cloudfront.OriginRequestCookieBehavior.none(),
       }),
+      functionAssociations: [
+        {
+          function: docsFunction,
+          eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+        },
+      ],
     }
 
     return {
