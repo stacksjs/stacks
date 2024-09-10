@@ -1,7 +1,7 @@
 import { config } from '@stacksjs/config'
 import { dynamodb, fileSystem, memory, redis } from './drivers'
 
-const driver = config.cache.driver || 'fileSystem'
+const driver = config.cache.driver || 'memory'
 
 let driverInstance = fileSystem
 
