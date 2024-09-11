@@ -94,6 +94,7 @@ Doyon
 dprint
 Drasner
 ecommerce
+edgelambda
 elasticloadbalancingv
 elbv
 encrypter

@@ -303,20 +303,42 @@ export class CdnStack {
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromInline(`
-      exports.handler = (event, context, callback) => {
-        const request = event.Records[0].cf.request;
-        const uri = request.uri;
-
-        if (uri.startsWith('/docs')) {
-          request.uri = uri.replace('/docs', '') || '/';
-          if (request.uri.endsWith('/')) {
-            request.uri += 'index.html';
-          }
+        const config = {
+          suffix: '.html',
+          appendToDirs: 'index.html',
         }
 
-        callback(null, request);
-      };
-    `),
+        const regexSuffixless = /\\/[^/.]+$/
+        const regexTrailingSlash = /.+\\/$/
+
+        exports.handler = (event, context, callback) => {
+          const request = event.Records[0].cf.request;
+          let uri = request.uri;
+
+          // Remove /docs prefix
+          if (uri.startsWith('/docs')) {
+            uri = uri.replace('/docs', '') || '/';
+          }
+
+          // Append ".html" to origin request
+          if (config.suffix && uri.match(regexSuffixless)) {
+            uri = uri + config.suffix;
+          }
+          // Append "index.html" to origin request
+          else if (config.appendToDirs && uri.match(regexTrailingSlash)) {
+            uri = uri + config.appendToDirs;
+          }
+
+          request.uri = uri;
+          callback(null, request);
+        };
+      `),
+    })
+
+    new lambda.CfnPermission(scope, 'DocsOriginRequestFunctionPermission', {
+      action: 'lambda:InvokeFunction',
+      principal: 'edgelambda.amazonaws.com',
+      functionName: docsOriginRequestFunction.functionName,
     })
 
     const commonBehavior: cloudfront.BehaviorOptions = {
