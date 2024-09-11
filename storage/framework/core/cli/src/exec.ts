@@ -33,7 +33,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   log.debug('cmd:', cmd)
   log.debug('exec options:', options)
 
-  const cwd = options?.cwd || process.cwd()
+  const cwd = options?.cwd ?? process.cwd()
   const proc = Bun.spawn(cmd, {
     ...options,
     stdout:
@@ -106,8 +106,13 @@ export async function execSync(command: string | string[], options?: CliOptions)
   return proc.stdout.toString()
 }
 
-// @ts-expect-error - missing types is okay here but can be improved later on
-function exitHandler(type: 'spawn' | 'spawnSync', subprocess, exitCode, signalCode, error) {
+function exitHandler(
+  type: 'spawn' | 'spawnSync',
+  subprocess: Subprocess,
+  exitCode: number | null,
+  signalCode: number | null,
+  error?: Error,
+) {
   log.debug(`exitHandler: ${type}`)
   log.debug('subprocess', subprocess)
   log.debug('exitCode', exitCode)
