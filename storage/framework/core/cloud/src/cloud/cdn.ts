@@ -98,6 +98,12 @@ export class CdnStack {
     //   signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     // })
 
+    const originAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
+      originAccessControlName: `${props.slug}-${props.appEnv}-web-oac`,
+      description: 'Access from CloudFront to the frontend bucket.',
+      signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
+    })
+
     // the actual CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
       domainNames: [props.domain],
@@ -119,6 +125,7 @@ export class CdnStack {
           config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket,
           {
             originPath: '/',
+            originAccessControlId: originAccessControl.originAccessControlId,
           },
         ),
         edgeLambdas: [
@@ -279,25 +286,36 @@ export class CdnStack {
   docsBehaviorOptions(scope: Construct, docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
 
-    const origin = new origins.S3StaticWebsiteOrigin(docsBucket)
-
-    const docsFunction = new cloudfront.Function(scope, 'DocsViewerRequestFunction', {
-      functionName: `${this.props.slug}-${this.props.appEnv}-docs-viewer-request-function`,
-      comment: 'Stacks Docs Viewer Request Function',
-      runtime: cloudfront.FunctionRuntime.JS_2_0,
-      code: cloudfront.FunctionCode.fromInline(`
-      function handler(event) {
-        var request = event.request;
-        console.log('Original URI:', request.uri);
-        if (request.uri.startsWith('/docs')) {
-          // strip the /docs prefix
-          request.uri = request.uri.replace('/docs', '/')
-        }
-        console.log('Modified URI:', request.uri);
-        return request;
-      }
-      `),
+    // create origin access control
+    const originAccessControl = new cloudfront.S3OriginAccessControl(scope, 'DocsOAC', {
+      originAccessControlName: `${this.props.slug}-${this.props.appEnv}-docs-oac`,
+      description: 'Access from CloudFront to the docs bucket.',
+      signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     })
+
+    const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
+      originPath: '/',
+      originAccessControlId: originAccessControl.originAccessControlId,
+    })
+
+    // const docsFunction = new cloudfront.Function(scope, 'DocsViewerRequestFunction', {
+    //   functionName: `${this.props.slug}-${this.props.appEnv}-docs-viewer-request-function`,
+    //   comment: 'Stacks Docs Viewer Request Function',
+    //   runtime: cloudfront.FunctionRuntime.JS_2_0,
+    //   code: cloudfront.FunctionCode.fromInline(`
+    //     function handler(event) {
+    //       var request = event.request
+    //       console.log('Original URI:', request.uri)
+    //       if (request.uri === '/docs' || request.uri === '/docs/') {
+    //         request.uri += 'index.html'
+    //       } else if (request.uri.startsWith('/docs/')) {
+    //         request.uri = request.uri.slice(5)
+    //       }
+    //       console.log('Modified URI:', request.uri)
+    //       return request
+    //     }
+    //   `),
+    // })
 
     const commonBehavior: cloudfront.BehaviorOptions = {
       origin,
@@ -311,12 +329,12 @@ export class CdnStack {
         headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('Host'),
         cookieBehavior: cloudfront.OriginRequestCookieBehavior.none(),
       }),
-      functionAssociations: [
-        {
-          function: docsFunction,
-          eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-        },
-      ],
+      // functionAssociations: [
+      //   {
+      //     function: docsFunction,
+      //     eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+      //   },
+      // ],
     }
 
     return {

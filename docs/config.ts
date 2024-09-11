@@ -570,7 +570,7 @@ export default {
   description: 'Rapid application, cloud & library development framework.',
   lastUpdated: true,
   deploy: true,
-  base: '/docs/',
+  base: '/',
 
   themeConfig: {
     logo: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',
