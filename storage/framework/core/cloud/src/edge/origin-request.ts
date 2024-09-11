@@ -7,7 +7,7 @@ const config = {
 const regexSuffixless = /\/[^/.]+$/ // e.g. "/some/page" but not "/", "/some/" or "/some.jpg"
 const regexTrailingSlash = /.+\/$/ // e.g. "/some/" or "/some/page/" but not root "/"
 
-// TODO: need to improve types here
+// TODO: narrow types here
 export function handler(event: any, context: any, callback: any) {
   const { request } = event.Records[0].cf
   const { uri } = request

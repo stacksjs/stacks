@@ -2,12 +2,13 @@ import { config } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-import type { aws_certificatemanager as acm, aws_lambda as lambda, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
+import type { aws_certificatemanager as acm, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
   Fn,
   CfnOutput as Output,
   aws_cloudfront as cloudfront,
+  aws_lambda as lambda,
   aws_cloudfront_origins as origins,
   aws_route53 as route53,
   aws_route53_targets as targets,
@@ -298,24 +299,25 @@ export class CdnStack {
       originAccessControlId: originAccessControl.originAccessControlId,
     })
 
-    // const docsFunction = new cloudfront.Function(scope, 'DocsViewerRequestFunction', {
-    //   functionName: `${this.props.slug}-${this.props.appEnv}-docs-viewer-request-function`,
-    //   comment: 'Stacks Docs Viewer Request Function',
-    //   runtime: cloudfront.FunctionRuntime.JS_2_0,
-    //   code: cloudfront.FunctionCode.fromInline(`
-    //     function handler(event) {
-    //       var request = event.request
-    //       console.log('Original URI:', request.uri)
-    //       if (request.uri === '/docs' || request.uri === '/docs/') {
-    //         request.uri += 'index.html'
-    //       } else if (request.uri.startsWith('/docs/')) {
-    //         request.uri = request.uri.slice(5)
-    //       }
-    //       console.log('Modified URI:', request.uri)
-    //       return request
-    //     }
-    //   `),
-    // })
+    const docsOriginRequestFunction = new lambda.Function(scope, 'DocsOriginRequestFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromInline(`
+      exports.handler = (event, context, callback) => {
+        const request = event.Records[0].cf.request;
+        const uri = request.uri;
+
+        if (uri.startsWith('/docs')) {
+          request.uri = uri.replace('/docs', '') || '/';
+          if (request.uri.endsWith('/')) {
+            request.uri += 'index.html';
+          }
+        }
+
+        callback(null, request);
+      };
+    `),
+    })
 
     const commonBehavior: cloudfront.BehaviorOptions = {
       origin,
@@ -324,11 +326,13 @@ export class CdnStack {
       cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-      originRequestPolicy: new cloudfront.OriginRequestPolicy(scope, 'DocsOriginRequestPolicy', {
-        queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
-        headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('Host'),
-        cookieBehavior: cloudfront.OriginRequestCookieBehavior.none(),
-      }),
+      originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
+      edgeLambdas: [
+        {
+          functionVersion: docsOriginRequestFunction.currentVersion,
+          eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+        },
+      ],
       // functionAssociations: [
       //   {
       //     function: docsFunction,
