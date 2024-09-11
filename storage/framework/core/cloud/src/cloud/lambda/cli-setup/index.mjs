@@ -1,4 +1,4 @@
-async function handler() {
+export async function handler(event) {
   const setupScriptContents = `if [ -n "$1" ]; then
   # Check if the directory exists
   if [ -d "storage/framework/core" ]; then # this is our identifier whether it is a Stacks project
@@ -60,8 +60,4 @@ rm /tmp/mypipe
     statusCode: 200,
     body: setupScriptContents,
   }
-}
-
-module.exports = {
-  handler,
 }

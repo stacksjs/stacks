@@ -26,7 +26,7 @@ export class DocsStack {
       // deletion process takes a "long time". This way, the function is always unique in cases of quick recreations.
       functionName: `${props.slug}-${props.appEnv}-origin-request-${props.timestamp}`,
       description: 'The Stacks Origin Request function that prettifies URLs',
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'dist/origin-request.handler',
       code: lambda.Code.fromAsset(p.cloudPath('dist.zip'), {
         assetHash: originRequestFunctionHash(),

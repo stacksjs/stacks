@@ -300,6 +300,8 @@ export class CdnStack {
     })
 
     const docsOriginRequestFunction = new lambda.Function(scope, 'DocsOriginRequestFunction', {
+      functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-request-function`,
+      description: 'Custom origin request function for the docs',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromInline(`
@@ -321,11 +323,11 @@ export class CdnStack {
           }
 
           // Append ".html" to origin request
-          if (config.suffix && uri.match(regexSuffixless)) {
+          if (uri.match(regexSuffixless)) {
             uri = uri + config.suffix;
           }
           // Append "index.html" to origin request
-          else if (config.appendToDirs && uri.match(regexTrailingSlash)) {
+          else if (uri.match(regexTrailingSlash)) {
             uri = uri + config.appendToDirs;
           }
 

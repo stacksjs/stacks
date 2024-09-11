@@ -3,7 +3,7 @@ import { intro, outro } from '@stacksjs/build'
 import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { fs, deleteFolder } from '@stacksjs/storage'
+import { fs, deleteFile, deleteFolder } from '@stacksjs/storage'
 import { build } from 'bun'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 
@@ -35,6 +35,11 @@ async function main() {
   log.info(`  ${path.userServerPath('storage')}`, { styled: false })
   await deleteFolder(path.userServerPath('storage'))
   log.success('Deleted old files')
+  log.info('Removing node_modules...')
+  await deleteFolder(path.cloudPath('src/cloud/aws-sdk-layer/node_modules'))
+  await deleteFile(path.cloudPath('src/cloud/aws-sdk-layer/bun.lockb'))
+  // await Bun.$`rm -rf ${path.storagePath('**/node_modules')}` // somehow this does not work
+  log.success('Removed node_modules')
 
   log.info('Building...')
   const result = await build({
