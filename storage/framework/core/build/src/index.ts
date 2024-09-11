@@ -19,7 +19,7 @@ export async function outro(options: {
   }
 
   // loop over all the files in the dist directory and log them and their size
-  const files = await glob(p.resolve(options.dir, 'dist', '**/*'))
+  const files = await glob([p.resolve(options.dir, 'dist', '**/*')], { absolute: true })
   for (const file of files) {
     const stats = await fs.stat(file)
 
