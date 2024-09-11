@@ -92,11 +92,11 @@ export class CdnStack {
     //   samplingRate: 100, // Adjust the sampling rate as needed
     // })
 
-    const frontendOriginAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
-      description: 'Access from CloudFront to the bucket.',
-      originAccessControlName: `${props.slug}-${props.appEnv}-web-oac`,
-      signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
-    })
+    // const frontendOriginAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
+    //   description: 'Access from CloudFront to the bucket.',
+    //   originAccessControlName: `${props.slug}-${props.appEnv}-web-oac`,
+    //   signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
+    // })
 
     // the actual CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
@@ -115,11 +115,10 @@ export class CdnStack {
       additionalBehaviors: this.additionalBehaviors(scope, props),
 
       defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(
+        origin: new origins.S3StaticWebsiteOrigin(
           config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket,
           {
             originPath: '/',
-            originAccessControl: frontendOriginAccessControl,
           },
         ),
         edgeLambdas: [
@@ -280,21 +279,19 @@ export class CdnStack {
   docsBehaviorOptions(scope: Construct, docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
 
-    const origin = origins.S3BucketOrigin.withOriginAccessControl(docsBucket, {
-      originAccessControl: new cloudfront.S3OriginAccessControl(scope, 'DocsOAC', {
-        originAccessControlName: `${this.props.slug}-${this.props.appEnv}-docs-oac`,
-        description: 'Access from CloudFront to the docs bucket.',
-        signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
-      }),
-    })
+    const origin = new origins.S3StaticWebsiteOrigin(docsBucket)
 
     const docsFunction = new cloudfront.Function(scope, 'DocsViewerRequestFunction', {
+      functionName: `${this.props.slug}-${this.props.appEnv}-docs-viewer-request-function`,
+      comment: 'Stacks Docs Viewer Request Function',
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
       code: cloudfront.FunctionCode.fromInline(`
       function handler(event) {
         var request = event.request;
         console.log('Original URI:', request.uri);
         if (request.uri.startsWith('/docs')) {
-          request.uri = '/index.html';
+          // strip the /docs prefix
+          request.uri = request.uri.replace('/docs', '/')
         }
         console.log('Modified URI:', request.uri);
         return request;
