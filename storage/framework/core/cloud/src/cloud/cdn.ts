@@ -312,7 +312,7 @@ export class CdnStack {
         const regexSuffixless = /\\/[^/.]+$/
         const regexTrailingSlash = /.+\\/$/
 
-        export const handler = (event, context, callback) => {
+        exports.handler = (event, context, callback) => {
           console.log('event from stacks', event)
           const request = event.Records[0].cf.request;
           let uri = request.uri;
