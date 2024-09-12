@@ -12,7 +12,7 @@ process.on('SIGINT', () => {
 if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB) throw new Error('Missing JOB environment variable')
 
-  const jobModule = await import(`./app/Jobs/${process.env.JOB}`)
+  const jobModule = await import(`./app/Jobs/${process.env.JOB?.replace(/\.ts$/, '')}`) // removes a potential .ts extension
 
   log.info('Running job...', process.env.JOB)
 

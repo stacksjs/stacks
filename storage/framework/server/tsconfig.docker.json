@@ -9,14 +9,15 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "@stacksjs/*": ["./storage/framework/core/*/src"],
-      "stacks/*": ["./storage/framework/core/*/src"],
-      "buddy": ["./storage/framework/core/buddy/src/index.ts"],
-      "buddy/*": ["./storage/framework/core/buddy/src/*"],
-      "Actions/*": ["./app/Actions/*"],
-      "Jobs/*": ["./app/Jobs/*"],
-      "~/*": ["./*"],
-      "../../../env": ["./storage/framework/env.ts"]
+      "@stacksjs/*": ["../storage/framework/core/*/dist"],
+      "stacks/*": ["../storage/framework/core/*/dist"],
+      "buddy": ["../storage/framework/core/buddy/dist/index.js"],
+      "buddy/*": ["../storage/framework/core/buddy/dist/*"],
+      "Actions/*": ["../app/Actions/*"],
+      "Jobs/*": ["../app/Jobs/*"],
+      "./app/*": ["../app/*"], // it's outside the dist folder
+      "~/*": ["../*"],
+      "../../../env": ["../storage/framework/env.ts"]
     },
     "resolveJsonModule": true,
     "types": [
@@ -42,5 +43,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./*.ts", "./src/*.ts", "./*.d.ts"]
+  "include": ["./*.ts", "./src/*.ts", "./*.d.ts", "./*.js"]
 }
