@@ -16,9 +16,10 @@ import { analyticsHead, faviconHead } from './head'
 export default withPwa(
   defineConfig({
     srcDir: p.projectPath('docs'),
-    outDir: p.frameworkPath('docs/dist'),
+    outDir: p.frameworkPath('docs/dist/docs'), // we need to currently ensure it outputs into docs/dist/docs to ensure the S3 storage key is correct for CloudFront origins
     cacheDir: p.frameworkPath('cache/docs'),
     assetsDir: '/assets',
+    emptyOutDir: true,
 
     // sitemap: {
     //   hostname: 'stacks.localhost',

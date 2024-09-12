@@ -313,17 +313,28 @@ export class CdnStack {
         const regexTrailingSlash = /.+\\/$/
 
         exports.handler = (event, context, callback) => {
-          console.log('event from stacks', event)
+          const safeStringify = (obj, indent = 2) => {
+            const cache = new Set()
+            return JSON.stringify(obj, (key, value) => {
+              if (typeof value === 'object' && value !== null) {
+                if (cache.has(value)) return '[Circular]'
+                cache.add(value)
+              }
+              return value
+            }, indent)
+          }
+          console.log('Event from Stacks:', safeStringify(event))
           const request = event.Records[0].cf.request;
-          let uri = request.uri;
 
-          if (uri === '/docs' || uri === '/docs/') {
-            uri = '/index.html'
+          if (request.uri === '/docs' || request.uri === '/docs/') {
+            request.uri = '/docs/index.html'
+            console.log('Request from Stacks:', safeStringify(request))
             callback(null, request)
             return
           }
 
           // Append ".html" to origin request
+          const uri = request.uri
           if (uri.match(regexSuffixless)) {
             request.uri = uri + config.suffix
             callback(null, request)
@@ -337,7 +348,6 @@ export class CdnStack {
             return
           }
 
-          request.uri = uri;
           callback(null, request);
         };
       `),
