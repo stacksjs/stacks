@@ -307,7 +307,6 @@ export class CdnStack {
       code: lambda.Code.fromInline(`
         const config = {
           suffix: '.html',
-          appendToDirs: 'index.html',
         }
 
         const regexSuffixless = /\\/[^/.]+$/
@@ -317,18 +316,24 @@ export class CdnStack {
           const request = event.Records[0].cf.request;
           let uri = request.uri;
 
-          // Remove /docs prefix
-          if (uri.startsWith('/docs')) {
-            uri = uri.replace('/docs', '') || '/';
+          if (uri === '/docs' || uri === '/docs/') {
+            uri = '/index.html'
+            callback(null, request)
+            return
           }
 
           // Append ".html" to origin request
           if (uri.match(regexSuffixless)) {
-            uri = uri + config.suffix;
+            request.uri = uri + suffix
+            callback(null, request)
+            return
           }
-          // Append "index.html" to origin request
-          else if (uri.match(regexTrailingSlash)) {
-            uri = uri + config.appendToDirs;
+
+          // Remove trailing slash and append ".html" to origin request
+          if (uri.match(regexTrailingSlash)) {
+            request.uri = uri.slice(0, -1) + '.html'
+            callback(null, request)
+            return
           }
 
           request.uri = uri;
@@ -343,6 +348,28 @@ export class CdnStack {
       functionName: docsOriginRequestFunction.functionName,
     })
 
+    // const docsOriginResponseFunction = new lambda.Function(scope, 'DocsOriginResponseFunction', {
+    //   functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-response-function`,
+    //   description: 'Custom origin response function for the docs',
+    //   runtime: lambda.Runtime.NODEJS_20_X,
+    //   handler: 'index.handler',
+    //   code: lambda.Code.fromInline(`
+    //     exports.handler = (event, context, callback) => {
+    //       const response = event.Records[0].cf.response;
+    //       response.headers['x-custom-header'] = {
+    //         value: 'custom-value',
+    //       };
+    //       callback(null, response);
+    //     };
+    //   `),
+    // })
+
+    // new lambda.CfnPermission(scope, 'DocsOriginResponseFunctionPermission', {
+    //   action: 'lambda:InvokeFunction',
+    //   principal: 'edgelambda.amazonaws.com',
+    //   functionName: docsOriginResponseFunction.functionName,
+    // })
+
     const commonBehavior: cloudfront.BehaviorOptions = {
       origin,
       compress: true,
@@ -356,6 +383,10 @@ export class CdnStack {
           functionVersion: docsOriginRequestFunction.currentVersion,
           eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
         },
+        // {
+        //   functionVersion: docsOriginResponseFunction.currentVersion,
+        //   eventType: cloudfront.LambdaEdgeEventType.ORIGIN_RESPONSE,
+        // },
       ],
       // functionAssociations: [
       //   {
