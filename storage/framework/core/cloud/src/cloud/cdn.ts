@@ -289,7 +289,7 @@ export class CdnStack {
 
     // create origin access control
     const originAccessControl = new cloudfront.S3OriginAccessControl(scope, 'DocsOAC', {
-      originAccessControlName: `${this.props.slug}-${this.props.appEnv}-docs-oac`,
+      originAccessControlName: `${this.props.slug}-${this.props.appEnv}-docs-oac-${this.props.timestamp}`,
       description: 'Access from CloudFront to the docs bucket.',
       signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     })
@@ -300,7 +300,7 @@ export class CdnStack {
     })
 
     const docsOriginRequestFunction = new lambda.Function(scope, 'DocsOriginRequestFunction', {
-      functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-request-function`,
+      functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-request-function-${this.props.timestamp}`,
       description: 'Custom origin request function for the docs',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
@@ -312,7 +312,8 @@ export class CdnStack {
         const regexSuffixless = /\\/[^/.]+$/
         const regexTrailingSlash = /.+\\/$/
 
-        exports.handler = (event, context, callback) => {
+        export const handler = (event, context, callback) => {
+          console.log('event from stacks', event)
           const request = event.Records[0].cf.request;
           let uri = request.uri;
 
@@ -324,7 +325,7 @@ export class CdnStack {
 
           // Append ".html" to origin request
           if (uri.match(regexSuffixless)) {
-            request.uri = uri + suffix
+            request.uri = uri + config.suffix
             callback(null, request)
             return
           }
@@ -349,7 +350,7 @@ export class CdnStack {
     })
 
     // const docsOriginResponseFunction = new lambda.Function(scope, 'DocsOriginResponseFunction', {
-    //   functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-response-function`,
+    //   functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-response-function-${this.props.timestamp}`,
     //   description: 'Custom origin response function for the docs',
     //   runtime: lambda.Runtime.NODEJS_20_X,
     //   handler: 'index.handler',
