@@ -1,7 +1,7 @@
 import { CloudFormation } from '@aws-sdk/client-cloudformation'
 import type { DescribeLogGroupsCommandOutput } from '@aws-sdk/client-cloudwatch-logs'
 import { CloudWatchLogsClient, DeleteLogGroupCommand, DescribeLogGroupsCommand } from '@aws-sdk/client-cloudwatch-logs'
-import { EC2, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
+import { DescribeRegionsCommand, EC2, EC2Client, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { IAM } from '@aws-sdk/client-iam'
 import { Lambda } from '@aws-sdk/client-lambda'
@@ -375,17 +375,24 @@ export async function deleteStacksFunctions() {
 
 export async function deleteLogGroups() {
   try {
-    const client = new CloudWatchLogsClient({ region: 'us-east-1' })
-    const logGroups: DescribeLogGroupsCommandOutput = await client.send(new DescribeLogGroupsCommand({}))
+    const ec2Client = new EC2Client({ region: 'us-east-1' })
+    const { Regions } = await ec2Client.send(new DescribeRegionsCommand({}))
+    const regions = Regions?.map((region) => region.RegionName) || []
 
-    if (!logGroups?.logGroups) return err('No log groups found')
+    for (const region of regions) {
+      const client = new CloudWatchLogsClient({ region })
+      const logGroups: DescribeLogGroupsCommandOutput = await client.send(new DescribeLogGroupsCommand({}))
 
-    for (const group of logGroups.logGroups) {
-      if (group.logGroupName?.includes('stacks'))
-        await client.send(new DeleteLogGroupCommand({ logGroupName: group.logGroupName }))
+      if (logGroups?.logGroups) {
+        for (const group of logGroups.logGroups) {
+          const appName = config.app.name?.toLocaleLowerCase() || 'stacks'
+          if (group.logGroupName?.includes(appName))
+            await client.send(new DeleteLogGroupCommand({ logGroupName: group.logGroupName }))
+        }
+      }
     }
 
-    return ok('Log groups deleted')
+    return ok('Log groups deleted in all regions')
   } catch (error) {
     console.error(error)
     return err(handleError('Error deleting log groups'))
@@ -398,7 +405,8 @@ export async function deleteParameterStore() {
 
   if (!data.Parameters) return ok('No parameters found')
 
-  const stacksParameters = data.Parameters.filter((param) => param.Name?.includes('stacks')) || []
+  const appName = config.app.name?.toLocaleLowerCase() || 'stacks'
+  const stacksParameters = data.Parameters.filter((param) => param.Name?.includes(appName)) || []
 
   if (!stacksParameters || stacksParameters.length === 0) return ok('No stacks parameters found')
 
@@ -414,8 +422,8 @@ export async function deleteParameterStore() {
 
 export async function deleteCdkRemnants() {
   try {
-    // TODO: use $ once we can use CDK past Bun v1.0.8
-    return ok(await runCommand(`bunx rimraf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`))
+    await Bun.$`rm -rf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`.text()
+    return ok('CDK remnants deleted')
   } catch (error) {
     console.error(error)
     return err(handleError('Error deleting CDK remnants'))
