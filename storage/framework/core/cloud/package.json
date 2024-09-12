@@ -39,8 +39,8 @@
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "bootstrap": "npx cdk bootstrap",
-    "deploy": "cd ../.. && bun run build && cd ../docs && bun run build && cd ../core/cloud && npx cdk deploy --require-approval never",
+    "bootstrap": "bunx cdk bootstrap",
+    "deploy": "cd ../.. && bun run build && cd ../docs && bun run build && cd ../core/cloud && bunx cdk deploy --require-approval never",
     "build": "bun build.ts",
     "build-edge": "bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js",
     "typecheck": "bun --bun tsc --noEmit",
