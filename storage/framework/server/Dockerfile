@@ -35,6 +35,9 @@ RUN mkdir -p ./storage && chown -R bun:bun ./storage && apt-get update && apt-ge
 
 COPY --chown=bun:bun ./storage ./storage
 
+# Clean up unnecessary files and folders
+RUN rm -rf **/dist **/node_modules **/src **/tests **/*.DS_Store **/*.lockb
+
 # Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]
 
