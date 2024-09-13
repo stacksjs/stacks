@@ -81,8 +81,5 @@
     "useIgnoreFile": true,
     "defaultBranch": "main"
   },
-  "formatter": {
-    "useEditorconfig": true
-  },
   "extends": ["./storage/framework/.biomelintrc-auto-import.json"]
 }

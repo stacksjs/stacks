@@ -1,134 +1,75 @@
-// import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-// import { expect, it } from '@stacksjs/testing'
-//
-// const dynamodb = new DynamoDB({ region: 'us-east-1' })
-//
-// describe('dynamoDB test', () => {
-//   it('it should create a table for dynamodb cache', async () => {
-//     await createTable()
-//   })
-//
-//   it('it should set dynamodb cache', async () => {
-//     await set('foo', 'bar')
-//     const value = await get('foo')
-//     expect(value).toBe('bar')
-//   })
-//
-//   it('it should get dynamodb cache', async () => {
-//     await set('foo', 'bar')
-//     const value = await get('foo')
-//     expect(value).toBe('bar')
-//   })
-//
-//   it('it should delete dynamodb cache', async () => {
-//     await set('foo', 'bar')
-//     await remove('foo')
-//     const value = await get('foo')
-//     expect(value).toBe(null)
-//   })
-// })
-//
-// async function createTable() {
-//   const tables = await dynamodb.send(new ListTablesCommand({}))
-//
-//   const tableExists = tables.TableNames?.includes('cache')
-//
-//   if (tableExists)
-//     return
-//
-//   const params = {
-//     AttributeDefinitions: [
-//       {
-//         AttributeName: 'key',
-//         AttributeType: 'S',
-//       },
-//     ],
-//     KeySchema: [
-//       {
-//         AttributeName: 'key',
-//         KeyType: 'HASH',
-//       },
-//     ],
-//     ProvisionedThroughput: {
-//       ReadCapacityUnits: 5,
-//       WriteCapacityUnits: 5,
-//     },
-//     TableName: 'cache',
-//   }
-//
-//   await dynamodb.createTable(params)
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function set(key: string, value: string | number): Promise<void> {
-//   console.log('set', key, value)
-//   return Promise.resolve()
-//   // const valueAttribute = 'value'
-//   // const keyAttribute = 'key'
-//   //
-//   // const params: PutItemCommandInput = {
-//   //   TableName: 'cache',
-//   //   Item: {
-//   //     [keyAttribute]: {
-//   //       S: key,
-//   //     },
-//   //     [valueAttribute]: {
-//   //       [getValueType(value)]: serialize(value),
-//   //     },
-//   //   },
-//   // }
-//   //
-//   // await dynamodb.putItem(params)
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function get(key: string): Promise<string | undefined | null> {
-//   const valueAttribute = 'value'
-//   const keyAttribute = 'key'
-//
-//   const params = {
-//     TableName: 'cache',
-//     Key: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//     },
-//   }
-//
-//   const response = await dynamodb.getItem(params)
-//
-//   if (!response.Item)
-//     return null
-//
-//   return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function remove(key: string): Promise<void> {
-//   const keyAttribute = 'key'
-//
-//   const params = {
-//     TableName: 'cache',
-//     Key: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//     },
-//   }
-//
-//   await dynamodb.deleteItem(params)
-// }
-//
-// // TODO: needs to be imported to cache package
-// // async function del(key: string): Promise<void> {
-// //   const params = {
-// //     TableName: 'cache',
-// //     Key: {
-// //       [keyAttribute]: {
-// //         S: key,
-// //       },
-// //     },
-// //   }
-//
-// //   await dynamodb.deleteItem(params)
-// // }
+import { beforeEach, describe, expect, it } from 'bun:test'
+
+import { dynamodb } from '../src/drivers/dynamodb'
+
+beforeEach(async () => {
+  await dynamodb.clear()
+})
+
+describe('redisTest', () => {
+  it('should set and get a dynamodb cache value', async () => {
+    await dynamodb.set('key1', 'value1')
+    expect(await dynamodb.get('key1')).toBe('value1')
+  })
+
+  it('should set a dynamodb cache value with no TTL and get it', async () => {
+    await dynamodb.setForever('key2', 'value2')
+    expect(await dynamodb.get('key2')).toBe('value2')
+  })
+
+  it('should get or set a dynamodb cache value if not set', async () => {
+    expect(await dynamodb.get('key3')).toBeUndefined()
+
+    await dynamodb.getOrSet('key3', 'value3')
+    expect(await dynamodb.get('key3')).toBe('value3')
+  })
+
+  it('should delete a dynamodb cache value', async () => {
+    await dynamodb.set('key4', 'value4')
+    await dynamodb.del('key4')
+    expect(await dynamodb.get('key4')).toBeUndefined()
+  })
+
+  it('should delete multiple dynamodb cache values', async () => {
+    await dynamodb.set('key5', 'value5')
+    await dynamodb.set('key6', 'value6')
+    await dynamodb.deleteMany(['key5', 'key6'])
+
+    expect(await dynamodb.get('key5')).toBeUndefined()
+    expect(await dynamodb.get('key6')).toBeUndefined()
+  })
+
+  it('should check if a key exists in dynamodb cache', async () => {
+    await dynamodb.set('key7', 'value7')
+    expect(await dynamodb.has('key7')).toBe(true)
+  })
+
+  it('should return false if a key is missing in dynamodb cache', async () => {
+    expect(await dynamodb.missing('nonExistentKey')).toBe(true)
+    await dynamodb.set('key8', 'value8')
+    expect(await dynamodb.missing('key8')).toBe(false)
+  })
+
+  it('should clear all dynamodb cache values', async () => {
+    await dynamodb.set('key9', 'value9')
+    await dynamodb.set('key10', 'value10')
+    await dynamodb.clear()
+
+    expect(await dynamodb.get('key9')).toBeUndefined()
+    expect(await dynamodb.get('key10')).toBeUndefined()
+  })
+
+  it('should remove a specific dynamodb cache value', async () => {
+    await dynamodb.set('key11', 'value11')
+    await dynamodb.remove('key11')
+
+    expect(await dynamodb.get('key11')).toBeUndefined()
+  })
+
+  it('should disconnect from dynamodb', async () => {
+    await dynamodb.set('key12', 'value12')
+    await dynamodb.disconnect()
+    // We cannot perform an operation after disconnecting, just check it's disconnected without throwing errors
+    expect(await dynamodb.get('key12')).toBeUndefined()
+  })
+})

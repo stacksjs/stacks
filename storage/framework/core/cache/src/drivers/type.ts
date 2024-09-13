@@ -10,7 +10,7 @@ export type CacheDriver = {
   missing: (key: string) => Promise<boolean>
   del: (key: string) => Promise<void>
   deleteMany: (keys: string[]) => Promise<void>
-  clear: (keys: string[]) => Promise<void>
+  clear: () => Promise<void>
   deleteAll: () => Promise<void>
   disconnect: () => Promise<void>
   client: BentoCache<Record<string, any>>

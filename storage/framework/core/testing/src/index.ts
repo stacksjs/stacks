@@ -1,1 +1,1 @@
-export * as unit from 'bun:test'
+export * from 'bun:test'

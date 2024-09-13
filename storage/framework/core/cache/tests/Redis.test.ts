@@ -1,84 +1,75 @@
-// import { expect, it } from '@stacksjs/testing'
-//
-// import { createClient } from 'redis'
-//
-// // TODO: needs to be imported from cache package
-//
-// const client: any = createClient({
-//   socket: {
-//     host: '127.0.0.1',
-//     port: 6379,
-//   },
-//   password: '',
-// })
-//
-// // TODO: needs to be moved to cache package
-// await client.connect()
-//
-// // TODO: needs to be imported to cache package
-// async function set(key: any, value: any): Promise<void> {
-//   await client.set(key, value)
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function get(key: string): Promise<any> {
-//   const value = await client.get(key)
-//
-//   return value
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function remove(key: string): Promise<void> {
-//   await client.del(key)
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function del(key: string): Promise<void> {
-//   await client.del(key)
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function flushAll(): Promise<void> {
-//   await client.sendCommand(['FLUSHALL', 'ASYNC'])
-// }
-//
-// // TODO: needs to be imported to cache package
-// async function flushDB(): Promise<void> {
-//   await client.sendCommand(['FLUSHDB', 'ASYNC'])
-// }
-//
-// describe('redisTest', () => {
-//   it('it should set redis cache', async () => {
-//     await set('test', 'test')
-//     expect(await get('test')).toBe('test')
-//   })
-//
-//   it('it should get redis cache', async () => {
-//     await set('test', 'test')
-//     expect(await get('test')).toBe('test')
-//   })
-//
-//   it('it should remove cache', async () => {
-//     await set('test', 'test')
-//     await remove('test')
-//     expect(await get('test')).toBe(null)
-//   })
-//
-//   it('it should del cache', async () => {
-//     await set('test', 'test')
-//     await del('test')
-//     expect(await get('test')).toBe(null)
-//   })
-//
-//   it('it should flush all cache', async () => {
-//     await set('test', 'test')
-//     await flushAll()
-//     expect(await get('test')).toBe(null)
-//   })
-//
-//   it('it should flush all DB', async () => {
-//     await set('test', 'test')
-//     await flushDB()
-//     expect(await get('test')).toBe(null)
-//   })
-// })
+import { beforeEach, describe, expect, it } from 'bun:test'
+
+import { redis } from '../src/drivers/redis'
+
+beforeEach(async () => {
+  await redis.clear()
+})
+
+describe('redisTest', () => {
+  it('should set and get a redis cache value', async () => {
+    await redis.set('key1', 'value1')
+    expect(await redis.get('key1')).toBe('value1')
+  })
+
+  it('should set a redis cache value with no TTL and get it', async () => {
+    await redis.setForever('key2', 'value2')
+    expect(await redis.get('key2')).toBe('value2')
+  })
+
+  it('should get or set a redis cache value if not set', async () => {
+    expect(await redis.get('key3')).toBeUndefined()
+
+    await redis.getOrSet('key3', 'value3')
+    expect(await redis.get('key3')).toBe('value3')
+  })
+
+  it('should delete a redis cache value', async () => {
+    await redis.set('key4', 'value4')
+    await redis.del('key4')
+    expect(await redis.get('key4')).toBeUndefined()
+  })
+
+  it('should delete multiple redis cache values', async () => {
+    await redis.set('key5', 'value5')
+    await redis.set('key6', 'value6')
+    await redis.deleteMany(['key5', 'key6'])
+
+    expect(await redis.get('key5')).toBeUndefined()
+    expect(await redis.get('key6')).toBeUndefined()
+  })
+
+  it('should check if a key exists in redis cache', async () => {
+    await redis.set('key7', 'value7')
+    expect(await redis.has('key7')).toBe(true)
+  })
+
+  it('should return false if a key is missing in redis cache', async () => {
+    expect(await redis.missing('nonExistentKey')).toBe(true)
+    await redis.set('key8', 'value8')
+    expect(await redis.missing('key8')).toBe(false)
+  })
+
+  it('should clear all redis cache values', async () => {
+    await redis.set('key9', 'value9')
+    await redis.set('key10', 'value10')
+    await redis.clear()
+
+    expect(await redis.get('key9')).toBeUndefined()
+    expect(await redis.get('key10')).toBeUndefined()
+  })
+
+  it('should remove a specific redis cache value', async () => {
+    await redis.set('key11', 'value11')
+    await redis.remove('key11')
+
+    expect(await redis.get('key11')).toBeUndefined()
+  })
+
+  it('should disconnect from redis', async () => {
+    await redis.set('key12', 'value12')
+    await redis.disconnect()
+    // We cannot perform an operation after disconnecting, just check it's disconnected without throwing errors
+    expect(await redis.get('key12')).toBeUndefined()
+  })
+})
