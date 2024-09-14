@@ -1,5 +1,7 @@
 import type { JobOptions } from '@stacksjs/types'
 
+export { DeferQueue } from '@poppinss/defer'
+
 export class Job {
   name: JobOptions['name']
   description: JobOptions['description']

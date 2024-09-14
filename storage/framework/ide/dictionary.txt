@@ -234,6 +234,7 @@ plivo
 pluginutils
 pnpm
 polacek
+poppinss
 Postcardware
 postcssrc
 prefetch

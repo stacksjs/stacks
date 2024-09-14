@@ -44,6 +44,9 @@
     "typecheck": "bun --bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@poppinss/defer": "^1.1.0"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
   }
