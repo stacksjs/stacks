@@ -100,7 +100,7 @@ export class CdnStack {
     // })
 
     const originAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
-      originAccessControlName: `${props.slug}-${props.appEnv}-web-oac`,
+      originAccessControlName: `${props.slug}-${props.appEnv}-web-oac-${props.timestamp}`,
       description: 'Access from CloudFront to the frontend bucket.',
       signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     })
@@ -119,8 +119,6 @@ export class CdnStack {
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
       webAclId: props.firewall.attrArn,
       enableIpv6: true,
-      additionalBehaviors: this.additionalBehaviors(scope, props),
-
       defaultBehavior: {
         origin: new origins.S3StaticWebsiteOrigin(
           config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket,
@@ -142,6 +140,7 @@ export class CdnStack {
         cachePolicy: this.cdnCachePolicy,
         // realtimeLogConfig: this.realtimeLogConfig,
       },
+      additionalBehaviors: this.additionalBehaviors(scope, props),
 
       // Add custom error responses
       errorResponses: [
@@ -295,7 +294,7 @@ export class CdnStack {
     })
 
     const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
-      originPath: '/',
+      originPath: '/docs',
       originAccessControlId: originAccessControl.originAccessControlId,
     })
 
@@ -313,30 +312,27 @@ export class CdnStack {
         const regexTrailingSlash = /.+\\/$/
 
         exports.handler = (event, context, callback) => {
-          const safeStringify = (obj, indent = 2) => {
-            const cache = new Set()
-            return JSON.stringify(obj, (key, value) => {
-              if (typeof value === 'object' && value !== null) {
-                if (cache.has(value)) return '[Circular]'
-                cache.add(value)
-              }
-              return value
-            }, indent)
-          }
-          console.log('Event from Stacks:', safeStringify(event))
+          console.log('Original Stacks event:', JSON.stringify(event, null, 2));
           const request = event.Records[0].cf.request;
 
           if (request.uri === '/docs' || request.uri === '/docs/') {
-            request.uri = '/docs/index.html'
-            console.log('Request from Stacks:', safeStringify(request))
+            request.uri = '/index.html'
+            console.log('Original /docs or /docs/ request:', JSON.stringify(request, null, 2));
             callback(null, request)
             return
           }
 
           // Append ".html" to origin request
           const uri = request.uri
+
+           if (uri.startsWith('/docs/')) {
+            request.uri = request.uri.slice(5) // Remove '/docs'
+            console.log('uri.startsWith('/docs/') request:', JSON.stringify(request, null, 2))
+          }
+
           if (uri.match(regexSuffixless)) {
             request.uri = uri + config.suffix
+            console.log('uri.match(regexSuffixless)', JSON.stringify(request, null, 2))
             callback(null, request)
             return
           }
@@ -344,6 +340,7 @@ export class CdnStack {
           // Remove trailing slash and append ".html" to origin request
           if (uri.match(regexTrailingSlash)) {
             request.uri = uri.slice(0, -1) + '.html'
+            console.log('uri.match(regexTrailingSlash)', JSON.stringify(request, null, 2))
             callback(null, request)
             return
           }
@@ -554,10 +551,13 @@ export class CdnStack {
       comment: 'Stacks API Cache Policy',
       cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy`,
       defaultTtl: Duration.seconds(0),
+      minTtl: Duration.seconds(0),
+      maxTtl: Duration.seconds(0),
+
       // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
-      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
-      queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
+      cookieBehavior: cloudfront.CacheCookieBehavior.all(),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Authorization', 'Content-Type'),
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
     })
 
     return this.apiCachePolicy

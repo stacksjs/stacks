@@ -31,7 +31,7 @@ COPY --from=builder /usr/src/tsconfig.json ./tsconfig.json
 
 # Set up storage directory
 USER root
-RUN mkdir -p ./storage && chown -R bun:bun ./storage && apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p ./storage && chown -R bun:bun ./storage
 
 COPY --chown=bun:bun ./storage ./storage
 

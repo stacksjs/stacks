@@ -137,27 +137,26 @@ async function main() {
     }
   }
 
-  // next, lets move the dist/docs/index.html to dist/index.html
-  const docsDistPath = path.frameworkPath('docs/dist')
+  // // next, lets move the dist/docs/index.html to dist/index.html
+  // const docsDistPath = path.frameworkPath('docs/dist')
 
-  log.info(`Moving dist/docs/index.html to dist/index.html`)
-  try {
-    await fs.rename(path.resolve(docsDistPath, 'docs/index.html'), path.resolve(docsDistPath, 'index.html'))
-    log.success(`Moved dist/docs/index.html to dist/index.html`)
-  } catch (error) {
-    log.error(`Failed to move dist/docs/index.html`, error)
-    process.exit(1)
-  }
+  // log.info(`Moving dist/docs/index.html to dist/index.html`)
+  // try {
+  //   await Bun.$`cp ${path.resolve(docsDistPath, 'docs/index.html')} ${path.resolve(docsDistPath, 'index.html')}`
+  //   log.success(`Moved dist/docs/index.html to dist/index.html`)
+  // } catch (error) {
+  //   log.error(`Failed to move dist/docs/index.html`, error)
+  //   process.exit(1)
+  // }
 
-  log.info(`Adjusting paths in index.html`)
-  // now, let's adjust the paths in the index.html by simply updating all "/assets/ to "/dist/assets/
-  let content = await fs.readFile(path.resolve(docsDistPath, 'index.html'), 'utf-8')
+  // log.info(`Adjusting paths in index.html`)
+  // let content = await fs.readFile(path.resolve(docsDistPath, 'index.html'), 'utf-8')
 
-  // Replace all instances of /assets/ with /dist/assets/
-  content = content.replace(/\/assets\//g, '/dist/assets/')
+  // // Replace all instances of /assets/ with /dist/assets/
+  // content = content.replace(/\/assets\//g, '/docs/assets/')
 
-  await fs.writeFile(path.join(docsDistPath, 'index.html'), content, 'utf-8')
-  log.success(`Adjusted paths in index.html`)
+  // await fs.writeFile(path.join(docsDistPath, 'index.html'), content, 'utf-8')
+  // log.success(`Adjusted paths in index.html`)
 
   await outro({
     dir: import.meta.dir,
