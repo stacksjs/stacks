@@ -45,8 +45,8 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "unplugin-vue-router": "^0.10.7",
-    "vue-router": "^4.4.3"
+    "unplugin-vue-router": "^0.10.8",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
