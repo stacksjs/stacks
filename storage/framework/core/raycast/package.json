@@ -25,12 +25,12 @@
     "publish": "bunx @raycast/api@latest publish"
   },
   "dependencies": {
-    "@raycast/api": "^1.82.3",
+    "@raycast/api": "^1.82.5",
     "@raycast/utils": "^1.17.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.2"
   },
   "version": "0.64.6"
 }

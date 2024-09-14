@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@biomejs/biome": "^1.9.0",
-    "@commitlint/cli": "^19.4.1",
+    "@commitlint/cli": "^19.5.0",
     "lint-staged": "^15.2.10",
     "publint": "^0.2.10"
   },

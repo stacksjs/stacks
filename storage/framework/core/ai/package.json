@@ -43,7 +43,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.645.0"
+    "@aws-sdk/client-bedrock-runtime": "^3.651.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
