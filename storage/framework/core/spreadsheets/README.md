@@ -37,36 +37,29 @@ const data = {
 // Generate and manipulate spreadsheets
 
 // 1. Using createSpreadsheet function
+const spreadsheet = createSpreadsheet(data) // defaults to csv
 const csvSpreadsheet = createSpreadsheet(data, { type: 'csv' })
 const excelSpreadsheet = createSpreadsheet(data, { type: 'excel' })
 
 // Store the spreadsheet to disk
-await csvSpreadsheet.store('output.csv')
+await spreadsheet.store('output.csv')
 
 // Create a download response
-const response1 = excelSpreadsheet.download('data.xlsx')
+const response1 = excelSpreadsheet.download('data.xlsx') // downloads and stores as data.xlsx on your filesystem
 
-// 2. Using spreadsheet object directly
-const csvContent = spreadsheet.generateCSV(data)
-await csvContent.store('output2.csv')
+// 2. Using spreadsheet object directly, and chain if desired
+const csvContent = spreadsheet(data).generateCSV().store('output2.csv')
+const csvContent2 = spreadsheet(data).csv().store('output3.csv') // same as above
 
-const excelContent = spreadsheet.generateExcel(data)
+const excelContent = spreadsheet(data).generateExcel()
 await excelContent.store('output3.xlsx')
+const response2 = await excelContent.download('output3.xlsx') // downloads and stores as output3.xlsx
 
-// Or chain the methods directly
-await spreadsheet.generateCSV(data).store('output4.csv')
-await spreadsheet.generateExcel(data).store('output5.xlsx')
-
-// Create a download response for Excel
-const response2 = spreadsheet(data).excel().download('data2.xlsx')
-
-// 3. Chaining methods
-const response3 = spreadsheet(data).csv().download('data3.csv')
-await spreadsheet(data).store('output3.xlsx')
-
-// 4. Accessing raw content
+// 3. Accessing raw content
 const rawCsvContent = spreadsheet(data).csv().getContent()
+const rawCsvContent2 = spreadsheet(data).generateCSV().getContent()
 const rawExcelContent = spreadsheet(data).excel().getContent()
+const rawExcelContent2 = spreadsheet(data).generateExcel().getContent()
 
 console.log('CSV Content:', rawCsvContent)
 console.log('Excel Content:', rawExcelContent)
