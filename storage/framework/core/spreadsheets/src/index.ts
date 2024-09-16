@@ -27,6 +27,8 @@ export type SpreadsheetOptions = Partial<{
   type: SpreadsheetType
 }>
 
+type FileExtension = '.csv' | '.xlsx'
+
 export type Spreadsheet = {
   (
     data: Content,
@@ -50,7 +52,8 @@ export const spreadsheet: Spreadsheet = Object.assign(
     csv: () => spreadsheet.generateCSV(data),
     excel: () => spreadsheet.generateExcel(data),
     store: async (path: string) => {
-      const type = path.toLowerCase().endsWith('.csv') ? 'csv' : 'excel'
+      const extension = path.slice(path.lastIndexOf('.')) as FileExtension
+      const type = extension === '.csv' ? 'csv' : 'excel'
       const content = spreadsheet.generate(data, { type })
       await spreadsheet.store({ content, type }, path)
     },
