@@ -208,6 +208,7 @@ nprogress
 nuxt
 oclif
 ofetch
+officedocument
 ohmyzsh
 openai
 openapi
@@ -215,6 +216,7 @@ opensearch
 opensearchservice
 openweb
 openweblabs
+openxmlformats
 orta
 otplib
 outdir
@@ -283,6 +285,7 @@ sizecheck
 solana
 sonner
 Spatie
+spreadsheetml
 Squeezy
 stackblitz
 stacksjs

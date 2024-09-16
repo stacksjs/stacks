@@ -1,11 +1,8 @@
 import process from 'node:process'
 import * as AWS4 from 'aws4'
-
 import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
 import { config } from 'aws-sdk'
-// todo: Remove axios and use the AWS SDK instead if possible, but I couldn't get it to work. At least, move to our own fetch wrapper
-import axios from 'axios'
 
 // Specify the AWS profile
 // process.env.AWS_PROFILE = 'your-profile-name' -> no need to define this because of our .env file
@@ -53,24 +50,24 @@ config.getCredentials((err) => {
       })
 
       // Convert headers to the correct type
-      const axiosHeaders = Object.fromEntries(
+      const headers = Object.fromEntries(
         Object.entries(signedRequest.headers || {}).map(([key, value]) => [key, String(value)]),
       )
 
       const url = `https://${signedRequest.host}${signedRequest.path}`
 
       // Send the request
-      axios({
+      fetch(url, {
         method: signedRequest.method,
-        url,
-        headers: axiosHeaders,
-        data: signedRequest.body,
+        headers,
+        body: signedRequest.body,
       })
-        .then((response) => {
-          log.info(response.data)
+        .then((response) => response.json())
+        .then((data) => {
+          log.info(data)
         })
         .catch((error) => {
-          log.error(error.data)
+          log.error('Error:', error)
         })
     }
   }
