@@ -22,7 +22,7 @@ bun install bun-spreadsheets
 Now, you can use it in your project:
 
 ```ts
-import { createSpreadsheet } from 'bun-spreadsheets'
+import { spreadsheet, createSpreadsheet } from 'bun-spreadsheets'
 
 // Create a spreadsheet
 const data = {
@@ -34,17 +34,42 @@ const data = {
   ]
 }
 
-// Generate a CSV spreadsheet
-const csvSpreadsheet = createSpreadsheet(data, 'csv')
+// Generate and manipulate spreadsheets
 
-// Generate an Excel spreadsheet
-const excelSpreadsheet = createSpreadsheet(data, 'excel')
+// 1. Using createSpreadsheet function
+const csvSpreadsheet = createSpreadsheet(data, { type: 'csv' })
+const excelSpreadsheet = createSpreadsheet(data, { type: 'excel' })
 
 // Store the spreadsheet to disk
-await spreadsheet.store(csvSpreadsheet, 'output.csv')
+await csvSpreadsheet.store('output.csv')
 
 // Create a download response
-const response = spreadsheet.download(excelSpreadsheet, 'data.xlsx')
+const response1 = excelSpreadsheet.download('data.xlsx')
+
+// 2. Using spreadsheet object directly
+const csvContent = spreadsheet.generateCSV(data)
+await csvContent.store('output2.csv')
+
+const excelContent = spreadsheet.generateExcel(data)
+await excelContent.store('output3.xlsx')
+
+// Or chain the methods directly
+await spreadsheet.generateCSV(data).store('output4.csv')
+await spreadsheet.generateExcel(data).store('output5.xlsx')
+
+// Create a download response for Excel
+const response2 = spreadsheet(data).excel().download('data2.xlsx')
+
+// 3. Chaining methods
+const response3 = spreadsheet(data).csv().download('data3.csv')
+await spreadsheet(data).store('output3.xlsx')
+
+// 4. Accessing raw content
+const rawCsvContent = spreadsheet(data).csv().getContent()
+const rawExcelContent = spreadsheet(data).excel().getContent()
+
+console.log('CSV Content:', rawCsvContent)
+console.log('Excel Content:', rawExcelContent)
 ```
 
 To view the full documentation, please visit [https://stacksjs.org/docs/bun-spreadsheets](https://stacksjs.org/docs/bun-spreadsheets).

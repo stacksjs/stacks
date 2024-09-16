@@ -23,74 +23,97 @@ export interface SpreadsheetContent {
   type: SpreadsheetType
 }
 
-export interface SpreadsheetOptions {
+export type SpreadsheetOptions = Partial<{
   type: SpreadsheetType
-}
+}>
 
 export type Spreadsheet = {
+  (
+    data: Content,
+  ): {
+    csv: () => SpreadsheetWrapper
+    excel: () => SpreadsheetWrapper
+    store: (path: string) => Promise<void>
+    generateCSV: () => SpreadsheetWrapper
+    generateExcel: () => SpreadsheetWrapper
+  }
   create: (data: Content, options: SpreadsheetOptions) => SpreadsheetContent
   generate: (data: Content, options: SpreadsheetOptions) => string | Uint8Array
-  generateCSV: (content: Content) => string | SpreadsheetWrapper
-  generateExcel: (content: Content) => Uint8Array | SpreadsheetWrapper
+  generateCSV: (content: Content) => SpreadsheetWrapper
+  generateExcel: (content: Content) => SpreadsheetWrapper
   store: (spreadsheet: SpreadsheetContent, path: string) => Promise<void>
   download: (spreadsheet: SpreadsheetContent, filename: string) => Response
 }
 
-export const spreadsheet: Spreadsheet = {
-  generate: (data: Content, options: SpreadsheetOptions = { type: 'csv' }): string | Uint8Array => {
-    const generators: Record<SpreadsheetType, (content: Content) => string | Uint8Array | SpreadsheetWrapper> = {
-      csv: spreadsheet.generateCSV,
-      excel: spreadsheet.generateExcel,
-    }
-
-    const generator = generators[options.type]
-
-    if (!generator) {
-      throw new Error(`Unsupported spreadsheet type: ${options.type}`)
-    }
-
-    const result = generator(data)
-    if (result instanceof SpreadsheetWrapper) {
-      return result.getContent()
-    }
-    return result
-  },
-
-  create: (data: Content, options: SpreadsheetOptions = { type: 'csv' }): SpreadsheetContent => ({
-    content: spreadsheet.generate(data, options),
-    type: options.type,
+export const spreadsheet: Spreadsheet = Object.assign(
+  (data: Content) => ({
+    csv: () => spreadsheet.generateCSV(data),
+    excel: () => spreadsheet.generateExcel(data),
+    store: async (path: string) => {
+      const type = path.toLowerCase().endsWith('.csv') ? 'csv' : 'excel'
+      const content = spreadsheet.generate(data, { type })
+      await spreadsheet.store({ content, type }, path)
+    },
+    generateCSV: () => spreadsheet.generateCSV(data),
+    generateExcel: () => spreadsheet.generateExcel(data),
   }),
+  {
+    generate: (data: Content, options: SpreadsheetOptions = { type: 'csv' }): string | Uint8Array => {
+      const generators: Record<SpreadsheetType, (content: Content) => string | Uint8Array | SpreadsheetWrapper> = {
+        csv: spreadsheet.generateCSV,
+        excel: spreadsheet.generateExcel,
+      }
 
-  generateCSV: (content: Content): string | SpreadsheetWrapper => {
-    const csvContent = generateCSVContent(content)
-    return new SpreadsheetWrapper(csvContent, 'csv')
+      const generator = generators[options.type || 'csv']
+
+      if (!generator) {
+        throw new Error(`Unsupported spreadsheet type: ${options.type}`)
+      }
+
+      const result = generator(data)
+      if (result instanceof SpreadsheetWrapper) {
+        return result.getContent()
+      }
+
+      return result
+    },
+
+    create: (data: Content, options: SpreadsheetOptions = { type: 'csv' }): SpreadsheetContent => ({
+      content: spreadsheet.generate(data, options),
+      type: options.type || 'csv',
+    }),
+
+    generateCSV: (content: Content): SpreadsheetWrapper => {
+      const csvContent = generateCSVContent(content)
+      return new SpreadsheetWrapper(csvContent, 'csv')
+    },
+
+    generateExcel: (content: Content): SpreadsheetWrapper => {
+      const excelContent = generateExcelContent(content)
+      return new SpreadsheetWrapper(excelContent, 'excel')
+    },
+
+    store: async ({ content }: SpreadsheetContent, path: string): Promise<void> => {
+      try {
+        await Bun.write(path, content)
+      } catch (error) {
+        throw new Error(`Failed to store spreadsheet: ${(error as Error).message}`)
+      }
+    },
+
+    download: ({ content, type }: SpreadsheetContent, filename: string): Response => {
+      const mimeType = type === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      const blob = new Blob([content], { type: mimeType })
+
+      return new Response(blob, {
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Disposition': `attachment; filename="${filename}"`,
+        },
+      })
+    },
   },
-
-  generateExcel: (content: Content): Uint8Array | SpreadsheetWrapper => {
-    const excelContent = generateExcelContent(content)
-    return new SpreadsheetWrapper(excelContent, 'excel')
-  },
-
-  store: async ({ content }: SpreadsheetContent, path: string): Promise<void> => {
-    try {
-      await Bun.write(path, content)
-    } catch (error) {
-      throw new Error(`Failed to store spreadsheet: ${(error as Error).message}`)
-    }
-  },
-
-  download: ({ content, type }: SpreadsheetContent, filename: string): Response => {
-    const mimeType = type === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    const blob = new Blob([content], { type: mimeType })
-
-    return new Response(blob, {
-      headers: {
-        'Content-Type': mimeType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
-    })
-  },
-}
+)
 
 export class SpreadsheetWrapper {
   constructor(
@@ -113,11 +136,13 @@ export class SpreadsheetWrapper {
 
 export function createSpreadsheet(data: Content, options: SpreadsheetOptions = { type: 'csv' }): SpreadsheetWrapper {
   const content = spreadsheet.generate(data, options)
-  return new SpreadsheetWrapper(content, options.type)
+
+  return new SpreadsheetWrapper(content, options.type || 'csv')
 }
 
 export function generateCSVContent(content: Content): string {
   const rows = [content.headings, ...content.data]
+
   return rows.map((row) => row.join(',')).join('\n')
 }
 
