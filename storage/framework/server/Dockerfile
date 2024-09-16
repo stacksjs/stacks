@@ -31,12 +31,9 @@ COPY --from=builder /usr/src/tsconfig.json ./tsconfig.json
 
 # Set up storage directory
 USER root
-RUN mkdir -p ./storage && chown -R bun:bun ./storage
+RUN mkdir -p ./storage
 
-COPY --chown=bun:bun ./storage ./storage
-
-# Clean up unnecessary files and folders
-RUN rm -rf **/dist **/node_modules **/src **/tests **/*.DS_Store **/*.lockb
+COPY --chown=bun:bun ./storage-tmp ./storage
 
 # Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]

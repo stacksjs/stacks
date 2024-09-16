@@ -80,7 +80,7 @@ async function main() {
   const r2 = await Bun.build({
     root,
     entrypoints: files.map((file) => path.resolve(root, file)),
-    outdir: path.frameworkPath('server/dist/app'),
+    outdir: path.frameworkPath('server/app'),
     format: 'esm',
     target: 'bun',
     sourcemap: 'linked',
@@ -96,15 +96,6 @@ async function main() {
     console.log(r2.logs)
     process.exit(1)
   }
-
-  // delete the app folder if it exists
-  log.info(`Deleting old app folder...`)
-  await deleteFolder(path.userServerPath('app'))
-  log.success('Deleted old app folder')
-
-  log.info(`Copying new app folder...`)
-  await runCommand(`cp -r ${path.userServerPath('dist/app')} ${path.userServerPath()}`)
-  log.success('Copied new app folder')
 
   // Process files in the ./app folder
   const glob2 = new Bun.Glob('**/*.js')
@@ -137,26 +128,17 @@ async function main() {
     }
   }
 
-  // // next, lets move the dist/docs/index.html to dist/index.html
-  // const docsDistPath = path.frameworkPath('docs/dist')
-
-  // log.info(`Moving dist/docs/index.html to dist/index.html`)
-  // try {
-  //   await Bun.$`cp ${path.resolve(docsDistPath, 'docs/index.html')} ${path.resolve(docsDistPath, 'index.html')}`
-  //   log.success(`Moved dist/docs/index.html to dist/index.html`)
-  // } catch (error) {
-  //   log.error(`Failed to move dist/docs/index.html`, error)
-  //   process.exit(1)
-  // }
-
-  // log.info(`Adjusting paths in index.html`)
-  // let content = await fs.readFile(path.resolve(docsDistPath, 'index.html'), 'utf-8')
-
-  // // Replace all instances of /assets/ with /dist/assets/
-  // content = content.replace(/\/assets\//g, '/docs/assets/')
-
-  // await fs.writeFile(path.join(docsDistPath, 'index.html'), content, 'utf-8')
-  // log.success(`Adjusted paths in index.html`)
+  try {
+    Bun.$.cwd(path.userServerPath())
+    await Bun.$`rm -rf ./storage-tmp/framework/**/dist ./storage-tmp/**/node_modules ./storage-tmp/framework/**/src ./storage-tmp/framework/core/**/tests ./storage-tmp/**/*.DS_Store ./storage-tmp/**/*.lockb`.text()
+    log.success('Optimized Docker Image size')
+  } catch (err: any) {
+    log.error('Optimization failed')
+    console.log(`Failed with code ${err.exitCode}`)
+    console.log(err.stdout.toString())
+    console.log(err.stderr.toString())
+    process.exit(1)
+  }
 
   await outro({
     dir: import.meta.dir,
@@ -166,6 +148,7 @@ async function main() {
   })
 
   if (cloud.api?.deploy) await buildDockerImage()
+  await Bun.$`rm -rf ${path.userServerPath('storage-tmp')}`.text()
 }
 
 main()
