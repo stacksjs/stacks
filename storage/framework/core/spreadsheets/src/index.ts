@@ -150,10 +150,11 @@ export function generateCSVContent(content: Content): string {
     .map((row) =>
       row
         .map((cell) => {
-          if (typeof cell === 'string' && cell.includes(',')) {
-            return `"${cell}"`
+          const cellString = String(cell)
+          if (cellString.includes(',') || cellString.includes('"') || cellString.includes('\n')) {
+            return `"${cellString.replace(/"/g, '""')}"`
           }
-          return cell
+          return cellString
         })
         .join(','),
     )
