@@ -660,9 +660,7 @@ export class TeamModel {
 }
 
 async function find(id: number): Promise<TeamModel | null> {
-  const query = db.selectFrom('teams').where('id', '=', id)
-
-  query.selectAll()
+  const query = db.selectFrom('teams').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 

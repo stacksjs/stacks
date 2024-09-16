@@ -538,9 +538,7 @@ export class SubscriberModel {
 }
 
 async function find(id: number): Promise<SubscriberModel | null> {
-  const query = db.selectFrom('subscribers').where('id', '=', id)
-
-  query.selectAll()
+  const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 

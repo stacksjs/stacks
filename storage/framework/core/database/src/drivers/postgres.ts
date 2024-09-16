@@ -17,7 +17,7 @@ import {
 } from '.'
 
 export async function resetPostgresDatabase() {
-  const tables = await fetchMysqlTables()
+  const tables = await fetchPostgresTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
 
@@ -265,7 +265,7 @@ export async function createAlterTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-export async function fetchMysqlTables(): Promise<string[]> {
+export async function fetchPostgresTables(): Promise<string[]> {
   const modelFiles = globSync([path.userModelsPath('*.ts')])
   const tables: string[] = []
 

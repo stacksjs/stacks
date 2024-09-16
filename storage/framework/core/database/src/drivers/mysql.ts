@@ -5,6 +5,7 @@ import { getModelName, getTableName } from '@stacksjs/orm'
 import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, glob, globSync } from '@stacksjs/storage'
+
 import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
@@ -330,7 +331,8 @@ function reArrangeColumns(attributes: Attributes | undefined, tableName: string)
 }
 
 export async function fetchMysqlTables(): Promise<string[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync(path.userModelsPath('*.ts'), { absolute: true })
+
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {

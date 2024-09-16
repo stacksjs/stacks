@@ -1650,9 +1650,7 @@ export async function generateModelString(
     }
 
     async function find(id: number): Promise<${modelName}Model | null> {
-      let query = db.selectFrom('${tableName}').where('id', '=', id)
-
-      query.selectAll()
+      let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
       const model = await query.executeTakeFirst()
 

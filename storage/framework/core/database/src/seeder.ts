@@ -1,5 +1,5 @@
 import { italic, log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { modelTableName } from '@stacksjs/orm'
 import { fetchOtherModelRelations } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
@@ -7,6 +7,7 @@ import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { singular, snakeCase } from '@stacksjs/strings'
 import type { Model, RelationConfig } from '@stacksjs/types'
+import { fetchMysqlTables } from './drivers'
 import { generateMigrations, resetDatabase, runDatabaseMigration } from './migrations'
 
 async function seedModel(name: string, model?: Model) {
@@ -159,5 +160,14 @@ export async function seed() {
     const modelPath = path.join(modelsDir, file)
     const model = await import(modelPath)
     await seedModel(file, model.default)
+  }
+}
+
+export async function refreshDatabase() {
+  const tables = await fetchMysqlTables()
+
+  for (const table of tables) {
+    // console.log(`TRUNCATE TABLE ${table}`)
+    await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(db)
   }
 }

@@ -621,9 +621,7 @@ export class DeploymentModel {
 }
 
 async function find(id: number): Promise<DeploymentModel | null> {
-  const query = db.selectFrom('deployments').where('id', '=', id)
-
-  query.selectAll()
+  const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 

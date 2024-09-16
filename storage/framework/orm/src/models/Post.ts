@@ -561,9 +561,7 @@ export class PostModel {
 }
 
 async function find(id: number): Promise<PostModel | null> {
-  const query = db.selectFrom('posts').where('id', '=', id)
-
-  query.selectAll()
+  const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 

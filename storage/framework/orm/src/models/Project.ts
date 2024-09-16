@@ -570,9 +570,7 @@ export class ProjectModel {
 }
 
 async function find(id: number): Promise<ProjectModel | null> {
-  const query = db.selectFrom('projects').where('id', '=', id)
-
-  query.selectAll()
+  const query = db.selectFrom('projects').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
