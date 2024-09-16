@@ -5,15 +5,15 @@
  * const content: Content = {
  *   headings: ['Name', 'Age', 'City'],
  *   data: [
- *     ['John Doe', '30', 'New York'],
- *     ['Jane Smith', '25', 'London'],
- *     ['Bob Johnson', '35', 'Paris']
+ *     ['John Doe', 30, 'New York'],
+ *     ['Jane Smith', 25, 'London'],
+ *     ['Bob Johnson', 35, 'Paris']
  *   ]
  * }
  */
 export interface Content {
   headings: string[]
-  data: string[][]
+  data: (string | number)[][]
 }
 
 export type SpreadsheetType = 'csv' | 'excel'
@@ -143,7 +143,18 @@ export function createSpreadsheet(data: Content, options: SpreadsheetOptions = {
 export function generateCSVContent(content: Content): string {
   const rows = [content.headings, ...content.data]
 
-  return rows.map((row) => row.join(',')).join('\n')
+  return rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          if (typeof cell === 'string' && cell.includes(',')) {
+            return `"${cell}"`
+          }
+          return cell
+        })
+        .join(','),
+    )
+    .join('\n')
 }
 
 export function generateExcelContent(content: Content): Uint8Array {
@@ -164,8 +175,8 @@ export function generateExcelContent(content: Content): Uint8Array {
         ${row
           .map(
             (cell, cellIndex) => `
-        <c r="${String.fromCharCode(65 + cellIndex)}${rowIndex + 1}">
-          <v>${cell}</v>
+        <c r="${String.fromCharCode(65 + cellIndex)}${rowIndex + 1}" ${typeof cell === 'number' ? 't="n"' : ''}>
+          <v>${typeof cell === 'string' ? cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : cell}</v>
         </c>`,
           )
           .join('')}
