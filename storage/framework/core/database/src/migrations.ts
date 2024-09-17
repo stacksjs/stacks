@@ -1,10 +1,8 @@
-import { dim, italic, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
 import { err, ok } from '@stacksjs/error-handling'
-import { extractAttributesFromModel } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
-import type { Attribute, Attributes } from '@stacksjs/types'
 import { $ } from 'bun'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { generateMysqlMigration, resetMysqlDatabase } from './drivers'
@@ -107,15 +105,6 @@ export async function generateMigration(modelPath: string) {
   if (driver === 'postgres') await generatePostgresMigration(modelPath)
 }
 
-export async function getExecutedMigrations() {
-  try {
-    // @ts-expect-error the migrations table is not typed yet
-    return await db.selectFrom('migrations').select('name').execute()
-  } catch (error) {
-    return []
-  }
-}
-
 export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {
   log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
 
@@ -153,21 +142,4 @@ export async function lastMigrationDate(): Promise<string | undefined> {
     console.error('Failed to get last migration date:', error)
     return undefined
   }
-}
-
-// This is a placeholder function. You need to implement the logic to
-// read the last migration file and extract the fields that were modified.
-export async function getLastMigrationFields(modelName: string): Promise<Attribute> {
-  const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
-  const model = (await import(oldModelPath)).default as Model
-  let fields = {} as Attributes
-
-  if (typeof model.attributes === 'object') fields = model.attributes
-  else fields = JSON.parse(model.attributes) as Attributes
-
-  return fields
-}
-
-export async function getCurrentMigrationFields(modelPath: string): Promise<Attribute | undefined> {
-  return extractAttributesFromModel(modelPath)
 }

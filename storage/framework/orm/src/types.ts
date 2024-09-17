@@ -24,6 +24,10 @@ export interface UserTeamsTable {
   user_id: number
   team_id: number
 }
+export interface MigrationsTable {
+  name: string
+  timestamp: string
+}
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -37,4 +41,5 @@ export interface Database {
   user_teams: UserTeamsTable
   users: UsersTable
   posts: PostsTable
+  migrations: MigrationsTable
 }

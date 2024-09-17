@@ -1,4 +1,4 @@
-export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod' | string
+export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod' | 'testing' | string
 
 /**
  * **Application Options**

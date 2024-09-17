@@ -1,28 +1,44 @@
 import { database } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, fetchTables, fetchTestSqliteFile, runDatabaseMigration, sql } from '@stacksjs/database'
 
 const driver = database.default || ''
 
-export async function refreshDatabase() {
+export async function setupDatabase() {
+  const dbName = `${database.connections?.mysql?.name ?? 'stacks'}_testing`
+
   if (driver === 'mysql') {
-    await refreshMysql()
+    await sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}`.execute(db)
+
+    await runDatabaseMigration()
   }
 
   if (driver === 'sqlite') {
-    await refreshMysql()
+    await sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}`.execute(db)
+
+    await runDatabaseMigration()
   }
 }
 
-export async function refreshMysql() {
-  const tables = await fetchTables()
+// export async function refreshDatabase() {
+//   if (driver === 'mysql') await truncateMysql()
 
-  for (const table of tables) {
-    await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(db)
-  }
-}
+//   if (driver === 'sqlite') await truncateSqlite()
+// }
 
-export async function refreshSqlite() {
-  const dbPath = await fetchTestSqliteFile()
+// export async function truncateMysql() {
+//   const tables = await fetchTables()
 
-  if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
-}
+//   for (const table of tables) {
+//     await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(db)
+//   }
+// }
+
+// export async function truncateSqlite() {
+//   const dbPath = await fetchTestSqliteFile()
+
+//   if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
+
+//   await runDatabaseMigration()
+// }
+
+await setupDatabase()

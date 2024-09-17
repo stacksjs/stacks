@@ -48,6 +48,7 @@
   "devDependencies": {
     "@happy-dom/global-registrator": "^15.7.4",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }

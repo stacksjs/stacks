@@ -1,4 +1,4 @@
-import { database } from '@stacksjs/config'
+import { app, database } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { Database } from '@stacksjs/orm'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
@@ -6,10 +6,19 @@ import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
 
+const appEnv = app.env
+
 export function getDialect() {
   const driver = database.default ?? 'sqlite'
 
   log.debug(`Using database driver: ${driver}`)
+
+  let dbName = database.connections?.mysql?.name ?? 'stacks' // Default database name
+
+  // Check if appEnv is testing and modify dbName accordingly
+  if (appEnv === 'testing') {
+    dbName += '-testing' // Append '-testing' to the database name
+  }
 
   if (driver === 'sqlite') {
     const path = database.connections?.sqlite.database ?? 'database/stacks.sqlite'
@@ -21,7 +30,7 @@ export function getDialect() {
   if (driver === 'mysql') {
     return new MysqlDialect({
       pool: createPool({
-        database: database.connections?.mysql?.name ?? 'stacks',
+        database: dbName, // Use modified dbName
         host: database.connections?.mysql?.host ?? '127.0.0.1',
         user: database.connections?.mysql?.username ?? 'root',
         password: database.connections?.mysql?.password ?? '',
@@ -31,9 +40,12 @@ export function getDialect() {
   }
 
   if (driver === 'postgres') {
+    const pgDbName = database.connections?.postgres?.name ?? 'stacks' // Default Postgres database name
+    const finalPgDbName = appEnv === 'testing' ? `${pgDbName}-testing` : pgDbName // Modify if testing
+
     return new PostgresDialect({
       pool: new Pool({
-        database: database.connections?.postgres?.name ?? 'stacks',
+        database: finalPgDbName, // Use modified pgDbName
         host: database.connections?.postgres?.host ?? '127.0.0.1',
         user: database.connections?.postgres?.username ?? '',
         password: database.connections?.postgres?.password ?? '',

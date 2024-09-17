@@ -1,4 +1,5 @@
 export * from './schema'
+export * from './drivers'
 export * from './migrations'
 export * from './seeder'
 export * from './types'

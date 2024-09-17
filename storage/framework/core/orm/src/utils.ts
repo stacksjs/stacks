@@ -783,6 +783,9 @@ export async function generateKyselyTypes() {
     }
   }
 
+  text += `\nexport interface MigrationsTable {\n`
+  text += `name: string\n timestamp: string \n }`
+
   text += `\nexport interface Database {\n`
 
   for (const modelFile of modelFiles) {
@@ -798,6 +801,8 @@ export async function generateKyselyTypes() {
 
     text += `  ${tableName}: ${formattedTableName}\n`
   }
+
+  text += `migrations: MigrationsTable`
 
   text += `}`
 
