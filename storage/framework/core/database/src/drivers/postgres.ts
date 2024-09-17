@@ -218,7 +218,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
   }
 }
 
-export async function createAlterTableMigration(modelPath: string) {
+async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
   const model = (await import(modelPath)).default as Model

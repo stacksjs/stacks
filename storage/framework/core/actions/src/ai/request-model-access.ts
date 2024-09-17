@@ -1,8 +1,8 @@
 import process from 'node:process'
-import * as AWS4 from 'aws4'
 import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
 import { config } from 'aws-sdk'
+import * as AWS4 from 'aws4'
 
 // Specify the AWS profile
 // process.env.AWS_PROFILE = 'your-profile-name' -> no need to define this because of our .env file

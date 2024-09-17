@@ -20,7 +20,7 @@ import {
 } from '.'
 
 export async function resetMysqlDatabase() {
-  const tables = await fetchMysqlTables()
+  const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
 
@@ -328,19 +328,4 @@ function reArrangeColumns(attributes: Attributes | undefined, tableName: string)
   }
 
   return migrationContent
-}
-
-export async function fetchMysqlTables(): Promise<string[]> {
-  const modelFiles = globSync(path.userModelsPath('*.ts'), { absolute: true })
-
-  const tables: string[] = []
-
-  for (const modelPath of modelFiles) {
-    const model = (await import(modelPath)).default as Model
-    const tableName = getTableName(model, modelPath)
-
-    tables.push(tableName)
-  }
-
-  return tables
 }

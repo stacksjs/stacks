@@ -19,7 +19,7 @@ import {
 } from '.'
 
 export async function resetSqliteDatabase() {
-  const dbPath = path.userDatabasePath('stacks.sqlite')
+  const dbPath = fetchSqliteFile()
 
   if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
 
@@ -55,6 +55,18 @@ export async function resetSqliteDatabase() {
   }
 
   return ok('All tables dropped successfully!')
+}
+
+export function fetchSqliteFile(): string {
+  const dbPath = path.userDatabasePath('stacks.sqlite')
+
+  return dbPath
+}
+
+export function fetchTestSqliteFile(): string {
+  const dbPath = path.userDatabasePath('stacks-testing.sqlite')
+
+  return dbPath
 }
 
 export async function generateSqliteMigration(modelPath: string) {
@@ -218,7 +230,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
   }
 }
 
-export async function createAlterTableMigration(modelPath: string) {
+async function createAlterTableMigration(modelPath: string) {
   console.log('createAlterTableMigration')
 
   const model = (await import(modelPath)).default as Model

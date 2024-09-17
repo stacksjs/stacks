@@ -1,7 +1,7 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, VineType } from '@stacksjs/types'
 
@@ -20,7 +20,7 @@ export async function getLastMigrationFields(modelName: string): Promise<Attribu
   let fields = {} as Attributes
 
   if (typeof model.attributes === 'object') fields = model.attributes
-  else fields = JSON.parse(model.attributes) as Attributes
+  else fields = JSON.parse(model.attributes || '{}') as Attributes
 
   return fields
 }
@@ -219,4 +219,19 @@ export function findDifferingKeys(obj1: any, obj2: any): { key: string; max: num
   }
 
   return differingKeys
+}
+
+export async function fetchTables(): Promise<string[]> {
+  const modelFiles = globSync(path.userModelsPath('*.ts'), { absolute: true })
+
+  const tables: string[] = []
+
+  for (const modelPath of modelFiles) {
+    const model = (await import(modelPath)).default as Model
+    const tableName = getTableName(model, modelPath)
+
+    tables.push(tableName)
+  }
+
+  return tables
 }
