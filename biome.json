@@ -3,6 +3,9 @@
   "organizeImports": {
     "enabled": true
   },
+  "formatter": {
+    "useEditorconfig": true
+  },
   "overrides": [
     {
       "include": [".vscode/**", "components.d.ts"],
