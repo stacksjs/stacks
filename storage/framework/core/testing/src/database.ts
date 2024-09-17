@@ -11,34 +11,26 @@ export async function setupDatabase() {
 
     await runDatabaseMigration()
   }
+}
 
-  if (driver === 'sqlite') {
-    await sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}`.execute(db)
+export async function refreshDatabase() {
+  if (driver === 'mysql') await truncateMysql()
 
-    await runDatabaseMigration()
+  if (driver === 'sqlite') await truncateSqlite()
+}
+
+export async function truncateMysql() {
+  const tables = await fetchTables()
+
+  for (const table of tables) {
+    await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(db)
   }
 }
 
-// export async function refreshDatabase() {
-//   if (driver === 'mysql') await truncateMysql()
+export async function truncateSqlite() {
+  const dbPath = await fetchTestSqliteFile()
 
-//   if (driver === 'sqlite') await truncateSqlite()
-// }
+  if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
 
-// export async function truncateMysql() {
-//   const tables = await fetchTables()
-
-//   for (const table of tables) {
-//     await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(db)
-//   }
-// }
-
-// export async function truncateSqlite() {
-//   const dbPath = await fetchTestSqliteFile()
-
-//   if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
-
-//   await runDatabaseMigration()
-// }
-
-await setupDatabase()
+  await runDatabaseMigration()
+}

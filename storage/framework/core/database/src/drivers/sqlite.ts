@@ -64,7 +64,7 @@ export function fetchSqliteFile(): string {
 }
 
 export function fetchTestSqliteFile(): string {
-  const dbPath = path.userDatabasePath('stacks-testing.sqlite')
+  const dbPath = path.userDatabasePath('stacks_testing.sqlite')
 
   return dbPath
 }
