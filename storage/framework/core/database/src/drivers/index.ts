@@ -4,7 +4,7 @@ import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 import type { Attributes, Model, VineType } from '@stacksjs/types'
-
+import { getTableName } from '@stacksjs/orm'
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'

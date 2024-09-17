@@ -1,11 +1,15 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { refreshDatabase } from '@stacksjs/database'
+import { refreshDatabase, setupDatabase } from '@stacksjs/testing'
+
 import User from '../models/User'
 
 beforeAll(async () => {
-  await refreshDatabase()
+  process.env.APP_ENV = 'testing'
+  await setupDatabase()
 })
 
 describe('redisTest', () => {
-  it('should store records in models', async () => {})
+  it('should store records in models', async () => {
+    console.log(process.env.APP_ENV)
+  })
 })

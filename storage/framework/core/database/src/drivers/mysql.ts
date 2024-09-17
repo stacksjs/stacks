@@ -11,6 +11,7 @@ import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   arrangeColumns,
   checkPivotMigration,
+  fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
   hasTableBeenMigrated,
