@@ -11,6 +11,7 @@ const excludePatterns = [
   'node_modules',
   'dist',
   'vendor',
+  'storage/framework/server',
   `${os.homedir()}/Documents`,
   `${os.homedir()}/Pictures`,
   `${os.homedir()}/Library`,
@@ -43,20 +44,23 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
   return foundProjects
 }
 
-async function searchDirectory(directory: string) {
+// this searches a dir for Stacks projects which we define
+// as a dir that contains a 'buddy' file and a 'storage'
+// dir with a 'framework/core/buddy' structure
+async function searchDirectory(directory: string): Promise<string[]> {
   const foundProjects: string[] = []
-
   const isExcluded = excludePatterns.some((pattern) =>
     typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory),
   )
-  if (isExcluded) return
+
+  if (isExcluded) return foundProjects
 
   let items: Dirent[]
   try {
     items = await fs.readdir(directory, { withFileTypes: true })
   } catch (error) {
     console.error(`Error reading directory ${directory}:`, error)
-    return
+    return foundProjects
   }
 
   let buddyFileFound = false
@@ -65,11 +69,11 @@ async function searchDirectory(directory: string) {
   for (const item of items) {
     if (item.isFile() && item.name === targetFileName) {
       buddyFileFound = true
-    } else if (item.isDirectory()) {
-      // Recursively search in directories
+    }
+
+    if (item.isDirectory()) {
       const fullPath = path.join(directory, item.name)
       if (item.name === 'storage') {
-        // Check if the 'storage/framework/core/buddy/' structure exists within this directory
         try {
           const storagePath = path.join(fullPath, 'framework/core/buddy')
           await fs.access(storagePath)
@@ -78,11 +82,16 @@ async function searchDirectory(directory: string) {
           // The specific directory structure does not exist
         }
       }
-      await searchDirectory(fullPath)
+
+      // Accumulate results from recursive calls
+      const subDirProjects = await searchDirectory(fullPath)
+      foundProjects.push(...subDirProjects)
     }
   }
 
-  if (buddyFileFound && storageDirFound) foundProjects.push(directory) // Both conditions are met
+  if (buddyFileFound && storageDirFound) {
+    foundProjects.push(directory)
+  }
 
   return foundProjects
 }
