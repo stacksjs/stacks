@@ -40,12 +40,15 @@
   "scripts": {
     "build": "bun --bun build.ts",
     "typecheck": "bun --bun tsc --noEmit",
+    "test": "bun test",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.651.1"
+    "@aws-sdk/client-bedrock-runtime": "^3.651.1",
+    "@aws-sdk/credential-providers": "^3.651.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "aws-sdk": "^2.1691.0"
   }
 }

@@ -42,6 +42,7 @@ certutil
 changelist
 changelogen
 changelogithub
+chatbots
 chrisbbreuer
 chrisbreuer
 circleci
