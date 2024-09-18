@@ -31,10 +31,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@vueform/multiselect": "^2.6.9"
+    "@vueform/multiselect": "^2.6.10"
   },
   "devDependencies": {
-    "vite": "^5.4.5",
+    "vite": "^5.4.6",
     "@stacksjs/development": "workspace:*"
   }
 }
