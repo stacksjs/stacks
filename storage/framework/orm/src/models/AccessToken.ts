@@ -166,20 +166,27 @@ export class AccessTokenModel {
     return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
-  // Method to get a AccessToken by criteria
-  static async get(): Promise<AccessTokenModel[]> {
-    let query = db.selectFrom('personal_access_tokens')
-
+  // Method to get a User by criteria
+  static async get(): Promise<UserModel[]> {
     const instance = new this(null)
 
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        instance.query = instance.query.where('deleted_at', 'is', null)
+      }
+
+      const model = await instance.query.execute()
+
+      return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
     }
 
-    const model = await query.selectAll().execute()
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
 
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    const model = await instance.query.selectAll().execute()
+
+    return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
   }
 
   // Method to get a AccessToken by criteria
@@ -265,16 +272,12 @@ export class AccessTokenModel {
   }
 
   // Method to create a new accesstoken
-  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel | undefined> {
+  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const instance = new this(null)
 
     const filteredValues = Object.fromEntries(
       Object.entries(newAccessToken).filter(([key]) => instance.fillable.includes(key)),
     ) as NewAccessToken
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
 
     const result = await db.insertInto('personal_access_tokens').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -283,7 +286,7 @@ export class AccessTokenModel {
     return model
   }
 
-  static async forceCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel | undefined> {
+  static async forceCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const result = await db.insertInto('personal_access_tokens').values(newAccessToken).executeTakeFirstOrThrow()
 
     const model = (await find(Number(result.insertId))) as AccessTokenModel
@@ -413,10 +416,14 @@ export class AccessTokenModel {
     return await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
+  static async last(): Promise<AccessTokenType | undefined> {
+    return await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
   static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query = instance.orderBy(column, order)
+    instance.query = instance.query.orderBy(column, order)
 
     return instance
   }
@@ -444,7 +451,7 @@ export class AccessTokenModel {
   static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'asc')
 
     return instance
   }
@@ -496,6 +503,8 @@ export class AccessTokenModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
+    const model = this.find(this.id)
+
     // Check if soft deletes are enabled
     if (this.softDeletes) {
       // Update the deleted_at column with the current timestamp
@@ -523,7 +532,9 @@ export class AccessTokenModel {
   }
 
   distinct(column: keyof AccessTokenType): AccessTokenModel {
-    this.query = this.query.distinctOn(column)
+    this.query = this.query.select(column).distinct()
+
+    this.hasSelect = true
 
     return this
   }
@@ -531,7 +542,9 @@ export class AccessTokenModel {
   static distinct(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+    instance.query = instance.query.select(column).distinct()
+
+    instance.hasSelect = true
 
     return instance
   }
@@ -585,12 +598,12 @@ export class AccessTokenModel {
   }
 }
 
-async function find(id: number): Promise<AccessTokenModel | null> {
+async function find(id: number): Promise<AccessTokenModel | undefined> {
   const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return null
+  if (!model) return undefined
 
   return new AccessTokenModel(model)
 }

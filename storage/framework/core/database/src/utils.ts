@@ -17,7 +17,7 @@ export function getDialect() {
 
   // Check if appEnv is testing and modify dbName accordingly
   if (appEnv === 'testing') {
-    dbName += '-testing' // Append '-testing' to the database name
+    dbName += '_testing' // Append '-testing' to the database name
   }
 
   if (driver === 'sqlite') {
@@ -41,7 +41,7 @@ export function getDialect() {
 
   if (driver === 'postgres') {
     const pgDbName = database.connections?.postgres?.name ?? 'stacks' // Default Postgres database name
-    const finalPgDbName = appEnv === 'testing' ? `${pgDbName}-testing` : pgDbName // Modify if testing
+    const finalPgDbName = appEnv === 'testing' ? `${pgDbName}_testing` : pgDbName // Modify if testing
 
     return new PostgresDialect({
       pool: new Pool({

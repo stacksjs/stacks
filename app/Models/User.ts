@@ -15,7 +15,6 @@ export default {
       useTwoFactor: true,
     },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
-    useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
     useSearch: {
       // defaults to true, `searchable` used as an alias
       searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)

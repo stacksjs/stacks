@@ -1243,21 +1243,29 @@ export async function generateModelString(
         return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }
 
-      // Method to get a ${modelName} by criteria
-      static async get(): Promise<${modelName}Model[]> {
-        let query = db.selectFrom('${tableName}');
-
+      // Method to get a User by criteria
+      static async get(): Promise<UserModel[]> {
         const instance = new this(null)
 
-        // Check if soft deletes are enabled
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
+        if (instance.hasSelect) {
+          if (instance.softDeletes) {
+            instance.query = instance.query.where('deleted_at', 'is', null)
+          }
+
+          const model = await instance.query.execute()
+
+          return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
-        const model = await query.selectAll().execute();
+        if (instance.softDeletes) {
+          instance.query = instance.query.where('deleted_at', 'is', null)
+        }
 
-        return model.map(modelItem => new ${modelName}Model(modelItem));
+        const model = await instance.query.selectAll().execute()
+
+       return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
+
 
       // Method to get a ${modelName} by criteria
       async get(): Promise<${modelName}Model[]> {
@@ -1342,16 +1350,12 @@ export async function generateModelString(
       }
 
       // Method to create a new ${formattedModelName}
-      static async create(new${modelName}: New${modelName}): Promise<${modelName}Model | undefined> {
+      static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const instance = new this(null)
 
          const filteredValues = Object.fromEntries(
           Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
         ) as New${modelName}
-
-        if (Object.keys(filteredValues).length === 0) {
-          return undefined
-        }
 
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)
@@ -1364,7 +1368,7 @@ export async function generateModelString(
         return model
       }
 
-      static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model | undefined> {
+      static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const result = await db.insertInto('${tableName}')
           .values(new${modelName})
           .executeTakeFirstOrThrow()
@@ -1477,10 +1481,14 @@ export async function generateModelString(
           .executeTakeFirst()
       }
 
+      static async last(): Promise<${modelName}Type | undefined> {
+        return await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+      }
+
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
         const instance = new this(null)
 
-        instance.query = instance.orderBy(column, order)
+        instance.query = instance.query.orderBy(column, order)
 
         return instance
       }
@@ -1508,7 +1516,7 @@ export async function generateModelString(
       static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new this(null)
 
-        instance.query = instance.query.orderBy(column, 'desc')
+        instance.query = instance.query.orderBy(column, 'asc')
 
         return instance
       }
@@ -1576,6 +1584,8 @@ export async function generateModelString(
           if (this.id === undefined)
               throw new Error('${modelName} ID is undefined');
 
+          const model = this.find(this.id)
+
           // Check if soft deletes are enabled
           if (this.softDeletes) {
               // Update the deleted_at column with the current timestamp
@@ -1599,7 +1609,9 @@ export async function generateModelString(
       ${relationMethods}
 
       distinct(column: keyof ${modelName}Type): ${modelName}Model {
-        this.query = this.query.distinctOn(column)
+        this.query = this.query.select(column).distinct()
+
+        this.hasSelect = true
 
         return this
       }
@@ -1607,7 +1619,9 @@ export async function generateModelString(
       static distinct(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new this(null)
 
-        instance.query = instance.query.distinctOn(column)
+        instance.query = instance.query.select(column).distinct()
+
+        instance.hasSelect = true
 
         return instance
       }
@@ -1654,12 +1668,12 @@ export async function generateModelString(
       ${twoFactorStatements}
     }
 
-    async function find(id: number): Promise<${modelName}Model | null> {
+    async function find(id: number): Promise<${modelName}Model | undefined> {
       let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
       const model = await query.executeTakeFirst()
 
-      if (!model) return null
+      if (!model) return undefined
 
       return new ${modelName}Model(model)
     }

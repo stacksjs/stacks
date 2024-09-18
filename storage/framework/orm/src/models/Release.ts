@@ -152,20 +152,27 @@ export class ReleaseModel {
     return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
-  // Method to get a Release by criteria
-  static async get(): Promise<ReleaseModel[]> {
-    let query = db.selectFrom('releases')
-
+  // Method to get a User by criteria
+  static async get(): Promise<UserModel[]> {
     const instance = new this(null)
 
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        instance.query = instance.query.where('deleted_at', 'is', null)
+      }
+
+      const model = await instance.query.execute()
+
+      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
     }
 
-    const model = await query.selectAll().execute()
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
 
-    return model.map((modelItem) => new ReleaseModel(modelItem))
+    const model = await instance.query.selectAll().execute()
+
+    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
 
   // Method to get a Release by criteria
@@ -250,16 +257,12 @@ export class ReleaseModel {
   }
 
   // Method to create a new release
-  static async create(newRelease: NewRelease): Promise<ReleaseModel | undefined> {
+  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
     const instance = new this(null)
 
     const filteredValues = Object.fromEntries(
       Object.entries(newRelease).filter(([key]) => instance.fillable.includes(key)),
     ) as NewRelease
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
 
     const result = await db.insertInto('releases').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -268,7 +271,7 @@ export class ReleaseModel {
     return model
   }
 
-  static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel | undefined> {
+  static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel> {
     const result = await db.insertInto('releases').values(newRelease).executeTakeFirstOrThrow()
 
     const model = (await find(Number(result.insertId))) as ReleaseModel
@@ -374,10 +377,14 @@ export class ReleaseModel {
     return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
+  static async last(): Promise<ReleaseType | undefined> {
+    return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
   static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
     const instance = new this(null)
 
-    instance.query = instance.orderBy(column, order)
+    instance.query = instance.query.orderBy(column, order)
 
     return instance
   }
@@ -405,7 +412,7 @@ export class ReleaseModel {
   static orderByAsc(column: keyof ReleaseType): ReleaseModel {
     const instance = new this(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'asc')
 
     return instance
   }
@@ -457,6 +464,8 @@ export class ReleaseModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
+    const model = this.find(this.id)
+
     // Check if soft deletes are enabled
     if (this.softDeletes) {
       // Update the deleted_at column with the current timestamp
@@ -474,7 +483,9 @@ export class ReleaseModel {
   }
 
   distinct(column: keyof ReleaseType): ReleaseModel {
-    this.query = this.query.distinctOn(column)
+    this.query = this.query.select(column).distinct()
+
+    this.hasSelect = true
 
     return this
   }
@@ -482,7 +493,9 @@ export class ReleaseModel {
   static distinct(column: keyof ReleaseType): ReleaseModel {
     const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+    instance.query = instance.query.select(column).distinct()
+
+    instance.hasSelect = true
 
     return instance
   }
@@ -533,12 +546,12 @@ export class ReleaseModel {
   }
 }
 
-async function find(id: number): Promise<ReleaseModel | null> {
+async function find(id: number): Promise<ReleaseModel | undefined> {
   const query = db.selectFrom('releases').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return null
+  if (!model) return undefined
 
   return new ReleaseModel(model)
 }

@@ -38,8 +38,6 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   public created_at = ''
   public updated_at = ''
 
-  public deleted_at = ''
-
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('User', this.all())

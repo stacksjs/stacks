@@ -8,12 +8,20 @@ export async function setupDatabase() {
 
   if (driver === 'mysql') {
     await sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}`.execute(db)
-
+    //TODO: Remove all log.info
     await runDatabaseMigration()
+  }
+
+  if (driver === 'sqlite') {
+    const dbPath = await fetchTestSqliteFile()
+
+    Bun.$`touch ${dbPath}`
   }
 }
 
 export async function refreshDatabase() {
+  await setupDatabase()
+
   if (driver === 'mysql') await truncateMysql()
 
   if (driver === 'sqlite') await truncateSqlite()

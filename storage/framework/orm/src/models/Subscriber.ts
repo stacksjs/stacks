@@ -156,20 +156,27 @@ export class SubscriberModel {
     return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
-  // Method to get a Subscriber by criteria
-  static async get(): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers')
-
+  // Method to get a User by criteria
+  static async get(): Promise<UserModel[]> {
     const instance = new this(null)
 
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        instance.query = instance.query.where('deleted_at', 'is', null)
+      }
+
+      const model = await instance.query.execute()
+
+      return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
     }
 
-    const model = await query.selectAll().execute()
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
 
-    return model.map((modelItem) => new SubscriberModel(modelItem))
+    const model = await instance.query.selectAll().execute()
+
+    return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
   }
 
   // Method to get a Subscriber by criteria
@@ -254,16 +261,12 @@ export class SubscriberModel {
   }
 
   // Method to create a new subscriber
-  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel | undefined> {
+  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
     const instance = new this(null)
 
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscriber).filter(([key]) => instance.fillable.includes(key)),
     ) as NewSubscriber
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
 
     const result = await db.insertInto('subscribers').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -272,7 +275,7 @@ export class SubscriberModel {
     return model
   }
 
-  static async forceCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel | undefined> {
+  static async forceCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
     const result = await db.insertInto('subscribers').values(newSubscriber).executeTakeFirstOrThrow()
 
     const model = (await find(Number(result.insertId))) as SubscriberModel
@@ -378,10 +381,14 @@ export class SubscriberModel {
     return await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
+  static async last(): Promise<SubscriberType | undefined> {
+    return await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
   static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
     const instance = new this(null)
 
-    instance.query = instance.orderBy(column, order)
+    instance.query = instance.query.orderBy(column, order)
 
     return instance
   }
@@ -409,7 +416,7 @@ export class SubscriberModel {
   static orderByAsc(column: keyof SubscriberType): SubscriberModel {
     const instance = new this(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'asc')
 
     return instance
   }
@@ -461,6 +468,8 @@ export class SubscriberModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Subscriber ID is undefined')
 
+    const model = this.find(this.id)
+
     // Check if soft deletes are enabled
     if (this.softDeletes) {
       // Update the deleted_at column with the current timestamp
@@ -478,7 +487,9 @@ export class SubscriberModel {
   }
 
   distinct(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.query.distinctOn(column)
+    this.query = this.query.select(column).distinct()
+
+    this.hasSelect = true
 
     return this
   }
@@ -486,7 +497,9 @@ export class SubscriberModel {
   static distinct(column: keyof SubscriberType): SubscriberModel {
     const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+    instance.query = instance.query.select(column).distinct()
+
+    instance.hasSelect = true
 
     return instance
   }
@@ -537,12 +550,12 @@ export class SubscriberModel {
   }
 }
 
-async function find(id: number): Promise<SubscriberModel | null> {
+async function find(id: number): Promise<SubscriberModel | undefined> {
   const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return null
+  if (!model) return undefined
 
   return new SubscriberModel(model)
 }

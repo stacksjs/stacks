@@ -161,20 +161,27 @@ export class ProjectModel {
     return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
-  // Method to get a Project by criteria
-  static async get(): Promise<ProjectModel[]> {
-    let query = db.selectFrom('projects')
-
+  // Method to get a User by criteria
+  static async get(): Promise<UserModel[]> {
     const instance = new this(null)
 
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        instance.query = instance.query.where('deleted_at', 'is', null)
+      }
+
+      const model = await instance.query.execute()
+
+      return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
     }
 
-    const model = await query.selectAll().execute()
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
 
-    return model.map((modelItem) => new ProjectModel(modelItem))
+    const model = await instance.query.selectAll().execute()
+
+    return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
   }
 
   // Method to get a Project by criteria
@@ -259,16 +266,12 @@ export class ProjectModel {
   }
 
   // Method to create a new project
-  static async create(newProject: NewProject): Promise<ProjectModel | undefined> {
+  static async create(newProject: NewProject): Promise<ProjectModel> {
     const instance = new this(null)
 
     const filteredValues = Object.fromEntries(
       Object.entries(newProject).filter(([key]) => instance.fillable.includes(key)),
     ) as NewProject
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
 
     const result = await db.insertInto('projects').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -277,7 +280,7 @@ export class ProjectModel {
     return model
   }
 
-  static async forceCreate(newProject: NewProject): Promise<ProjectModel | undefined> {
+  static async forceCreate(newProject: NewProject): Promise<ProjectModel> {
     const result = await db.insertInto('projects').values(newProject).executeTakeFirstOrThrow()
 
     const model = (await find(Number(result.insertId))) as ProjectModel
@@ -407,10 +410,14 @@ export class ProjectModel {
     return await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
+  static async last(): Promise<ProjectType | undefined> {
+    return await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
   static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
     const instance = new this(null)
 
-    instance.query = instance.orderBy(column, order)
+    instance.query = instance.query.orderBy(column, order)
 
     return instance
   }
@@ -438,7 +445,7 @@ export class ProjectModel {
   static orderByAsc(column: keyof ProjectType): ProjectModel {
     const instance = new this(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'asc')
 
     return instance
   }
@@ -490,6 +497,8 @@ export class ProjectModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Project ID is undefined')
 
+    const model = this.find(this.id)
+
     // Check if soft deletes are enabled
     if (this.softDeletes) {
       // Update the deleted_at column with the current timestamp
@@ -507,7 +516,9 @@ export class ProjectModel {
   }
 
   distinct(column: keyof ProjectType): ProjectModel {
-    this.query = this.query.distinctOn(column)
+    this.query = this.query.select(column).distinct()
+
+    this.hasSelect = true
 
     return this
   }
@@ -515,7 +526,9 @@ export class ProjectModel {
   static distinct(column: keyof ProjectType): ProjectModel {
     const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+    instance.query = instance.query.select(column).distinct()
+
+    instance.hasSelect = true
 
     return instance
   }
@@ -569,12 +582,12 @@ export class ProjectModel {
   }
 }
 
-async function find(id: number): Promise<ProjectModel | null> {
+async function find(id: number): Promise<ProjectModel | undefined> {
   const query = db.selectFrom('projects').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return null
+  if (!model) return undefined
 
   return new ProjectModel(model)
 }

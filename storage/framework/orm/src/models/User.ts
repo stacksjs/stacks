@@ -31,8 +31,6 @@ export interface UsersTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 }
 
 interface UserResponse {
@@ -69,7 +67,7 @@ interface QueryOptions {
 export class UserModel {
   private hidden = ['password']
   private fillable = ['name', 'email', 'job_title', 'password']
-  private softDeletes = true
+  private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -81,8 +79,6 @@ export class UserModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-
-  public deleted_at: Date | undefined
   public team_id: number | undefined
   public deployment_id: number | undefined
   public post_id: number | undefined
@@ -98,8 +94,6 @@ export class UserModel {
     this.created_at = user?.created_at
 
     this.updated_at = user?.updated_at
-
-    this.deleted_at = user?.deleted_at
 
     this.team_id = user?.team_id
     this.deployment_id = user?.deployment_id
@@ -189,18 +183,25 @@ export class UserModel {
 
   // Method to get a User by criteria
   static async get(): Promise<UserModel[]> {
-    let query = db.selectFrom('users')
-
     const instance = new this(null)
 
-    // Check if soft deletes are enabled
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        instance.query = instance.query.where('deleted_at', 'is', null)
+      }
+
+      const model = await instance.query.execute()
+
+      return model.map((modelItem: UserModel) => new UserModel(modelItem))
     }
 
-    const model = await query.selectAll().execute()
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
 
-    return model.map((modelItem) => new UserModel(modelItem))
+    const model = await instance.query.selectAll().execute()
+
+    return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
 
   // Method to get a User by criteria
@@ -285,16 +286,12 @@ export class UserModel {
   }
 
   // Method to create a new user
-  static async create(newUser: NewUser): Promise<UserModel | undefined> {
+  static async create(newUser: NewUser): Promise<UserModel> {
     const instance = new this(null)
 
     const filteredValues = Object.fromEntries(
       Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
     ) as NewUser
-
-    if (Object.keys(filteredValues).length === 0) {
-      return undefined
-    }
 
     const result = await db.insertInto('users').values(filteredValues).executeTakeFirstOrThrow()
 
@@ -305,7 +302,7 @@ export class UserModel {
     return model
   }
 
-  static async forceCreate(newUser: NewUser): Promise<UserModel | undefined> {
+  static async forceCreate(newUser: NewUser): Promise<UserModel> {
     const result = await db.insertInto('users').values(newUser).executeTakeFirstOrThrow()
 
     const model = (await find(Number(result.insertId))) as UserModel
@@ -439,10 +436,14 @@ export class UserModel {
     return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
   }
 
+  static async last(): Promise<UserType | undefined> {
+    return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
+
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
     const instance = new this(null)
 
-    instance.query = instance.orderBy(column, order)
+    instance.query = instance.query.orderBy(column, order)
 
     return instance
   }
@@ -470,7 +471,7 @@ export class UserModel {
   static orderByAsc(column: keyof UserType): UserModel {
     const instance = new this(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.query = instance.query.orderBy(column, 'asc')
 
     return instance
   }
@@ -525,6 +526,8 @@ export class UserModel {
   // Method to delete (soft delete) the user instance
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('User ID is undefined')
+
+    const model = this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -587,7 +590,9 @@ export class UserModel {
   }
 
   distinct(column: keyof UserType): UserModel {
-    this.query = this.query.distinctOn(column)
+    this.query = this.query.select(column).distinct()
+
+    this.hasSelect = true
 
     return this
   }
@@ -595,7 +600,9 @@ export class UserModel {
   static distinct(column: keyof UserType): UserModel {
     const instance = new this(null)
 
-    instance.query = instance.query.distinctOn(column)
+    instance.query = instance.query.select(column).distinct()
+
+    instance.hasSelect = true
 
     return instance
   }
@@ -629,8 +636,6 @@ export class UserModel {
       created_at: this.created_at,
 
       updated_at: this.updated_at,
-
-      deleted_at: this.deleted_at,
     }
 
     this.hidden.forEach((attr) => {
@@ -666,12 +671,12 @@ export class UserModel {
   }
 }
 
-async function find(id: number): Promise<UserModel | null> {
+async function find(id: number): Promise<UserModel | undefined> {
   const query = db.selectFrom('users').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return null
+  if (!model) return undefined
 
   return new UserModel(model)
 }
