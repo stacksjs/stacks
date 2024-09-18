@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
-import { cloudPath, frameworkCloudPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { cloudPath, frameworkCloudPath, frameworkPath, projectPath, userServerPath } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import { slug } from '@stacksjs/strings'
 import { $ } from 'bun'
@@ -77,6 +77,21 @@ export async function buildDockerImage() {
   log.info('Copying .env file...')
   await cleanCopy(projectPath('.env'), frameworkPath('server/.env'))
   log.success('Copied .env file')
+
+  Bun.$.cwd(userServerPath())
+  await Bun.$`rm -rf ./storage/framework/**/dist/*.js.map`.nothrow()
+  await Bun.$`rm -rf ./storage/**/*.lockb`.nothrow()
+  await Bun.$`rm -rf ./storage/framework/core/**/tests`.nothrow()
+  await Bun.$`rm -rf ./storage/framework/**/src`.nothrow()
+  await Bun.$`rm -rf ./storage/framework/docs`.nothrow()
+  await Bun.$`rm -rf ./storage/framework/types`.nothrow()
+  await Bun.$`rm -rf ./storage/**/node_modules`.nothrow()
+  await Bun.$`rm -rf .DS_Store`.nothrow()
+  await Bun.$`rm -rf **/README.md`.nothrow()
+  await Bun.$`rm -rf **/.DS_Store`.nothrow()
+  await Bun.$`rm -rf **/.biomelintrc-auto-import.json`.nothrow()
+
+  log.success('Optimized Docker Image size')
   log.success('Server ready to be built')
 
   if (!app.name) {

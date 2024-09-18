@@ -15,10 +15,9 @@ async function main() {
 
   // if stacks-container is running, stop it
   const stacksContainer = await runCommandSync(`timeout 2s docker ps -a --filter name=stacks-server --format "{{.ID}}"`)
-  console.log(stacksContainer)
 
   if (stacksContainer) {
-    log.info('Stopping stacks-server container...')
+    log.info(`Stopping stacks-server container: ${stacksContainer}`)
     await runCommand(`docker stop stacks-server`)
     log.info('Stopped stacks-server container')
   }
@@ -127,18 +126,6 @@ async function main() {
       log.info(`Updated imports in ${file}`)
       break
     }
-  }
-
-  try {
-    Bun.$.cwd(path.userServerPath())
-    await Bun.$`rm -rf ./storage/framework/**/dist ./storage/**/node_modules ./storage/framework/**/src ./storage/framework/core/**/tests ./storage/**/*.DS_Store ./storage/**/*.lockb`
-      .nothrow()
-      .text()
-    log.success('Optimized Docker Image size')
-  } catch (err: any) {
-    log.error('Optimization failed')
-    log.error(err)
-    process.exit(1)
   }
 
   await outro({
