@@ -71,7 +71,7 @@ export async function buildDockerImage() {
   log.success('Copied docs files')
 
   log.info('Copying storage files...')
-  await cleanCopy(projectPath('storage'), frameworkPath('server/storage-tmp'))
+  await cleanCopy(projectPath('storage'), frameworkPath('server/storage'))
   log.success('Copied storage files')
 
   log.info('Copying .env file...')

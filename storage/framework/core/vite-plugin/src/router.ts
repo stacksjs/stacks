@@ -19,7 +19,7 @@ export function router(options?: RouterOptions) {
 
   if (options?.type === 'views') {
     return VueRouter({
-      exclude: ['/dashboard/**', '/errors/**', '/system-tray/**'],
+      exclude: ['/dashboard/**', '/errors/**', '/system-tray/**', '/docs/**', '/api/**'], // these are provided by the framework, and that's why they cannot be reused
       ...opts,
     })
   }

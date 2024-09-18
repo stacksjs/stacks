@@ -14,5 +14,5 @@ cdk.out
 chunk-*
 *.node
 index.js*
-storage-tmp
+storage
 

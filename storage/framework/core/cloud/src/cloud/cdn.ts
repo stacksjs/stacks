@@ -260,13 +260,15 @@ export class CdnStack {
       protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
     })
 
+    const apiCachePolicy = this.setApiCachePolicy(scope)
+
     return {
       '/api': {
         origin,
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: this.setApiCachePolicy(scope),
+        cachePolicy: apiCachePolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         realtimeLogConfig: this.realtimeLogConfig,
       },
@@ -276,7 +278,7 @@ export class CdnStack {
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: this.apiCachePolicy,
+        cachePolicy: apiCachePolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         realtimeLogConfig: this.realtimeLogConfig,
       },
@@ -514,7 +516,10 @@ export class CdnStack {
       ]
       keysToRemove.forEach((key) => delete env[key as EnvKey])
 
-      behaviorOptions = this.apiBehaviorOptions(scope, props)
+      behaviorOptions = {
+        ...this.apiBehaviorOptions(scope, props),
+        ...behaviorOptions,
+      }
     }
 
     // if docMode is used, we don't need to add a behavior for the docs
@@ -549,15 +554,16 @@ export class CdnStack {
 
     this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
       comment: 'Stacks API Cache Policy',
-      cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy`,
+      cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy-${this.props.timestamp}`,
       defaultTtl: Duration.seconds(0),
       minTtl: Duration.seconds(0),
-      maxTtl: Duration.seconds(0),
+      maxTtl: Duration.seconds(1), // Changed from 0 to 1 second
 
-      // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       cookieBehavior: cloudfront.CacheCookieBehavior.all(),
       headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Authorization', 'Content-Type'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+      enableAcceptEncodingGzip: true, // Added this line
+      enableAcceptEncodingBrotli: true, // Added this line
     })
 
     return this.apiCachePolicy

@@ -33,7 +33,7 @@ COPY --from=builder /usr/src/tsconfig.json ./tsconfig.json
 USER root
 RUN mkdir -p ./storage
 
-COPY --chown=bun:bun ./storage-tmp ./storage
+COPY --chown=bun:bun ./storage ./storage
 
 # Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]

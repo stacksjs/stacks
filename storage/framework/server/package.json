@@ -38,8 +38,8 @@
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "dev": "./dev local",
-    "dev:cloud": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",
+    "dev": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",
+    "dev:local": "./dev local",
     "build": "bun build.ts"
   },
   "devDependencies": {

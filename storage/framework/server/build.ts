@@ -23,7 +23,7 @@ async function main() {
     log.info('Stopped stacks-server container')
   }
 
-  log.info('Deleting old files...')
+  log.info('Cleanup of previous build files...')
   log.info(`  ${path.userServerPath('app')}`, { styled: false })
   await deleteFolder(path.userServerPath('app'))
   log.info(`  ${path.userServerPath('config')}`, { styled: false })
@@ -33,8 +33,9 @@ async function main() {
   log.info(`  ${path.userServerPath('docs')}`, { styled: false })
   await deleteFolder(path.userServerPath('docs'))
   log.info(`  ${path.userServerPath('storage')}`, { styled: false })
-  await deleteFolder(path.userServerPath('storage'))
-  log.success('Deleted old files')
+  // await deleteFolder(path.userServerPath('storage'))
+  await Bun.$`rm -rf ${path.userServerPath('storage')}`.text()
+  log.success('Cleaned up previous build files')
 
   log.info('Building...')
   const result = await build({
@@ -49,7 +50,7 @@ async function main() {
   if (result.success) {
     log.success('Server built')
   } else {
-    log.error('Build failed')
+    log.error('Server Build failed')
     process.exit(1)
   }
 
@@ -130,13 +131,13 @@ async function main() {
 
   try {
     Bun.$.cwd(path.userServerPath())
-    await Bun.$`rm -rf ./storage-tmp/framework/**/dist ./storage-tmp/**/node_modules ./storage-tmp/framework/**/src ./storage-tmp/framework/core/**/tests ./storage-tmp/**/*.DS_Store ./storage-tmp/**/*.lockb`.text()
+    await Bun.$`rm -rf ./storage/framework/**/dist ./storage/**/node_modules ./storage/framework/**/src ./storage/framework/core/**/tests ./storage/**/*.DS_Store ./storage/**/*.lockb`
+      .nothrow()
+      .text()
     log.success('Optimized Docker Image size')
   } catch (err: any) {
     log.error('Optimization failed')
-    console.log(`Failed with code ${err.exitCode}`)
-    console.log(err.stdout.toString())
-    console.log(err.stderr.toString())
+    log.error(err)
     process.exit(1)
   }
 
@@ -148,7 +149,6 @@ async function main() {
   })
 
   if (cloud.api?.deploy) await buildDockerImage()
-  await Bun.$`rm -rf ${path.userServerPath('storage-tmp')}`.text()
 }
 
 main()
