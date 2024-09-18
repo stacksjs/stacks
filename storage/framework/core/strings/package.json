@@ -62,12 +62,12 @@
     "pluralize": "^8.0.0",
     "slugify": "^1.6.6",
     "string-ts": "^2.2.0",
-    "title-case": "^4.3.1",
+    "title-case": "^4.3.2",
     "validator": "^13.12.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/pluralize": "^0.0.33",
-    "@types/validator": "^13.12.1"
+    "@types/validator": "^13.12.2"
   }
 }

@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "^3.651.1",
+    "@aws-sdk/client-bedrock": "^3.652.0",
     "@aws-sdk/client-cloudformation": "^3.651.1",
     "@aws-sdk/client-cloudfront": "^3.651.1",
     "@aws-sdk/client-cloudwatch-logs": "^3.651.1",
@@ -55,12 +55,12 @@
     "@aws-sdk/client-ec2": "^3.651.1",
     "@aws-sdk/client-efs": "^3.651.1",
     "@aws-sdk/client-iam": "^3.651.1",
-    "@aws-sdk/client-lambda": "^3.651.1",
+    "@aws-sdk/client-lambda": "^3.653.0",
     "@aws-sdk/client-route-53-domains": "^3.651.1",
     "@aws-sdk/client-s3": "^3.651.1",
     "@aws-sdk/client-ses": "^3.651.1",
     "@aws-sdk/client-sesv2": "^3.651.1",
-    "@aws-sdk/client-ssm": "^3.651.1",
+    "@aws-sdk/client-ssm": "^3.653.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/logging": "workspace:*",
