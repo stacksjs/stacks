@@ -11,7 +11,7 @@ const excludePatterns = [
   'node_modules',
   'dist',
   'vendor',
-  'storage/framework/server',
+  'storage/framework',
   `${os.homedir()}/Documents`,
   `${os.homedir()}/Pictures`,
   `${os.homedir()}/Library`,
