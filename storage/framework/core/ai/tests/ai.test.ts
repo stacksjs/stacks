@@ -174,9 +174,9 @@ describe('Bedrock Client', () => {
       baseModelIdentifier: 'anthropic.claude-v2',
       outputModelName: 'my-custom-model',
       roleArn: 'arn:aws:iam::123456789012:role/BedrockModelCustomizationRole',
-      creationTime: new Date().toISOString(),
+      creationTime: new Date(),
       baseModelArn: 'arn:aws:bedrock:us-east-1:123456789012:foundation-model/anthropic.claude-v2',
-      lastModifiedTime: new Date().toISOString(),
+      lastModifiedTime: new Date(),
       trainingDataConfig: {
         s3Uri: 's3://example-bucket/training-data',
       },
