@@ -180,10 +180,18 @@ describe('Bedrock Client', () => {
       trainingDataConfig: {
         s3Uri: 's3://example-bucket/training-data',
       },
+      validationDataConfig: {
+        s3Uri: 's3://example-bucket/validation-data',
+      },
       outputDataConfig: {
         s3Uri: 's3://example-bucket/output-data',
       },
       hyperParameters: {},
+      trainingMetrics: {
+        trainingLoss: 0.1,
+        validationLoss: 0.2,
+        epochsCompleted: 10,
+      },
     }
 
     bedrockMock.on(GetModelCustomizationJobCommand).resolves(mockResponse)
