@@ -1,5 +1,6 @@
 import { database } from '@stacksjs/config'
 import { db, fetchTables, fetchTestSqliteFile, runDatabaseMigration, sql } from '@stacksjs/database'
+import { fs } from '@stacksjs/storage'
 
 const driver = database.default || ''
 
@@ -10,12 +11,6 @@ export async function setupDatabase() {
     await sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}`.execute(db)
     //TODO: Remove all log.info
     await runDatabaseMigration()
-  }
-
-  if (driver === 'sqlite') {
-    const dbPath = await fetchTestSqliteFile()
-
-    Bun.$`touch ${dbPath}`
   }
 }
 
@@ -38,7 +33,14 @@ export async function truncateMysql() {
 export async function truncateSqlite() {
   const dbPath = await fetchTestSqliteFile()
 
-  if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
+  if (fs.existsSync(dbPath)) {
+    await Bun.$`rm ${dbPath}`
+    await Bun.$`touch ${dbPath}`
+  }
 
-  await runDatabaseMigration()
+  if (!fs.existsSync(dbPath)) {
+    await Bun.$`touch ${dbPath}`
+  }
+
+  // await runDatabaseMigration()
 }

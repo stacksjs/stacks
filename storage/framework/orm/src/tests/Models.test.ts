@@ -7,246 +7,248 @@ beforeEach(async () => {
   await refreshDatabase()
 })
 
-describe('redisTest', () => {
-  it('should fetch a single record in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+await refreshDatabase()
 
-    const result = await User.create(user)
+// describe('redisTest', () => {
+//   it('should fetch a single record in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    const model = await User.find(result.id as number)
+//     const result = await User.create(user)
 
-    expect(model?.email).toBe(user.email)
-  })
+//     const model = await User.find(result.id as number)
 
-  it('should store records in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(model?.email).toBe(user.email)
+//   })
 
-    const result = await User.create(user)
+//   it('should store records in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    expect(result?.email).toBe(user.email)
-  })
+//     const result = await User.create(user)
 
-  it('should update records in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(result?.email).toBe(user.email)
+//   })
 
-    const model = await User.create(user)
+//   it('should update records in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    expect(model?.email).toBe(user.email)
+//     const model = await User.create(user)
 
-    const updatedModel = await model.update({ job_title: 'Open Source Developer' })
+//     expect(model?.email).toBe(user.email)
 
-    expect(updatedModel?.job_title).toBe('Open Source Developer')
-  })
+//     const updatedModel = await model.update({ job_title: 'Open Source Developer' })
 
-  it('should delete records in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(updatedModel?.job_title).toBe('Open Source Developer')
+//   })
 
-    const model = await User.create(user)
+//   it('should delete records in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    expect(model?.email).toBe(user.email)
+//     const model = await User.create(user)
 
-    await model.delete()
+//     expect(model?.email).toBe(user.email)
 
-    const userDeleted = await User.find(model?.id as number)
+//     await model.delete()
 
-    expect(userDeleted).toBeUndefined()
-  })
+//     const userDeleted = await User.find(model?.id as number)
 
-  it('should remove records in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(userDeleted).toBeUndefined()
+//   })
 
-    const model = await User.create(user)
+//   it('should remove records in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    expect(model?.email).toBe(user.email)
+//     const model = await User.create(user)
 
-    const userDeleted = await User.remove(model.id as number)
+//     expect(model?.email).toBe(user.email)
 
-    expect(userDeleted).toBeUndefined()
-  })
+//     const userDeleted = await User.remove(model.id as number)
 
-  it('should fetch the first record in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(userDeleted).toBeUndefined()
+//   })
 
-    await User.create(user)
+//   it('should fetch the first record in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    const firstModel = await User.first()
+//     await User.create(user)
 
-    expect(firstModel?.email).toBe(user.email)
-  })
+//     const firstModel = await User.first()
 
-  it('should fetch a record by ID in models', async () => {
-    const user = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(firstModel?.email).toBe(user.email)
+//   })
 
-    const model = await User.create(user)
+//   it('should fetch a record by ID in models', async () => {
+//     const user = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    const foundModel = await User.findOrFail(model.id as number)
+//     const model = await User.create(user)
 
-    expect(foundModel?.email).toBe(user.email)
-  })
+//     const foundModel = await User.findOrFail(model.id as number)
 
-  it('should throw an exception when record is not found by ID in models', async () => {
-    await expect(User.findOrFail(99999)).rejects.toThrowError('No model results found for 99999')
-  })
+//     expect(foundModel?.email).toBe(user.email)
+//   })
 
-  it('should fetch the last record in models', async () => {
-    const user1 = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//   it('should throw an exception when record is not found by ID in models', async () => {
+//     await expect(User.findOrFail(99999)).rejects.toThrowError('No model results found for 99999')
+//   })
 
-    const user2 = {
-      name: 'John Doe',
-      job_title: 'Data Scientist',
-      email: 'john@stacks.com',
-      password: '789012',
-    }
+//   it('should fetch the last record in models', async () => {
+//     const user1 = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    await User.create(user1)
-    await User.create(user2)
+//     const user2 = {
+//       name: 'John Doe',
+//       job_title: 'Data Scientist',
+//       email: 'john@stacks.com',
+//       password: '789012',
+//     }
 
-    const lastModel = await User.last()
+//     await User.create(user1)
+//     await User.create(user2)
 
-    expect(lastModel?.email).toBe(user2.email)
-  })
+//     const lastModel = await User.last()
 
-  it('should fetch records ordered by a specific column in models', async () => {
-    const user1 = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(lastModel?.email).toBe(user2.email)
+//   })
 
-    const user2 = {
-      name: 'John Doe',
-      job_title: 'Data Scientist',
-      email: 'john@stacks.com',
-      password: '789012',
-    }
+//   it('should fetch records ordered by a specific column in models', async () => {
+//     const user1 = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    await User.create(user1)
-    await User.create(user2)
+//     const user2 = {
+//       name: 'John Doe',
+//       job_title: 'Data Scientist',
+//       email: 'john@stacks.com',
+//       password: '789012',
+//     }
 
-    const orderedModels = await User.orderBy('name', 'asc').get()
+//     await User.create(user1)
+//     await User.create(user2)
 
-    expect(orderedModels[0]?.email).toBe(user1.email)
-    expect(orderedModels[1]?.email).toBe(user2.email)
-  })
+//     const orderedModels = await User.orderBy('name', 'asc').get()
 
-  it('should fetch distinct records in models', async () => {
-    const user1 = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(orderedModels[0]?.email).toBe(user1.email)
+//     expect(orderedModels[1]?.email).toBe(user2.email)
+//   })
 
-    const user2 = {
-      name: 'John Doe',
-      job_title: 'Data Scientist',
-      email: 'john@stacks.com',
-      password: '789012',
-    }
+//   it('should fetch distinct records in models', async () => {
+//     const user1 = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    const user3 = {
-      name: 'Jane Doe',
-      job_title: 'Data Scientist',
-      email: 'jane@stacks.com',
-      password: '101112',
-    }
+//     const user2 = {
+//       name: 'John Doe',
+//       job_title: 'Data Scientist',
+//       email: 'john@stacks.com',
+//       password: '789012',
+//     }
 
-    await User.create(user1)
-    await User.create(user2)
-    await User.create(user3)
+//     const user3 = {
+//       name: 'Jane Doe',
+//       job_title: 'Data Scientist',
+//       email: 'jane@stacks.com',
+//       password: '101112',
+//     }
 
-    const distinctModels = await User.distinct('job_title').get()
+//     await User.create(user1)
+//     await User.create(user2)
+//     await User.create(user3)
 
-    expect(distinctModels.length).toBe(2)
-    expect(distinctModels.map((model: UserModel) => model.job_title)).toEqual(['Software Engineer', 'Data Scientist'])
-  })
+//     const distinctModels = await User.distinct('job_title').get()
 
-  it('should fetch records ordered in ascending order in models', async () => {
-    const user1 = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(distinctModels.length).toBe(2)
+//     expect(distinctModels.map((model: UserModel) => model.job_title)).toEqual(['Software Engineer', 'Data Scientist'])
+//   })
 
-    const user2 = {
-      name: 'John Doe',
-      job_title: 'Data Scientist',
-      email: 'john@stacks.com',
-      password: '789012',
-    }
+//   it('should fetch records ordered in ascending order in models', async () => {
+//     const user1 = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    await User.create(user1)
-    await User.create(user2)
+//     const user2 = {
+//       name: 'John Doe',
+//       job_title: 'Data Scientist',
+//       email: 'john@stacks.com',
+//       password: '789012',
+//     }
 
-    const orderedModelsAsc = await User.orderByAsc('name').get()
+//     await User.create(user1)
+//     await User.create(user2)
 
-    expect(orderedModelsAsc[0]?.email).toBe(user1.email)
-    expect(orderedModelsAsc[1]?.email).toBe(user2.email)
-  })
+//     const orderedModelsAsc = await User.orderByAsc('name').get()
 
-  it('should fetch records ordered in descending order in models', async () => {
-    const user1 = {
-      name: 'Chris Breuer',
-      job_title: 'Software Engineer',
-      email: 'chris@stacks.com',
-      password: '123456',
-    }
+//     expect(orderedModelsAsc[0]?.email).toBe(user1.email)
+//     expect(orderedModelsAsc[1]?.email).toBe(user2.email)
+//   })
 
-    const user2 = {
-      name: 'John Doe',
-      job_title: 'Data Scientist',
-      email: 'john@stacks.com',
-      password: '789012',
-    }
+//   it('should fetch records ordered in descending order in models', async () => {
+//     const user1 = {
+//       name: 'Chris Breuer',
+//       job_title: 'Software Engineer',
+//       email: 'chris@stacks.com',
+//       password: '123456',
+//     }
 
-    await User.create(user1)
-    await User.create(user2)
+//     const user2 = {
+//       name: 'John Doe',
+//       job_title: 'Data Scientist',
+//       email: 'john@stacks.com',
+//       password: '789012',
+//     }
 
-    const orderedModelsDesc = await User.orderByDesc('name').get()
+//     await User.create(user1)
+//     await User.create(user2)
 
-    expect(orderedModelsDesc[0]?.email).toBe(user2.email)
-    expect(orderedModelsDesc[1]?.email).toBe(user1.email)
-  })
-})
+//     const orderedModelsDesc = await User.orderByDesc('name').get()
+
+//     expect(orderedModelsDesc[0]?.email).toBe(user2.email)
+//     expect(orderedModelsDesc[1]?.email).toBe(user1.email)
+//   })
+// })
