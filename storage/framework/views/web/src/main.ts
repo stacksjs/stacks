@@ -29,5 +29,16 @@ export const createApp = ViteSSG(
     })()
 
     // ctx.app.use(Previewer)
+
+    const { router } = ctx
+    router.beforeEach((to, from, next) => {
+      if (to.fullPath.startsWith('/api') || to.fullPath.startsWith('/docs')) {
+        console.log('redirecting to', to.fullPath)
+        window.location.href = to.fullPath
+        return
+      }
+
+      next()
+    })
   },
 )

@@ -22,6 +22,7 @@ const result = await Bun.build({
     '@stacksjs/storage',
     '@stacksjs/env',
     '@stacksjs/cli',
+    'aws-cdk-lib', // TODO: a recent AWS issue. We want to potentially remove this once the issue is resolved. Dig deeper into this before removing
   ],
 })
 
