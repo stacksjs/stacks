@@ -94,7 +94,7 @@ jobs:
         run: bun install
 
       - name: Test Suite
-        run: bun --bun run test
+        run: bun --filter='./storage/framework/core/*' test
 
   release-check:
     runs-on: ubuntu-latest
