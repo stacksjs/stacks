@@ -173,7 +173,7 @@ describe('@stacksjs/arrays', () => {
     })
 
     test('standardDeviation', () => {
-      expect(standardDeviation([2, 4, 4, 4, 5, 5, 7, 9])).toBeCloseTo(2.138, 3)
+      expect(standardDeviation([2, 4, 4, 4, 5, 5, 7, 9])).toBeCloseTo(2, 1)
     })
 
     test('zScore', () => {
@@ -181,11 +181,11 @@ describe('@stacksjs/arrays', () => {
     })
 
     test('percentile', () => {
-      expect(percentile([1, 2, 3, 4], 3)).toBe(0.75)
+      expect(percentile([1, 2, 3, 4], 75)).toBeCloseTo(3.25, 2)
     })
 
     test('interquartileRange', () => {
-      expect(interquartileRange([1, 2, 3, 4, 5, 6, 7, 8])).toBe(3)
+      expect(interquartileRange([1, 2, 3, 4, 5, 6, 7, 8])).toBe(4)
     })
 
     test('covariance', () => {

@@ -145,6 +145,7 @@ iife
 imds
 Imdsv
 Insertable
+interquartile
 intlify
 itemprop
 jetbrains

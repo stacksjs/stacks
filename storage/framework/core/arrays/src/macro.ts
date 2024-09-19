@@ -48,7 +48,7 @@ export const Arr = {
   },
 
   flatten<T>(array?: Nullable<Arrayable<T | Array<T>>>): Array<T> {
-    return flatten(array)
+    return toArray(array).reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val) : val), [] as T[])
   },
 
   mergeArrayable<T>(...args: Nullable<Arrayable<T>>[]): Array<T> {

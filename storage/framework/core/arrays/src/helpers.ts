@@ -32,7 +32,7 @@ export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
  * ```
  */
 export function flatten<T>(array?: Nullable<Arrayable<T | Array<T>>>): Array<T> {
-  return toArray(array).flat(1) as Array<T>
+  return toArray(array).reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val) : val), [] as T[])
 }
 
 /**

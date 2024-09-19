@@ -193,7 +193,14 @@ export function zScore(array: number[], num: number): number {
  * @see https://en.wikipedia.org/wiki/Percentile
  */
 export function percentile(array: number[], num: number): number {
-  return array.filter((n) => n < num).length / array.length
+  const sorted = [...array].sort((a, b) => a - b)
+  const index = (num / 100) * (sorted.length - 1)
+  const lower = Math.floor(index)
+  const upper = Math.ceil(index)
+  const weight = index - lower
+
+  if (upper === lower) return sorted[index]
+  return (1 - weight) * sorted[lower] + weight * sorted[upper]
 }
 
 /**
