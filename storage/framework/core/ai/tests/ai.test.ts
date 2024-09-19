@@ -22,7 +22,7 @@ const MOCK_SECRET_KEY = 'test-secret-key'
 const MOCK_SESSION_TOKEN = 'test-session-token'
 const MOCK_BEDROCK_URL = 'https://bedrock.us-east-1.amazonaws.com/foundation-model-entitlement'
 
-describe('requestModelAccess', () => {
+describe('@stacksjs/ai', () => {
   beforeEach(() => {
     // Mock defaultProvider
     mock.module('@aws-sdk/credential-provider-node', () => ({
@@ -59,6 +59,8 @@ describe('requestModelAccess', () => {
         json: () => Promise.resolve({ status: 'success' }),
       } as Response),
     )
+
+    bedrockMock.reset()
   })
 
   afterEach(() => {
@@ -105,12 +107,6 @@ describe('requestModelAccess', () => {
     expect(infoSpy).not.toHaveBeenCalled()
 
     ai.models = originalModels
-  })
-})
-
-describe('Bedrock Client', () => {
-  beforeEach(() => {
-    bedrockMock.reset()
   })
 
   it('should create model customization job', async () => {
