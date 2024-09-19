@@ -13,8 +13,8 @@ await refreshDatabase()
 //   it('should fetch a single record in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -28,8 +28,8 @@ await refreshDatabase()
 //   it('should store records in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -41,8 +41,8 @@ await refreshDatabase()
 //   it('should update records in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -58,8 +58,8 @@ await refreshDatabase()
 //   it('should delete records in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -77,8 +77,8 @@ await refreshDatabase()
 //   it('should remove records in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -94,8 +94,8 @@ await refreshDatabase()
 //   it('should fetch the first record in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -109,8 +109,8 @@ await refreshDatabase()
 //   it('should fetch a record by ID in models', async () => {
 //     const user = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -128,8 +128,8 @@ await refreshDatabase()
 //   it('should fetch the last record in models', async () => {
 //     const user1 = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -151,8 +151,8 @@ await refreshDatabase()
 //   it('should fetch records ordered by a specific column in models', async () => {
 //     const user1 = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -175,8 +175,8 @@ await refreshDatabase()
 //   it('should fetch distinct records in models', async () => {
 //     const user1 = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -201,14 +201,14 @@ await refreshDatabase()
 //     const distinctModels = await User.distinct('job_title').get()
 
 //     expect(distinctModels.length).toBe(2)
-//     expect(distinctModels.map((model: UserModel) => model.job_title)).toEqual(['Software Engineer', 'Data Scientist'])
+//     expect(distinctModels.map((model: UserModel) => model.job_title)).toEqual(['Open Sourceror', 'Data Scientist'])
 //   })
 
 //   it('should fetch records ordered in ascending order in models', async () => {
 //     const user1 = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 
@@ -231,8 +231,8 @@ await refreshDatabase()
 //   it('should fetch records ordered in descending order in models', async () => {
 //     const user1 = {
 //       name: 'Chris Breuer',
-//       job_title: 'Software Engineer',
-//       email: 'chris@stacks.com',
+//       job_title: 'Open Sourceror',
+//       email: 'chris@stacksjs.org',
 //       password: '123456',
 //     }
 

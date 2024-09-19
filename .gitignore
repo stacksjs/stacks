@@ -12,6 +12,7 @@ updates
 tests/unit/coverage
 dist*
 !.gitkeep
+database/stacks_testing.sqlite
 database/stacks.sqlite
 custom-cli
 *bun-build
