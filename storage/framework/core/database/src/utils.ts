@@ -11,8 +11,6 @@ const appEnv = app.env
 export function getDialect() {
   const driver = database.default ?? 'sqlite'
 
-  console.log(driver)
-
   log.debug(`Using database driver: ${driver}`)
 
   let dbName = database.connections?.mysql?.name ?? 'stacks' // Default database name

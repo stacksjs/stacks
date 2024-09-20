@@ -1,4 +1,5 @@
 import { italic, log } from '@stacksjs/cli'
+import { app } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
@@ -58,6 +59,9 @@ export async function resetSqliteDatabase() {
 }
 
 export function fetchSqliteFile(): string {
+  if (app.env === 'testing') {
+  }
+
   const dbPath = path.userDatabasePath('stacks.sqlite')
 
   return dbPath
