@@ -155,7 +155,7 @@ export function getRelationCount(relation: string): string {
 
 export async function getPivotTables(
   model: Model,
-  modelName: string,
+  modelPath: string,
 ): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
   const pivotTable = []
 
@@ -164,6 +164,7 @@ export async function getPivotTables(
     for (const belongsToManyRelation of belongsToManyArr) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
       const modelRelation = (await import(modelRelationPath)).default as Model
+      const modelName = getModelName(model, modelPath)
       const formattedModelName = modelName.toLowerCase()
 
       const firstForeignKey =
@@ -175,6 +176,8 @@ export async function getPivotTables(
         typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
           ? belongsToManyRelation.secondForeignKey
           : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+
+      console.log('formattedModelName', `${formattedModelName}_${modelRelation.table}`)
 
       pivotTable.push({
         table:

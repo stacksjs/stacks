@@ -3,7 +3,6 @@ import { faker } from '@stacksjs/faker'
 import { capitalize } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
-import type { User } from 'actions/src/orm/user'
 
 export default {
   name: 'User', // defaults to the sanitized file name
@@ -16,7 +15,6 @@ export default {
       useTwoFactor: true,
     },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
-    useSoftDeletes: true, // defaults to false, `softDeletable` used as an alias
     useSearch: {
       // defaults to true, `searchable` used as an alias
       searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)
@@ -33,11 +31,8 @@ export default {
     useApi: {
       uri: 'users', // your-url.com/api/users
       middleware: ['Api'], // defaults to `[]`
-      routes: {
-        index: 'UserIndexOrmAction.ts',
-        show: 'UserShowOrmAction.ts',
-        store: 'UserStoreAction.ts',
-      },
+
+      routes: ['index', 'store'],
     },
 
     observe: true,
@@ -56,7 +51,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(3).maxLength(88),
+        rule: schema.string().minLength(5).maxLength(255),
         message: {
           minLength: 'Name must have a minimum of 3 characters',
           maxLength: 'Name must have a maximum of 255 characters',

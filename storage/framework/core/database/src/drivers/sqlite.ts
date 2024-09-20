@@ -5,7 +5,7 @@ import { ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, glob, globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
@@ -27,8 +27,10 @@ export async function resetSqliteDatabase() {
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
-  const userModelFiles = globSync([path.userModelsPath('*.ts')])
+  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+
   for (const userModel of userModelFiles) {
+    console.log(userModel)
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
@@ -60,36 +62,33 @@ export async function resetSqliteDatabase() {
 
 export function fetchSqliteFile(): string {
   if (app.env === 'testing') {
+    return fetchTestSqliteFile()
   }
 
-  const dbPath = path.userDatabasePath('stacks.sqlite')
-
-  return dbPath
+  return path.userDatabasePath('stacks.sqlite')
 }
 
 export function fetchTestSqliteFile(): string {
-  const dbPath = path.userDatabasePath('stacks_testing.sqlite')
-
-  return dbPath
+  return path.userDatabasePath('stacks_testing.sqlite')
 }
 
 export async function generateSqliteMigration(modelPath: string) {
   // check if any files are in the database folder
-  const files = await fs.readdir(path.userMigrationsPath())
+  // const files = await fs.readdir(path.userMigrationsPath())
 
-  if (files.length === 0) {
-    log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
+  // if (files.length === 0) {
+  //   log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
-    // delete the *.ts files in the database/models folder
-    const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  //   // delete the *.ts files in the database/models folder
+  //   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
-    if (modelFiles.length) {
-      log.debug('No existing model files in framework path...')
+  //   if (modelFiles.length) {
+  //     log.debug('No existing model files in framework path...')
 
-      for (const file of modelFiles)
-        if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
-    }
-  }
+  //     for (const file of modelFiles)
+  //       if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
+  //   }
+  // }
 
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
@@ -139,7 +138,8 @@ async function createTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
-  const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
+  const twoFactorEnabled =
+    model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
@@ -157,7 +157,7 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite')
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
@@ -185,12 +185,12 @@ async function createTableMigration(modelPath: string) {
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
-    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-    migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+    migrationContent += "    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))\n"
+    migrationContent += "    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))\n"
   }
 
   // Append deleted_at column if useSoftDeletes is true
-  if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+  if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'text')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
@@ -198,6 +198,8 @@ async function createTableMigration(modelPath: string) {
   const timestamp = new Date().getTime().toString()
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  console.log(migrationFilePath)
 
   Bun.write(migrationFilePath, migrationContent)
 
@@ -226,6 +228,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     const timestamp = new Date().getTime().toString()
     const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
+
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     Bun.write(migrationFilePath, migrationContent)
@@ -279,7 +282,7 @@ async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validation?.rule)
+    const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'sqlite')
     const formattedFieldName = snakeCase(fieldName)
 
     migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
@@ -326,7 +329,7 @@ function reArrangeColumns(attributes: Attributes | undefined, tableName: string)
   let migrationContent = ''
 
   let previousField = ''
-  for (const [fieldName, options] of fields) {
+  for (const [fieldName] of fields) {
     const fieldNameFormatted = snakeCase(fieldName)
 
     if (previousField) {

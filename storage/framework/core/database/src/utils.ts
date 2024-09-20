@@ -6,19 +6,12 @@ import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
 
-const appEnv = app.env
+const appEnv = app.env || 'local'
 
 export function getDialect() {
   const driver = database.default ?? 'sqlite'
 
   log.debug(`Using database driver: ${driver}`)
-
-  let dbName = database.connections?.mysql?.name ?? 'stacks' // Default database name
-
-  // Check if appEnv is testing and modify dbName accordingly
-  if (appEnv === 'testing') {
-    dbName += '_testing' // Append '-testing' to the database name
-  }
 
   if (driver === 'sqlite') {
     const defaultName = appEnv !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
@@ -32,7 +25,7 @@ export function getDialect() {
   if (driver === 'mysql') {
     return new MysqlDialect({
       pool: createPool({
-        database: dbName, // Use modified dbName
+        database: database.connections?.mysql?.name || 'stacks', // Use modified dbName
         host: database.connections?.mysql?.host ?? '127.0.0.1',
         user: database.connections?.mysql?.username ?? 'root',
         password: database.connections?.mysql?.password ?? '',

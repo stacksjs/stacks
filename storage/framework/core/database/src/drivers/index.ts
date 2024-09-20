@@ -53,8 +53,12 @@ function hasFunction(rule: VineType, functionName: string): boolean {
   return typeof rule[functionName] === 'function'
 }
 
-export function mapFieldTypeToColumnType(rule: VineType): string {
+export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): string {
   if (hasFunction(rule, 'getChoices')) {
+    if (driver === 'sqlite') {
+      return `'text'`
+    }
+
     // Condition checker if an attribute is enum, could not think any conditions atm
     const enumChoices = rule.getChoices() as string[]
 

@@ -7,14 +7,10 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('email', 'varchar(255)', col => col.unique().notNull())
     .addColumn('password', 'varchar(255)', col => col.notNull())
-    .addColumn('name', 'varchar(88)', col => col.notNull())
+    .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('job_title', 'varchar(255)', col => col.notNull())
     .addColumn('two_factor_secret', 'varchar(255)')
-    .addColumn('team_id', 'integer', (col) =>
-        col.references('teams.id').onDelete('cascade')
-      ) 
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
-    .addColumn('deleted_at', 'timestamp')
+    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .execute()
 }

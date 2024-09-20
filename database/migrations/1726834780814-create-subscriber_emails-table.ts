@@ -6,8 +6,8 @@ export async function up(db: Database<any>) {
     .createTable('subscriber_emails')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('email', 'varchar(255)', col => col.unique())
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
-    .addColumn('deleted_at', 'timestamp')
+    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('deleted_at', 'text')
     .execute()
 }

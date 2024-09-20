@@ -8,11 +8,8 @@ export async function up(db: Database<any>) {
     .addColumn('name', 'varchar(255)')
     .addColumn('token', 'varchar(512)', col => col.unique())
     .addColumn('plain_text_token', 'varchar(512)')
-    .addColumn('abilities', sql`enum('read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin')`)
-    .addColumn('team_id', 'integer', (col) =>
-        col.references('teams.id').onDelete('cascade')
-      ) 
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
+    .addColumn('abilities', 'text')
+    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .execute()
 }

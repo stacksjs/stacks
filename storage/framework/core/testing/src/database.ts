@@ -1,5 +1,12 @@
 import { database } from '@stacksjs/config'
-import { db, fetchTables, fetchTestSqliteFile, runDatabaseMigration, sql } from '@stacksjs/database'
+import {
+  db,
+  fetchTables,
+  fetchTestSqliteFile,
+  resetSqliteDatabase,
+  runDatabaseMigration,
+  sql,
+} from '@stacksjs/database'
 import { fs } from '@stacksjs/storage'
 
 const driver = database.default || ''
@@ -32,6 +39,7 @@ export async function truncateMysql() {
 
 export async function truncateSqlite() {
   const dbPath = await fetchTestSqliteFile()
+  await resetSqliteDatabase()
 
   if (fs.existsSync(dbPath)) {
     await Bun.$`rm ${dbPath}`

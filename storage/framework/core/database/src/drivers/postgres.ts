@@ -27,7 +27,7 @@ export async function resetPostgresDatabase() {
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
-  const userModelFiles = globSync([path.userModelsPath('*.ts')])
+  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default

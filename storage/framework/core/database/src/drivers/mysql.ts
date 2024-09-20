@@ -30,7 +30,7 @@ export async function resetMysqlDatabase() {
 
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-  const userModelFiles = globSync([path.userModelsPath('*.ts')])
+  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const userModel of userModelFiles) {
     const model = (await import(userModel)).default as Model
@@ -129,7 +129,8 @@ async function createTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
-  const twoFactorEnabled = model.traits?.useAuth?.useTwoFactor
+  const twoFactorEnabled =
+    model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
@@ -189,6 +190,8 @@ async function createTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
+  console.log(migrationFilePath)
+
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
@@ -216,6 +219,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     const timestamp = new Date().getTime().toString()
     const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
+
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     Bun.write(migrationFilePath, migrationContent)

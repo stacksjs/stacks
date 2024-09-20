@@ -6,10 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('subscribers')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('subscribed', 'boolean')
-    .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
-      ) 
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
+    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .execute()
 }
