@@ -20,17 +20,32 @@ import {
 } from '.'
 
 export async function resetSqliteDatabase() {
+  await deleteFrameworkModels()
+  const files = await fs.readdir(path.userMigrationsPath())
+
+  if (files.length) {
+    for (const file of files) {
+      if (file.endsWith('.ts')) {
+        const migrationPath = path.userMigrationsPath(`${file}`)
+
+        if (fs.existsSync(migrationPath)) await Bun.$`rm ${migrationPath}`
+      }
+    }
+  }
+
+  return ok('All tables dropped successfully!')
+}
+
+export async function deleteFrameworkModels() {
   const dbPath = fetchSqliteFile()
 
   if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
 
-  const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
   const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const userModel of userModelFiles) {
-    console.log(userModel)
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
@@ -46,18 +61,6 @@ export async function resetSqliteDatabase() {
       }
     }
   }
-
-  if (files.length) {
-    for (const file of files) {
-      if (file.endsWith('.ts')) {
-        const migrationPath = path.userMigrationsPath(`${file}`)
-
-        if (fs.existsSync(migrationPath)) await Bun.$`rm ${migrationPath}`
-      }
-    }
-  }
-
-  return ok('All tables dropped successfully!')
 }
 
 export function fetchSqliteFile(): string {

@@ -3,9 +3,9 @@ import { refreshDatabase } from '@stacksjs/testing'
 import User from '../models/User'
 import type { UserModel } from '../models/User'
 
-beforeEach(async () => {
-  await refreshDatabase()
-})
+// beforeEach(async () => {
+//   await refreshDatabase()
+// })
 
 await refreshDatabase()
 
