@@ -9,7 +9,7 @@ import {
   runFrontendDevServer,
   runSystemTrayDevServer,
 } from '@stacksjs/actions'
-import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import { intro, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { libsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -91,29 +91,34 @@ export function dev(buddy: CLI) {
       }
 
       if (wantsInteractive(options)) {
-        const answer = await log.prompt.require().select(descriptions.select, {
-          options: [
-            { value: 'all', label: 'All' },
-            { value: 'frontend', label: 'Frontend' },
-            { value: 'api', label: 'Backend' },
-            { value: 'dashboard', label: 'Dashboard' },
-            { value: 'desktop', label: 'Desktop' },
-            { value: 'email', label: 'Email' },
-            { value: 'components', label: 'Components' },
-            { value: 'docs', label: 'Documentation' },
+        const answer = await prompts({
+          type: 'select',
+          name: 'value',
+          message: descriptions.select,
+          choices: [
+            { value: 'all', title: 'All' },
+            { value: 'frontend', title: 'Frontend' },
+            { value: 'api', title: 'Backend' },
+            { value: 'dashboard', title: 'Dashboard' },
+            { value: 'desktop', title: 'Desktop' },
+            { value: 'email', title: 'Email' },
+            { value: 'components', title: 'Components' },
+            { value: 'docs', title: 'Documentation' },
           ],
         })
 
-        if (answer === 'components') {
+        const selectedValue: string = answer.value
+
+        if (selectedValue === 'components') {
           await runComponentsDevServer(options)
-        } else if (answer === 'api') {
+        } else if (selectedValue === 'api') {
           await runApiDevServer(options)
-        } else if (answer === 'dashboard') {
+        } else if (selectedValue === 'dashboard') {
           await runDashboardDevServer(options)
         }
-        // else if (answer === 'email')
+        // else if (selectedValue === 'email')
         //   await runEmailDevServer(options)
-        else if (answer === 'docs') {
+        else if (selectedValue === 'docs') {
           await runDocsDevServer(options)
         } else {
           log.error('Invalid option during interactive mode')

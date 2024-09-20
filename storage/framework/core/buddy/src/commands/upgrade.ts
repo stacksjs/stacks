@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
@@ -42,22 +42,27 @@ export function upgrade(buddy: CLI) {
       const perf = await intro('buddy upgrade')
 
       if (hasNoOptions(options)) {
-        let answers = await log.prompt.require().multiselect(descriptions.select, {
-          options: [
-            { value: 'dependencies', label: 'Dependencies' },
-            { value: 'framework', label: 'Framework' },
-            { value: 'bun', label: 'Bun' },
-            { value: 'shell', label: 'Shell' },
-            { value: 'binary', label: 'Binary' },
+        const answers = await prompts({
+          type: 'multiselect',
+          name: 'value',
+          message: descriptions.select,
+          choices: [
+            { value: 'dependencies', title: 'Dependencies' },
+            { value: 'framework', title: 'Framework' },
+            { value: 'bun', title: 'Bun' },
+            { value: 'shell', title: 'Shell' },
+            { value: 'binary', title: 'Binary' },
           ],
         })
 
-        if (answers !== null) process.exit(ExitCode.InvalidArgument)
+        let answersValue = answers.value
 
-        if (isString(answers)) answers = [answers]
+        if (answersValue !== null) process.exit(ExitCode.InvalidArgument)
+
+        if (isString(answersValue)) answersValue = [answersValue]
 
         // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => {
+        options = answersValue.reduce((a: any, v: any) => {
           a[v] = true
           return a
         }, {})
