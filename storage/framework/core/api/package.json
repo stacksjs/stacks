@@ -46,7 +46,7 @@
   "dependencies": {
     "@stacksjs/utils": "workspace:*",
     "ofetch": "^1.3.4",
-    "openapi-typescript": "^7.4.0"
+    "openapi-typescript": "^7.4.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

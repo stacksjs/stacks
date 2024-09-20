@@ -52,10 +52,10 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.159.0"
+    "aws-cdk-lib": "^2.159.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "aws-cdk-lib": "^2.159.0"
+    "aws-cdk-lib": "^2.159.1"
   }
 }
