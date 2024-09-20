@@ -14,6 +14,6 @@ export async function up(db: Database<any>) {
     .addColumn('path', 'varchar(255)')
     .addColumn('is_personal', 'boolean')
     .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
-    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'text')
     .execute()
 }

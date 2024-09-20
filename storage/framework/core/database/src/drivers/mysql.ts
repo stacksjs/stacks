@@ -177,7 +177,7 @@ async function createTableMigration(modelPath: string) {
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
     migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-    migrationContent += `    .addColumn('updated_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   }
 
   // Append deleted_at column if useSoftDeletes is true

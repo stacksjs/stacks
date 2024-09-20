@@ -11,6 +11,6 @@ export async function up(db: Database<any>) {
     .addColumn('job_title', 'varchar(255)', col => col.notNull())
     .addColumn('two_factor_secret', 'varchar(255)')
     .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
-    .addColumn('updated_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'text')
     .execute()
 }
