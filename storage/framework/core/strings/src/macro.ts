@@ -26,8 +26,8 @@ export const Str = {
     return u.truncate(str, length, end)
   },
 
-  random(length = 16) {
-    return u.random(length)
+  random(length = 16, dict?: string) {
+    return u.random(length, dict)
   },
 
   capitalize(str: string) {

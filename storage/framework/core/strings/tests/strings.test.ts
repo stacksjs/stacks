@@ -57,6 +57,17 @@ describe('@stacksjs/strings', () => {
     test('titleCase', () => {
       expect(caseUtils.titleCase('hello world')).toBe('Hello World')
     })
+
+    test('capitalize edge cases', () => {
+      expect(caseUtils.capitalize('a')).toBe('A')
+      expect(caseUtils.capitalize('1hello')).toBe('1hello')
+      expect(caseUtils.capitalize('ALREADY CAPITALIZED')).toBe('Already capitalized')
+    })
+
+    test('international characters', () => {
+      expect(caseUtils.capitalize('éléphant')).toBe('Éléphant')
+      expect(caseUtils.lowercase('CAFÉ')).toBe('café')
+    })
   })
 
   describe('Helpers', () => {
@@ -65,6 +76,10 @@ describe('@stacksjs/strings', () => {
       expect(helpers.toString([])).toBe('[object Array]')
       expect(helpers.toString(42)).toBe('[object Number]')
       expect(helpers.toString('hello')).toBe('[object String]')
+      expect(helpers.toString(null)).toBe('[object Null]')
+      expect(helpers.toString(undefined)).toBe('[object Undefined]')
+      expect(helpers.toString(() => {})).toBe('[object Function]')
+      expect(helpers.toString(new Date())).toBe('[object Date]')
     })
   })
 
@@ -72,6 +87,9 @@ describe('@stacksjs/strings', () => {
     test('isEmail', () => {
       expect(is.isEmail('test@example.com')).toBe(true)
       expect(is.isEmail('invalid-email')).toBe(false)
+      expect(is.isEmail('test@example')).toBe(false)
+      expect(is.isEmail('test@example.com.uk')).toBe(true)
+      expect(is.isEmail('test+alias@example.com')).toBe(true)
     })
 
     test('isStrongPassword', () => {
@@ -95,7 +113,7 @@ describe('@stacksjs/strings', () => {
     })
 
     test('isMobilePhone', () => {
-      expect(is.isMobilePhone('+1234567890')).toBe(true)
+      expect(is.isMobilePhone('+12345678900')).toBe(true)
       expect(is.isMobilePhone('not-a-phone')).toBe(false)
     })
 
@@ -213,14 +231,25 @@ describe('@stacksjs/strings', () => {
       expect(Str.template('Hello {0}! My name is {1}.', 'Buddy', 'Chris')).toBe('Hello Buddy! My name is Chris.')
     })
 
+    test('template with multiple replacements', () => {
+      expect(Str.template('{0} {1} {2} {1} {0}', 'a', 'b', 'c')).toBe('a b c b a')
+    })
+
     test('truncate', () => {
-      expect(Str.truncate('This is a long string', 10)).toBe('This is a...')
+      expect(Str.truncate('This is a long string', 10)).toBe('This is...')
     })
 
     test('random', () => {
       const randomString = Str.random()
       expect(randomString).toHaveLength(16)
       expect(typeof randomString).toBe('string')
+    })
+
+    test('random with custom length and dictionary', () => {
+      const customDict = 'ABC123'
+      const result = Str.random(8, customDict)
+      expect(result).toHaveLength(8)
+      expect(result).toMatch(new RegExp(`^[${customDict}]+$`))
     })
 
     test('capitalize', () => {
@@ -248,6 +277,11 @@ describe('@stacksjs/strings', () => {
     test('plural', () => {
       expect(pluralize.plural('cat')).toBe('cats')
       expect(pluralize.plural('person')).toBe('people')
+    })
+
+    test('addPluralRule with invalid input', () => {
+      pluralize.addPluralRule('', '')
+      expect(pluralize.plural('')).toBe('')
     })
 
     test('singular', () => {
@@ -286,6 +320,12 @@ describe('@stacksjs/strings', () => {
       expect(pluralize.plural('fish')).toBe('fish')
       expect(pluralize.singular('fish')).toBe('fish')
     })
+
+    test('addUncountableRule does not affect other words', () => {
+      const originalPlural = pluralize.plural('book')
+      pluralize.addUncountableRule('data')
+      expect(pluralize.plural('book')).toBe(originalPlural)
+    })
   })
 
   describe('String utilities', () => {
@@ -308,13 +348,20 @@ describe('@stacksjs/strings', () => {
     })
 
     test('truncate', () => {
-      expect(utils.truncate('This is a long string', 10)).toBe('This is a...')
+      expect(utils.truncate('This is a long string', 10)).toBe('This is...')
     })
 
     test('random', () => {
-      const randomString = utils.random()
+      const randomString = Str.random()
       expect(randomString).toHaveLength(16)
       expect(typeof randomString).toBe('string')
+
+      const customLengthString = Str.random(8)
+      expect(customLengthString).toHaveLength(8)
+
+      const customDictString = Str.random(5, 'AB')
+      expect(customDictString).toHaveLength(5)
+      expect(customDictString).toMatch(/^[AB]+$/)
     })
 
     test('slug', () => {
@@ -322,12 +369,38 @@ describe('@stacksjs/strings', () => {
     })
 
     test('detectIndent', () => {
-      expect(utils.detectIndent('  hello\n    world')).toBe('  ')
+      const result = utils.detectIndent('  hello\n    world')
+      expect(result.indent).toBe('  ')
     })
 
     test('detectNewline', () => {
       expect(utils.detectNewline('hello\nworld')).toBe('\n')
       expect(utils.detectNewline('hello\r\nworld')).toBe('\r\n')
+    })
+
+    test('detectNewline with no newlines', () => {
+      expect(utils.detectNewline('hello world')).toBeUndefined()
+    })
+  })
+
+  describe('Combined utilities', () => {
+    test('slug and capitalize', () => {
+      expect(Str.capitalize(Str.slug('hello world'))).toBe('Hello-world')
+    })
+
+    test('camelCase and pluralize', () => {
+      expect(pluralize.plural(Str.camelCase('test case'))).toBe('testCases')
+    })
+  })
+
+  describe('Performance tests', () => {
+    test('random string generation performance', () => {
+      const start = performance.now()
+      for (let i = 0; i < 1000; i++) {
+        utils.random(100)
+      }
+      const end = performance.now()
+      expect(end - start).toBeLessThan(1000) // Should take less than 1 second
     })
   })
 

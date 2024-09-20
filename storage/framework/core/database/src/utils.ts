@@ -22,8 +22,8 @@ export function getDialect() {
 
   if (driver === 'sqlite') {
     const defaultName = appEnv !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
-
     const path = database.connections?.sqlite.database ?? defaultName
+
     return new BunWorkerDialect({
       url: path,
     })

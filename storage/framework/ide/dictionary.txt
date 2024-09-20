@@ -98,6 +98,7 @@ ecommerce
 edgelambda
 elasticloadbalancingv
 elbv
+éléphant
 encrypter
 entrypoints
 envrc
