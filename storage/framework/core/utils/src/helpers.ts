@@ -122,7 +122,7 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions): Pro
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   // simple, yet effective check to see if the script exists
-  if (isManifest(manifest) && hasScript(manifest, script)) return await runCommand(`bun --bun run ${script}`, options)
+  if (isManifest(manifest) && hasScript(manifest, script)) return await runCommand(`bun run ${script}`, options)
 
   return err(handleError(`The ${script} script does not exist in the package.json file.`))
 }

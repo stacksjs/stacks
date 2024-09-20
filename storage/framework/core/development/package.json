@@ -39,8 +39,8 @@
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

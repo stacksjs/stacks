@@ -22,7 +22,7 @@
     "dev": "ray develop",
     "fix-lint": "ray lint --fix",
     "lint": "ray lint",
-    "publish": "bunx @raycast/api@latest publish"
+    "publish": "bunx --bun @raycast/api@latest publish"
   },
   "dependencies": {
     "@raycast/api": "^1.83.1",

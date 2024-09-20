@@ -43,12 +43,12 @@
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "dev": "bunx vite ../../dashboard -c ../vite-config/src/desktop.ts",
+    "dev": "bunx --bun vite ../../dashboard -c ../vite-config/src/desktop.ts",
     "dev:app": "tauri dev",
-    "build": "bun --bun build.ts",
-    "build:app": "bunx vite build ../../dashboard -c ../vite-config/src/desktop.ts",
+    "build": "bun build.ts",
+    "build:app": "bunx --bun vite build ../../dashboard -c ../vite-config/src/desktop.ts",
     "tauri:build": "tauri build",
-    "typecheck": "bun --bun tsc --noEmit",
+    "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

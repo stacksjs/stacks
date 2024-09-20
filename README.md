@@ -37,7 +37,7 @@ curl -Ssf stacksjs.org/install | sh # wip
 
 # alternatively, if Bun >= v1.1.27 is installed already,
 # you may also get started via:
-bunx stacks new my-project
+bunx --bun stacks new my-project
 ```
 
 ## Usage
@@ -158,7 +158,7 @@ buddy make:factory cars # creates a Car factory file
 buddy make:table cars # bootstraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-project # shares logic with `bunx stacks new my-project`
+buddy make:stack my-project # shares logic with `bunx --bun stacks new my-project`
 
 buddy migrate # runs database migrations
 buddy migrate:dns # sets the ./config/dns.ts file

@@ -50,8 +50,8 @@ export class ErrorHandler {
 
   static writeErrorToConsole(err: string | Error | unknown): void {
     if (
-      err === `Failed to execute command: ${italic('bunx biome check --fix')}` ||
-      err === `Failed to execute command: ${italic('bun --bun storage/framework/core/actions/src/lint/fix.ts')}`
+      err === `Failed to execute command: ${italic('bunx --bun biome check --fix')}` ||
+      err === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
     ) {
       // To trigger this, run `buddy release` with a lint error in your codebase
       console.error(err)
@@ -60,7 +60,11 @@ export class ErrorHandler {
 
     // when "undeploying," there currently is a chance that edge functions can't be destroyed yet, because of their distributed nature
     // this is a temporary fix until AWS improves this on their side
-    if (typeof err === 'string' && err.includes('Failed to execute command:') && err.includes('bunx cdk destroy')) {
+    if (
+      typeof err === 'string' &&
+      err.includes('Failed to execute command:') &&
+      err.includes('bunx --bun cdk destroy')
+    ) {
       console.error(err)
       console.log(
         'No need to worry. The edge function is currently being destroyed. Please run `buddy undeploy` shortly again, and continue doing so until it succeeds running.',

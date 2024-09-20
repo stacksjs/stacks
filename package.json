@@ -17,7 +17,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
+    "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./storage/framework/scripts/setup.sh",
     "fresh": "bun run buddy fresh",

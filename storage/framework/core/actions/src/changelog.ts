@@ -11,8 +11,8 @@ const options = parseOptions()
 log.debug('Changelog Options', options)
 
 const command = options?.dryRun
-  ? `bunx changelogen --no-output --from ${fromRevision} --to ${toRevision}`
-  : `bunx changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}`
+  ? `bunx --bun changelogen --no-output --from ${fromRevision} --to ${toRevision}`
+  : `bunx --bun changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}`
 
 await runCommand(command, {
   cwd: projectPath(),

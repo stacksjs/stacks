@@ -34,7 +34,7 @@ browserslist
 bumpp
 bundleconfig
 bunnel
-bunx
+bunx --bun
 cardano
 cback
 certificatemanager

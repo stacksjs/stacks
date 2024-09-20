@@ -34,7 +34,7 @@
     "serve": "vite --config ../build/src/desktop.ts",
     "serve:tauri": "vite",
     "prepublishOnly": "bun run build",
-    "typecheck": "bun --bun tsc --noEmit"
+    "typecheck": "bun tsc --noEmit"
   },
   "dependencies": {
     "@stacksjs/desktop": "workspace:*",

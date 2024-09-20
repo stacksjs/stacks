@@ -35,11 +35,11 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite -c ../../core/vite-config/src/dashboard.ts",
-    "dev:app": "bunx tauri dev",
+    "dev:app": "bunx --bun tauri dev",
     "build": "bunx --bun vite build -c ../../core/vite-config/src/dashboard.ts",
-    "build:app": "bunx tauri build",
+    "build:app": "bunx --bun tauri build",
     "prepublishOnly": "bun run build",
-    "typecheck": "bun --bun tsc --noEmit"
+    "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/desktop": "workspace:*",

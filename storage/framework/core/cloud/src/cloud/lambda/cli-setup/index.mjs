@@ -37,17 +37,17 @@ cd $PROJECT_ROOT
 # Run the pkgx-install script
 if [[ $* == *--verbose* ]]; then
   "$SCRIPT_PATH"
-  # bun --bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
+  # bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
 else
   "$SCRIPT_PATH" > /dev/null 2>&1
-  # bun --bun ./storage/framework/core/buddy/src/cli.ts setup
+  # bun ./storage/framework/core/buddy/src/cli.ts setup
 fi
 
 # Create a named pipe
 mkfifo /tmp/mypipe
 
 # Run the command, send output to both the console and the pipe
-bun --bun $CLI_PATH setup | tee /tmp/mypipe &
+bun $CLI_PATH setup | tee /tmp/mypipe &
 
 # Read from the pipe, add timestamps, and append to the file
 while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> $LOG_PATH

@@ -38,8 +38,8 @@
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "bootstrap": "bunx cdk bootstrap",
-    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../cloud && bunx cdk deploy --require-approval never",
+    "bootstrap": "bunx --bun cdk bootstrap",
+    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../cloud && bunx --bun cdk deploy --require-approval never",
     "dev": "./dev local"
   },
   "dependencies": {

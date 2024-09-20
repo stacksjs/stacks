@@ -7,7 +7,7 @@
     "build": "wip",
     "dev": "wip",
     "typecheck": "bunx --bun vue-tsc --noEmit",
-    "sizecheck": "bunx vite-bundle-visualizer"
+    "sizecheck": "bunx --bun vite-bundle-visualizer"
   },
   "dependencies": {
     "@stacksjs/path": "workspace:*",

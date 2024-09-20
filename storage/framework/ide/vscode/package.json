@@ -31,8 +31,8 @@
     "vscode": "^1.93.1"
   },
   "scripts": {
-    "package": "bunx vsce package",
-    "release": "bunx vsce publish"
+    "package": "bunx --bun vsce package",
+    "release": "bunx --bun vsce publish"
   },
   "galleryBanner": {
     "color": "#d7e4f5",

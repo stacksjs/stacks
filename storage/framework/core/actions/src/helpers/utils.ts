@@ -46,7 +46,7 @@ export async function runAction(action: Action, options?: ActionOptions) {
   // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath
   const opts = buddyOptions()
   const path = p.relativeActionsPath(`src/${action}.ts`)
-  const cmd = `bun --bun ${path} ${opts}`.trimEnd()
+  const cmd = `bun ${path} ${opts}`.trimEnd()
   const optionsWithCwd = {
     cwd: options?.cwd || p.projectPath(),
     ...options,
@@ -82,7 +82,7 @@ export async function runActions(actions: Action[], options?: ActionOptions) {
     ...options,
   }
 
-  const commands = actions.map((action) => `bun --bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
+  const commands = actions.map((action) => `bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
 
   log.debug('commands:', commands)
 

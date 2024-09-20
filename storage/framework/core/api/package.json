@@ -38,9 +38,9 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "build": "bun --bun build.ts",
+    "build": "bun build.ts",
     "generate-types": "openapi-typescript ./../../api/openapi.json --output ./../../api/api-types.ts",
-    "typecheck": "bun --bun tsc --noEmit",
+    "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

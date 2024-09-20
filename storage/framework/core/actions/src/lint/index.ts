@@ -6,7 +6,7 @@ import { ExitCode } from '@stacksjs/types'
 
 log.info('Ensuring Code Style...')
 
-// TODO: somehow, we currently cannot trigger bunx using $`` syntax
+// TODO: somehow, we currently cannot trigger bunx --bun using $`` syntax
 // $.cwd(projectPath())
 
 // await $`${NpmScript.Lint}`

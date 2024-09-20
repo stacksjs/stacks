@@ -5,14 +5,14 @@ import { serve } from '@stacksjs/router'
 
 const options = parseOptions()
 
-log.debug('Running API dev server via', `bunx vite --config ${p.viteConfigPath('src/api.ts')}`, options)
+log.debug('Running API dev server via', `bunx --bun vite --config ${p.viteConfigPath('src/api.ts')}`, options)
 
 serve({
   port: config.ports?.api, // defaults to 3008
 })
 
 // the reason we start a Vite dev server next is because we need the Bun server proxied by vite
-await runCommand(`bunx vite --config ${p.viteConfigPath('src/api.ts')}`, {
+await runCommand(`bunx --bun vite --config ${p.viteConfigPath('src/api.ts')}`, {
   // ...options,
   cwd: p.frameworkPath(),
 })

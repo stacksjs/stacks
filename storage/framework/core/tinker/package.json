@@ -21,7 +21,7 @@
   "scripts": {
     "build": "echo 'wip'",
     "prepublishOnly": "bun run build",
-    "typecheck": "bun --bun tsc --noEmit"
+    "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -53,7 +53,7 @@ log.info('Deploying...')
 
 const profile = process.env.AWS_PROFILE ?? 'stacks'
 
-const result = await runCommand(`bunx cdk deploy --require-approval never --profile="${profile}"`, {
+const result = await runCommand(`bunx --bun cdk deploy --require-approval never --profile="${profile}"`, {
   cwd: p.frameworkCloudPath(),
 })
 

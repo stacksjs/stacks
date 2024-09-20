@@ -1226,7 +1226,7 @@ export async function generateModelString(
           throw(\`No model results found for \${id}\ \`)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
-        
+
         return instance.parseResult(new this(model))
       }
 

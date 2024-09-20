@@ -43,7 +43,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish Dummy Libraries
-        run: bunx pnpm --filter='./storage/framework' publish:dummy-libs
+        run: bunx --bun pnpm --filter='./storage/framework' publish:dummy-libs
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
@@ -58,6 +58,6 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Create GitHub Release
-        run: bunx changelogithub
+        run: bunx --bun changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

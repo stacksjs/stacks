@@ -8,7 +8,7 @@
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks/storage/framework/system-tray#readme",
   "scripts": {
-    "dev": "bunx vite -c ../core/vite-config/src/system-tray.ts",
+    "dev": "bunx --bun vite -c ../core/vite-config/src/system-tray.ts",
     "build": "wip"
   }
 }

@@ -22,7 +22,7 @@ We welcome contributions to this extension pack.
 ## Local Usage
 
 ```bash
-bun --bun run package // to create a .vsix file
+bun run package // to create a .vsix file
 code --install-extension stacks-vscode-0.44.2.vsix // to install the extension locally
 ```
 

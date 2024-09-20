@@ -69,7 +69,7 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
+    "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

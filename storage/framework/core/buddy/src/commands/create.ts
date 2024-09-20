@@ -101,7 +101,7 @@ function onlineCheck() {
 
 async function download(name: string, path: string, options: CreateOptions) {
   log.info('Setting up your stack.')
-  const result = await runCommand(`bunx giget stacks ${name}`, options)
+  const result = await runCommand(`bunx --bun giget stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
   return result

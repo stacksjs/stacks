@@ -24,6 +24,7 @@ export function websiteSourceHash() {
     p.projectPath('resources/components'),
     p.projectPath('resources/modules'),
     p.projectPath('resources/stores'),
+    p.frameworkPath('views/web'),
   ]
 
   return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)

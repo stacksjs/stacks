@@ -39,7 +39,7 @@
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "echo 'No build needed'",
-    "typecheck": "bun --bun tsc --noEmit",
+    "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
