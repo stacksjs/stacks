@@ -36,13 +36,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "luxon": "^3.5.0"
+    "cron": "^3.1.7"
   },
   "devDependencies": {
-    "@fast-check/jest": "^2.0.2",
-    "@stacksjs/development": "workspace:*",
-    "@types/luxon": "^3.4.2",
-    "@types/sinon": "^17.0.3",
-    "sinon": "^19.0.2"
+    "@stacksjs/development": "workspace:*"
   }
 }

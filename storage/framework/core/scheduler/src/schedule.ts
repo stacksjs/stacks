@@ -1,7 +1,6 @@
 import { log } from '@stacksjs/cli'
 import type { DateTime } from 'luxon'
-import { CronJob } from './job'
-import { CronTime } from './time'
+import { CronJob, CronTime } from './'
 
 export class Schedule {
   private cronPattern = ''

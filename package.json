@@ -44,7 +44,7 @@
     "release": "bun run buddy release",
     "changelog": "bun run buddy changelog",
     "generate": "bun run buddy generate",
-    "types:check": "bunx typecheck --noEmit",
+    "types:check": "bun tsc --noEmit",
     "types:fix": "bun run buddy types:fix",
     "test": "bun run buddy test",
     "test:ui": "bun run buddy test:ui",
