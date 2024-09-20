@@ -135,6 +135,30 @@ export async function generateSqliteMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
+export async function copyModelFiles(modelPath: string) {
+  const model = (await import(modelPath)).default as Model
+  const fileName = path.basename(modelPath)
+  const tableName = await getTableName(model, modelPath)
+
+  const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
+  const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
+
+  // if the file exists, we need to check if the fields have changed
+  if (fs.existsSync(copiedModelPath)) {
+    log.debug(`Fields have already been generated for ${tableName}`)
+
+    const previousFields = await getLastMigrationFields(fileName)
+    const previousFieldsString = JSON.stringify(previousFields, null, 2) // Convert to string for comparison
+
+    if (previousFieldsString === fieldsString) {
+      log.debug(`Fields have not changed for ${tableName}`)
+      return
+    }
+  }
+
+  // store the fields of the model to a file
+  await Bun.$`cp ${modelPath} ${copiedModelPath}`
+}
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 

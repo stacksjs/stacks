@@ -18,7 +18,7 @@ export function getDialect() {
     const path = database.connections?.sqlite.database ?? defaultName
 
     return new BunWorkerDialect({
-      url: '/Users/glennmichaeltorregosa/Documents/Projects/stacks/database/stacks.sqlite',
+      url: path,
     })
   }
 
