@@ -139,9 +139,9 @@ type StacksEvents = {
   'user:registered': object
   'user:logged-in': object
   'user:logged-out': object
-  'user:updated': UserModel
-  'user:created': UserModel
-  'user:deleted': UserModel
+  'user:updated': Partial<UserModel>
+  'user:created': Partial<UserModel>
+  'user:deleted': Partial<UserModel>
   'user:password-reset': object
   'user:password-changed': object
 }
