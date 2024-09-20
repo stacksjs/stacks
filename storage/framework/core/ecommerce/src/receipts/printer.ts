@@ -1,27 +1,36 @@
-type PrinterDriver = {
-  print: (receipt: Receipt) => void
-  cleanUp: () => void
-  checkStatus: () => void
+interface PrinterDriver {
+  print: (receipt: Receipt) => Promise<void>
+  cleanUp: () => Promise<void>
+  checkStatus: () => Promise<boolean>
 }
 
+type Path = string
+
 type Receipt = {
-  id: string
+  id: string | number
   name: string
   price: number
   quantity: number
-  image: string
+  template: Path
 }
 
-const printer: PrinterDriver = {
-  print(receipt: Receipt) {
-    console.log(receipt)
-  },
+class TSPIVPrinter implements PrinterDriver {
+  async print(receipt: Receipt): Promise<void> {
+    console.log('TSP IV Printer: Printing receipt', receipt)
+    // Implement actual printing logic here
+  }
 
-  cleanUp() {
-    console.log('Cleaning up print job...')
-  },
+  async cleanUp(): Promise<void> {
+    console.log('TSP IV Printer: Cleaning up print job...')
+    // Implement actual cleanup logic here
+  }
 
-  checkStatus() {
-    console.log('Checking online status...')
-  },
+  async checkStatus(): Promise<boolean> {
+    console.log('TSP IV Printer: Checking online status...')
+    // Implement actual status check logic here
+    return true // Return actual status
+  }
 }
+
+// Export the TSP IV printer instance
+export const tspIVPrinter = new TSPIVPrinter()

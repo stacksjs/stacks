@@ -315,6 +315,7 @@ tlsx
 treeshaking
 triggerable
 tsdoc
+TSPIV
 tsup
 twoslash
 typecheck
