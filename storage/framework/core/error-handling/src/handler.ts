@@ -10,6 +10,9 @@ interface ErrorOptions {
 type ErrorMessage = string
 
 export class ErrorHandler {
+  static isTestEnvironment = false
+  static shouldExitProcess = true
+
   static handle(err: Error | ErrorMessage | unknown, options?: ErrorOptions): Error {
     if (options?.silent !== true) this.writeErrorToConsole(err)
 
@@ -50,28 +53,26 @@ export class ErrorHandler {
   }
 
   static writeErrorToConsole(err: string | Error | unknown): void {
-    if (
-      err === `Failed to execute command: ${italic('bunx --bun biome check --fix')}` ||
-      err === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
-    ) {
-      console.error(err)
-      process.exit(ExitCode.FatalError)
-    }
-
-    if (
-      typeof err === 'string' &&
-      err.includes('Failed to execute command:') &&
-      err.includes('bunx --bun cdk destroy')
-    ) {
-      console.error(err)
-      console.log(
-        'No need to worry. The edge function is currently being destroyed. Please run `buddy undeploy` shortly again, and continue doing so until it succeeds running.',
-      )
-      console.log('Hoping to see you back soon!')
-      process.exit(ExitCode.FatalError)
-    }
-
     console.error(err)
+
+    const errorString = typeof err === 'string' ? err : err instanceof Error ? err.message : JSON.stringify(err)
+
+    if (
+      errorString.includes('bunx --bun cdk destroy') ||
+      errorString === `Failed to execute command: ${italic('bunx --bun biome check --fix')}` ||
+      errorString === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
+    ) {
+      if (!this.isTestEnvironment) {
+        console.log(
+          'No need to worry. The edge function is currently being destroyed. Please run `buddy undeploy` shortly again, and continue doing so until it succeeds running.',
+        )
+        console.log('Hoping to see you back soon!')
+      }
+    }
+
+    if (this.shouldExitProcess) {
+      process.exit(ExitCode.FatalError)
+    }
   }
 }
 

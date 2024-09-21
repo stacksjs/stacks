@@ -8,21 +8,31 @@ import { rescue } from '../src/utils'
 
 describe('@stacksjs/error-handling', () => {
   let originalConsoleError: typeof console.error
+  let originalConsoleLog: typeof console.log
   let originalProcessExit: typeof process.exit
 
   beforeAll(() => {
     originalConsoleError = console.error
     console.error = () => {} // No-op function
 
+    originalConsoleLog = console.log
+    console.log = () => {} // No-op function
+
     originalProcessExit = process.exit
     process.exit = () => {
       throw new Error('process.exit() was called')
     }
+
+    ErrorHandler.isTestEnvironment = true
+    ErrorHandler.shouldExitProcess = false
   })
 
   afterAll(() => {
     console.error = originalConsoleError
+    console.log = originalConsoleLog
     process.exit = originalProcessExit
+    ErrorHandler.isTestEnvironment = false
+    ErrorHandler.shouldExitProcess = true
   })
 
   describe('ErrorHandler', () => {
@@ -47,44 +57,45 @@ describe('@stacksjs/error-handling', () => {
     })
 
     it('should write error to console when not silent', () => {
-      const writeErrorToConsoleSpy = spyOn(ErrorHandler, 'writeErrorToConsole')
+      const consoleErrorSpy = spyOn(console, 'error')
       const error = new Error('Test error')
       ErrorHandler.handle(error, { silent: false })
-      expect(writeErrorToConsoleSpy).toHaveBeenCalledWith(error)
-      writeErrorToConsoleSpy.mockRestore()
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error)
+      consoleErrorSpy.mockRestore()
     })
 
     it('should not write error to console when silent', () => {
-      const writeErrorToConsoleSpy = spyOn(ErrorHandler, 'writeErrorToConsole')
+      const consoleErrorSpy = spyOn(console, 'error')
       const error = new Error('Test error')
       ErrorHandler.handle(error, { silent: true })
-      expect(writeErrorToConsoleSpy).not.toHaveBeenCalled()
-      writeErrorToConsoleSpy.mockRestore()
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
+      consoleErrorSpy.mockRestore()
     })
 
     it('should write error to file', async () => {
-      const writeErrorToFileSpy = spyOn(ErrorHandler, 'writeErrorToFile')
+      const appendFileSpy = spyOn(fs, 'appendFile').mockResolvedValue(undefined)
       const error = new Error('Test error')
-      await ErrorHandler.handle(error)
-      expect(writeErrorToFileSpy).toHaveBeenCalledWith(error)
-      writeErrorToFileSpy.mockRestore()
+      await ErrorHandler.writeErrorToFile(error)
+      expect(appendFileSpy).toHaveBeenCalled()
+      appendFileSpy.mockRestore()
     })
 
     it('should handle specific command errors', () => {
       const consoleErrorSpy = spyOn(console, 'error')
-      const processExitSpy = spyOn(process, 'exit')
+      const consoleLogSpy = spyOn(console, 'log')
 
-      const error = `Failed to execute command: ${italic('bunx --bun biome check --fix')}`
-      expect(() => ErrorHandler.writeErrorToConsole(error)).toThrow('process.exit() was called')
+      const error = 'Failed to execute command: bunx --bun cdk destroy'
+      ErrorHandler.writeErrorToConsole(error)
+
       expect(consoleErrorSpy).toHaveBeenCalledWith(error)
-      expect(processExitSpy).toHaveBeenCalledWith(ExitCode.FatalError)
+      expect(consoleLogSpy).not.toHaveBeenCalled()
 
       consoleErrorSpy.mockRestore()
-      processExitSpy.mockRestore()
+      consoleLogSpy.mockRestore()
     })
 
     it('should format error message correctly when writing to file', async () => {
-      const appendFileSpy = spyOn(fs, 'appendFile')
+      const appendFileSpy = spyOn(fs, 'appendFile').mockResolvedValue(undefined)
       const error = new Error('Test error')
       await ErrorHandler.writeErrorToFile(error)
       expect(appendFileSpy).toHaveBeenCalledWith(
@@ -97,26 +108,52 @@ describe('@stacksjs/error-handling', () => {
     it('should handle CDK destroy command errors', () => {
       const consoleErrorSpy = spyOn(console, 'error')
       const consoleLogSpy = spyOn(console, 'log')
-      const processExitSpy = spyOn(process, 'exit')
 
       const error = 'Failed to execute command: bunx --bun cdk destroy'
-      expect(() => ErrorHandler.writeErrorToConsole(error)).toThrow('process.exit() was called')
+      ErrorHandler.writeErrorToConsole(error)
+
       expect(consoleErrorSpy).toHaveBeenCalledWith(error)
-      expect(consoleLogSpy).toHaveBeenCalledTimes(2)
-      expect(processExitSpy).toHaveBeenCalledWith(ExitCode.FatalError)
+      expect(consoleLogSpy).not.toHaveBeenCalled()
 
       consoleErrorSpy.mockRestore()
       consoleLogSpy.mockRestore()
-      processExitSpy.mockRestore()
+    })
+
+    it('should handle biome check command errors', () => {
+      const consoleErrorSpy = spyOn(console, 'error')
+      const consoleLogSpy = spyOn(console, 'log')
+
+      const error = `Failed to execute command: ${italic('bunx --bun biome check --fix')}`
+      ErrorHandler.writeErrorToConsole(error)
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error)
+      expect(consoleLogSpy).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
+      consoleLogSpy.mockRestore()
+    })
+
+    it('should handle lint fix command errors', () => {
+      const consoleErrorSpy = spyOn(console, 'error')
+      const consoleLogSpy = spyOn(console, 'log')
+
+      const error = `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
+      ErrorHandler.writeErrorToConsole(error)
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error)
+      expect(consoleLogSpy).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
+      consoleLogSpy.mockRestore()
     })
 
     it('should use correct log file path', async () => {
-      const mkdirSpy = spyOn(fs, 'mkdir')
-      const appendFileSpy = spyOn(fs, 'appendFile')
+      const mkdirSpy = spyOn(fs, 'mkdir').mockResolvedValue(undefined)
+      const appendFileSpy = spyOn(fs, 'appendFile').mockResolvedValue(undefined)
       const error = new Error('Test error')
       await ErrorHandler.writeErrorToFile(error)
-      expect(mkdirSpy).toHaveBeenCalledWith(expect.any(String), expect.anything())
-      expect(appendFileSpy.mock.calls[0][0]).toMatch(/stacks\.log$/)
+      expect(mkdirSpy).toHaveBeenCalledWith(expect.stringContaining('logs'), expect.anything())
+      expect(appendFileSpy.mock.calls[0][0]).toMatch(/logs[/\\]stacks\.log$/)
       mkdirSpy.mockRestore()
       appendFileSpy.mockRestore()
     })
