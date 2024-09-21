@@ -6,7 +6,7 @@ beforeEach(async () => {
   await fileSystem.clear()
 })
 
-describe('redisTest', () => {
+describe('@stacksjs/cache - Filesystem', () => {
   it('should set and get a fileSystem cache value', async () => {
     await fileSystem.set('key1', 'value1')
     expect(await fileSystem.get('key1')).toBe('value1')

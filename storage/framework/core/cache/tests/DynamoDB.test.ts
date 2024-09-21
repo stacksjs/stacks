@@ -6,7 +6,7 @@ beforeEach(async () => {
   await dynamodb.clear()
 })
 
-describe('redisTest', () => {
+describe('@stacksjs/cache - DynamoDB', () => {
   it('should set and get a dynamodb cache value', async () => {
     await dynamodb.set('key1', 'value1')
     expect(await dynamodb.get('key1')).toBe('value1')

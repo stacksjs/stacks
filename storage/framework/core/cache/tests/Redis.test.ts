@@ -5,7 +5,7 @@ beforeEach(async () => {
   await redis.clear()
 })
 
-describe('@stacksjs/cache - redis', () => {
+describe('@stacksjs/cache - Redis', () => {
   it('should set and get a redis cache value', async () => {
     await redis.set('key1', 'value1')
     expect(await redis.get('key1')).toBe('value1')

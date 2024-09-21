@@ -6,7 +6,7 @@ beforeEach(async () => {
   await memory.clear()
 })
 
-describe('redisTest', () => {
+describe('@stacksjs/cache - Memory', () => {
   it('should set and get a memory cache value', async () => {
     await memory.set('key1', 'value1')
     expect(await memory.get('key1')).toBe('value1')
