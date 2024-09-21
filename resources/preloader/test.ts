@@ -1,4 +1,4 @@
-import { enableBrowserFeatures } from '@stacksjs/testing'
+import { setupTestEnvironment } from '@stacksjs/testing'
 
 /**
  * A place to register logic that should run before the tests run.
@@ -6,4 +6,4 @@ import { enableBrowserFeatures } from '@stacksjs/testing'
  * to prevent the original module from being evaluated.
  */
 
-enableBrowserFeatures()
+setupTestEnvironment()

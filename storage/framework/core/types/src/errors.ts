@@ -7,7 +7,6 @@
 //   toString(): string
 // }
 
-// export type StacksError = Error
 export type CommandError = Error
 
 export interface ErrorOptions {
