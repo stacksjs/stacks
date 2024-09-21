@@ -42,6 +42,16 @@ export class Schedule {
     return this
   }
 
+  everyHour() {
+    this.cronPattern = '0 0 * * * *'
+    return this
+  }
+
+  everyDay() {
+    this.cronPattern = '0 0 0 * * *'
+    return this
+  }
+
   hourly() {
     this.cronPattern = '0 0 * * * *'
     return this
@@ -114,6 +124,8 @@ export class Schedule {
     return this
   }
 }
+
+export class Job extends Schedule {}
 
 export function sendAt(cronTime: string | Date | DateTime): DateTime {
   return new CronTime(cronTime).sendAt()

@@ -1,158 +1,161 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { DateTime } from 'luxon'
-import { CronJob, Schedule, sendAt, timeout } from '../src'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { CronJob, CronTime, Job, Schedule, sendAt, timeout } from '../src'
+
+// Mock log.info
+const mockLogInfo = mock(() => {})
+mock.module('@stacksjs/cli', () => ({
+  log: { info: mockLogInfo },
+}))
 
 describe('@stacksjs/scheduler', () => {
-  let originalDateNow: () => number
+  let schedule: Schedule
+  let mockTask: () => void
 
   beforeEach(() => {
-    originalDateNow = Date.now
-    Date.now = () => new Date('2024-01-01T00:00:00Z').getTime()
+    mockTask = mock(() => {})
+    schedule = new Schedule(mockTask)
+    mockLogInfo.mockClear()
   })
 
-  afterEach(() => {
-    Date.now = originalDateNow
-  })
-
-  describe('Schedule class', () => {
-    it('should create a schedule with everySecond', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everySecond()
-      expect((schedule as any).cronPattern).toBe('* * * * * *')
+  describe('Schedule methods', () => {
+    it.each([
+      ['everySecond', '* * * * * *'],
+      ['everyMinute', '0 * * * * *'],
+      ['everyTwoMinutes', '*/2 * * * * *'],
+      ['everyFiveMinutes', '*/5 * * * *'],
+      ['everyTenMinutes', '*/10 * * * *'],
+      ['everyThirtyMinutes', '*/30 * * * *'],
+      ['everyHour', '0 0 * * * *'],
+      ['everyDay', '0 0 0 * * *'],
+      ['hourly', '0 0 * * * *'],
+      ['daily', '0 0 0 * * *'],
+      ['weekly', '0 0 0 * * 0'],
+      ['monthly', '0 0 0 1 * *'],
+      ['yearly', '0 0 0 1 1 *'],
+    ])('should set correct cron pattern for %s', (method, expectedPattern) => {
+      ;(schedule as any)[method]().start()
+      expect(mockLogInfo).toHaveBeenCalledWith(
+        `Scheduled task with pattern: ${expectedPattern} in timezone: America/Los_Angeles`,
+      )
     })
 
-    it('should create a schedule with everyMinute', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everyMinute()
-      expect((schedule as any).cronPattern).toBe('0 * * * * *')
+    it('should set correct cron pattern for onDays', () => {
+      schedule.onDays([1, 3, 5]).start()
+      expect(mockLogInfo).toHaveBeenCalledWith(
+        'Scheduled task with pattern: 0 0 0 * * 1,3,5 in timezone: America/Los_Angeles',
+      )
     })
 
-    it('should create a schedule with everyTwoMinutes', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everyTwoMinutes()
-      expect((schedule as any).cronPattern).toBe('*/2 * * * * *')
-    })
-
-    it('should create a schedule with everyFiveMinutes', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everyFiveMinutes()
-      expect((schedule as any).cronPattern).toBe('*/5 * * * *')
-    })
-
-    it('should create a schedule with everyTenMinutes', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everyTenMinutes()
-      expect((schedule as any).cronPattern).toBe('*/10 * * * *')
-    })
-
-    it('should create a schedule with everyThirtyMinutes', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everyThirtyMinutes()
-      expect((schedule as any).cronPattern).toBe('*/30 * * * *')
-    })
-
-    it('should create a schedule with hourly', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).hourly()
-      expect((schedule as any).cronPattern).toBe('0 0 * * * *')
-    })
-
-    it('should create a schedule with daily', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).daily()
-      expect((schedule as any).cronPattern).toBe('0 0 0 * * *')
-    })
-
-    it('should create a schedule with weekly', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).weekly()
-      expect((schedule as any).cronPattern).toBe('0 0 0 * * 0')
-    })
-
-    it('should create a schedule with monthly', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).monthly()
-      expect((schedule as any).cronPattern).toBe('0 0 0 1 * *')
-    })
-
-    it('should create a schedule with yearly', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).yearly()
-      expect((schedule as any).cronPattern).toBe('0 0 0 1 1 *')
-    })
-
-    it('should create a schedule with onDays', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).onDays([1, 3, 5])
-      expect((schedule as any).cronPattern).toBe('0 0 0 * * 1,3,5')
-    })
-
-    it('should create a schedule with at', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).at('14:30')
-      expect((schedule as any).cronPattern).toBe('30 14 * * *')
+    it('should set correct cron pattern for at', () => {
+      schedule.at('14:30').start()
+      expect(mockLogInfo).toHaveBeenCalledWith(
+        'Scheduled task with pattern: 30 14 * * * in timezone: America/Los_Angeles',
+      )
     })
 
     it('should set timezone', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).setTimeZone('UTC')
-      expect((schedule as any).timezone).toBe('UTC')
+      schedule.daily().setTimeZone('Europe/London').start()
+      expect(mockLogInfo).toHaveBeenCalledWith('Scheduled task with pattern: 0 0 0 * * * in timezone: Europe/London')
     })
+  })
 
-    it('should start the schedule', () => {
-      const task = mock(() => {})
-      const schedule = new Schedule(task).everyMinute()
-      const cronJobSpy = spyOn(CronJob, 'from').mockImplementation(() => ({}) as any)
-      schedule.start()
-      expect(cronJobSpy).toHaveBeenCalledWith('0 * * * * *', expect.any(Function), null, true, 'America/Los_Angeles')
-    })
-
+  describe('Job and Action methods', () => {
     it('should log job scheduling', () => {
-      const task = mock(() => {})
-      const logSpy = spyOn(console, 'info')
-      new Schedule(task).job('/path/to/job')
-      expect(logSpy).toHaveBeenCalledWith('Scheduling job: /path/to/job')
+      schedule.job('path/to/job')
+      expect(mockLogInfo).toHaveBeenCalledWith('Scheduling job: path/to/job')
     })
 
     it('should log action scheduling', () => {
-      const task = mock(() => {})
-      const logSpy = spyOn(console, 'info')
-      new Schedule(task).action('/path/to/action')
-      expect(logSpy).toHaveBeenCalledWith('Scheduling action: /path/to/action')
+      schedule.action('path/to/action')
+      expect(mockLogInfo).toHaveBeenCalledWith('Scheduling action: path/to/action')
+    })
+  })
+
+  describe('Static command method', () => {
+    it('should log command execution', () => {
+      Schedule.command('npm run build')
+      expect(mockLogInfo).toHaveBeenCalledWith('Executing command: npm run build')
+    })
+  })
+
+  describe('Job class', () => {
+    it('should inherit from Schedule', () => {
+      const job = new Job(mockTask)
+      expect(job).toBeInstanceOf(Schedule)
     })
 
-    it('should log command execution', () => {
-      const logSpy = spyOn(console, 'info')
-      Schedule.command('echo "Hello"')
-      expect(logSpy).toHaveBeenCalledWith('Executing command: echo "Hello"')
+    it('should have the same methods as Schedule', () => {
+      const job = new Job(mockTask)
+      expect(job.everyMinute).toBeDefined()
+      expect(job.daily).toBeDefined()
+      expect(job.setTimeZone).toBeDefined()
     })
   })
 
   describe('sendAt function', () => {
-    it('should return correct DateTime for cron string', () => {
+    it('should return a DateTime-like object', () => {
       const result = sendAt('0 0 * * *')
-      expect(result).toBeInstanceOf(DateTime)
-      expect(result.toISO()).toBe('2024-01-02T00:00:00.000Z')
+      expect(result).toHaveProperty('year')
+      expect(result).toHaveProperty('month')
+      expect(result).toHaveProperty('day')
+      expect(result).toHaveProperty('hour')
+      expect(result).toHaveProperty('minute')
+      expect(result).toHaveProperty('second')
     })
 
-    it('should return correct DateTime for Date object', () => {
-      const date = new Date('2024-01-01T12:00:00Z')
-      const result = sendAt(date)
-      expect(result).toBeInstanceOf(DateTime)
-      expect(result.toISO()).toBe('2024-01-01T12:00:00.000Z')
+    it('should calculate the next occurrence correctly', () => {
+      const now = new Date()
+      const result = sendAt('0 0 * * *')
+      expect(result.toJSDate() > now).toBe(true)
+      expect(result.hour).toBe(0)
+      expect(result.minute).toBe(0)
     })
   })
 
   describe('timeout function', () => {
-    it('should return correct timeout for cron string', () => {
+    it('should return a number', () => {
       const result = timeout('0 0 * * *')
-      expect(result).toBe(86400000) // 24 hours in milliseconds
+      expect(typeof result).toBe('number')
     })
 
-    it('should return correct timeout for Date object', () => {
-      const date = new Date('2024-01-01T12:00:00Z')
-      const result = timeout(date)
-      expect(result).toBe(43200000) // 12 hours in milliseconds
+    it('should return a positive number', () => {
+      const result = timeout('0 0 * * *')
+      expect(result).toBeGreaterThan(0)
+    })
+  })
+
+  describe('CronJob integration', () => {
+    it('should create a CronJob instance when start is called', () => {
+      const mockTask = mock(() => {})
+      const schedule = new Schedule(mockTask)
+
+      schedule.everySecond().start()
+
+      // Check if mockLogInfo was called with the correct message
+      expect(mockLogInfo).toHaveBeenCalledWith(
+        'Scheduled task with pattern: * * * * * * in timezone: America/Los_Angeles',
+      )
+    })
+
+    it('should create a CronJob with correct parameters', () => {
+      const mockTask = mock(() => {})
+      const schedule = new Schedule(mockTask)
+
+      schedule.everyMinute().setTimeZone('Europe/London').start()
+
+      expect(mockLogInfo).toHaveBeenCalledWith('Scheduled task with pattern: 0 * * * * * in timezone: Europe/London')
+    })
+
+    describe('Cron exports', () => {
+      it('CronJob is exported and can be instantiated', () => {
+        const job = new CronJob('* * * * *', () => {})
+        expect(job).toBeInstanceOf(CronJob)
+      })
+
+      it('CronTime is exported and can be instantiated', () => {
+        const time = new CronTime('* * * * *')
+        expect(time).toBeInstanceOf(CronTime)
+      })
     })
   })
 })

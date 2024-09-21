@@ -48,5 +48,6 @@ Key Conventions:
 - Aim for 100% test coverage
 - Use Composition API
 - Use setup script
+- Avoid usage of any
 
 Follow Vue.js docs for where makes sense
