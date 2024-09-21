@@ -106,6 +106,7 @@ interface CliOptions {
 
 export function parseOptions(options?: CliOptions): CliOptions {
   options = options || {}
+  const defaults = { dryRun: false, quiet: false, verbose: false }
   const args = process.argv.slice(2)
 
   for (let i = 0; i < args.length; i++) {
@@ -117,8 +118,8 @@ export function parseOptions(options?: CliOptions): CliOptions {
         (g) => (g[1] ? g[1].toUpperCase() : ''), // convert kebab-case to camelCase
       )
 
-      if (i + 1 < args.length) {
-        // if the next arg exists
+      if (i + 1 < args.length && !args[i + 1].startsWith('--')) {
+        // if the next arg exists and is not an option
         if (args[i + 1] === 'true' || args[i + 1] === 'false') {
           // if the next arg is a boolean
           options[camelCaseKey] = args[i + 1] === 'true' // set the value to the boolean
@@ -133,38 +134,32 @@ export function parseOptions(options?: CliOptions): CliOptions {
     }
   }
 
-  // if options has no keys, return undefined, e.g. `buddy release`
-  if (Object.keys(options).length === 0) return { dryRun: false, quiet: false, verbose: false }
+  if (Object.keys(options).length === 0)
+    // if options has no keys, return an empty object
+    return {}
 
-  // convert the string 'true' or 'false' to a boolean
-  Object.keys(options).forEach((key) => {
-    if (!options) return { dryRun: false, quiet: false, verbose: false }
-
-    const value = options[key]
-
-    if (value === 'true' || value === 'false') options[key] = value === 'true'
-  })
-
-  return options
+  return { ...defaults, ...options }
 }
+
 // interface BuddyOptions {
 //   dryRun?: boolean
 //   verbose?: boolean
 // }
-export function buddyOptions(options?: any): string {
-  if (!options) {
-    options = process.argv.slice(2)
+export function buddyOptions(options?: string[] | Record<string, any>): string {
+  if (Array.isArray(options)) {
     options = Array.from(new Set(options))
-    // delete the 0 element if it does not start with a -
-    // e.g. is used when buddy changelog --dry-run is used
     if (options[0] && !options[0].startsWith('-')) options.shift()
+    return options.join(' ')
   }
 
-  if (options?.verbose) {
-    log.debug('process.argv', process.argv)
-    log.debug('process.argv.slice(2)', process.argv.slice(2))
-    log.debug('options inside buddyOptions', options)
+  if (typeof options === 'object' && options !== null) {
+    return Object.entries(options)
+      .map(([key, value]) => {
+        if (value === true) return `--${key}`
+        return `--${key} ${value}`
+      })
+      .join(' ')
   }
 
-  return options.join(' ')
+  return buddyOptions(process.argv.slice(2))
 }
