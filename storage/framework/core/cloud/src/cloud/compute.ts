@@ -231,7 +231,7 @@ export class ComputeStack {
 
     const apiPrefix = 'api'
     new Output(scope, 'ApiUrl', {
-      value: `https://${props.domain}/${apiPrefix}`,
+      value: `https://${apiPrefix}.${props.domain}/`,
       description: 'The URL of the deployed application',
     })
 

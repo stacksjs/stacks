@@ -72,10 +72,12 @@ export class AiStack {
       value: this.askAiUrl.url,
     })
 
+    // TODO: should be using the API url here
     new Output(scope, 'AiVanitySummarizeApiUrl', {
       value: this.summarizeAiUrl.url,
     })
 
+    // TODO: should be using the API url here
     new Output(scope, 'AiAskApiUrl', {
       value: `https://${props.domain}/ai/ask`,
     })
