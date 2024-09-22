@@ -57,7 +57,7 @@ export class SecurityStack {
     this.certificate = new acm.Certificate(scope, 'Certificate', {
       domainName: props.domain,
       validation: acm.CertificateValidation.fromDns(props.zone),
-      subjectAlternativeNames: [`www.${props.domain}`, `api.${props.domain}`],
+      subjectAlternativeNames: [`www.${props.domain}`, `api.${props.domain}`, `docs.${props.domain}`],
     })
 
     this.originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, 'OAI')

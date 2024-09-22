@@ -85,6 +85,7 @@ export async function buildDockerImage() {
   await Bun.$`rm -rf ./storage/framework/**/src`.nothrow()
   await Bun.$`rm -rf ./storage/framework/docs`.nothrow()
   await Bun.$`rm -rf ./storage/framework/types`.nothrow()
+  await Bun.$`rm -rf ./storage/framework/cloud/cdk_out`.nothrow()
   await Bun.$`rm -rf ./storage/**/node_modules`.nothrow()
   await Bun.$`rm -rf .DS_Store`.nothrow()
   await Bun.$`rm -rf **/README.md`.nothrow()
