@@ -7,8 +7,17 @@ import '../../../../../resources/assets/styles/main.css'
 import App from './App.vue'
 import type { UserModule } from './types'
 
-// import Previewer from 'virtual:vue-component-preview'
-// const routes = setupLayouts(generatedRoutes)
+const apiRoutes = ['/api', '/docs']
+
+// Function to check if a route is an API route
+const isApiRoute = (path: string) => apiRoutes.some((route) => path.startsWith(route))
+
+// Function to handle API route navigation
+const handleApiNavigation = (path: string) => {
+  if (typeof window !== 'undefined') {
+    window.location.replace(path)
+  }
+}
 
 export const createApp = ViteSSG(
   App,
@@ -18,8 +27,6 @@ export const createApp = ViteSSG(
   },
   (ctx) => {
     // install all modules under `modules/`
-    // Object.values(import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts'))
-    //   .forEach(i => i.install?.(ctx))
     ;(async () => {
       const modules = import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts')
       const promises = Object.values(modules).map((func) => func())
@@ -27,16 +34,55 @@ export const createApp = ViteSSG(
       for (const module of modulesArray) module.install?.(ctx)
     })()
 
-    // ctx.app.use(Previewer)
+    const { router, isClient } = ctx
 
-    const { router } = ctx
-    router.beforeEach((to, from, next) => {
-      if (to.fullPath.startsWith('/api') || to.fullPath.startsWith('/docs')) {
-        console.log('redirecting to', to.fullPath)
-        window.location.href = to.fullPath
-        return
+    if (isClient) {
+      console.log('here11')
+
+      // Handle initial load and manual URL changes
+      const handleRouteChange = () => {
+        if (isApiRoute(window.location.pathname)) {
+          console.log('here2')
+          handleApiNavigation(window.location.pathname)
+        }
       }
 
+      // Check on initial load
+      handleRouteChange()
+
+      // Listen for popstate events (manual URL changes)
+      window.addEventListener('popstate', handleRouteChange)
+
+      // Modify how links are handled (only in the browser)
+      document.addEventListener(
+        'click',
+        (event) => {
+          console.log('here3')
+          const target = event.target as HTMLAnchorElement
+          if (target.tagName === 'A' && isApiRoute(target.pathname)) {
+            event.preventDefault()
+            handleApiNavigation(target.href)
+          }
+        },
+        true,
+      )
+    }
+
+    // Catch any navigation to API routes
+    router.beforeEach((to, from, next) => {
+      console.log('here4')
+      if (isApiRoute(to.fullPath)) {
+        console.log('here5')
+        if (isClient) {
+          console.log('here6')
+          handleApiNavigation(to.fullPath)
+          return false
+        }
+        // For SSR, we'll let the server handle these routes
+        console.log('here7')
+        return next()
+      }
+      console.log('here8')
       next()
     })
   },
