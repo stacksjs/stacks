@@ -35,7 +35,6 @@ export interface CdnStackProps extends NestedCloudProps {
 export class CdnStack {
   distribution: cloudfront.Distribution
   cdnCachePolicy: cloudfront.CachePolicy
-  // apiCachePolicy: cloudfront.CachePolicy | undefined
   vanityUrl: string
   realtimeLogConfig!: cloudfront.RealtimeLogConfig
   props: CdnStackProps
@@ -58,7 +57,17 @@ export class CdnStack {
       signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     })
 
-    // the actual CDN distribution
+    const originRequestFunction = config.app.docMode
+      ? this.createDocsOriginRequestFunction(scope)
+      : props.originRequestFunction
+
+    const sourceBucket = config.app.docMode ? props.docsBucket : props.publicBucket
+
+    if (!sourceBucket) {
+      throw new Error('Source bucket is undefined')
+    }
+
+    // the CDN distribution
     this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
       domainNames: [props.domain],
       defaultRootObject: 'index.html',
@@ -73,17 +82,14 @@ export class CdnStack {
       webAclId: props.firewall.attrArn,
       enableIpv6: true,
       defaultBehavior: {
-        origin: new origins.S3StaticWebsiteOrigin(
-          config.app.docMode ? (props.docsBucket as s3.Bucket) : props.publicBucket,
-          {
-            originPath: '/',
-            originAccessControlId: originAccessControl.originAccessControlId,
-          },
-        ),
+        origin: new origins.S3StaticWebsiteOrigin(sourceBucket, {
+          originPath: '/',
+          originAccessControlId: originAccessControl.originAccessControlId,
+        }),
         edgeLambdas: [
           {
             eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
-            functionVersion: props.originRequestFunction.currentVersion,
+            functionVersion: originRequestFunction.currentVersion,
           },
         ],
         compress: config.cloud.cdn?.compress,
@@ -91,11 +97,8 @@ export class CdnStack {
         cachedMethods: this.cachedMethods(),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: this.cdnCachePolicy,
-        // realtimeLogConfig: this.realtimeLogConfig,
       },
       additionalBehaviors: this.additionalBehaviors(scope, props),
-
-      // Add custom error responses
       errorResponses: [
         {
           httpStatus: 404,
@@ -132,8 +135,63 @@ export class CdnStack {
       value: this.vanityUrl,
       description: 'The vanity URL of the deployed application',
     })
+  }
 
-    // this.cdnCachePolicy = cdnCachePolicy
+  createDocsOriginRequestFunction(scope: Construct): lambda.Function {
+    const docsOriginRequestFunction = new lambda.Function(scope, 'DocsOriginRequestFunction', {
+      functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-request-function-${this.props.timestamp}`,
+      description: 'Custom origin request function for the docs',
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromInline(`
+        const config = {
+          suffix: '.html',
+        }
+
+        const regexSuffixless = /\\/[^/.]+$/
+        const regexTrailingSlash = /.+\\/$/
+
+        exports.handler = (event, context, callback) => {
+          console.log('Original Stacks event:', JSON.stringify(event, null, 2));
+          const request = event.Records[0].cf.request;
+
+          if (request.uri === '/' || request.uri === '') {
+            request.uri = '/index.html'
+            console.log('Root request:', JSON.stringify(request, null, 2));
+            callback(null, request)
+            return
+          }
+
+          // Append ".html" to origin request
+          const uri = request.uri
+
+          if (uri.match(regexSuffixless)) {
+            request.uri = uri + config.suffix
+            console.log('uri.match(regexSuffixless)', JSON.stringify(request, null, 2))
+            callback(null, request)
+            return
+          }
+
+          // Remove trailing slash and append ".html" to origin request
+          if (uri.match(regexTrailingSlash)) {
+            request.uri = uri.slice(0, -1) + '.html'
+            console.log('uri.match(regexTrailingSlash)', JSON.stringify(request, null, 2))
+            callback(null, request)
+            return
+          }
+
+          callback(null, request);
+        };
+      `),
+    })
+
+    new lambda.CfnPermission(scope, 'DocsOriginRequestFunctionPermission', {
+      action: 'lambda:InvokeFunction',
+      principal: 'edgelambda.amazonaws.com',
+      functionName: docsOriginRequestFunction.functionName,
+    })
+
+    return docsOriginRequestFunction
   }
 
   getCookieBehavior(behavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
@@ -143,7 +201,6 @@ export class CdnStack {
       case 'none':
         return cloudfront.CacheCookieBehavior.none()
       case 'allowList':
-        // If you have a list of cookies, replace `myCookie` with your cookie
         return cloudfront.CacheCookieBehavior.allowList(...(config.cloud.cdn?.allowList.cookies || []))
       default:
         return undefined
@@ -174,197 +231,6 @@ export class CdnStack {
     }
   }
 
-  allowedMethodsFromString(methods?: 'ALL' | 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.AllowedMethods {
-    if (!methods) return cloudfront.AllowedMethods.ALLOW_ALL
-
-    switch (methods) {
-      case 'ALL':
-        return cloudfront.AllowedMethods.ALLOW_ALL
-      case 'GET_HEAD':
-        return cloudfront.AllowedMethods.ALLOW_GET_HEAD
-      case 'GET_HEAD_OPTIONS':
-        return cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS
-      default:
-        return cloudfront.AllowedMethods.ALLOW_ALL
-    }
-  }
-
-  cachedMethodsFromString(methods?: 'GET_HEAD' | 'GET_HEAD_OPTIONS'): cloudfront.CachedMethods {
-    if (!methods) return cloudfront.CachedMethods.CACHE_GET_HEAD
-
-    switch (methods) {
-      case 'GET_HEAD':
-        return cloudfront.CachedMethods.CACHE_GET_HEAD
-      case 'GET_HEAD_OPTIONS':
-        return cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS
-      default:
-        return cloudfront.CachedMethods.CACHE_GET_HEAD
-    }
-  }
-
-  // shouldDeployApi() {
-  //   return config.cloud.api?.deploy
-  // }
-
-  // apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-  //   const hostname = `api.${props.domain}` // TODO: make `api` configurable
-  //   const origin = new origins.HttpOrigin(hostname, {
-  //     originPath: '/',
-  //     protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-  //   })
-
-  //   const apiCachePolicy = this.setApiCachePolicy(scope)
-
-  //   return {
-  //     '/api': {
-  //       origin,
-  //       compress: true,
-  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //       cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //       cachePolicy: apiCachePolicy,
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //       realtimeLogConfig: this.realtimeLogConfig,
-  //     },
-
-  //     '/api/*': {
-  //       origin,
-  //       compress: true,
-  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-  //       cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-  //       cachePolicy: apiCachePolicy,
-  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-  //       realtimeLogConfig: this.realtimeLogConfig,
-  //     },
-  //   }
-  // }
-
-  docsBehaviorOptions(scope: Construct, docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
-    if (!docsBucket) return {}
-
-    // create origin access control
-    const originAccessControl = new cloudfront.S3OriginAccessControl(scope, 'DocsOAC', {
-      originAccessControlName: `${this.props.slug}-${this.props.appEnv}-docs-oac-${this.props.timestamp}`,
-      description: 'Access from CloudFront to the docs bucket.',
-      signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
-    })
-
-    const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
-      originPath: '/',
-      originAccessControlId: originAccessControl.originAccessControlId,
-    })
-
-    const docsOriginRequestFunction = new lambda.Function(scope, 'DocsOriginRequestFunction', {
-      functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-request-function-${this.props.timestamp}`,
-      description: 'Custom origin request function for the docs',
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-        const config = {
-          suffix: '.html',
-        }
-
-        const regexSuffixless = /\\/[^/.]+$/
-        const regexTrailingSlash = /.+\\/$/
-
-        exports.handler = (event, context, callback) => {
-          console.log('Original Stacks event:', JSON.stringify(event, null, 2));
-          const request = event.Records[0].cf.request;
-
-          if (request.uri === '/docs' || request.uri === '/docs/') {
-            request.uri = '/index.html'
-            console.log('Original /docs or /docs/ request:', JSON.stringify(request, null, 2));
-            callback(null, request)
-            return
-          }
-
-          // Append ".html" to origin request
-          const uri = request.uri
-
-           if (uri.startsWith('/docs/')) {
-            request.uri = request.uri.slice(5) // Remove '/docs'
-            console.log('uri.startsWith('/docs/') request:', JSON.stringify(request, null, 2))
-          }
-
-          if (uri.match(regexSuffixless)) {
-            request.uri = uri + config.suffix
-            console.log('uri.match(regexSuffixless)', JSON.stringify(request, null, 2))
-            callback(null, request)
-            return
-          }
-
-          // Remove trailing slash and append ".html" to origin request
-          if (uri.match(regexTrailingSlash)) {
-            request.uri = uri.slice(0, -1) + '.html'
-            console.log('uri.match(regexTrailingSlash)', JSON.stringify(request, null, 2))
-            callback(null, request)
-            return
-          }
-
-          callback(null, request);
-        };
-      `),
-    })
-
-    new lambda.CfnPermission(scope, 'DocsOriginRequestFunctionPermission', {
-      action: 'lambda:InvokeFunction',
-      principal: 'edgelambda.amazonaws.com',
-      functionName: docsOriginRequestFunction.functionName,
-    })
-
-    // const docsOriginResponseFunction = new lambda.Function(scope, 'DocsOriginResponseFunction', {
-    //   functionName: `${this.props.slug}-${this.props.appEnv}-docs-origin-response-function-${this.props.timestamp}`,
-    //   description: 'Custom origin response function for the docs',
-    //   runtime: lambda.Runtime.NODEJS_20_X,
-    //   handler: 'index.handler',
-    //   code: lambda.Code.fromInline(`
-    //     exports.handler = (event, context, callback) => {
-    //       const response = event.Records[0].cf.response;
-    //       response.headers['x-custom-header'] = {
-    //         value: 'custom-value',
-    //       };
-    //       callback(null, response);
-    //     };
-    //   `),
-    // })
-
-    // new lambda.CfnPermission(scope, 'DocsOriginResponseFunctionPermission', {
-    //   action: 'lambda:InvokeFunction',
-    //   principal: 'edgelambda.amazonaws.com',
-    //   functionName: docsOriginResponseFunction.functionName,
-    // })
-
-    const commonBehavior: cloudfront.BehaviorOptions = {
-      origin,
-      compress: true,
-      allowedMethods: this.allowedMethodsFromString(config.cloud.cdn?.allowedMethods),
-      cachedMethods: this.cachedMethodsFromString(config.cloud.cdn?.cachedMethods),
-      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-      originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
-      edgeLambdas: [
-        {
-          functionVersion: docsOriginRequestFunction.currentVersion,
-          eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
-        },
-        // {
-        //   functionVersion: docsOriginResponseFunction.currentVersion,
-        //   eventType: cloudfront.LambdaEdgeEventType.ORIGIN_RESPONSE,
-        // },
-      ],
-      // functionAssociations: [
-      //   {
-      //     function: docsFunction,
-      //     eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-      //   },
-      // ],
-    }
-
-    return {
-      '/docs': commonBehavior,
-      '/docs/*': commonBehavior,
-    }
-  }
-
   aiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     const hostname = Fn.select(2, Fn.split('/', props.askAiUrl.url))
     const summaryHostname = Fn.select(2, Fn.split('/', props.summarizeAiUrl.url))
@@ -373,7 +239,6 @@ export class CdnStack {
       comment: 'Stacks AI Cache Policy',
       cachePolicyName: `${this.props.slug}-${this.props.appEnv}-ai-cache-policy`,
       defaultTtl: Duration.seconds(0),
-      // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
       headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
@@ -421,12 +286,11 @@ export class CdnStack {
           comment: 'Stacks CLI Setup Cache Policy',
           cachePolicyName: `${this.props.slug}-${this.props.appEnv}-cli-setup-cache-policy`,
           defaultTtl: Duration.seconds(0),
-          // minTtl: config.cloud.cdn?.minTtl ? Duration.seconds(config.cloud.cdn.minTtl) : undefined,
           cookieBehavior: cloudfront.CacheCookieBehavior.none(),
           headerBehavior: cloudfront.CacheHeaderBehavior.none(),
           queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
         }),
-        realtimeLogConfig: this.realtimeLogConfig, // we potentially want to allow for tracking 100% of the traffic here?
+        realtimeLogConfig: this.realtimeLogConfig,
       },
     }
   }
@@ -439,51 +303,8 @@ export class CdnStack {
     return config.cloud.cli
   }
 
-  shouldDeployDocs() {
-    return hasFiles(p.projectPath('docs')) && !config.app.docMode
-  }
-
   additionalBehaviors(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
-
-    // if (this.shouldDeployApi()) {
-    //   const keysToRemove = [
-    //     '_HANDLER',
-    //     '_X_AMZN_TRACE_ID',
-    //     'AWS_REGION',
-    //     'AWS_EXECUTION_ENV',
-    //     'AWS_LAMBDA_FUNCTION_NAME',
-    //     'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
-    //     'AWS_LAMBDA_FUNCTION_VERSION',
-    //     'AWS_LAMBDA_INITIALIZATION_TYPE',
-    //     'AWS_LAMBDA_LOG_GROUP_NAME',
-    //     'AWS_LAMBDA_LOG_STREAM_NAME',
-    //     'AWS_ACCESS_KEY',
-    //     'AWS_ACCESS_KEY_ID',
-    //     'AWS_SECRET_ACCESS_KEY',
-    //     'AWS_SESSION_TOKEN',
-    //     'AWS_LAMBDA_RUNTIME_API',
-    //     'LAMBDA_TASK_ROOT',
-    //     'LAMBDA_RUNTIME_DIR',
-    //     '_',
-    //   ]
-    //   keysToRemove.forEach((key) => delete env[key as EnvKey])
-
-    //   behaviorOptions = {
-    //     ...this.apiBehaviorOptions(scope, props),
-    //     ...behaviorOptions,
-    //   }
-    // }
-
-    // if docMode is used, we don't need to add a behavior for the docs
-    // because the docs will be the root of the site
-    if (this.shouldDeployDocs()) {
-      const docsBehaviors = this.docsBehaviorOptions(scope, props.docsBucket)
-      behaviorOptions = {
-        ...docsBehaviors,
-        ...behaviorOptions,
-      }
-    }
 
     if (this.shouldDeployAiEndpoints()) {
       behaviorOptions = {
@@ -501,24 +322,4 @@ export class CdnStack {
 
     return behaviorOptions
   }
-
-  // setApiCachePolicy(scope: Construct) {
-  //   if (this.apiCachePolicy) return this.apiCachePolicy
-
-  //   this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
-  //     comment: 'Stacks API Cache Policy',
-  //     cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy-${this.props.timestamp}`,
-  //     defaultTtl: Duration.seconds(0),
-  //     minTtl: Duration.seconds(0),
-  //     maxTtl: Duration.seconds(1), // Changed from 0 to 1 second
-
-  //     cookieBehavior: cloudfront.CacheCookieBehavior.all(),
-  //     headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Authorization', 'Content-Type'),
-  //     queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
-  //     enableAcceptEncodingGzip: true, // Added this line
-  //     enableAcceptEncodingBrotli: true, // Added this line
-  //   })
-
-  //   return this.apiCachePolicy
-  // }
 }
