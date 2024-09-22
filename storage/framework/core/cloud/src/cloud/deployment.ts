@@ -11,7 +11,8 @@ export interface DeploymentStackProps extends NestedCloudProps {
   publicBucket: s3.Bucket
   docsBucket?: s3.Bucket
   privateBucket: s3.Bucket
-  cdn: cloudfront.Distribution
+  mainDistribution: cloudfront.Distribution
+  docsDistribution: cloudfront.Distribution
 }
 
 export class DeploymentStack {
@@ -24,6 +25,7 @@ export class DeploymentStack {
     this.privateSource = '../../private'
     this.docsSource = '../docs/dist/'
     this.publicSource = config.app.docMode === true ? this.docsSource : '../views/web/dist/'
+    const mainBucket = config.app.docMode === true ? props.docsBucket : props.publicBucket
 
     new s3deploy.BucketDeployment(scope, 'Website', {
       sources: [
@@ -32,9 +34,9 @@ export class DeploymentStack {
           assetHashType: AssetHashType.CUSTOM,
         }),
       ],
-      destinationBucket: props.publicBucket,
-      distribution: props.cdn,
-      distributionPaths: ['/*'],
+      destinationBucket: mainBucket as s3.Bucket,
+      distribution: props.mainDistribution,
+      // distributionPaths: ['/*'],
     })
 
     if (this.shouldDeployDocs()) {
@@ -47,8 +49,8 @@ export class DeploymentStack {
           }),
         ],
         destinationBucket: props.docsBucket as s3.Bucket,
-        distribution: props.cdn,
-        distributionPaths: ['/docs/*'],
+        distribution: props.docsDistribution,
+        // distributionPaths: ['/*'],
       })
     }
 

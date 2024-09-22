@@ -1,6 +1,4 @@
 import { config } from '@stacksjs/config'
-import { path as p } from '@stacksjs/path'
-import { hasFiles } from '@stacksjs/storage'
 import type { aws_certificatemanager as acm, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import {
   Duration,
@@ -36,7 +34,7 @@ export class CdnStack {
   mainDistribution: cloudfront.Distribution
   docsDistribution: cloudfront.Distribution | undefined
   cdnCachePolicy: cloudfront.CachePolicy
-  mainVanityUrl: string
+  mainVanityUrl!: string
   docsVanityUrl: string | undefined
   realtimeLogConfig!: cloudfront.RealtimeLogConfig
   props: CdnStackProps
@@ -64,10 +62,10 @@ export class CdnStack {
       this.mainDistribution = this.createDistribution(
         scope,
         props,
-        props.docsBucket!,
+        props.docsBucket as s3.Bucket,
         this.createDocsOriginRequestFunction(scope),
         props.domain,
-        'MainCdn',
+        'Cdn',
         originAccessControl,
       )
     } else {
@@ -159,7 +157,7 @@ export class CdnStack {
     })
   }
 
-  createRoute53Records(scope: Construct, props: CdnStackProps) {
+  createRoute53Records(scope: Construct, props: CdnStackProps): void {
     new route53.ARecord(scope, 'MainAliasRecord', {
       recordName: props.domain,
       zone: props.zone,
@@ -175,7 +173,7 @@ export class CdnStack {
     }
   }
 
-  createOutputs(scope: Construct, props: CdnStackProps) {
+  createOutputs(scope: Construct, props: CdnStackProps): void {
     new Output(scope, 'MainDistributionId', {
       value: this.mainDistribution.distributionId,
     })
@@ -363,12 +361,12 @@ export class CdnStack {
     }
   }
 
-  shouldDeployAiEndpoints() {
-    return config.cloud.ai
+  shouldDeployAiEndpoints(): boolean {
+    return config.cloud.ai ?? false
   }
 
-  shouldDeployCliSetup() {
-    return config.cloud.cli
+  shouldDeployCliSetup(): boolean {
+    return config.cloud.cli ?? false
   }
 
   additionalBehaviors(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
