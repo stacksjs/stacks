@@ -12,13 +12,6 @@ const apiRoutes = ['/api', '/docs']
 // Function to check if a route is an API route
 const isApiRoute = (path: string) => apiRoutes.some((route) => path.startsWith(route))
 
-// Function to handle API route navigation
-const handleApiNavigation = (path: string) => {
-  if (typeof window !== 'undefined') {
-    window.location.replace(path)
-  }
-}
-
 export const createApp = ViteSSG(
   App,
   {
@@ -37,52 +30,55 @@ export const createApp = ViteSSG(
     const { router, isClient } = ctx
 
     if (isClient) {
-      console.log('here11')
+      console.log('Client-side code running - v1')
 
-      // Handle initial load and manual URL changes
-      const handleRouteChange = () => {
-        if (isApiRoute(window.location.pathname)) {
-          console.log('here2')
-          handleApiNavigation(window.location.pathname)
-        }
+      // Handle API routes
+      const handleApiRoute = (path: string) => {
+        console.log('Handling API route:', path)
+        window.location.replace(path)
       }
 
       // Check on initial load
-      handleRouteChange()
+      if (isApiRoute(window.location.pathname)) {
+        console.log('Initial load is API route')
+        handleApiRoute(window.location.pathname)
+      }
 
-      // Listen for popstate events (manual URL changes)
-      window.addEventListener('popstate', handleRouteChange)
-
-      // Modify how links are handled (only in the browser)
+      // Intercept link clicks
       document.addEventListener(
         'click',
         (event) => {
-          console.log('here3')
           const target = event.target as HTMLAnchorElement
-          if (target.tagName === 'A' && isApiRoute(target.pathname)) {
+          if (target.tagName === 'A' && isApiRoute(new URL(target.href).pathname)) {
+            console.log('Clicked API route link:', target.href)
             event.preventDefault()
-            handleApiNavigation(target.href)
+            handleApiRoute(target.href)
           }
         },
         true,
       )
+
+      // Handle popstate events (browser back/forward)
+      window.addEventListener('popstate', () => {
+        if (isApiRoute(window.location.pathname)) {
+          console.log('Popstate detected API route')
+          handleApiRoute(window.location.pathname)
+        }
+      })
     }
 
-    // Catch any navigation to API routes
+    // Router guard for API routes
     router.beforeEach((to, from, next) => {
-      console.log('here4')
+      console.log('Router guard triggered for:', to.fullPath)
       if (isApiRoute(to.fullPath)) {
-        console.log('here5')
         if (isClient) {
-          console.log('here6')
-          handleApiNavigation(to.fullPath)
+          console.log('Router guard redirecting to API route:', to.fullPath)
+          window.location.replace(to.fullPath)
           return false
         }
-        // For SSR, we'll let the server handle these routes
-        console.log('here7')
+        // For SSR, let the server handle it
         return next()
       }
-      console.log('here8')
       next()
     })
   },
