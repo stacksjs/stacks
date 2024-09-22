@@ -35,7 +35,6 @@
       "vitepress"
     ],
     "allowImportingTsExtensions": true,
-    "allowJs": true,
     "strict": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
@@ -49,7 +48,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "isolatedDeclaration": true,
+    "isolatedDeclarations": true,
     "skipLibCheck": true
   },
   "vueCompilerOptions": {
