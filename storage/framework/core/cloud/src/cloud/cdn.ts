@@ -502,23 +502,23 @@ export class CdnStack {
     return behaviorOptions
   }
 
-  setApiCachePolicy(scope: Construct) {
-    if (this.apiCachePolicy) return this.apiCachePolicy
+  // setApiCachePolicy(scope: Construct) {
+  //   if (this.apiCachePolicy) return this.apiCachePolicy
 
-    this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
-      comment: 'Stacks API Cache Policy',
-      cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy-${this.props.timestamp}`,
-      defaultTtl: Duration.seconds(0),
-      minTtl: Duration.seconds(0),
-      maxTtl: Duration.seconds(1), // Changed from 0 to 1 second
+  //   this.apiCachePolicy = new cloudfront.CachePolicy(scope, 'ApiCachePolicy', {
+  //     comment: 'Stacks API Cache Policy',
+  //     cachePolicyName: `${this.props.slug}-${this.props.appEnv}-api-cache-policy-${this.props.timestamp}`,
+  //     defaultTtl: Duration.seconds(0),
+  //     minTtl: Duration.seconds(0),
+  //     maxTtl: Duration.seconds(1), // Changed from 0 to 1 second
 
-      cookieBehavior: cloudfront.CacheCookieBehavior.all(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Authorization', 'Content-Type'),
-      queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
-      enableAcceptEncodingGzip: true, // Added this line
-      enableAcceptEncodingBrotli: true, // Added this line
-    })
+  //     cookieBehavior: cloudfront.CacheCookieBehavior.all(),
+  //     headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Authorization', 'Content-Type'),
+  //     queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+  //     enableAcceptEncodingGzip: true, // Added this line
+  //     enableAcceptEncodingBrotli: true, // Added this line
+  //   })
 
-    return this.apiCachePolicy
-  }
+  //   return this.apiCachePolicy
+  // }
 }
