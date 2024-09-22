@@ -10,7 +10,6 @@ import type { UserModule } from './types'
 // import Previewer from 'virtual:vue-component-preview'
 // const routes = setupLayouts(generatedRoutes)
 
-// https://github.com/antfu/vite-ssg
 export const createApp = ViteSSG(
   App,
   {
