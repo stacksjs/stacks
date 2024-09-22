@@ -33,9 +33,11 @@ export interface CdnStackProps extends NestedCloudProps {
 }
 
 export class CdnStack {
-  distribution: cloudfront.Distribution
+  mainDistribution: cloudfront.Distribution
+  docsDistribution: cloudfront.Distribution | undefined
   cdnCachePolicy: cloudfront.CachePolicy
-  vanityUrl: string
+  mainVanityUrl: string
+  docsVanityUrl: string | undefined
   realtimeLogConfig!: cloudfront.RealtimeLogConfig
   props: CdnStackProps
 
@@ -57,21 +59,62 @@ export class CdnStack {
       signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     })
 
-    const originRequestFunction = config.app.docMode
-      ? this.createDocsOriginRequestFunction(scope)
-      : props.originRequestFunction
+    if (config.app.docMode) {
+      // In doc mode, create only one distribution for docs
+      this.mainDistribution = this.createDistribution(
+        scope,
+        props,
+        props.docsBucket!,
+        this.createDocsOriginRequestFunction(scope),
+        props.domain,
+        'MainCdn',
+        originAccessControl,
+      )
+    } else {
+      // Not in doc mode, create two distributions
+      this.mainDistribution = this.createDistribution(
+        scope,
+        props,
+        props.publicBucket,
+        props.originRequestFunction,
+        props.domain,
+        'MainCdn',
+        originAccessControl,
+      )
 
-    const sourceBucket = config.app.docMode ? props.docsBucket : props.publicBucket
-
-    if (!sourceBucket) {
-      throw new Error('Source bucket is undefined')
+      if (props.docsBucket) {
+        this.docsDistribution = this.createDistribution(
+          scope,
+          props,
+          props.docsBucket,
+          this.createDocsOriginRequestFunction(scope),
+          `docs.${props.domain}`,
+          'DocsCdn',
+          originAccessControl,
+        )
+      }
     }
 
-    // the CDN distribution
-    this.distribution = new cloudfront.Distribution(scope, 'Cdn', {
-      domainNames: [props.domain],
+    // Create Route53 records
+    this.createRoute53Records(scope, props)
+
+    // Create outputs
+    this.createOutputs(scope, props)
+  }
+
+  createDistribution(
+    scope: Construct,
+    props: CdnStackProps,
+    sourceBucket: s3.Bucket,
+    originRequestFunction: lambda.Function,
+    domainName: string,
+    id: string,
+    originAccessControl: cloudfront.S3OriginAccessControl,
+  ): cloudfront.Distribution {
+    return new cloudfront.Distribution(scope, id, {
+      domainNames: [domainName],
       defaultRootObject: 'index.html',
-      comment: `CDN for ${config.app.url}`,
+      comment: `CDN for ${domainName}`,
       certificate: props.certificate,
       enableLogging: true,
       logBucket: props.logBucket,
@@ -114,27 +157,56 @@ export class CdnStack {
         },
       ],
     })
+  }
 
-    new route53.ARecord(scope, 'AliasRecord', {
+  createRoute53Records(scope: Construct, props: CdnStackProps) {
+    new route53.ARecord(scope, 'MainAliasRecord', {
       recordName: props.domain,
       zone: props.zone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.mainDistribution)),
     })
 
-    new Output(scope, 'DistributionId', {
-      value: this.distribution.distributionId,
+    if (this.docsDistribution) {
+      new route53.ARecord(scope, 'DocsAliasRecord', {
+        recordName: `docs.${props.domain}`,
+        zone: props.zone,
+        target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.docsDistribution)),
+      })
+    }
+  }
+
+  createOutputs(scope: Construct, props: CdnStackProps) {
+    new Output(scope, 'MainDistributionId', {
+      value: this.mainDistribution.distributionId,
     })
 
-    new Output(scope, 'AppUrl', {
+    new Output(scope, 'MainAppUrl', {
       value: `https://${props.domain}`,
-      description: 'The URL of the deployed application',
+      description: 'The URL of the deployed main application',
     })
 
-    this.vanityUrl = `https://${this.distribution.domainName}`
-    new Output(scope, 'AppVanityUrl', {
-      value: this.vanityUrl,
-      description: 'The vanity URL of the deployed application',
+    this.mainVanityUrl = `https://${this.mainDistribution.domainName}`
+    new Output(scope, 'MainAppVanityUrl', {
+      value: this.mainVanityUrl,
+      description: 'The vanity URL of the deployed main application',
     })
+
+    if (this.docsDistribution) {
+      new Output(scope, 'DocsDistributionId', {
+        value: this.docsDistribution.distributionId,
+      })
+
+      new Output(scope, 'DocsAppUrl', {
+        value: `https://docs.${props.domain}`,
+        description: 'The URL of the deployed docs application',
+      })
+
+      this.docsVanityUrl = `https://${this.docsDistribution.domainName}`
+      new Output(scope, 'DocsAppVanityUrl', {
+        value: this.docsVanityUrl,
+        description: 'The vanity URL of the deployed docs application',
+      })
+    }
   }
 
   createDocsOriginRequestFunction(scope: Construct): lambda.Function {
@@ -152,32 +224,28 @@ export class CdnStack {
         const regexTrailingSlash = /.+\\/$/
 
         exports.handler = (event, context, callback) => {
-          console.log('Original Stacks event:', JSON.stringify(event, null, 2));
           const request = event.Records[0].cf.request;
+          const uri = request.uri;
 
-          if (request.uri === '/' || request.uri === '') {
-            request.uri = '/index.html'
-            console.log('Root request:', JSON.stringify(request, null, 2));
-            callback(null, request)
-            return
+          // Append index.html to root URI
+          if (uri === '/') {
+            request.uri = '/index.html';
+            callback(null, request);
+            return;
           }
 
-          // Append ".html" to origin request
-          const uri = request.uri
-
+          // Append .html to suffixless URI
           if (uri.match(regexSuffixless)) {
-            request.uri = uri + config.suffix
-            console.log('uri.match(regexSuffixless)', JSON.stringify(request, null, 2))
-            callback(null, request)
-            return
+            request.uri = uri + '.html';
+            callback(null, request);
+            return;
           }
 
-          // Remove trailing slash and append ".html" to origin request
+          // Remove trailing slash and append .html to origin request
           if (uri.match(regexTrailingSlash)) {
-            request.uri = uri.slice(0, -1) + '.html'
-            console.log('uri.match(regexTrailingSlash)', JSON.stringify(request, null, 2))
-            callback(null, request)
-            return
+            request.uri = uri.slice(0, -1) + '.html';
+            callback(null, request);
+            return;
           }
 
           callback(null, request);
@@ -194,12 +262,12 @@ export class CdnStack {
     return docsOriginRequestFunction
   }
 
-  getCookieBehavior(behavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
-    switch (behavior) {
-      case 'all':
-        return cloudfront.CacheCookieBehavior.all()
+  getCookieBehavior(cookieBehavior: string | undefined): cloudfront.CacheCookieBehavior | undefined {
+    switch (cookieBehavior) {
       case 'none':
         return cloudfront.CacheCookieBehavior.none()
+      case 'all':
+        return cloudfront.CacheCookieBehavior.all()
       case 'allowList':
         return cloudfront.CacheCookieBehavior.allowList(...(config.cloud.cdn?.allowList.cookies || []))
       default:
