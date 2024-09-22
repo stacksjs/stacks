@@ -1,5 +1,4 @@
 import { config } from '@stacksjs/config'
-import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import type { aws_certificatemanager as acm, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
@@ -15,7 +14,6 @@ import {
 } from 'aws-cdk-lib'
 import type { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import type { Construct } from 'constructs'
-import type { EnvKey } from '../../../../env'
 import type { NestedCloudProps } from '../types'
 
 export interface CdnStackProps extends NestedCloudProps {
@@ -37,7 +35,7 @@ export interface CdnStackProps extends NestedCloudProps {
 export class CdnStack {
   distribution: cloudfront.Distribution
   cdnCachePolicy: cloudfront.CachePolicy
-  apiCachePolicy: cloudfront.CachePolicy | undefined
+  // apiCachePolicy: cloudfront.CachePolicy | undefined
   vanityUrl: string
   realtimeLogConfig!: cloudfront.RealtimeLogConfig
   props: CdnStackProps
@@ -53,51 +51,6 @@ export class CdnStack {
       maxTtl: config.cloud.cdn?.maxTtl ? Duration.seconds(config.cloud.cdn.maxTtl) : undefined,
       cookieBehavior: this.getCookieBehavior(config.cloud.cdn?.cookieBehavior),
     })
-
-    // Step 1: Create a Kinesis Firehose delivery stream for the logs
-    // const logStream = new kinesis.Stream(scope, 'StacksCdnRealtimeLogStream', {
-    //   streamName: 'StacksCdnRealtimeLogStream',
-    //   retentionPeriod: Duration.days(1),
-    //   shardCount: 1,
-    //   encryption: kinesis.StreamEncryption.UNENCRYPTED,
-    // })
-
-    // Create an IAM role for CloudFront to write logs to Kinesis Firehose
-    // new iam.Role(scope, 'LoggingRole', {
-    //   assumedBy: new iam.ServicePrincipal('cloudfront.amazonaws.com'),
-    //   inlinePolicies: {
-    //     loggingPolicy: new iam.PolicyDocument({
-    //       statements: [
-    //         new iam.PolicyStatement({
-    //           actions: ['kinesis:PutRecord', 'kinesis:PutRecordBatch'],
-    //           resources: [logStream.streamArn],
-    //         }),
-    //       ],
-    //     }),
-    //   },
-    // })
-
-    // TODO: make this configurable
-    // this.realtimeLogConfig = new cloudfront.RealtimeLogConfig(scope, 'StacksRealTimeLogConfig', {
-    //   endPoints: [cloudfront.Endpoint.fromKinesisStream(logStream)],
-    //   fields: [
-    //     'timestamp',
-    //     'c-ip',
-    //     'cs-method',
-    //     'cs-uri-stem',
-    //     'cs-uri-query',
-    //     'cs-referer',
-    //     'cs-user-agent',
-    //     'sc-status',
-    //   ],
-    //   samplingRate: 100, // Adjust the sampling rate as needed
-    // })
-
-    // const frontendOriginAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
-    //   description: 'Access from CloudFront to the bucket.',
-    //   originAccessControlName: `${props.slug}-${props.appEnv}-web-oac`,
-    //   signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
-    // })
 
     const originAccessControl = new cloudfront.S3OriginAccessControl(scope, 'WebOAC', {
       originAccessControlName: `${props.slug}-${props.appEnv}-web-oac-${props.timestamp}`,
@@ -249,41 +202,41 @@ export class CdnStack {
     }
   }
 
-  shouldDeployApi() {
-    return config.cloud.api?.deploy
-  }
+  // shouldDeployApi() {
+  //   return config.cloud.api?.deploy
+  // }
 
-  apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = `api.${props.domain}` // TODO: make `api` configurable
-    const origin = new origins.HttpOrigin(hostname, {
-      originPath: '/',
-      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-    })
+  // apiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
+  //   const hostname = `api.${props.domain}` // TODO: make `api` configurable
+  //   const origin = new origins.HttpOrigin(hostname, {
+  //     originPath: '/',
+  //     protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+  //   })
 
-    const apiCachePolicy = this.setApiCachePolicy(scope)
+  //   const apiCachePolicy = this.setApiCachePolicy(scope)
 
-    return {
-      '/api': {
-        origin,
-        compress: true,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: apiCachePolicy,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
+  //   return {
+  //     '/api': {
+  //       origin,
+  //       compress: true,
+  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //       cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //       cachePolicy: apiCachePolicy,
+  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+  //       realtimeLogConfig: this.realtimeLogConfig,
+  //     },
 
-      '/api/*': {
-        origin,
-        compress: true,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        cachePolicy: apiCachePolicy,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
-    }
-  }
+  //     '/api/*': {
+  //       origin,
+  //       compress: true,
+  //       allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+  //       cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+  //       cachePolicy: apiCachePolicy,
+  //       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+  //       realtimeLogConfig: this.realtimeLogConfig,
+  //     },
+  //   }
+  // }
 
   docsBehaviorOptions(scope: Construct, docsBucket?: s3.Bucket): Record<string, cloudfront.BehaviorOptions> {
     if (!docsBucket) return {}
@@ -296,7 +249,7 @@ export class CdnStack {
     })
 
     const origin = new origins.S3StaticWebsiteOrigin(docsBucket, {
-      originPath: '/docs',
+      originPath: '/',
       originAccessControlId: originAccessControl.originAccessControlId,
     })
 
@@ -493,34 +446,34 @@ export class CdnStack {
   additionalBehaviors(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
     let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
 
-    if (this.shouldDeployApi()) {
-      const keysToRemove = [
-        '_HANDLER',
-        '_X_AMZN_TRACE_ID',
-        'AWS_REGION',
-        'AWS_EXECUTION_ENV',
-        'AWS_LAMBDA_FUNCTION_NAME',
-        'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
-        'AWS_LAMBDA_FUNCTION_VERSION',
-        'AWS_LAMBDA_INITIALIZATION_TYPE',
-        'AWS_LAMBDA_LOG_GROUP_NAME',
-        'AWS_LAMBDA_LOG_STREAM_NAME',
-        'AWS_ACCESS_KEY',
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
-        'AWS_SESSION_TOKEN',
-        'AWS_LAMBDA_RUNTIME_API',
-        'LAMBDA_TASK_ROOT',
-        'LAMBDA_RUNTIME_DIR',
-        '_',
-      ]
-      keysToRemove.forEach((key) => delete env[key as EnvKey])
+    // if (this.shouldDeployApi()) {
+    //   const keysToRemove = [
+    //     '_HANDLER',
+    //     '_X_AMZN_TRACE_ID',
+    //     'AWS_REGION',
+    //     'AWS_EXECUTION_ENV',
+    //     'AWS_LAMBDA_FUNCTION_NAME',
+    //     'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
+    //     'AWS_LAMBDA_FUNCTION_VERSION',
+    //     'AWS_LAMBDA_INITIALIZATION_TYPE',
+    //     'AWS_LAMBDA_LOG_GROUP_NAME',
+    //     'AWS_LAMBDA_LOG_STREAM_NAME',
+    //     'AWS_ACCESS_KEY',
+    //     'AWS_ACCESS_KEY_ID',
+    //     'AWS_SECRET_ACCESS_KEY',
+    //     'AWS_SESSION_TOKEN',
+    //     'AWS_LAMBDA_RUNTIME_API',
+    //     'LAMBDA_TASK_ROOT',
+    //     'LAMBDA_RUNTIME_DIR',
+    //     '_',
+    //   ]
+    //   keysToRemove.forEach((key) => delete env[key as EnvKey])
 
-      behaviorOptions = {
-        ...this.apiBehaviorOptions(scope, props),
-        ...behaviorOptions,
-      }
-    }
+    //   behaviorOptions = {
+    //     ...this.apiBehaviorOptions(scope, props),
+    //     ...behaviorOptions,
+    //   }
+    // }
 
     // if docMode is used, we don't need to add a behavior for the docs
     // because the docs will be the root of the site
