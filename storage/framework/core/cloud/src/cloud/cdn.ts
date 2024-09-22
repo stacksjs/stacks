@@ -24,9 +24,6 @@ export interface CdnStackProps extends NestedCloudProps {
   zone: route53.IHostedZone
   webServer?: lambda.Function
   webServerUrl?: lambda.FunctionUrl
-  cliSetupUrl: lambda.FunctionUrl
-  askAiUrl: lambda.FunctionUrl
-  summarizeAiUrl: lambda.FunctionUrl
   lb?: ApplicationLoadBalancer
 }
 
@@ -139,7 +136,6 @@ export class CdnStack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: this.cdnCachePolicy,
       },
-      additionalBehaviors: this.additionalBehaviors(scope, props),
       errorResponses: [
         {
           httpStatus: 404,
@@ -178,13 +174,13 @@ export class CdnStack {
       value: this.mainDistribution.distributionId,
     })
 
-    new Output(scope, 'MainAppUrl', {
+    new Output(scope, 'MainUrl', {
       value: `https://${props.domain}`,
       description: 'The URL of the deployed main application',
     })
 
     this.mainVanityUrl = `https://${this.mainDistribution.domainName}`
-    new Output(scope, 'MainAppVanityUrl', {
+    new Output(scope, 'MainVanityUrl', {
       value: this.mainVanityUrl,
       description: 'The vanity URL of the deployed main application',
     })
@@ -192,11 +188,6 @@ export class CdnStack {
     if (this.docsDistribution) {
       new Output(scope, 'DocsDistributionId', {
         value: this.docsDistribution.distributionId,
-      })
-
-      new Output(scope, 'DocsAppUrl', {
-        value: `https://docs.${props.domain}`,
-        description: 'The URL of the deployed docs application',
       })
 
       this.docsVanityUrl = `https://${this.docsDistribution.domainName}`
@@ -297,95 +288,7 @@ export class CdnStack {
     }
   }
 
-  aiBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = Fn.select(2, Fn.split('/', props.askAiUrl.url))
-    const summaryHostname = Fn.select(2, Fn.split('/', props.summarizeAiUrl.url))
-
-    const aiCachePolicy = new cloudfront.CachePolicy(scope, 'AiCachePolicy', {
-      comment: 'Stacks AI Cache Policy',
-      cachePolicyName: `${this.props.slug}-${this.props.appEnv}-ai-cache-policy`,
-      defaultTtl: Duration.seconds(0),
-      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Accept', 'x-api-key', 'Authorization', 'Content-Type'),
-      queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
-    })
-
-    return {
-      '/ai/ask': {
-        origin: new origins.HttpOrigin(hostname, {
-          originPath: '/ai',
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-        }),
-        compress: false,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: aiCachePolicy,
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
-      '/ai/summary': {
-        origin: new origins.HttpOrigin(summaryHostname, {
-          originPath: '/ai',
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-        }),
-        compress: false,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: aiCachePolicy,
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
-    }
-  }
-
-  cliSetupBehaviorOptions(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    const hostname = Fn.select(2, Fn.split('/', props.cliSetupUrl.url))
-
-    return {
-      '/install': {
-        origin: new origins.HttpOrigin(hostname, {
-          originPath: '/cli-setup',
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-        }),
-        compress: false,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: new cloudfront.CachePolicy(scope, 'CliSetupCachePolicy', {
-          comment: 'Stacks CLI Setup Cache Policy',
-          cachePolicyName: `${this.props.slug}-${this.props.appEnv}-cli-setup-cache-policy`,
-          defaultTtl: Duration.seconds(0),
-          cookieBehavior: cloudfront.CacheCookieBehavior.none(),
-          headerBehavior: cloudfront.CacheHeaderBehavior.none(),
-          queryStringBehavior: cloudfront.CacheQueryStringBehavior.none(),
-        }),
-        realtimeLogConfig: this.realtimeLogConfig,
-      },
-    }
-  }
-
-  shouldDeployAiEndpoints(): boolean {
-    return config.cloud.ai ?? false
-  }
-
   shouldDeployCliSetup(): boolean {
     return config.cloud.cli ?? false
-  }
-
-  additionalBehaviors(scope: Construct, props: CdnStackProps): Record<string, cloudfront.BehaviorOptions> {
-    let behaviorOptions: Record<string, cloudfront.BehaviorOptions> = {}
-
-    if (this.shouldDeployAiEndpoints()) {
-      behaviorOptions = {
-        ...this.aiBehaviorOptions(scope, props),
-        ...behaviorOptions,
-      }
-    }
-
-    if (this.shouldDeployCliSetup()) {
-      behaviorOptions = {
-        ...this.cliSetupBehaviorOptions(scope, props),
-        ...behaviorOptions,
-      }
-    }
-
-    return behaviorOptions
   }
 }

@@ -14,6 +14,8 @@ route.get('/hello/world', () => 'hello world, buddy') // $APP_URL/api/hello/worl
 
 route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
 route.post('/login', 'Actions/LoginAction')
+route.post('/ai/ask', 'Actions/AI/AskAction')
+route.post('/ai/summary', 'Actions/AI/SummaryAction')
 // route.email('/welcome')
 route.health() // adds a GET `/api/health` route
 

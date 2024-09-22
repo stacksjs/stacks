@@ -123,8 +123,6 @@ export class Cloud extends Stack {
       originRequestFunction: this.docs.originRequestFunction,
       zone: this.dns.zone,
       cliSetupUrl: this.cli.cliSetupUrl,
-      askAiUrl: this.ai.askAiUrl,
-      summarizeAiUrl: this.ai.summarizeAiUrl,
       lb: this.api?.lb,
     })
 
