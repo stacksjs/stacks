@@ -97,7 +97,7 @@ async function submitEmail() {
             </div>
           </div>
 
-          <a href="https://stacksjs.org/docs" class="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
+          <a href="https://docs.stacksjs.org" class="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
         </div>
 
         <p v-for="error in errors" class="text-xs pt-2 text-red-500">
