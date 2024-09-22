@@ -6,13 +6,13 @@ import { Action } from '@stacksjs/actions'
  *
  * Please be aware, this action is used as a container health check. While you are encouraged
  * to extend this health check as you see fit, the framework requires the `status`
- * property to be present in the response of the `/api/health` endpoint.
+ * property to be present in the response of the `/health` endpoint.
  */
 
 export default new Action({
   name: 'Health',
   description: 'A health check for your application.',
-  path: '/api/health',
+  path: '/health',
 
   handle() {
     return {

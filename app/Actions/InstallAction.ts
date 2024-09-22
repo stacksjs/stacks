@@ -2,17 +2,13 @@ import process from 'node:process'
 import { Action } from '@stacksjs/actions'
 
 /**
- * A health check for your application.
- *
- * Please be aware, this action is used as a container health check. While you are encouraged
- * to extend this health check as you see fit, the framework requires the `status`
- * property to be present in the response of the `/api/health` endpoint.
+ * CLI Setup
  */
 
 export default new Action({
   name: 'CLI Setup',
   description: 'This action is used to setup the CLI.',
-  path: '/api/cli-setup',
+  path: '/install',
 
   handle() {
     const setupScriptContents = `if [ -n "$1" ]; then
