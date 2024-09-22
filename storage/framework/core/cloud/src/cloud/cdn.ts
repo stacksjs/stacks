@@ -65,7 +65,7 @@ export class CdnStack {
         props.docsBucket as s3.Bucket,
         this.createDocsOriginRequestFunction(scope),
         props.domain,
-        'Cdn',
+        'MainCdn',
         originAccessControl,
       )
     } else {
