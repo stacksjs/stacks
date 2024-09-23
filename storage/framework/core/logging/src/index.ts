@@ -44,7 +44,7 @@ export const logger = createConsola({
 
 export { consola }
 
-export async function writeToLogFile(message: string) {
+export async function writeToLogFile(message: string): Promise<void> {
   const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
 
   try {
@@ -141,17 +141,17 @@ export const log: Log = {
   echo: (...args: any[]) => console.log(...args),
 }
 
-export function dump(...args: any[]) {
+export function dump(...args: any[]): void {
   args.forEach((arg) => log.debug(arg))
 }
 
-export function dd(...args: any[]) {
+export function dd(...args: any[]): void {
   args.forEach((arg) => log.debug(arg))
   // we need to return a non-zero exit code to indicate an error
   // e.g. if used in a CDK script, we want it to fail the deployment
   process.exit(ExitCode.FatalError)
 }
 
-export function echo(...args: any[]) {
+export function echo(...args: any[]): void {
   console.log(...args)
 }
