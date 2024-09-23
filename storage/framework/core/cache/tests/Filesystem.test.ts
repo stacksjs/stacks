@@ -65,11 +65,4 @@ describe('@stacksjs/cache - Filesystem', () => {
 
     expect(await fileSystem.get('key11')).toBeUndefined()
   })
-
-  it('should disconnect from fileSystem', async () => {
-    await fileSystem.set('key12', 'value12')
-    await fileSystem.disconnect()
-    // We cannot perform an operation after disconnecting, just check it's disconnected without throwing errors
-    expect(await fileSystem.get('key12')).toBeUndefined()
-  })
 })

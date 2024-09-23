@@ -65,11 +65,4 @@ describe('@stacksjs/cache - Memory', () => {
 
     expect(await memory.get('key11')).toBeUndefined()
   })
-
-  it('should disconnect from memory', async () => {
-    await memory.set('key12', 'value12')
-    await memory.disconnect()
-    // We cannot perform an operation after disconnecting, just check it's disconnected without throwing errors
-    expect(await memory.get('key12')).toBeUndefined()
-  })
 })

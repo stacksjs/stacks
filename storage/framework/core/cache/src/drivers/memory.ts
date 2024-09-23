@@ -52,7 +52,7 @@ export const memory: CacheDriver = {
     return await client.has({ key })
   },
   async missing(key: string): Promise<boolean> {
-    return await client.has({ key })
+    return await client.missing({ key })
   },
   async deleteAll(): Promise<void> {
     await client.clear()
