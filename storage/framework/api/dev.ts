@@ -63,12 +63,11 @@ serve({
 })
 
 process.on('SIGINT', () => {
-  log.info(`Exited ${italic('using Ctrl-C')}`)
-
+  log.info(`Exited using Ctrl-C`)
   process.exit()
 })
 
 // @ts-expect-error - somehow type is not recognized
-if (globalThis.counter === 1) log.info(`Listening on http://localhost:${ports.api}/api ...`)
+if (globalThis.counter === 1) log.info(`Listening on http://localhost:${ports.api} ...`)
 // @ts-expect-error - somehow type is not recognized
-else log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api}/api ...`)
+else log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api} ...`)

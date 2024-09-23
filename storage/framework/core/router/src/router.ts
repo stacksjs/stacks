@@ -11,7 +11,6 @@ type ActionPath = string // TODO: narrow this by automating its generation
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
-  private apiPrefix = '/api'
   private groupPrefix = ''
   private path = ''
 
@@ -78,7 +77,7 @@ export class Router implements RouterInterface {
   public async health(): Promise<this> {
     const healthModule = (await import(p.userActionsPath('HealthAction'))).default as Action
     const callback = healthModule.handle
-    const path = healthModule.path ?? `${this.apiPrefix}/health`
+    const path = healthModule.path ?? `/health`
 
     this.addRoute('GET', path, callback, 200)
 
@@ -321,11 +320,11 @@ export class Router implements RouterInterface {
     return path.endsWith('/') ? path.slice(0, -1) : path
   }
 
-  public prepareUri(path: string) {
+  public prepareUri(path: string): string {
     // if string starts with / then remove it because we are adding it back in the next line
     if (path.startsWith('/')) path = path.slice(1)
 
-    path = `${this.apiPrefix}${this.groupPrefix}/${path}`
+    path = `${this.groupPrefix}/${path}`
 
     // if path ends in "/", then remove it
     // e.g. triggered when route is "/"
@@ -340,4 +339,4 @@ export class Router implements RouterInterface {
   }
 }
 
-export const route = new Router()
+export const route: Router = new Router()

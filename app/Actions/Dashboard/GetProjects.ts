@@ -4,7 +4,7 @@ import { Action } from '@stacksjs/actions'
 export default new Action({
   name: 'GetProjects',
   description: 'Gets your local Stacks projects.',
-  path: '/api/projects',
+  path: '/projects',
 
   async handle() {
     console.log('GetProjects called from Action')

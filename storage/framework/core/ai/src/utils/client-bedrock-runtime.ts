@@ -10,9 +10,10 @@ import {
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime'
 
-export const client = new BedrockRuntimeClient({
+export const client: BedrockRuntimeClient = new BedrockRuntimeClient({
   region: process.env.REGION || 'us-east-1',
 })
+
 const logger = console // import your own logger
 
 /*
@@ -46,5 +47,7 @@ export async function invokeModelWithResponseStream(
   logger.debug(res)
   return res
 }
+
+export { InvokeModelCommand }
 
 export type { InvokeModelCommandInput, InvokeModelWithResponseStreamCommandInput }

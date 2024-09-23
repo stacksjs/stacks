@@ -4,7 +4,7 @@ import { schema } from '@stacksjs/validation'
 export default new Action({
   name: 'UpdateAiConfig',
   description: 'Updates the AI config.',
-  path: '/api/dashboard/settings/ai',
+  path: '/dashboard/settings/ai',
   method: 'POST',
 
   validations: {

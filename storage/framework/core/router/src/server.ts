@@ -19,7 +19,7 @@ interface Options {
   statusCode?: StatusCode
 }
 
-export async function serve(options: ServeOptions = {}) {
+export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
@@ -39,7 +39,7 @@ export async function serve(options: ServeOptions = {}) {
   })
 }
 
-export async function serverResponse(req: Request, body: string) {
+export async function serverResponse(req: Request, body: string): Promise<Response> {
   log.debug(`Incoming Request: ${req.method} ${req.url}`)
   log.debug(`Headers: ${JSON.stringify(req.headers)}`)
   log.debug(`Body: ${JSON.stringify(req.body)}`)
@@ -299,8 +299,7 @@ function noCache(response: Response) {
 }
 
 async function addRouteQuery(url: URL) {
-  // const modelFiles = globSync([path.userModelsPath('*.ts')])
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
     const modelName = getModelName(model, modelFile)
@@ -317,7 +316,7 @@ async function addRouteQuery(url: URL) {
 }
 
 async function addBody(params: any) {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
@@ -335,7 +334,7 @@ async function addBody(params: any) {
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -353,7 +352,7 @@ async function addRouteParam(param: RouteParam): Promise<void> {
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model

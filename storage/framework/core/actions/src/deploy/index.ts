@@ -38,13 +38,6 @@ await runCommand('bun build.ts', {
 })
 log.success('Server built')
 
-// run bun install in the framework path
-log.info('Installing aws-sdk-layer dependency...')
-await runCommand('bun install', {
-  cwd: p.cloudPath('src/cloud/aws-sdk-layer'),
-})
-log.success('aws-sdk-layer dependency installed')
-
 await runCommand('bun zip.ts', {
   cwd: p.corePath('cloud'),
 })

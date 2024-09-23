@@ -1,4 +1,4 @@
-import { InvokeModelCommand, client } from './client-bedrock-runtime'
+import { InvokeModelCommand, client } from './utils/client-bedrock-runtime'
 
 export interface AiOptions {
   maxTokenCount?: number
@@ -58,6 +58,7 @@ export async function ask(question: string, options: AskOptions = {}): Promise<s
   try {
     const response = await client.send(command)
     const responseBody = JSON.parse(new TextDecoder().decode(response.body))
+
     return responseBody.results[0].outputText
   } catch (error) {
     console.error('Error asking question:', error)

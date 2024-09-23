@@ -3,7 +3,7 @@ import type { StacksOptions } from '@stacksjs/types'
 
 // import { userConfig as overrides } from './overrides'
 
-export default {
+const config: StacksOptions = {
   ai: {
     deploy: false,
     models: [
@@ -613,4 +613,6 @@ export default {
       },
     },
   },
-} satisfies StacksOptions
+}
+
+export default config
