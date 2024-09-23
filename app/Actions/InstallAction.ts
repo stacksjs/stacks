@@ -10,7 +10,7 @@ export default new Action({
   description: 'This action is used to setup the CLI.',
   path: '/install',
 
-  handle() {
+  handle(): string {
     const setupScriptContents = `if [ -n "$1" ]; then
   # Check if the directory exists
   if [ -d "storage/framework/core" ]; then # this is our identifier whether it is a Stacks project

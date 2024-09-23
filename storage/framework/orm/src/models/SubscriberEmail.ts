@@ -14,11 +14,11 @@ export interface SubscriberEmailsTable {
   id: Generated<number>
   email?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
-  deleted_at?: Date
+  deleted_at?: string
 }
 
 interface SubscriberEmailResponse {
@@ -64,7 +64,7 @@ export class SubscriberEmailModel {
   public created_at: Date | undefined
   public updated_at: Date | undefined
 
-  public deleted_at: Date | undefined
+  public deleted_at: string | undefined
 
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
     this.id = subscriberemail?.id

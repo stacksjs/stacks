@@ -15,9 +15,9 @@ export interface SubscribersTable {
   subscribed?: boolean
   user_id?: number
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 }
 
 interface SubscriberResponse {

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { schema } from '@stacksjs/validation'
 import { ask } from '@stacksjs/ai'
+import { schema } from '@stacksjs/validation'
 
 // TODO: this should have been auto-generated
 type Request = {

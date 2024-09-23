@@ -19,7 +19,7 @@ interface ActionOptions {
   enabled?: JobOptions['enabled']
   path?: string
   requestFile?: string
-  handle: (options?: Request) => Promise<any>
+  handle: (options?: Request) => Promise<any> | string | number | boolean
 }
 
 export class Action {

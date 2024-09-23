@@ -26,9 +26,9 @@ export interface TeamsTable {
   accesstoken_id?: number
   user_id?: number
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 }
 
 interface TeamResponse {

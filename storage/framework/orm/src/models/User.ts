@@ -28,9 +28,9 @@ export interface UsersTable {
   post_id?: number
   two_factor_secret?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 }
 
 interface UserResponse {
