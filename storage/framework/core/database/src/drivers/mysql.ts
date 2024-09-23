@@ -64,7 +64,7 @@ export async function resetMysqlDatabase() {
 
 export async function generateMysqlMigration(modelPath: string) {
   // check if any files are in the database folder
-  const files = await fs.readdir(path.userMigrationsPath())
+  // const files = await fs.readdir(path.userMigrationsPath())
 
   // if (files.length === 0) {
   //   log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')

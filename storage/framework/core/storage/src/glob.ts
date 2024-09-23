@@ -13,7 +13,7 @@ export interface GlobOptions {
   onlyFiles?: boolean
 }
 
-export const globSync = (patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>) => {
+export const globSync = (patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): string[] => {
   if (typeof patterns === 'string') {
     return gs([patterns], options)
   }

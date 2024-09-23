@@ -1,7 +1,16 @@
 import { database } from '@stacksjs/config'
-import { copyModelFiles, db, deleteFrameworkModels, fetchTables, runDatabaseMigration, sql } from '@stacksjs/database'
+import {
+  copyModelFiles,
+  db,
+  deleteFrameworkModels,
+  dropSqliteTables,
+  fetchSqliteFile,
+  fetchTables,
+  runDatabaseMigration,
+  sql,
+} from '@stacksjs/database'
 import { path } from '@stacksjs/path'
-import { globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 
 const driver = database.default || ''
 
@@ -32,6 +41,11 @@ export async function truncateMysql() {
 }
 
 export async function truncateSqlite() {
+  const sqlitePath = fetchSqliteFile()
+
+  if (!fs.existsSync(sqlitePath)) await Bun.$`touch ${sqlitePath}`
+
+  await dropSqliteTables()
   await deleteFrameworkModels()
 
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })

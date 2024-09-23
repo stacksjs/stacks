@@ -11,6 +11,7 @@ import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   arrangeColumns,
   checkPivotMigration,
+  fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
   hasTableBeenMigrated,
@@ -21,6 +22,13 @@ import {
 
 export async function resetSqliteDatabase() {
   await deleteFrameworkModels()
+  await deleteMigrationFiles()
+  await dropSqliteTables()
+
+  return ok('All tables dropped successfully!')
+}
+
+export async function deleteMigrationFiles() {
   const files = await fs.readdir(path.userMigrationsPath())
 
   if (files.length) {
@@ -32,25 +40,10 @@ export async function resetSqliteDatabase() {
       }
     }
   }
-
-  return ok('All tables dropped successfully!')
 }
 
 export async function deleteFrameworkModels() {
-  const dbPath = fetchSqliteFile()
-
-  if (fs.existsSync(dbPath)) await Bun.$`rm ${dbPath}`
-
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-
-  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-
-  for (const userModel of userModelFiles) {
-    const userModelPath = (await import(userModel)).default
-    const pivotTables = await getPivotTables(userModelPath, userModel)
-
-    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
-  }
 
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
@@ -60,6 +53,22 @@ export async function deleteFrameworkModels() {
         if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
       }
     }
+  }
+}
+
+export async function dropSqliteTables() {
+  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const tables = await fetchTables()
+
+  for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
+  await db.schema.dropTable('migrations').ifExists().execute()
+  await db.schema.dropTable('migration_locks').ifExists().execute()
+
+  for (const userModel of userModelFiles) {
+    const userModelPath = (await import(userModel)).default
+    const pivotTables = await getPivotTables(userModelPath, userModel)
+
+    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
   }
 }
 

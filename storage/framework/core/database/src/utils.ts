@@ -1,24 +1,27 @@
 import { app, database } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { Database } from '@stacksjs/orm'
+import { path } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
+import type { RawBuilder } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
 
 const appEnv = app.env || 'local'
 
-export function getDialect() {
+export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect {
   const driver = database.default ?? 'sqlite'
 
   log.debug(`Using database driver: ${driver}`)
 
   if (driver === 'sqlite') {
     const defaultName = appEnv !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
-    const path = database.connections?.sqlite.database ?? defaultName
+    const sqliteDbName = database.connections?.sqlite.database ?? defaultName
+    const dbPath = path.projectPath(sqliteDbName)
 
     return new BunWorkerDialect({
-      url: path,
+      url: dbPath,
     })
   }
 
@@ -52,8 +55,8 @@ export function getDialect() {
   throw new Error(`Unsupported driver: ${driver}`)
 }
 
-export const now = sql`now()`
+export const now: RawBuilder<any> = sql`now()`
 
-export const db = new Kysely<Database>({
+export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
 })
