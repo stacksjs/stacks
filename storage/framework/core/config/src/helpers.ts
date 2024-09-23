@@ -51,111 +51,54 @@ export async function localUrl({
   localhost?: boolean
   https?: boolean
 } = {}): Promise<string> {
-  // Ensure url starts with http:// or https://
-  // if (!url.startsWith('http://') && !url.startsWith('https://'))
-  //   url = 'https://' + url
-  let url
+  let url = domain.replace(/\.[^\.]+$/, '.localhost')
 
   switch (type) {
     case 'frontend':
       if (network) return await createLocalTunnel(config.ports?.frontend || 3000)
-
       if (localhost) return `http://localhost:${config.ports?.frontend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost')
-
-      if (https) return `https://${url}`
-
-      return url
+      break
     case 'backend':
       if (network) return await createLocalTunnel(config.ports?.backend || 3001)
-
       if (localhost) return `http://localhost:${config.ports?.backend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
-
-      if (https) return `https://${url}`
-
-      return url
-    case 'api':
-      if (network) return await createLocalTunnel(config.ports?.backend || 3001)
-
-      if (localhost) return `http://localhost:${config.ports?.backend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
-
-      if (https) return `https://${url}`
-
-      return url
+      url = `api.${url}`
+      break
     case 'admin':
       if (network) return await createLocalTunnel(config.ports?.admin || 3002)
-
       if (localhost) return `http://localhost:${config.ports?.admin}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/admin/')
-
-      if (https) return `https://${url}`
-
-      return url
+      url = `admin.${url}`
+      break
     case 'library':
       if (network) return await createLocalTunnel(config.ports?.library || 3003)
-
       if (localhost) return `http://localhost:${config.ports?.library}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/libs/')
-
-      if (https) return `https://${url}`
-
-      return url
+      url = `libs.${url}`
+      break
     case 'email':
       if (network) return await createLocalTunnel(config.ports?.email || 3005)
-
       if (localhost) return `http://localhost:${config.ports?.email}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
-
-      if (https) return `https://${url}`
-
-      return url
+      url = `email.${url}`
+      break
     case 'desktop':
       if (network) return await createLocalTunnel(config.ports?.desktop || 3004)
-
-      if (localhost) return `http://localhost:${config.ports?.email}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
-
-      if (https) return `https://${url}`
-
-      return url
+      if (localhost) return `http://localhost:${config.ports?.desktop}`
+      url = `desktop.${url}`
+      break
     case 'docs':
-      if (network) return await createLocalTunnel(config.ports?.desktop || 3006)
-
+      if (network) return await createLocalTunnel(config.ports?.docs || 3006)
       if (localhost) return `http://localhost:${config.ports?.docs}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/docs/')
-
-      if (https) return `https://${url}`
-
-      return url
+      url = `docs.${url}`
+      break
     case 'inspect':
-      if (network) return await createLocalTunnel(config.ports?.desktop || 3007)
-
+      if (network) return await createLocalTunnel(config.ports?.inspect || 3007)
       if (localhost) return `http://localhost:${config.ports?.inspect}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/__inspect/')
-
-      if (https) return `https://${url}`
-
-      return url
+      url = `inspect.${url}`
+      break
     default:
       if (localhost) return `http://localhost:${config.ports?.frontend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost')
-
-      if (https) return `https://${url}`
-
-      return url
   }
+
+  if (https) return `https://${url}`
+  return `http://${url}`
 }
 
 export function defineStacksConfig(config: StacksConfig): StacksConfig {
