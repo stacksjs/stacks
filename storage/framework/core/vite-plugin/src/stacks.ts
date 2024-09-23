@@ -58,10 +58,12 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           inspect: await localUrl({ type: 'inspect', https: true }),
         }
 
-        const stacksVersion = `alpha-${version}`
+        console.log('urls', urls)
+        const stacksVersion = `alpha-v${version}`
         const withLocalhost = options?.withLocalhost
 
         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
+        console.log('')
 
         for (const [option, url] of Object.entries(urls)) {
           if (options?.[option as keyof StacksPluginOptions])

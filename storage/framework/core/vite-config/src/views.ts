@@ -12,9 +12,10 @@ import {
   markdown,
   pwa,
   router,
+  stacks,
+  uiEngine,
 } from '@stacksjs/vite-plugin'
-import Vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
+import { type UserConfig, defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
@@ -22,7 +23,9 @@ import generateSitemap from 'vite-ssg-sitemap'
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
 
-export default defineConfig({
+console.log('views.ts')
+
+const config: UserConfig = defineConfig({
   build: {
     rollupOptions: {
       external: ['fsevents', 'tinyexec', '@iconify/utils', '@antfu/install-pkg', 'local-pkg', 'mlly', 'fs'],
@@ -49,9 +52,7 @@ export default defineConfig({
   },
 
   plugins: [
-    Vue({
-      include: /\.(stx|vue|md)($|\?)/,
-    }),
+    uiEngine(),
 
     router({
       type: 'views',
@@ -69,9 +70,8 @@ export default defineConfig({
     pwa(),
     devtools(),
     i18n(),
-
-    // https://github.com/feat-agency/vite-plugin-webfont-dl
     fonts(),
+    stacks(),
   ],
 
   // https://github.com/antfu/vite-ssg
@@ -98,3 +98,5 @@ export default defineConfig({
     noExternal: ['workbox-window', /vue-i18n/],
   },
 })
+
+export default config
