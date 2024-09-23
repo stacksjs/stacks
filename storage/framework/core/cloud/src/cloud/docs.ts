@@ -24,7 +24,7 @@ export class DocsStack {
       // this needs to have timestamp to ensure uniqueness. Since Origin Request (Lambda@Edge) functions are replicated functions, the
       // deletion process takes a "long time". This way, the function is always unique in cases of quick recreations.
       functionName: `${props.slug}-${props.appEnv}-origin-request-${props.timestamp}`,
-      description: 'The Stacks Origin Request function that prettifies URLs',
+      description: 'The Stacks Origin Request function that prettifies URLs by removing the .html extension',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'dist/origin-request.handler',
       code: lambda.Code.fromAsset(p.cloudPath('dist.zip'), {
