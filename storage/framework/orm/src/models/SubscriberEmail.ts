@@ -14,11 +14,11 @@ export interface SubscriberEmailsTable {
   id: Generated<number>
   email?: string
 
-  created_at?: string
+  created_at?: Date
 
-  updated_at?: string
+  updated_at?: Date
 
-  deleted_at?: string
+  deleted_at?: Date
 }
 
 interface SubscriberEmailResponse {

@@ -25,9 +25,9 @@ interface RequestDataTeam {
   is_personal: boolean
   accesstoken_id: number
   user_id: number
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
+  created_at?: Date
+  updated_at?: Date
+  deleted_at?: Date
 }
 export class TeamRequest extends Request<RequestDataTeam> implements TeamRequestType {
   public id = 1

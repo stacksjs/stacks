@@ -20,9 +20,9 @@ interface RequestDataAccessToken {
   plain_text_token: string
   abilities: string[]
   team_id: number
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
+  created_at?: Date
+  updated_at?: Date
+  deleted_at?: Date
 }
 export class AccessTokenRequest extends Request<RequestDataAccessToken> implements AccessTokenRequestType {
   public id = 1

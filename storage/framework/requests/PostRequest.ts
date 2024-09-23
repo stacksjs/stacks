@@ -18,9 +18,9 @@ interface RequestDataPost {
   title: string
   body: string
   user_id: number
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
+  created_at?: Date
+  updated_at?: Date
+  deleted_at?: Date
 }
 export class PostRequest extends Request<RequestDataPost> implements PostRequestType {
   public id = 1

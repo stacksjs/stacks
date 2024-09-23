@@ -16,9 +16,9 @@ interface CustomAttributes {
 interface RequestDataSubscriberEmail {
   id?: number
   email: string
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
+  created_at?: Date
+  updated_at?: Date
+  deleted_at?: Date
 }
 export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> implements SubscriberEmailRequestType {
   public id = 1

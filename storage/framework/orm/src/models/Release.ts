@@ -14,9 +14,9 @@ export interface ReleasesTable {
   id: Generated<number>
   version?: string
 
-  created_at?: string
+  created_at?: Date
 
-  updated_at?: string
+  updated_at?: Date
 }
 
 interface ReleaseResponse {

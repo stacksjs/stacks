@@ -23,9 +23,9 @@ interface RequestDataDeployment {
   deploy_script: string
   terminal_output: string
   user_id: number
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
+  created_at?: Date
+  updated_at?: Date
+  deleted_at?: Date
 }
 export class DeploymentRequest extends Request<RequestDataDeployment> implements DeploymentRequestType {
   public id = 1

@@ -17,9 +17,9 @@ interface RequestDataSubscriber {
   id?: number
   subscribed: boolean
   user_id: number
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
+  created_at?: Date
+  updated_at?: Date
+  deleted_at?: Date
 }
 export class SubscriberRequest extends Request<RequestDataSubscriber> implements SubscriberRequestType {
   public id = 1

@@ -16,9 +16,9 @@ interface RequestDataProject {
       description: string
       url: string
       status: string
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface ProjectRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -31,17 +31,17 @@ export interface ProjectRequestType extends Request {
       description: string
       url: string
       status: string
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataSubscriberEmail {
        id?: number
  email: string
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface SubscriberEmailRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -51,9 +51,9 @@ export interface SubscriberEmailRequestType extends Request {
       all(): RequestDataSubscriberEmail
        id?: number
  email: string
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataAccessToken {
@@ -63,9 +63,9 @@ interface RequestDataAccessToken {
       plain_text_token: string
       abilities: string[]
       team_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface AccessTokenRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -81,9 +81,9 @@ export interface AccessTokenRequestType extends Request {
       plain_text_token: string
       abilities: string[]
       team_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataTeam {
@@ -98,9 +98,9 @@ interface RequestDataTeam {
       is_personal: boolean
       accesstoken_id: number
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface TeamRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -122,18 +122,18 @@ export interface TeamRequestType extends Request {
       is_personal: boolean
       accesstoken_id: number
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataSubscriber {
        id?: number
  subscribed: boolean
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface SubscriberRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -145,9 +145,9 @@ export interface SubscriberRequestType extends Request {
        id?: number
  subscribed: boolean
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataDeployment {
@@ -160,9 +160,9 @@ interface RequestDataDeployment {
       deploy_script: string
       terminal_output: string
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface DeploymentRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -181,17 +181,17 @@ export interface DeploymentRequestType extends Request {
       deploy_script: string
       terminal_output: string
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataRelease {
        id?: number
  version: string
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface ReleaseRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -201,9 +201,9 @@ export interface ReleaseRequestType extends Request {
       all(): RequestDataRelease
        id?: number
  version: string
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataUser {
@@ -215,9 +215,9 @@ interface RequestDataUser {
       team_id: number
       deployment_id: number
       post_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface UserRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -236,9 +236,9 @@ export interface UserRequestType extends Request {
       team_id: number
       deployment_id: number
       post_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 interface RequestDataPost {
@@ -246,9 +246,9 @@ interface RequestDataPost {
  title: string
       body: string
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 export interface PostRequestType extends Request {
       validate(attributes?: CustomAttributes): void
@@ -261,9 +261,9 @@ export interface PostRequestType extends Request {
  title: string
       body: string
       user_id: number
-     created_at?: string
-      updated_at?: string
-      deleted_at?: string
+     created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date
     }
 
 export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType

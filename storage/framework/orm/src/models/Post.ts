@@ -17,9 +17,9 @@ export interface PostsTable {
   body?: string
   user_id?: number
 
-  created_at?: string
+  created_at?: Date
 
-  updated_at?: string
+  updated_at?: Date
 }
 
 interface PostResponse {

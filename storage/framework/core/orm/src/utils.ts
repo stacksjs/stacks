@@ -240,7 +240,7 @@ export function getFillableAttributes(attributes: Attributes | undefined): strin
     .map((attribute) => snakeCase(attribute))
 }
 
-export async function writeModelNames() {
+export async function writeModelNames(): Promise<void> {
   const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
   let fileString = `export type ModelNames = `
 
@@ -265,7 +265,7 @@ export async function writeModelNames() {
   }
 }
 
-export async function writeModelRequest() {
+export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
@@ -354,9 +354,9 @@ export async function writeModelRequest() {
       `
     }
 
-    fieldString += `created_at?: string
-      updated_at?: string
-      deleted_at?: string`
+    fieldString += `created_at?: Date
+      updated_at?: Date
+      deleted_at?: Date`
 
     const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
@@ -567,7 +567,7 @@ function parseRule(rule: string): FieldArrayElement | null {
   )
 }
 
-export async function generateApiRoutes(modelFiles: string[]) {
+export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
   const file = Bun.file(path.frameworkPath(`orm/routes.ts`))
   const writer = file.writer()
   let routeString = `import { route } from '@stacksjs/router'\n\n\n`
@@ -609,10 +609,6 @@ export async function generateApiRoutes(modelFiles: string[]) {
                   await writeOrmActions(apiRoute, modelName)
 
                   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
-
-                  const pathAction = path.builtUserActionsPath(`src/${modelName}${formattedApiRoute}OrmAction.ts`, {
-                    relative: true,
-                  })
 
                   if (apiRoute === 'index')
                     routeString += `route.get('${uri}', '${modelName}${formattedApiRoute}OrmAction').middleware(['Api'])\n\n`
@@ -684,7 +680,7 @@ export async function generateApiRoutes(modelFiles: string[]) {
   await writer.end()
 }
 
-export async function deleteExistingModels(modelStringFile?: string) {
+export async function deleteExistingModels(modelStringFile?: string): Promise<void> {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
   if (fs.existsSync(typePath)) await fs.promises.unlink(typePath)
 
@@ -709,7 +705,7 @@ export async function deleteExistingModels(modelStringFile?: string) {
   return
 }
 
-export async function deleteExistingOrmActions(modelStringFile?: string) {
+export async function deleteExistingOrmActions(modelStringFile?: string): Promise<void> {
   if (modelStringFile) {
     const ormPath = path.builtUserActionsPath(`src/${modelStringFile}.ts`)
     if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
@@ -724,12 +720,12 @@ export async function deleteExistingOrmActions(modelStringFile?: string) {
   }
 }
 
-export async function deleteExistingModelNameTypes() {
+export async function deleteExistingModelNameTypes(): Promise<void> {
   const typeFile = path.corePath(`types/src/model-names.ts`)
   if (fs.existsSync(typeFile)) await fs.promises.unlink(typeFile)
 }
 
-export async function deleteExistingModelRequest(modelStringFile?: string) {
+export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
   if (fs.existsSync(requestD)) await fs.promises.unlink(requestD)
 
@@ -746,12 +742,12 @@ export async function deleteExistingModelRequest(modelStringFile?: string) {
   }
 }
 
-export async function deleteExistingOrmRoute() {
+export async function deleteExistingOrmRoute(): Promise<void> {
   const ormRoute = path.frameworkPath('orm/routes.ts')
   if (fs.existsSync(ormRoute)) await fs.promises.unlink(ormRoute)
 }
 
-export async function generateKyselyTypes() {
+export async function generateKyselyTypes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   let text = ``
 
@@ -1091,14 +1087,14 @@ export async function generateModelString(
 
   if (useTimestamps) {
     fieldString += `
-      created_at?: string\n
-      updated_at?: string
+      created_at?: Date\n
+      updated_at?: Date
     `
   }
 
   if (useSoftDeletes) {
     fieldString += `
-      deleted_at?: string
+      deleted_at?: Date
     `
   }
 
