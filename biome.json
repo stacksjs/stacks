@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": [
-    "./node_modules/@stacksjs/biome-config/schema.json",
+    "@stacksjs/biome-config",
     "./storage/framework/.biomelintrc-auto-import.json"
   ]
 }

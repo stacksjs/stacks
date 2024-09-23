@@ -1,7 +1,7 @@
 import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
-import { buddyOptions } from '@stacksjs/cli'
+import { buddyOptions, stripAnsi } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
@@ -10,7 +10,7 @@ import { consola, createConsola } from 'consola'
 
 // import type { Prompt } from '@stacksjs/cli'
 
-export function logLevel() {
+export function logLevel(): number {
   /**
    * This regex checks for:
    *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
@@ -91,26 +91,26 @@ export const log: Log = {
   info: async (message: string, options?: LogOptions) => {
     if (options?.styled === false) console.log(message)
     else logger.info(message)
-    await writeToLogFile(`INFO: ${message}`)
+    await writeToLogFile(`INFO: ${stripAnsi(message)}`)
   },
 
   success: async (message: string, options?: LogOptions) => {
     if (options?.styled === false) console.log(message)
     else logger.success(message)
-    await writeToLogFile(`SUCCESS: ${message}`)
+    await writeToLogFile(`SUCCESS: ${stripAnsi(message)}`)
   },
 
   warn: async (message: string, options?: LogOptions) => {
     if (options?.styled === false) console.log(message)
     else logger.warn(message)
-    await writeToLogFile(`WARN: ${message}`)
+    await writeToLogFile(`WARN: ${stripAnsi(message)}`)
   },
 
   /** alias for `log.warn()`. */
   warning: async (message: string, options?: LogOptions) => {
     if (options?.styled === false) console.log(message)
     else logger.warn(message)
-    await writeToLogFile(`WARN: ${message}`)
+    await writeToLogFile(`WARN: ${stripAnsi(message)}`)
   },
 
   error: async (err: unknown, options?: any | Error) => {
@@ -120,7 +120,7 @@ export const log: Log = {
     else handleError(err, options)
 
     const errorMessage = isString(err) ? err : err instanceof Error ? err.message : String(err)
-    await writeToLogFile(`ERROR: ${errorMessage}`)
+    await writeToLogFile(`ERROR: ${stripAnsi(errorMessage)}`)
   },
 
   debug: async (...args: any[]) => {
@@ -130,7 +130,7 @@ export const log: Log = {
     if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod') return writeToLogFile(message)
 
     logger.debug(message)
-    await writeToLogFile(message)
+    await writeToLogFile(stripAnsi(message))
   },
 
   dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
