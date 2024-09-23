@@ -3,8 +3,9 @@ import type { AutoImportsOptions } from '@stacksjs/types'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
+import type { Plugin } from 'vite'
 
-export function autoImports(options?: AutoImportsOptions) {
+export function autoImports(options?: AutoImportsOptions): Plugin {
   return AutoImport({
     include: /\.(stx|vue|js|ts|mdx?|html)($|\?)/,
     imports: [

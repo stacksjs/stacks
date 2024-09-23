@@ -1,8 +1,9 @@
 import { kolorist as c } from '@stacksjs/cli'
 import type { ViteDevServer } from 'vite'
+import type { Plugin } from 'vite'
 import { version } from '../../package.json'
 
-export const docsEngine = {
+export const docsEngine: Plugin = {
   name: 'stacks-plugin',
   configureServer(server: ViteDevServer) {
     // const base = server.config.base || '/'

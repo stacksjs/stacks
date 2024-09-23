@@ -2,13 +2,14 @@ import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import type { Options } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
+import type { Plugin } from 'vite'
 
 interface RouterOptions extends Options {
   type?: 'views'
 }
 
 // https://github.com/posva/unplugin-vue-router
-export function router(options?: RouterOptions) {
+export function router(options?: RouterOptions): Plugin {
   const opts = {
     extensions: ['.stx', '.vue', '.md'],
     dts: p.frameworkPath('types/router.d.ts'),
@@ -18,11 +19,17 @@ export function router(options?: RouterOptions) {
   }
 
   if (options?.type === 'views') {
-    return VueRouter({
-      exclude: ['/dashboard/**', '/errors/**', '/system-tray/**', '/docs/**', '/api/**'], // these are provided by the framework, and that's why they cannot be reused
-      ...opts,
-    })
+    return {
+      name: 'router-plugin',
+      ...VueRouter({
+        exclude: ['/dashboard/**', '/errors/**', '/system-tray/**', '/docs/**', '/api/**'], // these are provided by the framework, and that's why they cannot be reused
+        ...opts,
+      }),
+    }
   }
 
-  return VueRouter(opts)
+  return {
+    name: 'router-plugin',
+    ...VueRouter(opts),
+  }
 }

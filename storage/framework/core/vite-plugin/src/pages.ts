@@ -1,9 +1,10 @@
 import { defu } from 'defu'
 import type { Options, TreeNode } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
+import type { Plugin } from 'vite'
 
 // https://github.com/posva/unplugin-vue-router
-export function pages(options?: Options) {
+export function pages(options?: Options): Plugin {
   const defaultOptions = {
     extensions: ['.stx', '.vue', '.md'],
     getRouteName: (routeNode: TreeNode) => getFileBasedRouteName(routeNode),
@@ -11,7 +12,10 @@ export function pages(options?: Options) {
 
   const newOptions = defu(options, defaultOptions)
 
-  return VueRouter(newOptions)
+  return {
+    name: 'pages-plugin',
+    ...VueRouter(newOptions),
+  }
 }
 
 function getFileBasedRouteName(node: TreeNode): string {
