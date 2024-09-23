@@ -44,7 +44,13 @@ export async function localUrl({
   localhost = false,
   https = undefined as boolean | undefined,
   network = undefined as boolean | undefined,
-} = {}) {
+}: {
+  domain?: string
+  type?: LocalUrlType
+  network?: boolean
+  localhost?: boolean
+  https?: boolean
+} = {}): Promise<string> {
   // Ensure url starts with http:// or https://
   // if (!url.startsWith('http://') && !url.startsWith('https://'))
   //   url = 'https://' + url
@@ -152,110 +158,110 @@ export async function localUrl({
   }
 }
 
-export function defineStacksConfig(config: StacksConfig) {
+export function defineStacksConfig(config: StacksConfig): StacksConfig {
   return config
 }
 
-export function defineApp(config: AppConfig) {
+export function defineApp(config: AppConfig): AppConfig {
   return config
 }
 
-export function defineCache(config: CacheConfig) {
+export function defineCache(config: CacheConfig): CacheConfig {
   return config
 }
 
-export function defineCdn(config: CdnConfig) {
+export function defineCdn(config: CdnConfig): CdnConfig {
   return config
 }
 
-export function defineChat(config: ChatConfig) {
+export function defineChat(config: ChatConfig): ChatConfig {
   return config
 }
 
-export function defineCli(config: CliConfig) {
+export function defineCli(config: CliConfig): CliConfig {
   return config
 }
 
-export function defineJob(config: JobConfig) {
+export function defineJob(config: JobConfig): JobConfig {
   return config
 }
 
-export function defineCronJob(config: JobConfig) {
+export function defineCronJob(config: JobConfig): JobConfig {
   return config
 }
 
-export function defineDatabase(config: DatabaseConfig) {
+export function defineDatabase(config: DatabaseConfig): DatabaseConfig {
   return config
 }
 
-export function defineDependencies(config: DependenciesConfig) {
+export function defineDependencies(config: DependenciesConfig): DependenciesConfig {
   return config
 }
 
-export function defineDns(config: DnsConfig) {
+export function defineDns(config: DnsConfig): DnsConfig {
   return config
 }
 
-export function defineEmailConfig(config: EmailConfig) {
+export function defineEmailConfig(config: EmailConfig): EmailConfig {
   return config
 }
 
-export function defineEmail(config: EmailConfig) {
+export function defineEmail(config: EmailConfig): EmailConfig {
   return config
 }
 
-export function defineGit(config: GitConfig) {
+export function defineGit(config: GitConfig): GitConfig {
   return config
 }
 
-export function defineHashing(config: HashingConfig) {
+export function defineHashing(config: HashingConfig): HashingConfig {
   return config
 }
 
-export function defineLibrary(config: LibraryConfig) {
+export function defineLibrary(config: LibraryConfig): LibraryConfig {
   return config
 }
 
-export function defineNotification(config: NotificationConfig) {
+export function defineNotification(config: NotificationConfig): NotificationConfig {
   return config
 }
 
-export function definePayment(config: PaymentConfig) {
+export function definePayment(config: PaymentConfig): PaymentConfig {
   return config
 }
 
-export function defineQueue(config: QueueConfig) {
+export function defineQueue(config: QueueConfig): QueueConfig {
   return config
 }
 
-export function defineSearchEngine(config: SearchEngineConfig) {
+export function defineSearchEngine(config: SearchEngineConfig): SearchEngineConfig {
   return config
 }
 
-export function defineSecurity(config: SecurityConfig) {
+export function defineSecurity(config: SecurityConfig): SecurityConfig {
   return config
 }
 
-export function defineServices(config: ServicesConfig) {
+export function defineServices(config: ServicesConfig): ServicesConfig {
   return config
 }
 
-export function defineSms(config: any) {
+export function defineSms(config: any): any {
   return config
 }
 
-export function defineStorage(config: StorageConfig) {
+export function defineStorage(config: StorageConfig): StorageConfig {
   return config
 }
 
-export function defineUi(config: UiConfig) {
+export function defineUi(config: UiConfig): UiConfig {
   return config
 }
 
-export function defineModel(config: Model) {
+export function defineModel(config: Model): Model {
   return config
 }
 
-export function defineEvents(config: Events) {
+export function defineEvents(config: Events): Events {
   return config
 }
