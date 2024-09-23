@@ -1,11 +1,11 @@
 import process from 'node:process'
 import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { frameworkPath, path as p, projectPath, resolve } from '@stacksjs/path'
+import { frameworkPath, path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import type { MakeOptions } from '@stacksjs/types'
 
-export async function invoke(options: MakeOptions) {
+export async function invoke(options: MakeOptions): Promise<void> {
   if (options.component) await makeComponent(options)
   if (options.database) makeDatabase(options)
   if (options.function) await makeFunction(options)
@@ -19,11 +19,11 @@ export async function invoke(options: MakeOptions) {
   if (options.stack) makeStack(options)
 }
 
-export async function make(options: MakeOptions) {
-  return invoke(options)
+export async function make(options: MakeOptions): Promise<void> {
+  return await invoke(options)
 }
 
-export async function makeAction(options: MakeOptions) {
+export async function makeAction(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info('Creating your action...')
@@ -35,7 +35,7 @@ export async function makeAction(options: MakeOptions) {
   }
 }
 
-export async function makeComponent(options: MakeOptions) {
+export async function makeComponent(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info('Creating your component...')
@@ -47,7 +47,7 @@ export async function makeComponent(options: MakeOptions) {
   }
 }
 
-export async function createAction(options: MakeOptions) {
+export async function createAction(options: MakeOptions): Promise<void> {
   const name = options.name
   await writeTextFile({
     path: p.userActionsPath(name),
@@ -65,7 +65,7 @@ export default new Action({
   })
 }
 
-export async function createComponent(options: MakeOptions) {
+export async function createComponent(options: MakeOptions): Promise<void> {
   const name = options.name
   await writeTextFile({
     path: p.userComponentsPath(`${name}.vue`),
@@ -82,7 +82,7 @@ console.log('Hello World component created')
   })
 }
 
-export function makeDatabase(options: MakeOptions) {
+export function makeDatabase(options: MakeOptions): void {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} database...`)
@@ -94,11 +94,11 @@ export function makeDatabase(options: MakeOptions) {
   }
 }
 
-export function createDatabase(options: MakeOptions) {
+export function createDatabase(options: MakeOptions): void {
   console.log('createDatabase options', options) // wip
 }
 
-export function factory(options: MakeOptions) {
+export function factory(options: MakeOptions): void {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} factory...`)
@@ -110,11 +110,11 @@ export function factory(options: MakeOptions) {
   }
 }
 
-export function createFactory(options: MakeOptions) {
+export function createFactory(options: MakeOptions): void {
   console.log('options', options) // wip
 }
 
-export async function makeNotification(options: MakeOptions) {
+export async function makeNotification(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info(`Creating your ${italic(name)} notification...`)
@@ -126,7 +126,7 @@ export async function makeNotification(options: MakeOptions) {
   }
 }
 
-export async function makePage(options: MakeOptions) {
+export async function makePage(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info('Creating your page...')
@@ -138,7 +138,7 @@ export async function makePage(options: MakeOptions) {
   }
 }
 
-export async function createPage(options: MakeOptions) {
+export async function createPage(options: MakeOptions): Promise<void> {
   const name = options.name
   await writeTextFile({
     path: p.userViewsPath(`${name}.vue`),
@@ -155,7 +155,7 @@ console.log('Hello World page created')
   })
 }
 
-export async function makeFunction(options: MakeOptions) {
+export async function makeFunction(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info('Creating your function...')
@@ -167,7 +167,7 @@ export async function makeFunction(options: MakeOptions) {
   }
 }
 
-export async function createFunction(options: MakeOptions) {
+export async function createFunction(options: MakeOptions): Promise<void> {
   const name = options.name
   await writeTextFile({
     path: p.userFunctionsPath(`${name}.ts`),
@@ -187,7 +187,7 @@ export {
   })
 }
 
-export async function makeLanguage(options: MakeOptions) {
+export async function makeLanguage(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info('Creating your translation file...')
@@ -199,7 +199,7 @@ export async function makeLanguage(options: MakeOptions) {
   }
 }
 
-export async function createLanguage(options: MakeOptions) {
+export async function createLanguage(options: MakeOptions): Promise<void> {
   const name = options.name
   await writeTextFile({
     path: p.resourcesPath(`lang/${name}.yml`),
@@ -209,7 +209,7 @@ export async function createLanguage(options: MakeOptions) {
   })
 }
 
-export function makeStack(options: MakeOptions) {
+export function makeStack(options: MakeOptions): void {
   try {
     const name = options.name
     log.info(`Creating your ${name} stack...`)
@@ -224,7 +224,7 @@ export function makeStack(options: MakeOptions) {
   }
 }
 
-export async function createNotification(options: MakeOptions) {
+export async function createNotification(options: MakeOptions): Promise<boolean> {
   const name = options.name
   try {
     let importOption = 'EmailOptions'
@@ -256,7 +256,7 @@ function send(): ${importOption} {
   }
 }
 
-export async function createMigration(options: MakeOptions) {
+export async function createMigration(options: MakeOptions): Promise<void> {
   const optionName = options.name
   // const table = options.tableName
   const table = 'dummy-name'
@@ -285,7 +285,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   }
 }
 
-export async function createModel(options: MakeOptions) {
+export async function createModel(options: MakeOptions): Promise<void> {
   const optionName = options.name
 
   if (!optionName[0]) throw new Error('options.name is required and cannot be empty')

@@ -15,11 +15,11 @@ export async function invoke(options: ExamplesOptions) {
     )
 }
 
-export async function examples(options: ExamplesOptions) {
-  return invoke(options)
+export async function examples(options: ExamplesOptions): Promise<void> {
+  return await invoke(options)
 }
 
-export async function componentExample(options: ExamplesOptions) {
+export async function componentExample(options: ExamplesOptions): Promise<void> {
   if (hasComponents()) {
     await runNpmScript(NpmScript.ExampleVue, options)
     log.success('Your component library was built successfully')
@@ -29,7 +29,7 @@ export async function componentExample(options: ExamplesOptions) {
   }
 }
 
-export async function webComponentExample(options: ExamplesOptions) {
+export async function webComponentExample(options: ExamplesOptions): Promise<void> {
   if (hasComponents()) {
     log.info('Building your Web Component library...')
     await runNpmScript(NpmScript.BuildWebComponents, options)

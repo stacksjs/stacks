@@ -15,7 +15,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { generateModelFiles } from '@stacksjs/orm'
 import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
 
-export function generate(buddy: CLI) {
+export function generate(buddy: CLI): void {
   const descriptions = {
     command:
       'Automagically build any of your libraries/packages for production use. Select any of the following packages',

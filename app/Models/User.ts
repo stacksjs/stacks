@@ -30,9 +30,8 @@ export default {
 
     useApi: {
       uri: 'users', // your-url.com/api/users
-      middleware: ['Api'], // defaults to `[]`
 
-      routes: ['index', 'store'],
+      routes: ['index', 'store', 'show'],
     },
 
     observe: true,
