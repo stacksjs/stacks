@@ -1,15 +1,16 @@
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
   "format_on_save": "on",
+  "formatter": {
+    "language_server": {
+      "name": "biome"
+    }
+  },
   "code_actions_on_format": {
-    "source.fixAll": true,
-    "source.fixAll.eslint": false,
+    "source.fixAll.biome": true,
     "source.organizeImports.biome": true
   },
-  "formatter": "language_server",
-  "autosave": "on_focus_change",
-  "language_servers": [
-    "biome"
-  ],
   "file_types": {
     "JavaScript": [
       "buddy"
