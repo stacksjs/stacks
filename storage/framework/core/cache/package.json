@@ -49,6 +49,7 @@
     "ioredis": "^5.4.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "dynamodb-tooling": "^0.1.0"
   }
 }

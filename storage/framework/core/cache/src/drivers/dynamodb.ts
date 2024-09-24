@@ -5,7 +5,7 @@ import type { CacheDriver } from './type'
 const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID || ''
 const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || ''
 const dynamoEndpoint = process.env.AWS_DYNAMODB_ENDPOINT || ''
-const tableName = process.env.AWS_DYNAMODB_TABLE || ''
+const tableName = process.env.AWS_DYNAMODB_TABLE || 'stacks'
 
 const client = new BentoCache({
   default: 'dynamo',
@@ -13,7 +13,7 @@ const client = new BentoCache({
     dynamo: bentostore().useL2Layer(
       dynamoDbDriver({
         endpoint: dynamoEndpoint,
-        region: 'eu-west-3',
+        region: 'eu-east-1',
         table: {
           name: tableName,
         },
