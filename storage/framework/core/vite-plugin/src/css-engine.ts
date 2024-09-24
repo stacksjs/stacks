@@ -3,18 +3,16 @@ import UnoCSS from 'unocss/vite'
 import type { Plugin } from 'vite'
 
 export function cssEngine(isWebComponent = false): Plugin {
-  return {
-    name: 'css-engine-plugin',
-    ...UnoCSS({
-      configFile: p.uiPath('src/unocss.config.ts'),
-      mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
-      // content: {
-      //   pipeline: {
-      //     include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
-      //     // exclude files
-      //     // exclude: []
-      //   },
-      // },
-    }),
-  }
+  // @ts-expect-error - somehow a pwa error happens when we type `name` in antfus plugins
+  return UnoCSS({
+    configFile: p.uiPath('src/unocss.config.ts'),
+    mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
+    // content: {
+    //   pipeline: {
+    //     include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
+    //     // exclude files
+    //     // exclude: []
+    //   },
+    // },
+  })
 }

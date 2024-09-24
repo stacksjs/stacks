@@ -12,10 +12,8 @@ export function pages(options?: Options): Plugin {
 
   const newOptions = defu(options, defaultOptions)
 
-  return {
-    name: 'pages-plugin',
-    ...VueRouter(newOptions),
-  }
+  // @ts-expect-error - somehow a pwa error happens when we type `name` in some plugins, so ignore it everywhere
+  return VueRouter(newOptions)
 }
 
 function getFileBasedRouteName(node: TreeNode): string {

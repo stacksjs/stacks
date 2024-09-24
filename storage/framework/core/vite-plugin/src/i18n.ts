@@ -3,13 +3,11 @@ import { path as p } from '@stacksjs/path'
 import type { Plugin } from 'vite'
 
 export function i18n(): Plugin {
-  return {
-    name: 'i18n-plugin',
-    ...VueI18n({
-      runtimeOnly: true,
-      compositionOnly: true,
-      fullInstall: true,
-      include: [p.resolve(__dirname, '../../../../../../../lang/**')],
-    }),
-  }
+  // @ts-expect-error - somehow a pwa error happens when we type `name` in this plugin
+  return VueI18n({
+    runtimeOnly: true,
+    compositionOnly: true,
+    fullInstall: true,
+    include: [p.resolve(__dirname, '../../../../../../../lang/**')],
+  })
 }

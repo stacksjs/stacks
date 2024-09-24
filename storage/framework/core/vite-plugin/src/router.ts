@@ -19,17 +19,13 @@ export function router(options?: RouterOptions): Plugin {
   }
 
   if (options?.type === 'views') {
-    return {
-      name: 'router-plugin',
-      ...VueRouter({
-        exclude: ['/dashboard/**', '/errors/**', '/system-tray/**', '/docs/**', '/api/**'], // these are provided by the framework, and that's why they cannot be reused
-        ...opts,
-      }),
-    }
+    // @ts-expect-error - somehow a pwa error happens when we type `name` in antfus plugins, so ignore it for now
+    return VueRouter({
+      exclude: ['/dashboard/**', '/errors/**', '/system-tray/**', '/docs/**', '/api/**'], // these are provided by the framework, and that's why they cannot be reused
+      ...opts,
+    })
   }
 
-  return {
-    name: 'router-plugin',
-    ...VueRouter(opts),
-  }
+  // @ts-expect-error - somehow a pwa error happens when we type `name` in antfus plugins, so ignore it for now
+  return VueRouter(opts)
 }
