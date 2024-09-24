@@ -15,7 +15,7 @@ import { libsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DevOptions } from '@stacksjs/types'
 
-export function dev(buddy: CLI) {
+export function dev(buddy: CLI): void {
   const descriptions = {
     dev: 'Start development server',
     frontend: 'Start the frontend development server',
@@ -270,7 +270,7 @@ export function dev(buddy: CLI) {
   })
 }
 
-export async function startDevelopmentServer(options: DevOptions) {
+export async function startDevelopmentServer(options: DevOptions): Promise<void> {
   const result = await runAction(Action.Dev, options)
 
   if (result.isErr()) {

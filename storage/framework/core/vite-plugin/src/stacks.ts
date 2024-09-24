@@ -17,33 +17,33 @@ interface StacksPluginOptions {
 
 // https://github.com/hannoeru/vite-plugin-pages
 export function stacks(options?: StacksPluginOptions): Plugin {
-  if (!options) options = parseOptions() as StacksPluginOptions // TODO: low priority, but we can do better
+  if (!options) options = parseOptions() as StacksPluginOptions
 
   return {
     name: 'stacks',
 
     // BuildStart hook before the build starts
     // buildStart(options) {
-    buildStart() {
-      // console.log('BuildStart hook with options:', options)
-    },
+    // buildStart() {
+    //   // console.log('BuildStart hook with options:', options)
+    // },
 
     // Load hook for loading individual files
     // async load(id) {
-    load() {
-      return null // Return null to let Vite handle the file loading
-    },
+    // load() {
+    //   return null // Return null to let Vite handle the file loading
+    // },
 
     // async resolveId(source, importer) {
-    resolveId() {
-      return null // Return null to let Vite handle the module resolution
-    },
+    // resolveId() {
+    //   return null // Return null to let Vite handle the module resolution
+    // },
 
     // Transform hook for transforming individual files
     // async transform(code, id) {
-    transform(code: any) {
-      return code // Return the unmodified code
-    },
+    // transform(code: any) {
+    //   return code // Return the unmodified code
+    // },
 
     configureServer(server: DevServer) {
       server.printUrls = async () => {

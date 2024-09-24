@@ -1,3 +1,4 @@
+import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
@@ -1787,3 +1788,41 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     process.exit(ExitCode.FatalError)
   }
 }
+
+export async function extractAttributesFromModel(filePath: string): Promise<Attributes> {
+  // Read the TypeScript file
+  const content = fs.readFileSync(filePath, 'utf8')
+
+  // Parse the file content into an AST
+  const ast = parser.parse(content, {
+    sourceType: 'module',
+    plugins: ['typescript', 'classProperties', 'decorators-legacy'],
+  })
+
+  let fields: Attributes | undefined
+  traverse(ast, {
+    ObjectExpression(path) {
+      // Look for the `fields` key in the object
+      const fieldsProperty = path.node.properties.find(
+        (property) =>
+          property.type === 'ObjectProperty' &&
+          property.key.type === 'Identifier' &&
+          property.key.name === 'attributes',
+      )
+
+      if (fieldsProperty && fieldsProperty.type === 'ObjectProperty' && fieldsProperty.value) {
+        // Convert the AST back to code (stringify)
+        const generated = generator(fieldsProperty.value, {}, content)
+        fields = generated.code as unknown as Attributes
+        path.stop() // Stop traversing further once we found the fields
+      }
+    },
+  })
+
+  return fields as Attributes
+}
+
+// TODO: https://github.com/oven-sh/bun/issues/6060
+// export function userModels() {
+//   return import.meta.glob<{ default: Model }>(path.userModelsPath('*.ts'))
+// }
