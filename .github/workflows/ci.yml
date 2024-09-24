@@ -75,6 +75,13 @@ jobs:
         os: [ubuntu-latest]
       fail-fast: false
 
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: --detach
+        
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
