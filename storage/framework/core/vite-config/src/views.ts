@@ -28,7 +28,7 @@ console.log('views.ts')
 const config: UserConfig = defineConfig({
   build: {
     rollupOptions: {
-      external: ['fsevents', 'tinyexec', '@iconify/utils', '@antfu/install-pkg', 'local-pkg', 'mlly', 'fs'],
+      external: ['fsevents', 'tinyexec', '@iconify/utils', '@antfu/install-pkg', 'local-pkg', 'mlly', 'fs', 'bun'],
     },
   },
 
@@ -40,7 +40,7 @@ const config: UserConfig = defineConfig({
   assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: ['vue'],
+    exclude: ['vue', 'bun'],
   },
 
   server: server({

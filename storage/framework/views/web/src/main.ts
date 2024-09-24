@@ -14,12 +14,28 @@ export const createApp = ViteSSG(
     base: import.meta.env.BASE_URL,
   },
   (ctx) => {
-    // install all modules under `modules/`
-    ;(async () => {
-      const modules = import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts')
-      const promises = Object.values(modules).map((func) => func())
-      const modulesArray = await Promise.all(promises)
-      for (const module of modulesArray) module.install?.(ctx)
-    })()
+    if (!ctx.isClient) {
+      // install all modules under `modules/`
+      ;(async () => {
+        const glob = new Bun.Glob('**/*.ts')
+        const moduleFiles = []
+        for await (const file of glob.scan('../../../../../resources/modules')) {
+          moduleFiles.push(file)
+        }
+
+        // const modules = import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts')
+        // const promises = Object.values(modules).map((func) => func())
+        // const modulesArray = await Promise.all(promises)
+
+        const modulesArray = await Promise.all(
+          moduleFiles.map(async (file) => {
+            const module = await import(/* @vite-ignore */ file)
+            return module
+          }),
+        )
+
+        for (const module of modulesArray) module.install?.(ctx)
+      })()
+    }
   },
 )
