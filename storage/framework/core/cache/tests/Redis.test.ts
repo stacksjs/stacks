@@ -2,17 +2,17 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import { redis } from '../src/drivers/redis'
 import { startRedisServer, stopRedisServer } from './scripts/redis-server'
 
-// beforeAll(async () => {
-//   await startRedisServer()
-// })
+beforeAll(async () => {
+  await startRedisServer()
+})
 
 beforeEach(async () => {
   await redis.clear()
 })
 
-// afterAll(() => {
-//   stopRedisServer()
-// })
+afterAll(() => {
+  stopRedisServer()
+})
 
 describe('@stacksjs/cache - Redis', () => {
   it('should set and get a redis cache value', async () => {
