@@ -122,9 +122,10 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 
   const dynamicSegments: { [key: string]: string } = {}
   dynamicSegmentNames.forEach((name, index) => {
-    dynamicSegments[name] = dynamicSegmentValues[index]
+    if (name && dynamicSegmentValues[index] !== undefined) {
+      dynamicSegments[name] = dynamicSegmentValues[index] // Ensure value is defined
+    }
   })
-
   return dynamicSegments
 }
 
@@ -290,7 +291,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   })
 }
 
-function noCache(response: Response) {
+function noCache(response: Response): Response {
   response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   response.headers.set('Pragma', 'no-cache')
   response.headers.set('Expires', '0')
@@ -298,7 +299,7 @@ function noCache(response: Response) {
   return response
 }
 
-async function addRouteQuery(url: URL) {
+async function addRouteQuery(url: URL): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
@@ -315,7 +316,7 @@ async function addRouteQuery(url: URL) {
   RequestParam.addQuery(url)
 }
 
-async function addBody(params: any) {
+async function addBody(params: any): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {

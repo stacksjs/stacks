@@ -74,7 +74,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.headers.get(headerParam)
   }
 
-  public getHeaders() {
+  public getHeaders(): any {
     return this.headers
   }
 
@@ -106,4 +106,4 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 }
 
-export const request = new Request()
+export const request: Request = new Request()

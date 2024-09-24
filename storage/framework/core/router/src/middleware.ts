@@ -15,7 +15,7 @@ export class Middleware implements MiddlewareOptions {
 
 // const readdir = promisify(fs.readdir)
 
-async function importMiddlewares(directory: string) {
+async function importMiddlewares(directory: string): Promise<string[]> {
   // const middlewares = []
   // TODO: somehow this breaks ./buddy dev
   // const files = await readdir(directory)
@@ -30,6 +30,6 @@ async function importMiddlewares(directory: string) {
   return [directory] // fix this: return array of middlewares
 }
 
-export const middlewares = async () => {
+export const middlewares = async (): Promise<string[]> => {
   return await importMiddlewares(userMiddlewarePath())
 }

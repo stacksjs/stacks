@@ -4,7 +4,7 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
-import type { Attributes, Model, VineType } from '@stacksjs/types'
+import type { Attribute, Attributes, Model, VineType } from '@stacksjs/types'
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
@@ -33,7 +33,7 @@ export async function modelTableName(model: Model | string): Promise<string> {
   return model.table ?? snakeCase(plural(model?.name || ''))
 }
 
-export async function hasTableBeenMigrated(tableName: string) {
+export async function hasTableBeenMigrated(tableName: string): Promise<boolean> {
   log.debug(`hasTableBeenMigrated for table: ${tableName}`)
 
   const results = await getExecutedMigrations()
@@ -41,7 +41,7 @@ export async function hasTableBeenMigrated(tableName: string) {
   return results.some((migration) => migration.name.includes(tableName))
 }
 
-export async function getExecutedMigrations() {
+export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   try {
     return await db.selectFrom('migrations').select('name').execute()
   } catch (error) {
@@ -175,7 +175,7 @@ export function pluckChanges(array1: string[], array2: string[]): { added: strin
   return { added, removed }
 }
 
-export function arrangeColumns(attributes: Attributes | undefined) {
+export function arrangeColumns(attributes: Attributes | undefined): Attribute[] | string[] {
   if (!attributes) return []
 
   const entries = Object.entries(attributes)
@@ -186,7 +186,7 @@ export function arrangeColumns(attributes: Attributes | undefined) {
     return orderA - orderB
   })
 
-  return entries
+  return entries as Attribute[]
 }
 
 export function isArrayEqual(arr1: (number | undefined)[], arr2: (number | undefined)[]): boolean {

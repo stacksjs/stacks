@@ -1,10 +1,10 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { ok } from '@stacksjs/error-handling'
+import { type Ok, ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, glob, globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 
 import { snakeCase } from '@stacksjs/strings'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
@@ -20,7 +20,7 @@ import {
   pluckChanges,
 } from '.'
 
-export async function resetMysqlDatabase() {
+export async function resetMysqlDatabase(): Promise<Ok<string, any>> {
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
@@ -62,7 +62,7 @@ export async function resetMysqlDatabase() {
   return ok('All tables dropped successfully!')
 }
 
-export async function generateMysqlMigration(modelPath: string) {
+export async function generateMysqlMigration(modelPath: string): Promise<void> {
   // check if any files are in the database folder
   // const files = await fs.readdir(path.userMigrationsPath())
 
@@ -123,7 +123,7 @@ export async function generateMysqlMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
-async function createTableMigration(modelPath: string) {
+async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
@@ -197,7 +197,7 @@ async function createTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-async function createPivotTableMigration(model: Model, modelPath: string) {
+async function createPivotTableMigration(model: Model, modelPath: string): Promise<void> {
   const pivotTables = await getPivotTables(model, modelPath)
 
   if (!pivotTables.length) return
@@ -228,7 +228,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
   }
 }
 
-export async function createAlterTableMigration(modelPath: string) {
+export async function createAlterTableMigration(modelPath: string): Promise<void> {
   console.log('createAlterTableMigration')
 
   const model = (await import(modelPath)).default as Model
