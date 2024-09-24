@@ -80,8 +80,17 @@ jobs:
         image: redis:latest
         ports:
           - 6379:6379
-        options: --detach
-        
+
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
