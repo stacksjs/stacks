@@ -4,6 +4,5 @@
     "isolatedDeclarations": true,
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
   "extends": "../tsconfig.json"
 }

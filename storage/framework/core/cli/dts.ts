@@ -103,15 +103,18 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
 
     const host = ts.createCompilerHost(compilerOptions)
 
+    // Filter files to only include those within the root directory
+    const rootFiles = parsedCommandLine.fileNames.filter((file) => file.startsWith(root))
+
     const program = ts.createProgram({
-      rootNames: parsedCommandLine.fileNames.filter((file) => file.startsWith(root)),
+      rootNames: rootFiles,
       options: compilerOptions,
       host,
     })
 
     const emitResult = program.emit(undefined, (fileName, data) => {
       if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.ts.map')) {
-        const outputPath = p.join(compilerOptions.outDir ?? './dist', p.relative(p.resolve(cwd, root), fileName))
+        const outputPath = p.join(compilerOptions.outDir ?? './dist', p.relative(root, fileName))
         const dir = p.dirname(outputPath)
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir, { recursive: true })
