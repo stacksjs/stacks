@@ -69,7 +69,7 @@ export interface DtsOptions {
  */
 export async function generate(entryPoints: string | string[], options?: DtsOptions): Promise<void> {
   const cwd = options?.cwd ?? process.cwd()
-  const configPath = p.resolve(cwd, 'tsconfig.json')
+  const configPath = options?.tsconfigPath ?? p.resolve(cwd, 'tsconfig.json')
   const root = (options?.root ?? 'src').replace(/^\.\//, '')
 
   console.log('TSConfig path:', configPath)
@@ -93,7 +93,7 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
       declaration: true,
       emitDeclarationOnly: true,
       noEmit: false,
-      outDir: './dist',
+      outDir: options?.outdir ?? './dist',
     }
 
     console.log('Compiler Options:', JSON.stringify(compilerOptions, null, 2))
@@ -155,6 +155,8 @@ export function dts(options?: DtsOptions): BunPlugin {
         root,
         include: entrypoints,
         cwd: options?.cwd || process.cwd(),
+        tsconfigPath: options?.tsconfigPath,
+        outdir: options?.outdir || build.config.outdir,
         ...options,
       })
     },
