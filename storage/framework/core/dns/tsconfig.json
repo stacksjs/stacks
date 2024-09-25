@@ -1,7 +1,3 @@
 {
-  "compilerOptions": {
-    "isolatedDeclarations": true,
-    "outDir": "./dist"
-  },
-  "extends": "../tsconfig.lib.json"
+  "extends": "../tsconfig.build.json"
 }

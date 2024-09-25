@@ -22,7 +22,7 @@ export const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfgh
  * slash('C:\\Users\\Chris') => 'C:/Users/Chris'
  * ```
  */
-export function slash(str: string) {
+export function slash(str: string): string {
   return str.replace(/\\/g, '/')
 }
 
@@ -35,7 +35,7 @@ export function slash(str: string) {
  * ensurePrefix('https://', 'google.com') => 'https://google.com'
  * ensurePrefix('https://', 'http://google.com') => 'https://google.com'
  */
-export function ensurePrefix(prefix: string, str: string) {
+export function ensurePrefix(prefix: string, str: string): string {
   if (!str.startsWith(prefix)) return prefix + str
   return str
 }
@@ -50,7 +50,7 @@ export function ensurePrefix(prefix: string, str: string) {
  * ensureSuffix('.js', 'index.js') => 'index.js'
  * ```
  */
-export function ensureSuffix(suffix: string, str: string) {
+export function ensureSuffix(suffix: string, str: string): string {
   return str.endsWith(suffix) ? str : str + suffix
 }
 
@@ -74,7 +74,7 @@ export function template(str: string, ...args: any[]): string {
   })
 }
 
-export function truncate(str: string, length: number, end = '...') {
+export function truncate(str: string, length: number, end = '...'): string {
   if (str.length <= length) return str
 
   return str.slice(0, length - end.length) + end
@@ -84,7 +84,7 @@ export function truncate(str: string, length: number, end = '...') {
  * Generate a random string
  * @category String
  */
-export function random(size = 16, dict = urlAlphabet) {
+export function random(size = 16, dict: string = urlAlphabet): string {
   let id = ''
   let i = size
   const len = dict.length
