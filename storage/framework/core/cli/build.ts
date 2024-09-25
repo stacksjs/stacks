@@ -1,3 +1,4 @@
+// import { dts } from 'bun-plugin-dts-auto'
 import { intro, outro } from '../build/src'
 import { dts } from './dts'
 
@@ -22,7 +23,11 @@ const result = await Bun.build({
     '@stacksjs/collections',
   ],
 
-  plugins: [dts()],
+  plugins: [
+    dts({
+      root: './src',
+    }),
+  ],
 })
 
 await outro({

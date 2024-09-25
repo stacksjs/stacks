@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
-    // "isolatedDeclarations": true,
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "baseUrl": "."
+    "isolatedDeclarations": true,
+    "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
   "extends": "../tsconfig.json"
 }
