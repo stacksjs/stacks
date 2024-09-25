@@ -639,15 +639,16 @@ export const spinner = (): Spinner => {
   }
 
   const start = (msg = ''): void => {
-    let loop: ReturnType<typeof setInterval>
     isSpinnerActive = true
     unblock = block()
     _message = msg.replace(/\.+$/, '')
     process.stdout.write(`${color.gray(S_BAR)}\n`)
     let frameIndex = 0
     let dotsTimer = 0
+
     registerHooks()
-    loop = setInterval(() => {
+
+    setInterval(() => {
       const frame = color.magenta(frames[frameIndex])
       const loadingDots = '.'.repeat(Math.floor(dotsTimer)).slice(0, 3)
       process.stdout.write(cursor.move(-999, 0))

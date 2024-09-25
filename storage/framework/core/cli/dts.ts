@@ -53,7 +53,7 @@ export interface DtsOptions {
    * it is relative to the current working directory.
    * @default 'dist'
    */
-  outdir?: ts.CompilerOptions['outDir']
+  outdir?: ts.CompilerOptions['outDir'] // sadly, the bundler uses `outdir` instead of `outDir` and to avoid confusion, we'll use `outdir` here
 
   /**
    * The files to include. If not provided, it will include all files in the
@@ -95,6 +95,8 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
       noEmit: false,
       outDir: options?.outdir ?? './dist',
       rootDir: p.resolve(cwd, root),
+      incremental: undefined,
+      composite: undefined,
     }
 
     console.log('Compiler Options:', JSON.stringify(compilerOptions, null, 2))

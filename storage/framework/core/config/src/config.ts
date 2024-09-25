@@ -8,33 +8,31 @@ export const config: StacksOptions = {
   ...overrides,
 }
 
-export const {
-  ai,
-  analytics,
-  app,
-  cache,
-  cloud,
-  cli,
-  database,
-  dns,
-  docs,
-  email,
-  errors,
-  git,
-  hashing,
-  library,
-  logging,
-  notification,
-  payment,
-  ports,
-  queue,
-  security,
-  searchEngine,
-  services,
-  storage,
-  team,
-  ui,
-}: StacksOptions = config
+export const ai: StacksOptions['ai'] = config.ai
+export const analytics: StacksOptions['analytics'] = config.analytics
+export const app: StacksOptions['app'] = config.app
+export const cache: StacksOptions['cache'] = config.cache
+export const cloud: StacksOptions['cloud'] = config.cloud
+export const cli: StacksOptions['cli'] = config.cli
+export const database: StacksOptions['database'] = config.database
+export const dns: StacksOptions['dns'] = config.dns
+export const docs: StacksOptions['docs'] = config.docs
+export const email: StacksOptions['email'] = config.email
+export const errors: StacksOptions['errors'] = config.errors
+export const git: StacksOptions['git'] = config.git
+export const hashing: StacksOptions['hashing'] = config.hashing
+export const library: StacksOptions['library'] = config.library
+export const logging: StacksOptions['logging'] = config.logging
+export const notification: StacksOptions['notification'] = config.notification
+export const payment: StacksOptions['payment'] = config.payment
+export const ports: StacksOptions['ports'] = config.ports
+export const queue: StacksOptions['queue'] = config.queue
+export const security: StacksOptions['security'] = config.security
+export const searchEngine: StacksOptions['searchEngine'] = config.searchEngine
+export const services: StacksOptions['services'] = config.services
+export const storage: StacksOptions['storage'] = config.storage
+export const team: StacksOptions['team'] = config.team
+export const ui: StacksOptions['ui'] = config.ui
 
 export { defaults, overrides }
 

@@ -25,8 +25,7 @@ import team from '~/config/team'
 import ui from '~/config/ui'
 // import docs from '~/docs/config'
 
-// this "user config" will override the default config options
-export default {
+const config: StacksConfig = {
   ai,
   analytics,
   app,
@@ -52,4 +51,6 @@ export default {
   storage,
   team,
   ui,
-} satisfies StacksConfig
+}
+
+export default config

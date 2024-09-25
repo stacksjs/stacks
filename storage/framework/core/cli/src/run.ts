@@ -1,5 +1,5 @@
-import type { Result } from '@stacksjs/error-handling'
-import type { CliOptions, CommandError, Subprocess } from '@stacksjs/types'
+import type { Ok, Result } from '@stacksjs/error-handling'
+import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { log } from './console'
 import { exec, execSync } from './exec'
@@ -90,7 +90,10 @@ export async function runCommandSync(command: string, options?: CliOptions): Pro
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions): Promise<Subprocess[]> {
+export async function runCommands(
+  commands: string[],
+  options?: CliOptions,
+): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[]> {
   const results = []
 
   for (const command of commands) {
