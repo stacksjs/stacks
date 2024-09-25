@@ -1,15 +1,15 @@
 # preload these modules before running bun
-preload = [ "./resources/preloader/main.ts" ]
+preload = ["./resources/preloader/main.ts"]
 
 [test]
-preload = [ "./resources/preloader/test.ts" ]
+preload = ["./resources/preloader/test.ts"]
 coverage = true
 
 [install]
 # To configure Bun's package auto-install behavior.
 # Default "auto" — when no node_modules folder is found, Bun
 # will automatically install dependencies on the fly during execution.
-auto = true
+# auto = true
 
 # set default registry as a string
 registry = "https://registry.npmjs.org"

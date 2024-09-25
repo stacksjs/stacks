@@ -21,11 +21,7 @@ const result = await Bun.build({
     '@stacksjs/validation',
   ],
 
-  plugins: [
-    dts({
-      cwd: import.meta.dir,
-    }),
-  ],
+  plugins: [dts()],
 })
 
 await outro({
