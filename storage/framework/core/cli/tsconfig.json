@@ -1,10 +1,33 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "isolatedDeclarations": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "baseUrl": ".",
+    "paths": {
+      "@stacksjs/*": ["./*/src"],
+      "@stacksjs/utils/*": ["./utils/src/*"],
+      "stacks/*": ["./*/src"],
+      "buddy": ["./buddy/src/index.ts"],
+      "buddy/*": ["./buddy/src/*"],
+      "Actions/*": ["../../../app/Actions/*"],
+      "Commands/*": ["../../../app/Commands/*"],
+      "Jobs/*": ["../../../app/Jobs/*"],
+      "Middleware/*": ["../../../app/Middleware/*"],
+      "Models/*": ["../../../app/Models/*"],
+      "Notifications/*": ["../../../app/Notifications/*"],
+      "~/*": ["../../../*"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "extends": "../tsconfig.json"
+  "exclude": ["node_modules", "dist"]
 }

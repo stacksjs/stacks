@@ -26,13 +26,7 @@ const result = await Bun.build({
   plugins: [
     dts({
       root: './src',
-      tsconfigPath: './tsconfig.json',
-      compiler: {
-        // Override specific compiler options here
-        isolatedModules: true,
-        skipLibCheck: true,
-        // Add any other compiler options you want to override
-      },
+      outdir: './dist',
     }),
   ],
 })

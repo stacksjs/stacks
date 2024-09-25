@@ -3,5 +3,5 @@
     "isolatedDeclarations": true,
     "outDir": "./dist"
   },
-  "extends": "../tsconfig.json"
+  "extends": "../tsconfig.lib.json"
 }

@@ -71,9 +71,11 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
   const cwd = options?.cwd ?? process.cwd()
   const configPath = options?.tsconfigPath ? p.resolve(cwd, options.tsconfigPath) : p.resolve(cwd, 'tsconfig.json')
   const root = p.resolve(cwd, (options?.root ?? 'src').replace(/^\.\//, ''))
+  const outDir = p.resolve(cwd, options?.outdir ?? './dist')
 
   console.log('TSConfig path:', configPath)
   console.log('Root directory:', root)
+  console.log('Output directory:', outDir)
   console.log('Entry points:', entryPoints)
 
   try {
@@ -82,33 +84,27 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
       throw new Error(`Failed to read tsconfig: ${configFile.error.messageText}`)
     }
 
-    // Override the config file's compilerOptions and include/exclude
-    const overriddenConfig = {
-      ...configFile.config,
-      compilerOptions: {
-        ...configFile.config.compilerOptions,
-        ...options?.compiler,
-        rootDir: root,
-        outDir: options?.outdir ?? './dist',
-        declaration: true,
-        emitDeclarationOnly: true,
-        noEmit: false,
-        incremental: undefined,
-        composite: undefined,
-      },
-      include: [`${root}/**/*`],
-      exclude: ['node_modules', 'dist'],
-    }
-
-    const parsedCommandLine = ts.parseJsonConfigFileContent(overriddenConfig, ts.sys, cwd)
+    const parsedCommandLine = ts.parseJsonConfigFileContent(configFile.config, ts.sys, cwd)
 
     if (parsedCommandLine.errors.length) {
       throw new Error(`Failed to parse tsconfig: ${parsedCommandLine.errors.map((e) => e.messageText).join(', ')}`)
     }
 
-    console.log('Compiler Options:', JSON.stringify(parsedCommandLine.options, null, 2))
+    const compilerOptions: ts.CompilerOptions = {
+      ...parsedCommandLine.options,
+      ...options?.compiler,
+      rootDir: root,
+      outDir,
+      declaration: true,
+      emitDeclarationOnly: true,
+      noEmit: false,
+      skipLibCheck: true,
+      isolatedModules: true,
+    }
 
-    const host = ts.createCompilerHost(parsedCommandLine.options)
+    console.log('Compiler Options:', JSON.stringify(compilerOptions, null, 2))
+
+    const host = ts.createCompilerHost(compilerOptions)
 
     // Ensure entryPoints is an array and resolve to absolute paths
     const entryPointsArray = (Array.isArray(entryPoints) ? entryPoints : [entryPoints]).map((entry) =>
@@ -122,19 +118,17 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
       throw new Error('No valid entry points found within the specified root directory')
     }
 
-    const program = ts.createProgram(validEntryPoints, parsedCommandLine.options, host)
+    const program = ts.createProgram(validEntryPoints, compilerOptions, host)
 
     const emitResult = program.emit(undefined, (fileName, data) => {
       if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.ts.map')) {
-        if (fileName.startsWith(root)) {
-          const outputPath = p.join(parsedCommandLine.options.outDir ?? './dist', p.relative(root, fileName))
-          const dir = p.dirname(outputPath)
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true })
-          }
-          fs.writeFileSync(outputPath, data)
-          console.log('Emitted:', outputPath)
+        const outputPath = p.join(outDir, p.relative(root, fileName))
+        const dir = p.dirname(outputPath)
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true })
         }
+        fs.writeFileSync(outputPath, data)
+        console.log('Emitted:', outputPath)
       }
     })
 
