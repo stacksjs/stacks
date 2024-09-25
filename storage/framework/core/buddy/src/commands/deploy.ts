@@ -9,7 +9,7 @@ import { ExitCode } from '@stacksjs/types'
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { $ } from 'bun'
 
-export function deploy(buddy: CLI) {
+export function deploy(buddy: CLI): void {
   const descriptions = {
     deploy: 'Deploy your project',
     project: 'Target a specific project',

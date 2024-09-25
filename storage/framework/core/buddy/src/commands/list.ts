@@ -4,7 +4,7 @@ import { projectPath } from '@stacksjs/path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import { $ } from 'bun'
 
-export function list(buddy: CLI) {
+export function list(buddy: CLI): void {
   const descriptions = {
     list: 'List all of the project-specific Buddy commands',
     project: 'Target a specific project',

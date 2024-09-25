@@ -4,7 +4,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 
-export function changelog(buddy: CLI) {
+export function changelog(buddy: CLI): void {
   const descriptions = {
     changelog: 'Create a CHANGELOG.md file',
     quiet: 'Minimal output',

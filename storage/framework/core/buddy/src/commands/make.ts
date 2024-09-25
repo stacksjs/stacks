@@ -18,7 +18,7 @@ import { path as p } from '@stacksjs/path'
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
-export function make(buddy: CLI) {
+export function make(buddy: CLI): void {
   const descriptions = {
     action: 'Create a new action',
     model: 'Create a new model',

@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 
-export function fresh(buddy: CLI) {
+export function fresh(buddy: CLI): void {
   const descriptions = {
     fresh: 'Re-installs your npm dependencies',
     project: 'Target a specific project',

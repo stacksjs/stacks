@@ -4,7 +4,7 @@ import { projectPath } from '@stacksjs/path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import { $ } from 'bun'
 
-export function outdated(buddy: CLI) {
+export function outdated(buddy: CLI): void {
   const descriptions = {
     outdated: 'List all the outdated project dependencies',
     project: 'Target a specific project',

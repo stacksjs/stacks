@@ -3,7 +3,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import type { CLI, InstallOptions } from '@stacksjs/types'
 
-export function install(buddy: CLI) {
+export function install(buddy: CLI): void {
   const descriptions = {
     install: 'Install your dependencies',
     project: 'Target a specific project',

@@ -8,7 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
 import { $ } from 'bun'
 
-export function ports(buddy: CLI) {
+export function ports(buddy: CLI): void {
   const descriptions = {
     command: 'Let buddy check your project for potential issues and misconfigurations',
     ports: 'Check if the ports are available',

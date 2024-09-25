@@ -4,7 +4,7 @@ import { path as p } from '@stacksjs/path'
 import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
-export function configure(buddy: CLI) {
+export function configure(buddy: CLI): void {
   const descriptions = {
     configure: 'Configure options',
     aws: 'Configure the AWS connection',

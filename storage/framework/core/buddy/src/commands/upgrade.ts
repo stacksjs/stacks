@@ -6,7 +6,7 @@ import { ExitCode } from '@stacksjs/types'
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
-export function upgrade(buddy: CLI) {
+export function upgrade(buddy: CLI): void {
   const descriptions = {
     command: 'Upgrade dependencies, framework, package manager, JS/TS runtime',
     framework: 'Upgrade the Stacks framework',

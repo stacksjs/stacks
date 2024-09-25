@@ -22,7 +22,7 @@ export function throttle(fn: Function, wait = 300) {
   let lastFn: ReturnType<typeof setTimeout>
   let lastTime: number
 
-  return function (this: unknown, ...args: any[]) {
+  return function (this: unknown, ...args: any[]): void {
     if (!inThrottle) {
       fn.apply(this, args)
 

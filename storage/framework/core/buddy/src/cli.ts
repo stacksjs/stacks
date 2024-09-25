@@ -86,7 +86,7 @@ await main()
 async function dynamicImports(buddy: CAC) {
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
-  const commandFiles = fs.readdirSync(commandsDir).filter((file) => file.endsWith('.ts'))
+  const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))
 
   for (const file of commandFiles) {
     const commandPath = `${commandsDir}/${file}`

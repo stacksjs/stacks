@@ -4,7 +4,7 @@ import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import type { CLI, LintOptions } from '@stacksjs/types'
 
-export function lint(buddy: CLI) {
+export function lint(buddy: CLI): void {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',

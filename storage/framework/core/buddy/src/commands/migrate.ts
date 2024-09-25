@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 
-export function migrate(buddy: CLI) {
+export function migrate(buddy: CLI): void {
   const descriptions = {
     migrate: 'Migrates your database',
     dns: 'Writes the DNS records for a domain to ./config/dns.ts',

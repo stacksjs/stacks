@@ -3,7 +3,7 @@ import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, TinkerOptions } from '@stacksjs/types'
 
-export function tinker(buddy: CLI) {
+export function tinker(buddy: CLI): void {
   const descriptions = {
     tinker: 'Tinker with your code',
     project: 'Target a specific project',

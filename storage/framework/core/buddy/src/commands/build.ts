@@ -4,9 +4,8 @@ import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
 
-export function build(buddy: CLI) {
+export function build(buddy: CLI): void {
   const descriptions = {
     build: 'Build any of your libraries (packages) for production use',
     components: 'Build your component library',

@@ -7,7 +7,7 @@ import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, DomainsOptions } from '@stacksjs/types'
 
-export function domains(buddy: CLI) {
+export function domains(buddy: CLI): void {
   const descriptions = {
     purchase: 'Purchase a domain',
     add: 'Add a domain to your cloud', // given you already own it with a different registrar

@@ -27,7 +27,7 @@ interface HttpOptions {
   verbose?: boolean
 }
 
-export function http(buddy: CLI) {
+export function http(buddy: CLI): void {
   const descriptions = {
     http: 'Send an HTTP request to a domain',
     project: 'Target a specific project',

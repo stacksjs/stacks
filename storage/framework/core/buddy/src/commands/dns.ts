@@ -23,7 +23,7 @@ interface DnsOptions {
   verbose?: boolean
 }
 
-export function dns(buddy: CLI) {
+export function dns(buddy: CLI): void {
   const descriptions = {
     dns: 'Lists the DNS records for a domain',
     query: 'Host name or IP address to query',

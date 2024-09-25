@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, SeedOptions } from '@stacksjs/types'
 
-export function seed(buddy: CLI) {
+export function seed(buddy: CLI): void {
   const descriptions = {
     seed: 'Seed your database',
     project: 'Target a specific project',

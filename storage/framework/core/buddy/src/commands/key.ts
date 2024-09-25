@@ -4,7 +4,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import type { CLI, KeyOptions } from '@stacksjs/types'
 
-export function key(buddy: CLI) {
+export function key(buddy: CLI): void {
   const descriptions = {
     command: 'Generate & set the application key.',
     project: 'Target a specific project',

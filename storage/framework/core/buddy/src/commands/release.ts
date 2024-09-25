@@ -12,7 +12,7 @@ const descriptions = {
   verbose: 'Enable verbose output',
 }
 
-export function release(buddy: CLI) {
+export function release(buddy: CLI): void {
   buddy
     .command('release', descriptions.release)
     .option('--dry-run', descriptions.dryRun, { default: false })

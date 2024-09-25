@@ -17,7 +17,7 @@ async function main() {
 
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
-  const commandFiles = fs.readdirSync(commandsDir).filter((file) => file.endsWith('.ts'))
+  const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))
 
   for (const file of commandFiles) {
     const commandPath = `${commandsDir}/${file}`

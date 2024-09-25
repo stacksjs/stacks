@@ -20,7 +20,7 @@ export function isDir(path: string): boolean {
   return isFolder(path)
 }
 
-export function doesFolderExist(path: string) {
+export function doesFolderExist(path: string): boolean {
   return fs.existsSync(path)
 }
 
@@ -39,7 +39,14 @@ export function getFolders(dir: string): string[] {
   })
 }
 
-export const folders = {
+export type Folders = {
+  isFolder: (path: string) => boolean
+  doesFolderExist: (path: string) => boolean
+  createFolder: (dir: string) => Promise<void>
+  getFolders: (dir: string) => string[]
+}
+
+export const folders: Folders = {
   isFolder,
   doesFolderExist,
   createFolder,

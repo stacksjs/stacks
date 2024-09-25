@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CleanOptions } from '@stacksjs/types'
 
-export function clean(buddy: CLI) {
+export function clean(buddy: CLI): void {
   const descriptions = {
     clean: 'Removes all node_modules & lock files',
     project: 'Target a specific project',

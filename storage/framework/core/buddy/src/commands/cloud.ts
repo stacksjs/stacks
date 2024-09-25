@@ -18,7 +18,7 @@ import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { loop } from '@stacksjs/utils'
 
-export function cloud(buddy: CLI) {
+export function cloud(buddy: CLI): void {
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
     ssh: 'SSH into the Stacks Cloud',

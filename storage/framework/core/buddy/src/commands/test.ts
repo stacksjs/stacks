@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'
 import type { CLI, TestOptions } from '@stacksjs/types'
 
-export function test(buddy: CLI) {
+export function test(buddy: CLI): void {
   const descriptions = {
     command: 'Runs your test suite',
     types: 'Typechecks your codebase',

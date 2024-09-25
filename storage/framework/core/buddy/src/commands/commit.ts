@@ -3,7 +3,7 @@ import { runCommit } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import type { CLI, FreshOptions } from '@stacksjs/types'
 
-export function commit(buddy: CLI) {
+export function commit(buddy: CLI): void {
   const descriptions = {
     commit: 'Commit your stashed changes',
     project: 'Target a specific project',

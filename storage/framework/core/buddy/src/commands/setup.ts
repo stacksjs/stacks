@@ -8,7 +8,7 @@ import { storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, CliOptions } from '@stacksjs/types'
 
-export function setup(buddy: CLI) {
+export function setup(buddy: CLI): void {
   const descriptions = {
     setup: 'This command ensures your project is setup correctly',
     ohMyZsh: 'Enable Oh My Zsh',

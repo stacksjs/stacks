@@ -5,7 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 
-export function route(buddy: CLI) {
+export function route(buddy: CLI): void {
   const descriptions = {
     route: 'Lists your routes',
     verbose: 'Enable verbose output',

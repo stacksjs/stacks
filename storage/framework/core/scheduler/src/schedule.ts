@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { log, runCommand } from '@stacksjs/cli'
 import type { DateTime } from 'luxon'
 import { CronJob, CronTime } from './'
 
@@ -12,72 +12,72 @@ export class Schedule {
     this.task = task
   }
 
-  everySecond() {
+  everySecond(): Schedule {
     this.cronPattern = '* * * * * *'
     return this
   }
 
-  everyMinute() {
+  everyMinute(): Schedule {
     this.cronPattern = '0 * * * * *'
     return this
   }
 
-  everyTwoMinutes() {
+  everyTwoMinutes(): Schedule {
     this.cronPattern = '*/2 * * * * *'
     return this
   }
 
-  everyFiveMinutes() {
+  everyFiveMinutes(): Schedule {
     this.cronPattern = '*/5 * * * *'
     return this
   }
 
-  everyTenMinutes() {
+  everyTenMinutes(): Schedule {
     this.cronPattern = '*/10 * * * *'
     return this
   }
 
-  everyThirtyMinutes() {
+  everyThirtyMinutes(): Schedule {
     this.cronPattern = '*/30 * * * *'
     return this
   }
 
-  everyHour() {
+  everyHour(): Schedule {
     this.cronPattern = '0 0 * * * *'
     return this
   }
 
-  everyDay() {
+  everyDay(): Schedule {
     this.cronPattern = '0 0 0 * * *'
     return this
   }
 
-  hourly() {
+  hourly(): Schedule {
     this.cronPattern = '0 0 * * * *'
     return this
   }
 
-  daily() {
+  daily(): Schedule {
     this.cronPattern = '0 0 0 * * *'
     return this
   }
 
-  weekly() {
+  weekly(): Schedule {
     this.cronPattern = '0 0 0 * * 0'
     return this
   }
 
-  monthly() {
+  monthly(): Schedule {
     this.cronPattern = '0 0 0 1 * *'
     return this
   }
 
-  yearly() {
+  yearly(): Schedule {
     this.cronPattern = '0 0 0 1 1 *'
     return this
   }
 
-  onDays(days: number[]) {
+  onDays(days: number[]): Schedule {
     const dayPattern = days.join(',')
     this.cronPattern = `0 0 0 * * ${dayPattern}`
     return this
@@ -90,38 +90,48 @@ export class Schedule {
   //   return this
   // }
 
-  at(time: string) {
+  at(time: string): Schedule {
     // Assuming time is in "HH:MM" format
     const [hour, minute] = time.split(':').map(Number)
     this.cronPattern = `${minute} ${hour} * * *`
     return this
   }
 
-  setTimeZone(timezone: string) {
+  setTimeZone(timezone: string): Schedule {
     this.timezone = timezone
     return this
   }
 
-  start() {
+  start(): void {
     new CronJob(this.cronPattern, this.task, null, true, this.timezone)
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
   }
 
   // job and action methods need to be added and they accept a path string param
-  job(path: string) {
+  job(path: string): Schedule {
     log.info(`Scheduling job: ${path}`)
     return this
   }
 
-  action(path: string) {
+  action(path: string): Schedule {
     log.info(`Scheduling action: ${path}`)
     return this
   }
 
-  static command(cmd: string) {
+  static command(cmd: string): Schedule {
     log.info(`Executing command: ${cmd}`)
-    // this.cmd = cmd
-    return this
+    return new Schedule(async () => {
+      log.info(`Executing command: ${cmd}`)
+
+      const result = await runCommand(cmd)
+
+      if (result.isErr()) {
+        log.error(result.error)
+        return
+      }
+
+      log.info(result.value)
+    })
   }
 }
 

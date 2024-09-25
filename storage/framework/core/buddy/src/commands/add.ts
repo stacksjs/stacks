@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
-export function add(buddy: CLI) {
+export function add(buddy: CLI): void {
   const descriptions = {
     add: 'Add a stack to your project (coming soon)',
     table: 'Add the Table Stack to your project',

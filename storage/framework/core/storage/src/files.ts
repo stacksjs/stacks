@@ -1,8 +1,8 @@
 import { contains } from '@stacksjs/arrays'
 import { dirname, join, path as p } from '@stacksjs/path'
-import { createFolder, isFolder } from '@stacksjs/storage'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
+import { createFolder, isFolder } from './'
 import { fs, existsSync } from './fs'
 
 /**
@@ -20,7 +20,7 @@ export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile
 /**
  * Reads a package.json file and returns the parsed data.
  */
-export async function readPackageJson(name: string, cwd?: string) {
+export async function readPackageJson(name: string, cwd?: string): Promise<PackageJson> {
   const file = await readJsonFile(name, cwd)
   return file.data as PackageJson
 }
@@ -115,7 +115,7 @@ export function hasFunctions(): boolean {
   return hasFiles(p.functionsPath())
 }
 
-export function deleteFiles(dir: string, exclude: string[] = []) {
+export function deleteFiles(dir: string, exclude: string[] = []): void {
   if (fs.existsSync(dir)) {
     fs.readdirSync(dir).forEach((file) => {
       const p = join(dir, file)
@@ -144,7 +144,7 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
   return results
 }
 
-export function put(path: string, contents: string) {
+export function put(path: string, contents: string): void {
   const dirPath = dirname(path)
 
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true })
@@ -156,7 +156,23 @@ export async function get(path: string): Promise<string> {
   return Bun.file(path).text()
 }
 
-export const files = {
+export type Files = {
+  readJsonFile: typeof readJsonFile
+  readPackageJson: typeof readPackageJson
+  readTextFile: typeof readTextFile
+  writeJsonFile: typeof writeJsonFile
+  writeTextFile: typeof writeTextFile
+  isFile: typeof isFile
+  hasFiles: typeof hasFiles
+  hasComponents: typeof hasComponents
+  hasFunctions: typeof hasFunctions
+  deleteFiles: typeof deleteFiles
+  getFiles: typeof getFiles
+  put: typeof put
+  get: typeof get
+}
+
+export const files: Files = {
   readJsonFile,
   readPackageJson,
   readTextFile,

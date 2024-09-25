@@ -8,7 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 import type { CLI, CreateOptions } from '@stacksjs/types'
 import { useOnline } from '@stacksjs/utils'
 
-export function create(buddy: CLI) {
+export function create(buddy: CLI): void {
   const descriptions = {
     name: 'The name of the project',
     command: 'Create a new Stacks project',

@@ -4,7 +4,7 @@ import { ExitCode } from '@stacksjs/types'
 import type { CLI, ProjectsOptions } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
 
-export function projects(buddy: CLI) {
+export function projects(buddy: CLI): void {
   const descriptions = {
     projects: 'Find all Stacks projects on your system',
     verbose: 'Enable verbose output',

@@ -31,6 +31,7 @@ export function createSingletonPromise<T>(fn: () => Promise<T>): SingletonPromis
     if (!_promise) _promise = fn()
     return _promise
   }
+
   wrapper.reset = async () => {
     const _prev = _promise
     _promise = undefined
@@ -62,20 +63,25 @@ export function createPromiseLock() {
   return {
     async run<T = void>(fn: () => Promise<T>): Promise<T> {
       const p = fn()
+
       locks.push(p)
+
       try {
         return await p
       } finally {
         remove(locks, p)
       }
     },
+
     async wait(): Promise<void> {
       await Promise.allSettled(locks)
     },
-    isWaiting() {
+
+    isWaiting(): boolean {
       return Boolean(locks.length)
     },
-    clear() {
+
+    clear(): void {
       locks.length = 0
     },
   }

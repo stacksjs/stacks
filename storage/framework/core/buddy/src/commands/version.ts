@@ -3,7 +3,7 @@ import { bold, dim, green, intro, log } from '@stacksjs/cli'
 import { storage } from '@stacksjs/storage'
 import type { CLI } from '@stacksjs/types'
 
-export function version(buddy: CLI) {
+export function version(buddy: CLI): void {
   const descriptions = {
     version: 'Retrieving Stacks build version',
   }
