@@ -51,7 +51,7 @@ export interface DtsOptions {
   /**
    * The output directory of the declaration files. Please note,
    * it is relative to the current working directory.
-   * @default 'dist/types'
+   * @default 'dist'
    */
   outdir?: ts.CompilerOptions['outDir']
 
