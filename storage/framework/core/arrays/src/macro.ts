@@ -19,27 +19,27 @@ import {
 import { average, median, mode, range, sum } from './math'
 
 export const Arr = {
-  contains(needle: string, haystack: string[]) {
+  contains(needle: string, haystack: string[]): boolean {
     return contains(needle, haystack)
   },
 
-  containsAll(needles: string[], haystack: string[]) {
+  containsAll(needles: string[], haystack: string[]): boolean {
     return containsAll(needles, haystack)
   },
 
-  containsAny(needles: string[], haystack: string[]) {
+  containsAny(needles: string[], haystack: string[]): boolean {
     return containsAny(needles, haystack)
   },
 
-  containsNone(needles: string[], haystack: string[]) {
+  containsNone(needles: string[], haystack: string[]): boolean {
     return containsNone(needles, haystack)
   },
 
-  containsOnly(needles: string[], haystack: string[]) {
+  containsOnly(needles: string[], haystack: string[]): boolean {
     return containsOnly(needles, haystack)
   },
 
-  doesNotContain(needle: string, haystack: string[]) {
+  doesNotContain(needle: string, haystack: string[]): boolean {
     return doesNotContain(needle, haystack)
   },
 
@@ -47,8 +47,8 @@ export const Arr = {
     return toArray(array)
   },
 
-  flatten<T>(array?: Nullable<Arrayable<T | Array<T>>>): Array<T> {
-    return toArray(array).reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val) : val), [] as T[])
+  flatten<T>(array?: Nullable<Arrayable<T | T[]>>): T[] {
+    return flatten(array)
   },
 
   mergeArrayable<T>(...args: Nullable<Arrayable<T>>[]): Array<T> {
@@ -70,11 +70,7 @@ export const Arr = {
    * Returns random item/s from the array
    */
   sample<T>(arr: T[], count = 1): T[] {
-    // Get the sample array (may contain undefined values)
-    const sampleArr = sample(arr, count)
-
-    // Filter out any undefined values
-    return sampleArr.filter((item): item is T => item !== undefined)
+    return sample(arr, count)
   },
 
   unique<T>(arr: T[]): T[] {
@@ -89,7 +85,7 @@ export const Arr = {
     return last(arr)
   },
 
-  remove<T>(arr: T[], value: T) {
+  remove<T>(arr: T[], value: T): boolean {
     return remove(arr, value)
   },
 
@@ -105,7 +101,7 @@ export const Arr = {
     return move(arr, from, to)
   },
 
-  clampArrayRange(arr: readonly unknown[], n: number) {
+  clampArrayRange(arr: readonly unknown[], n: number): number {
     return clampArrayRange(arr, n)
   },
 
@@ -146,4 +142,4 @@ export const Arr = {
   },
 }
 
-export const arr = Arr
+export const arr: typeof Arr = Arr

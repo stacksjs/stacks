@@ -31,8 +31,8 @@ export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
  * flatten([1, [2, [3, [4, [5]]]]]) // [1, 2, 3, 4, 5]
  * ```
  */
-export function flatten<T>(array?: Nullable<Arrayable<T | Array<T>>>): Array<T> {
-  return toArray(array).reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val) : val), [] as T[])
+export function flatten<T>(array?: Nullable<Arrayable<T | T[]>>): T[] {
+  return toArray(array).reduce((acc: T[], val) => acc.concat(Array.isArray(val) ? flatten(val) : (val as T)), [])
 }
 
 /**
@@ -181,7 +181,7 @@ export function last<T>(array: readonly T[]): T | undefined {
  * Arr.remove(arr, 4) // false
  * console.log(arr) // [1, 3]
  */
-export function remove<T>(array: T[], value: T) {
+export function remove<T>(array: T[], value: T): boolean {
   if (!array) return false
 
   const index = array.indexOf(value)
@@ -258,7 +258,7 @@ export function move<T>(array: T[], from: number, to: number): T[] {
  * clampArrayRange([1, 2, 3], 4) // 2
  * clampArrayRange([1, 2, 3], -1) // 0
  */
-export function clampArrayRange(arr: readonly unknown[], n: number) {
+export function clampArrayRange(arr: readonly unknown[], n: number): number {
   return clamp(n, 0, arr.length - 1)
 }
 
@@ -271,8 +271,9 @@ export function clampArrayRange(arr: readonly unknown[], n: number) {
  * sample([1, 2, 3, 4], 2) // [2, 3]
  * ```
  */
-export function sample<T>(arr: T[], count: number) {
-  return Array.from({ length: count }, (_) => arr[Math.round(Math.random() * (arr.length - 1))])
+export function sample<T>(arr: T[], count: number): T[] {
+  // biome-ignore lint/style/noNonNullAssertion: it should be fine, open to improvements
+  return Array.from({ length: count }, () => arr[Math.floor(Math.random() * arr.length)]!)
 }
 
 /**

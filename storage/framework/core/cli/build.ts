@@ -1,6 +1,7 @@
-// import { dts } from 'bun-plugin-dts-auto'
 import { intro, outro } from '../build/src'
 import { dts } from './dts'
+
+// import { dts } from 'bun-plugin-dts-auto'
 
 const { startTime } = await intro({
   dir: import.meta.dir,

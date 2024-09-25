@@ -199,8 +199,8 @@ export function percentile(array: number[], num: number): number {
   const upper = Math.ceil(index)
   const weight = index - lower
 
-  if (upper === lower) return sorted[index]
-  return (1 - weight) * sorted[lower] + weight * sorted[upper]
+  if (upper === lower) return sorted[index] ?? 0
+  return (1 - weight) * (sorted[lower] ?? 0) + weight * (sorted[upper] ?? 0)
 }
 
 /**
