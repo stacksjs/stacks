@@ -14,11 +14,11 @@ import library from '~/config/library'
  *
  * @param type LibraryType
  */
-export async function generateLibEntry(type: LibraryType) {
+export async function generateLibEntry(type: LibraryType): Promise<void> {
   await createLibraryEntryPoint(type)
 }
 
-export async function createLibraryEntryPoint(type: LibraryType) {
+export async function createLibraryEntryPoint(type: LibraryType): Promise<void> {
   if (type === 'vue-components') await createVueLibraryEntryPoint()
 
   if (type === 'web-components') await createWebComponentLibraryEntryPoint()
@@ -26,13 +26,13 @@ export async function createLibraryEntryPoint(type: LibraryType) {
   if (type === 'functions') await createFunctionLibraryEntryPoint()
 }
 
-export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components') {
+export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components'): Promise<void> {
   log.info('Ensuring Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
-  }).catch((err) => {
+  }).catch((err: Error) => {
     log.error('There was an error generating the Vue Component Library Entry Point.', err)
     process.exit(ExitCode.FatalError)
   })
@@ -40,13 +40,13 @@ export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-compon
   log.success('Created Vue Component Library Entry Point')
 }
 
-export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components') {
+export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components'): Promise<void> {
   log.info('Ensuring Web Component Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
-  }).catch((err) => {
+  }).catch((err: Error) => {
     log.error('There was an error generating the Web Component library entry point', err)
     process.exit(ExitCode.FatalError)
   })
@@ -54,13 +54,13 @@ export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'w
   log.success('Created Web Component Library Entry Point')
 }
 
-export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions') {
+export async function createFunctionLibraryEntryPoint(type: LibraryType = 'functions'): Promise<void> {
   log.info('Ensuring Function Library Entry Point...')
 
   await writeTextFile({
     path: libraryEntryPath(type),
     data: generateEntryPointData(type),
-  }).catch((err) => {
+  }).catch((err: Error) => {
     log.error('There was an error generating Function Library Entry Point', err)
     process.exit(ExitCode.FatalError)
   })

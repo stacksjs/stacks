@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { hasComponents, hasFunctions } from '@stacksjs/storage'
 import { generateLibEntry } from '../helpers/lib-entries'
 
-export async function generateLibEntries() {
+export async function generateLibEntries(): Promise<void> {
   log.info('Generating library entry points...')
 
   if (library.releaseable && hasComponents()) {

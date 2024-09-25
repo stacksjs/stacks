@@ -9,7 +9,7 @@ try {
 
   if (projects.length > 0) {
     log.info('Found Projects:')
-    projects.forEach((project) => console.log(`   - ${project}`))
+    projects.forEach((project: string) => console.log(`   - ${project}`))
     process.exit()
   }
 

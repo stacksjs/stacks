@@ -1,10 +1,12 @@
 import type { Action as ActionType } from '@stacksjs/actions'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
+import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
-import type { ActionOptions } from '@stacksjs/types'
+import type { Readable, Subprocess, Writable } from '@stacksjs/types'
+import type { ActionOptions, CommandError } from '@stacksjs/types'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 type ActionName = string // TODO: narrow this by automating its generation
@@ -17,7 +19,7 @@ type Action = ActionPath | ActionName | string
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runAction(action: Action, options?: ActionOptions) {
+export async function runAction(action: Action, options?: ActionOptions): Promise<Result<Subprocess, CommandError>> {
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
   const glob = new Bun.Glob('**/*.{ts,js}')
@@ -65,7 +67,10 @@ export async function runAction(action: Action, options?: ActionOptions) {
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runActions(actions: Action[], options?: ActionOptions) {
+export async function runActions(
+  actions: Action[],
+  options?: ActionOptions,
+): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[] | Err<never, string>> {
   log.debug('runActions:', actions, options)
 
   if (!actions.length) return err('No actions were specified')
@@ -90,7 +95,7 @@ export async function runActions(actions: Action[], options?: ActionOptions) {
 }
 
 // looks in most common locations
-export function hasAction(action: Action) {
+export function hasAction(action: Action): boolean {
   // Define patterns specifically for user actions
   const userActionPatterns = [
     `${action}.ts`,

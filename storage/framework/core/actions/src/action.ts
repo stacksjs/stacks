@@ -1,4 +1,6 @@
 import type { JobOptions } from '@stacksjs/types'
+import type { schema } from '@stacksjs/validation'
+
 interface ActionValidations {
   [key: string]: {
     rule: ReturnType<typeof schema.string>

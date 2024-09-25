@@ -10,7 +10,7 @@ import { version } from '../package.json'
 // import { determineDebugLevel } from '@stacksjs/utils'
 
 // export async function checkForUncommittedChanges(path = './stacks', options: UpgradeOptions) {
-export function checkForUncommittedChanges(options: UpgradeOptions) {
+export function checkForUncommittedChanges(options: UpgradeOptions): void {
   try {
     // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
     // check if the stacks folder has any updates
@@ -36,7 +36,7 @@ export function checkForUncommittedChanges(options: UpgradeOptions) {
   }
 }
 
-export async function downloadFrameworkUpdate(options: UpgradeOptions) {
+export async function downloadFrameworkUpdate(options: UpgradeOptions): Promise<void> {
   const tempFolderName = 'updates'
   const tempUpdatePath = projectPath(tempFolderName)
 
@@ -48,7 +48,7 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions) {
 }
 
 // export async function updateDependencies(options: UpgradeOptions) {
-export async function updateDependencies() {
+export async function updateDependencies(): Promise<void> {
   const perf = await intro('buddy upgrade:dependencies')
   const result = await runCommand(NpmScript.UpgradeDependencies, {
     cwd: projectPath(),

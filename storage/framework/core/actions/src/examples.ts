@@ -6,7 +6,7 @@ import type { ExamplesOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 
-export async function invoke(options: ExamplesOptions) {
+export async function invoke(options: ExamplesOptions): Promise<void> {
   if (options.components || options.vue) await componentExample(options)
   else if (options.webComponents || options.elements) await webComponentExample(options)
   else

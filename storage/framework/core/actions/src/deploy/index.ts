@@ -3,6 +3,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
+import { ExitCode } from '@stacksjs/types'
 import type { Subprocess } from '@stacksjs/types'
 
 log.info('Building the framework...')

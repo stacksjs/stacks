@@ -13,7 +13,7 @@ import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker
  * original script: https://raw.githubusercontent.com/jd-solanki/anu/main/scripts/gen-component-meta.ts
  */
 
-export function generateComponentMeta() {
+export function generateComponentMeta(): void {
   const md = new MarkdownIt()
   const checkerOptions: MetaCheckerOptions = {
     forceUseTs: true,
@@ -56,7 +56,7 @@ export function generateComponentMeta() {
     absolute: true,
   })
 
-  components.forEach((componentPath) => {
+  components.forEach((componentPath: string) => {
     // Thanks: https://futurestud.io/tutorials/node-js-get-a-file-name-with-or-without-extension
     const componentExportName = path.parse(componentPath).name
     const meta = filterMeta(tsconfigChecker.getComponentMeta(componentPath, componentExportName))

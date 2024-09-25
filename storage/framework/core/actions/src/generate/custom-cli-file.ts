@@ -17,7 +17,7 @@ await writeTextFile({
   data: `#!/usr/bin/env bun
 import('./storage/framework/core/buddy/src/custom-cli')
 `,
-}).catch((err) => {
+}).catch((err: Error) => {
   log.error('There was an error generating your custom CLI file.', err)
   process.exit(ExitCode.FatalError)
 })

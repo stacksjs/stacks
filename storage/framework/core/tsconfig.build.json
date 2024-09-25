@@ -19,6 +19,9 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "declaration": true,
-    "isolatedDeclarations": true
+    "isolatedDeclarations": true,
+    "paths": {
+      "~/*": ["../../../*"]
+    }
   }
 }

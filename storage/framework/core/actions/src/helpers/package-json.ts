@@ -5,7 +5,7 @@ import library from '~/config/library'
 
 type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
 
-export async function generatePackageJson(type: PackageJsonType) {
+export async function generatePackageJson(type: PackageJsonType): Promise<void> {
   let name
   let description
   let directory
