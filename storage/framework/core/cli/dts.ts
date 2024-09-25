@@ -74,6 +74,7 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
 
   console.log('TSConfig path:', configPath)
   console.log('Root directory:', root)
+  console.log('Entry points:', entryPoints)
 
   try {
     const configFile = ts.readConfigFile(configPath, ts.sys.readFile)
@@ -103,24 +104,26 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
 
     const host = ts.createCompilerHost(compilerOptions)
 
-    // Filter files to only include those within the root directory
-    const rootFiles = parsedCommandLine.fileNames.filter((file) => file.startsWith(root))
+    // Ensure entryPoints is an array
+    const entryPointsArray = Array.isArray(entryPoints) ? entryPoints : [entryPoints]
 
-    const program = ts.createProgram({
-      rootNames: rootFiles,
-      options: compilerOptions,
-      host,
-    })
+    // Resolve entry points to absolute paths
+    const resolvedEntryPoints = entryPointsArray.map((entry) => p.resolve(cwd, entry))
+
+    const program = ts.createProgram(resolvedEntryPoints, compilerOptions, host)
 
     const emitResult = program.emit(undefined, (fileName, data) => {
       if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.ts.map')) {
-        const outputPath = p.join(compilerOptions.outDir ?? './dist', p.relative(root, fileName))
-        const dir = p.dirname(outputPath)
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true })
+        // Only emit files that are within the root directory
+        if (fileName.startsWith(root)) {
+          const outputPath = p.join(compilerOptions.outDir ?? './dist', p.relative(root, fileName))
+          const dir = p.dirname(outputPath)
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true })
+          }
+          fs.writeFileSync(outputPath, data)
+          console.log('Emitted:', outputPath)
         }
-        fs.writeFileSync(outputPath, data)
-        console.log('Emitted:', outputPath)
       }
     })
 
