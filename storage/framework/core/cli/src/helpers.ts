@@ -27,7 +27,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
 /**
  * Prints the outro message.
  */
-export function outro(text: string, options?: OutroOptions, error?: Error | string) {
+export function outro(text: string, options?: OutroOptions, error?: Error | string): Promise<number> {
   const opts = {
     type: 'success',
     useSeconds: true,

@@ -37,11 +37,11 @@ export class Command {
 }
 
 export const command = {
-  run: async (command: string, options?: CliOptions) => {
+  run: async (command: string, options?: CliOptions): Promise<void> => {
     return await runCommand(command, options)
   },
 
-  runSync: async (command: string, options?: CliOptions) => {
+  runSync: async (command: string, options?: CliOptions): Promise<void> => {
     return await runCommand(command, options)
   },
 }

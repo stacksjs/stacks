@@ -94,6 +94,7 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
       emitDeclarationOnly: true,
       noEmit: false,
       outDir: options?.outdir ?? './dist',
+      rootDir: p.resolve(cwd, root),
     }
 
     console.log('Compiler Options:', JSON.stringify(compilerOptions, null, 2))
@@ -101,14 +102,14 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
     const host = ts.createCompilerHost(compilerOptions)
 
     const program = ts.createProgram({
-      rootNames: parsedCommandLine.fileNames,
+      rootNames: parsedCommandLine.fileNames.filter((file) => file.startsWith(compilerOptions.rootDir ?? 'src')),
       options: compilerOptions,
       host,
     })
 
     const emitResult = program.emit(undefined, (fileName, data) => {
       if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.ts.map')) {
-        const outputPath = p.join(compilerOptions.outDir!, p.relative(p.resolve(cwd, root), fileName))
+        const outputPath = p.join(compilerOptions.outDir ?? './dist', p.relative(p.resolve(cwd, root), fileName))
         const dir = p.dirname(outputPath)
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir, { recursive: true })

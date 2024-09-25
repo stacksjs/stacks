@@ -14,7 +14,7 @@ interface CliOptions {
   // description: string
 }
 
-export function cli(name?: string | CliOptions, options?: CliOptions) {
+export function cli(name?: string | CliOptions, options?: CliOptions): CAC {
   if (typeof name === 'object') {
     options = name
     name = options.name

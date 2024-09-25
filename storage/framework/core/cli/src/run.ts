@@ -90,7 +90,7 @@ export async function runCommandSync(command: string, options?: CliOptions): Pro
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions) {
+export async function runCommands(commands: string[], options?: CliOptions): Promise<Subprocess[]> {
   const results = []
 
   for (const command of commands) {

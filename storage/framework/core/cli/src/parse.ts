@@ -1,5 +1,4 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
 
 interface ParsedArgv {
   args: string[]
@@ -118,9 +117,9 @@ export function parseOptions(options?: CliOptions): CliOptions {
         (g) => (g[1] ? g[1].toUpperCase() : ''), // convert kebab-case to camelCase
       )
 
-      if (i + 1 < args.length && !args[i + 1].startsWith('--')) {
+      if (i + 1 < args.length && !args?.[i + 1]?.startsWith('--')) {
         // if the next arg exists and is not an option
-        if (args[i + 1] === 'true' || args[i + 1] === 'false') {
+        if (args?.[i + 1] === 'true' || args?.[i + 1] === 'false') {
           // if the next arg is a boolean
           options[camelCaseKey] = args[i + 1] === 'true' // set the value to the boolean
           i++
@@ -147,8 +146,8 @@ export function parseOptions(options?: CliOptions): CliOptions {
 // }
 export function buddyOptions(options?: string[] | Record<string, any>): string {
   if (Array.isArray(options)) {
-    options = Array.from(new Set(options))
-    if (options[0] && !options[0].startsWith('-')) options.shift()
+    options = Array.from(new Set(options)) as string[]
+    if (Array.isArray(options) && options[0] && !options[0].startsWith('-')) options.shift()
     return options.join(' ')
   }
 

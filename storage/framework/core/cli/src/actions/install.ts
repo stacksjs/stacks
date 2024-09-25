@@ -1,5 +1,4 @@
 import { installPackage as installPkg } from '@antfu/install-pkg'
-import type { ExecaReturnValue } from 'execa'
 
 interface InstallPackageOptions {
   cwd?: string

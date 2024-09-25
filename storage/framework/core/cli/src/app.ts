@@ -563,7 +563,7 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
 }
 
 const strip = (str: string) => str.replace(ansiRegex(), '')
-export const note = (message = '', title = '') => {
+export const note = (message = '', title = ''): void => {
   const lines = `\n${message}\n`.split('\n')
   const titleLen = strip(title).length
   const len =
@@ -584,19 +584,25 @@ export const note = (message = '', title = '') => {
   )
 }
 
-export const cancel = (message = '') => {
+export const cancel = (message = ''): void => {
   process.stdout.write(`${color.gray(S_BAR_END)}  ${color.red(message)}\n\n`)
 }
 
-export const intro = (title = '') => {
+export const intro = (title = ''): void => {
   process.stdout.write(`${color.gray(S_BAR_START)}  ${title}\n`)
 }
 
-export const outro = (message = '') => {
+export const outro = (message = ''): void => {
   process.stdout.write(`${color.gray(S_BAR)}\n${color.gray(S_BAR_END)}  ${message}\n\n`)
 }
 
-export const spinner = () => {
+type Spinner = {
+  start: (msg: string) => void
+  stop: (msg: string, code: number) => void
+  message: (msg: string) => void
+}
+
+export const spinner = (): Spinner => {
   const frames = unicode ? ['◒', '◐', '◓', '◑'] : ['•', 'o', 'O', '0']
   const delay = unicode ? 80 : 120
 
@@ -669,11 +675,13 @@ export const spinner = () => {
     _message = msg ?? _message
   }
 
-  return {
-    start,
-    stop,
-    message,
+  const spinner = {
+    start: start,
+    stop: stop,
+    message: message,
   }
+
+  return spinner
 }
 
 // Adapted from https://github.com/chalk/ansi-regex
@@ -761,13 +769,13 @@ export type Task = {
 /**
  * Define a group of tasks to be executed
  */
-export const tasks = async (tasks: Task[]) => {
+export const tasks = async (tasks: Task[]): Promise<void> => {
   for (const task of tasks) {
     if (task.enabled === false) continue
 
     const s = spinner()
     s.start(task.title)
     const result = await task.task(s.message)
-    s.stop(result || task.title)
+    s.stop(result || task.title, 0)
   }
 }

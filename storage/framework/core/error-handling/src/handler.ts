@@ -35,7 +35,7 @@ export class ErrorHandler {
     return err
   }
 
-  static async writeErrorToFile(err: Error | unknown) {
+  static async writeErrorToFile(err: Error | unknown): Promise<void> {
     if (!(err instanceof Error)) {
       console.error('Error is not an instance of Error:', err)
       return
