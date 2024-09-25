@@ -70,7 +70,7 @@ export interface DtsOptions {
 export async function generate(entryPoints: string | string[], options?: DtsOptions): Promise<void> {
   const cwd = options?.cwd ?? process.cwd()
   const configPath = options?.tsconfigPath ?? p.resolve(cwd, 'tsconfig.json')
-  const root = (options?.root ?? 'src').replace(/^\.\//, '')
+  const root = p.resolve(cwd, (options?.root ?? 'src').replace(/^\.\//, ''))
 
   console.log('TSConfig path:', configPath)
   console.log('Root directory:', root)
@@ -94,7 +94,7 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
       emitDeclarationOnly: true,
       noEmit: false,
       outDir: options?.outdir ?? './dist',
-      rootDir: p.resolve(cwd, root),
+      rootDir: root,
       incremental: undefined,
       composite: undefined,
     }
@@ -104,7 +104,7 @@ export async function generate(entryPoints: string | string[], options?: DtsOpti
     const host = ts.createCompilerHost(compilerOptions)
 
     const program = ts.createProgram({
-      rootNames: parsedCommandLine.fileNames.filter((file) => file.startsWith(compilerOptions.rootDir ?? 'src')),
+      rootNames: parsedCommandLine.fileNames.filter((file) => file.startsWith(root)),
       options: compilerOptions,
       host,
     })
