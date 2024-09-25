@@ -1,5 +1,6 @@
 import os from 'node:os'
 import {
+  type ParsedPath,
   basename,
   delimiter,
   dirname,
@@ -34,15 +35,15 @@ export function actionsPath(path?: string): string {
   return corePath(`actions/${path || ''}`)
 }
 
-export function relativeActionsPath(path?: string) {
+export function relativeActionsPath(path?: string): string {
   return relative(projectPath(), actionsPath(path))
 }
 
-export function userActionsPath(path?: string, options?: { relative: true }) {
+export function userActionsPath(path?: string, options?: { relative: true }): string {
   return appPath(`Actions/${path || ''}`)
 }
 
-export function builtUserActionsPath(path?: string, options?: { relative: boolean }) {
+export function builtUserActionsPath(path?: string, options?: { relative: boolean }): string {
   const absolutePath = frameworkPath(`actions/${path || ''}`)
 
   if (options?.relative) return relative(process.cwd(), absolutePath)
@@ -50,15 +51,15 @@ export function builtUserActionsPath(path?: string, options?: { relative: boolea
   return absolutePath
 }
 
-export function userComponentsPath(path?: string) {
+export function userComponentsPath(path?: string): string {
   return libsPath(`components/${path || ''}`)
 }
 
-export function userViewsPath(path?: string) {
+export function userViewsPath(path?: string): string {
   return resourcesPath(`views/${path || ''}`)
 }
 
-export function userFunctionsPath(path?: string) {
+export function userFunctionsPath(path?: string): string {
   return resourcesPath(`functions/${path || ''}`)
 }
 
@@ -106,7 +107,7 @@ export function userListenersPath(path?: string): string {
  * console.log(userMiddlewarePath('MyMiddleware.ts')) // Outputs the absolute path to 'MyMiddleware.ts' within the user-defined Middleware directory.
  * ```
  */
-export function userMiddlewarePath(path?: string) {
+export function userMiddlewarePath(path?: string): string {
   return appPath(`Middleware/${path || ''}`)
 }
 
@@ -138,15 +139,15 @@ export function userModelsPath(path?: string): string {
  * console.log(userNotificationsPath('MyNotification.ts')) // Outputs the absolute path to 'MyNotification.ts' within the user-defined `Notifications` directory.
  * ```
  */
-export function userNotificationsPath(path?: string) {
+export function userNotificationsPath(path?: string): string {
   return appPath(`Notifications/${path || ''}`)
 }
 
-export function userDatabasePath(path?: string) {
+export function userDatabasePath(path?: string): string {
   return projectPath(`database/${path || ''}`)
 }
 
-export function userMigrationsPath(path?: string) {
+export function userMigrationsPath(path?: string): string {
   return userDatabasePath(`migrations/${path || ''}`)
 }
 
@@ -180,7 +181,7 @@ export function userEventsPath(): string {
  * console.log(aiPath('src/drivers/example.ts')) // Outputs the absolute path to 'openai.ts' within the AI directory
  * ```
  */
-export function aiPath(path?: string) {
+export function aiPath(path?: string): string {
   return corePath(`ai/${path || ''}`)
 }
 
@@ -196,7 +197,7 @@ export function aiPath(path?: string) {
  * console.log(assetsPath('images/logo.png')) // Outputs the absolute path to 'images/logo.png' within the `assets` directory.
  * ```
  */
-export function assetsPath(path?: string) {
+export function assetsPath(path?: string): string {
   return resourcesPath(`assets/${path || ''}`)
 }
 
@@ -211,7 +212,7 @@ export function assetsPath(path?: string) {
  * console.log(aliasPath()) // Outputs the absolute path to the `alias` directory.
  * ```
  */
-export function aliasPath() {
+export function aliasPath(): string {
   return corePath('alias/src/index.ts')
 }
 
@@ -230,7 +231,7 @@ export function aliasPath() {
  * console.log(buddyPath('config/buddy.json', { relative: true })) // Outputs the relative path to 'config/buddy.json' within the buddy directory.
  * ```
  */
-export function buddyPath(path?: string, options?: { relative?: boolean }) {
+export function buddyPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = corePath(`buddy/${path || ''}`)
 
   if (options?.relative) return relative(process.cwd(), absolutePath)
@@ -346,7 +347,7 @@ export function coreApiPath(path?: string): string {
  * buildPath('components.ts')
  * ```
  */
-export function buildPath(path?: string) {
+export function buildPath(path?: string): string {
   return corePath(`build/${path || ''}`)
 }
 
@@ -615,7 +616,7 @@ export function coreEnvPath(path?: string): string {
  * @param type - The type of examples to filter by ('vue-components' or 'web-components').
  * @returns The absolute path to the specified type of examples within the `examples` directory.
  */
-export function examplesPath(type: 'vue-components' | 'web-components'): string {
+export function examplesPath(type?: 'vue-components' | 'web-components'): string {
   return frameworkPath(`examples/${type || ''}`)
 }
 
@@ -839,9 +840,8 @@ export function onboardingPath(path?: string): string {
  * @param type - The type of the library ('vue-components', 'web-components', or 'functions') for which to return the package.json path.
  * @returns The absolute path to the specified package.json file within the framework directory.
  */
-export function packageJsonPath(type: 'vue-components' | 'web-components' | 'functions'): string {
+export function packageJsonPath(type: LibraryType): string {
   if (type === 'vue-components') return frameworkPath('libs/components/vue/package.json')
-
   if (type === 'web-components') return frameworkPath('libs/components/web/package.json')
 
   return frameworkPath(`libs/${type}/package.json`)
@@ -959,7 +959,7 @@ export function publicPath(path?: string): string {
  * @param path - The relative path to the file or directory within the push directory.
  * @returns The absolute path to the specified file or directory within the push directory.
  */
-export function pushPath(path?: string) {
+export function pushPath(path?: string): string {
   return notificationsPath(`push/${path || ''}`)
 }
 
@@ -969,7 +969,7 @@ export function pushPath(path?: string) {
  * @param path - The relative path to the file or directory within the query-builder directory.
  * @returns The absolute path to the specified file or directory within the query-builder directory.
  */
-export function queryBuilderPath(path?: string) {
+export function queryBuilderPath(path?: string): string {
   return corePath(`query-builder/${path || ''}`)
 }
 
@@ -979,7 +979,7 @@ export function queryBuilderPath(path?: string) {
  * @param path - The relative path to the file or directory within the queue directory.
  * @returns The absolute path to the specified file or directory within the queue directory.
  */
-export function queuePath(path?: string) {
+export function queuePath(path?: string): string {
   return corePath(`queue/${path || ''}`)
 }
 
@@ -989,7 +989,7 @@ export function queuePath(path?: string) {
  * @param path - The relative path to the file or directory within the realtime directory.
  * @returns The absolute path to the specified file or directory within the realtime directory.
  */
-export function realtimePath(path?: string) {
+export function realtimePath(path?: string): string {
   return corePath(`realtime/${path || ''}`)
 }
 
@@ -1001,7 +1001,7 @@ export function realtimePath(path?: string) {
  * @param options.relative - If true, returns the path relative to the current working directory.
  * @returns The absolute or relative path to the specified file or directory within the `resources` directory.
  */
-export function resourcesPath(path?: string, options?: { relative?: boolean }) {
+export function resourcesPath(path?: string, options?: { relative?: boolean }): string {
   if (options?.relative) {
     const absolutePath = projectPath(`resources/${path || ''}`)
     return relative(process.cwd(), absolutePath)
@@ -1016,7 +1016,7 @@ export function resourcesPath(path?: string, options?: { relative?: boolean }) {
  * @param path - The relative path to the file or directory within the repl directory.
  * @returns The absolute path to the specified file or directory within the repl directory.
  */
-export function replPath(path?: string) {
+export function replPath(path?: string): string {
   return corePath(`repl/${path || ''}`)
 }
 
@@ -1026,7 +1026,7 @@ export function replPath(path?: string) {
  * @param path - The relative path to the file or directory within the router directory.
  * @returns The absolute path to the specified file or directory within the router directory.
  */
-export function routerPath(path?: string) {
+export function routerPath(path?: string): string {
   return corePath(`router/${path || ''}`)
 }
 
@@ -1038,7 +1038,7 @@ export function routerPath(path?: string) {
  * @param options.relative - If true, returns the path relative to the current working directory.
  * @returns The absolute or relative path to the specified file or directory within the `routes` directory.
  */
-export function routesPath(path?: string, options?: { relative?: boolean }) {
+export function routesPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = resourcesPath(`routes/${path || ''}`)
 
   if (options?.relative) return relative(process.cwd(), absolutePath)
@@ -1052,7 +1052,7 @@ export function routesPath(path?: string, options?: { relative?: boolean }) {
  * @param path - The relative path to the file or directory within the search-engine directory.
  * @returns The absolute path to the specified file or directory within the search-engine directory.
  */
-export function searchEnginePath(path?: string) {
+export function searchEnginePath(path?: string): string {
   return corePath(`search-engine/${path || ''}`)
 }
 
@@ -1062,7 +1062,7 @@ export function searchEnginePath(path?: string) {
  * @param path - The relative path to the file or directory within the `settings` directory.
  * @returns The absolute path to the specified file or directory within the `settings` directory.
  */
-export function settingsPath(path?: string) {
+export function settingsPath(path?: string): string {
   return projectPath(`${path || 'views/dashboard/settings'}`)
 }
 
@@ -1072,7 +1072,7 @@ export function settingsPath(path?: string) {
  * @param path - The relative path to the file or directory within the `scripts` directory.
  * @returns The absolute path to the specified file or directory within the `scripts` directory.
  */
-export function scriptsPath(path?: string) {
+export function scriptsPath(path?: string): string {
   return frameworkPath(`scripts/${path || ''}`)
 }
 
@@ -1082,7 +1082,7 @@ export function scriptsPath(path?: string) {
  * @param path - The relative path to the file or directory within the scheduler directory.
  * @returns The absolute path to the specified file or directory within the scheduler directory.
  */
-export function schedulerPath(path?: string) {
+export function schedulerPath(path?: string): string {
   return corePath(`scheduler/${path || ''}`)
 }
 
@@ -1092,7 +1092,7 @@ export function schedulerPath(path?: string) {
  * @param path - The relative path to the file or directory within the slug directory.
  * @returns The absolute path to the specified file or directory within the slug directory.
  */
-export function slugPath(path?: string) {
+export function slugPath(path?: string): string {
   return corePath(`slug/${path || ''}`)
 }
 
@@ -1102,7 +1102,7 @@ export function slugPath(path?: string) {
  * @param path - The relative path to the file or directory within the `sms` directory.
  * @returns The absolute path to the specified file or directory within the `sms` directory.
  */
-export function smsPath(path?: string) {
+export function smsPath(path?: string): string {
   return notificationsPath(`sms/${path || ''}`)
 }
 
@@ -1112,7 +1112,7 @@ export function smsPath(path?: string) {
  * @param path - The relative path to the file or directory within the storage directory.
  * @returns The absolute path to the specified file or directory within the storage directory.
  */
-export function coreStoragePath(path?: string) {
+export function coreStoragePath(path?: string): string {
   return corePath(`storage/${path || ''}`)
 }
 
@@ -1122,7 +1122,7 @@ export function coreStoragePath(path?: string) {
  * @param path - The relative path to the file or directory within the `stores` directory.
  * @returns The absolute path to the specified file or directory within the `stores` directory.
  */
-export function storesPath(path?: string) {
+export function storesPath(path?: string): string {
   return resourcesPath(`stores/${path || ''}`)
 }
 
@@ -1132,7 +1132,7 @@ export function storesPath(path?: string) {
  * @param path - The relative path to the file or directory within the security directory.
  * @returns The absolute path to the specified file or directory within the security directory.
  */
-export function securityPath(path?: string) {
+export function securityPath(path?: string): string {
   return corePath(`security/${path || ''}`)
 }
 
@@ -1142,11 +1142,11 @@ export function securityPath(path?: string) {
  * @param path - The relative path to the file or directory within the server directory.
  * @returns The absolute path to the specified file or directory within the server directory.
  */
-export function serverPath(path?: string) {
+export function serverPath(path?: string): string {
   return corePath(`server/${path || ''}`)
 }
 
-export function userServerPath(path?: string) {
+export function userServerPath(path?: string): string {
   return frameworkPath(`server/${path || ''}`)
 }
 
@@ -1156,7 +1156,7 @@ export function userServerPath(path?: string) {
  * @param path - The relative path to the file or directory within the `serverless` directory.
  * @returns The absolute path to the specified file or directory within the `serverless` directory.
  */
-export function serverlessPath(path?: string) {
+export function serverlessPath(path?: string): string {
   return corePath(`serverless/${path || ''}`)
 }
 
@@ -1166,7 +1166,7 @@ export function serverlessPath(path?: string) {
  * @param path - The relative path to the file or directory within the framework's `src` directory.
  * @returns The absolute path to the specified file or directory within the framework's `src` directory.
  */
-export function stacksPath(path?: string) {
+export function stacksPath(path?: string): string {
   return frameworkPath(`src/${path || ''}`)
 }
 
@@ -1176,7 +1176,7 @@ export function stacksPath(path?: string) {
  * @param path - The relative path to the file or directory within the shell directory.
  * @returns The absolute path to the specified file or directory within the shell directory.
  */
-export function shellPath(path?: string) {
+export function shellPath(path?: string): string {
   return corePath(`shell/${path || ''}`)
 }
 
@@ -1186,7 +1186,7 @@ export function shellPath(path?: string) {
  * @param path - The relative path to the file or directory within the `strings` directory.
  * @returns The absolute path to the specified file or directory within the `strings` directory.
  */
-export function stringsPath(path?: string) {
+export function stringsPath(path?: string): string {
   return corePath(`strings/${path || ''}`)
 }
 
@@ -1196,7 +1196,7 @@ export function stringsPath(path?: string) {
  * @param path - The relative path to the file or directory within the testing directory.
  * @returns The absolute path to the specified file or directory within the testing directory.
  */
-export function testingPath(path?: string) {
+export function testingPath(path?: string): string {
   return corePath(`testing/${path || ''}`)
 }
 
@@ -1206,7 +1206,7 @@ export function testingPath(path?: string) {
  * @param path - The relative path to the file or directory within the tinker directory.
  * @returns The absolute path to the specified file or directory within the tinker directory.
  */
-export function tinkerPath(path?: string) {
+export function tinkerPath(path?: string): string {
   return corePath(`tinker/${path || ''}`)
 }
 
@@ -1216,7 +1216,7 @@ export function tinkerPath(path?: string) {
  * @param path - The relative path to the file or directory within the `tests` directory.
  * @returns The absolute path to the specified file or directory within the `tests` directory.
  */
-export function testsPath(path?: string) {
+export function testsPath(path?: string): string {
   return frameworkPath(`tests/${path || ''}`)
 }
 
@@ -1226,7 +1226,7 @@ export function testsPath(path?: string) {
  * @param path - The relative path to the file or directory within the `types` directory.
  * @returns The absolute path to the specified file or directory within the `types` directory.
  */
-export function typesPath(path?: string) {
+export function typesPath(path?: string): string {
   return corePath(`types/${path || ''}`)
 }
 
@@ -1236,7 +1236,7 @@ export function typesPath(path?: string) {
  * @param path - The relative path to the file or directory within the ui directory.
  * @returns The absolute path to the specified file or directory within the ui directory.
  */
-export function uiPath(path?: string, options?: { relative?: boolean }) {
+export function uiPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = corePath(`ui/${path || ''}`)
 
   if (options?.relative) return relative(process.cwd(), absolutePath)
@@ -1250,7 +1250,7 @@ export function uiPath(path?: string, options?: { relative?: boolean }) {
  * @param path - The relative path to the file or directory within the `utils` directory.
  * @returns The absolute path to the specified file or directory within the `utils` directory.
  */
-export function utilsPath(path?: string) {
+export function utilsPath(path?: string): string {
   return corePath(`utils/${path || ''}`)
 }
 
@@ -1260,7 +1260,7 @@ export function utilsPath(path?: string) {
  * @param path - The relative path to the file or directory within the validation directory.
  * @returns The absolute path to the specified file or directory within the validation directory.
  */
-export function validationPath(path?: string) {
+export function validationPath(path?: string): string {
   return corePath(`validation/${path || ''}`)
 }
 
@@ -1270,7 +1270,7 @@ export function validationPath(path?: string) {
  * @param path - The relative path to the file or directory within the vite-config directory.
  * @returns The absolute path to the specified file or directory within the vite-config directory.
  */
-export function viteConfigPath(path?: string) {
+export function viteConfigPath(path?: string): string {
   return corePath(`vite-config/${path || ''}`)
 }
 
@@ -1280,7 +1280,7 @@ export function viteConfigPath(path?: string) {
  * @param path - The relative path to the file or directory within the vite directory.
  * @returns The absolute path to the specified file or directory within the vite directory.
  */
-export function vitePluginPath(path?: string) {
+export function vitePluginPath(path?: string): string {
   return corePath(`vite-plugin/${path || ''}`)
 }
 
@@ -1290,7 +1290,7 @@ export function vitePluginPath(path?: string) {
  * @param path - The relative path to the file or directory within the x-ray directory.
  * @returns The absolute path to the specified file or directory within the x-ray directory.
  */
-export function xRayPath(path?: string) {
+export function xRayPath(path?: string): string {
   return frameworkPath(`stacks/x-ray/${path || ''}`)
 }
 
@@ -1300,11 +1300,141 @@ export function xRayPath(path?: string) {
  * @param path - The relative path to append to the home directory path.
  * @returns The absolute path to the specified file or directory within the home directory.
  */
-export function homeDir(path?: string) {
+export function homeDir(path?: string): string {
   return os.homedir() + (path ? (path.startsWith('/') ? '' : '/') + path : '~')
 }
 
-export const path = {
+export interface Path {
+  actionsPath: (path?: string) => string
+  userActionsPath: (path?: string) => string
+  builtUserActionsPath: (path?: string) => string
+  userComponentsPath: (path?: string) => string
+  userViewsPath: (path?: string) => string
+  userFunctionsPath: (path?: string) => string
+  aiPath: (path?: string) => string
+  assetsPath: (path?: string) => string
+  relativeActionsPath: (path?: string) => string
+  aliasPath: (path?: string) => string
+  analyticsPath: (path?: string) => string
+  arraysPath: (path?: string) => string
+  appPath: (path?: string) => string
+  authPath: (path?: string) => string
+  coreApiPath: (path?: string) => string
+  buddyPath: (path?: string) => string
+  buildEnginePath: (path?: string) => string
+  libsEntriesPath: (path?: string) => string
+  buildPath: (path?: string) => string
+  cachePath: (path?: string) => string
+  chatPath: (path?: string) => string
+  cliPath: (path?: string) => string
+  cloudPath: (path?: string) => string
+  frameworkCloudPath: (path?: string) => string
+  collectionsPath: (path?: string) => string
+  commandsPath: (path?: string) => string
+  componentsPath: (path?: string) => string
+  configPath: (path?: string) => string
+  projectConfigPath: (path?: string) => string
+  corePath: (path?: string) => string
+  customElementsDataPath: (path?: string) => string
+  databasePath: (path?: string) => string
+  datetimePath: (path?: string) => string
+  developmentPath: (path?: string) => string
+  desktopPath: (path?: string) => string
+  docsPath: (path?: string) => string
+  dnsPath: (path?: string) => string
+  emailPath: (path?: string) => string
+  enumsPath: (path?: string) => string
+  errorHandlingPath: (path?: string) => string
+  eventsPath: (path?: string) => string
+  coreEnvPath: (path?: string) => string
+  healthPath: (path?: string) => string
+  examplesPath: (type?: 'vue-components' | 'web-components') => string
+  fakerPath: (path?: string) => string
+  frameworkPath: (path?: string) => string
+  browserPath: (path?: string) => string
+  storagePath: (path?: string) => string
+  functionsPath: (path?: string) => string
+  gitPath: (path?: string) => string
+  langPath: (path?: string) => string
+  layoutsPath: (path?: string) => string
+  libsPath: (path?: string) => string
+  userLibsPath: (path?: string) => string
+  libraryEntryPath: (type: LibraryType) => string
+  lintPath: (path?: string) => string
+  listenersPath: (path?: string) => string
+  loggingPath: (path?: string) => string
+  logsPath: (path?: string) => string
+  jobsPath: (path?: string) => string
+  modulesPath: (path?: string) => string
+  ormPath: (path?: string) => string
+  objectsPath: (path?: string) => string
+  onboardingPath: (path?: string) => string
+  notificationsPath: (path?: string) => string
+  packageJsonPath: (type: LibraryType) => string
+  viewsPath: (path?: string) => string
+  pathPath: (path?: string) => string
+  paymentsPath: (path?: string) => string
+  projectPath: (path?: string) => string
+  findProjectPath: (project: string) => Promise<string>
+  coreStoragePath: (path?: string) => string
+  publicPath: (path?: string) => string
+  pushPath: (path?: string) => string
+  queryBuilderPath: (path?: string) => string
+  queuePath: (path?: string) => string
+  realtimePath: (path?: string) => string
+  resourcesPath: (path?: string) => string
+  replPath: (path?: string) => string
+  routerPath: (path?: string) => string
+  routesPath: (path?: string) => string
+  runtimePath: (path?: string) => string
+  searchEnginePath: (path?: string) => string
+  schedulerPath: (path?: string) => string
+  settingsPath: (path?: string) => string
+  smsPath: (path?: string) => string
+  slugPath: (path?: string) => string
+  scriptsPath: (path?: string) => string
+  securityPath: (path?: string) => string
+  serverPath: (path?: string) => string
+  userServerPath: (path?: string) => string
+  serverlessPath: (path?: string) => string
+  stacksPath: (path?: string) => string
+  stringsPath: (path?: string) => string
+  shellPath: (path?: string) => string
+  storesPath: (path?: string) => string
+  testingPath: (path?: string) => string
+  testsPath: (path?: string) => string
+  tinkerPath: (path?: string) => string
+  typesPath: (path?: string) => string
+  uiPath: (path?: string) => string
+  userDatabasePath: (path?: string) => string
+  userMigrationsPath: (path?: string) => string
+  userEventsPath: (path?: string) => string
+  userJobsPath: (path?: string) => string
+  userListenersPath: (path?: string) => string
+  userMiddlewarePath: (path?: string) => string
+  userModelsPath: (path?: string) => string
+  userNotificationsPath: (path?: string) => string
+  utilsPath: (path?: string) => string
+  validationPath: (path?: string) => string
+  viteConfigPath: (path?: string) => string
+  vitePluginPath: (path?: string) => string
+  xRayPath: (path?: string) => string
+  homeDir: (path?: string) => string
+  basename: (path: string) => string
+  delimiter: () => ';' | ':'
+  dirname: (path: string) => string
+  extname: (path: string) => string
+  isAbsolute: (path: string) => boolean
+  join: (...paths: string[]) => string
+  normalize: (path: string) => string
+  relative: (from: string, to: string) => string
+  resolve: (...paths: string[]) => string
+  parse: (path: string) => ParsedPath
+  sep: () => '/' | '\\'
+  toNamespacedPath: (path: string) => string
+}
+
+export const path: Path = {
   actionsPath,
   userActionsPath,
   builtUserActionsPath,
@@ -1423,7 +1553,7 @@ export const path = {
 
   // path utils
   basename,
-  delimiter,
+  delimiter: () => delimiter,
   dirname,
   extname,
   isAbsolute,
@@ -1432,7 +1562,7 @@ export const path = {
   relative,
   resolve,
   parse,
-  sep,
+  sep: () => sep,
   toNamespacedPath,
 }
 

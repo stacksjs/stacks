@@ -3,7 +3,7 @@ import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import library from '~/config/library'
 
-export async function generateVsCodeCustomData() {
+export async function generateVsCodeCustomData(): Promise<void> {
   try {
     log.info('Generating custom-elements.json...')
     // the version does not have to be set here,
@@ -18,7 +18,7 @@ export async function generateVsCodeCustomData() {
   }
 }
 
-export async function generateWebTypes() {
+export async function generateWebTypes(): Promise<void> {
   log.info('Generating web-types.json...')
   log.info('This feature is not yet implemented.')
 }
