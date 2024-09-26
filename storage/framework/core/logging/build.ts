@@ -20,8 +20,7 @@ const result = await Bun.build({
     '@stacksjs/types',
     '@stacksjs/validation',
   ],
-
-  plugins: [dts()],
+  // plugins: [dts()],
 })
 
 await outro({

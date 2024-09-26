@@ -21,7 +21,8 @@
     "declaration": true,
     "isolatedDeclarations": true,
     "paths": {
-      "~/*": ["../../../*"]
+      "~/*": ["../../../*"],
+      "@stacksjs/*": ["./*/src"]
     }
   }
 }

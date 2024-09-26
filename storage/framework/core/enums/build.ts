@@ -11,7 +11,7 @@ const result = await Bun.build({
   format: 'esm',
   sourcemap: 'linked',
   minify: true,
-  plugins: [dts()],
+  // plugins: [dts()],
 })
 
 await outro({

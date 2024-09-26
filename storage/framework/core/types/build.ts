@@ -13,8 +13,7 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
   external: ['@stacksjs/validation', 'consola', 'unocss', '@unocss/core'],
-
-  plugins: [dts()],
+  // plugins: [dts()],
 })
 
 await outro({

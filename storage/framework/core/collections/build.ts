@@ -12,7 +12,7 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
 
-  plugins: [dts()],
+  // plugins: [dts()],
 })
 
 await outro({

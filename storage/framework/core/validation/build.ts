@@ -14,10 +14,10 @@ const result = await Bun.build({
   minify: true,
   external: ['@stacksjs/strings', '@stacksjs/types', '@stacksjs/path'],
   plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
+    // dts({
+    //   root: './src',
+    //   outdir: './dist',
+    // }),
   ],
 })
 

@@ -13,10 +13,10 @@ const result = await Bun.build({
   minify: true,
   target: 'bun',
   plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
+    // dts({
+    //   root: './src',
+    //   outdir: './dist',
+    // }),
   ],
 })
 
