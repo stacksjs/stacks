@@ -167,11 +167,14 @@ export function dts(options?: DtsOptions): BunPlugin {
 
       await generate(entrypoints, {
         root,
-        include: entrypoints,
+        include: entrypoints, // Use only the entrypoints from build.ts
         cwd: options?.cwd || process.cwd(),
         tsconfigPath: options?.tsconfigPath,
         outdir: options?.outdir || build.config.outdir,
-        ...options,
+        compiler: {
+          ...options?.compiler,
+          paths: undefined, // Remove the paths option to avoid generating extra dts files
+        },
       })
     },
   }
