@@ -1,7 +1,7 @@
 import { path } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
 
-export async function generateOpenApi() {
+export async function generateOpenApi(): Promise<void> {
   const routeLists: any[] = await route.getRoutes()
 
   const openAPISpec = {

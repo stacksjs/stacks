@@ -3,7 +3,7 @@ import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
 import AWS4 from 'aws4'
 
-export async function requestModelAccess() {
+export async function requestModelAccess(): Promise<void> {
   process.env.AWS_REGION = 'us-east-1'
   const credentials = await defaultProvider()()
 
