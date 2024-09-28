@@ -58,31 +58,42 @@ export function createSingletonPromise<T>(fn: () => Promise<T>): SingletonPromis
  * ```
  */
 export function createPromiseLock() {
-  const locks: Promise<any>[] = []
+  let currentPromise = Promise.resolve()
+  const queue: Promise<any>[] = []
 
   return {
     async run<T = void>(fn: () => Promise<T>): Promise<T> {
-      const p = fn()
-
-      locks.push(p)
-
-      try {
-        return await p
-      } finally {
-        remove(locks, p)
+      const runTask = async (): Promise<T> => {
+        await currentPromise
+        return fn()
       }
+
+      const taskPromise = runTask()
+      queue.push(taskPromise)
+
+      currentPromise = taskPromise
+        .catch(() => {})
+        .finally(() => {
+          const index = queue.indexOf(taskPromise)
+          if (index > -1) queue.splice(index, 1)
+        }) as Promise<void>
+
+      return taskPromise
     },
 
     async wait(): Promise<void> {
-      await Promise.allSettled(locks)
+      while (queue.length > 0) {
+        await Promise.all(queue)
+      }
     },
 
     isWaiting(): boolean {
-      return Boolean(locks.length)
+      return queue.length > 0
     },
 
     clear(): void {
-      locks.length = 0
+      queue.length = 0
+      currentPromise = Promise.resolve()
     },
   }
 }

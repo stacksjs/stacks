@@ -154,52 +154,143 @@ describe('@stacksjs/browser', () => {
   })
 
   describe('promise', () => {
-    it('createSingletonPromise returns same promise on multiple calls', async () => {
-      let count = 0
-      const fn = browser.createSingletonPromise(() => Promise.resolve(++count))
-      const [result1, result2] = await Promise.all([fn(), fn()])
-      expect(result1).toBe(1)
-      expect(result2).toBe(1)
+    describe('createSingletonPromise', () => {
+      it('returns same promise on multiple calls', async () => {
+        let count = 0
+        const fn = browser.createSingletonPromise(() => Promise.resolve(++count))
+        const [result1, result2] = await Promise.all([fn(), fn()])
+        expect(result1).toBe(1)
+        expect(result2).toBe(1)
+      })
+
+      it('resets the promise when reset is called', async () => {
+        let count = 0
+        const fn = browser.createSingletonPromise(() => Promise.resolve(++count))
+        const result1 = await fn()
+        await fn.reset()
+        const result2 = await fn()
+        expect(result1).toBe(1)
+        expect(result2).toBe(2)
+      })
+
+      it('handles rejections correctly', async () => {
+        const fn = browser.createSingletonPromise(() => Promise.reject(new Error('test error')))
+        expect(fn()).rejects.toThrow('test error')
+      })
     })
 
-    it('createPromiseLock runs tasks sequentially', async () => {
-      const lock = browser.createPromiseLock()
-      const results: number[] = []
-      await Promise.all([
-        lock.run(
-          () =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                results.push(1)
-                resolve()
-              }, 50),
-            ) as Promise<void>,
-        ),
-        lock.run(
-          () =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                results.push(2)
-                resolve()
-              }, 10),
-            ) as Promise<void>,
-        ),
-      ])
-      expect(results.length).toBe(2)
-      expect(results).toContain(1)
-      expect(results).toContain(2)
+    describe('createPromiseLock', () => {
+      it('runs tasks sequentially', async () => {
+        const lock = browser.createPromiseLock()
+        const results: number[] = []
+        await lock.run(async () => {
+          await browser.sleep(50)
+          results.push(1)
+        })
+        await lock.run(async () => {
+          await browser.sleep(10)
+          results.push(2)
+        })
+        expect(results).toEqual([1, 2])
+      })
+
+      it('waits for all tasks to complete in correct order', async () => {
+        const lock = browser.createPromiseLock()
+        const results: number[] = []
+        let resolve1: () => void
+        let resolve2: () => void
+
+        console.log('Test started')
+
+        const promise1 = new Promise<void>((r) => {
+          resolve1 = r
+        })
+        const promise2 = new Promise<void>((r) => {
+          resolve2 = r
+        })
+
+        lock.run(async () => {
+          console.log('Task 1 started')
+          await promise1
+          results.push(1)
+          console.log('Task 1 completed')
+        })
+
+        lock.run(async () => {
+          console.log('Task 2 started')
+          await promise2
+          results.push(2)
+          console.log('Task 2 completed')
+        })
+
+        console.log('Resolving promise 2')
+        // biome-ignore lint/style/noNonNullAssertion: we know it is defined here
+        resolve2!()
+        await browser.sleep(10)
+        console.log('Resolving promise 1')
+        // biome-ignore lint/style/noNonNullAssertion: we know it is defined here
+        resolve1!()
+
+        console.log('Waiting for lock')
+        await lock.wait()
+        console.log('Lock wait completed')
+
+        console.log('Final results:', results)
+        expect(results).toEqual([1, 2])
+      })
+
+      it('reports waiting status correctly', async () => {
+        const lock = browser.createPromiseLock()
+        expect(lock.isWaiting()).toBe(false)
+        const promise = lock.run(() => new Promise<void>((resolve) => setTimeout(resolve, 50)))
+        expect(lock.isWaiting()).toBe(true)
+        await promise
+        expect(lock.isWaiting()).toBe(false)
+      })
+
+      it('clears all pending tasks', async () => {
+        const lock = browser.createPromiseLock()
+        lock.run(() => new Promise<void>((resolve) => setTimeout(resolve, 50)))
+        lock.run(() => new Promise<void>((resolve) => setTimeout(resolve, 100)))
+        expect(lock.isWaiting()).toBe(true)
+        lock.clear()
+        expect(lock.isWaiting()).toBe(false)
+      })
     })
 
-    it('createControlledPromise resolves correctly', async () => {
-      const controlledPromise = browser.createControlledPromise<string>()
-      setTimeout(() => controlledPromise.resolve('test'), 10)
-      const result = await controlledPromise
-      expect(result).toBe('test')
+    describe('createControlledPromise', () => {
+      it('resolves correctly', async () => {
+        const controlledPromise = browser.createControlledPromise<string>()
+        setTimeout(() => controlledPromise.resolve('test'), 10)
+        const result = await controlledPromise
+        expect(result).toBe('test')
+      })
+
+      it('rejects correctly', async () => {
+        const controlledPromise = browser.createControlledPromise<string>()
+        setTimeout(() => controlledPromise.reject(new Error('test error')), 10)
+        expect(controlledPromise).rejects.toThrow('test error')
+      })
+
+      it('can be resolved externally', async () => {
+        const controlledPromise = browser.createControlledPromise<number>()
+        controlledPromise.resolve(42)
+        const result = await controlledPromise
+        expect(result).toBe(42)
+      })
+
+      it('can be rejected externally', async () => {
+        const controlledPromise = browser.createControlledPromise<number>()
+        controlledPromise.reject(new Error('external rejection'))
+        expect(controlledPromise).rejects.toThrow('external rejection')
+      })
     })
   })
 
   describe('retry', () => {
-    let mockFn
+    const dummy = mock()
+    type Mock = typeof dummy
+    let mockFn: Mock
     let mockOptions: any
     let originalSetTimeout: typeof setTimeout
 
@@ -229,7 +320,7 @@ describe('@stacksjs/browser', () => {
 
     it('should retry specified number of times before failing', async () => {
       mockFn.mockRejectedValue(new Error('fail'))
-      await expect(browser.retry(mockFn, mockOptions)).rejects.toThrow('fail')
+      expect(browser.retry(mockFn, mockOptions)).rejects.toThrow('fail')
       expect(mockFn).toHaveBeenCalledTimes(4) // Initial + 3 retries
     })
 
@@ -246,13 +337,13 @@ describe('@stacksjs/browser', () => {
 
     it('should use default options if not provided', async () => {
       mockFn.mockRejectedValue(new Error('fail'))
-      await expect(browser.retry(mockFn, {})).rejects.toThrow('fail')
+      expect(browser.retry(mockFn, {})).rejects.toThrow('fail')
       expect(mockFn).toHaveBeenCalledTimes(4) // Default 3 retries + initial attempt
     })
 
     it('should respect custom retry count', async () => {
       mockFn.mockRejectedValue(new Error('fail'))
-      await expect(browser.retry(mockFn, { retries: 5 })).rejects.toThrow('fail')
+      expect(browser.retry(mockFn, { retries: 5 })).rejects.toThrow('fail')
       expect(mockFn).toHaveBeenCalledTimes(6) // 5 retries + initial attempt
     })
 
