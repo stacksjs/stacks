@@ -23,7 +23,6 @@ export function generateQrCode(): void {
   const user = 'johndoe@example.com'
   const service = 'StacksJS 2fa'
   const secret = generateTwoFactorSecret()
-
   const otpauth = authenticator.keyuri(user, service, secret)
 
   qrcode.toDataURL(otpauth, (err: any, imageUrl: any) => {

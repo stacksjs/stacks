@@ -7,7 +7,7 @@ export type {
   StringCapturedBy,
 } from 'magic-regexp'
 export {
-  createRegExp,
+  // createRegExp,
   caseInsensitive,
   anyOf,
   carriageReturn,
@@ -33,3 +33,11 @@ export {
   wordBoundary,
   wordChar,
 } from 'magic-regexp'
+
+// export function caseInsensitive(pattern: string): RegExp {
+//   return new RegExp(pattern, 'i')
+// }
+
+export function createRegExp(pattern: string, options: { flags?: string } = {}): RegExp {
+  return new RegExp(pattern, options.flags)
+}

@@ -13,7 +13,12 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
   external: ['@stacksjs/utils'],
-  // plugins: [dts()],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
 })
 
 await outro({

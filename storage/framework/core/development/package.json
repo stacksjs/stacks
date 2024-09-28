@@ -56,6 +56,6 @@
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@total-typescript/ts-reset": "^0.6.1",
-    "bun-plugin-dts-auto": "^0.15.3"
+    "bun-plugin-dts-auto": "^0.16.0"
   }
 }

@@ -134,7 +134,7 @@ async function destroy(url: string, params?: Params): Promise<any> {
   return (await ofetch(url, parameters)) as FetchResponse
 }
 
-function setToken(authToken: string) {
+function setToken(authToken: string): void {
   token.value = authToken
 }
 

@@ -13,7 +13,7 @@ const authConfig = { username: 'email', password: 'password' }
 
 let authUser: any = undefined
 
-export async function attempt(credentials: Credentials, remember?: boolean) {
+export async function attempt(credentials: Credentials, remember?: boolean): Promise<boolean> {
   const user = await User.where(authConfig.username, credentials[authConfig.username]).first()
 
   const hashCheck = await verifyHash(credentials[authConfig.password], user?.password, 'bcrypt')
@@ -65,7 +65,8 @@ export async function team() {
   return team
 }
 
-export async function authToken() {
+// TODO: type this string better based on our token format
+export async function authToken(): Promise<string | undefined> {
   if (authUser) {
     const teams = await authUser.userTeams()
 
