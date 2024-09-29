@@ -1,11 +1,10 @@
-import type { median } from '@stacksjs/arrays'
 import { clone, deleteKeys, isArray, isFunction, isObject, nestedValue, values, variadic } from './helpers/'
 
-export class Collection<T extends object> {
-  private items: T[]
+export class Collection<T> {
+  protected items: T[] | Record<string, T>
 
   constructor(items: T[] | Record<string, T> = []) {
-    this.items = Array.isArray(items) ? items : Object.values(items)
+    this.items = items
   }
 
   [Symbol.iterator] = SymbolIterator
@@ -14,8 +13,8 @@ export class Collection<T extends object> {
     return this.items
   }
 
-  all(): T | T[] | Record<string, T> {
-    return Array.isArray(this.items) ? this.items : { ...this.items }
+  all(): T[] | Record<string, T> {
+    return this.items
   }
 
   average(key?: string | ((item: T) => number)): number {
@@ -49,9 +48,12 @@ export class Collection<T extends object> {
     return new (this.constructor as any)(([] as T[]).concat(...(this.items as any[])))
   }
 
-  combine(array: any[]): Collection<Record<string, any>> {
-    const result = Object.fromEntries(this.items.map((key, index) => [key, array[index]]))
-    return new Collection(result)
+  combine(values: T[]): Collection<T> {
+    if (Array.isArray(this.items) && Array.isArray(values)) {
+      return new Collection(Object.fromEntries(this.items.map((key, index) => [key, values[index]])))
+    }
+
+    throw new Error('Cannot combine non-array collections')
   }
 
   concat(collectionOrArrayOrObject: Collection<T> | T[] | object): Collection<T> {
@@ -110,11 +112,13 @@ export class Collection<T extends object> {
     return Array.isArray(this.items) ? this.items.length : Object.keys(this.items).length
   }
 
-  countBy(fn: (value: T) => any = (value: T) => value): Collection<number> {
-    const grouped = this.groupBy(fn)
-    return new Collection(
-      Object.fromEntries(Object.entries(grouped.all()).map(([key, value]) => [key, (value as T[]).length])),
-    )
+  countBy(callback?: (item: T) => string | number): Collection<number> {
+    const counts: Record<string | number, number> = {}
+    this.each((item) => {
+      const key = callback ? callback(item) : item
+      counts[key] = (counts[key] || 0) + 1
+    })
+    return new Collection(counts)
   }
 
   crossJoin(...values: T[]): Collection<T> {
@@ -419,8 +423,12 @@ export class Collection<T extends object> {
     return new Collection(result)
   }
 
-  get(key: string, defaultValue: any = null): any {
-    return key in this.items ? this.items[key] : defaultValue
+  get(key: string | number, defaultValue: T | null = null): T | null {
+    if (Array.isArray(this.items)) {
+      return this.items[key as number] ?? defaultValue
+    }
+
+    return (this.items as Record<string, T>)[key as string] ?? defaultValue
   }
 
   groupBy(fn: ((item: T) => any) | string): Collection<Collection<T>> {
@@ -432,11 +440,16 @@ export class Collection<T extends object> {
       }
       groups[groupKey].push(item)
     })
+
     return new Collection(groups)
   }
 
-  has(key: string): boolean {
-    return key in this.items
+  has(key: string | number): boolean {
+    if (Array.isArray(this.items)) {
+      return key in this.items
+    }
+
+    return key in (this.items as Record<string, T>)
   }
 
   implode(key: string, glue?: string): string {
@@ -960,10 +973,18 @@ export class Collection<T extends object> {
     return this
   }
 
-  pull(key: string): any {
-    const value = this.get(key)
-    this.forget(key)
-    return value
+  pull(key: string | number, defaultValue: T | null = null): T | null {
+    if (Array.isArray(this.items)) {
+      const index = Number(key)
+      if (Number.isNaN(index)) return defaultValue
+      const value = this.items[index]
+      this.items.splice(index, 1)
+      return value ?? defaultValue
+    }
+
+    const value = this.items[key as string]
+    delete this.items[key as string]
+    return value ?? defaultValue
   }
 
   push(...items) {
@@ -1393,12 +1414,15 @@ export class Collection<T extends object> {
     return slicedCollection
   }
 
-  split(numberOfGroups: number): Collection<Collection<T>> {
-    const itemsPerGroup = Math.ceil(this.count() / numberOfGroups)
-    const groups = []
-    for (let i = 0; i < numberOfGroups; i++) {
-      groups.push(new Collection(this.items.slice(i * itemsPerGroup, (i + 1) * itemsPerGroup)))
+  split(numberOfGroups: number): Collection<T[]> {
+    const itemsArray = this.toArray()
+    const groups: T[][] = []
+    const size = Math.ceil(itemsArray.length / numberOfGroups)
+
+    for (let i = 0; i < itemsArray.length; i += size) {
+      groups.push(itemsArray.slice(i, i + size))
     }
+
     return new Collection(groups)
   }
 
@@ -1539,7 +1563,7 @@ export class Collection<T extends object> {
     return this
   }
 
-  toArray(): any[] {
+  toArray(): T[] {
     return Array.isArray(this.items) ? this.items : Object.values(this.items)
   }
 
@@ -1782,24 +1806,30 @@ export class Collection<T extends object> {
 
   whereBetween(key: string, values: [number, number]): Collection<T> {
     return this.filter((item) => {
-      const itemValue = item[key]
+      const itemValue = typeof item === 'object' ? item[key] : item
       return itemValue >= values[0] && itemValue <= values[1]
     })
   }
 
   whereIn(key: string, values: any[]): Collection<T> {
-    return this.filter((item) => values.includes(item[key]))
+    return this.filter((item) => {
+      const itemValue = typeof item === 'object' ? item[key] : item
+      return values.includes(itemValue)
+    })
   }
 
   whereNotBetween(key: string, values: [number, number]): Collection<T> {
     return this.filter((item) => {
-      const itemValue = item[key]
+      const itemValue = typeof item === 'object' ? item[key] : item
       return itemValue < values[0] || itemValue > values[1]
     })
   }
 
   whereNotIn(key: string, values: any[]): Collection<T> {
-    return this.filter((item) => !values.includes(item[key]))
+    return this.filter((item) => {
+      const itemValue = typeof item === 'object' ? item[key] : item
+      return !values.includes(itemValue)
+    })
   }
 
   private getNestedValue(item: any, key: string): any {
