@@ -20,8 +20,8 @@ export class Collection<T extends object> {
     return this.items
   }
 
-  all(): T[] {
-    return Array.isArray(this.items) ? this.items : Object.values(this.items)
+  all(): T | T[] | Record<string, T> {
+    return Array.isArray(this.items) ? this.items : { ...this.items }
   }
 
   average(key?: string | ((item: T) => number)): number {
@@ -403,54 +403,14 @@ export class Collection<T extends object> {
     return this.map(fn).collapse()
   }
 
-  flatten(depth?: number): Collection<any> {
-    let flattenDepth = depth || Number.POSITIVE_INFINITY
-
-    let fullyFlattened = false
-    let collection = []
-
-    const flat = function flat(items: any): void {
-      collection = []
-
-      if (isArray(items)) {
-        items.forEach((item) => {
-          if (isArray(item)) {
-            collection = collection.concat(item)
-          } else if (isObject(item)) {
-            Object.keys(item).forEach((property) => {
-              collection = collection.concat(item[property])
-            })
-          } else {
-            collection.push(item)
-          }
-        })
-      } else {
-        Object.keys(items).forEach((property) => {
-          if (isArray(items[property])) {
-            collection = collection.concat(items[property])
-          } else if (isObject(items[property])) {
-            Object.keys(items[property]).forEach((prop) => {
-              collection = collection.concat(items[property][prop])
-            })
-          } else {
-            collection.push(items[property])
-          }
-        })
-      }
-
-      fullyFlattened = collection.filter((item) => isObject(item))
-      fullyFlattened = fullyFlattened.length === 0
-
-      flattenDepth -= 1
+  flatten(depth: number = Number.POSITIVE_INFINITY): Collection<T> {
+    const flatten = (arr: any[], d: number): any[] => {
+      return d > 0
+        ? arr.reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val, d - 1) : val), [])
+        : arr.slice()
     }
 
-    flat(this.items)
-
-    while (!fullyFlattened && flattenDepth > 0) {
-      flat(collection)
-    }
-
-    return new this.constructor(collection)
+    return new Collection(flatten(this.items as any[], depth))
   }
 
   flip(): Collection<T> {
@@ -492,24 +452,12 @@ export class Collection<T extends object> {
     return this
   }
 
-  get(key: string | number, defaultValue: T | (() => T) | null = null): T {
-    if (this.items[key] !== undefined) {
-      return this.items[key]
-    }
-
+  get(key: string | number): T | null {
     if (Array.isArray(this.items)) {
-      return this.items[key as number] ?? defaultValue
+      return this.items[key as number] ?? null
     }
 
-    if (isFunction(defaultValue)) {
-      return defaultValue()
-    }
-
-    if (defaultValue !== null) {
-      return defaultValue
-    }
-
-    return (this.items as Record<string, T>)[key as string] ?? defaultValue
+    return (this.items as Record<string, T>)[key as string] ?? null
   }
 
   groupBy(key: string | ((item: T, index: number) => any)): Collection<Collection<T>> {
@@ -538,10 +486,10 @@ export class Collection<T extends object> {
 
   has(key: string | number): boolean {
     if (Array.isArray(this.items)) {
-      return key < this.items.length && key >= 0
+      return key in this.items
     }
 
-    return Object.prototype.hasOwnProperty.call(this.items, key)
+    return key in (this.items as Record<string, T>)
   }
 
   implode(key: string, glue?: string): string {
@@ -771,24 +719,10 @@ export class Collection<T extends object> {
     return this.items[Math.floor(length / 2)][key]
   }
 
-  merge(value: T | T[] | Collection<T>): Collection<T> {
-    let arrayOrObject = value
+  merge(object: object): Collection<T> {
+    const merged = { ...this.items, ...object }
 
-    if (typeof arrayOrObject === 'string') {
-      arrayOrObject = [arrayOrObject]
-    }
-
-    if (Array.isArray(this.items) && Array.isArray(arrayOrObject)) {
-      return new this.constructor(this.items.concat(arrayOrObject))
-    }
-
-    const collection = JSON.parse(JSON.stringify(this.items))
-
-    Object.keys(arrayOrObject).forEach((key) => {
-      collection[key] = arrayOrObject[key]
-    })
-
-    return new this.constructor(collection)
+    return new Collection(merged)
   }
 
   mergeRecursive(items: T | T[] | Collection<T>): Collection<T> {
@@ -1514,7 +1448,7 @@ export class Collection<T extends object> {
     return new this.constructor(ordered)
   }
 
-  sortKeysDesc() {
+  sortKeysDesc(): Collection<T> {
     const ordered = {}
 
     Object.keys(this.items)
@@ -1527,7 +1461,7 @@ export class Collection<T extends object> {
     return new this.constructor(ordered)
   }
 
-  splice(index, limit, replace) {
+  splice(index: number, limit: number, replace: any): Collection<T> {
     const slicedCollection = this.slice(index, limit)
 
     this.items = this.diff(slicedCollection.all()).all()
@@ -1541,7 +1475,7 @@ export class Collection<T extends object> {
     return slicedCollection
   }
 
-  split(numberOfGroups) {
+  split(numberOfGroups: number): Collection<T[]> {
     const itemsPerGroup = Math.round(this.items.length / numberOfGroups)
 
     const items = JSON.parse(JSON.stringify(this.items))
@@ -1576,7 +1510,7 @@ export class Collection<T extends object> {
     return Number.parseFloat(total.toPrecision(12))
   }
 
-  take(length) {
+  take(length: number): Collection<T> {
     if (!Array.isArray(this.items) && typeof this.items === 'object') {
       const keys = Object.keys(this.items)
       let slicedKeys
@@ -1605,7 +1539,7 @@ export class Collection<T extends object> {
     return new this.constructor(this.items.slice(0, length))
   }
 
-  takeUntil(valueOrFunction) {
+  takeUntil(valueOrFunction): Collection<T> {
     let previous = null
     let items
 
@@ -1641,7 +1575,7 @@ export class Collection<T extends object> {
     return new this.constructor(items)
   }
 
-  takeWhile(valueOrFunction) {
+  takeWhile(valueOrFunction: any): Collection<T> {
     let previous = null
     let items
 
@@ -1677,13 +1611,13 @@ export class Collection<T extends object> {
     return new this.constructor(items)
   }
 
-  tap(fn) {
+  tap(fn: (collection: Collection<T>) => void): Collection<T> {
     fn(this)
 
     return this
   }
 
-  times(n, fn) {
+  times(n: number, fn: (iterator: number) => void): Collection<T> {
     for (let iterator = 1; iterator <= n; iterator += 1) {
       this.items.push(fn(iterator))
     }
@@ -1691,10 +1625,10 @@ export class Collection<T extends object> {
     return this
   }
 
-  toArray() {
+  toArray(): T[] {
     const collectionInstance = this.constructor
 
-    function iterate(list, collection) {
+    function iterate(list: any, collection: any) {
       const childCollection = []
 
       if (list instanceof collectionInstance) {
@@ -1709,7 +1643,7 @@ export class Collection<T extends object> {
     }
 
     if (Array.isArray(this.items)) {
-      const collection = []
+      const collection: any[] = []
 
       this.items.forEach((items) => {
         iterate(items, collection)
@@ -1721,7 +1655,7 @@ export class Collection<T extends object> {
     return this.values().all()
   }
 
-  toJson() {
+  toJson(): string {
     if (typeof this.items === 'object' && !Array.isArray(this.items)) {
       return JSON.stringify(this.all())
     }
@@ -1729,7 +1663,7 @@ export class Collection<T extends object> {
     return JSON.stringify(this.toArray())
   }
 
-  transform(fn) {
+  transform(fn: (item: T, key: string) => T): Collection<T> {
     if (Array.isArray(this.items)) {
       this.items = this.items.map(fn)
     } else {
@@ -1745,7 +1679,7 @@ export class Collection<T extends object> {
     return this
   }
 
-  undot() {
+  undot(): Collection<T> {
     if (Array.isArray(this.items)) {
       return this
     }
@@ -1802,7 +1736,7 @@ export class Collection<T extends object> {
     return this
   }
 
-  union(object) {
+  union(object: Record<string, T>): Collection<T> {
     const collection = JSON.parse(JSON.stringify(this.items))
 
     Object.keys(object).forEach((prop) => {
@@ -1814,7 +1748,7 @@ export class Collection<T extends object> {
     return new this.constructor(collection)
   }
 
-  unique(key) {
+  unique(key: string | ((item: T) => string)): Collection<T> {
     let collection
 
     if (key === undefined) {
@@ -1846,7 +1780,7 @@ export class Collection<T extends object> {
     return this.items
   }
 
-  values(items) {
+  values(items: T[] | Collection<T>): T[] {
     const valuesArray = []
 
     if (Array.isArray(items)) {
@@ -1860,7 +1794,11 @@ export class Collection<T extends object> {
     return valuesArray
   }
 
-  when(value, fn, defaultFn) {
+  when(
+    value: any,
+    fn: (collection: Collection<T>) => void,
+    defaultFn?: (collection: Collection<T>) => void,
+  ): Collection<T> {
     if (!value) {
       fn(this)
     } else {
@@ -1888,7 +1826,7 @@ export class Collection<T extends object> {
     return this
   }
 
-  whenNotEmpty(fn, defaultFn) {
+  whenNotEmpty(fn: (collection: Collection<T>) => void, defaultFn: (collection: Collection<T>) => void): Collection<T> {
     if (Array.isArray(this.items) && this.items.length) {
       return fn(this)
     }
@@ -1909,7 +1847,7 @@ export class Collection<T extends object> {
     return this
   }
 
-  where(key, operator, value) {
+  where(key: string, operator: string, value: any): Collection<T> {
     let comparisonOperator = operator
     let comparisonValue = value
 
@@ -1935,10 +1873,6 @@ export class Collection<T extends object> {
             nestedValue(item, key) === Number(comparisonValue) || nestedValue(item, key) === comparisonValue.toString()
           )
 
-        default:
-        case '===':
-          return nestedValue(item, key) === comparisonValue
-
         case '!=':
         case '<>':
           return (
@@ -1959,6 +1893,12 @@ export class Collection<T extends object> {
 
         case '>=':
           return nestedValue(item, key) >= comparisonValue
+
+        case '===':
+          return nestedValue(item, key) === comparisonValue
+
+        default:
+          return nestedValue(item, key) === comparisonValue
       }
     })
 
@@ -1984,58 +1924,58 @@ export class Collection<T extends object> {
     return keys.reduce((obj, k) => (obj && obj[k] !== undefined ? obj[k] : null), item)
   }
 
-  whereInstanceOf(type) {
+  whereInstanceOf(type: any): Collection<T> {
     return this.filter((item) => item instanceof type)
   }
 
-  whereNotBetween(key, values) {
+  whereNotBetween(key: string, values: any[]): Collection<T> {
     return this.filter(
       (item) => nestedValue(item, key) < values[0] || nestedValue(item, key) > values[values.length - 1],
     )
   }
 
-  whereNotIn(key, values) {
-    const items = extractValues(values)
-
-    const collection = this.items.filter((item) => items.indexOf(nestedValue(item, key)) === -1)
-
-    return new this.constructor(collection)
-  }
-
-  whereNotNull(key = null) {
+  whereNotNull(key: string): Collection<T> {
     return this.where(key, '!==', null)
   }
 
-  whereNull(key = null) {
+  whereNull(key: string): Collection<T> {
     return this.where(key, '===', null)
   }
 
-  wrap(value) {
-    if (value instanceof this.constructor) {
+  static wrap<T extends object>(value: T | T[] | Collection<T>): Collection<T> {
+    if (value instanceof Collection) {
+      return value
+    }
+
+    return new Collection(value)
+  }
+
+  static unwrap<T extends object>(value: T | T[] | Collection<T>): T | T[] {
+    if (value instanceof Collection) {
+      return value.all()
+    }
+
+    return value
+  }
+
+  wrap(value: any): Collection<T> {
+    if (value instanceof Collection) {
       return value
     }
 
     if (typeof value === 'object') {
-      return new this.constructor(value)
+      return new Collection(value)
     }
 
-    return new this.constructor([value])
+    return new Collection([value])
   }
 
-  zip(array) {
-    let values = array
-
-    if (values instanceof this.constructor) {
-      values = values.all()
-    }
-
-    const collection = this.items.map((item, index) => new this.constructor([item, values[index]]))
-
-    return new this.constructor(collection)
+  zip(array: any[]): Collection<[T, any]> {
+    return new Collection((this.items as T[]).map((item, index): [T, any] => [item, array[index]]))
   }
 }
 
-function falsyValue(item) {
+function falsyValue(item: any) {
   if (Array.isArray(item)) {
     if (item.length) {
       return false
@@ -2051,7 +1991,7 @@ function falsyValue(item) {
   return true
 }
 
-function filterObject(func, items) {
+function filterObject(func: (item: any, key: string) => boolean, items: Record<string, any>) {
   const result = {}
   Object.keys(items).forEach((key) => {
     if (func) {
@@ -2066,26 +2006,11 @@ function filterObject(func, items) {
   return result
 }
 
-function filterArray(func, items) {
-  if (func) {
-    return items.filter(func)
-  }
-  const result = []
-  for (let i = 0; i < items.length; i += 1) {
-    const item = items[i]
-    if (!falsyValue(item)) {
-      result.push(item)
-    }
-  }
-
-  return result
-}
-
-const buildKeyPathMap = function buildKeyPathMap(items) {
+const buildKeyPathMap = function buildKeyPathMap(items: any) {
   const keyPaths = {}
 
-  items.forEach((item, index) => {
-    function buildKeyPath(val, keyPath) {
+  items.forEach((item: any, index: number) => {
+    function buildKeyPath(val: any, keyPath: string) {
       if (isObject(val)) {
         Object.keys(val).forEach((prop) => {
           buildKeyPath(val[prop], `${keyPath}.${prop}`)
