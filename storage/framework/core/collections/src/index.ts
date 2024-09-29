@@ -1949,7 +1949,7 @@ function SymbolIterator() {
   }
 }
 
-export const collect = <T extends object>(collection?: T | T[] | Collection<T>): Collection<T> =>
+export const collect = <T extends object | number>(collection?: T | T[] | Collection<T>): Collection<T> =>
   new Collection<T>(collection)
 
 export default collect
