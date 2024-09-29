@@ -3,7 +3,7 @@ import type { Ports } from './ports'
 
 type ArrayBufferView = NodeJS.TypedArray | DataView
 
-export type { Subprocess, SyncSubprocess } from 'bun'
+export type { Subprocess, SyncSubprocess, SpawnOptions, ErrorLike } from 'bun'
 export type Readable =
   | 'pipe'
   | 'inherit'

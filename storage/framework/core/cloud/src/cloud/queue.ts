@@ -22,7 +22,7 @@ export class QueueStack {
     this.props = props
   }
 
-  async init() {
+  async init(): Promise<void> {
     const jobsDir = path.jobsPath()
     const actionsDir = path.appPath('Actions')
     const ormActionDir = path.builtUserActionsPath('src')
@@ -86,14 +86,14 @@ export class QueueStack {
     }
   }
 
-  async loadModule(filePath: string) {
+  async loadModule(filePath: string): Promise<{ default: any }> {
     const jobModule = await import(filePath)
 
     return jobModule
   }
 
   // TODO: narrow any type -> jobs & actions are allowed
-  createQueueRule(module: { default: any }, file: string) {
+  createQueueRule(module: { default: any }, file: string): void {
     // Now you can safely access module.default.rate
     const rate = module.default?.rate
 

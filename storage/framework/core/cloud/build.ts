@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dts-auto'
 import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -23,6 +24,12 @@ const result = await Bun.build({
     '@stacksjs/env',
     '@stacksjs/cli',
     'aws-cdk-lib', // TODO: a recent AWS issue. We want to potentially remove this once the issue is resolved. Dig deeper into this before removing
+  ],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
   ],
 })
 

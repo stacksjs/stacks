@@ -12,7 +12,7 @@ export interface DeploymentStackProps extends NestedCloudProps {
   docsBucket?: s3.Bucket
   privateBucket: s3.Bucket
   mainDistribution: cloudfront.Distribution
-  docsDistribution: cloudfront.Distribution
+  docsDistribution?: cloudfront.Distribution
 }
 
 export class DeploymentStack {
@@ -64,7 +64,7 @@ export class DeploymentStack {
     }
   }
 
-  shouldDeployDocs() {
+  shouldDeployDocs(): boolean {
     return hasFiles(p.projectPath('docs')) && !config.app.docMode
   }
 }

@@ -92,7 +92,7 @@ export class Cloud extends Stack {
 
   // we use an async init() method here because we need to wait for the
 
-  async init() {
+  async init(): Promise<void> {
     const props = this.props
 
     if (this.shouldDeployApi()) {
@@ -122,7 +122,6 @@ export class Cloud extends Stack {
       firewall: this.security.firewall,
       originRequestFunction: this.docs.originRequestFunction,
       zone: this.dns.zone,
-      cliSetupUrl: this.cli.cliSetupUrl,
       lb: this.api?.lb,
     })
 
@@ -131,11 +130,12 @@ export class Cloud extends Stack {
       publicBucket: this.storage.publicBucket,
       privateBucket: this.storage.privateBucket,
       docsBucket: this.storage.docsBucket,
-      cdn: this.cdn.distribution,
+      mainDistribution: this.cdn.mainDistribution,
+      docsDistribution: this.cdn.docsDistribution,
     })
   }
 
-  shouldDeployApi() {
-    return config.cloud.api?.deploy
+  shouldDeployApi(): boolean {
+    return config.cloud.api?.deploy ?? false
   }
 }

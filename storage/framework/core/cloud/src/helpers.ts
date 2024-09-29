@@ -5,13 +5,13 @@ import { DescribeRegionsCommand, EC2, EC2Client, _InstanceType as InstanceType }
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { IAM } from '@aws-sdk/client-iam'
 import { Lambda } from '@aws-sdk/client-lambda'
-import type { CountryCode } from '@aws-sdk/client-route-53-domains'
+import type { CountryCode, RegisterDomainCommandOutput } from '@aws-sdk/client-route-53-domains'
 import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { SSM } from '@aws-sdk/client-ssm'
 import { runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
-import { err, handleError, ok } from '@stacksjs/error-handling'
+import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { slug } from '@stacksjs/strings'
@@ -21,7 +21,7 @@ const cloudName = `stacks-cloud-${appEnv}`
 
 export { InstanceType }
 
-export async function getSecurityGroupId(securityGroupName: string) {
+export async function getSecurityGroupId(securityGroupName: string): Promise<Result<string | undefined, string>> {
   const ec2 = new EC2({ region: 'us-east-1' })
   const { SecurityGroups } = await ec2.describeSecurityGroups({
     Filters: [{ Name: 'group-name', Values: [securityGroupName] }],
@@ -79,7 +79,10 @@ export interface PurchaseOptions {
   verbose: boolean
 }
 
-export function purchaseDomain(domain: string, options: PurchaseOptions) {
+export function purchaseDomain(
+  domain: string,
+  options: PurchaseOptions,
+): Result<Promise<RegisterDomainCommandOutput>, Error> {
   const route53domains = new Route53Domains({ region: 'us-east-1' })
   const contactType = options.contactType.toUpperCase() as ContactType
 
@@ -147,7 +150,7 @@ export function purchaseDomain(domain: string, options: PurchaseOptions) {
   }
 }
 
-export async function getJumpBoxInstanceId(name?: string) {
+export async function getJumpBoxInstanceId(name?: string): Promise<string | undefined> {
   if (!name) name = `${cloudName}/JumpBox`
 
   const ec2 = new EC2({ region: 'us-east-1' })
@@ -165,7 +168,7 @@ export async function getJumpBoxInstanceId(name?: string) {
   return undefined
 }
 
-export async function deleteEc2Instance(id: string, stackName?: string) {
+export async function deleteEc2Instance(id: string, stackName?: string): Promise<Result<string, string>> {
   if (!stackName) stackName = cloudName
 
   if (!id) return err(`Instance ${id} not found`)
@@ -176,7 +179,7 @@ export async function deleteEc2Instance(id: string, stackName?: string) {
   return ok(`Instance ${id} is being terminated`)
 }
 
-export async function deleteJumpBox(stackName?: string) {
+export async function deleteJumpBox(stackName?: string): Promise<Result<string, string>> {
   if (!stackName) stackName = cloudName
 
   const jumpBoxId = await getJumpBoxInstanceId()
@@ -188,7 +191,7 @@ export async function deleteJumpBox(stackName?: string) {
   return await deleteEc2Instance(jumpBoxId, stackName)
 }
 
-export async function deleteIamUsers() {
+export async function deleteIamUsers(): Promise<Result<string, string>> {
   const iam = new IAM({ region: 'us-east-1' })
   const data = await iam.listUsers({})
   const teamName = slug(config.team.name)
@@ -247,7 +250,7 @@ export async function deleteIamUsers() {
   return ok(`Stacks IAM users deleted for team ${teamName}`)
 }
 
-export async function deleteStacksBuckets() {
+export async function deleteStacksBuckets(): Promise<Result<string, string | Error>> {
   try {
     const s3 = new S3({ region: 'us-east-1' })
     const data = await s3.listBuckets({})
@@ -350,7 +353,7 @@ export async function deleteStacksBuckets() {
   }
 }
 
-export async function deleteStacksFunctions() {
+export async function deleteStacksFunctions(): Promise<Result<string, string>> {
   const lambda = new Lambda({ region: 'us-east-1' })
   const data = await lambda.listFunctions({})
   const stacksFunctions = data.Functions?.filter((func) => func.FunctionName?.includes('stacks')) || []
@@ -373,7 +376,7 @@ export async function deleteStacksFunctions() {
   return ok('Stacks functions deleted')
 }
 
-export async function deleteLogGroups() {
+export async function deleteLogGroups(): Promise<Result<string, Error>> {
   try {
     const ec2Client = new EC2Client({ region: 'us-east-1' })
     const { Regions } = await ec2Client.send(new DescribeRegionsCommand({}))
@@ -399,7 +402,7 @@ export async function deleteLogGroups() {
   }
 }
 
-export async function deleteParameterStore() {
+export async function deleteParameterStore(): Promise<Result<string, string>> {
   const ssm = new SSM({ region: 'us-east-1' })
   const data = await ssm.describeParameters({})
 
@@ -420,7 +423,7 @@ export async function deleteParameterStore() {
   return ok('Parameter store deleted')
 }
 
-export async function deleteCdkRemnants() {
+export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
   try {
     await Bun.$`rm -rf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`.text()
     return ok('CDK remnants deleted')
@@ -430,7 +433,7 @@ export async function deleteCdkRemnants() {
   }
 }
 
-export async function hasBeenDeployed() {
+export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
   const s3 = new S3({ region: 'us-east-1' })
 
   try {
@@ -446,7 +449,7 @@ export async function hasBeenDeployed() {
   }
 }
 
-export async function getJumpBoxInstanceProfileName() {
+export async function getJumpBoxInstanceProfileName(): Promise<Result<string | undefined, string>> {
   const iam = new IAM({ region: 'us-east-1' })
   const data = await iam.listInstanceProfiles({})
   const instanceProfile = data.InstanceProfiles?.find((profile) => profile.InstanceProfileName?.includes('JumpBox'))
@@ -456,7 +459,7 @@ export async function getJumpBoxInstanceProfileName() {
   return ok(instanceProfile?.InstanceProfileName)
 }
 
-export async function addJumpBox(stackName?: string) {
+export async function addJumpBox(stackName?: string): Promise<Result<string, string>> {
   if (!stackName) stackName = cloudName
 
   if (await getJumpBoxInstanceId())
@@ -537,7 +540,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
     : err('Jump-box creation failed')
 }
 
-export async function getJumpBoxSecurityGroupName() {
+export async function getJumpBoxSecurityGroupName(): Promise<Result<string | undefined, string>> {
   const jumpBoxId = await getJumpBoxInstanceId()
 
   if (!jumpBoxId) return err('Jump-box not found')
@@ -555,7 +558,7 @@ export async function getJumpBoxSecurityGroupName() {
   return err('Security group not found')
 }
 
-export async function getSecurityGroupFromInstanceId(instanceId: string) {
+export async function getSecurityGroupFromInstanceId(instanceId: string): Promise<string | undefined> {
   const ec2 = new EC2({ region: 'us-east-1' })
   const data = await ec2.describeInstances({ InstanceIds: [instanceId] })
 
@@ -569,7 +572,7 @@ export async function getSecurityGroupFromInstanceId(instanceId: string) {
   return undefined
 }
 
-export async function isFirstDeployment() {
+export async function isFirstDeployment(): Promise<boolean> {
   const stackName = cloudName
   const cloudFormation = new CloudFormation()
   const data = await cloudFormation.listStacks({
@@ -580,7 +583,7 @@ export async function isFirstDeployment() {
   return !isStacksCloudPresent
 }
 
-export async function isFailedState() {
+export async function isFailedState(): Promise<boolean> {
   const cloudFormation = new CloudFormation()
   const data = await cloudFormation.listStacks({
     StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'],

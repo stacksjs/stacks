@@ -12,11 +12,11 @@ export class RedirectsStack {
 
   constructor(scope: Construct, props: RedirectsStackProps) {
     // for each redirect, create a bucket & redirect it to the APP_URL
-    config.dns.redirects?.forEach((redirect) => {
+    config.dns.redirects?.forEach((redirect: string) => {
       // TODO: use string-ts function here instead
       const slug = redirect
         .split('.')
-        .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+        .map((part: string, index: number) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
         .join('') // creates a CamelCase slug from the redirect
       const hostedZone = route53.HostedZone.fromLookup(scope, 'HostedZone', {
         domainName: redirect,
@@ -40,10 +40,10 @@ export class RedirectsStack {
     })
 
     // TODO: fix this – redirects do not work yet
-    config.dns.redirects?.forEach((redirect) => {
+    config.dns.redirects?.forEach((redirect: string) => {
       const slug = redirect
         .split('.')
-        .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+        .map((part: string, index: number) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
         .join('') // creates a CamelCase slug from the redirect
       const hostedZone = route53.HostedZone.fromLookup(scope, `RedirectHostedZone${slug}`, { domainName: redirect })
       this.redirectZones.push(hostedZone)

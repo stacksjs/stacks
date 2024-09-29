@@ -10,7 +10,7 @@ export class AiStack {
     const bedrockAccessPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
-      resources: config.ai.models?.map((model) => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
+      resources: config.ai.models?.map((model: string) => `arn:aws:bedrock:us-east-1::foundation-model/${model}`),
     })
 
     const bedrockAccessRole = new iam.Role(scope, 'BedrockAccessRole', {

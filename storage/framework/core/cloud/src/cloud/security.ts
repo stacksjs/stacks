@@ -118,7 +118,7 @@ export class SecurityStack {
     }
 
     if (config.security.firewall?.httpHeaders?.length) {
-      config.security.firewall.httpHeaders.forEach((header, index) => {
+      config.security.firewall.httpHeaders.forEach((header: string | undefined, index: number) => {
         priorities.push(1)
         rules.push({
           name: `HttpHeaderRule${index}`,

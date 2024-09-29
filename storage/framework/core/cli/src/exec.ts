@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
-import type { CliOptions, Subprocess } from '@stacksjs/types'
+import type { CliOptions, ErrorLike, SpawnOptions, Subprocess } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { italic, log } from './'
 
@@ -42,7 +42,12 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     detached: options?.background || false,
     cwd,
     // env: { ...e, ...options?.env },
-    onExit(subprocess, exitCode, signalCode, error) {
+    onExit(
+      subprocess: Subprocess<SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable>,
+      exitCode: number | null,
+      signalCode: number | null,
+      error: ErrorLike | undefined,
+    ) {
       exitHandler('spawn', subprocess, exitCode, signalCode, error)
     },
   })
@@ -98,12 +103,17 @@ export async function execSync(command: string | string[], options?: CliOptions)
     stderr: options?.stderr ?? 'inherit',
     cwd: options?.cwd ?? process.cwd(),
     // env: { ...Bun.env, ...options?.env },
-    onExit(subprocess, exitCode, signalCode, error) {
+    onExit(
+      subprocess: Subprocess<SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable>,
+      exitCode: number | null,
+      signalCode: number | null,
+      error: ErrorLike | undefined,
+    ) {
       exitHandler('spawnSync', subprocess, exitCode, signalCode, error)
     },
   })
 
-  return proc.stdout.toString()
+  return proc.stdout?.toString() ?? ''
 }
 
 function exitHandler(

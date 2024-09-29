@@ -1,3 +1,4 @@
+import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import type { aws_cloudfront as cloudfront, aws_kms as kms } from 'aws-cdk-lib'
@@ -103,7 +104,7 @@ export class StorageStack {
     })
   }
 
-  createBackupRole(scope: Construct) {
+  createBackupRole(scope: Construct): iam.Role {
     const backupRole = new iam.Role(scope, 'BackupRole', {
       assumedBy: new iam.ServicePrincipal('backup.amazonaws.com'),
     })
@@ -190,7 +191,7 @@ export class StorageStack {
     return backupRole
   }
 
-  shouldDeployDocs() {
-    return hasFiles(p.projectPath('docs')) || config.app.docMode
+  shouldDeployDocs(): boolean {
+    return (hasFiles(p.projectPath('docs')) || config.app.docMode) ?? false
   }
 }
