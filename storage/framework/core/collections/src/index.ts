@@ -35,7 +35,7 @@ export class Collection<T extends object> {
     }
 
     return (
-      new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).pluck(key).sum() /
+      new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).pluck(key).sum(...[]) /
       this.items.length
     )
   }
@@ -49,7 +49,7 @@ export class Collection<T extends object> {
     if (Array.isArray(this.items)) {
       do {
         const items = this.items.slice(index, index + size)
-        const collection = new this.constructor(items)
+        const collection = new (this.constructor as new (items: typeof this.items) => typeof this)(items)
 
         chunks.push(collection)
         index += size
@@ -59,36 +59,36 @@ export class Collection<T extends object> {
 
       do {
         const keysOfChunk = keys.slice(index, index + size)
-        const collection = new this.constructor({})
+        const collection = new (this.constructor as new (items: typeof this.items) => typeof this)({} as T[])
 
-        keysOfChunk.forEach((key) => collection.put(key, this.items[key]))
+        keysOfChunk.forEach((key: string) => collection.put(key, (this.items as Record<string, any>)[key]))
 
         chunks.push(collection)
         index += size
       } while (index < keys.length)
     } else {
-      chunks.push(new this.constructor([this.items]))
+      chunks.push(new (this.constructor as new (items: typeof this.items) => typeof this)([this.items]))
     }
 
-    return new this.constructor(chunks)
+    return new (this.constructor as new (items: T[][]) => Collection<T[]>)(chunks as unknown as T[][])
   }
 
-  collapse(): Collection<T> {
-    return new this.constructor([].concat(...this.items))
+  collapse(): Collection<T extends any[] ? T[number] : T> {
+    return new (this.constructor as any)(([] as T[]).concat(...(this.items as any[])))
   }
 
   combine(array: Collection<T> | T[]): Collection<T> {
     let values = array
 
     if (values instanceof this.constructor) {
-      values = array.all()
+      values = (values as Collection<T>).all()
     }
 
     const collection = {}
 
     if (Array.isArray(this.items) && Array.isArray(values)) {
       this.items.forEach((key, iterator) => {
-        collection[key] = values[iterator]
+        ;(collection as Record<string, unknown>)[String(key)] = values[iterator]
       })
     } else if (typeof this.items === 'object' && typeof values === 'object') {
       Object.keys(this.items).forEach((key, index) => {
@@ -334,21 +334,21 @@ export class Collection<T extends object> {
     return this
   }
 
-  eachSpread(fn) {
-    this.each((values, key) => {
+  eachSpread(fn: (...args: any[]) => void): Collection<T> {
+    this.each((values: any, key: any) => {
       fn(...values, key)
     })
 
     return this
   }
 
-  every(fn) {
+  every(fn: (value: T, key: string | number, collection: T[]) => boolean): boolean {
     const items = values(this.items)
 
     return items.every(fn)
   }
 
-  except(...args) {
+  except(...args: any[]): Collection<T> {
     const properties = variadic(args)
 
     if (Array.isArray(this.items)) {
@@ -368,7 +368,7 @@ export class Collection<T extends object> {
     return new this.constructor(collection)
   }
 
-  filter(fn) {
+  filter(fn: (value: T, key: string | number, collection: T[]) => boolean): Collection<T> {
     const func = fn || false
     let filteredItems = null
     if (Array.isArray(this.items)) {
@@ -380,7 +380,7 @@ export class Collection<T extends object> {
     return new this.constructor(filteredItems)
   }
 
-  first(fn, defaultValue) {
+  first(fn: (value: T, key: string | number, collection: T[]) => boolean, defaultValue: T): T {
     if (isFunction(fn)) {
       const keys = Object.keys(this.items)
 
@@ -417,7 +417,7 @@ export class Collection<T extends object> {
     return defaultValue
   }
 
-  firstOrFail(key, operator, value) {
+  firstOrFail(key: string, operator: string, value: any): T {
     if (isFunction(key)) {
       return this.first(key, () => {
         throw new Error('Item not found.')
@@ -433,7 +433,7 @@ export class Collection<T extends object> {
     return collection.first()
   }
 
-  firstWhere(key, operator, value) {
+  firstWhere(key: string, operator: string, value: any): T {
     return this.where(key, operator, value).first() || null
   }
 
@@ -1011,10 +1011,9 @@ export class Collection<T extends object> {
     return fn(this)
   }
 
-  pluck(value, key) {
+  pluck(value: string, key?: string) {
     if (value.indexOf('*') !== -1) {
       const keyPathMap = buildKeyPathMap(this.items)
-
       const keyMatches = []
 
       if (key !== undefined) {
@@ -1594,7 +1593,7 @@ export class Collection<T extends object> {
     return new this.constructor(collection)
   }
 
-  sum(key) {
+  sum(key?: string | ((item: T) => number)): number {
     const items = values(this.items)
 
     let total = 0
