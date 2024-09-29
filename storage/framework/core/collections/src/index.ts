@@ -1139,7 +1139,7 @@ export class Collection<T> {
     return result
   }
 
-  shift(count = 1) {
+  shift(count = 1): T | undefined | null {
     if (this.isEmpty()) {
       return null
     }
@@ -1178,7 +1178,7 @@ export class Collection<T> {
     return null
   }
 
-  shuffle() {
+  shuffle(): Collection<T> {
     const items = values(this.items)
 
     let j
@@ -1197,7 +1197,7 @@ export class Collection<T> {
     return this
   }
 
-  skip(number) {
+  skip(number: number): Collection<T> {
     if (isObject(this.items)) {
       return new this.constructor(
         Object.keys(this.items).reduce((accumulator, key, index) => {
@@ -1213,7 +1213,7 @@ export class Collection<T> {
     return new this.constructor(this.items.slice(number))
   }
 
-  skipUntil(valueOrFunction) {
+  skipUntil(valueOrFunction: any): Collection<T> {
     let previous = null
     let items
 
@@ -1249,7 +1249,7 @@ export class Collection<T> {
     return new this.constructor(items)
   }
 
-  skipWhile(valueOrFunction) {
+  skipWhile(valueOrFunction: any): Collection<T> {
     let previous = null
     let items
 
@@ -1285,7 +1285,7 @@ export class Collection<T> {
     return new this.constructor(items)
   }
 
-  slice(remove, limit) {
+  slice(remove: number, limit: number): Collection<T> {
     let collection = this.items.slice(remove)
 
     if (limit !== undefined) {
@@ -1295,7 +1295,7 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  sole(key, operator, value) {
+  sole(key: string, operator: string, value: any): T | undefined {
     let collection
 
     if (isFunction(key)) {
@@ -1315,9 +1315,9 @@ export class Collection<T> {
     return collection.first()
   }
 
-  some = this.contains
+  some: typeof this.contains = this.contains
 
-  sort(fn) {
+  sort(fn: (a: T, b: T) => number): Collection<T> {
     const collection = [].concat(this.items)
 
     if (fn === undefined) {
@@ -1333,11 +1333,11 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  sortDesc() {
+  sortDesc(): Collection<T> {
     return this.sort().reverse()
   }
 
-  sortBy(valueOrFunction) {
+  sortBy(valueOrFunction: any): Collection<T> {
     const collection = [].concat(this.items)
     const getValue = (item) => {
       if (isFunction(valueOrFunction)) {
@@ -1371,11 +1371,11 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  sortByDesc(valueOrFunction) {
+  sortByDesc(valueOrFunction: any): Collection<T> {
     return this.sortBy(valueOrFunction).reverse()
   }
 
-  sortKeys() {
+  sortKeys(): Collection<T> {
     const ordered = {}
 
     Object.keys(this.items)
