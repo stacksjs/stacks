@@ -29,9 +29,7 @@ describe('@stacksjs/collections', () => {
         name: 'Darwin Núñez',
       })
 
-      expect(collection.all()).toEqual({
-        0: { name: 'Darwin Núñez' },
-      } as Record<string, { name: string }>)
+      expect(collection.all()).toEqual({ name: 'Darwin Núñez' })
     })
 
     it('should return all items when containing objects', () => {
