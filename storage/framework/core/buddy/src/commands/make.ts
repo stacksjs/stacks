@@ -99,7 +99,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:component` ...', options)
 
       name = name ?? options.name
@@ -118,7 +118,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name, options: MakeOptions) => {
+    .action((name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:database` ...', options)
 
       name = name ?? options.name
@@ -140,7 +140,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name, options: MakeOptions) => {
+    .action((name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:factory` ...', options)
 
       name = name ?? options.name
@@ -160,7 +160,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:view` ...', options)
 
       name = name ?? options.name
@@ -190,7 +190,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:lang` ...', options)
 
       name = name ?? options.name
@@ -212,7 +212,7 @@ export function make(buddy: CLI): void {
     .option('-s, --sms', 'Is it a SMS notification?', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:notification` ...', options)
 
       const perf = await intro('buddy make:notification')
@@ -247,7 +247,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name, options: MakeOptions) => {
+    .action((name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:stack` ...', options)
 
       name = name ?? options.name
@@ -266,7 +266,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.info('Running `buddy make:action` ...')
       log.debug('Running `buddy make:action` ...', name, options)
 
@@ -286,7 +286,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:model` ...', options)
 
       name = name ?? options.name
@@ -305,7 +305,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name, options: MakeOptions) => {
+    .action((name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:migration` ...', options)
 
       name = name ?? options.name

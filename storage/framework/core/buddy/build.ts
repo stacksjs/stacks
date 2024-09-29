@@ -33,7 +33,7 @@ const result = await Bun.build({
     'bun',
   ],
 
-  // plugins: [dts()],
+  plugins: [dts({ root: './src', outdir: './dist' })],
 })
 
 await outro({

@@ -42,6 +42,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/browser": "workspace:*",
     "@stacksjs/security": "workspace:*"
   },
   "devDependencies": {

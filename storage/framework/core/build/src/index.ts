@@ -8,7 +8,7 @@ export async function outro(options: {
   startTime: number
   result: any
   pkgName?: string
-}) {
+}): Promise<void> {
   const endTime = Date.now()
   const timeTaken = endTime - options.startTime
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
@@ -39,7 +39,9 @@ export async function outro(options: {
   console.log(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
-export async function intro(options: { dir: string; pkgName?: string; styled?: boolean }) {
+export async function intro(options: { dir: string; pkgName?: string; styled?: boolean }): Promise<{
+  startTime: number
+}> {
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
   if (options.styled === false) console.log(`Building ${pkgName}...`)

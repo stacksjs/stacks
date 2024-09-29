@@ -1,3 +1,4 @@
+import { useDateFormat } from '@stacksjs/browser'
 import type { CalendarLink } from '../types'
 
 const dateFormat = 'YYYYMMDD'

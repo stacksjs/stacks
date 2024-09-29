@@ -23,6 +23,7 @@ bazelignore
 bazelproject
 bazelrc
 bentocache
+bentostore
 biomejs
 biomelintrc
 boject
@@ -359,6 +360,7 @@ vueform
 vueuse
 wafv
 webfont
+weboutlook
 whois
 wmaurer
 xiaoluoboding

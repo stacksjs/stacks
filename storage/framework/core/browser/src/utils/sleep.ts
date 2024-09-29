@@ -43,6 +43,11 @@ export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+export type WaitOptions = {
+  interval?: number
+  timeout?: number
+}
+
 /**
  * Pauses execution until a specified condition is met.
  * @param condition The condition to wait for.

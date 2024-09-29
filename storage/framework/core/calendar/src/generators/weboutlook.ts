@@ -1,3 +1,4 @@
+import { useDateFormat } from '@stacksjs/browser'
 import type { CalendarLink } from '../types'
 
 export function generateOutlook(link: CalendarLink): string {
