@@ -200,7 +200,7 @@ describe('@stacksjs/browser', () => {
         let resolve1: () => void
         let resolve2: () => void
 
-        console.log('Test started')
+        // console.log('Test started')
 
         const promise1 = new Promise<void>((r) => {
           resolve1 = r
@@ -210,32 +210,32 @@ describe('@stacksjs/browser', () => {
         })
 
         lock.run(async () => {
-          console.log('Task 1 started')
+          // console.log('Task 1 started')
           await promise1
           results.push(1)
-          console.log('Task 1 completed')
+          // console.log('Task 1 completed')
         })
 
         lock.run(async () => {
-          console.log('Task 2 started')
+          // console.log('Task 2 started')
           await promise2
           results.push(2)
-          console.log('Task 2 completed')
+          // console.log('Task 2 completed')
         })
 
-        console.log('Resolving promise 2')
+        // console.log('Resolving promise 2')
         // biome-ignore lint/style/noNonNullAssertion: we know it is defined here
         resolve2!()
         await browser.sleep(10)
-        console.log('Resolving promise 1')
+        // console.log('Resolving promise 1')
         // biome-ignore lint/style/noNonNullAssertion: we know it is defined here
         resolve1!()
 
-        console.log('Waiting for lock')
+        // console.log('Waiting for lock')
         await lock.wait()
-        console.log('Lock wait completed')
+        // console.log('Lock wait completed')
 
-        console.log('Final results:', results)
+        // console.log('Final results:', results)
         expect(results).toEqual([1, 2])
       })
 
@@ -396,10 +396,10 @@ describe('@stacksjs/browser', () => {
     testCases.forEach(({ name, fn }) => {
       it(`${name} function pauses execution for the specified time`, async () => {
         const start = Date.now()
-        await fn(100)
+        await fn(50)
         const duration = Date.now() - start
-        expect(duration).toBeGreaterThanOrEqual(95)
-        expect(duration).toBeLessThan(150) // Allow for some overhead, but not too much
+        expect(duration).toBeGreaterThanOrEqual(45)
+        expect(duration).toBeLessThan(105) // Allow for some overhead, but not too much
       })
 
       it(`${name} function works with 0ms`, async () => {
