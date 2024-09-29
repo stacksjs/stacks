@@ -1,9 +1,19 @@
+export type NonNegativeInteger<T extends number> = number extends T
+  ? never
+  : `${T}` extends `-${string}` | `${string}.${string}`
+    ? never
+    : T
+
 /**
  * Pauses execution for a specified number of milliseconds.
  * @param ms The number of milliseconds to pause execution.
  * @returns A promise that resolves after the specified delay.
  */
 export function sleep(ms: number): Promise<void> {
+  if (ms < 0 || !Number.isInteger(ms)) {
+    throw new Error('sleep() requires a non-negative integer')
+  }
+
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -13,6 +23,10 @@ export function sleep(ms: number): Promise<void> {
  * @returns A promise that resolves after the specified delay.
  */
 export function wait(ms: number): Promise<void> {
+  if (ms < 0 || !Number.isInteger(ms)) {
+    throw new Error('wait() requires a non-negative integer')
+  }
+
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -22,6 +36,10 @@ export function wait(ms: number): Promise<void> {
  * @returns A promise that resolves after the specified delay.
  */
 export function delay(ms: number): Promise<void> {
+  if (ms < 0 || !Number.isInteger(ms)) {
+    throw new Error('delay() requires a non-negative integer')
+  }
+
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -31,14 +49,29 @@ export function delay(ms: number): Promise<void> {
  * @param interval The interval at which to check the condition, in milliseconds. Defaults to 1000.
  * @returns A promise that resolves when the condition is met.
  */
-export function waitUntil(condition: () => boolean, interval = 1000): Promise<void> {
+export function waitUntil(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
-    const check = setInterval(() => {
+    const { interval = 100, timeout = 0 } = options
+
+    // Immediately resolve if the condition is initially true
+    if (condition()) {
+      resolve()
+      return
+    }
+
+    const check = () => {
       if (condition()) {
-        clearInterval(check)
         resolve()
+      } else {
+        setTimeout(check, interval)
       }
-    }, interval)
+    }
+
+    if (timeout) {
+      setTimeout(resolve, timeout)
+    }
+
+    check()
   })
 }
 
@@ -48,13 +81,28 @@ export function waitUntil(condition: () => boolean, interval = 1000): Promise<vo
  * @param interval The interval at which to check the condition, in milliseconds. Defaults to 1000.
  * @returns A promise that resolves when the condition is no longer met.
  */
-export function waitWhile(condition: () => boolean, interval = 1000): Promise<void> {
+export function waitWhile(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
-    const check = setInterval(() => {
+    const { interval = 100, timeout = 0 } = options
+
+    // Immediately resolve if the condition is initially false
+    if (!condition()) {
+      resolve()
+      return
+    }
+
+    const check = () => {
       if (!condition()) {
-        clearInterval(check)
         resolve()
+      } else {
+        setTimeout(check, interval)
       }
-    }, interval)
+    }
+
+    if (timeout) {
+      setTimeout(resolve, timeout)
+    }
+
+    check()
   })
 }

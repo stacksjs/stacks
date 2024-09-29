@@ -387,25 +387,97 @@ describe('@stacksjs/browser', () => {
   })
 
   describe('sleep', () => {
-    it('sleep function pauses execution', async () => {
-      const start = Date.now()
-      await browser.sleep(100)
-      const duration = Date.now() - start
-      expect(duration).toBeGreaterThanOrEqual(95) // Allow for small timing variations
+    const testCases = [
+      { name: 'sleep', fn: browser.sleep },
+      { name: 'wait', fn: browser.wait },
+      { name: 'delay', fn: browser.delay },
+    ]
+
+    testCases.forEach(({ name, fn }) => {
+      it(`${name} function pauses execution for the specified time`, async () => {
+        const start = Date.now()
+        await fn(100)
+        const duration = Date.now() - start
+        expect(duration).toBeGreaterThanOrEqual(95)
+        expect(duration).toBeLessThan(150) // Allow for some overhead, but not too much
+      })
+
+      it(`${name} function works with 0ms`, async () => {
+        const start = Date.now()
+        await fn(0)
+        const duration = Date.now() - start
+        expect(duration).toBeLessThan(50) // Should resolve almost immediately
+      })
     })
 
-    it('wait function pauses execution', async () => {
-      const start = Date.now()
-      await browser.wait(100)
-      const duration = Date.now() - start
-      expect(duration).toBeGreaterThanOrEqual(95)
+    describe('waitUntil function', () => {
+      it('resolves when condition becomes true', async () => {
+        let flag = false
+        setTimeout(() => {
+          flag = true
+        }, 100)
+
+        const start = Date.now()
+        await browser.waitUntil(() => flag)
+        const duration = Date.now() - start
+
+        expect(flag).toBe(true)
+        expect(duration).toBeGreaterThanOrEqual(95)
+        expect(duration).toBeLessThan(150)
+      })
+
+      it('uses custom interval', async () => {
+        let checkCount = 0
+        const condition = () => {
+          checkCount++
+          return checkCount >= 3
+        }
+
+        await browser.waitUntil(condition, 50)
+        expect(checkCount).toBe(3)
+      })
+
+      it('resolves immediately if condition is initially true', async () => {
+        const start = Date.now()
+        await browser.waitUntil(() => true)
+        const duration = Date.now() - start
+        expect(duration).toBeLessThan(50)
+      })
     })
 
-    it('delay function pauses execution', async () => {
-      const start = Date.now()
-      await browser.delay(100)
-      const duration = Date.now() - start
-      expect(duration).toBeGreaterThanOrEqual(95)
+    describe('waitWhile function', () => {
+      it('resolves when condition becomes false', async () => {
+        let flag = true
+        setTimeout(() => {
+          flag = false
+        }, 100)
+
+        const start = Date.now()
+        await browser.waitWhile(() => flag)
+        const duration = Date.now() - start
+
+        expect(flag).toBe(false)
+        expect(duration).toBeGreaterThanOrEqual(95)
+        expect(duration).toBeLessThan(150)
+      })
+
+      it('uses custom interval', async () => {
+        let checkCount = 0
+        const condition = () => {
+          checkCount++
+          return checkCount < 3
+        }
+
+        await browser.waitWhile(condition, 50)
+        expect(checkCount).toBe(3)
+      })
+
+      it('resolves immediately if condition is initially false', async () => {
+        const start = Date.now()
+        await browser.waitWhile(() => false)
+        const duration = Date.now() - start
+        expect(duration).toBeLessThan(50)
+      })
     })
   })
 
