@@ -1,4 +1,4 @@
-import { clone, deleteKeys, isArray, isFunction, isObject, nestedValue, values, variadic } from './helpers/'
+import { clone, deleteKeys, isArray, isFunction, isObject, nestedValue, values } from './helpers/'
 
 export class Collection<T> {
   protected items: T[] | Record<string, T>
@@ -13,8 +13,8 @@ export class Collection<T> {
     return this.items
   }
 
-  all(): T[] | Record<string, T> {
-    return this.items
+  all(): CollectionAll<T> {
+    return this.items as CollectionAll<T>
   }
 
   average(key?: string | ((item: T) => number)): number {
@@ -48,9 +48,11 @@ export class Collection<T> {
     return new (this.constructor as any)(([] as T[]).concat(...(this.items as any[])))
   }
 
-  combine(values: T[]): Collection<T> {
+  combine<U extends unknown[]>(values: U): Collection<{ [K in T[number]]: U[number] }> {
     if (Array.isArray(this.items) && Array.isArray(values)) {
-      return new Collection(Object.fromEntries(this.items.map((key, index) => [key, values[index]])))
+      return new Collection(Object.fromEntries(this.items.map((key, index) => [key, values[index]]))) as Collection<{
+        [K in T[number]]: U[number]
+      }>
     }
 
     throw new Error('Cannot combine non-array collections')
@@ -1949,7 +1951,11 @@ function SymbolIterator() {
   }
 }
 
-export const collect = <T extends object | number>(collection?: T | T[] | Collection<T>): Collection<T> =>
-  new Collection<T>(collection)
+export function collect<T extends object | any[]>(items: T): Collection<T> {
+  return new Collection(items)
+}
+
+type IsArray<T> = T extends any[] ? true : false
+type CollectionAll<T> = IsArray<T> extends true ? T : { [K in keyof T]: T[K] }
 
 export default collect

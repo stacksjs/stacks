@@ -9,7 +9,7 @@ describe('@stacksjs/collections', () => {
 
   describe('all() method', () => {
     it('should return all items, simple array', () => {
-      expect(collect<number>([1, 2, 3, 4, 5]).all()).toEqual([1, 2, 3, 4, 5])
+      expect(collect([1, 2, 3, 4, 5]).all()).toEqual([1, 2, 3, 4, 5])
     })
 
     it('should recursively return all items', () => {
@@ -76,7 +76,7 @@ describe('@stacksjs/collections', () => {
   })
 
   it('collapse()', () => {
-    const collection = collect<number | number[]>([[1], [2, 3], [4, 5]])
+    const collection = collect([[1], [2, 3], [4, 5]])
     expect(collection.collapse().all()).toEqual([1, 2, 3, 4, 5])
   })
 
