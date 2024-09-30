@@ -46,6 +46,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
+    "dynamodb-tooling": "^0.2.0",
     "@happy-dom/global-registrator": "^15.7.4",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
