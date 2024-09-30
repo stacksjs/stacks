@@ -91,6 +91,11 @@ jobs:
         ports:
           - 3306:3306
 
+      dynamodb:
+        image: amazon/dynamodb-local
+        ports:
+          - 8000:8000
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -110,6 +115,8 @@ jobs:
         run: bun install
 
       - name: Test Suite
+        env:
+          AWS_DYNAMODB_ENDPOINT: http://localhost:8000
         run: bun --filter='./storage/framework/core/*' test
 
   release-check:
