@@ -21,3 +21,4 @@ dependencies:
   sqlite.org: ^3.42.0
   stedolan.github.io/jq: ^1.7 # can be removed when publishing works without npm
   redis.io: ^7.2.5
+  openjdk.org: ^21.0.3.6

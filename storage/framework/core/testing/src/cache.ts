@@ -1,4 +1,4 @@
-import { dynamoDb } from 'dynamodb-tooling'
+import { dynamoDb } from '@stacksjs/cache'
 
 async function launch(): Promise<void> {
   await dynamoDb.launch()

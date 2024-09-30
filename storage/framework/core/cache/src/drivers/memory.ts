@@ -26,7 +26,6 @@ export const memory: CacheDriver = {
     await client.setForever({
       key,
       value,
-      gracePeriod: { enabled: true, duration: '5m' },
     })
   },
   async get(key: string): Promise<string | undefined | null> {

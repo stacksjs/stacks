@@ -6,6 +6,7 @@ const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID || ''
 const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || ''
 const dynamoEndpoint = process.env.AWS_DYNAMODB_ENDPOINT || 'http://localhost:8000'
 const tableName = process.env.AWS_DYNAMODB_TABLE || 'stacks'
+const region = process.env.AWS_REGION || 'us-east-1'
 
 const client = new BentoCache({
   default: 'dynamo',
@@ -15,11 +16,7 @@ const client = new BentoCache({
         endpoint: dynamoEndpoint,
         region: 'eu-east-1',
         table: {
-          name: tableName,
-        },
-        credentials: {
-          accessKeyId: awsAccessKeyId,
-          secretAccessKey: awsSecretAccessKey,
+          name: 'stacks',
         },
       }),
     ),
@@ -38,7 +35,6 @@ export const dynamodb: CacheDriver = {
     await client.setForever({
       key,
       value,
-      gracePeriod: { enabled: true, duration: '5m' },
     })
   },
   async get(key: string): Promise<string | undefined | null> {
@@ -64,7 +60,7 @@ export const dynamodb: CacheDriver = {
     return await client.has({ key })
   },
   async missing(key: string): Promise<boolean> {
-    return await client.has({ key })
+    return await client.missing({ key })
   },
   async deleteAll(): Promise<void> {
     await client.clear()

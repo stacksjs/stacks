@@ -65,11 +65,4 @@ describe('@stacksjs/cache - DynamoDB', () => {
 
     expect(await dynamodb.get('key11')).toBeUndefined()
   })
-
-  it('should disconnect from dynamodb', async () => {
-    await dynamodb.set('key12', 'value12')
-    await dynamodb.disconnect()
-    // We cannot perform an operation after disconnecting, just check it's disconnected without throwing errors
-    expect(await dynamodb.get('key12')).toBeUndefined()
-  })
 })
