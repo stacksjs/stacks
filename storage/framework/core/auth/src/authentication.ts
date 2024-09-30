@@ -1,22 +1,27 @@
 import { request } from '@stacksjs/router'
 import { verifyHash } from '@stacksjs/security'
 import AccessToken from '../../../orm/src/models/AccessToken'
-import Team from '../../../orm/src/models/Team'
+import Team, { type TeamModel } from '../../../orm/src/models/Team'
 import User from '../../../orm/src/models/User'
 
 interface Credentials {
-  password: string | number | undefined
+  password: string
   [key: string]: string | number | undefined
 }
+
+type AuthToken = `${number}:${number}:${string}`
 
 const authConfig = { username: 'email', password: 'password' }
 
 let authUser: any = undefined
 
 export async function attempt(credentials: Credentials, remember?: boolean): Promise<boolean> {
-  const user = await User.where(authConfig.username, credentials[authConfig.username]).first()
+  let hashCheck = false
 
-  const hashCheck = await verifyHash(credentials[authConfig.password], user?.password, 'bcrypt')
+  const user = await User.where(authConfig.username, credentials[authConfig.username]).first()
+  const authPass = credentials[authConfig.password]
+
+  if (typeof authPass === 'string' && user?.password) hashCheck = await verifyHash(authPass, user?.password, 'bcrypt')
 
   if (hashCheck) {
     if (user) {
@@ -29,7 +34,7 @@ export async function attempt(credentials: Credentials, remember?: boolean): Pro
   return false
 }
 
-export async function team() {
+export async function team(): Promise<TeamModel | undefined> {
   if (authUser) {
     const teams = await authUser.userTeams()
 
@@ -65,8 +70,7 @@ export async function team() {
   return team
 }
 
-// TODO: type this string better based on our token format
-export async function authToken(): Promise<string | undefined> {
+export async function authToken(): Promise<AuthToken | undefined> {
   if (authUser) {
     const teams = await authUser.userTeams()
 

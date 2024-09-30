@@ -1,5 +1,4 @@
 import { intro, outro } from '../build/src'
-import { dts } from './dts'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -12,12 +11,7 @@ const result = await Bun.build({
   target: 'bun',
   sourcemap: 'linked',
   minify: true,
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
+  plugins: [],
 })
 
 await outro({

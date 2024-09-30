@@ -5,11 +5,11 @@ interface Params {
 }
 
 interface ApiFetch {
-  get(url: string, params?: Params): Promise<FetchResponse>
-  post(url: string, params?: Params): Promise<FetchResponse>
-  destroy(url: string, params?: Params): Promise<FetchResponse>
-  patch(url: string, params?: Params): Promise<FetchResponse>
-  put(url: string, params?: Params): Promise<FetchResponse>
+  get(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
+  post(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
+  destroy(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
+  patch(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
+  put(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
   setToken(authToken: string): void
   baseURL: '/' | string
   loading: boolean

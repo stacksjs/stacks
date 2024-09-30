@@ -12,6 +12,8 @@ interface ValidationField {
   message: Record<string, string>
 }
 
+type AuthToken = `${number}:${number}:${string}`
+
 interface CustomAttributes {
   [key: string]: ValidationField
 }
@@ -86,7 +88,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.params ? this.params[key] || null : null
   }
 
-  public bearerToken(): string | null {
+  public bearerToken(): string | null | AuthToken {
     const authorizationHeader = this.headers.get('authorization')
 
     if (authorizationHeader?.startsWith('Bearer ')) {
