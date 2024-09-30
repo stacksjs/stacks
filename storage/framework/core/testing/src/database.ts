@@ -14,7 +14,7 @@ import { fs, globSync } from '@stacksjs/storage'
 
 const driver = database.default || ''
 
-export async function setupDatabase() {
+export async function setupDatabase(): Promise<void> {
   const dbName = `${database.connections?.mysql?.name ?? 'stacks'}_testing`
 
   if (driver === 'mysql') {
@@ -24,7 +24,7 @@ export async function setupDatabase() {
   }
 }
 
-export async function refreshDatabase() {
+export async function refreshDatabase(): Promise<void> {
   await setupDatabase()
 
   if (driver === 'mysql') await truncateMysql()
@@ -32,7 +32,7 @@ export async function refreshDatabase() {
   if (driver === 'sqlite') await truncateSqlite()
 }
 
-export async function truncateMysql() {
+export async function truncateMysql(): Promise<void> {
   const tables = await fetchTables()
 
   for (const table of tables) {
@@ -40,7 +40,7 @@ export async function truncateMysql() {
   }
 }
 
-export async function truncateSqlite() {
+export async function truncateSqlite(): Promise<void> {
   const sqlitePath = fetchSqliteFile()
 
   if (!fs.existsSync(sqlitePath)) await Bun.$`touch ${sqlitePath}`
