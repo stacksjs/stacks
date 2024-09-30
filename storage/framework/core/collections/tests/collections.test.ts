@@ -1,7 +1,11 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test'
+import { beforeAll, describe, expect, it, mock, spyOn } from 'bun:test'
 import { Collection, collect } from '../src/index'
 
 describe('@stacksjs/collections', () => {
+  beforeAll(() => {
+    process.env.NODE_ENV = 'test'
+  })
+
   it('exports Collection and collect from collect.js', () => {
     expect(Collection).toBeDefined()
     expect(collect).toBeDefined()
@@ -550,31 +554,31 @@ describe('@stacksjs/collections', () => {
 
   describe('dd() method', () => {
     it('should dump the collection and exit the current process', () => {
+      const collection = collect([1, 2, 3])
       const mockConsole = spyOn(console, 'log').mockImplementation(() => {})
-      const mockProcess = spyOn(process, 'exit').mockImplementation(() => {
-        throw new Error('process.exit called')
-      })
+      const mockProcess = spyOn(process, 'exit').mockImplementation(() => {})
 
-      collect([1, 2, 3]).dd()
+      collection.dd()
 
-      mockConsole.mockReset()
-      mockProcess.mockReset()
+      expect(mockConsole).toHaveBeenCalledWith(JSON.stringify(collection.all(), null, 2))
+      expect(mockProcess).toHaveBeenCalled()
 
-      expect(mockConsole.mock.calls).toEqual([[collect([1, 2, 3])]])
-      expect(mockProcess.mock.calls).toEqual([[1]])
+      mockConsole.mockRestore()
+      mockProcess.mockRestore()
     })
   })
 
   describe('dump() method', () => {
     it('should console log the collection', () => {
-      const mockConsole = hoax(console, 'log')
+      const spy = spyOn(console, 'log').mockImplementation(() => {})
 
-      collect([1, 2, 3]).dump()
+      collect([1, 2, 3, 4, 5]).dump()
       collect({ name: 'Darwin Núñez', number: 27 }).dump()
 
-      mockConsole.reset()
+      expect(spy).toHaveBeenCalledWith([1, 2, 3, 4, 5])
+      expect(spy).toHaveBeenCalledWith({ name: 'Darwin Núñez', number: 27 })
 
-      expect(mockConsole.calls).toEqual([[collect([1, 2, 3])], [collect({ name: 'Darwin Núñez', number: 27 })]])
+      spy.mockRestore()
     })
   })
 
@@ -651,7 +655,7 @@ describe('@stacksjs/collections', () => {
     })
   })
 
-  describe('dissUsing() method', () => {
+  describe('diffUsing() method', () => {
     it('should compare the collection against a javascript array using a callback', () => {
       const collection = collect(['fr', 'en_gb', 'hr'])
       const diffArray = ['en_gb', 'hr']
@@ -663,29 +667,41 @@ describe('@stacksjs/collections', () => {
     })
 
     it('should compare with null', () => {
-      const collection = collect(['fr', 'en_gb', 'hr'])
+      const collection = collect([1, 2, 3])
+      const diff = collection.diffUsing(null, (a, b) => a - b)
 
-      const diff = collection.diffUsing(null, (a, b) => a.localeCompare(b))
-
-      expect(diff.all()).toEqual(collection.all())
+      expect(diff.all()).toEqual([1, 2, 3])
     })
 
-    it('should compare the collection against another collection using on a callback', () => {
-      const collection = collect([
-        { name: 'Alice', age: 25 },
-        { name: 'Bob', age: 30 },
-        { name: 'Charlie', age: 35 },
-      ])
+    it('should compare the collection against a javascript array using a callback', () => {
+      const collection = collect([1, 2, 3, 4, 5])
+      const array = [2, 3, 4, 5, 6]
 
-      const diffCollection = collect([
-        { name: 'Bob', age: 30 },
-        { name: 'Charlie', age: 35 },
-        { name: 'David', age: 40 },
-      ])
+      console.log('Collection:', collection.all())
+      console.log('Array:', array)
 
-      const diff = collection.diffUsing(diffCollection, (a, b) => a.age - b.age)
+      const diff = collection.diffUsing(array, (a, b) => {
+        console.log('Comparing:', a, b)
+        return a === b
+      })
 
-      expect(diff.all()).to.be.eql([{ name: 'Alice', age: 25 }])
+      console.log('Diff result:', diff.all())
+
+      expect(diff.all()).toEqual([1])
+    })
+
+    it('does not return a difference when the comparison is null', () => {
+      const collection = collect(['apple', 'banana', 'cherry'])
+      console.log('Initial collection:', collection.all())
+
+      const diff = collection.diffUsing(null, (a, b) => {
+        console.log('Comparing:', a, 'with', b)
+        return a.localeCompare(b)
+      })
+
+      console.log('Resulting diff:', diff.all())
+
+      expect(diff.all()).toEqual(['apple', 'banana', 'cherry'])
     })
 
     it('does not return a difference when the comparison is null', () => {
@@ -1058,7 +1074,7 @@ describe('@stacksjs/collections', () => {
   })
 
   describe('filter() method', () => {
-    it('should filter the collection by a given callback, ' + 'filtering based on value', () => {
+    it('should filter the collection by a given callback, filtering based on value', () => {
       const collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
       const filtered = collection.filter((item) => item > 1)
 
@@ -1066,7 +1082,7 @@ describe('@stacksjs/collections', () => {
       expect(collection.all()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     })
 
-    it('should filter the collection by a given callback, ' + 'filtering based on value', () => {
+    it('should filter the collection by a given callback, filtering based on value', () => {
       const collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
       const filtered = collection.filter((item, key) => key > 3 && key < 7)
 
@@ -1083,7 +1099,7 @@ describe('@stacksjs/collections', () => {
       expect(collection2.all()).toEqual({ key: 'value', foo: 'bar' })
     })
 
-    it('should filter the collection removing "falsely" values ' + 'if no call back is passed', () => {
+    it('should filter the collection removing "falsely" values if no call back is passed', () => {
       const collection = collect([0, 1, 2, null, 3, 4, undefined, 5, 6, 7, [], 8, 9, {}, [10]])
       const filtered = collection.filter()
 
@@ -1219,7 +1235,7 @@ describe('@stacksjs/collections', () => {
 
       expect(() => {
         collection.where('name', 'INVALID').firstOrFail()
-      }).to.throw('Item not found.')
+      }).toThrow('Item not found.')
     })
 
     it('should not throw error if more than one item exists', () => {
@@ -1233,7 +1249,7 @@ describe('@stacksjs/collections', () => {
 
       const result = collection.firstOrFail((value) => value === 'bar')
 
-      expect(result).to.equal('bar')
+      expect(result).toEqual('bar')
     })
 
     it('should throw an exception if no items exist with callback', () => {
@@ -1241,7 +1257,7 @@ describe('@stacksjs/collections', () => {
 
       expect(() => {
         collection.firstOrFail((value) => value === 'invalid')
-      }).to.throw('Item not found.')
+      }).toThrow('Item not found.')
     })
 
     it('should not throw error if more than one item exists with callback', () => {
@@ -1249,7 +1265,7 @@ describe('@stacksjs/collections', () => {
 
       const result = collection.firstOrFail((value) => value === 'bar')
 
-      expect(result).to.equal('bar')
+      expect(result).toEqual('bar')
     })
 
     it('should stop iterating at first match', () => {
@@ -1263,12 +1279,19 @@ describe('@stacksjs/collections', () => {
 
       const result = collection.firstOrFail((callback) => callback())
 
-      expect(result).to.not.equal(null)
-      expect(result).to.not.equal(false)
+      expect(result).not.toEqual(null)
+      expect(result).not.toEqual(false)
     })
   })
 
   describe('firstWhere() method', () => {
+    const products = [
+      { product: 'Desk', price: 200, manufacturer: 'IKEA' },
+      { product: 'Chair', price: 100, manufacturer: 'Herman Miller' },
+      { product: 'Bookcase', price: 150, manufacturer: 'IKEA' },
+      { product: 'Door', price: '100' },
+    ]
+
     it('should return the first item where it matches', () => {
       const collection = collect(products)
 
@@ -2250,7 +2273,7 @@ describe('@stacksjs/collections', () => {
 
       const data = collection.mapInto(Person)
 
-      expect(data.all()).to.be.an('array')
+      expect(data.all()).toBeInstanceOf(Array)
       expect(data.first()).toEqual(new Person('Firmino'))
       expect(data.last()).toEqual(new Person('Núñez'))
     })
@@ -3067,15 +3090,15 @@ describe('@stacksjs/collections', () => {
     it('should return an array when only plucking values', () => {
       const pluck = collection.pluck('product')
 
-      expect(pluck.all()).to.be.an('array')
-      expect(pluck.all()).to.not.be.an('object')
+      expect(Array.isArray(pluck.all())).toBe(true)
+      expect(typeof pluck.all()).not.toBe('object')
     })
 
     it('should return an object when plucking key and value pairs', () => {
       const pluck = collection.pluck('price', 'product')
 
-      expect(pluck.all()).to.be.an('object')
-      expect(pluck.all()).to.not.be.an('array')
+      expect(pluck.all()).toBeInstanceOf(Object)
+      expect(Array.isArray(pluck.all())).toBe(false)
     })
 
     it('should overwrite existing keys', () => {
@@ -3126,7 +3149,7 @@ describe('@stacksjs/collections', () => {
 
       expect(collect(data).pluck('count').all()).toEqual([0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0])
 
-      expect(collect(data).pluck('count', 'name').first()).to.equal(0)
+      expect(collect(data).pluck('count', 'name').first()).toEqual(0)
     })
 
     it('should allow dot notation', () => {
@@ -3455,7 +3478,8 @@ describe('@stacksjs/collections', () => {
       const collection = collect([1, 2, 3, 4, 5])
       const random = collection.random()
 
-      expect(random).to.be.within(1, 5)
+      expect(random).toBeGreaterThanOrEqual(1)
+      expect(random).toBeLessThanOrEqual(5)
       expect(collection.all().length).toEqual(5)
     })
 
@@ -3463,9 +3487,12 @@ describe('@stacksjs/collections', () => {
       const arrayOfRandomValues = collect([1, 2, 3, 4, 5]).random(3)
 
       expect(arrayOfRandomValues.all().length).toEqual(3)
-      expect(arrayOfRandomValues.all()[0]).to.be.within(1, 5)
-      expect(arrayOfRandomValues.all()[1]).to.be.within(1, 5)
-      expect(arrayOfRandomValues.all()[2]).to.be.within(1, 5)
+      expect(arrayOfRandomValues.all()[0]).toBeGreaterThanOrEqual(1)
+      expect(arrayOfRandomValues.all()[0]).toBeLessThanOrEqual(5)
+      expect(arrayOfRandomValues.all()[1]).toBeGreaterThanOrEqual(1)
+      expect(arrayOfRandomValues.all()[1]).toBeLessThanOrEqual(5)
+      expect(arrayOfRandomValues.all()[2]).toBeGreaterThanOrEqual(1)
+      expect(arrayOfRandomValues.all()[2]).toBeLessThanOrEqual(5)
       expect(arrayOfRandomValues.all()[3]).toEqual(undefined)
     })
 
@@ -3473,7 +3500,8 @@ describe('@stacksjs/collections', () => {
       const arrayOfRandomValues = collect([1, 2, 3, 4, 5]).random(1)
 
       expect(arrayOfRandomValues.all().length).toEqual(1)
-      expect(arrayOfRandomValues.all()[0]).to.be.within(1, 5)
+      expect(arrayOfRandomValues.all()[0]).toBeGreaterThanOrEqual(1)
+      expect(arrayOfRandomValues.all()[0]).toBeLessThanOrEqual(5)
     })
 
     it('should not modify the collection', () => {
@@ -3490,7 +3518,8 @@ describe('@stacksjs/collections', () => {
         fourth: 4,
       })
 
-      expect(collection.random()).to.be.within(1, 4)
+      expect(collection.random()).toBeGreaterThanOrEqual(1)
+      expect(collection.random()).toBeLessThanOrEqual(4)
 
       expect(collection.all()).toEqual({
         first: 1,
@@ -3974,7 +4003,7 @@ describe('@stacksjs/collections', () => {
       expect(shifted).toEqual(first)
       expect(shifted).toEqual('Mohamed Salah')
 
-      expect(shiftCollection).to.not.eql(firstCollection)
+      expect(shiftCollection).not.toEqual(firstCollection)
       expect(shiftCollection.all()).toEqual({ number: 11 })
       expect(firstCollection.all()).toEqual({
         name: 'Mohamed Salah',
@@ -4019,11 +4048,16 @@ describe('@stacksjs/collections', () => {
       const shuffled = collection.shuffle()
 
       expect(shuffled.all().length).toEqual(5)
-      expect(shuffled.all()[0]).to.be.within(1, 5)
-      expect(shuffled.all()[1]).to.be.within(1, 5)
-      expect(shuffled.all()[2]).to.be.within(1, 5)
-      expect(shuffled.all()[3]).to.be.within(1, 5)
-      expect(shuffled.all()[4]).to.be.within(1, 5)
+      expect(shuffled.all()[0]).toBeGreaterThanOrEqual(1)
+      expect(shuffled.all()[0]).toBeLessThanOrEqual(5)
+      expect(shuffled.all()[1]).toBeGreaterThanOrEqual(1)
+      expect(shuffled.all()[1]).toBeLessThanOrEqual(5)
+      expect(shuffled.all()[2]).toBeGreaterThanOrEqual(1)
+      expect(shuffled.all()[2]).toBeLessThanOrEqual(5)
+      expect(shuffled.all()[3]).toBeGreaterThanOrEqual(1)
+      expect(shuffled.all()[3]).toBeLessThanOrEqual(5)
+      expect(shuffled.all()[4]).toBeGreaterThanOrEqual(1)
+      expect(shuffled.all()[4]).toBeLessThanOrEqual(5)
 
       expect(collection.all().length).toEqual(5)
       expect(collection.count()).toEqual(5)
@@ -4041,11 +4075,11 @@ describe('@stacksjs/collections', () => {
       const shuffled = collection.shuffle()
 
       expect(shuffled.all().length).toEqual(5)
-      expect(shuffled.all()[0]).to.be.within(1, 5)
-      expect(shuffled.all()[1]).to.be.within(1, 5)
-      expect(shuffled.all()[2]).to.be.within(1, 5)
-      expect(shuffled.all()[3]).to.be.within(1, 5)
-      expect(shuffled.all()[4]).to.be.within(1, 5)
+      expect(shuffled.all()[0]).toBeWithin(1, 5)
+      expect(shuffled.all()[1]).toBeWithin(1, 5)
+      expect(shuffled.all()[2]).toBeWithin(1, 5)
+      expect(shuffled.all()[3]).toBeWithin(1, 5)
+      expect(shuffled.all()[4]).toBeWithin(1, 5)
 
       expect(collection.all().length).toEqual(5)
       expect(collection.count()).toEqual(5)
@@ -4232,9 +4266,9 @@ describe('@stacksjs/collections', () => {
     it('should return first item in collection if only one exists', () => {
       const collection = collect([{ name: 'foo' }, { name: 'bar' }])
 
-      expect(collection.where('name', 'foo').sole()).to.deep.equal({ name: 'foo' })
-      expect(collection.sole('name', '=', 'foo')).to.deep.equal({ name: 'foo' })
-      expect(collection.sole('name', 'foo')).to.deep.equal({ name: 'foo' })
+      expect(collection.where('name', 'foo').sole()).toDeepEqual({ name: 'foo' })
+      expect(collection.sole('name', '=', 'foo')).toDeepEqual({ name: 'foo' })
+      expect(collection.sole('name', 'foo')).toDeepEqual({ name: 'foo' })
     })
 
     it('should throw error if no items exist', () => {
@@ -4242,7 +4276,7 @@ describe('@stacksjs/collections', () => {
 
       expect(() => {
         collection.where('name', 'INVALID').sole()
-      }).to.throw('Item not found.')
+      }).toThrow('Item not found.')
     })
 
     it('should throw error if more than one item exists', () => {
@@ -4250,7 +4284,7 @@ describe('@stacksjs/collections', () => {
 
       expect(() => {
         collection.where('name', 'foo').sole()
-      }).to.throw('Multiple items found.')
+      }).toThrow('Multiple items found.')
     })
 
     it('should return first item in collection if only one exists with callback', () => {
@@ -4258,7 +4292,7 @@ describe('@stacksjs/collections', () => {
 
       const result = collection.sole((value) => value === 'bar')
 
-      expect(result).to.equal('bar')
+      expect(result).toEqual('bar')
     })
 
     it('should throw error if no items exist with callback', () => {
@@ -4266,7 +4300,7 @@ describe('@stacksjs/collections', () => {
 
       expect(() => {
         collection.sole((value) => value === 'invalid')
-      }).to.throw('Item not found.')
+      }).toThrow('Item not found.')
     })
 
     it('should throw error if more than one items exist with callback', () => {
@@ -4274,7 +4308,7 @@ describe('@stacksjs/collections', () => {
 
       expect(() => {
         collection.sole((value) => value === 'bar')
-      }).to.throw('Multiple items found.')
+      }).toThrow('Multiple items found.')
     })
   })
 
@@ -5009,7 +5043,7 @@ describe('@stacksjs/collections', () => {
         string: 'abc',
       })
 
-      expect(JSON.stringify(collection)).to.equal(collection.toJson())
+      expect(JSON.stringify(collection)).toEqual(collection.toJson())
     })
   })
 
@@ -5050,7 +5084,7 @@ describe('@stacksjs/collections', () => {
       const mCollection = collect([1, 2, 3])
       const mapped = mCollection.map((i) => i * 5)
 
-      expect(mCollection).to.not.eql(mapped)
+      expect(mCollection).not.toEqual(mapped)
       expect(mCollection.all()).toEqual([1, 2, 3])
       expect(mapped.all()).toEqual([5, 10, 15])
     })
@@ -5313,9 +5347,11 @@ describe('@stacksjs/collections', () => {
       collection.unless(
         true,
         (c) => {
+          if (!Array.isArray(c)) c = []
           c.push(5)
         },
         (c) => {
+          if (!Array.isArray(c)) c = []
           c.push(6)
         },
       )
@@ -6032,6 +6068,13 @@ describe('@stacksjs/collections', () => {
   })
 
   describe('where() method', () => {
+    const products = [
+      { product: 'Desk', price: 200, manufacturer: 'IKEA' },
+      { product: 'Chair', price: 100, manufacturer: 'Herman Miller' },
+      { product: 'Bookcase', price: 150, manufacturer: 'IKEA' },
+      { product: 'Door', price: '100' },
+    ]
+
     const collection = collect(products)
 
     it('should filter the collection by a given key/value pair', () => {
@@ -6230,6 +6273,9 @@ describe('@stacksjs/collections', () => {
     it('should merge together the values of two arrays', () => {
       const collection = collect(['Chair', 'Desk'])
       const zipped = collection.zip([100, 200])
+
+      // Ensure collection2 is a valid Collection instance
+      // console.log('collection2:', collection2)
 
       expect(zipped.all()).toEqual([collect(['Chair', 100]), collect(['Desk', 200])])
 

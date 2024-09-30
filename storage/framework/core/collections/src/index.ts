@@ -44,12 +44,14 @@ export class Collection<T> {
 
   avg: typeof this.average = this.average
 
-  chunk(size: number): Collection<Collection<T>> {
-    const chunks: Collection<T>[] = []
-    const itemsLength = Number(this.items.length)
-    for (let i = 0; i < itemsLength; i += size) {
-      chunks.push(new Collection((this.items as T[]).slice(i, i + size)))
+  chunk(size: number): Collection<T[]> {
+    const chunks = []
+    const items = Array.isArray(this.items) ? this.items : Object.values(this.items)
+
+    for (let i = 0; i < items.length; i += size) {
+      chunks.push(items.slice(i, i + size))
     }
+
     return new Collection(chunks)
   }
 
@@ -57,14 +59,25 @@ export class Collection<T> {
     return new (this.constructor as any)(([] as T[]).concat(...(this.items as any[])))
   }
 
-  combine<U extends unknown[]>(values: U): Collection<{ [K in T[number]]: U[number] }> {
-    if (Array.isArray(this.items) && Array.isArray(values)) {
-      return new Collection(Object.fromEntries(this.items.map((key, index) => [key, values[index]]))) as Collection<{
-        [K in T[number]]: U[number]
-      }>
+  combine(values: any): Collection<T> {
+    if (typeof values === 'string') {
+      values = [values]
     }
 
-    throw new Error('Cannot combine non-array collections')
+    if (!Array.isArray(values)) {
+      throw new Error('The values must be an array or a string')
+    }
+
+    const collection = {}
+    const keys = Array.isArray(this.items) ? this.items : Object.keys(this.items)
+
+    keys.forEach((key, index) => {
+      if (values[index] !== undefined) {
+        collection[key] = values[index]
+      }
+    })
+
+    return new Collection(collection)
   }
 
   concat(collectionOrArrayOrObject: Collection<T> | T[] | object): Collection<T> {
@@ -120,11 +133,19 @@ export class Collection<T> {
   }
 
   containsOneItem(): boolean {
-    return this.count() === 1
+    if (typeof this.items === 'string') {
+      return true
+    }
+
+    return Object.keys(this.items).length === 1
   }
 
-  count(): number {
-    return Array.isArray(this.items) ? this.items.length : Object.keys(this.items).length
+  count(predicate?: (item: T) => boolean): number {
+    if (predicate) {
+      return this.filter(predicate).count()
+    }
+
+    return Object.keys(this.items).length
   }
 
   countBy(callback?: (item: T) => string | number): Collection<number> {
@@ -166,11 +187,8 @@ export class Collection<T> {
   }
 
   dd(): void {
-    this.dump()
-
-    if (typeof process !== 'undefined') {
-      process.exit(1)
-    }
+    console.log(JSON.stringify(this.all(), null, 2))
+    process.exit()
   }
 
   diff(values: Collection<T> | T[]): Collection<T> {
@@ -221,21 +239,48 @@ export class Collection<T> {
     return new this.constructor(this.items).only(remainingKeys)
   }
 
-  diffUsing(values: T[], callback: (a: T, b: T) => number): Collection<T> {
-    const collection = this.items.filter(
-      (item) => !(values && values.some((otherItem) => callback(item, otherItem) === 0)),
-    )
+  diffUsing(array: any[] | null, callback: (a: any, b: any) => number): Collection<T> {
+    console.log('Original collection:', this.items)
+    console.log('Array to compare:', array)
 
-    return new this.constructor(collection)
+    if (array === null) {
+      // If the input array is null, return a copy of the original collection
+      return new Collection(this.items)
+    }
+
+    const collection = this.items.filter((item) => {
+      const index = array.findIndex((otherItem) => {
+        return callback(item, otherItem) === 0
+      })
+
+      return index === -1
+    })
+
+    return new Collection(collection)
   }
 
-  doesntContain(key: string | ((item: T, index: number) => boolean), value?: any): boolean {
-    return !this.contains(key, value)
+  doesntContain(key: string | number | symbol | ((item: T, index: number) => boolean), value?: any): boolean {
+    console.log('doesntContain called with:', { key, value })
+
+    if (typeof key === 'function') {
+      console.log('Function branch')
+      return !this.contains(key)
+    }
+
+    if (value !== undefined) {
+      console.log('Key-value pair branch')
+      return !this.contains((item) => {
+        console.log('Comparing:', item[key], 'with', value)
+        return item[key] === value
+      })
+    }
+
+    console.log('Single value branch')
+    return !this.contains(key)
   }
 
-  dump(): Collection<T> {
-    console.log(this)
-
+  dump(): this {
+    console.log(this.items)
     return this
   }
 
@@ -313,25 +358,33 @@ export class Collection<T> {
     return items.every(fn)
   }
 
-  except(keys: string[]): Collection<T> {
+  except(keys: string | string[]): Collection<T> {
     const result = { ...this.items }
-    keys.forEach((key) => delete result[key])
+    const keysArray = Array.isArray(keys) ? keys : [keys]
+    keysArray.forEach((key) => delete result[key])
     return new Collection(result)
   }
 
-  filter(callback: (item: T, index: number) => boolean): Collection<T> {
-    if (Array.isArray(this.items)) {
-      return new Collection(this.items.filter(callback))
+  filter(callback?: (item: T, index: number) => boolean): Collection<T> {
+    console.log('Filter method called with callback:', callback)
+    console.log('Current items:', this.items)
+
+    if (typeof callback !== 'function') {
+      console.log('No callback provided, removing falsy values')
+      const filteredItems = this.items.filter((item) => {
+        console.log('Filtering item:', item)
+        return Boolean(item)
+      })
+      console.log('Filtered items:', filteredItems)
+      return new Collection(filteredItems)
     }
 
-    const filtered: Record<string, T> = {}
-    Object.entries(this.items).forEach(([key, value], index) => {
-      if (callback(value, index)) {
-        filtered[key] = value
-      }
+    const filteredItems = this.items.filter((item, index) => {
+      console.log('Filtering item:', item, 'at index:', index)
+      return callback(item, index)
     })
-
-    return new Collection(filtered)
+    console.log('Filtered items:', filteredItems)
+    return new Collection(filteredItems)
   }
 
   first(
@@ -374,20 +427,12 @@ export class Collection<T> {
     return defaultValue
   }
 
-  firstOrFail(key: string | ((item: T, index: number) => boolean), operator?: string, value?: any): T {
-    if (isFunction(key)) {
-      return this.first(key, () => {
-        throw new Error('Item not found.')
-      })
-    }
-
-    const collection = this.where(key, operator, value)
-
-    if (collection.isEmpty()) {
+  firstOrFail(callback?: (item: T) => boolean): T {
+    const found = this.items.find(callback || (() => true))
+    if (found === undefined) {
       throw new Error('Item not found.')
     }
-
-    return collection.first()
+    return found
   }
 
   firstWhere(key: string, operator: string, value: any): T | null {
@@ -399,21 +444,35 @@ export class Collection<T> {
   }
 
   flatten(depth: number = Number.POSITIVE_INFINITY): Collection<T> {
-    const flatten = (arr: any[], d: number): any[] => {
+    const flatten = (item: any, d: number): any[] => {
+      if (!Array.isArray(item) && typeof item !== 'object') {
+        return [item]
+      }
       return d > 0
-        ? arr.reduce((acc, val) => acc.concat(Array.isArray(val) ? flatten(val, d - 1) : val), [])
-        : arr.slice()
+        ? Object.values(item).reduce(
+            (acc, val) => acc.concat(Array.isArray(val) || typeof val === 'object' ? flatten(val, d - 1) : val),
+            [],
+          )
+        : Array.isArray(item)
+          ? [...item]
+          : [item]
     }
 
-    return new Collection(flatten(this.items as any[], depth))
+    return new Collection(flatten(this.items, depth))
   }
 
   flip(): Collection<T> {
-    const flipped = Object.entries(this.items).reduce((acc, [key, value]) => {
-      acc[value] = key
-      return acc
-    }, {})
-    return new Collection(flipped)
+    const flipped = {}
+    if (Array.isArray(this.items)) {
+      this.items.forEach((value, index) => {
+        flipped[value] = index
+      })
+    } else {
+      Object.entries(this.items).forEach(([key, value]) => {
+        flipped[value] = key
+      })
+    }
+    return new this.constructor(flipped)
   }
 
   forPage(page: number, chunk: number): Collection<T> {
@@ -433,9 +492,13 @@ export class Collection<T> {
   }
 
   forget(key: string): Collection<T> {
-    const result = { ...this.items }
-    delete result[key]
-    return new Collection(result)
+    if (Array.isArray(this.items)) {
+      this.items = this.items.filter((item, index) => index !== Number.parseInt(key, 10))
+    } else if (typeof this.items === 'object' && this.items !== null) {
+      delete this.items[key]
+    }
+
+    return this
   }
 
   get(key: string | number, defaultValue: T | null = null): T | null {
@@ -1010,9 +1073,8 @@ export class Collection<T> {
     return value ?? defaultValue
   }
 
-  push(...items) {
-    this.items.push(...items)
-
+  push(...items: T[]): Collection<T> {
+    this.items = [...this.items, ...items]
     return this
   }
 
@@ -1318,27 +1380,16 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  sole(key: string, operator: string, value: any): T | undefined {
-    let collection
-
-    if (isFunction(key)) {
-      collection = this.filter(key)
-    } else {
-      collection = this.where(key, operator, value)
+  sole(): T {
+    if (this.items.length !== 1) {
+      throw new Error('Collection does not contain exactly one item.')
     }
-
-    if (collection.isEmpty()) {
-      throw new Error('Item not found.')
-    }
-
-    if (collection.count() > 1) {
-      throw new Error('Multiple items found.')
-    }
-
-    return collection.first()
+    return this.items[0]
   }
 
-  some: typeof this.contains = this.contains
+  some(key: string): boolean {
+    return this.items.some((item) => item.hasOwnProperty(key))
+  }
 
   sort(fn: (a: T, b: T) => number): Collection<T> {
     const collection = [].concat(this.items)
@@ -1679,32 +1730,9 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  unique(key?: string | ((item: T) => string)): Collection<T> {
-    let collection
-
-    if (key === undefined) {
-      collection = this.items.filter((element, index, self) => self.indexOf(element) === index)
-    } else {
-      collection = []
-
-      const usedKeys = []
-
-      for (let iterator = 0, { length } = this.items; iterator < length; iterator += 1) {
-        let uniqueKey
-        if (isFunction(key)) {
-          uniqueKey = key(this.items[iterator])
-        } else {
-          uniqueKey = this.items[iterator][key]
-        }
-
-        if (usedKeys.indexOf(uniqueKey) === -1) {
-          collection.push(this.items[iterator])
-          usedKeys.push(uniqueKey)
-        }
-      }
-    }
-
-    return new this.constructor(collection)
+  unique(): Collection<T> {
+    const uniqueItems = Array.from(new Set(this.items))
+    return new this.constructor(uniqueItems)
   }
 
   unwrap(): T[] | Record<string, T> {
@@ -1716,14 +1744,14 @@ export class Collection<T> {
   }
 
   when(
-    value: boolean,
-    fn: (collection: Collection<T>) => void,
-    defaultFn: (collection: Collection<T>) => void = () => {},
+    value: any,
+    callback: (collection: Collection<T>, value: any) => void,
+    defaultCallback?: () => void,
   ): Collection<T> {
     if (value) {
-      fn(this)
-    } else {
-      defaultFn(this)
+      callback(this, value)
+    } else if (defaultCallback) {
+      defaultCallback()
     }
     return this
   }
@@ -1769,62 +1797,40 @@ export class Collection<T> {
     return this
   }
 
-  where(key: string, operator: string, value: any): Collection<T> {
-    let comparisonOperator = operator
-    let comparisonValue = value
-
-    const items = values(this.items)
-
-    if (operator === undefined || operator === true) {
-      return new this.constructor(items.filter((item) => nestedValue(item, key)))
+  where(key: string, operator?: any, value?: any): Collection<T> {
+    // If only one argument is passed, we're checking for existence
+    if (arguments.length === 1) {
+      return new Collection(this.items.filter((item) => item[key] !== undefined))
     }
 
-    if (operator === false) {
-      return new this.constructor(items.filter((item) => !nestedValue(item, key)))
+    // If two arguments are passed, the second one is the value
+    if (arguments.length === 2) {
+      value = operator
+      operator = '==='
     }
 
-    if (value === undefined) {
-      comparisonValue = operator
-      comparisonOperator = '==='
-    }
+    const compareValues = (item: any, key: string, value: any, operator: string) => {
+      const itemValue = item[key]
 
-    const collection = items.filter((item) => {
-      switch (comparisonOperator) {
-        case '==':
-          return (
-            nestedValue(item, key) === Number(comparisonValue) || nestedValue(item, key) === comparisonValue.toString()
-          )
-
-        case '!=':
-        case '<>':
-          return (
-            nestedValue(item, key) !== Number(comparisonValue) && nestedValue(item, key) !== comparisonValue.toString()
-          )
-
-        case '!==':
-          return nestedValue(item, key) !== comparisonValue
-
-        case '<':
-          return nestedValue(item, key) < comparisonValue
-
-        case '<=':
-          return nestedValue(item, key) <= comparisonValue
-
-        case '>':
-          return nestedValue(item, key) > comparisonValue
-
-        case '>=':
-          return nestedValue(item, key) >= comparisonValue
-
+      switch (operator) {
         case '===':
-          return nestedValue(item, key) === comparisonValue
-
+          return itemValue === value
+        case '!==':
+          return itemValue !== value
+        case '<':
+          return itemValue < value
+        case '<=':
+          return itemValue <= value
+        case '>':
+          return itemValue > value
+        case '>=':
+          return itemValue >= value
         default:
-          return nestedValue(item, key) === comparisonValue
+          return itemValue == value
       }
-    })
+    }
 
-    return new this.constructor(collection)
+    return new Collection(this.items.filter((item) => compareValues(item, key, value, operator)))
   }
 
   whereBetween(key: string, values: [number, number]): Collection<T> {
@@ -1849,10 +1855,19 @@ export class Collection<T> {
   }
 
   whereNotIn(key: string, values: any[]): Collection<T> {
-    return this.filter((item) => {
-      const itemValue = typeof item === 'object' ? item[key] : item
-      return !values.includes(itemValue)
+    const filteredItems = this.items.filter((item) => {
+      const keys = key.split('.')
+      let value = item
+
+      for (const k of keys) {
+        if (value[k] === undefined) return true
+        value = value[k]
+      }
+
+      return !values.includes(value)
     })
+
+    return new Collection(filteredItems)
   }
 
   private getNestedValue(item: any, key: string): any {
@@ -1897,8 +1912,16 @@ export class Collection<T> {
     return new Collection([value])
   }
 
-  zip(array: any[]): Collection<[T, any]> {
-    return new Collection((this.items as T[]).map((item, index): [T, any] => [item, array[index]]))
+  zip(...arrays: any[]): Collection<any> {
+    const arrayOfArrays = arrays.map((arg) => this.constructor.wrap(arg).all())
+    const zipped = this.items.map((item, index) => {
+      const values = [item]
+      arrayOfArrays.forEach((array) => {
+        values.push(array[index])
+      })
+      return new this.constructor(values) // Wrap each zipped item in a new Collection
+    })
+    return new this.constructor(zipped)
   }
 }
 
