@@ -1,16 +1,23 @@
 import { clone, deleteKeys, isArray, isFunction, isObject, nestedValue, values } from './helpers/'
 
+type IsArray<T> = T extends any[] ? true : false
+type CollectionAll<T> = IsArray<T> extends true ? T : { [K in keyof T]: T[K] }
+
+export function collect<T extends object | string | number | boolean>(items: T): Collection<T> {
+  return new Collection(items)
+}
+
 export class Collection<T> {
   protected items: T[] | Record<string, T>
 
-  constructor(items: T[] | Record<string, T> = []) {
+  constructor(items: T[] | Record<string | number | symbol, T> = []) {
     this.items = items
   }
 
   [Symbol.iterator] = SymbolIterator
 
   toJSON(): T[] {
-    return this.items
+    return this.items as T[]
   }
 
   all(): CollectionAll<T> {
@@ -19,27 +26,29 @@ export class Collection<T> {
 
   average(key?: string | ((item: T) => number)): number {
     if (key === undefined) {
-      return this.sum() / this.items.length
+      return this.sum() / Number(this.items.length)
     }
 
     if (isFunction(key)) {
       return (
-        new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).sum(key) / this.items.length
+        Number(new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).sum(key)) /
+        Number(this.items.length)
       )
     }
 
     return (
-      new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).pluck(key).sum(...[]) /
-      this.items.length
+      Number(new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).pluck(key).sum()) /
+      Number(this.items.length)
     )
   }
 
   avg: typeof this.average = this.average
 
-  chunk(size: number): Collection<T[]> {
-    const chunks = []
-    for (let i = 0; i < this.items.length; i += size) {
-      chunks.push(this.items.slice(i, i + size))
+  chunk(size: number): Collection<Collection<T>> {
+    const chunks: Collection<T>[] = []
+    const itemsLength = Number(this.items.length)
+    for (let i = 0; i < itemsLength; i += size) {
+      chunks.push(new Collection((this.items as T[]).slice(i, i + size)))
     }
     return new Collection(chunks)
   }
@@ -83,27 +92,31 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  contains(key: string | ((item: T, index: number) => boolean), value?: any): boolean {
-    if (value !== undefined) {
-      if (Array.isArray(this.items)) {
-        return this.items.filter((items) => items[key] !== undefined && items[key] === value).length > 0
-      }
-
-      return this.items[key] !== undefined && this.items[key] === value
-    }
-
-    if (isFunction(key)) {
-      return this.items.filter((item, index) => key(item, index)).length > 0
+  contains(key: T extends (infer U)[] ? U : T | string | ((item: T, index: number) => boolean), value?: any): boolean {
+    if (typeof key === 'function') {
+      return this.items.some(key as (item: T, index: number) => boolean)
     }
 
     if (Array.isArray(this.items)) {
-      return this.items.indexOf(key) !== -1
+      return (this.items as any[]).includes(key as any)
     }
 
-    const keysAndValues = values(this.items)
-    keysAndValues.push(...Object.keys(this.items))
+    if (value !== undefined) {
+      if (Array.isArray(this.items)) {
+        return this.items.some((item) => item[key as keyof T] !== undefined && item[key as keyof T] === value)
+      }
 
-    return keysAndValues.indexOf(key) !== -1
+      return (
+        (key as string | number | symbol) in this.items &&
+        (this.items as Record<keyof T, any>)[key as keyof T] === value
+      )
+    }
+
+    if (Array.isArray(this.items)) {
+      return this.items.includes(key as T extends (infer U)[] ? U : never)
+    }
+
+    return Object.values(this.items).includes(key as T extends object ? T[keyof T] : never)
   }
 
   containsOneItem(): boolean {
@@ -460,6 +473,14 @@ export class Collection<T> {
     }
 
     return new this.constructor(this.items).pluck(key).all().join(glue)
+  }
+
+  includes(key: T | T[keyof T]): boolean {
+    if (Array.isArray(this.items)) {
+      return this.items.includes(key as T)
+    }
+
+    return Object.values(this.items).some((item) => item === key)
   }
 
   intersect(values: Collection<T> | T[]): Collection<T> {
@@ -1658,7 +1679,7 @@ export class Collection<T> {
     return new this.constructor(collection)
   }
 
-  unique(key: string | ((item: T) => string)): Collection<T> {
+  unique(key?: string | ((item: T) => string)): Collection<T> {
     let collection
 
     if (key === undefined) {
@@ -1881,37 +1902,6 @@ export class Collection<T> {
   }
 }
 
-function falsyValue(item: any) {
-  if (Array.isArray(item)) {
-    if (item.length) {
-      return false
-    }
-  } else if (item !== undefined && item !== null && typeof item === 'object') {
-    if (Object.keys(item).length) {
-      return false
-    }
-  } else if (item) {
-    return false
-  }
-
-  return true
-}
-
-function filterObject(func: (item: any, key: string) => boolean, items: Record<string, any>) {
-  const result = {}
-  Object.keys(items).forEach((key) => {
-    if (func) {
-      if (func(items[key], key)) {
-        result[key] = items[key]
-      }
-    } else if (!falsyValue(items[key])) {
-      result[key] = items[key]
-    }
-  })
-
-  return result
-}
-
 const buildKeyPathMap = function buildKeyPathMap(items: any) {
   const keyPaths = {}
 
@@ -1950,12 +1940,5 @@ function SymbolIterator() {
     },
   }
 }
-
-export function collect<T extends object | any[]>(items: T): Collection<T> {
-  return new Collection(items)
-}
-
-type IsArray<T> = T extends any[] ? true : false
-type CollectionAll<T> = IsArray<T> extends true ? T : { [K in keyof T]: T[K] }
 
 export default collect
