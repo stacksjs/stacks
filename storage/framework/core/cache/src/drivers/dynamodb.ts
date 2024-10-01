@@ -13,7 +13,7 @@ const client = new BentoCache({
   stores: {
     dynamo: bentostore().useL2Layer(
       dynamoDbDriver({
-        endpoint: dynamoEndpoint,
+        endpoint: 'http://localhost:8000',
         region: 'eu-east-1',
         table: {
           name: 'stacks',
