@@ -23,12 +23,20 @@ import generateSitemap from 'vite-ssg-sitemap'
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
 
-console.log('views.ts')
-
 const config: UserConfig = defineConfig({
   build: {
     rollupOptions: {
-      external: ['fsevents', 'tinyexec', '@iconify/utils', '@antfu/install-pkg', 'local-pkg', 'mlly', 'fs', 'bun'],
+      external: [
+        'fsevents',
+        'tinyexec',
+        '@iconify/utils',
+        '@antfu/install-pkg',
+        'local-pkg',
+        'mlly',
+        'fs',
+        'bun',
+        '@stacksjs/logging',
+      ],
     },
   },
 

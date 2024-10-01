@@ -1,4 +1,5 @@
 import { setupLayouts } from 'virtual:generated-layouts'
+import { log } from '@stacksjs/logging'
 import '@unocss/reset/tailwind.css'
 import 'unocss'
 import path from 'node:path'

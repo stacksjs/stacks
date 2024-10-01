@@ -1356,7 +1356,7 @@ export interface Path {
   functionsPath: (path?: string) => string
   gitPath: (path?: string) => string
   langPath: (path?: string) => string
-  layoutsPath: (path?: string) => string
+  layoutsPath: (path?: string, options?: { relative?: boolean }) => string
   libsPath: (path?: string) => string
   userLibsPath: (path?: string) => string
   libraryEntryPath: (type: LibraryType) => string
