@@ -18,6 +18,10 @@ const client = new BentoCache({
         table: {
           name: 'stacks',
         },
+        credentials: {
+          accessKeyId: 'dummy',
+          secretAccessKey: 'dummy',
+        },
       }),
     ),
   },
