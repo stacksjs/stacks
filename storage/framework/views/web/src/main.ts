@@ -1,11 +1,12 @@
 import { setupLayouts } from 'virtual:generated-layouts'
 import '@unocss/reset/tailwind.css'
 import 'unocss'
+import path from 'node:path'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import '../../../../../resources/assets/styles/main.css'
 import App from './App.vue'
-import type { UserModule } from './types'
+// import type { UserModule } from './types'
 
 export const createApp = ViteSSG(
   App,
@@ -19,8 +20,10 @@ export const createApp = ViteSSG(
       ;(async () => {
         const glob = new Bun.Glob('**/*.ts')
         const moduleFiles = []
-        for await (const file of glob.scan('../../../../resources/modules')) {
-          moduleFiles.push(file)
+        const modulesPath = path.resolve(__dirname, '../../../../../../resources/modules')
+        for await (const file of glob.scan(modulesPath)) {
+          log.debug('pushing module', `${modulesPath}/${file}`)
+          moduleFiles.push(`${modulesPath}/${file}`)
         }
 
         // const modules = import.meta.glob<{ install: UserModule }>('../../../../../resources/modules/*.ts')
