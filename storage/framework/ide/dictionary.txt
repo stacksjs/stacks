@@ -157,6 +157,7 @@ jsdelivr
 jsdevtools
 jsons
 julr
+keyuri
 kibibytes
 kleur
 kohler
@@ -223,6 +224,7 @@ openweb
 openweblabs
 openxmlformats
 orta
+otpauth
 otplib
 outdir
 outfile

@@ -1041,9 +1041,7 @@ export async function generateModelString(
 
   for (const otherModelRelation of otherModelRelations) {
     fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
-
     declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
-
     constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
   }
 
@@ -1670,7 +1668,7 @@ export async function generateModelString(
 
     ${whereFunctionStatements}
 
-    const ${modelName} = ${modelName}Model
+    export const ${modelName} = ${modelName}Model
 
     export default ${modelName}
     `
@@ -1701,8 +1699,8 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       console.log('error', error)
       process.exit(ExitCode.FatalError)
     }
-
     log.success('Wrote Model Names')
+
     log.info('Writing Model Requests...')
     try {
       await writeModelRequest()

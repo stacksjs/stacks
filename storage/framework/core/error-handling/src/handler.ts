@@ -1,11 +1,12 @@
+import { access, appendFile, mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import { italic } from '@stacksjs/cli'
+import { stripAnsi } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
+import type { ErrorOptions } from '@stacksjs/logging'
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import fs from 'fs-extra'
-
-interface ErrorOptions {
-  silent?: boolean
-}
+import { isString } from '@stacksjs/validation'
 
 type ErrorMessage = string
 
@@ -14,15 +15,29 @@ export class ErrorHandler {
   static shouldExitProcess = true
 
   static handle(err: Error | ErrorMessage | unknown, options?: ErrorOptions): Error {
+    this.shouldExitProcess = options?.shouldExit !== false ?? true
     if (options?.silent !== true) this.writeErrorToConsole(err)
 
     let error: Error
-    if (err instanceof Error) {
-      error = err
+    let errorMessage: string
+
+    if (options?.message) {
+      // Use the message from options if provided
+      errorMessage = options.message
+    } else if (err instanceof Error) {
+      errorMessage = err.message
     } else if (typeof err === 'string') {
-      error = new Error(err)
+      errorMessage = err
     } else {
-      error = new Error(JSON.stringify(err))
+      errorMessage = JSON.stringify(err)
+    }
+
+    // Create a new Error with the determined message
+    error = new Error(errorMessage)
+
+    // If the original err was an Error instance, copy its properties
+    if (err instanceof Error) {
+      Object.assign(error, err)
     }
 
     this.writeErrorToFile(error).catch((e) => console.error(e))
@@ -45,8 +60,8 @@ export class ErrorHandler {
     const logFilePath = path.logsPath('stacks.log') ?? path.logsPath('errors.log')
 
     try {
-      await fs.mkdir(path.dirname(logFilePath), { recursive: true })
-      await fs.appendFile(logFilePath, formattedError)
+      await mkdir(path.dirname(logFilePath), { recursive: true })
+      await appendFile(logFilePath, formattedError)
     } catch (error) {
       console.error('Failed to write to error file:', error)
     }
@@ -76,6 +91,46 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: ErrorMessage | Error | unknown, options?: ErrorOptions): Error {
+export function handleError(err: string | Error | object | unknown, options?: ErrorOptions): Error {
+  let errorMessage: string
+
+  if (isString(err)) {
+    errorMessage = err
+  } else if (err instanceof Error) {
+    errorMessage = err.message
+  } else if (options instanceof Error) {
+    errorMessage = options.message
+  } else {
+    errorMessage = String(err)
+  }
+
+  writeToLogFile(`ERROR: ${stripAnsi(errorMessage)}`)
+
   return ErrorHandler.handle(err, options)
+}
+
+type WriteOptions = {
+  logFile?: string
+}
+
+export async function writeToLogFile(message: string, options?: WriteOptions): Promise<void> {
+  const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
+
+  try {
+    const logFile = options?.logFile ?? config.logging.logsPath ?? 'storage/logs/stacks.log'
+
+    try {
+      // Check if the file exists
+      await access(logFile)
+    } catch {
+      // File doesn't exist, create the directory
+      console.log('Creating log file directory...', logFile)
+      await mkdir(dirname(logFile), { recursive: true })
+    }
+
+    // Append the message to the log file
+    await appendFile(logFile, formattedMessage)
+  } catch (error) {
+    console.error('Failed to write to log file:', error)
+  }
 }

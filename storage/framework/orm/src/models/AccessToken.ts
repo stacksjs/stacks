@@ -658,6 +658,6 @@ export async function whereAbilities(value: string | number | boolean | undefine
   return results.map((modelItem) => new AccessTokenModel(modelItem))
 }
 
-const AccessToken = AccessTokenModel
+export const AccessToken = AccessTokenModel
 
 export default AccessToken

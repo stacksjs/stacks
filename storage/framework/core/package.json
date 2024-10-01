@@ -339,7 +339,8 @@
   "scripts": {
     "buddy": "bun run ./buddy/src/cli.ts",
     "build": "cd config && bun run build && cd ../env && bun run build && cd ../storage && bun run build && cd .. && bun ./build.ts",
-    "up": "bunx --bun taze major -I"
+    "up": "bun update",
+    "up:latest": "bun update --latest"
   },
   "web-types": "./web-types.json",
   "dependencies": {

@@ -1,3 +1,4 @@
+import { handleError } from '@stacksjs/error-handling'
 import { authenticator } from 'otplib'
 import qrcode from 'qrcode'
 
@@ -7,13 +8,13 @@ export function generateTwoFactorSecret(): string {
   return secret
 }
 
-export function generateTwoFactorToken(): string {
-  const token = authenticator.generate(generateTwoFactorSecret())
-
-  return token
+export type Token = string
+export type Secret = string
+export function generateTwoFactorToken(): Token {
+  return authenticator.generate(generateTwoFactorSecret())
 }
 
-export function verifyTwoFactorCode(token: string, secret: string): boolean {
+export function verifyTwoFactorCode(token: Token, secret: Secret): boolean {
   const isValid = authenticator.verify({ token, secret })
 
   return isValid
@@ -27,7 +28,7 @@ export function generateQrCode(): void {
 
   qrcode.toDataURL(otpauth, (err: any, imageUrl: any) => {
     if (err) {
-      console.log('Error with QR')
+      handleError('Error with QR')
       return
     }
   })

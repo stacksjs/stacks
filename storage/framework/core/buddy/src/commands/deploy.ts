@@ -86,6 +86,7 @@ async function confirmProductionDeployment() {
 }
 
 async function configureDomain(domain: string, options: DeployOptions, startTime: number) {
+  log.debug('Configuring domain...', domain)
   if (!domain) {
     log.info('We could not identify a domain to deploy to.')
     log.warn('Please set your .env or ./config/app.ts properly.')
@@ -150,9 +151,10 @@ async function checkIfAwsIsConfigured() {
   })
 
   if (result.isErr()) {
-    log.error('AWS is not configured properly.')
+    log.error('AWS is not configured properly.', {
+      shouldExit: false,
+    })
     log.error('Please run `buddy configure:aws` to set up your AWS credentials.')
-    process.exit(ExitCode.FatalError)
   }
 
   log.success('AWS is configured')
