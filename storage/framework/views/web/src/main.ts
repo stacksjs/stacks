@@ -19,7 +19,7 @@ export const createApp = ViteSSG(
       ;(async () => {
         const glob = new Bun.Glob('**/*.ts')
         const moduleFiles = []
-        for await (const file of glob.scan('../../../../../resources/modules')) {
+        for await (const file of glob.scan('../../../../resources/modules')) {
           moduleFiles.push(file)
         }
 

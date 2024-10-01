@@ -36,8 +36,8 @@ declare global {
   const Every: typeof import('../core/types/src/cron-jobs')['Every']
   const ExitCode: typeof import('../core/types/src/exit-code')['ExitCode']
   const Fetch: typeof import('../core/api/src/ofetch')['Fetch']
-  const Head: typeof import('../core/browser/src/index')['Head']
-  const HeadVuePlugin: typeof import('../core/browser/src/index')['HeadVuePlugin']
+  const Head: typeof import('../core/browser/src/utils/vendors')['Head']
+  const HeadVuePlugin: typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']
   const LogLevels: typeof import('../core/types/src/logger')['LogLevels']
   const LogTypes: typeof import('../core/types/src/logger')['LogTypes']
   const Macroable: typeof import('../core/utils/src/macroable')['Macroable']
@@ -111,8 +111,8 @@ declare global {
   const all: typeof import('../core/events/src/index')['all']
   const allocate: typeof import('../core/utils/src/currency')['allocate']
   const analyticsPath: typeof import('../core/path/src/index')['analyticsPath']
-  const and: typeof import('../core/utils/src/math')['and']
-  const anyOf: typeof import('../core/utils/src/regex')['anyOf']
+  const and: typeof import('../core/browser/src/utils/math')['and']
+  const anyOf: typeof import('../core/browser/src/utils/regex')['anyOf']
   const appPath: typeof import('../core/path/src/index')['appPath']
   const archive: typeof import('../core/storage/src/zip')['archive']
   const argon2Encode: typeof import('../core/security/src/hash')['argon2Encode']
@@ -121,27 +121,27 @@ declare global {
   const arraysPath: typeof import('../core/path/src/index')['arraysPath']
   const assert: typeof import('../core/testing/src/index')['assert']
   const assetsPath: typeof import('../core/path/src/index')['assetsPath']
-  const asyncComputed: typeof import('../core/browser/src/index')['asyncComputed']
+  const asyncComputed: typeof import('../core/browser/src/utils/vendors')['asyncComputed']
   const attempt: typeof import('../core/auth/src/authentication')['attempt']
   const auth: typeof import('../core/auth/src/index')['auth']
   const authPath: typeof import('../core/path/src/index')['authPath']
   const authToken: typeof import('../core/auth/src/authentication')['authToken']
-  const autoResetRef: typeof import('../core/browser/src/index')['autoResetRef']
+  const autoResetRef: typeof import('../core/browser/src/utils/vendors')['autoResetRef']
   const base64Encode: typeof import('../core/security/src/hash')['base64Encode']
   const base64Verify: typeof import('../core/security/src/hash')['base64Verify']
   const basename: typeof import('../core/path/src/index')['basename']
-  const batchInvoke: typeof import('../core/utils/src/function')['batchInvoke']
+  const batchInvoke: typeof import('../core/browser/src/utils/function')['batchInvoke']
   const bcryptEncode: typeof import('../core/security/src/hash')['bcryptEncode']
   const bcryptVerify: typeof import('../core/security/src/hash')['bcryptVerify']
   const beforeAll: typeof import('../core/testing/src/index')['beforeAll']
   const beforeEach: typeof import('../core/testing/src/index')['beforeEach']
-  const breakpointsAntDesign: typeof import('../core/browser/src/index')['breakpointsAntDesign']
-  const breakpointsBootstrapV5: typeof import('../core/browser/src/index')['breakpointsBootstrapV5']
-  const breakpointsMasterCss: typeof import('../core/browser/src/index')['breakpointsMasterCss']
-  const breakpointsQuasar: typeof import('../core/browser/src/index')['breakpointsQuasar']
-  const breakpointsSematic: typeof import('../core/browser/src/index')['breakpointsSematic']
-  const breakpointsTailwind: typeof import('../core/browser/src/index')['breakpointsTailwind']
-  const breakpointsVuetify: typeof import('../core/browser/src/index')['breakpointsVuetify']
+  const breakpointsAntDesign: typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']
+  const breakpointsBootstrapV5: typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']
+  const breakpointsMasterCss: typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']
+  const breakpointsQuasar: typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']
+  const breakpointsSematic: typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']
+  const breakpointsTailwind: typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']
+  const breakpointsVuetify: typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']
   const buddy: typeof import('../core/index')['buddy']
   const buddyPath: typeof import('../core/path/src/index')['buddyPath']
   const buildEnginePath: typeof import('../core/path/src/index')['buildEnginePath']
@@ -149,23 +149,23 @@ declare global {
   const builtUserActionsPath: typeof import('../core/path/src/index')['builtUserActionsPath']
   const cache: typeof import('../core/index')['cache']
   const cachePath: typeof import('../core/path/src/index')['cachePath']
-  const calculateDelay: typeof import('../core/utils/src/retry')['calculateDelay']
+  const calculateDelay: typeof import('../core/browser/src/utils/retry')['calculateDelay']
   const calculatePagination: typeof import('../core/search-engine/src/index')['calculatePagination']
-  const carriageReturn: typeof import('../core/utils/src/regex')['carriageReturn']
-  const caseInsensitive: typeof import('../core/utils/src/regex')['caseInsensitive']
+  const carriageReturn: typeof import('../core/browser/src/utils/regex')['carriageReturn']
+  const caseInsensitive: typeof import('../core/browser/src/utils/regex')['caseInsensitive']
   const changelog: typeof import('../core/git/src/index')['changelog']
-  const char: typeof import('../core/utils/src/regex')['char']
-  const charIn: typeof import('../core/utils/src/regex')['charIn']
-  const charNotIn: typeof import('../core/utils/src/regex')['charNotIn']
+  const char: typeof import('../core/browser/src/utils/regex')['char']
+  const charIn: typeof import('../core/browser/src/utils/regex')['charIn']
+  const charNotIn: typeof import('../core/browser/src/utils/regex')['charNotIn']
   const chat: typeof import('../core/index')['chat']
   const chatPath: typeof import('../core/path/src/index')['chatPath']
-  const clamp: typeof import('../core/utils/src/math')['clamp']
+  const clamp: typeof import('../core/browser/src/utils/math')['clamp']
   const cleanProject: typeof import('../core/utils/src/clean')['cleanProject']
   const clearUndefined: typeof import('../core/objects/src/index')['clearUndefined']
   const cli: typeof import('../core/index')['cli']
   const cliPath: typeof import('../core/path/src/index')['cliPath']
   const client: typeof import('../core/search-engine/src/index')['client']
-  const cloneFnJSON: typeof import('../core/browser/src/index')['cloneFnJSON']
+  const cloneFnJSON: typeof import('../core/browser/src/utils/vendors')['cloneFnJSON']
   const cloud: typeof import('../core/index')['cloud']
   const cloudPath: typeof import('../core/path/src/index')['cloudPath']
   const collections: typeof import('../core/index')['collections']
@@ -175,16 +175,16 @@ declare global {
   const componentsPath: typeof import('../core/path/src/index')['componentsPath']
   const compress: typeof import('../core/storage/src/zip')['compress']
   const computed: typeof import('vue')['computed']
-  const computedAsync: typeof import('../core/browser/src/index')['computedAsync']
-  const computedEager: typeof import('../core/browser/src/index')['computedEager']
-  const computedInject: typeof import('../core/browser/src/index')['computedInject']
+  const computedAsync: typeof import('../core/browser/src/utils/vendors')['computedAsync']
+  const computedEager: typeof import('../core/browser/src/utils/vendors')['computedEager']
+  const computedInject: typeof import('../core/browser/src/utils/vendors')['computedInject']
   const computedSignal: typeof import('../core/signals/src/index')['computedSignal']
-  const computedWithControl: typeof import('../core/browser/src/index')['computedWithControl']
+  const computedWithControl: typeof import('../core/browser/src/utils/vendors')['computedWithControl']
   const config: typeof import('../core/index')['config']
   const configPath: typeof import('../core/path/src/index')['configPath']
   const consola: typeof import('../core/logging/src/index')['consola']
-  const controlledComputed: typeof import('../core/browser/src/index')['controlledComputed']
-  const controlledRef: typeof import('../core/browser/src/index')['controlledRef']
+  const controlledComputed: typeof import('../core/browser/src/utils/vendors')['controlledComputed']
+  const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
   const convert: typeof import('../core/utils/src/currency')['convert']
   const copy: typeof import('../core/storage/src/copy')['copy']
   const copyFile: typeof import('../core/storage/src/copy')['copyFile']
@@ -198,18 +198,18 @@ declare global {
   const createAlterTableMigration: typeof import('../core/database/src/migrations')['createAlterTableMigration']
   const createApp: typeof import('vue')['createApp']
   const createComponent: typeof import('../core/actions/src/index')['createComponent']
-  const createControlledPromise: typeof import('../core/utils/src/promise')['createControlledPromise']
+  const createControlledPromise: typeof import('../core/browser/src/utils/promise')['createControlledPromise']
   const createDatabase: typeof import('../core/actions/src/index')['createDatabase']
-  const createEventHook: typeof import('../core/browser/src/index')['createEventHook']
+  const createEventHook: typeof import('../core/browser/src/utils/vendors')['createEventHook']
   const createFactory: typeof import('../core/actions/src/index')['createFactory']
-  const createFetch: typeof import('../core/browser/src/index')['createFetch']
+  const createFetch: typeof import('../core/browser/src/utils/vendors')['createFetch']
   const createFolder: typeof import('../core/storage/src/folders')['createFolder']
   const createFunction: typeof import('../core/actions/src/index')['createFunction']
-  const createGenericProjection: typeof import('../core/utils/src/math')['createGenericProjection']
-  const createGlobalState: typeof import('../core/browser/src/index')['createGlobalState']
-  const createHead: typeof import('../core/browser/src/index')['createHead']
+  const createGenericProjection: typeof import('../core/browser/src/utils/math')['createGenericProjection']
+  const createGlobalState: typeof import('../core/browser/src/utils/vendors')['createGlobalState']
+  const createHead: typeof import('../core/browser/src/utils/vendors')['createHead']
   const createHostedZone: typeof import('../core/dns/src/drivers/aws')['createHostedZone']
-  const createInjectionState: typeof import('../core/browser/src/index')['createInjectionState']
+  const createInjectionState: typeof import('../core/browser/src/utils/vendors')['createInjectionState']
   const createLanguage: typeof import('../core/actions/src/index')['createLanguage']
   const createLocalTunnel: typeof import('../core/tunnel/src/index')['createLocalTunnel']
   const createMigration: typeof import('../core/actions/src/index')['createMigration']
@@ -219,21 +219,21 @@ declare global {
   const createNotification: typeof import('../core/actions/src/index')['createNotification']
   const createPage: typeof import('../core/actions/src/index')['createPage']
   const createPinia: typeof import('pinia')['createPinia']
-  const createProjection: typeof import('../core/utils/src/math')['createProjection']
-  const createPromiseLock: typeof import('../core/utils/src/promise')['createPromiseLock']
-  const createReactiveFn: typeof import('../core/browser/src/index')['createReactiveFn']
-  const createRegExp: typeof import('../core/utils/src/regex')['createRegExp']
-  const createReusableTemplate: typeof import('../core/browser/src/index')['createReusableTemplate']
-  const createSharedComposable: typeof import('../core/browser/src/index')['createSharedComposable']
-  const createSingletonPromise: typeof import('../core/utils/src/promise')['createSingletonPromise']
+  const createProjection: typeof import('../core/browser/src/utils/math')['createProjection']
+  const createPromiseLock: typeof import('../core/browser/src/utils/promise')['createPromiseLock']
+  const createReactiveFn: typeof import('../core/browser/src/utils/vendors')['createReactiveFn']
+  const createRegExp: typeof import('../core/browser/src/utils/regex')['createRegExp']
+  const createReusableTemplate: typeof import('../core/browser/src/utils/vendors')['createReusableTemplate']
+  const createSharedComposable: typeof import('../core/browser/src/utils/vendors')['createSharedComposable']
+  const createSingletonPromise: typeof import('../core/browser/src/utils/promise')['createSingletonPromise']
   const createTableMigration: typeof import('../core/database/src/migrations')['createTableMigration']
-  const createTemplatePromise: typeof import('../core/browser/src/index')['createTemplatePromise']
-  const createUnrefFn: typeof import('../core/browser/src/index')['createUnrefFn']
+  const createTemplatePromise: typeof import('../core/browser/src/utils/vendors')['createTemplatePromise']
+  const createUnrefFn: typeof import('../core/browser/src/utils/vendors')['createUnrefFn']
   const currency: typeof import('../core/utils/src/currency')['currency']
   const currentPage: typeof import('../core/search-engine/src/index')['currentPage']
   const customElementsDataPath: typeof import('../core/path/src/index')['customElementsDataPath']
   const customRef: typeof import('vue')['customRef']
-  const customStorageEventName: typeof import('../core/browser/src/index')['customStorageEventName']
+  const customStorageEventName: typeof import('../core/browser/src/utils/vendors')['customStorageEventName']
   const customValidate: typeof import('../core/validation/src/validator')['customValidate']
   const dashboardPath: typeof import('../core/path/src/index')['dashboardPath']
   const databasePath: typeof import('../core/path/src/index')['databasePath']
@@ -242,16 +242,16 @@ declare global {
   const db: typeof import('../core/database/src/utils')['db']
   const dbDialect: typeof import('../core/database/src/index')['dbDialect']
   const dd: typeof import('../core/logging/src/index')['dd']
-  const debounce: typeof import('../core/utils/src/debounce')['debounce']
-  const debouncedRef: typeof import('../core/browser/src/index')['debouncedRef']
-  const debouncedWatch: typeof import('../core/browser/src/index')['debouncedWatch']
+  const debounce: typeof import('../core/browser/src/utils/debounce')['debounce']
+  const debouncedRef: typeof import('../core/browser/src/utils/vendors')['debouncedRef']
+  const debouncedWatch: typeof import('../core/browser/src/utils/vendors')['debouncedWatch']
   const decompress: typeof import('../core/storage/src/zip')['decompress']
   const decrypt: typeof import('../core/security/src/crypt')['decrypt']
   const deepMerge: typeof import('../core/objects/src/index')['deepMerge']
-  const defaultDocument: typeof import('../core/browser/src/index')['defaultDocument']
-  const defaultLocation: typeof import('../core/browser/src/index')['defaultLocation']
-  const defaultNavigator: typeof import('../core/browser/src/index')['defaultNavigator']
-  const defaultWindow: typeof import('../core/browser/src/index')['defaultWindow']
+  const defaultDocument: typeof import('../core/browser/src/utils/vendors')['defaultDocument']
+  const defaultLocation: typeof import('../core/browser/src/utils/vendors')['defaultLocation']
+  const defaultNavigator: typeof import('../core/browser/src/utils/vendors')['defaultNavigator']
+  const defaultWindow: typeof import('../core/browser/src/utils/vendors')['defaultWindow']
   const defineApp: typeof import('../core/utils/src/config')['defineApp']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineCache: typeof import('../core/utils/src/config')['defineCache']
@@ -282,7 +282,7 @@ declare global {
   const defineUi: typeof import('../core/utils/src/config')['defineUi']
   const deflateSync: typeof import('../core/storage/src/zip')['deflateSync']
   const del: typeof import('../core/storage/src/delete')['del']
-  const delay: typeof import('../core/utils/src/sleep')['delay']
+  const delay: typeof import('../core/browser/src/utils/sleep')['delay']
   const deleteEmptyFolder: typeof import('../core/storage/src/delete')['deleteEmptyFolder']
   const deleteEmptyFolders: typeof import('../core/storage/src/delete')['deleteEmptyFolders']
   const deleteExistingModelNameTypes: typeof import('../core/orm/src/utils')['deleteExistingModelNameTypes']
@@ -303,7 +303,7 @@ declare global {
   const determineDebugLevel: typeof import('../core/utils/src/helpers')['determineDebugLevel']
   const determineResetPreset: typeof import('../core/utils/src/helpers')['determineResetPreset']
   const developmentPath: typeof import('../core/path/src/index')['developmentPath']
-  const digit: typeof import('../core/utils/src/regex')['digit']
+  const digit: typeof import('../core/browser/src/utils/regex')['digit']
   const dirname: typeof import('../core/path/src/index')['dirname']
   const dispatch: typeof import('../core/events/src/index')['dispatch']
   const dnsPath: typeof import('../core/path/src/index')['dnsPath']
@@ -313,10 +313,10 @@ declare global {
   const doesExist: typeof import('../core/storage/src/files')['doesExist']
   const doesFolderExist: typeof import('../core/storage/src/folders')['doesFolderExist']
   const doesNotExist: typeof import('../core/storage/src/files')['doesNotExist']
-  const dotAll: typeof import('../core/utils/src/regex')['dotAll']
+  const dotAll: typeof import('../core/browser/src/utils/regex')['dotAll']
   const dump: typeof import('../core/logging/src/index')['dump']
   const dumpYaml: typeof import('../core/utils/src/helpers')['dumpYaml']
-  const eagerComputed: typeof import('../core/browser/src/index')['eagerComputed']
+  const eagerComputed: typeof import('../core/browser/src/utils/vendors')['eagerComputed']
   const echo: typeof import('../core/logging/src/index')['echo']
   const effect: typeof import('../core/signals/src/index')['effect']
   const effectScope: typeof import('vue')['effectScope']
@@ -336,14 +336,14 @@ declare global {
   const errorHandlingPath: typeof import('../core/path/src/index')['errorHandlingPath']
   const events: typeof import('../core/events/src/index')['events']
   const eventsPath: typeof import('../core/path/src/index')['eventsPath']
-  const exactly: typeof import('../core/utils/src/regex')['exactly']
+  const exactly: typeof import('../core/browser/src/utils/regex')['exactly']
   const examplesPath: typeof import('../core/path/src/index')['examplesPath']
-  const executeTransition: typeof import('../core/browser/src/index')['executeTransition']
+  const executeTransition: typeof import('../core/browser/src/utils/vendors')['executeTransition']
   const exists: typeof import('../core/storage/src/fs')['exists']
   const existsSync: typeof import('../core/storage/src/fs')['existsSync']
   const expect: typeof import('../core/testing/src/index')['expect']
   const expo: typeof import('../core/push/src/drivers/index')['expo']
-  const extendRef: typeof import('../core/browser/src/index')['extendRef']
+  const extendRef: typeof import('../core/browser/src/utils/vendors')['extendRef']
   const extname: typeof import('../core/path/src/index')['extname']
   const extractAttributesFromModel: typeof import('../core/orm/src/utils')['extractAttributesFromModel']
   const extractDefaultRequest: typeof import('../core/router/src/utils')['extractDefaultRequest']
@@ -371,7 +371,7 @@ declare global {
   const first: typeof import('../core/orm/src/generated/User')['first']
   const folders: typeof import('../core/storage/src/folders')['folders']
   const format: typeof import('../core/path/src/index')['format']
-  const formatTimeAgo: typeof import('../core/browser/src/index')['formatTimeAgo']
+  const formatTimeAgo: typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']
   const frameworkCloudPath: typeof import('../core/path/src/index')['frameworkCloudPath']
   const frameworkPath: typeof import('../core/path/src/index')['frameworkPath']
   const frameworkVersion: typeof import('../core/utils/src/helpers')['frameworkVersion']
@@ -430,12 +430,12 @@ declare global {
   const getRelationCount: typeof import('../core/orm/src/utils')['getRelationCount']
   const getRelationType: typeof import('../core/orm/src/utils')['getRelationType']
   const getRelations: typeof import('../core/orm/src/utils')['getRelations']
-  const getSSRHandler: typeof import('../core/browser/src/index')['getSSRHandler']
+  const getSSRHandler: typeof import('../core/browser/src/utils/vendors')['getSSRHandler']
   const getTableName: typeof import('../core/orm/src/utils')['getTableName']
   const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
   const gitPath: typeof import('../core/path/src/index')['gitPath']
   const glob: typeof import('../core/storage/src/glob')['glob']
-  const global: typeof import('../core/utils/src/regex')['global']
+  const global: typeof import('../core/browser/src/utils/regex')['global']
   const goToNextPage: typeof import('../core/search-engine/src/index')['goToNextPage']
   const goToPage: typeof import('../core/search-engine/src/index')['goToPage']
   const goToPrevPage: typeof import('../core/search-engine/src/index')['goToPrevPage']
@@ -468,14 +468,14 @@ declare global {
   const helpers: typeof import('../core/storage/src/helpers')['helpers']
   const hits: typeof import('../core/search-engine/src/index')['hits']
   const homeDir: typeof import('../core/path/src/index')['homeDir']
-  const ignorableWatch: typeof import('../core/browser/src/index')['ignorableWatch']
+  const ignorableWatch: typeof import('../core/browser/src/utils/vendors')['ignorableWatch']
   const increment: typeof import('../../../resources/functions/counter')['increment']
   const index: typeof import('../core/search-engine/src/index')['index']
   const inflateSync: typeof import('../core/storage/src/zip')['inflateSync']
   const initProject: typeof import('../core/utils/src/helpers')['initProject']
   const inject: typeof import('vue')['inject']
   const injectHead: typeof import('@unhead/vue')['injectHead']
-  const injectLocal: typeof import('../core/browser/src/index')['injectLocal']
+  const injectLocal: typeof import('../core/browser/src/utils/vendors')['injectLocal']
   const installIfVersionMismatch: typeof import('../core/utils/src/helpers')['installIfVersionMismatch']
   const intro: typeof import('../core/build/src/index')['intro']
   const invoke: typeof import('../core/actions/src/generate/index')['invoke']
@@ -490,7 +490,7 @@ declare global {
   const isDate: typeof import('../core/validation/src/is')['isDate']
   const isDeepEqual: typeof import('../core/utils/src/equal')['isDeepEqual']
   const isDef: typeof import('../core/validation/src/is')['isDef']
-  const isDefined: typeof import('../core/browser/src/index')['isDefined']
+  const isDefined: typeof import('../core/browser/src/utils/vendors')['isDefined']
   const isDir: typeof import('../core/storage/src/folders')['isDir']
   const isDirectory: typeof import('../core/storage/src/folders')['isDirectory']
   const isDirectoryEmpty: typeof import('../core/storage/src/delete')['isDirectoryEmpty']
@@ -528,7 +528,7 @@ declare global {
   const isSet: typeof import('../core/validation/src/is')['isSet']
   const isString: typeof import('../core/validation/src/is')['isString']
   const isSymbol: typeof import('../core/validation/src/is')['isSymbol']
-  const isTruthy: typeof import('../core/utils/src/guards')['isTruthy']
+  const isTruthy: typeof import('../core/browser/src/utils/guards')['isTruthy']
   const isUndefined: typeof import('../core/validation/src/is')['isUndefined']
   const isWindow: typeof import('../core/validation/src/is')['isWindow']
   const isZero: typeof import('../core/utils/src/currency')['isZero']
@@ -544,11 +544,11 @@ declare global {
   const layoutsPath: typeof import('../core/path/src/index')['layoutsPath']
   const lessThan: typeof import('../core/utils/src/currency')['lessThan']
   const lessThanOrEqual: typeof import('../core/utils/src/currency')['lessThanOrEqual']
-  const letter: typeof import('../core/utils/src/regex')['letter']
+  const letter: typeof import('../core/browser/src/utils/regex')['letter']
   const libraryEntryPath: typeof import('../core/path/src/index')['libraryEntryPath']
   const libsEntriesPath: typeof import('../core/path/src/index')['libsEntriesPath']
   const libsPath: typeof import('../core/path/src/index')['libsPath']
-  const linefeed: typeof import('../core/utils/src/regex')['linefeed']
+  const linefeed: typeof import('../core/browser/src/utils/regex')['linefeed']
   const lintPath: typeof import('../core/path/src/index')['lintPath']
   const listFoundationModels: typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']
   const listRoutes: typeof import('../core/router/src/utils')['listRoutes']
@@ -561,14 +561,14 @@ declare global {
   const logLevel: typeof import('../core/logging/src/index')['logLevel']
   const logger: typeof import('../core/logging/src/index')['logger']
   const loggingPath: typeof import('../core/path/src/index')['loggingPath']
-  const logicNot: typeof import('../core/utils/src/math')['logicNot']
-  const logicOr: typeof import('../core/utils/src/math')['logicOr']
+  const logicNot: typeof import('../core/browser/src/utils/math')['logicNot']
+  const logicOr: typeof import('../core/browser/src/utils/math')['logicOr']
   const logsPath: typeof import('../core/path/src/index')['logsPath']
-  const loop: typeof import('../core/utils/src/base')['loop']
+  const loop: typeof import('../core/browser/src/utils/base')['loop']
   const makeAction: typeof import('../core/actions/src/index')['makeAction']
   const makeComponent: typeof import('../core/actions/src/index')['makeComponent']
   const makeDatabase: typeof import('../core/actions/src/index')['makeDatabase']
-  const makeDestructurable: typeof import('../core/browser/src/index')['makeDestructurable']
+  const makeDestructurable: typeof import('../core/browser/src/utils/vendors')['makeDestructurable']
   const makeFunction: typeof import('../core/actions/src/index')['makeFunction']
   const makeHash: typeof import('../core/security/src/hash')['makeHash']
   const makeLanguage: typeof import('../core/actions/src/index')['makeLanguage']
@@ -576,14 +576,14 @@ declare global {
   const makePage: typeof import('../core/actions/src/index')['makePage']
   const makeStack: typeof import('../core/actions/src/index')['makeStack']
   const mapActions: typeof import('pinia')['mapActions']
-  const mapGamepadToXbox360Controller: typeof import('../core/browser/src/index')['mapGamepadToXbox360Controller']
+  const mapGamepadToXbox360Controller: typeof import('../core/browser/src/utils/vendors')['mapGamepadToXbox360Controller']
   const mapGetters: typeof import('pinia')['mapGetters']
   const mapState: typeof import('pinia')['mapState']
   const mapStores: typeof import('pinia')['mapStores']
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
   const maximum: typeof import('../core/utils/src/currency')['maximum']
-  const maybe: typeof import('../core/utils/src/regex')['maybe']
+  const maybe: typeof import('../core/browser/src/utils/regex')['maybe']
   const md5Encode: typeof import('../core/security/src/hash')['md5Encode']
   const middlewares: typeof import('../core/router/src/middleware')['middlewares']
   const migrator: typeof import('../core/database/src/migrations')['migrator']
@@ -595,17 +595,17 @@ declare global {
   const modelsPath: typeof import('../core/path/src/index')['modelsPath']
   const modulesPath: typeof import('../core/path/src/index')['modulesPath']
   const money: typeof import('../core/utils/src/currency')['money']
-  const multiline: typeof import('../core/utils/src/regex')['multiline']
+  const multiline: typeof import('../core/browser/src/utils/regex')['multiline']
   const multiply: typeof import('../core/utils/src/currency')['multiply']
   const nexmo: typeof import('../core/sms/src/drivers/index')['nexmo']
   const nextTick: typeof import('vue')['nextTick']
-  const noNull: typeof import('../core/utils/src/guards')['noNull']
+  const noNull: typeof import('../core/browser/src/utils/guards')['noNull']
   const normalize: typeof import('../core/path/src/index')['normalize']
   const normalizeScale: typeof import('../core/utils/src/currency')['normalizeScale']
   const normalizeString: typeof import('../core/path/src/index')['normalizeString']
-  const not: typeof import('../core/utils/src/regex')['not']
-  const notNullish: typeof import('../core/utils/src/guards')['notNullish']
-  const notUndefined: typeof import('../core/utils/src/guards')['notUndefined']
+  const not: typeof import('../core/browser/src/utils/regex')['not']
+  const notNullish: typeof import('../core/browser/src/utils/guards')['notNullish']
+  const notUndefined: typeof import('../core/browser/src/utils/guards')['notUndefined']
   const notification: typeof import('../core/notifications/src/index')['notification']
   const notificationsPath: typeof import('../core/path/src/index')['notificationsPath']
   const now: typeof import('../core/database/src/utils')['now']
@@ -624,28 +624,28 @@ declare global {
   const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
   const onBeforeUpdate: typeof import('vue')['onBeforeUpdate']
-  const onClickOutside: typeof import('../core/browser/src/index')['onClickOutside']
+  const onClickOutside: typeof import('../core/browser/src/utils/vendors')['onClickOutside']
   const onDeactivated: typeof import('vue')['onDeactivated']
   const onErrorCaptured: typeof import('vue')['onErrorCaptured']
-  const onKeyDown: typeof import('../core/browser/src/index')['onKeyDown']
-  const onKeyPressed: typeof import('../core/browser/src/index')['onKeyPressed']
-  const onKeyStroke: typeof import('../core/browser/src/index')['onKeyStroke']
-  const onKeyUp: typeof import('../core/browser/src/index')['onKeyUp']
-  const onLongPress: typeof import('../core/browser/src/index')['onLongPress']
+  const onKeyDown: typeof import('../core/browser/src/utils/vendors')['onKeyDown']
+  const onKeyPressed: typeof import('../core/browser/src/utils/vendors')['onKeyPressed']
+  const onKeyStroke: typeof import('../core/browser/src/utils/vendors')['onKeyStroke']
+  const onKeyUp: typeof import('../core/browser/src/utils/vendors')['onKeyUp']
+  const onLongPress: typeof import('../core/browser/src/utils/vendors')['onLongPress']
   const onMounted: typeof import('vue')['onMounted']
   const onRenderTracked: typeof import('vue')['onRenderTracked']
   const onRenderTriggered: typeof import('vue')['onRenderTriggered']
   const onScopeDispose: typeof import('vue')['onScopeDispose']
   const onServerPrefetch: typeof import('vue')['onServerPrefetch']
-  const onStartTyping: typeof import('../core/browser/src/index')['onStartTyping']
+  const onStartTyping: typeof import('../core/browser/src/utils/vendors')['onStartTyping']
   const onUnmounted: typeof import('vue')['onUnmounted']
   const onUpdated: typeof import('vue')['onUpdated']
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
   const onboardingPath: typeof import('../core/path/src/index')['onboardingPath']
-  const oneOrMore: typeof import('../core/utils/src/regex')['oneOrMore']
+  const oneOrMore: typeof import('../core/browser/src/utils/regex')['oneOrMore']
   const openShell: typeof import('../core/desktop/src/index')['openShell']
   const openaiWip: typeof import('../core/ai/src/drivers/openai')['openaiWip']
-  const or: typeof import('../core/utils/src/math')['or']
+  const or: typeof import('../core/browser/src/utils/math')['or']
   const originRequestFunctionHash: typeof import('../core/utils/src/hash')['originRequestFunctionHash']
   const ormPath: typeof import('../core/path/src/index')['ormPath']
   const outro: typeof import('../core/build/src/index')['outro']
@@ -657,7 +657,7 @@ declare global {
   const parser: typeof import('../core/build/src/utils')['parser']
   const path: typeof import('../core/path/src/index')['path']
   const pathPath: typeof import('../core/path/src/index')['pathPath']
-  const pausableWatch: typeof import('../core/browser/src/index')['pausableWatch']
+  const pausableWatch: typeof import('../core/browser/src/utils/vendors')['pausableWatch']
   const paymentsPath: typeof import('../core/path/src/index')['paymentsPath']
   const perPage: typeof import('../core/search-engine/src/index')['perPage']
   const playwrightConfig: typeof import('../core/playwright.config')['default']
@@ -669,7 +669,7 @@ declare global {
   const projectPath: typeof import('../core/path/src/index')['projectPath']
   const projectStoragePath: typeof import('../core/path/src/paths')['projectStoragePath']
   const provide: typeof import('vue')['provide']
-  const provideLocal: typeof import('../core/browser/src/index')['provideLocal']
+  const provideLocal: typeof import('../core/browser/src/utils/vendors')['provideLocal']
   const publicPath: typeof import('../core/path/src/index')['publicPath']
   const pushPath: typeof import('../core/path/src/index')['pushPath']
   const put: typeof import('../core/storage/src/files')['put']
@@ -677,42 +677,42 @@ declare global {
   const queryBuilderPath: typeof import('../core/path/src/index')['queryBuilderPath']
   const queue: typeof import('../core/index')['queue']
   const queuePath: typeof import('../core/path/src/index')['queuePath']
-  const rand: typeof import('../core/utils/src/math')['rand']
-  const reactify: typeof import('../core/browser/src/index')['reactify']
-  const reactifyObject: typeof import('../core/browser/src/index')['reactifyObject']
+  const rand: typeof import('../core/browser/src/utils/math')['rand']
+  const reactify: typeof import('../core/browser/src/utils/vendors')['reactify']
+  const reactifyObject: typeof import('../core/browser/src/utils/vendors')['reactifyObject']
   const reactive: typeof import('vue')['reactive']
-  const reactiveComputed: typeof import('../core/browser/src/index')['reactiveComputed']
-  const reactiveOmit: typeof import('../core/browser/src/index')['reactiveOmit']
-  const reactivePick: typeof import('../core/browser/src/index')['reactivePick']
+  const reactiveComputed: typeof import('../core/browser/src/utils/vendors')['reactiveComputed']
+  const reactiveOmit: typeof import('../core/browser/src/utils/vendors')['reactiveOmit']
+  const reactivePick: typeof import('../core/browser/src/utils/vendors')['reactivePick']
   const readFileSync: typeof import('../core/storage/src/fs')['readFileSync']
   const readJsonFile: typeof import('../core/storage/src/files')['readJsonFile']
   const readPackageJson: typeof import('../core/storage/src/files')['readPackageJson']
   const readTextFile: typeof import('../core/storage/src/files')['readTextFile']
-  const readableSize: typeof import('../core/browser/src/index')['readableSize']
+  const readableSize: typeof import('../core/browser/src/utils/vendors')['readableSize']
   const readonly: typeof import('vue')['readonly']
   const realtimePath: typeof import('../core/path/src/index')['realtimePath']
   const realtimeWip: typeof import('../core/realtime/src/drivers/index')['realtimeWip']
   const ref: typeof import('vue')['ref']
-  const refAutoReset: typeof import('../core/browser/src/index')['refAutoReset']
-  const refDebounced: typeof import('../core/browser/src/index')['refDebounced']
-  const refDefault: typeof import('../core/browser/src/index')['refDefault']
-  const refThrottled: typeof import('../core/browser/src/index')['refThrottled']
-  const refWithControl: typeof import('../core/browser/src/index')['refWithControl']
+  const refAutoReset: typeof import('../core/browser/src/utils/vendors')['refAutoReset']
+  const refDebounced: typeof import('../core/browser/src/utils/vendors')['refDebounced']
+  const refDefault: typeof import('../core/browser/src/utils/vendors')['refDefault']
+  const refThrottled: typeof import('../core/browser/src/utils/vendors')['refThrottled']
+  const refWithControl: typeof import('../core/browser/src/utils/vendors')['refWithControl']
   const relative: typeof import('../core/path/src/index')['relative']
   const relativeActionsPath: typeof import('../core/path/src/index')['relativeActionsPath']
   const remove: typeof import('../core/orm/src/generated/User')['remove']
-  const renderHeadToString: typeof import('../core/browser/src/index')['renderHeadToString']
+  const renderHeadToString: typeof import('../core/browser/src/utils/vendors')['renderHeadToString']
   const replPath: typeof import('../core/path/src/index')['replPath']
   const reportError: typeof import('../core/validation/src/reporter')['reportError']
   const request: typeof import('../core/router/src/request')['request']
   const resetDatabase: typeof import('../core/database/src/migrations')['resetDatabase']
   const resolve: typeof import('../core/path/src/index')['resolve']
   const resolveComponent: typeof import('vue')['resolveComponent']
-  const resolveRef: typeof import('../core/browser/src/index')['resolveRef']
-  const resolveUnref: typeof import('../core/browser/src/index')['resolveUnref']
+  const resolveRef: typeof import('../core/browser/src/utils/vendors')['resolveRef']
+  const resolveUnref: typeof import('../core/browser/src/utils/vendors')['resolveUnref']
   const resourcesPath: typeof import('../core/path/src/index')['resourcesPath']
   const results: typeof import('../core/search-engine/src/index')['results']
-  const retry: typeof import('../core/utils/src/retry')['retry']
+  const retry: typeof import('../core/browser/src/utils/retry')['retry']
   const rimraf: typeof import('../core/utils/src/delete')['rimraf']
   const root: typeof import('../core/signals/src/index')['root']
   const route: typeof import('../core/router/src/router')['route']
@@ -760,7 +760,7 @@ declare global {
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setEnvValue: typeof import('../core/utils/src/helpers')['setEnvValue']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
-  const setSSRHandler: typeof import('../core/browser/src/index')['setSSRHandler']
+  const setSSRHandler: typeof import('../core/browser/src/utils/vendors')['setSSRHandler']
   const setSystemTime: typeof import('../core/testing/src/index')['setSystemTime']
   const setTotalHits: typeof import('../core/search-engine/src/index')['setTotalHits']
   const settingsPath: typeof import('../core/path/src/index')['settingsPath']
@@ -769,7 +769,7 @@ declare global {
   const shallowRef: typeof import('vue')['shallowRef']
   const shellPath: typeof import('../core/path/src/index')['shellPath']
   const signal: typeof import('../core/signals/src/index')['signal']
-  const sleep: typeof import('../core/utils/src/sleep')['sleep']
+  const sleep: typeof import('../core/browser/src/utils/sleep')['sleep']
   const slugPath: typeof import('../core/path/src/index')['slugPath']
   const sms77: typeof import('../core/sms/src/drivers/index')['sms77']
   const smsPath: typeof import('../core/path/src/index')['smsPath']
@@ -781,7 +781,7 @@ declare global {
   const src: typeof import('../core/events/src/index')['default']
   const stacks: typeof import('../core/build/src/index')['stacks']
   const stacksPath: typeof import('../core/path/src/index')['stacksPath']
-  const sticky: typeof import('../core/utils/src/regex')['sticky']
+  const sticky: typeof import('../core/browser/src/utils/regex')['sticky']
   const storage: typeof import('../core/storage/src/index')['storage']
   const storagePath: typeof import('../core/path/src/index')['storagePath']
   const storeToRefs: typeof import('pinia')['storeToRefs']
@@ -790,21 +790,21 @@ declare global {
   const stringsPath: typeof import('../core/path/src/index')['stringsPath']
   const stripe: typeof import('../core/payments/src/index')['stripe']
   const subtract: typeof import('../core/utils/src/currency')['subtract']
-  const syncRef: typeof import('../core/browser/src/index')['syncRef']
-  const syncRefs: typeof import('../core/browser/src/index')['syncRefs']
-  const tab: typeof import('../core/utils/src/regex')['tab']
-  const tap: typeof import('../core/utils/src/function')['tap']
+  const syncRef: typeof import('../core/browser/src/utils/vendors')['syncRef']
+  const syncRefs: typeof import('../core/browser/src/utils/vendors')['syncRefs']
+  const tab: typeof import('../core/browser/src/utils/regex')['tab']
+  const tap: typeof import('../core/browser/src/utils/function')['tap']
   const team: typeof import('../core/auth/src/authentication')['team']
   const telnyx: typeof import('../core/sms/src/drivers/index')['telnyx']
-  const templateRef: typeof import('../core/browser/src/index')['templateRef']
+  const templateRef: typeof import('../core/browser/src/utils/vendors')['templateRef']
   const termii: typeof import('../core/sms/src/drivers/index')['termii']
   const test: typeof import('../core/testing/src/index')['test']
   const testingPath: typeof import('../core/path/src/index')['testingPath']
   const testingThis: typeof import('../core/desktop/src/system-tray')['testingThis']
   const testsPath: typeof import('../core/path/src/index')['testsPath']
-  const throttle: typeof import('../core/utils/src/throttle')['throttle']
-  const throttledRef: typeof import('../core/browser/src/index')['throttledRef']
-  const throttledWatch: typeof import('../core/browser/src/index')['throttledWatch']
+  const throttle: typeof import('../core/browser/src/utils/throttle')['throttle']
+  const throttledRef: typeof import('../core/browser/src/utils/vendors')['throttledRef']
+  const throttledWatch: typeof import('../core/browser/src/utils/vendors')['throttledWatch']
   const tick: typeof import('../core/signals/src/index')['tick']
   const timeout: typeof import('../core/scheduler/src/schedule')['timeout']
   const tinker: typeof import('../core/repl/src/index')['tinker']
@@ -812,11 +812,11 @@ declare global {
   const toDecimal: typeof import('../core/utils/src/currency')['toDecimal']
   const toNamespacedPath: typeof import('../core/path/src/index')['toNamespacedPath']
   const toRaw: typeof import('vue')['toRaw']
-  const toReactive: typeof import('../core/browser/src/index')['toReactive']
+  const toReactive: typeof import('../core/browser/src/utils/vendors')['toReactive']
   const toRef: typeof import('vue')['toRef']
   const toRefs: typeof import('vue')['toRefs']
   const toSnapshot: typeof import('../core/utils/src/currency')['toSnapshot']
-  const toString: typeof import('../core/utils/src/base')['toString']
+  const toString: typeof import('../core/browser/src/utils/base')['toString']
   const toUnits: typeof import('../core/utils/src/currency')['toUnits']
   const toValue: typeof import('vue')['toValue']
   const toggleDark: typeof import('../../../resources/functions/dark')['toggleDark']
@@ -825,102 +825,102 @@ declare global {
   const traverse: typeof import('../core/build/src/utils')['traverse']
   const triggerRef: typeof import('vue')['triggerRef']
   const trimScale: typeof import('../core/utils/src/currency')['trimScale']
-  const tryOnBeforeMount: typeof import('../core/browser/src/index')['tryOnBeforeMount']
-  const tryOnBeforeUnmount: typeof import('../core/browser/src/index')['tryOnBeforeUnmount']
-  const tryOnMounted: typeof import('../core/browser/src/index')['tryOnMounted']
-  const tryOnScopeDispose: typeof import('../core/browser/src/index')['tryOnScopeDispose']
-  const tryOnUnmounted: typeof import('../core/browser/src/index')['tryOnUnmounted']
+  const tryOnBeforeMount: typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']
+  const tryOnBeforeUnmount: typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']
+  const tryOnMounted: typeof import('../core/browser/src/utils/vendors')['tryOnMounted']
+  const tryOnScopeDispose: typeof import('../core/browser/src/utils/vendors')['tryOnScopeDispose']
+  const tryOnUnmounted: typeof import('../core/browser/src/utils/vendors')['tryOnUnmounted']
   const twilio: typeof import('../core/sms/src/drivers/index')['twilio']
   const typesPath: typeof import('../core/path/src/index')['typesPath']
   const ui: typeof import('../core/ui/src/index')['ui']
   const uiPath: typeof import('../core/path/src/index')['uiPath']
   const unarchive: typeof import('../core/storage/src/zip')['unarchive']
-  const unicode: typeof import('../core/utils/src/regex')['unicode']
+  const unicode: typeof import('../core/browser/src/utils/regex')['unicode']
   const unit: typeof import('../core/testing/src/index')['unit']
   const unref: typeof import('vue')['unref']
-  const unrefElement: typeof import('../core/browser/src/index')['unrefElement']
-  const until: typeof import('../core/browser/src/index')['until']
+  const unrefElement: typeof import('../core/browser/src/utils/vendors')['unrefElement']
+  const until: typeof import('../core/browser/src/utils/vendors')['until']
   const unzip: typeof import('../core/storage/src/zip')['unzip']
   const update: typeof import('../core/orm/src/generated/User')['update']
   const updateConfigFile: typeof import('../core/storage/src/helpers')['updateConfigFile']
   const updateNameservers: typeof import('../core/dns/src/drivers/aws')['updateNameservers']
-  const useAbs: typeof import('../core/utils/src/math')['useAbs']
-  const useActiveElement: typeof import('../core/browser/src/index')['useActiveElement']
-  const useAnimate: typeof import('../core/browser/src/index')['useAnimate']
-  const useArrayDifference: typeof import('../core/browser/src/index')['useArrayDifference']
-  const useArrayEvery: typeof import('../core/browser/src/index')['useArrayEvery']
-  const useArrayFilter: typeof import('../core/browser/src/index')['useArrayFilter']
-  const useArrayFind: typeof import('../core/browser/src/index')['useArrayFind']
-  const useArrayFindIndex: typeof import('../core/browser/src/index')['useArrayFindIndex']
+  const useAbs: typeof import('../core/browser/src/utils/math')['useAbs']
+  const useActiveElement: typeof import('../core/browser/src/utils/vendors')['useActiveElement']
+  const useAnimate: typeof import('../core/browser/src/utils/vendors')['useAnimate']
+  const useArrayDifference: typeof import('../core/browser/src/utils/vendors')['useArrayDifference']
+  const useArrayEvery: typeof import('../core/browser/src/utils/vendors')['useArrayEvery']
+  const useArrayFilter: typeof import('../core/browser/src/utils/vendors')['useArrayFilter']
+  const useArrayFind: typeof import('../core/browser/src/utils/vendors')['useArrayFind']
+  const useArrayFindIndex: typeof import('../core/browser/src/utils/vendors')['useArrayFindIndex']
   const useArrayFindLast: typeof import('@vueuse/core')['useArrayFindLast']
-  const useArrayIncludes: typeof import('../core/browser/src/index')['useArrayIncludes']
+  const useArrayIncludes: typeof import('../core/browser/src/utils/vendors')['useArrayIncludes']
   const useArrayJoin: typeof import('@vueuse/core')['useArrayJoin']
-  const useArrayMap: typeof import('../core/browser/src/index')['useArrayMap']
-  const useArrayReduce: typeof import('../core/browser/src/index')['useArrayReduce']
-  const useArraySome: typeof import('../core/browser/src/index')['useArraySome']
-  const useArrayUnique: typeof import('../core/browser/src/index')['useArrayUnique']
-  const useAsyncQueue: typeof import('../core/browser/src/index')['useAsyncQueue']
-  const useAsyncState: typeof import('../core/browser/src/index')['useAsyncState']
+  const useArrayMap: typeof import('../core/browser/src/utils/vendors')['useArrayMap']
+  const useArrayReduce: typeof import('../core/browser/src/utils/vendors')['useArrayReduce']
+  const useArraySome: typeof import('../core/browser/src/utils/vendors')['useArraySome']
+  const useArrayUnique: typeof import('../core/browser/src/utils/vendors')['useArrayUnique']
+  const useAsyncQueue: typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']
+  const useAsyncState: typeof import('../core/browser/src/utils/vendors')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
-  const useAverage: typeof import('../core/utils/src/math')['useAverage']
-  const useBase64: typeof import('../core/browser/src/index')['useBase64']
-  const useBattery: typeof import('../core/browser/src/index')['useBattery']
-  const useBluetooth: typeof import('../core/browser/src/index')['useBluetooth']
-  const useBreakpoints: typeof import('../core/browser/src/index')['useBreakpoints']
-  const useBroadcastChannel: typeof import('../core/browser/src/index')['useBroadcastChannel']
-  const useBrowserLocation: typeof import('../core/browser/src/index')['useBrowserLocation']
-  const useCached: typeof import('../core/browser/src/index')['useCached']
-  const useCeil: typeof import('../core/utils/src/math')['useCeil']
+  const useAverage: typeof import('../core/browser/src/utils/math')['useAverage']
+  const useBase64: typeof import('../core/browser/src/utils/vendors')['useBase64']
+  const useBattery: typeof import('../core/browser/src/utils/vendors')['useBattery']
+  const useBluetooth: typeof import('../core/browser/src/utils/vendors')['useBluetooth']
+  const useBreakpoints: typeof import('../core/browser/src/utils/vendors')['useBreakpoints']
+  const useBroadcastChannel: typeof import('../core/browser/src/utils/vendors')['useBroadcastChannel']
+  const useBrowserLocation: typeof import('../core/browser/src/utils/vendors')['useBrowserLocation']
+  const useCached: typeof import('../core/browser/src/utils/vendors')['useCached']
+  const useCeil: typeof import('../core/browser/src/utils/math')['useCeil']
   const useChat: typeof import('../core/notifications/src/index')['useChat']
-  const useClamp: typeof import('../core/utils/src/math')['useClamp']
-  const useClipboard: typeof import('../core/browser/src/index')['useClipboard']
-  const useClipboardItems: typeof import('../core/browser/src/index')['useClipboardItems']
-  const useCloned: typeof import('../core/browser/src/index')['useCloned']
-  const useColorMode: typeof import('../core/browser/src/index')['useColorMode']
-  const useConfirmDialog: typeof import('../core/browser/src/index')['useConfirmDialog']
-  const useCounter: typeof import('../core/browser/src/index')['useCounter']
+  const useClamp: typeof import('../core/browser/src/utils/math')['useClamp']
+  const useClipboard: typeof import('../core/browser/src/utils/vendors')['useClipboard']
+  const useClipboardItems: typeof import('../core/browser/src/utils/vendors')['useClipboardItems']
+  const useCloned: typeof import('../core/browser/src/utils/vendors')['useCloned']
+  const useColorMode: typeof import('../core/browser/src/utils/vendors')['useColorMode']
+  const useConfirmDialog: typeof import('../core/browser/src/utils/vendors')['useConfirmDialog']
+  const useCounter: typeof import('../core/browser/src/utils/vendors')['useCounter']
   const useCssModule: typeof import('vue')['useCssModule']
-  const useCssVar: typeof import('../core/browser/src/index')['useCssVar']
+  const useCssVar: typeof import('../core/browser/src/utils/vendors')['useCssVar']
   const useCssVars: typeof import('vue')['useCssVars']
-  const useCurrentElement: typeof import('../core/browser/src/index')['useCurrentElement']
-  const useCycleList: typeof import('../core/browser/src/index')['useCycleList']
-  const useDark: typeof import('../core/browser/src/index')['useDark']
-  const useDateFormat: typeof import('../core/browser/src/index')['useDateFormat']
-  const useDebounce: typeof import('../core/browser/src/index')['useDebounce']
-  const useDebounceFn: typeof import('../core/browser/src/index')['useDebounceFn']
-  const useDebouncedRefHistory: typeof import('../core/browser/src/index')['useDebouncedRefHistory']
-  const useDeviceMotion: typeof import('../core/browser/src/index')['useDeviceMotion']
-  const useDeviceOrientation: typeof import('../core/browser/src/index')['useDeviceOrientation']
-  const useDevicePixelRatio: typeof import('../core/browser/src/index')['useDevicePixelRatio']
-  const useDevicesList: typeof import('../core/browser/src/index')['useDevicesList']
-  const useDisplayMedia: typeof import('../core/browser/src/index')['useDisplayMedia']
-  const useDocumentVisibility: typeof import('../core/browser/src/index')['useDocumentVisibility']
-  const useDraggable: typeof import('../core/browser/src/index')['useDraggable']
-  const useDropZone: typeof import('../core/browser/src/index')['useDropZone']
-  const useElementBounding: typeof import('../core/browser/src/index')['useElementBounding']
-  const useElementByPoint: typeof import('../core/browser/src/index')['useElementByPoint']
-  const useElementHover: typeof import('../core/browser/src/index')['useElementHover']
-  const useElementSize: typeof import('../core/browser/src/index')['useElementSize']
-  const useElementVisibility: typeof import('../core/browser/src/index')['useElementVisibility']
+  const useCurrentElement: typeof import('../core/browser/src/utils/vendors')['useCurrentElement']
+  const useCycleList: typeof import('../core/browser/src/utils/vendors')['useCycleList']
+  const useDark: typeof import('../core/browser/src/utils/vendors')['useDark']
+  const useDateFormat: typeof import('../core/browser/src/utils/vendors')['useDateFormat']
+  const useDebounce: typeof import('../core/browser/src/utils/vendors')['useDebounce']
+  const useDebounceFn: typeof import('../core/browser/src/utils/vendors')['useDebounceFn']
+  const useDebouncedRefHistory: typeof import('../core/browser/src/utils/vendors')['useDebouncedRefHistory']
+  const useDeviceMotion: typeof import('../core/browser/src/utils/vendors')['useDeviceMotion']
+  const useDeviceOrientation: typeof import('../core/browser/src/utils/vendors')['useDeviceOrientation']
+  const useDevicePixelRatio: typeof import('../core/browser/src/utils/vendors')['useDevicePixelRatio']
+  const useDevicesList: typeof import('../core/browser/src/utils/vendors')['useDevicesList']
+  const useDisplayMedia: typeof import('../core/browser/src/utils/vendors')['useDisplayMedia']
+  const useDocumentVisibility: typeof import('../core/browser/src/utils/vendors')['useDocumentVisibility']
+  const useDraggable: typeof import('../core/browser/src/utils/vendors')['useDraggable']
+  const useDropZone: typeof import('../core/browser/src/utils/vendors')['useDropZone']
+  const useElementBounding: typeof import('../core/browser/src/utils/vendors')['useElementBounding']
+  const useElementByPoint: typeof import('../core/browser/src/utils/vendors')['useElementByPoint']
+  const useElementHover: typeof import('../core/browser/src/utils/vendors')['useElementHover']
+  const useElementSize: typeof import('../core/browser/src/utils/vendors')['useElementSize']
+  const useElementVisibility: typeof import('../core/browser/src/utils/vendors')['useElementVisibility']
   const useEmail: typeof import('../core/notifications/src/index')['useEmail']
   const useEnvReader: typeof import('../../../resources/functions/env-reader')['useEnvReader']
   const useEvent: typeof import('../core/events/src/index')['useEvent']
-  const useEventBus: typeof import('../core/browser/src/index')['useEventBus']
-  const useEventListener: typeof import('../core/browser/src/index')['useEventListener']
-  const useEventSource: typeof import('../core/browser/src/index')['useEventSource']
+  const useEventBus: typeof import('../core/browser/src/utils/vendors')['useEventBus']
+  const useEventListener: typeof import('../core/browser/src/utils/vendors')['useEventListener']
+  const useEventSource: typeof import('../core/browser/src/utils/vendors')['useEventSource']
   const useEvents: typeof import('../core/events/src/index')['useEvents']
-  const useEyeDropper: typeof import('../core/browser/src/index')['useEyeDropper']
-  const useFavicon: typeof import('../core/browser/src/index')['useFavicon']
-  const useFetch: typeof import('../core/browser/src/index')['useFetch']
-  const useFileDialog: typeof import('../core/browser/src/index')['useFileDialog']
-  const useFileSystemAccess: typeof import('../core/browser/src/index')['useFileSystemAccess']
-  const useFloor: typeof import('../core/utils/src/math')['useFloor']
-  const useFocus: typeof import('../core/browser/src/index')['useFocus']
-  const useFocusWithin: typeof import('../core/browser/src/index')['useFocusWithin']
-  const useFps: typeof import('../core/browser/src/index')['useFps']
-  const useFullscreen: typeof import('../core/browser/src/index')['useFullscreen']
-  const useGamepad: typeof import('../core/browser/src/index')['useGamepad']
-  const useGeolocation: typeof import('../core/browser/src/index')['useGeolocation']
+  const useEyeDropper: typeof import('../core/browser/src/utils/vendors')['useEyeDropper']
+  const useFavicon: typeof import('../core/browser/src/utils/vendors')['useFavicon']
+  const useFetch: typeof import('../core/browser/src/utils/vendors')['useFetch']
+  const useFileDialog: typeof import('../core/browser/src/utils/vendors')['useFileDialog']
+  const useFileSystemAccess: typeof import('../core/browser/src/utils/vendors')['useFileSystemAccess']
+  const useFloor: typeof import('../core/browser/src/utils/math')['useFloor']
+  const useFocus: typeof import('../core/browser/src/utils/vendors')['useFocus']
+  const useFocusWithin: typeof import('../core/browser/src/utils/vendors')['useFocusWithin']
+  const useFps: typeof import('../core/browser/src/utils/vendors')['useFps']
+  const useFullscreen: typeof import('../core/browser/src/utils/vendors')['useFullscreen']
+  const useGamepad: typeof import('../core/browser/src/utils/vendors')['useGamepad']
+  const useGeolocation: typeof import('../core/browser/src/utils/vendors')['useGeolocation']
   const useGitHub: typeof import('../core/git/src/index')['useGitHub']
   const useGitStore: typeof import('../../../resources/stores/git')['useGitStore']
   const useHead: typeof import('@unhead/vue')['useHead']
@@ -928,119 +928,119 @@ declare global {
   const useHttpFetch: typeof import('../core/api/src/index')['useHttpFetch']
   const useI18n: typeof import('vue-i18n')['useI18n']
   const useId: typeof import('vue')['useId']
-  const useIdle: typeof import('../core/browser/src/index')['useIdle']
-  const useImage: typeof import('../core/browser/src/index')['useImage']
-  const useInfiniteScroll: typeof import('../core/browser/src/index')['useInfiniteScroll']
-  const useIntersectionObserver: typeof import('../core/browser/src/index')['useIntersectionObserver']
-  const useInterval: typeof import('../core/browser/src/index')['useInterval']
-  const useIntervalFn: typeof import('../core/browser/src/index')['useIntervalFn']
-  const useKeyModifier: typeof import('../core/browser/src/index')['useKeyModifier']
-  const useLastChanged: typeof import('../core/browser/src/index')['useLastChanged']
+  const useIdle: typeof import('../core/browser/src/utils/vendors')['useIdle']
+  const useImage: typeof import('../core/browser/src/utils/vendors')['useImage']
+  const useInfiniteScroll: typeof import('../core/browser/src/utils/vendors')['useInfiniteScroll']
+  const useIntersectionObserver: typeof import('../core/browser/src/utils/vendors')['useIntersectionObserver']
+  const useInterval: typeof import('../core/browser/src/utils/vendors')['useInterval']
+  const useIntervalFn: typeof import('../core/browser/src/utils/vendors')['useIntervalFn']
+  const useKeyModifier: typeof import('../core/browser/src/utils/vendors')['useKeyModifier']
+  const useLastChanged: typeof import('../core/browser/src/utils/vendors')['useLastChanged']
   const useLink: typeof import('vue-router/auto')['useLink']
-  const useLocalStorage: typeof import('../core/browser/src/index')['useLocalStorage']
-  const useMagicKeys: typeof import('../core/browser/src/index')['useMagicKeys']
-  const useManualRefHistory: typeof import('../core/browser/src/index')['useManualRefHistory']
-  const useMath: typeof import('../core/utils/src/math')['useMath']
-  const useMax: typeof import('../core/utils/src/math')['useMax']
-  const useMediaControls: typeof import('../core/browser/src/index')['useMediaControls']
-  const useMediaQuery: typeof import('../core/browser/src/index')['useMediaQuery']
-  const useMemoize: typeof import('../core/browser/src/index')['useMemoize']
-  const useMemory: typeof import('../core/browser/src/index')['useMemory']
-  const useMin: typeof import('../core/utils/src/math')['useMin']
+  const useLocalStorage: typeof import('../core/browser/src/utils/vendors')['useLocalStorage']
+  const useMagicKeys: typeof import('../core/browser/src/utils/vendors')['useMagicKeys']
+  const useManualRefHistory: typeof import('../core/browser/src/utils/vendors')['useManualRefHistory']
+  const useMath: typeof import('../core/browser/src/utils/math')['useMath']
+  const useMax: typeof import('../core/browser/src/utils/math')['useMax']
+  const useMediaControls: typeof import('../core/browser/src/utils/vendors')['useMediaControls']
+  const useMediaQuery: typeof import('../core/browser/src/utils/vendors')['useMediaQuery']
+  const useMemoize: typeof import('../core/browser/src/utils/vendors')['useMemoize']
+  const useMemory: typeof import('../core/browser/src/utils/vendors')['useMemory']
+  const useMin: typeof import('../core/browser/src/utils/math')['useMin']
   const useModel: typeof import('vue')['useModel']
-  const useMounted: typeof import('../core/browser/src/index')['useMounted']
-  const useMouse: typeof import('../core/browser/src/index')['useMouse']
-  const useMouseInElement: typeof import('../core/browser/src/index')['useMouseInElement']
-  const useMousePressed: typeof import('../core/browser/src/index')['useMousePressed']
-  const useMutationObserver: typeof import('../core/browser/src/index')['useMutationObserver']
-  const useNavigatorLanguage: typeof import('../core/browser/src/index')['useNavigatorLanguage']
-  const useNetwork: typeof import('../core/browser/src/index')['useNetwork']
+  const useMounted: typeof import('../core/browser/src/utils/vendors')['useMounted']
+  const useMouse: typeof import('../core/browser/src/utils/vendors')['useMouse']
+  const useMouseInElement: typeof import('../core/browser/src/utils/vendors')['useMouseInElement']
+  const useMousePressed: typeof import('../core/browser/src/utils/vendors')['useMousePressed']
+  const useMutationObserver: typeof import('../core/browser/src/utils/vendors')['useMutationObserver']
+  const useNavigatorLanguage: typeof import('../core/browser/src/utils/vendors')['useNavigatorLanguage']
+  const useNetwork: typeof import('../core/browser/src/utils/vendors')['useNetwork']
   const useNotification: typeof import('../core/notifications/src/index')['useNotification']
-  const useNow: typeof import('../core/browser/src/index')['useNow']
-  const useObjectUrl: typeof import('../core/browser/src/index')['useObjectUrl']
-  const useOffsetPagination: typeof import('../core/browser/src/index')['useOffsetPagination']
-  const useOnline: typeof import('../core/browser/src/index')['useOnline']
-  const usePageLeave: typeof import('../core/browser/src/index')['usePageLeave']
-  const useParallax: typeof import('../core/browser/src/index')['useParallax']
-  const useParentElement: typeof import('../core/browser/src/index')['useParentElement']
-  const usePerformanceObserver: typeof import('../core/browser/src/index')['usePerformanceObserver']
-  const usePermission: typeof import('../core/browser/src/index')['usePermission']
-  const usePointer: typeof import('../core/browser/src/index')['usePointer']
-  const usePointerLock: typeof import('../core/browser/src/index')['usePointerLock']
-  const usePointerSwipe: typeof import('../core/browser/src/index')['usePointerSwipe']
-  const usePrecision: typeof import('../core/utils/src/math')['usePrecision']
-  const usePreferredColorScheme: typeof import('../core/browser/src/index')['usePreferredColorScheme']
-  const usePreferredContrast: typeof import('../core/browser/src/index')['usePreferredContrast']
-  const usePreferredDark: typeof import('../core/browser/src/index')['usePreferredDark']
-  const usePreferredLanguages: typeof import('../core/browser/src/index')['usePreferredLanguages']
-  const usePreferredReducedMotion: typeof import('../core/browser/src/index')['usePreferredReducedMotion']
-  const usePrevious: typeof import('../core/browser/src/index')['usePrevious']
-  const useProjection: typeof import('../core/utils/src/math')['useProjection']
-  const useRafFn: typeof import('../core/browser/src/index')['useRafFn']
-  const useRefHistory: typeof import('../core/browser/src/index')['useRefHistory']
-  const useResizeObserver: typeof import('../core/browser/src/index')['useResizeObserver']
-  const useRound: typeof import('../core/utils/src/math')['useRound']
+  const useNow: typeof import('../core/browser/src/utils/vendors')['useNow']
+  const useObjectUrl: typeof import('../core/browser/src/utils/vendors')['useObjectUrl']
+  const useOffsetPagination: typeof import('../core/browser/src/utils/vendors')['useOffsetPagination']
+  const useOnline: typeof import('../core/browser/src/utils/vendors')['useOnline']
+  const usePageLeave: typeof import('../core/browser/src/utils/vendors')['usePageLeave']
+  const useParallax: typeof import('../core/browser/src/utils/vendors')['useParallax']
+  const useParentElement: typeof import('../core/browser/src/utils/vendors')['useParentElement']
+  const usePerformanceObserver: typeof import('../core/browser/src/utils/vendors')['usePerformanceObserver']
+  const usePermission: typeof import('../core/browser/src/utils/vendors')['usePermission']
+  const usePointer: typeof import('../core/browser/src/utils/vendors')['usePointer']
+  const usePointerLock: typeof import('../core/browser/src/utils/vendors')['usePointerLock']
+  const usePointerSwipe: typeof import('../core/browser/src/utils/vendors')['usePointerSwipe']
+  const usePrecision: typeof import('../core/browser/src/utils/math')['usePrecision']
+  const usePreferredColorScheme: typeof import('../core/browser/src/utils/vendors')['usePreferredColorScheme']
+  const usePreferredContrast: typeof import('../core/browser/src/utils/vendors')['usePreferredContrast']
+  const usePreferredDark: typeof import('../core/browser/src/utils/vendors')['usePreferredDark']
+  const usePreferredLanguages: typeof import('../core/browser/src/utils/vendors')['usePreferredLanguages']
+  const usePreferredReducedMotion: typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']
+  const usePrevious: typeof import('../core/browser/src/utils/vendors')['usePrevious']
+  const useProjection: typeof import('../core/browser/src/utils/math')['useProjection']
+  const useRafFn: typeof import('../core/browser/src/utils/vendors')['useRafFn']
+  const useRefHistory: typeof import('../core/browser/src/utils/vendors')['useRefHistory']
+  const useResizeObserver: typeof import('../core/browser/src/utils/vendors')['useResizeObserver']
+  const useRound: typeof import('../core/browser/src/utils/math')['useRound']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
   const useSMS: typeof import('../core/notifications/src/index')['useSMS']
   const useScheduler: typeof import('../core/scheduler/src/index')['useScheduler']
-  const useScreenOrientation: typeof import('../core/browser/src/index')['useScreenOrientation']
-  const useScreenSafeArea: typeof import('../core/browser/src/index')['useScreenSafeArea']
-  const useScriptTag: typeof import('../core/browser/src/index')['useScriptTag']
-  const useScroll: typeof import('../core/browser/src/index')['useScroll']
-  const useScrollLock: typeof import('../core/browser/src/index')['useScrollLock']
+  const useScreenOrientation: typeof import('../core/browser/src/utils/vendors')['useScreenOrientation']
+  const useScreenSafeArea: typeof import('../core/browser/src/utils/vendors')['useScreenSafeArea']
+  const useScriptTag: typeof import('../core/browser/src/utils/vendors')['useScriptTag']
+  const useScroll: typeof import('../core/browser/src/utils/vendors')['useScroll']
+  const useScrollLock: typeof import('../core/browser/src/utils/vendors')['useScrollLock']
   const useSearchEngine: typeof import('../core/search-engine/src/index')['useSearchEngine']
   const useSeoMeta: typeof import('@unhead/vue')['useSeoMeta']
   const useServerHead: typeof import('@unhead/vue')['useServerHead']
   const useServerHeadSafe: typeof import('@unhead/vue')['useServerHeadSafe']
   const useServerSeoMeta: typeof import('@unhead/vue')['useServerSeoMeta']
-  const useSessionStorage: typeof import('../core/browser/src/index')['useSessionStorage']
-  const useShare: typeof import('../core/browser/src/index')['useShare']
+  const useSessionStorage: typeof import('../core/browser/src/utils/vendors')['useSessionStorage']
+  const useShare: typeof import('../core/browser/src/utils/vendors')['useShare']
   const useSlots: typeof import('vue')['useSlots']
-  const useSorted: typeof import('../core/browser/src/index')['useSorted']
-  const useSpeechRecognition: typeof import('../core/browser/src/index')['useSpeechRecognition']
-  const useSpeechSynthesis: typeof import('../core/browser/src/index')['useSpeechSynthesis']
-  const useStepper: typeof import('../core/browser/src/index')['useStepper']
-  const useStorage: typeof import('../core/browser/src/index')['useStorage']
-  const useStorageAsync: typeof import('../core/browser/src/index')['useStorageAsync']
-  const useStyleTag: typeof import('../core/browser/src/index')['useStyleTag']
-  const useSum: typeof import('../core/utils/src/math')['useSum']
-  const useSupported: typeof import('../core/browser/src/index')['useSupported']
-  const useSwipe: typeof import('../core/browser/src/index')['useSwipe']
+  const useSorted: typeof import('../core/browser/src/utils/vendors')['useSorted']
+  const useSpeechRecognition: typeof import('../core/browser/src/utils/vendors')['useSpeechRecognition']
+  const useSpeechSynthesis: typeof import('../core/browser/src/utils/vendors')['useSpeechSynthesis']
+  const useStepper: typeof import('../core/browser/src/utils/vendors')['useStepper']
+  const useStorage: typeof import('../core/browser/src/utils/vendors')['useStorage']
+  const useStorageAsync: typeof import('../core/browser/src/utils/vendors')['useStorageAsync']
+  const useStyleTag: typeof import('../core/browser/src/utils/vendors')['useStyleTag']
+  const useSum: typeof import('../core/browser/src/utils/math')['useSum']
+  const useSupported: typeof import('../core/browser/src/utils/vendors')['useSupported']
+  const useSwipe: typeof import('../core/browser/src/utils/vendors')['useSwipe']
   const useTemplateRef: typeof import('vue')['useTemplateRef']
-  const useTemplateRefsList: typeof import('../core/browser/src/index')['useTemplateRefsList']
-  const useTextDirection: typeof import('../core/browser/src/index')['useTextDirection']
-  const useTextSelection: typeof import('../core/browser/src/index')['useTextSelection']
-  const useTextareaAutosize: typeof import('../core/browser/src/index')['useTextareaAutosize']
-  const useThrottle: typeof import('../core/browser/src/index')['useThrottle']
-  const useThrottleFn: typeof import('../core/browser/src/index')['useThrottleFn']
-  const useThrottledRefHistory: typeof import('../core/browser/src/index')['useThrottledRefHistory']
-  const useTimeAgo: typeof import('../core/browser/src/index')['useTimeAgo']
-  const useTimeout: typeof import('../core/browser/src/index')['useTimeout']
-  const useTimeoutFn: typeof import('../core/browser/src/index')['useTimeoutFn']
-  const useTimeoutPoll: typeof import('../core/browser/src/index')['useTimeoutPoll']
-  const useTimestamp: typeof import('../core/browser/src/index')['useTimestamp']
-  const useTitle: typeof import('../core/browser/src/index')['useTitle']
-  const useToNumber: typeof import('../core/browser/src/index')['useToNumber']
-  const useToString: typeof import('../core/browser/src/index')['useToString']
-  const useToggle: typeof import('../core/browser/src/index')['useToggle']
-  const useTransition: typeof import('../core/browser/src/index')['useTransition']
-  const useTrunc: typeof import('../core/utils/src/math')['useTrunc']
-  const useUrlSearchParams: typeof import('../core/browser/src/index')['useUrlSearchParams']
-  const useUserMedia: typeof import('../core/browser/src/index')['useUserMedia']
+  const useTemplateRefsList: typeof import('../core/browser/src/utils/vendors')['useTemplateRefsList']
+  const useTextDirection: typeof import('../core/browser/src/utils/vendors')['useTextDirection']
+  const useTextSelection: typeof import('../core/browser/src/utils/vendors')['useTextSelection']
+  const useTextareaAutosize: typeof import('../core/browser/src/utils/vendors')['useTextareaAutosize']
+  const useThrottle: typeof import('../core/browser/src/utils/vendors')['useThrottle']
+  const useThrottleFn: typeof import('../core/browser/src/utils/vendors')['useThrottleFn']
+  const useThrottledRefHistory: typeof import('../core/browser/src/utils/vendors')['useThrottledRefHistory']
+  const useTimeAgo: typeof import('../core/browser/src/utils/vendors')['useTimeAgo']
+  const useTimeout: typeof import('../core/browser/src/utils/vendors')['useTimeout']
+  const useTimeoutFn: typeof import('../core/browser/src/utils/vendors')['useTimeoutFn']
+  const useTimeoutPoll: typeof import('../core/browser/src/utils/vendors')['useTimeoutPoll']
+  const useTimestamp: typeof import('../core/browser/src/utils/vendors')['useTimestamp']
+  const useTitle: typeof import('../core/browser/src/utils/vendors')['useTitle']
+  const useToNumber: typeof import('../core/browser/src/utils/vendors')['useToNumber']
+  const useToString: typeof import('../core/browser/src/utils/vendors')['useToString']
+  const useToggle: typeof import('../core/browser/src/utils/vendors')['useToggle']
+  const useTransition: typeof import('../core/browser/src/utils/vendors')['useTransition']
+  const useTrunc: typeof import('../core/browser/src/utils/math')['useTrunc']
+  const useUrlSearchParams: typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']
+  const useUserMedia: typeof import('../core/browser/src/utils/vendors')['useUserMedia']
   const useUserStore: typeof import('../../../resources/stores/user')['useUserStore']
-  const useVModel: typeof import('../core/browser/src/index')['useVModel']
-  const useVModels: typeof import('../core/browser/src/index')['useVModels']
-  const useVibrate: typeof import('../core/browser/src/index')['useVibrate']
-  const useVirtualList: typeof import('../core/browser/src/index')['useVirtualList']
-  const useWakeLock: typeof import('../core/browser/src/index')['useWakeLock']
-  const useWebNotification: typeof import('../core/browser/src/index')['useWebNotification']
-  const useWebSocket: typeof import('../core/browser/src/index')['useWebSocket']
-  const useWebWorker: typeof import('../core/browser/src/index')['useWebWorker']
-  const useWebWorkerFn: typeof import('../core/browser/src/index')['useWebWorkerFn']
-  const useWindowFocus: typeof import('../core/browser/src/index')['useWindowFocus']
-  const useWindowScroll: typeof import('../core/browser/src/index')['useWindowScroll']
-  const useWindowSize: typeof import('../core/browser/src/index')['useWindowSize']
+  const useVModel: typeof import('../core/browser/src/utils/vendors')['useVModel']
+  const useVModels: typeof import('../core/browser/src/utils/vendors')['useVModels']
+  const useVibrate: typeof import('../core/browser/src/utils/vendors')['useVibrate']
+  const useVirtualList: typeof import('../core/browser/src/utils/vendors')['useVirtualList']
+  const useWakeLock: typeof import('../core/browser/src/utils/vendors')['useWakeLock']
+  const useWebNotification: typeof import('../core/browser/src/utils/vendors')['useWebNotification']
+  const useWebSocket: typeof import('../core/browser/src/utils/vendors')['useWebSocket']
+  const useWebWorker: typeof import('../core/browser/src/utils/vendors')['useWebWorker']
+  const useWebWorkerFn: typeof import('../core/browser/src/utils/vendors')['useWebWorkerFn']
+  const useWindowFocus: typeof import('../core/browser/src/utils/vendors')['useWindowFocus']
+  const useWindowScroll: typeof import('../core/browser/src/utils/vendors')['useWindowScroll']
+  const useWindowSize: typeof import('../core/browser/src/utils/vendors')['useWindowSize']
   const userActionsPath: typeof import('../core/path/src/index')['userActionsPath']
   const userComponentsPath: typeof import('../core/path/src/index')['userComponentsPath']
   const userDatabasePath: typeof import('../core/path/src/index')['userDatabasePath']
@@ -1071,38 +1071,38 @@ declare global {
   const vitePluginPath: typeof import('../core/path/src/index')['vitePluginPath']
   const vueComponentExample: typeof import('../core/build/src/index')['vueComponentExample']
   const vueComponents: typeof import('../core/build/src/index')['vueComponents']
-  const wait: typeof import('../core/utils/src/sleep')['wait']
-  const waitUntil: typeof import('../core/utils/src/sleep')['waitUntil']
-  const waitWhile: typeof import('../core/utils/src/sleep')['waitWhile']
+  const wait: typeof import('../core/browser/src/utils/sleep')['wait']
+  const waitUntil: typeof import('../core/browser/src/utils/sleep')['waitUntil']
+  const waitWhile: typeof import('../core/browser/src/utils/sleep')['waitWhile']
   const watch: typeof import('vue')['watch']
-  const watchArray: typeof import('../core/browser/src/index')['watchArray']
-  const watchAtMost: typeof import('../core/browser/src/index')['watchAtMost']
-  const watchDebounced: typeof import('../core/browser/src/index')['watchDebounced']
-  const watchDeep: typeof import('../core/browser/src/index')['watchDeep']
+  const watchArray: typeof import('../core/browser/src/utils/vendors')['watchArray']
+  const watchAtMost: typeof import('../core/browser/src/utils/vendors')['watchAtMost']
+  const watchDebounced: typeof import('../core/browser/src/utils/vendors')['watchDebounced']
+  const watchDeep: typeof import('../core/browser/src/utils/vendors')['watchDeep']
   const watchEffect: typeof import('vue')['watchEffect']
   const watchFile: typeof import('../core/storage/src/fs')['watchFile']
-  const watchIgnorable: typeof import('../core/browser/src/index')['watchIgnorable']
-  const watchImmediate: typeof import('../core/browser/src/index')['watchImmediate']
-  const watchOnce: typeof import('../core/browser/src/index')['watchOnce']
-  const watchPausable: typeof import('../core/browser/src/index')['watchPausable']
+  const watchIgnorable: typeof import('../core/browser/src/utils/vendors')['watchIgnorable']
+  const watchImmediate: typeof import('../core/browser/src/utils/vendors')['watchImmediate']
+  const watchOnce: typeof import('../core/browser/src/utils/vendors')['watchOnce']
+  const watchPausable: typeof import('../core/browser/src/utils/vendors')['watchPausable']
   const watchPostEffect: typeof import('vue')['watchPostEffect']
   const watchSyncEffect: typeof import('vue')['watchSyncEffect']
-  const watchThrottled: typeof import('../core/browser/src/index')['watchThrottled']
-  const watchTriggerable: typeof import('../core/browser/src/index')['watchTriggerable']
-  const watchWithFilter: typeof import('../core/browser/src/index')['watchWithFilter']
+  const watchThrottled: typeof import('../core/browser/src/utils/vendors')['watchThrottled']
+  const watchTriggerable: typeof import('../core/browser/src/utils/vendors')['watchTriggerable']
+  const watchWithFilter: typeof import('../core/browser/src/utils/vendors')['watchWithFilter']
   const webComponentExample: typeof import('../core/build/src/index')['webComponentExample']
   const webComponents: typeof import('../core/build/src/index')['webComponents']
   const websiteSourceHash: typeof import('../core/utils/src/hash')['websiteSourceHash']
-  const whenever: typeof import('../core/browser/src/index')['whenever']
+  const whenever: typeof import('../core/browser/src/utils/vendors')['whenever']
   const where: typeof import('../core/orm/src/generated/User')['where']
   const whereIn: typeof import('../core/orm/src/generated/User')['whereIn']
-  const whitespace: typeof import('../core/utils/src/regex')['whitespace']
+  const whitespace: typeof import('../core/browser/src/utils/regex')['whitespace']
   const wipOrm: typeof import('../core/orm/src/index')['wipOrm']
   const wipSlug: typeof import('../core/slug/src/index')['wipSlug']
-  const withIndices: typeof import('../core/utils/src/regex')['withIndices']
-  const word: typeof import('../core/utils/src/regex')['word']
-  const wordBoundary: typeof import('../core/utils/src/regex')['wordBoundary']
-  const wordChar: typeof import('../core/utils/src/regex')['wordChar']
+  const withIndices: typeof import('../core/browser/src/utils/regex')['withIndices']
+  const word: typeof import('../core/browser/src/utils/regex')['word']
+  const wordBoundary: typeof import('../core/browser/src/utils/regex')['wordBoundary']
+  const wordChar: typeof import('../core/browser/src/utils/regex')['wordChar']
   const writeEnv: typeof import('../core/env/src/index')['writeEnv']
   const writeFile: typeof import('../core/storage/src/files')['writeFile']
   const writeFileSync: typeof import('../core/storage/src/fs')['writeFileSync']
@@ -1119,7 +1119,7 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, ComponentPublicInstance, ComputedRef, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, VNode, WritableComputedRef } from 'vue'
+  export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
 }
 // for vue template auto import
@@ -1128,339 +1128,405 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
-    readonly Head: UnwrapRef<typeof import('../core/browser/src/index')['Head']>
-    readonly HeadVuePlugin: UnwrapRef<typeof import('../core/browser/src/index')['HeadVuePlugin']>
+    readonly Head: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['Head']>
+    readonly HeadVuePlugin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
-    readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/index')['asyncComputed']>
-    readonly autoResetRef: UnwrapRef<typeof import('../core/browser/src/index')['autoResetRef']>
-    readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsAntDesign']>
-    readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsBootstrapV5']>
-    readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsMasterCss']>
-    readonly breakpointsQuasar: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsQuasar']>
-    readonly breakpointsSematic: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsSematic']>
-    readonly breakpointsTailwind: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsTailwind']>
-    readonly breakpointsVuetify: UnwrapRef<typeof import('../core/browser/src/index')['breakpointsVuetify']>
-    readonly cloneFnJSON: UnwrapRef<typeof import('../core/browser/src/index')['cloneFnJSON']>
+    readonly and: UnwrapRef<typeof import('../core/browser/src/utils/math')['and']>
+    readonly anyOf: UnwrapRef<typeof import('../core/browser/src/utils/regex')['anyOf']>
+    readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['asyncComputed']>
+    readonly autoResetRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['autoResetRef']>
+    readonly batchInvoke: UnwrapRef<typeof import('../core/browser/src/utils/function')['batchInvoke']>
+    readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']>
+    readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']>
+    readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']>
+    readonly breakpointsQuasar: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']>
+    readonly breakpointsSematic: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']>
+    readonly breakpointsTailwind: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']>
+    readonly breakpointsVuetify: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']>
+    readonly calculateDelay: UnwrapRef<typeof import('../core/browser/src/utils/retry')['calculateDelay']>
+    readonly carriageReturn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['carriageReturn']>
+    readonly caseInsensitive: UnwrapRef<typeof import('../core/browser/src/utils/regex')['caseInsensitive']>
+    readonly char: UnwrapRef<typeof import('../core/browser/src/utils/regex')['char']>
+    readonly charIn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['charIn']>
+    readonly charNotIn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['charNotIn']>
+    readonly clamp: UnwrapRef<typeof import('../core/browser/src/utils/math')['clamp']>
+    readonly cloneFnJSON: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['cloneFnJSON']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
-    readonly computedAsync: UnwrapRef<typeof import('../core/browser/src/index')['computedAsync']>
-    readonly computedEager: UnwrapRef<typeof import('../core/browser/src/index')['computedEager']>
-    readonly computedInject: UnwrapRef<typeof import('../core/browser/src/index')['computedInject']>
-    readonly computedWithControl: UnwrapRef<typeof import('../core/browser/src/index')['computedWithControl']>
-    readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/index')['controlledComputed']>
-    readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/index')['controlledRef']>
+    readonly computedAsync: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedAsync']>
+    readonly computedEager: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedEager']>
+    readonly computedInject: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedInject']>
+    readonly computedWithControl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedWithControl']>
+    readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
+    readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
-    readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/index')['createEventHook']>
-    readonly createFetch: UnwrapRef<typeof import('../core/browser/src/index')['createFetch']>
-    readonly createGlobalState: UnwrapRef<typeof import('../core/browser/src/index')['createGlobalState']>
-    readonly createHead: UnwrapRef<typeof import('../core/browser/src/index')['createHead']>
-    readonly createInjectionState: UnwrapRef<typeof import('../core/browser/src/index')['createInjectionState']>
+    readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
+    readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
+    readonly createFetch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createFetch']>
+    readonly createGenericProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['createGenericProjection']>
+    readonly createGlobalState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createGlobalState']>
+    readonly createHead: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createHead']>
+    readonly createInjectionState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createInjectionState']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
-    readonly createReactiveFn: UnwrapRef<typeof import('../core/browser/src/index')['createReactiveFn']>
-    readonly createReusableTemplate: UnwrapRef<typeof import('../core/browser/src/index')['createReusableTemplate']>
-    readonly createSharedComposable: UnwrapRef<typeof import('../core/browser/src/index')['createSharedComposable']>
-    readonly createTemplatePromise: UnwrapRef<typeof import('../core/browser/src/index')['createTemplatePromise']>
-    readonly createUnrefFn: UnwrapRef<typeof import('../core/browser/src/index')['createUnrefFn']>
+    readonly createProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['createProjection']>
+    readonly createPromiseLock: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createPromiseLock']>
+    readonly createReactiveFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createReactiveFn']>
+    readonly createRegExp: UnwrapRef<typeof import('../core/browser/src/utils/regex')['createRegExp']>
+    readonly createReusableTemplate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createReusableTemplate']>
+    readonly createSharedComposable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createSharedComposable']>
+    readonly createSingletonPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createSingletonPromise']>
+    readonly createTemplatePromise: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createTemplatePromise']>
+    readonly createUnrefFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createUnrefFn']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
-    readonly customStorageEventName: UnwrapRef<typeof import('../core/browser/src/index')['customStorageEventName']>
-    readonly debouncedRef: UnwrapRef<typeof import('../core/browser/src/index')['debouncedRef']>
-    readonly debouncedWatch: UnwrapRef<typeof import('../core/browser/src/index')['debouncedWatch']>
-    readonly defaultDocument: UnwrapRef<typeof import('../core/browser/src/index')['defaultDocument']>
-    readonly defaultLocation: UnwrapRef<typeof import('../core/browser/src/index')['defaultLocation']>
-    readonly defaultNavigator: UnwrapRef<typeof import('../core/browser/src/index')['defaultNavigator']>
-    readonly defaultWindow: UnwrapRef<typeof import('../core/browser/src/index')['defaultWindow']>
+    readonly customStorageEventName: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['customStorageEventName']>
+    readonly debounce: UnwrapRef<typeof import('../core/browser/src/utils/debounce')['debounce']>
+    readonly debouncedRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['debouncedRef']>
+    readonly debouncedWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['debouncedWatch']>
+    readonly defaultDocument: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultDocument']>
+    readonly defaultLocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultLocation']>
+    readonly defaultNavigator: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultNavigator']>
+    readonly defaultWindow: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultWindow']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
-    readonly eagerComputed: UnwrapRef<typeof import('../core/browser/src/index')['eagerComputed']>
+    readonly delay: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['delay']>
+    readonly digit: UnwrapRef<typeof import('../core/browser/src/utils/regex')['digit']>
+    readonly dotAll: UnwrapRef<typeof import('../core/browser/src/utils/regex')['dotAll']>
+    readonly eagerComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
-    readonly executeTransition: UnwrapRef<typeof import('../core/browser/src/index')['executeTransition']>
-    readonly extendRef: UnwrapRef<typeof import('../core/browser/src/index')['extendRef']>
-    readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/index')['formatTimeAgo']>
+    readonly exactly: UnwrapRef<typeof import('../core/browser/src/utils/regex')['exactly']>
+    readonly executeTransition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['executeTransition']>
+    readonly extendRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['extendRef']>
+    readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getSSRHandler: UnwrapRef<typeof import('../core/browser/src/index')['getSSRHandler']>
+    readonly getSSRHandler: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['getSSRHandler']>
+    readonly global: UnwrapRef<typeof import('../core/browser/src/utils/regex')['global']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
-    readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/index')['ignorableWatch']>
+    readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
-    readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/index')['injectLocal']>
+    readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
     readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
-    readonly isDefined: UnwrapRef<typeof import('../core/browser/src/index')['isDefined']>
+    readonly isDefined: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
-    readonly makeDestructurable: UnwrapRef<typeof import('../core/browser/src/index')['makeDestructurable']>
+    readonly isTruthy: UnwrapRef<typeof import('../core/browser/src/utils/guards')['isTruthy']>
+    readonly letter: UnwrapRef<typeof import('../core/browser/src/utils/regex')['letter']>
+    readonly linefeed: UnwrapRef<typeof import('../core/browser/src/utils/regex')['linefeed']>
+    readonly logicNot: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicNot']>
+    readonly logicOr: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicOr']>
+    readonly loop: UnwrapRef<typeof import('../core/browser/src/utils/base')['loop']>
+    readonly makeDestructurable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
-    readonly mapGamepadToXbox360Controller: UnwrapRef<typeof import('../core/browser/src/index')['mapGamepadToXbox360Controller']>
+    readonly mapGamepadToXbox360Controller: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['mapGamepadToXbox360Controller']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
     readonly mapState: UnwrapRef<typeof import('pinia')['mapState']>
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly maybe: UnwrapRef<typeof import('../core/browser/src/utils/regex')['maybe']>
+    readonly multiline: UnwrapRef<typeof import('../core/browser/src/utils/regex')['multiline']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly noNull: UnwrapRef<typeof import('../core/browser/src/utils/guards')['noNull']>
+    readonly not: UnwrapRef<typeof import('../core/browser/src/utils/regex')['not']>
+    readonly notNullish: UnwrapRef<typeof import('../core/browser/src/utils/guards')['notNullish']>
+    readonly notUndefined: UnwrapRef<typeof import('../core/browser/src/utils/guards')['notUndefined']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
     readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
-    readonly onClickOutside: UnwrapRef<typeof import('../core/browser/src/index')['onClickOutside']>
+    readonly onClickOutside: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onClickOutside']>
     readonly onDeactivated: UnwrapRef<typeof import('vue')['onDeactivated']>
     readonly onErrorCaptured: UnwrapRef<typeof import('vue')['onErrorCaptured']>
-    readonly onKeyDown: UnwrapRef<typeof import('../core/browser/src/index')['onKeyDown']>
-    readonly onKeyPressed: UnwrapRef<typeof import('../core/browser/src/index')['onKeyPressed']>
-    readonly onKeyStroke: UnwrapRef<typeof import('../core/browser/src/index')['onKeyStroke']>
-    readonly onKeyUp: UnwrapRef<typeof import('../core/browser/src/index')['onKeyUp']>
-    readonly onLongPress: UnwrapRef<typeof import('../core/browser/src/index')['onLongPress']>
+    readonly onKeyDown: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyDown']>
+    readonly onKeyPressed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyPressed']>
+    readonly onKeyStroke: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyStroke']>
+    readonly onKeyUp: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyUp']>
+    readonly onLongPress: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onLongPress']>
     readonly onMounted: UnwrapRef<typeof import('vue')['onMounted']>
     readonly onRenderTracked: UnwrapRef<typeof import('vue')['onRenderTracked']>
     readonly onRenderTriggered: UnwrapRef<typeof import('vue')['onRenderTriggered']>
     readonly onScopeDispose: UnwrapRef<typeof import('vue')['onScopeDispose']>
     readonly onServerPrefetch: UnwrapRef<typeof import('vue')['onServerPrefetch']>
-    readonly onStartTyping: UnwrapRef<typeof import('../core/browser/src/index')['onStartTyping']>
+    readonly onStartTyping: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onStartTyping']>
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
-    readonly pausableWatch: UnwrapRef<typeof import('../core/browser/src/index')['pausableWatch']>
+    readonly oneOrMore: UnwrapRef<typeof import('../core/browser/src/utils/regex')['oneOrMore']>
+    readonly or: UnwrapRef<typeof import('../core/browser/src/utils/math')['or']>
+    readonly pausableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['pausableWatch']>
     readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
-    readonly provideLocal: UnwrapRef<typeof import('../core/browser/src/index')['provideLocal']>
-    readonly reactify: UnwrapRef<typeof import('../core/browser/src/index')['reactify']>
-    readonly reactifyObject: UnwrapRef<typeof import('../core/browser/src/index')['reactifyObject']>
+    readonly provideLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['provideLocal']>
+    readonly rand: UnwrapRef<typeof import('../core/browser/src/utils/math')['rand']>
+    readonly reactify: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactify']>
+    readonly reactifyObject: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactifyObject']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
-    readonly reactiveComputed: UnwrapRef<typeof import('../core/browser/src/index')['reactiveComputed']>
-    readonly reactiveOmit: UnwrapRef<typeof import('../core/browser/src/index')['reactiveOmit']>
-    readonly reactivePick: UnwrapRef<typeof import('../core/browser/src/index')['reactivePick']>
-    readonly readableSize: UnwrapRef<typeof import('../core/browser/src/index')['readableSize']>
+    readonly reactiveComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactiveComputed']>
+    readonly reactiveOmit: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactiveOmit']>
+    readonly reactivePick: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactivePick']>
+    readonly readableSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['readableSize']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
-    readonly refAutoReset: UnwrapRef<typeof import('../core/browser/src/index')['refAutoReset']>
-    readonly refDebounced: UnwrapRef<typeof import('../core/browser/src/index')['refDebounced']>
-    readonly refDefault: UnwrapRef<typeof import('../core/browser/src/index')['refDefault']>
-    readonly refThrottled: UnwrapRef<typeof import('../core/browser/src/index')['refThrottled']>
-    readonly refWithControl: UnwrapRef<typeof import('../core/browser/src/index')['refWithControl']>
-    readonly renderHeadToString: UnwrapRef<typeof import('../core/browser/src/index')['renderHeadToString']>
+    readonly refAutoReset: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refAutoReset']>
+    readonly refDebounced: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refDebounced']>
+    readonly refDefault: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refDefault']>
+    readonly refThrottled: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refThrottled']>
+    readonly refWithControl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refWithControl']>
+    readonly renderHeadToString: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['renderHeadToString']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly resolveRef: UnwrapRef<typeof import('../core/browser/src/index')['resolveRef']>
-    readonly resolveUnref: UnwrapRef<typeof import('../core/browser/src/index')['resolveUnref']>
+    readonly resolveRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveRef']>
+    readonly resolveUnref: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveUnref']>
+    readonly retry: UnwrapRef<typeof import('../core/browser/src/utils/retry')['retry']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
-    readonly setSSRHandler: UnwrapRef<typeof import('../core/browser/src/index')['setSSRHandler']>
+    readonly setSSRHandler: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['setSSRHandler']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
+    readonly sleep: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['sleep']>
+    readonly sticky: UnwrapRef<typeof import('../core/browser/src/utils/regex')['sticky']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
-    readonly syncRef: UnwrapRef<typeof import('../core/browser/src/index')['syncRef']>
-    readonly syncRefs: UnwrapRef<typeof import('../core/browser/src/index')['syncRefs']>
-    readonly templateRef: UnwrapRef<typeof import('../core/browser/src/index')['templateRef']>
-    readonly throttledRef: UnwrapRef<typeof import('../core/browser/src/index')['throttledRef']>
-    readonly throttledWatch: UnwrapRef<typeof import('../core/browser/src/index')['throttledWatch']>
+    readonly syncRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRef']>
+    readonly syncRefs: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRefs']>
+    readonly tab: UnwrapRef<typeof import('../core/browser/src/utils/regex')['tab']>
+    readonly tap: UnwrapRef<typeof import('../core/browser/src/utils/function')['tap']>
+    readonly templateRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['templateRef']>
+    readonly throttle: UnwrapRef<typeof import('../core/browser/src/utils/throttle')['throttle']>
+    readonly throttledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['throttledRef']>
+    readonly throttledWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['throttledWatch']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
-    readonly toReactive: UnwrapRef<typeof import('../core/browser/src/index')['toReactive']>
+    readonly toReactive: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['toReactive']>
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
+    readonly toString: UnwrapRef<typeof import('../core/browser/src/utils/base')['toString']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
-    readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/src/index')['tryOnBeforeMount']>
-    readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/src/index')['tryOnBeforeUnmount']>
-    readonly tryOnMounted: UnwrapRef<typeof import('../core/browser/src/index')['tryOnMounted']>
-    readonly tryOnScopeDispose: UnwrapRef<typeof import('../core/browser/src/index')['tryOnScopeDispose']>
-    readonly tryOnUnmounted: UnwrapRef<typeof import('../core/browser/src/index')['tryOnUnmounted']>
+    readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']>
+    readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']>
+    readonly tryOnMounted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnMounted']>
+    readonly tryOnScopeDispose: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnScopeDispose']>
+    readonly tryOnUnmounted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnUnmounted']>
+    readonly unicode: UnwrapRef<typeof import('../core/browser/src/utils/regex')['unicode']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
-    readonly unrefElement: UnwrapRef<typeof import('../core/browser/src/index')['unrefElement']>
-    readonly until: UnwrapRef<typeof import('../core/browser/src/index')['until']>
-    readonly useActiveElement: UnwrapRef<typeof import('../core/browser/src/index')['useActiveElement']>
-    readonly useAnimate: UnwrapRef<typeof import('../core/browser/src/index')['useAnimate']>
-    readonly useArrayDifference: UnwrapRef<typeof import('../core/browser/src/index')['useArrayDifference']>
-    readonly useArrayEvery: UnwrapRef<typeof import('../core/browser/src/index')['useArrayEvery']>
-    readonly useArrayFilter: UnwrapRef<typeof import('../core/browser/src/index')['useArrayFilter']>
-    readonly useArrayFind: UnwrapRef<typeof import('../core/browser/src/index')['useArrayFind']>
-    readonly useArrayFindIndex: UnwrapRef<typeof import('../core/browser/src/index')['useArrayFindIndex']>
-    readonly useArrayIncludes: UnwrapRef<typeof import('../core/browser/src/index')['useArrayIncludes']>
-    readonly useArrayMap: UnwrapRef<typeof import('../core/browser/src/index')['useArrayMap']>
-    readonly useArrayReduce: UnwrapRef<typeof import('../core/browser/src/index')['useArrayReduce']>
-    readonly useArraySome: UnwrapRef<typeof import('../core/browser/src/index')['useArraySome']>
-    readonly useArrayUnique: UnwrapRef<typeof import('../core/browser/src/index')['useArrayUnique']>
-    readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/src/index')['useAsyncQueue']>
-    readonly useAsyncState: UnwrapRef<typeof import('../core/browser/src/index')['useAsyncState']>
+    readonly unrefElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['unrefElement']>
+    readonly until: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['until']>
+    readonly useAbs: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAbs']>
+    readonly useActiveElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useActiveElement']>
+    readonly useAnimate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAnimate']>
+    readonly useArrayDifference: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayDifference']>
+    readonly useArrayEvery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayEvery']>
+    readonly useArrayFilter: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayFilter']>
+    readonly useArrayFind: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayFind']>
+    readonly useArrayFindIndex: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayFindIndex']>
+    readonly useArrayIncludes: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayIncludes']>
+    readonly useArrayMap: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayMap']>
+    readonly useArrayReduce: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayReduce']>
+    readonly useArraySome: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArraySome']>
+    readonly useArrayUnique: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayUnique']>
+    readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']>
+    readonly useAsyncState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
-    readonly useBase64: UnwrapRef<typeof import('../core/browser/src/index')['useBase64']>
-    readonly useBattery: UnwrapRef<typeof import('../core/browser/src/index')['useBattery']>
-    readonly useBluetooth: UnwrapRef<typeof import('../core/browser/src/index')['useBluetooth']>
-    readonly useBreakpoints: UnwrapRef<typeof import('../core/browser/src/index')['useBreakpoints']>
-    readonly useBroadcastChannel: UnwrapRef<typeof import('../core/browser/src/index')['useBroadcastChannel']>
-    readonly useBrowserLocation: UnwrapRef<typeof import('../core/browser/src/index')['useBrowserLocation']>
-    readonly useCached: UnwrapRef<typeof import('../core/browser/src/index')['useCached']>
-    readonly useClipboard: UnwrapRef<typeof import('../core/browser/src/index')['useClipboard']>
-    readonly useClipboardItems: UnwrapRef<typeof import('../core/browser/src/index')['useClipboardItems']>
-    readonly useCloned: UnwrapRef<typeof import('../core/browser/src/index')['useCloned']>
-    readonly useColorMode: UnwrapRef<typeof import('../core/browser/src/index')['useColorMode']>
-    readonly useConfirmDialog: UnwrapRef<typeof import('../core/browser/src/index')['useConfirmDialog']>
-    readonly useCounter: UnwrapRef<typeof import('../core/browser/src/index')['useCounter']>
+    readonly useAverage: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAverage']>
+    readonly useBase64: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBase64']>
+    readonly useBattery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBattery']>
+    readonly useBluetooth: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBluetooth']>
+    readonly useBreakpoints: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBreakpoints']>
+    readonly useBroadcastChannel: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBroadcastChannel']>
+    readonly useBrowserLocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBrowserLocation']>
+    readonly useCached: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCached']>
+    readonly useCeil: UnwrapRef<typeof import('../core/browser/src/utils/math')['useCeil']>
+    readonly useClamp: UnwrapRef<typeof import('../core/browser/src/utils/math')['useClamp']>
+    readonly useClipboard: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useClipboard']>
+    readonly useClipboardItems: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useClipboardItems']>
+    readonly useCloned: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCloned']>
+    readonly useColorMode: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useColorMode']>
+    readonly useConfirmDialog: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useConfirmDialog']>
+    readonly useCounter: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCounter']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
-    readonly useCssVar: UnwrapRef<typeof import('../core/browser/src/index')['useCssVar']>
+    readonly useCssVar: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCssVar']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
-    readonly useCurrentElement: UnwrapRef<typeof import('../core/browser/src/index')['useCurrentElement']>
-    readonly useCycleList: UnwrapRef<typeof import('../core/browser/src/index')['useCycleList']>
-    readonly useDark: UnwrapRef<typeof import('../core/browser/src/index')['useDark']>
-    readonly useDateFormat: UnwrapRef<typeof import('../core/browser/src/index')['useDateFormat']>
-    readonly useDebounce: UnwrapRef<typeof import('../core/browser/src/index')['useDebounce']>
-    readonly useDebounceFn: UnwrapRef<typeof import('../core/browser/src/index')['useDebounceFn']>
-    readonly useDebouncedRefHistory: UnwrapRef<typeof import('../core/browser/src/index')['useDebouncedRefHistory']>
-    readonly useDeviceMotion: UnwrapRef<typeof import('../core/browser/src/index')['useDeviceMotion']>
-    readonly useDeviceOrientation: UnwrapRef<typeof import('../core/browser/src/index')['useDeviceOrientation']>
-    readonly useDevicePixelRatio: UnwrapRef<typeof import('../core/browser/src/index')['useDevicePixelRatio']>
-    readonly useDevicesList: UnwrapRef<typeof import('../core/browser/src/index')['useDevicesList']>
-    readonly useDisplayMedia: UnwrapRef<typeof import('../core/browser/src/index')['useDisplayMedia']>
-    readonly useDocumentVisibility: UnwrapRef<typeof import('../core/browser/src/index')['useDocumentVisibility']>
-    readonly useDraggable: UnwrapRef<typeof import('../core/browser/src/index')['useDraggable']>
-    readonly useDropZone: UnwrapRef<typeof import('../core/browser/src/index')['useDropZone']>
-    readonly useElementBounding: UnwrapRef<typeof import('../core/browser/src/index')['useElementBounding']>
-    readonly useElementByPoint: UnwrapRef<typeof import('../core/browser/src/index')['useElementByPoint']>
-    readonly useElementHover: UnwrapRef<typeof import('../core/browser/src/index')['useElementHover']>
-    readonly useElementSize: UnwrapRef<typeof import('../core/browser/src/index')['useElementSize']>
-    readonly useElementVisibility: UnwrapRef<typeof import('../core/browser/src/index')['useElementVisibility']>
-    readonly useEventBus: UnwrapRef<typeof import('../core/browser/src/index')['useEventBus']>
-    readonly useEventListener: UnwrapRef<typeof import('../core/browser/src/index')['useEventListener']>
-    readonly useEventSource: UnwrapRef<typeof import('../core/browser/src/index')['useEventSource']>
-    readonly useEyeDropper: UnwrapRef<typeof import('../core/browser/src/index')['useEyeDropper']>
-    readonly useFavicon: UnwrapRef<typeof import('../core/browser/src/index')['useFavicon']>
-    readonly useFetch: UnwrapRef<typeof import('../core/browser/src/index')['useFetch']>
-    readonly useFileDialog: UnwrapRef<typeof import('../core/browser/src/index')['useFileDialog']>
-    readonly useFileSystemAccess: UnwrapRef<typeof import('../core/browser/src/index')['useFileSystemAccess']>
-    readonly useFocus: UnwrapRef<typeof import('../core/browser/src/index')['useFocus']>
-    readonly useFocusWithin: UnwrapRef<typeof import('../core/browser/src/index')['useFocusWithin']>
-    readonly useFps: UnwrapRef<typeof import('../core/browser/src/index')['useFps']>
-    readonly useFullscreen: UnwrapRef<typeof import('../core/browser/src/index')['useFullscreen']>
-    readonly useGamepad: UnwrapRef<typeof import('../core/browser/src/index')['useGamepad']>
-    readonly useGeolocation: UnwrapRef<typeof import('../core/browser/src/index')['useGeolocation']>
+    readonly useCurrentElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCurrentElement']>
+    readonly useCycleList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCycleList']>
+    readonly useDark: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDark']>
+    readonly useDateFormat: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDateFormat']>
+    readonly useDebounce: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDebounce']>
+    readonly useDebounceFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDebounceFn']>
+    readonly useDebouncedRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDebouncedRefHistory']>
+    readonly useDeviceMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDeviceMotion']>
+    readonly useDeviceOrientation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDeviceOrientation']>
+    readonly useDevicePixelRatio: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDevicePixelRatio']>
+    readonly useDevicesList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDevicesList']>
+    readonly useDisplayMedia: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDisplayMedia']>
+    readonly useDocumentVisibility: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDocumentVisibility']>
+    readonly useDraggable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDraggable']>
+    readonly useDropZone: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDropZone']>
+    readonly useElementBounding: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementBounding']>
+    readonly useElementByPoint: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementByPoint']>
+    readonly useElementHover: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementHover']>
+    readonly useElementSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementSize']>
+    readonly useElementVisibility: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementVisibility']>
+    readonly useEventBus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEventBus']>
+    readonly useEventListener: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEventListener']>
+    readonly useEventSource: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEventSource']>
+    readonly useEyeDropper: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEyeDropper']>
+    readonly useFavicon: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFavicon']>
+    readonly useFetch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFetch']>
+    readonly useFileDialog: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFileDialog']>
+    readonly useFileSystemAccess: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFileSystemAccess']>
+    readonly useFloor: UnwrapRef<typeof import('../core/browser/src/utils/math')['useFloor']>
+    readonly useFocus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFocus']>
+    readonly useFocusWithin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFocusWithin']>
+    readonly useFps: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFps']>
+    readonly useFullscreen: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFullscreen']>
+    readonly useGamepad: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGamepad']>
+    readonly useGeolocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGeolocation']>
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
-    readonly useIdle: UnwrapRef<typeof import('../core/browser/src/index')['useIdle']>
-    readonly useImage: UnwrapRef<typeof import('../core/browser/src/index')['useImage']>
-    readonly useInfiniteScroll: UnwrapRef<typeof import('../core/browser/src/index')['useInfiniteScroll']>
-    readonly useIntersectionObserver: UnwrapRef<typeof import('../core/browser/src/index')['useIntersectionObserver']>
-    readonly useInterval: UnwrapRef<typeof import('../core/browser/src/index')['useInterval']>
-    readonly useIntervalFn: UnwrapRef<typeof import('../core/browser/src/index')['useIntervalFn']>
-    readonly useKeyModifier: UnwrapRef<typeof import('../core/browser/src/index')['useKeyModifier']>
-    readonly useLastChanged: UnwrapRef<typeof import('../core/browser/src/index')['useLastChanged']>
+    readonly useIdle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIdle']>
+    readonly useImage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useImage']>
+    readonly useInfiniteScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useInfiniteScroll']>
+    readonly useIntersectionObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIntersectionObserver']>
+    readonly useInterval: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useInterval']>
+    readonly useIntervalFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIntervalFn']>
+    readonly useKeyModifier: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useKeyModifier']>
+    readonly useLastChanged: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useLastChanged']>
     readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
-    readonly useLocalStorage: UnwrapRef<typeof import('../core/browser/src/index')['useLocalStorage']>
-    readonly useMagicKeys: UnwrapRef<typeof import('../core/browser/src/index')['useMagicKeys']>
-    readonly useManualRefHistory: UnwrapRef<typeof import('../core/browser/src/index')['useManualRefHistory']>
-    readonly useMediaControls: UnwrapRef<typeof import('../core/browser/src/index')['useMediaControls']>
-    readonly useMediaQuery: UnwrapRef<typeof import('../core/browser/src/index')['useMediaQuery']>
-    readonly useMemoize: UnwrapRef<typeof import('../core/browser/src/index')['useMemoize']>
-    readonly useMemory: UnwrapRef<typeof import('../core/browser/src/index')['useMemory']>
+    readonly useLocalStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useLocalStorage']>
+    readonly useMagicKeys: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMagicKeys']>
+    readonly useManualRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useManualRefHistory']>
+    readonly useMath: UnwrapRef<typeof import('../core/browser/src/utils/math')['useMath']>
+    readonly useMax: UnwrapRef<typeof import('../core/browser/src/utils/math')['useMax']>
+    readonly useMediaControls: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMediaControls']>
+    readonly useMediaQuery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMediaQuery']>
+    readonly useMemoize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMemoize']>
+    readonly useMemory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMemory']>
+    readonly useMin: UnwrapRef<typeof import('../core/browser/src/utils/math')['useMin']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
-    readonly useMounted: UnwrapRef<typeof import('../core/browser/src/index')['useMounted']>
-    readonly useMouse: UnwrapRef<typeof import('../core/browser/src/index')['useMouse']>
-    readonly useMouseInElement: UnwrapRef<typeof import('../core/browser/src/index')['useMouseInElement']>
-    readonly useMousePressed: UnwrapRef<typeof import('../core/browser/src/index')['useMousePressed']>
-    readonly useMutationObserver: UnwrapRef<typeof import('../core/browser/src/index')['useMutationObserver']>
-    readonly useNavigatorLanguage: UnwrapRef<typeof import('../core/browser/src/index')['useNavigatorLanguage']>
-    readonly useNetwork: UnwrapRef<typeof import('../core/browser/src/index')['useNetwork']>
-    readonly useNow: UnwrapRef<typeof import('../core/browser/src/index')['useNow']>
-    readonly useObjectUrl: UnwrapRef<typeof import('../core/browser/src/index')['useObjectUrl']>
-    readonly useOffsetPagination: UnwrapRef<typeof import('../core/browser/src/index')['useOffsetPagination']>
-    readonly useOnline: UnwrapRef<typeof import('../core/browser/src/index')['useOnline']>
-    readonly usePageLeave: UnwrapRef<typeof import('../core/browser/src/index')['usePageLeave']>
-    readonly useParallax: UnwrapRef<typeof import('../core/browser/src/index')['useParallax']>
-    readonly useParentElement: UnwrapRef<typeof import('../core/browser/src/index')['useParentElement']>
-    readonly usePerformanceObserver: UnwrapRef<typeof import('../core/browser/src/index')['usePerformanceObserver']>
-    readonly usePermission: UnwrapRef<typeof import('../core/browser/src/index')['usePermission']>
-    readonly usePointer: UnwrapRef<typeof import('../core/browser/src/index')['usePointer']>
-    readonly usePointerLock: UnwrapRef<typeof import('../core/browser/src/index')['usePointerLock']>
-    readonly usePointerSwipe: UnwrapRef<typeof import('../core/browser/src/index')['usePointerSwipe']>
-    readonly usePreferredColorScheme: UnwrapRef<typeof import('../core/browser/src/index')['usePreferredColorScheme']>
-    readonly usePreferredContrast: UnwrapRef<typeof import('../core/browser/src/index')['usePreferredContrast']>
-    readonly usePreferredDark: UnwrapRef<typeof import('../core/browser/src/index')['usePreferredDark']>
-    readonly usePreferredLanguages: UnwrapRef<typeof import('../core/browser/src/index')['usePreferredLanguages']>
-    readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/src/index')['usePreferredReducedMotion']>
-    readonly usePrevious: UnwrapRef<typeof import('../core/browser/src/index')['usePrevious']>
-    readonly useRafFn: UnwrapRef<typeof import('../core/browser/src/index')['useRafFn']>
-    readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/index')['useRefHistory']>
-    readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/index')['useResizeObserver']>
+    readonly useMounted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMounted']>
+    readonly useMouse: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMouse']>
+    readonly useMouseInElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMouseInElement']>
+    readonly useMousePressed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMousePressed']>
+    readonly useMutationObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMutationObserver']>
+    readonly useNavigatorLanguage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useNavigatorLanguage']>
+    readonly useNetwork: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useNetwork']>
+    readonly useNow: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useNow']>
+    readonly useObjectUrl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useObjectUrl']>
+    readonly useOffsetPagination: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useOffsetPagination']>
+    readonly useOnline: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useOnline']>
+    readonly usePageLeave: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePageLeave']>
+    readonly useParallax: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useParallax']>
+    readonly useParentElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useParentElement']>
+    readonly usePerformanceObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePerformanceObserver']>
+    readonly usePermission: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePermission']>
+    readonly usePointer: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointer']>
+    readonly usePointerLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointerLock']>
+    readonly usePointerSwipe: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointerSwipe']>
+    readonly usePrecision: UnwrapRef<typeof import('../core/browser/src/utils/math')['usePrecision']>
+    readonly usePreferredColorScheme: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredColorScheme']>
+    readonly usePreferredContrast: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredContrast']>
+    readonly usePreferredDark: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredDark']>
+    readonly usePreferredLanguages: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredLanguages']>
+    readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']>
+    readonly usePrevious: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePrevious']>
+    readonly useProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['useProjection']>
+    readonly useRafFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRafFn']>
+    readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRefHistory']>
+    readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useResizeObserver']>
+    readonly useRound: UnwrapRef<typeof import('../core/browser/src/utils/math')['useRound']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
-    readonly useScreenOrientation: UnwrapRef<typeof import('../core/browser/src/index')['useScreenOrientation']>
-    readonly useScreenSafeArea: UnwrapRef<typeof import('../core/browser/src/index')['useScreenSafeArea']>
-    readonly useScriptTag: UnwrapRef<typeof import('../core/browser/src/index')['useScriptTag']>
-    readonly useScroll: UnwrapRef<typeof import('../core/browser/src/index')['useScroll']>
-    readonly useScrollLock: UnwrapRef<typeof import('../core/browser/src/index')['useScrollLock']>
+    readonly useScreenOrientation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScreenOrientation']>
+    readonly useScreenSafeArea: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScreenSafeArea']>
+    readonly useScriptTag: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScriptTag']>
+    readonly useScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScroll']>
+    readonly useScrollLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScrollLock']>
     readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>
     readonly useServerHead: UnwrapRef<typeof import('@unhead/vue')['useServerHead']>
     readonly useServerHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useServerHeadSafe']>
     readonly useServerSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useServerSeoMeta']>
-    readonly useSessionStorage: UnwrapRef<typeof import('../core/browser/src/index')['useSessionStorage']>
-    readonly useShare: UnwrapRef<typeof import('../core/browser/src/index')['useShare']>
+    readonly useSessionStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSessionStorage']>
+    readonly useShare: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useShare']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
-    readonly useSorted: UnwrapRef<typeof import('../core/browser/src/index')['useSorted']>
-    readonly useSpeechRecognition: UnwrapRef<typeof import('../core/browser/src/index')['useSpeechRecognition']>
-    readonly useSpeechSynthesis: UnwrapRef<typeof import('../core/browser/src/index')['useSpeechSynthesis']>
-    readonly useStepper: UnwrapRef<typeof import('../core/browser/src/index')['useStepper']>
-    readonly useStorage: UnwrapRef<typeof import('../core/browser/src/index')['useStorage']>
-    readonly useStorageAsync: UnwrapRef<typeof import('../core/browser/src/index')['useStorageAsync']>
-    readonly useStyleTag: UnwrapRef<typeof import('../core/browser/src/index')['useStyleTag']>
-    readonly useSupported: UnwrapRef<typeof import('../core/browser/src/index')['useSupported']>
-    readonly useSwipe: UnwrapRef<typeof import('../core/browser/src/index')['useSwipe']>
+    readonly useSorted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSorted']>
+    readonly useSpeechRecognition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSpeechRecognition']>
+    readonly useSpeechSynthesis: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSpeechSynthesis']>
+    readonly useStepper: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStepper']>
+    readonly useStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStorage']>
+    readonly useStorageAsync: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStorageAsync']>
+    readonly useStyleTag: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStyleTag']>
+    readonly useSum: UnwrapRef<typeof import('../core/browser/src/utils/math')['useSum']>
+    readonly useSupported: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSupported']>
+    readonly useSwipe: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSwipe']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
-    readonly useTemplateRefsList: UnwrapRef<typeof import('../core/browser/src/index')['useTemplateRefsList']>
-    readonly useTextDirection: UnwrapRef<typeof import('../core/browser/src/index')['useTextDirection']>
-    readonly useTextSelection: UnwrapRef<typeof import('../core/browser/src/index')['useTextSelection']>
-    readonly useTextareaAutosize: UnwrapRef<typeof import('../core/browser/src/index')['useTextareaAutosize']>
-    readonly useThrottle: UnwrapRef<typeof import('../core/browser/src/index')['useThrottle']>
-    readonly useThrottleFn: UnwrapRef<typeof import('../core/browser/src/index')['useThrottleFn']>
-    readonly useThrottledRefHistory: UnwrapRef<typeof import('../core/browser/src/index')['useThrottledRefHistory']>
-    readonly useTimeAgo: UnwrapRef<typeof import('../core/browser/src/index')['useTimeAgo']>
-    readonly useTimeout: UnwrapRef<typeof import('../core/browser/src/index')['useTimeout']>
-    readonly useTimeoutFn: UnwrapRef<typeof import('../core/browser/src/index')['useTimeoutFn']>
-    readonly useTimeoutPoll: UnwrapRef<typeof import('../core/browser/src/index')['useTimeoutPoll']>
-    readonly useTimestamp: UnwrapRef<typeof import('../core/browser/src/index')['useTimestamp']>
-    readonly useTitle: UnwrapRef<typeof import('../core/browser/src/index')['useTitle']>
-    readonly useToNumber: UnwrapRef<typeof import('../core/browser/src/index')['useToNumber']>
-    readonly useToString: UnwrapRef<typeof import('../core/browser/src/index')['useToString']>
-    readonly useToggle: UnwrapRef<typeof import('../core/browser/src/index')['useToggle']>
-    readonly useTransition: UnwrapRef<typeof import('../core/browser/src/index')['useTransition']>
-    readonly useUrlSearchParams: UnwrapRef<typeof import('../core/browser/src/index')['useUrlSearchParams']>
-    readonly useUserMedia: UnwrapRef<typeof import('../core/browser/src/index')['useUserMedia']>
+    readonly useTemplateRefsList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTemplateRefsList']>
+    readonly useTextDirection: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTextDirection']>
+    readonly useTextSelection: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTextSelection']>
+    readonly useTextareaAutosize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTextareaAutosize']>
+    readonly useThrottle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useThrottle']>
+    readonly useThrottleFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useThrottleFn']>
+    readonly useThrottledRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useThrottledRefHistory']>
+    readonly useTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeAgo']>
+    readonly useTimeout: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeout']>
+    readonly useTimeoutFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeoutFn']>
+    readonly useTimeoutPoll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeoutPoll']>
+    readonly useTimestamp: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimestamp']>
+    readonly useTitle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTitle']>
+    readonly useToNumber: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToNumber']>
+    readonly useToString: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToString']>
+    readonly useToggle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToggle']>
+    readonly useTransition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTransition']>
+    readonly useTrunc: UnwrapRef<typeof import('../core/browser/src/utils/math')['useTrunc']>
+    readonly useUrlSearchParams: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']>
+    readonly useUserMedia: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUserMedia']>
     readonly useUserStore: UnwrapRef<typeof import('../../../resources/stores/user')['useUserStore']>
-    readonly useVModel: UnwrapRef<typeof import('../core/browser/src/index')['useVModel']>
-    readonly useVModels: UnwrapRef<typeof import('../core/browser/src/index')['useVModels']>
-    readonly useVibrate: UnwrapRef<typeof import('../core/browser/src/index')['useVibrate']>
-    readonly useVirtualList: UnwrapRef<typeof import('../core/browser/src/index')['useVirtualList']>
-    readonly useWakeLock: UnwrapRef<typeof import('../core/browser/src/index')['useWakeLock']>
-    readonly useWebNotification: UnwrapRef<typeof import('../core/browser/src/index')['useWebNotification']>
-    readonly useWebSocket: UnwrapRef<typeof import('../core/browser/src/index')['useWebSocket']>
-    readonly useWebWorker: UnwrapRef<typeof import('../core/browser/src/index')['useWebWorker']>
-    readonly useWebWorkerFn: UnwrapRef<typeof import('../core/browser/src/index')['useWebWorkerFn']>
-    readonly useWindowFocus: UnwrapRef<typeof import('../core/browser/src/index')['useWindowFocus']>
-    readonly useWindowScroll: UnwrapRef<typeof import('../core/browser/src/index')['useWindowScroll']>
-    readonly useWindowSize: UnwrapRef<typeof import('../core/browser/src/index')['useWindowSize']>
+    readonly useVModel: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVModel']>
+    readonly useVModels: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVModels']>
+    readonly useVibrate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVibrate']>
+    readonly useVirtualList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVirtualList']>
+    readonly useWakeLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWakeLock']>
+    readonly useWebNotification: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebNotification']>
+    readonly useWebSocket: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebSocket']>
+    readonly useWebWorker: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebWorker']>
+    readonly useWebWorkerFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebWorkerFn']>
+    readonly useWindowFocus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWindowFocus']>
+    readonly useWindowScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWindowScroll']>
+    readonly useWindowSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWindowSize']>
+    readonly wait: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['wait']>
+    readonly waitUntil: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['waitUntil']>
+    readonly waitWhile: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['waitWhile']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
-    readonly watchArray: UnwrapRef<typeof import('../core/browser/src/index')['watchArray']>
-    readonly watchAtMost: UnwrapRef<typeof import('../core/browser/src/index')['watchAtMost']>
-    readonly watchDebounced: UnwrapRef<typeof import('../core/browser/src/index')['watchDebounced']>
-    readonly watchDeep: UnwrapRef<typeof import('../core/browser/src/index')['watchDeep']>
+    readonly watchArray: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchArray']>
+    readonly watchAtMost: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchAtMost']>
+    readonly watchDebounced: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchDebounced']>
+    readonly watchDeep: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchDeep']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
-    readonly watchIgnorable: UnwrapRef<typeof import('../core/browser/src/index')['watchIgnorable']>
-    readonly watchImmediate: UnwrapRef<typeof import('../core/browser/src/index')['watchImmediate']>
-    readonly watchOnce: UnwrapRef<typeof import('../core/browser/src/index')['watchOnce']>
-    readonly watchPausable: UnwrapRef<typeof import('../core/browser/src/index')['watchPausable']>
+    readonly watchIgnorable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchIgnorable']>
+    readonly watchImmediate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchImmediate']>
+    readonly watchOnce: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchOnce']>
+    readonly watchPausable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchPausable']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>
     readonly watchSyncEffect: UnwrapRef<typeof import('vue')['watchSyncEffect']>
-    readonly watchThrottled: UnwrapRef<typeof import('../core/browser/src/index')['watchThrottled']>
-    readonly watchTriggerable: UnwrapRef<typeof import('../core/browser/src/index')['watchTriggerable']>
-    readonly watchWithFilter: UnwrapRef<typeof import('../core/browser/src/index')['watchWithFilter']>
-    readonly whenever: UnwrapRef<typeof import('../core/browser/src/index')['whenever']>
+    readonly watchThrottled: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchThrottled']>
+    readonly watchTriggerable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchTriggerable']>
+    readonly watchWithFilter: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchWithFilter']>
+    readonly whenever: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['whenever']>
+    readonly whitespace: UnwrapRef<typeof import('../core/browser/src/utils/regex')['whitespace']>
+    readonly withIndices: UnwrapRef<typeof import('../core/browser/src/utils/regex')['withIndices']>
+    readonly word: UnwrapRef<typeof import('../core/browser/src/utils/regex')['word']>
+    readonly wordBoundary: UnwrapRef<typeof import('../core/browser/src/utils/regex')['wordBoundary']>
+    readonly wordChar: UnwrapRef<typeof import('../core/browser/src/utils/regex')['wordChar']>
   }
 }

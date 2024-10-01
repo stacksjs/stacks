@@ -7,7 +7,6 @@ export type {
   StringCapturedBy,
 } from 'magic-regexp'
 export {
-  // createRegExp,
   caseInsensitive,
   anyOf,
   carriageReturn,
