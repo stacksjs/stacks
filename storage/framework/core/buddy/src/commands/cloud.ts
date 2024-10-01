@@ -10,6 +10,8 @@ import {
   deleteParameterStore,
   deleteStacksBuckets,
   deleteStacksFunctions,
+  deleteSubnets,
+  deleteVpcs,
   getCloudFrontDistributionId,
   getJumpBoxInstanceId,
 } from '@stacksjs/cloud'
@@ -407,6 +409,21 @@ export function cloud(buddy: CLI): void {
           { startTime, useSeconds: true },
           result7.error,
         )
+        process.exit(ExitCode.FatalError)
+      }
+
+      // delete all vpcs & subnets & internet gateways
+      const result9 = await deleteVpcs()
+
+      if (result9.isErr()) {
+        await outro('While deleting the VPCs, there was an issue', { startTime, useSeconds: true }, result9.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      const result10 = await deleteSubnets()
+
+      if (result10.isErr()) {
+        await outro('While deleting the Subnets, there was an issue', { startTime, useSeconds: true }, result10.error)
         process.exit(ExitCode.FatalError)
       }
 

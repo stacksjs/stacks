@@ -1,7 +1,21 @@
 import { CloudFormation } from '@aws-sdk/client-cloudformation'
 import type { DescribeLogGroupsCommandOutput } from '@aws-sdk/client-cloudwatch-logs'
 import { CloudWatchLogsClient, DeleteLogGroupCommand, DescribeLogGroupsCommand } from '@aws-sdk/client-cloudwatch-logs'
-import { DescribeRegionsCommand, EC2, EC2Client, _InstanceType as InstanceType } from '@aws-sdk/client-ec2'
+import {
+  DeleteNetworkInterfaceCommand,
+  DeleteSubnetCommand,
+  DeleteVpcCommand,
+  DescribeInstancesCommand,
+  DescribeNetworkInterfacesCommand,
+  DescribeRegionsCommand,
+  DescribeSubnetsCommand,
+  DescribeVpcsCommand,
+  DetachNetworkInterfaceCommand,
+  EC2,
+  EC2Client,
+  _InstanceType as InstanceType,
+  TerminateInstancesCommand,
+} from '@aws-sdk/client-ec2'
 import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
 import { IAM } from '@aws-sdk/client-iam'
 import { Lambda } from '@aws-sdk/client-lambda'
@@ -9,7 +23,6 @@ import type { CountryCode, RegisterDomainCommandOutput } from '@aws-sdk/client-r
 import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
 import { SSM } from '@aws-sdk/client-ssm'
-import { runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -423,6 +436,42 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
   return ok('Parameter store deleted')
 }
 
+export async function deleteVpcs(): Promise<Result<string, Error>> {
+  const ec2Client = new EC2Client({ region: 'us-east-1' })
+  const vpcNamePattern = `${config.app.name?.toLowerCase()}-` ?? 'stacks-'
+
+  try {
+    // Describe all VPCs
+    const describeVpcsCommand = new DescribeVpcsCommand({})
+    const { Vpcs } = await ec2Client.send(describeVpcsCommand)
+
+    if (!Vpcs || Vpcs.length === 0) {
+      return ok('No VPCs found')
+    }
+
+    // Filter VPCs based on the name pattern
+    const vpcsToDel = Vpcs.filter((vpc) => vpc.Tags?.some((tag) => tag.Key === 'Name' && tag.Value === vpcNamePattern))
+
+    if (vpcsToDel.length === 0) {
+      return ok(`No VPCs found matching the pattern: ${vpcNamePattern}`)
+    }
+
+    // Delete each matching VPC
+    for (const vpc of vpcsToDel) {
+      if (vpc.VpcId) {
+        const deleteVpcCommand = new DeleteVpcCommand({ VpcId: vpc.VpcId })
+        await ec2Client.send(deleteVpcCommand)
+        log.info(`Deleted VPC: ${vpc.VpcId} (${vpcNamePattern})`)
+      }
+    }
+
+    return ok(`Deleted ${vpcsToDel.length} VPCs matching the pattern: ${vpcNamePattern}`)
+  } catch (error) {
+    console.error('Error deleting VPCs:', error)
+    return err(handleError(`Error deleting VPCs: ${error}`))
+  }
+}
+
 export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
   try {
     await Bun.$`rm -rf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`.text()
@@ -430,6 +479,88 @@ export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
   } catch (error) {
     console.error(error)
     return err(handleError('Error deleting CDK remnants'))
+  }
+}
+
+export async function deleteSubnets(): Promise<Result<string, Error>> {
+  const ec2Client = new EC2Client({ region: 'us-east-1' })
+  const subnetNamePattern = `${config.app.name?.toLowerCase()}-` ?? 'stacks-'
+
+  try {
+    // Describe all subnets
+    const describeSubnetsCommand = new DescribeSubnetsCommand({})
+    const { Subnets } = await ec2Client.send(describeSubnetsCommand)
+
+    if (!Subnets || Subnets.length === 0) {
+      return ok('No subnets found')
+    }
+
+    // Filter subnets based on the name pattern
+    const subnetsToDel = Subnets.filter((subnet) =>
+      subnet.Tags?.some((tag) => tag.Key === 'Name' && tag.Value?.startsWith(subnetNamePattern)),
+    )
+
+    if (subnetsToDel.length === 0) {
+      return ok(`No subnets found matching the pattern: ${subnetNamePattern}`)
+    }
+
+    // Delete dependencies and subnets
+    for (const subnet of subnetsToDel) {
+      if (subnet.SubnetId) {
+        // Describe network interfaces in the subnet
+        const describeNIsCommand = new DescribeNetworkInterfacesCommand({
+          Filters: [{ Name: 'subnet-id', Values: [subnet.SubnetId] }],
+        })
+        const { NetworkInterfaces } = await ec2Client.send(describeNIsCommand)
+
+        // Delete network interfaces
+        for (const ni of NetworkInterfaces || []) {
+          if (ni.NetworkInterfaceId) {
+            // If the network interface is attached to an instance, terminate the instance
+            if (ni.Attachment && ni.Attachment.InstanceId) {
+              const terminateInstanceCommand = new TerminateInstancesCommand({
+                InstanceIds: [ni.Attachment.InstanceId],
+              })
+              await ec2Client.send(terminateInstanceCommand)
+              log.info(`Terminated instance: ${ni.Attachment.InstanceId}`)
+
+              // Wait for the instance to terminate
+              await new Promise((resolve) => setTimeout(resolve, 60000)) // Wait for 60 seconds
+            }
+
+            // Detach the network interface if it's attached
+            if (ni.Attachment && ni.Attachment.AttachmentId) {
+              const detachCommand = new DetachNetworkInterfaceCommand({
+                AttachmentId: ni.Attachment.AttachmentId,
+                Force: true,
+              })
+              await ec2Client.send(detachCommand)
+              log.info(`Detached network interface: ${ni.NetworkInterfaceId}`)
+
+              // Wait for the detachment to complete
+              await new Promise((resolve) => setTimeout(resolve, 10000)) // Wait for 10 seconds
+            }
+
+            // Delete the network interface
+            const deleteNICommand = new DeleteNetworkInterfaceCommand({
+              NetworkInterfaceId: ni.NetworkInterfaceId,
+            })
+            await ec2Client.send(deleteNICommand)
+            log.info(`Deleted network interface: ${ni.NetworkInterfaceId}`)
+          }
+        }
+
+        // Delete the subnet
+        const deleteSubnetCommand = new DeleteSubnetCommand({ SubnetId: subnet.SubnetId })
+        await ec2Client.send(deleteSubnetCommand)
+        log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find((tag) => tag.Key === 'Name')?.Value})`)
+      }
+    }
+
+    return ok(`Deleted ${subnetsToDel.length} subnets matching the pattern: ${subnetNamePattern}`)
+  } catch (error) {
+    console.error('Error deleting subnets:', error)
+    return err(handleError(`Error deleting subnets: ${error}`))
   }
 }
 
