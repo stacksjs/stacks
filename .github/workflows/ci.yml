@@ -69,7 +69,9 @@ jobs:
 
   test:
     runs-on: ${{ matrix.os }}
-
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       matrix:
         os: [ubuntu-latest]
