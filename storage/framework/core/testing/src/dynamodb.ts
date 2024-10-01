@@ -11,9 +11,10 @@ import {
 const client = new DynamoDBClient({ endpoint: 'http://localhost:8000' })
 
 export async function launchServer(): Promise<void> {
-  if (process.env.GITHUB_ACTIONS) return
+  if (!process.env.GITHUB_ACTIONS) {
+    await dynamoDbTool.dynamoDb.launch()
+  }
 
-  await dynamoDbTool.dynamoDb.launch()
   await delay(5000)
   await createStacksTable()
 }
