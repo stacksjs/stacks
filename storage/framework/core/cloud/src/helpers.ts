@@ -361,8 +361,7 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
 
     return ok('Stacks buckets deleted')
   } catch (error) {
-    console.error(error)
-    return err(handleError('Error deleting stacks buckets'))
+    return err(handleError('Error deleting stacks buckets', error))
   }
 }
 
@@ -382,8 +381,7 @@ export async function deleteStacksFunctions(): Promise<Result<string, string>> {
       return ok('CloudFront is still deleting the some functions. Try again later.')
     }
 
-    console.error(error)
-    return err(handleError('Error deleting stacks functions'))
+    return err(handleError('Error deleting stacks functions', error))
   })
 
   return ok('Stacks functions deleted')
@@ -410,8 +408,7 @@ export async function deleteLogGroups(): Promise<Result<string, Error>> {
 
     return ok('Log groups deleted in all regions')
   } catch (error) {
-    console.error(error)
-    return err(handleError('Error deleting log groups'))
+    return err(handleError('Error deleting log groups', error))
   }
 }
 
@@ -429,8 +426,7 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
   const promises = stacksParameters.map((param) => ssm.deleteParameter({ Name: param.Name || '' }))
 
   await Promise.all(promises).catch((error: Error) => {
-    console.error(error)
-    return err(handleError('Error deleting parameter store'))
+    return err(handleError('Error deleting parameter store', error))
   })
 
   return ok('Parameter store deleted')
@@ -467,7 +463,6 @@ export async function deleteVpcs(): Promise<Result<string, Error>> {
 
     return ok(`Deleted ${vpcsToDel.length} VPCs matching the pattern: ${vpcNamePattern}`)
   } catch (error) {
-    console.error('Error deleting VPCs:', error)
     return err(handleError(`Error deleting VPCs: ${error}`))
   }
 }
@@ -477,8 +472,7 @@ export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
     await Bun.$`rm -rf ${p.cloudPath('cdk.out/')} ${p.cloudPath('cdk.context.json')}`.text()
     return ok('CDK remnants deleted')
   } catch (error) {
-    console.error(error)
-    return err(handleError('Error deleting CDK remnants'))
+    return err(handleError('Error deleting CDK remnants', error))
   }
 }
 
@@ -517,7 +511,7 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
         for (const ni of NetworkInterfaces || []) {
           if (ni.NetworkInterfaceId) {
             // If the network interface is attached to an instance, terminate the instance
-            if (ni.Attachment && ni.Attachment.InstanceId) {
+            if (ni.Attachment?.InstanceId) {
               const terminateInstanceCommand = new TerminateInstancesCommand({
                 InstanceIds: [ni.Attachment.InstanceId],
               })
@@ -529,7 +523,7 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
             }
 
             // Detach the network interface if it's attached
-            if (ni.Attachment && ni.Attachment.AttachmentId) {
+            if (ni.Attachment?.AttachmentId) {
               const detachCommand = new DetachNetworkInterfaceCommand({
                 AttachmentId: ni.Attachment.AttachmentId,
                 Force: true,
@@ -559,7 +553,6 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
 
     return ok(`Deleted ${subnetsToDel.length} subnets matching the pattern: ${subnetNamePattern}`)
   } catch (error) {
-    console.error('Error deleting subnets:', error)
     return err(handleError(`Error deleting subnets: ${error}`))
   }
 }
@@ -599,11 +592,9 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
     )
 
   const ec2 = new EC2({ region: 'us-east-1' })
-
   const r = await getJumpBoxSecurityGroupName()
 
   if (r.isErr()) return err(r.error)
-
   if (!r.value) return err('Security group not found when adding jump-box')
 
   const result = await getSecurityGroupId(r.value)
@@ -615,7 +606,6 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
   const client = new EFSClient({ region: 'us-east-1' })
   const command = new DescribeFileSystemsCommand({})
   const data = await client.send(command)
-
   const fileSystemName = `stacks-${config.app.env}-efs`
   const fileSystem = data.FileSystems?.find((fs) => fs.Name === fileSystemName)
   const fileSystemId = fileSystem?.FileSystemId
@@ -738,6 +728,7 @@ export async function getOrCreateTimestamp(): Promise<string> {
   } catch (error: any) {
     const timestamp = new Date().getTime().toString()
     log.debug(`Creating timestamp parameter ${parameterName} with value ${timestamp}`)
+
     await ssm.putParameter({
       Name: parameterName,
       Value: timestamp,
