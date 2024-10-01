@@ -1,9 +1,18 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 
+import { createStacksTable, deleteStacksTable, launchServer } from '@stacksjs/testing'
 import { dynamodb } from '../src/drivers/dynamodb'
 
-beforeEach(async () => {
+beforeAll(async () => {
+  await launchServer()
+})
+
+afterEach(async () => {
   await dynamodb.clear()
+})
+
+afterAll(async () => {
+  await deleteStacksTable()
 })
 
 describe('@stacksjs/cache - DynamoDB', () => {

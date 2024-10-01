@@ -1,2 +1,2 @@
 export * from './drivers'
-export * from 'dynamodb-tooling'
+export * as dynamoDbTool from 'dynamodb-tooling'
