@@ -62,6 +62,8 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
+    "oxc-parser": "^0.30.5",
+    "oxc-transform": "^0.30.5",
     "vue-component-meta": "^2.1.6"
   },
   "devDependencies": {
