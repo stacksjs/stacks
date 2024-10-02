@@ -2,8 +2,8 @@ import { BentoCache, bentostore } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 import type { CacheDriver } from './type'
 
-const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID || ''
-const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || ''
+const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID || 'dummy'
+const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || 'dummy'
 const dynamoEndpoint = process.env.AWS_DYNAMODB_ENDPOINT || 'http://localhost:8000'
 const tableName = process.env.AWS_DYNAMODB_TABLE || 'stacks'
 const region = process.env.AWS_REGION || 'us-east-1'
@@ -19,8 +19,8 @@ const client = new BentoCache({
           name: tableName,
         },
         credentials: {
-          accessKeyId: 'dummy',
-          secretAccessKey: 'dummy',
+          accessKeyId: awsAccessKeyId,
+          secretAccessKey: awsSecretAccessKey,
         },
       }),
     ),
