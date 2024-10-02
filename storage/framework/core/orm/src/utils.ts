@@ -969,10 +969,12 @@ export async function generateModelString(
       }
 
       verifyTwoFactorCode(code: string): boolean {
-        if (! this.${formattedModelName}) return false
+        const modelTwoFactorSecret = this.two_factor_secret
+        let isValid = false
 
-        const modelTwoFactorSecret = this.${formattedModelName}.two_factor_secret
-        const isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+        if (typeof modelTwoFactorSecret === 'string') {
+          isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+        }
 
         return isValid
       }
@@ -988,7 +990,7 @@ export async function generateModelString(
     constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
-    whereStatements += `static where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): ${modelName}Model {
+    whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
         const instance = new this(null)
 
         instance.query = instance.query.where('${attribute.field}', '=', value)
@@ -996,8 +998,8 @@ export async function generateModelString(
         return instance
       } \n\n`
 
-    whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: string | number | boolean | undefined | null): Promise<${modelName}Model[]> {
-        const query = db.selectFrom('${tableName}').where('${attribute.field}', '=', value)
+    whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: ${entity}): Promise<${modelName}Model[]> {
+        const query = db.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
         const results = await query.execute()
 
         return results.map(modelItem => new ${modelName}Model(modelItem))
@@ -1056,11 +1058,9 @@ export async function generateModelString(
     `
   }
 
-  if (useSoftDeletes) {
-    fieldString += `
-      deleted_at?: Date
-    `
-  }
+  fieldString += `
+    deleted_at?: Date
+  `
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model.attributes))
@@ -1533,7 +1533,7 @@ export async function generateModelString(
           throw new Error('${modelName} data is undefined')
 
         if (this.id === undefined) {
-          const newModel = await db.insertInto('${tableName}')
+          await db.insertInto('${tableName}')
             .values(this as New${modelName})
             .executeTakeFirstOrThrow()
         }
@@ -1547,7 +1547,7 @@ export async function generateModelString(
           if (this.id === undefined)
               throw new Error('${modelName} ID is undefined');
 
-          const model = this.find(this.id)
+          const model = await this.find(this.id)
 
           // Check if soft deletes are enabled
           if (this.softDeletes) {
@@ -1610,9 +1610,8 @@ export async function generateModelString(
       toJSON() {
         const output: Partial<${modelName}Type> = ${jsonFields}
 
-        this.hidden.forEach((attr) => {
-          if (attr in output)
-            delete output[attr as keyof Partial<${modelName}Type>]
+        this.hidden.forEach((attr: string) => {
+          if (attr in output) delete (output as Record<string, any>)[attr]
         })
 
         type ${modelName} = Omit<${modelName}Type, 'password'>

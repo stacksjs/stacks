@@ -17,6 +17,8 @@ export interface ReleasesTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface ReleaseResponse {
@@ -337,7 +339,7 @@ export class ReleaseModel {
     return instance
   }
 
-  static whereVersion(value: string | number | boolean | undefined | null): ReleaseModel {
+  static whereVersion(value: string): ReleaseModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('version', '=', value)
@@ -451,7 +453,7 @@ export class ReleaseModel {
     if (!this) throw new Error('Release data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('releases')
         .values(this as NewRelease)
         .executeTakeFirstOrThrow()
@@ -464,7 +466,7 @@ export class ReleaseModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Release ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -528,8 +530,8 @@ export class ReleaseModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<ReleaseType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type Release = Omit<ReleaseType, 'password'>
@@ -576,13 +578,13 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('releases').where('id', '=', id).execute()
 }
 
-export async function whereVersion(value: string | number | boolean | undefined | null): Promise<ReleaseModel[]> {
+export async function whereVersion(value: string): Promise<ReleaseModel[]> {
   const query = db.selectFrom('releases').where('version', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new ReleaseModel(modelItem))
 }
 
-const Release = ReleaseModel
+export const Release = ReleaseModel
 
 export default Release

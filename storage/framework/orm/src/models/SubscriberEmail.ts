@@ -344,7 +344,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  static whereEmail(value: string | number | boolean | undefined | null): SubscriberEmailModel {
+  static whereEmail(value: string): SubscriberEmailModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('email', '=', value)
@@ -458,7 +458,7 @@ export class SubscriberEmailModel {
     if (!this) throw new Error('SubscriberEmail data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('subscriber_emails')
         .values(this as NewSubscriberEmail)
         .executeTakeFirstOrThrow()
@@ -471,7 +471,7 @@ export class SubscriberEmailModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -537,8 +537,8 @@ export class SubscriberEmailModel {
       deleted_at: this.deleted_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<SubscriberEmailType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
@@ -585,13 +585,13 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
 }
 
-export async function whereEmail(value: string | number | boolean | undefined | null): Promise<SubscriberEmailModel[]> {
+export async function whereEmail(value: string): Promise<SubscriberEmailModel[]> {
   const query = db.selectFrom('subscriber_emails').where('email', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new SubscriberEmailModel(modelItem))
 }
 
-const SubscriberEmail = SubscriberEmailModel
+export const SubscriberEmail = SubscriberEmailModel
 
 export default SubscriberEmail

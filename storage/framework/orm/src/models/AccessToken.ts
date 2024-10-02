@@ -22,6 +22,8 @@ export interface PersonalAccessTokensTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface AccessTokenResponse {
@@ -352,7 +354,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  static whereName(value: string | number | boolean | undefined | null): AccessTokenModel {
+  static whereName(value: string): AccessTokenModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('name', '=', value)
@@ -360,7 +362,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  static whereToken(value: string | number | boolean | undefined | null): AccessTokenModel {
+  static whereToken(value: string): AccessTokenModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('token', '=', value)
@@ -368,7 +370,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  static wherePlainTextToken(value: string | number | boolean | undefined | null): AccessTokenModel {
+  static wherePlainTextToken(value: string): AccessTokenModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('plainTextToken', '=', value)
@@ -376,7 +378,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  static whereAbilities(value: string | number | boolean | undefined | null): AccessTokenModel {
+  static whereAbilities(value: string): AccessTokenModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('abilities', '=', value)
@@ -490,7 +492,7 @@ export class AccessTokenModel {
     if (!this) throw new Error('AccessToken data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('personal_access_tokens')
         .values(this as NewAccessToken)
         .executeTakeFirstOrThrow()
@@ -503,7 +505,7 @@ export class AccessTokenModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('AccessToken ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -580,8 +582,8 @@ export class AccessTokenModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<AccessTokenType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type AccessToken = Omit<AccessTokenType, 'password'>
@@ -628,30 +630,28 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
 }
 
-export async function whereName(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
+export async function whereName(value: string): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))
 }
 
-export async function whereToken(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
+export async function whereToken(value: string): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('token', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))
 }
 
-export async function wherePlainTextToken(
-  value: string | number | boolean | undefined | null,
-): Promise<AccessTokenModel[]> {
-  const query = db.selectFrom('personal_access_tokens').where('plainTextToken', '=', value)
+export async function wherePlainTextToken(value: string): Promise<AccessTokenModel[]> {
+  const query = db.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new AccessTokenModel(modelItem))
 }
 
-export async function whereAbilities(value: string | number | boolean | undefined | null): Promise<AccessTokenModel[]> {
+export async function whereAbilities(value: string[]): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('abilities', '=', value)
   const results = await query.execute()
 

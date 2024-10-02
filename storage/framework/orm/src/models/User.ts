@@ -31,6 +31,8 @@ export interface UsersTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface UserResponse {
@@ -372,7 +374,7 @@ export class UserModel {
     return instance
   }
 
-  static whereName(value: string | number | boolean | undefined | null): UserModel {
+  static whereName(value: string): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('name', '=', value)
@@ -380,7 +382,7 @@ export class UserModel {
     return instance
   }
 
-  static whereEmail(value: string | number | boolean | undefined | null): UserModel {
+  static whereEmail(value: string): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('email', '=', value)
@@ -388,7 +390,7 @@ export class UserModel {
     return instance
   }
 
-  static whereJobTitle(value: string | number | boolean | undefined | null): UserModel {
+  static whereJobTitle(value: string): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('jobTitle', '=', value)
@@ -396,7 +398,7 @@ export class UserModel {
     return instance
   }
 
-  static wherePassword(value: string | number | boolean | undefined | null): UserModel {
+  static wherePassword(value: string): UserModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('password', '=', value)
@@ -514,7 +516,7 @@ export class UserModel {
     if (!this) throw new Error('User data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('users')
         .values(this as NewUser)
         .executeTakeFirstOrThrow()
@@ -527,7 +529,7 @@ export class UserModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('User ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -638,8 +640,8 @@ export class UserModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<UserType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type User = Omit<UserType, 'password'>
@@ -662,10 +664,12 @@ export class UserModel {
   }
 
   verifyTwoFactorCode(code: string): boolean {
-    if (!this.user) return false
+    const modelTwoFactorSecret = this.two_factor_secret
+    let isValid = false
 
-    const modelTwoFactorSecret = this.user.two_factor_secret
-    const isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+    if (typeof modelTwoFactorSecret === 'string') {
+      isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+    }
 
     return isValid
   }
@@ -701,34 +705,34 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('users').where('id', '=', id).execute()
 }
 
-export async function whereName(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
+export async function whereName(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('name', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-export async function whereEmail(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
+export async function whereEmail(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('email', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-export async function whereJobTitle(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
-  const query = db.selectFrom('users').where('jobTitle', '=', value)
+export async function whereJobTitle(value: string): Promise<UserModel[]> {
+  const query = db.selectFrom('users').where('job_title', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-export async function wherePassword(value: string | number | boolean | undefined | null): Promise<UserModel[]> {
+export async function wherePassword(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('password', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new UserModel(modelItem))
 }
 
-const User = UserModel
+export const User = UserModel
 
 export default User

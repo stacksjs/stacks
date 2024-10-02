@@ -20,6 +20,8 @@ export interface ProjectsTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface ProjectResponse {
@@ -346,7 +348,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereName(value: string | number | boolean | undefined | null): ProjectModel {
+  static whereName(value: string): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('name', '=', value)
@@ -354,7 +356,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereDescription(value: string | number | boolean | undefined | null): ProjectModel {
+  static whereDescription(value: string): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('description', '=', value)
@@ -362,7 +364,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereUrl(value: string | number | boolean | undefined | null): ProjectModel {
+  static whereUrl(value: string): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('url', '=', value)
@@ -370,7 +372,7 @@ export class ProjectModel {
     return instance
   }
 
-  static whereStatus(value: string | number | boolean | undefined | null): ProjectModel {
+  static whereStatus(value: string): ProjectModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('status', '=', value)
@@ -484,7 +486,7 @@ export class ProjectModel {
     if (!this) throw new Error('Project data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('projects')
         .values(this as NewProject)
         .executeTakeFirstOrThrow()
@@ -497,7 +499,7 @@ export class ProjectModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Project ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -564,8 +566,8 @@ export class ProjectModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<ProjectType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type Project = Omit<ProjectType, 'password'>
@@ -612,34 +614,34 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('projects').where('id', '=', id).execute()
 }
 
-export async function whereName(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
+export async function whereName(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('name', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-export async function whereDescription(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
+export async function whereDescription(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('description', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-export async function whereUrl(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
+export async function whereUrl(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('url', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-export async function whereStatus(value: string | number | boolean | undefined | null): Promise<ProjectModel[]> {
+export async function whereStatus(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('status', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new ProjectModel(modelItem))
 }
 
-const Project = ProjectModel
+export const Project = ProjectModel
 
 export default Project

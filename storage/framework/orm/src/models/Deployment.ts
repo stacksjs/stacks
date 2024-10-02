@@ -25,6 +25,8 @@ export interface DeploymentsTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface DeploymentResponse {
@@ -360,7 +362,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereCommitSha(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereCommitSha(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('commitSha', '=', value)
@@ -368,7 +370,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereCommitMessage(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereCommitMessage(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('commitMessage', '=', value)
@@ -376,7 +378,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereBranch(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereBranch(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('branch', '=', value)
@@ -384,7 +386,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereStatus(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereStatus(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('status', '=', value)
@@ -392,7 +394,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereExecutionTime(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereExecutionTime(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('executionTime', '=', value)
@@ -400,7 +402,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereDeployScript(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereDeployScript(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('deployScript', '=', value)
@@ -408,7 +410,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static whereTerminalOutput(value: string | number | boolean | undefined | null): DeploymentModel {
+  static whereTerminalOutput(value: string): DeploymentModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('terminalOutput', '=', value)
@@ -522,7 +524,7 @@ export class DeploymentModel {
     if (!this) throw new Error('Deployment data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('deployments')
         .values(this as NewDeployment)
         .executeTakeFirstOrThrow()
@@ -535,7 +537,7 @@ export class DeploymentModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Deployment ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -615,8 +617,8 @@ export class DeploymentModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<DeploymentType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type Deployment = Omit<DeploymentType, 'password'>
@@ -663,63 +665,55 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('deployments').where('id', '=', id).execute()
 }
 
-export async function whereCommitSha(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commitSha', '=', value)
+export async function whereCommitSha(value: string): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('commit_sha', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-export async function whereCommitMessage(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commitMessage', '=', value)
+export async function whereCommitMessage(value: string): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('commit_message', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-export async function whereBranch(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+export async function whereBranch(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('branch', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-export async function whereStatus(value: string | number | boolean | undefined | null): Promise<DeploymentModel[]> {
+export async function whereStatus(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('status', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-export async function whereExecutionTime(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('executionTime', '=', value)
+export async function whereExecutionTime(value: number): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('execution_time', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-export async function whereDeployScript(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('deployScript', '=', value)
+export async function whereDeployScript(value: string): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('deploy_script', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-export async function whereTerminalOutput(
-  value: string | number | boolean | undefined | null,
-): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('terminalOutput', '=', value)
+export async function whereTerminalOutput(value: string): Promise<DeploymentModel[]> {
+  const query = db.selectFrom('deployments').where('terminal_output', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new DeploymentModel(modelItem))
 }
 
-const Deployment = DeploymentModel
+export const Deployment = DeploymentModel
 
 export default Deployment

@@ -20,6 +20,8 @@ export interface PostsTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface PostResponse {
@@ -345,7 +347,7 @@ export class PostModel {
     return instance
   }
 
-  static whereTitle(value: string | number | boolean | undefined | null): PostModel {
+  static whereTitle(value: string): PostModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('title', '=', value)
@@ -353,7 +355,7 @@ export class PostModel {
     return instance
   }
 
-  static whereBody(value: string | number | boolean | undefined | null): PostModel {
+  static whereBody(value: string): PostModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('body', '=', value)
@@ -467,7 +469,7 @@ export class PostModel {
     if (!this) throw new Error('Post data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('posts')
         .values(this as NewPost)
         .executeTakeFirstOrThrow()
@@ -480,7 +482,7 @@ export class PostModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Post ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -555,8 +557,8 @@ export class PostModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<PostType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type Post = Omit<PostType, 'password'>
@@ -603,20 +605,20 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('posts').where('id', '=', id).execute()
 }
 
-export async function whereTitle(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
+export async function whereTitle(value: string): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('title', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new PostModel(modelItem))
 }
 
-export async function whereBody(value: string | number | boolean | undefined | null): Promise<PostModel[]> {
+export async function whereBody(value: string): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('body', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new PostModel(modelItem))
 }
 
-const Post = PostModel
+export const Post = PostModel
 
 export default Post

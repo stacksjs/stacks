@@ -18,6 +18,8 @@ export interface SubscribersTable {
   created_at?: Date
 
   updated_at?: Date
+
+  deleted_at?: Date
 }
 
 interface SubscriberResponse {
@@ -341,7 +343,7 @@ export class SubscriberModel {
     return instance
   }
 
-  static whereSubscribed(value: string | number | boolean | undefined | null): SubscriberModel {
+  static whereSubscribed(value: string): SubscriberModel {
     const instance = new this(null)
 
     instance.query = instance.query.where('subscribed', '=', value)
@@ -455,7 +457,7 @@ export class SubscriberModel {
     if (!this) throw new Error('Subscriber data is undefined')
 
     if (this.id === undefined) {
-      const newModel = await db
+      await db
         .insertInto('subscribers')
         .values(this as NewSubscriber)
         .executeTakeFirstOrThrow()
@@ -468,7 +470,7 @@ export class SubscriberModel {
   async delete(): Promise<void> {
     if (this.id === undefined) throw new Error('Subscriber ID is undefined')
 
-    const model = this.find(this.id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -532,8 +534,8 @@ export class SubscriberModel {
       updated_at: this.updated_at,
     }
 
-    this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<SubscriberType>]
+    this.hidden.forEach((attr: string) => {
+      if (attr in output) delete (output as Record<string, any>)[attr]
     })
 
     type Subscriber = Omit<SubscriberType, 'password'>
@@ -580,13 +582,13 @@ export async function remove(id: number): Promise<void> {
   await db.deleteFrom('subscribers').where('id', '=', id).execute()
 }
 
-export async function whereSubscribed(value: string | number | boolean | undefined | null): Promise<SubscriberModel[]> {
+export async function whereSubscribed(value: boolean): Promise<SubscriberModel[]> {
   const query = db.selectFrom('subscribers').where('subscribed', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem) => new SubscriberModel(modelItem))
 }
 
-const Subscriber = SubscriberModel
+export const Subscriber = SubscriberModel
 
 export default Subscriber
