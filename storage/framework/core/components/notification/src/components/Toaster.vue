@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue'
 import { ToastState } from '../state'
-import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss } from '../types'
+import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss, ToasterProps } from '../types'
 import Toast from './Toast.vue'
+import CloseIcon from './assets/CloseIcon.vue'
 import ErrorIcon from './icons/ErrorIcon.vue'
 import InfoIcon from './icons/InfoIcon.vue'
 import LoaderIcon from './icons/Loader.vue'
@@ -18,8 +19,6 @@ const VISIBLE_TOASTS_AMOUNT = 3
 
 // Viewport padding
 const VIEWPORT_OFFSET = '32px'
-// Default lifetime of a toasts (in ms)
-const TOAST_LIFETIME = 4000
 // Default toast width
 const TOAST_WIDTH = 356
 // Default gap between toasts
@@ -36,7 +35,6 @@ const props = withDefaults(defineProps<NotificationProps>(), {
   offset: VIEWPORT_OFFSET,
   theme: 'light',
   richColors: false,
-  duration: TOAST_LIFETIME,
   style: () => ({}),
   visibleToasts: VISIBLE_TOASTS_AMOUNT,
   toastOptions: () => ({}),
@@ -44,23 +42,24 @@ const props = withDefaults(defineProps<NotificationProps>(), {
   gap: GAP,
   containerAriaLabel: 'Notifications',
   pauseWhenPageIsHidden: false,
+  cn: _cn,
 })
 
-function _cn(...classes: (string | undefined)[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
-function getDocumentDirection(): NotificationProps['dir'] {
+function getDocumentDirection(): ToasterProps['dir'] {
   if (typeof window === 'undefined') return 'ltr'
   if (typeof document === 'undefined') return 'ltr' // For Fresh purpose
 
   const dirAttribute = document.documentElement.getAttribute('dir')
 
   if (dirAttribute === 'auto' || !dirAttribute) {
-    return window.getComputedStyle(document.documentElement).direction as NotificationProps['dir']
+    return window.getComputedStyle(document.documentElement).direction as ToasterProps['dir']
   }
 
-  return dirAttribute as NotificationProps['dir']
+  return dirAttribute as ToasterProps['dir']
+}
+
+function _cn(...classes: (string | undefined)[]) {
+  return classes.filter(Boolean).join(' ')
 }
 
 const attrs = useAttrs()
@@ -82,16 +81,18 @@ const actualTheme = ref(
       : 'light',
 )
 
-const cnFunction = computed(() => props.cn || _cn)
 const listRef = ref<HTMLOListElement[] | HTMLOListElement | null>(null)
 const lastFocusedElementRef = ref<HTMLElement | null>(null)
 const isFocusWithinRef = ref(false)
 
 const hotkeyLabel = props.hotkey.join('+').replace(/Key/g, '').replace(/Digit/g, '')
 
-function removeToast(toast: ToastT) {
-  heights.value = heights.value.filter(({ toastId }) => toastId !== toast.id)
-  toasts.value = toasts.value.filter(({ id }) => id !== toast.id)
+function removeToast(toastToRemove: ToastT) {
+  if (!toasts.value.find((toast) => toast.id === toastToRemove.id)?.delete) {
+    ToastState.dismiss(toastToRemove.id)
+  }
+
+  toasts.value = toasts.value.filter(({ id }) => id !== toastToRemove.id)
 }
 
 function onBlur(event: FocusEvent | any) {
@@ -135,13 +136,15 @@ watchEffect((onInvalidate) => {
       const indexOfExistingToast = toasts.value.findIndex((t) => t.id === toast.id)
 
       // Update the toast if it already exists
-      if (indexOfExistingToast !== -1) toasts.value.splice(indexOfExistingToast, 1, toast)
-      // toasts.value = [
-      //   ...toasts.value.slice(0, indexOfExistingToast),
-      //   { ...toasts.value[indexOfExistingToast], ...toast },
-      //   ...toasts.value.slice(indexOfExistingToast + 1)
-      // ]
-      else toasts.value = [toast, ...toasts.value]
+      if (indexOfExistingToast !== -1) {
+        toasts.value = [
+          ...toasts.value.slice(0, indexOfExistingToast),
+          { ...toasts.value[indexOfExistingToast], ...toast },
+          ...toasts.value.slice(indexOfExistingToast + 1),
+        ]
+      } else {
+        toasts.value = [toast, ...toasts.value]
+      }
     })
   })
 
@@ -231,7 +234,7 @@ watchEffect((onInvalidate) => {
       <ol
         ref="listRef"
         data-notification
-        :class="class"
+        :class="props.class"
         :dir="dir === 'auto' ? getDocumentDirection() : dir"
         :tabIndex="-1"
         :data-theme="theme"
@@ -243,7 +246,7 @@ watchEffect((onInvalidate) => {
             '--front-toast-height': `${heights[0]?.height}px`,
             '--offset': typeof offset === 'number' ? `${offset}px` : offset || VIEWPORT_OFFSET,
             '--width': `${TOAST_WIDTH}px`,
-            '--gap': `${GAP}px`,
+            '--gap': `${gap}px`,
             ...style,
             ...(attrs as Record<string, Record<string, any>>).style,
           }
@@ -251,8 +254,8 @@ watchEffect((onInvalidate) => {
         v-bind="$attrs"
         @blur="onBlur"
         @focus="onFocus"
-        @mouseenter="expanded = true"
-        @mousemove="expanded = true"
+        @mouseenter="() => (expanded = true)"
+        @mousemove="() => (expanded = true)"
         @mouseleave="
           () => {
             // Avoid setting expanded to false when interacting with a toast, e.g. swiping
@@ -262,19 +265,21 @@ watchEffect((onInvalidate) => {
           }
         "
         @pointerdown="onPointerDown"
-        @pointerup="interacting = false"
+        @pointerup="() => (interacting = false)"
       >
         <template
           v-for="(toast, idx) in toasts.filter(
             (toast) =>
-              (!toast.position && index === 0) || toast.position === position,
+              (!toast.position && index === 0) || toast.position === pos,
           )"
           :key="toast.id"
         >
           <Toast
-            v-model:heights="heights"
+            :heights="heights.filter((h) => h.position === toast.position)"
+            :icons="icons"
             :index="idx"
             :toast="toast"
+            :defaultRichColors="richColors"
             :duration="toastOptions?.duration ?? duration"
             :class="toastOptions?.class ?? ''"
             :description-class="toastOptions?.descriptionClass"
@@ -282,20 +287,30 @@ watchEffect((onInvalidate) => {
             :visible-toasts="visibleToasts"
             :close-button="toastOptions?.closeButton ?? closeButton"
             :interacting="interacting"
-            :position="position"
+            :position="pos"
             :style="toastOptions?.style"
             :unstyled="toastOptions?.unstyled"
             :classes="toastOptions?.classes"
             :cancel-button-style="toastOptions?.cancelButtonStyle"
             :action-button-style="toastOptions?.actionButtonStyle"
-            :toasts="toasts"
+            :toasts="toasts.filter((t) => t.position === toast.position)"
             :expand-by-default="expand"
             :gap="gap"
             :expanded="expanded"
             :pause-when-page-is-hidden="pauseWhenPageIsHidden"
-            :cn="cnFunction"
+            :cn="cn"
+            @update:heights="
+              (h) => {
+                heights = h
+              }"
             @remove-toast="removeToast"
           >
+            <template #close-icon>
+              <slot name="close-icon">
+                <CloseIcon />
+              </slot>
+            </template>
+
             <template #loading-icon>
               <slot name="loading-icon">
                 <LoaderIcon :visible="toast.type === 'loading'" />

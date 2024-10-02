@@ -38,7 +38,7 @@ const allTypes = [
   },
   {
     name: 'Rich Colors Warning',
-    snippet: `notification.Warning('Event has been created')
+    snippet: `notification.warning('Event has been created')
 
 // ...
 

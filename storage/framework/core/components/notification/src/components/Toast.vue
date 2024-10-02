@@ -2,8 +2,7 @@
 import '../styles/styles.css'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useIsDocumentHidden } from '../composables/useIsDocumentHidden'
-import type { HeightT, ToastProps, ToastT } from '../types'
-import CloseIcon from './icons/CloseIcon.vue'
+import { type HeightT, type ToastProps, type ToastT, isAction } from './types'
 
 const props = defineProps<ToastProps>()
 
@@ -14,12 +13,9 @@ const emit = defineEmits<{
 
 // Default lifetime of a toasts (in ms)
 const TOAST_LIFETIME = 4000
-
 // Default gap between toasts
 const GAP = 14
-
 const SWIPE_THRESHOLD = 20
-
 const TIME_BEFORE_UNMOUNT = 200
 
 const mounted = ref(false)
@@ -34,15 +30,8 @@ const isFront = computed(() => props.index === 0)
 const isVisible = computed(() => props.index + 1 <= props.visibleToasts)
 const toastType = computed(() => props.toast.type)
 const dismissible = computed(() => props.toast.dismissible !== false)
-const toastClass = computed(() => {
-  return props.cn(
-    props.classes?.toast,
-    props.toast?.classes?.toast,
-    props.classes?.default,
-    props.classes?.[props.toast.type || 'default'],
-    props.toast?.classes?.[props.toast.type || 'default'],
-  )
-})
+const toastClass = computed(() => props.toast.class || '')
+const toastDescriptionClass = computed(() => props.descriptionClass || '')
 
 const toastStyle = props.toast.style || {}
 
@@ -53,7 +42,6 @@ const duration = computed(() => props.toast.duration || props.duration || TOAST_
 
 const closeTimerStartTimeRef = ref(0)
 const offset = ref(0)
-const remainingTime = ref(duration.value)
 const lastCloseTimerStartTimeRef = ref(0)
 const pointerStartRef = ref<{ x: number; y: number } | null>(null)
 const coords = computed(() => props.position.split('-'))
@@ -113,6 +101,9 @@ function deleteToast() {
   removed.value = true
   offsetBeforeRemove.value = offset.value
 
+  const height = props.heights.filter((height) => height.toastId !== props.toast.id)
+  emit('update:heights', height)
+
   setTimeout(() => {
     emit('removeToast', props.toast)
   }, TIME_BEFORE_UNMOUNT)
@@ -136,7 +127,7 @@ function onPointerDown(event: PointerEvent) {
   pointerStartRef.value = { x: event.clientX, y: event.clientY }
 }
 
-function onPointerUp(event: PointerEvent) {
+function onPointerUp() {
   if (swipeOut.value) return
   pointerStartRef.value = null
 
@@ -159,7 +150,7 @@ function onPointerUp(event: PointerEvent) {
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (!pointerStartRef.value) return
+  if (!pointerStartRef.value || !dismissible.value) return
 
   const yPosition = event.clientY - pointerStartRef.value.y
   const xPosition = event.clientX - pointerStartRef.value.x
@@ -179,7 +170,7 @@ function onPointerMove(event: PointerEvent) {
 }
 
 watchEffect(() => {
-  offset.value = heightIndex.value * GAP + toastsHeightBefore.value
+  offset.value = heightIndex.value * props?.gap + toastsHeightBefore.value
 })
 
 watchEffect((onInvalidate) => {
@@ -187,9 +178,12 @@ watchEffect((onInvalidate) => {
     (props.toast.promise && toastType.value === 'loading') ||
     props.toast.duration === Number.POSITIVE_INFINITY ||
     props.toast.type === 'loading'
-  )
+  ) {
     return
+  }
+
   let timeoutId: ReturnType<typeof setTimeout>
+  let remainingTime = duration.value
 
   // Pause the timer on each hover
   const pauseTimer = () => {
@@ -197,19 +191,20 @@ watchEffect((onInvalidate) => {
       // Get the elapsed time since the timer started
       const elapsedTime = new Date().getTime() - closeTimerStartTimeRef.value
 
-      remainingTime.value = remainingTime.value - elapsedTime
+      remainingTime = remainingTime - elapsedTime
     }
 
     lastCloseTimerStartTimeRef.value = new Date().getTime()
   }
 
   const startTimer = () => {
+    if (remainingTime === Number.POSITIVE_INFINITY) return
     closeTimerStartTimeRef.value = new Date().getTime()
     // Let the toast know it has started
     timeoutId = setTimeout(() => {
       props.toast.onAutoClose?.(props.toast)
       deleteToast()
-    }, remainingTime.value)
+    }, remainingTime)
   }
 
   if (props.expanded || props.interacting || (props.pauseWhenPageIsHidden && isDocumentHidden)) pauseTimer()
@@ -220,9 +215,9 @@ watchEffect((onInvalidate) => {
   })
 })
 
-watchEffect(() => {
-  if (props.toast.delete) deleteToast()
-})
+// watchEffect(() => {
+//   if (props.toast.delete) deleteToast()
+// })
 
 onMounted(() => {
   if (toastRef.value) {
@@ -253,8 +248,9 @@ onUnmounted(() => {
     aria-atomic="true"
     role="status"
     tabindex="0"
-    data-sonner-toast=""
+    data-sonner-toast="true"
     :class="toastClass"
+    :data-rich-colors="toast.richColors ?? defaultRichColors"
     :data-styled="!Boolean(toast.component || toast?.unstyled || unstyled)"
     :data-mounted="mounted"
     :data-promise="Boolean(toast.promise)"
@@ -287,11 +283,16 @@ onUnmounted(() => {
       <button
         :aria-label="closeButtonAriaLabel || 'Close toast'"
         :data-disabled="disabled"
-        data-close-button
+        data-close-button="true"
         :class="cn(classes?.closeButton, toast?.classes?.closeButton)"
         @click="handleCloseToast"
       >
-        <CloseIcon />
+        <template v-if="icons?.close">
+          <component :is="icons?.close" />
+        </template>
+        <template v-else>
+          <slot name="close-icon" />
+        </template>
       </button>
     </template>
 
@@ -339,7 +340,7 @@ onUnmounted(() => {
             :class="
               cn(
                 descriptionClass,
-                toast.descriptionClass,
+                toastDescriptionClass,
                 classes?.description,
                 toast.classes?.description,
               )
@@ -359,34 +360,38 @@ onUnmounted(() => {
       </div>
       <template v-if="toast.cancel">
         <button
+          :style="toast.cancelButtonStyle || cancelButtonStyle"
           :class="cn(classes?.cancelButton, toast.classes?.cancelButton)"
           data-button
           data-cancel
           @click="
-            () => {
-              deleteToast()
-              if (toast.cancel?.onClick) {
-                toast.cancel.onClick()
-              }
+            (event) => {
+              if (!isAction(toast.cancel!)) return;
+              if (!dismissible) return;
+              toast.cancel.onClick?.(event);
+              deleteToast();
             }
           "
         >
-          {{ toast.cancel.label }}
+          {{ isAction(toast.cancel) ? toast.cancel?.label : toast.cancel }}
         </button>
       </template>
       <template v-if="toast.action">
         <button
+          :style="toast.actionButtonStyle || actionButtonStyle"
           :class="cn(classes?.actionButton, toast.classes?.actionButton)"
           data-button
+          data-action
           @click="
             (event) => {
-              toast.action?.onClick(event)
-              if (event.defaultPrevented) return
-              deleteToast()
+              if (!isAction(toast.action!)) return;
+              if (event.defaultPrevented) return;
+              toast.action.onClick?.(event);
+              deleteToast();
             }
           "
         >
-          {{ toast.action.label }}
+          {{ isAction(toast.action) ? toast.action?.label : toast.action }}
         </button>
       </template>
     </template>

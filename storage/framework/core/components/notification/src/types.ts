@@ -4,13 +4,18 @@ export type NotificationTypes = 'normal' | 'action' | 'success' | 'info' | 'warn
 
 export type PromiseT<Data = any> = Promise<Data> | (() => Promise<Data>)
 
+export type PromiseTResult<Data = any> =
+  | string
+  | Component
+  | ((data: Data) => Component | string | Promise<Component | string>)
+
 export type PromiseExternalToast = Omit<ExternalToast, 'description'>
 
 export type PromiseData<ToastData = any> = ExternalToast & {
   loading?: string | Component
-  success?: (data: ToastData) => string | Component
-  error?: (data: ToastData) => string | Component
-  description?: string | Component | ((data: any) => Component | string)
+  success?: PromiseTResult<ToastData>
+  error?: PromiseTResult
+  description?: PromiseTResult
   finally?: () => void | Promise<void>
 }
 
@@ -22,14 +27,14 @@ export interface ToastClasses {
   closeButton?: string
   cancelButton?: string
   actionButton?: string
-  normal?: string
-  action?: string
   success?: string
   error?: string
   info?: string
   warning?: string
   loading?: string
   default?: string
+  content?: string
+  icon?: string
 }
 
 export interface ToastIcons {
@@ -38,6 +43,13 @@ export interface ToastIcons {
   warning?: Component
   error?: Component
   loading?: Component
+  close?: Component
+}
+
+export interface Action {
+  label: Component | string
+  onClick: (event: MouseEvent) => void
+  actionButtonStyle?: CSSProperties
 }
 
 export interface ToastT<T extends Component = Component> {
@@ -47,6 +59,7 @@ export interface ToastT<T extends Component = Component> {
   icon?: Component
   component?: T
   componentProps?: any
+  richColors?: boolean
   invert?: boolean
   closeButton?: boolean
   dismissible?: boolean
@@ -54,14 +67,8 @@ export interface ToastT<T extends Component = Component> {
   duration?: number
   delete?: boolean
   important?: boolean
-  action?: {
-    label: string | Component
-    onClick: (event: MouseEvent) => void
-  }
-  cancel?: {
-    label: string | Component
-    onClick?: () => void
-  }
+  action?: Action | Component
+  cancel?: Action | Component
   onDismiss?: (toast: ToastT) => void
   onAutoClose?: (toast: ToastT) => void
   promise?: PromiseT
@@ -73,6 +80,10 @@ export interface ToastT<T extends Component = Component> {
   classes?: ToastClasses
   descriptionClass?: string
   position?: Position
+}
+
+export function isAction(action: Action | Component): action is Action {
+  return (action as Action).label !== undefined
 }
 
 export type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
@@ -132,19 +143,20 @@ export interface ToastProps {
   expandByDefault: boolean
   closeButton: boolean
   interacting: boolean
-  duration?: number
-  descriptionClass?: string
   style?: CSSProperties
   cancelButtonStyle?: CSSProperties
   actionButtonStyle?: CSSProperties
-  unstyled?: boolean
-  loadingIcon?: Component
+  duration?: number
   class: string
+  unstyled?: boolean
+  descriptionClass?: string
+  loadingIcon?: Component
   classes?: ToastClasses
   icons?: ToastIcons
   closeButtonAriaLabel?: string
   pauseWhenPageIsHidden: boolean
   cn: CnFunction
+  defaultRichColors?: boolean
 }
 
 export enum SwipeStateTypes {
