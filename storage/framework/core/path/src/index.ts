@@ -1307,7 +1307,7 @@ export function homeDir(path?: string): string {
 export interface Path {
   actionsPath: (path?: string) => string
   userActionsPath: (path?: string) => string
-  builtUserActionsPath: (path?: string) => string
+  builtUserActionsPath: (path?: string, option?: { relative: boolean }) => string
   userComponentsPath: (path?: string) => string
   userViewsPath: (path?: string) => string
   userFunctionsPath: (path?: string) => string
