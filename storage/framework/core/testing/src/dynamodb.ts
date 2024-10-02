@@ -10,6 +10,7 @@ import {
 
 const client = new DynamoDBClient({
   endpoint: 'http://localhost:8000',
+  region: 'us-east-1', // You can use any valid region name
   credentials: {
     accessKeyId: 'dummy',
     secretAccessKey: 'dummy',
