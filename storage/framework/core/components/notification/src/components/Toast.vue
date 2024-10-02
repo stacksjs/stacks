@@ -2,7 +2,7 @@
 import '../styles/styles.css'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useIsDocumentHidden } from '../composables/useIsDocumentHidden'
-import { type HeightT, type ToastProps, type ToastT, isAction } from './types'
+import { type HeightT, type ToastProps, type ToastT, isAction } from '../types'
 
 const props = defineProps<ToastProps>()
 

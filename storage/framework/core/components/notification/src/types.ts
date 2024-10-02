@@ -1,6 +1,7 @@
 import type { CSSProperties, Component } from 'vue'
 
-export type NotificationTypes = 'normal' | 'action' | 'success' | 'info' | 'warning' | 'error' | 'loading' | 'default'
+export type ToastTypes = 'normal' | 'action' | 'success' | 'info' | 'warning' | 'error' | 'loading' | 'default'
+export type NotificationTypes = ToastTypes
 
 export type PromiseT<Data = any> = Promise<Data> | (() => Promise<Data>)
 
@@ -55,7 +56,7 @@ export interface Action {
 export interface ToastT<T extends Component = Component> {
   id: number | string
   title?: string | Component
-  type?: NotificationTypes
+  type?: ToastTypes
   icon?: Component
   component?: T
   componentProps?: any
@@ -108,7 +109,7 @@ export interface ToastOptions {
 
 export type CnFunction = (...classes: Array<string | undefined>) => string
 
-export interface NotificationProps {
+export interface ToasterProps {
   invert?: boolean
   theme?: Theme
   position?: Position
@@ -129,6 +130,7 @@ export interface NotificationProps {
   pauseWhenPageIsHidden?: boolean
   cn?: CnFunction
 }
+export type NotificationProps = ToasterProps
 
 export interface ToastProps {
   toast: ToastT

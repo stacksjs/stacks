@@ -248,3 +248,4 @@ export const notification = Object.assign(
     getHistory,
   },
 )
+export const toast = notification
