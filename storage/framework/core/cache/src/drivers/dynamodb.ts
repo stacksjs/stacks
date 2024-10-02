@@ -14,9 +14,9 @@ const client = new BentoCache({
     dynamo: bentostore().useL2Layer(
       dynamoDbDriver({
         endpoint: 'http://localhost:8000',
-        region: 'eu-east-1',
+        region,
         table: {
-          name: 'stacks',
+          name: tableName,
         },
         credentials: {
           accessKeyId: 'dummy',

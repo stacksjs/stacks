@@ -8,7 +8,13 @@ import {
   ScalarAttributeType,
 } from '@aws-sdk/client-dynamodb'
 
-const client = new DynamoDBClient({ endpoint: 'http://localhost:8000' })
+const client = new DynamoDBClient({
+  endpoint: 'http://localhost:8000',
+  credentials: {
+    accessKeyId: 'dummy',
+    secretAccessKey: 'dummy',
+  },
+})
 
 export async function launchServer(): Promise<void> {
   if (!process.env.GITHUB_ACTIONS) {
