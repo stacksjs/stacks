@@ -1,23 +1,22 @@
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
+import type { ViteConfig } from '@stacksjs/types'
 import { components, cssEngine, i18n, layouts } from '@stacksjs/vite-plugin'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
-import { defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
 // import { autoImports, components, cssEngine, devtools, i18n, layouts, markdown, pwa, router } from './stacks'
-
 // import { fonts } from './plugin/fonts'
 
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
 
-export default defineConfig({
+export const dashboardConfig: ViteConfig = {
   build: {
     rollupOptions: {
       external: [
@@ -128,4 +127,6 @@ export default defineConfig({
     // TODO: workaround until they support native ESM
     noExternal: ['workbox-window', /vue-i18n/],
   },
-})
+}
+
+export default dashboardConfig

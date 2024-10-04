@@ -4,10 +4,9 @@ import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } fr
 import { server } from '@stacksjs/server'
 import type { ViteConfig } from '@stacksjs/types'
 import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
-import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
-const config = {
+export const componentsConfig: ViteConfig = {
   root: libsPath('components/vue'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
@@ -40,7 +39,7 @@ const config = {
   ],
 
   build: vueComponentsBuildOptions(),
-} satisfies ViteConfig
+}
 
 export function vueComponentsBuildOptions(): ViteBuildOptions {
   return {
@@ -69,8 +68,4 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
   }
 }
 
-export default defineConfig(({ command }) => {
-  if (command === 'serve') return config
-
-  return config
-})
+export default componentsConfig

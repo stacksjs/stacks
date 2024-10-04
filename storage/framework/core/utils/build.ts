@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dts-auto'
 import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -27,6 +28,12 @@ const result = await Bun.build({
     '@stacksjs/validation',
     '@stacksjs/strings',
     'bun',
+  ],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
   ],
 })
 

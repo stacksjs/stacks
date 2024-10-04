@@ -1,8 +1,8 @@
 import { alias } from '@stacksjs/alias'
 import { examplesPath } from '@stacksjs/path'
-import { defineConfig } from 'vite'
+import type { ViteConfig } from '@stacksjs/types'
 
-export const webComponentsExampleConfig = {
+export const webComponentsExampleConfig: ViteConfig = {
   root: examplesPath('web-components'),
 
   resolve: {
@@ -18,6 +18,4 @@ export const webComponentsExampleConfig = {
   // ],
 }
 
-export default defineConfig(() => {
-  return webComponentsExampleConfig
-})
+export default webComponentsExampleConfig

@@ -4,10 +4,9 @@ import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } fr
 import { server } from '@stacksjs/server'
 import type { ViteConfig } from '@stacksjs/types'
 import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
-import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
-const config = {
+export const webComponentsConfig: ViteConfig = {
   root: libsPath('components/web'),
   envDir: projectPath(),
   envPrefix: 'FRONTEND_',
@@ -69,8 +68,4 @@ export function webComponentsBuildOptions(): ViteBuildOptions {
   }
 }
 
-export default defineConfig(({ command }) => {
-  if (command === 'serve') return config
-
-  return config
-})
+export default webComponentsConfig

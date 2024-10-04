@@ -1,10 +1,10 @@
 import { alias } from '@stacksjs/alias'
 import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
-import type { UserConfig } from 'vite'
+import type { ViteConfig } from '@stacksjs/types'
 import { defineConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 
-export const functionsConfig: UserConfig = {
+export const functionsConfig: ViteConfig = {
   root: functionsPath(),
   envDir: projectPath(),
   envPrefix: '',
@@ -40,9 +40,11 @@ export function functionsBuildOptions(): ViteBuildOptions {
   }
 }
 
-export default defineConfig(({ command }) => {
-  if (command === 'serve') return functionsConfig
+export default functionsConfig
 
-  // command === 'build'
-  return functionsConfig
-})
+// export default defineConfig(({ command }) => {
+//   if (command === 'serve') return functionsConfig
+
+//   // command === 'build'
+//   return functionsConfig
+// })

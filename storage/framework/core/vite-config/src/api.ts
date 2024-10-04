@@ -1,8 +1,8 @@
 import { ports } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import { type UserConfig, defineConfig } from 'vite'
+import type { ViteConfig } from '@stacksjs/types'
 
-const config: UserConfig = defineConfig({
+export const apiConfig: ViteConfig = {
   base: '/api/',
 
   root: p.frameworkPath('api'),
@@ -15,6 +15,6 @@ const config: UserConfig = defineConfig({
       '/': `http://127.0.0.1:${ports.api}`,
     },
   },
-})
+}
 
-export default config
+export default apiConfig

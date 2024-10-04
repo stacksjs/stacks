@@ -6,11 +6,9 @@
 
 export type { BuildOptions as ViteBuildOptions, ViteDevServer } from 'vite'
 
-export * as vueComponentExample from './example-vue'
-export * as webComponentExample from './example-wc'
-export * as functions from './functions'
-export * as views from './views'
-export * as vueComponents from './components'
-export * as webComponents from './web-components'
-
-// export { ViteDevServer, ViteBuildOptions }
+export * from './example-vue'
+export * from './example-wc'
+export * from './functions'
+export * from './views'
+export * from './components'
+export * from './web-components'

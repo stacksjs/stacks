@@ -1,23 +1,11 @@
 import { ports } from '@stacksjs/config'
+import type { ServerOptions } from '@stacksjs/types'
 
-interface ServerOptions {
-  type?:
-    | 'frontend'
-    | 'backend'
-    | 'api'
-    | 'library'
-    | 'desktop'
-    | 'docs'
-    | 'email'
-    | 'admin'
-    | 'system-tray'
-    | 'database'
-  host?: string
-  port?: number
-  open?: boolean
-}
-
-export function config(options: ServerOptions) {
+export function config(options: ServerOptions): {
+  host: string
+  port: number
+  open: boolean
+} {
   const serversMap = {
     frontend: {
       host: 'localhost',

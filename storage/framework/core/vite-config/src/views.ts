@@ -1,6 +1,7 @@
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
+import type { ViteConfig } from '@stacksjs/types'
 import {
   autoImports,
   components,
@@ -15,7 +16,6 @@ import {
   stacks,
   uiEngine,
 } from '@stacksjs/vite-plugin'
-import { type UserConfig, defineConfig } from 'vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
@@ -23,7 +23,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 // const isMaintenanceMode = config.app.maintenanceMode
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
 
-const config: UserConfig = defineConfig({
+export const viewsConfig: ViteConfig = {
   build: {
     rollupOptions: {
       external: [
@@ -105,6 +105,6 @@ const config: UserConfig = defineConfig({
     // TODO: workaround until they support native ESM
     noExternal: ['workbox-window', /vue-i18n/],
   },
-})
+}
 
-export default config
+export default viewsConfig
