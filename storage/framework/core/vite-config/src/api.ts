@@ -1,8 +1,8 @@
 import { ports } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import { defineConfig } from 'vite'
+import { type UserConfig, defineConfig } from 'vite'
 
-export default defineConfig({
+const config: UserConfig = defineConfig({
   base: '/api/',
 
   root: p.frameworkPath('api'),
@@ -16,3 +16,5 @@ export default defineConfig({
     },
   },
 })
+
+export default config

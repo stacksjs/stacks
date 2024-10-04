@@ -27,18 +27,21 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./*": {
       "bun": "./src/*",
       "import": "./dist/*"
     }
   },
+  "types": "./dist/index.d.ts",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
+    "test": "bun test",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

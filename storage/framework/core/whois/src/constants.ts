@@ -1,4 +1,11 @@
-export default {
+export const IANA_CHK_URL: string = 'https://www.iana.org/whois?q='
+
+export const PARAMETERS: Record<string, string> = {
+  'whois.denic.de': '-T dn,ace',
+  'whois.nic.fr': '-V Md5.2',
+}
+
+export const SERVERS: Record<string, string> = {
   'br.com': 'whois.centralnic.net',
   'cn.com': 'whois.centralnic.net',
   'de.com': 'whois.centralnic.net',

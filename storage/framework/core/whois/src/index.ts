@@ -2,10 +2,10 @@ import Net from 'node:net'
 import fetch from 'node-fetch'
 import type { SocksClientOptions } from 'socks'
 import { SocksClient } from 'socks'
-import PARAMETERS from './parameters'
-import SERVERS from './servers'
-
-const IANA_CHK_URL = 'https://www.iana.org/whois?q='
+import { IANA_CHK_URL, PARAMETERS, SERVERS } from './constants'
+import { ProxyType } from './types'
+import type { ProxyData, WhoIsOptions, WhoIsResponse } from './types'
+import { shallowCopy } from './utils'
 
 /**
  * Find the WhoIs server for the TLD from IANA WhoIs service. The TLD is be searched and the HTML response is parsed to extract the WhoIs server
@@ -13,7 +13,7 @@ const IANA_CHK_URL = 'https://www.iana.org/whois?q='
  * @param tld TLD of the domain
  * @returns WhoIs server which hosts the information for the domains of the TLD
  */
-async function findWhoIsServer(tld: string): Promise<string> {
+export async function findWhoIsServer(tld: string): Promise<string> {
   const chkURL = IANA_CHK_URL + tld
 
   try {
@@ -29,27 +29,6 @@ async function findWhoIsServer(tld: string): Promise<string> {
 
   return ''
 }
-/**
- * Copy an Object with its values
- *
- * @param obj Object which needs to be copied
- * @returns A copy of the object
- */
-function shallowCopy<T>(obj: T): T {
-  if (Array.isArray(obj)) {
-    return obj.slice() as T // Clone the array
-  }
-
-  if (typeof obj === 'object' && obj !== null) {
-    const copy: any = {}
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) copy[key] = shallowCopy(obj[key])
-    }
-    return copy as T
-  }
-
-  return obj // For primitive values, return as is
-}
 
 /**
  * Get whois server of the tld from servers list
@@ -57,7 +36,8 @@ function shallowCopy<T>(obj: T): T {
  * @param tld TLD of the domain
  * @returns WhoIs server which hosts the information for the domains of the TLD
  */
-function getWhoIsServer(tld: keyof typeof SERVERS): string | undefined {
+export function getWhoIsServer(tld: keyof typeof SERVERS): string | undefined {
+  if (tld === 'com') return 'whois.verisign-grs.com'
   return SERVERS[tld]
 }
 
@@ -69,132 +49,21 @@ function getWhoIsServer(tld: keyof typeof SERVERS): string | undefined {
  * @param domain Domain name
  * @returns TLD
  */
-function getTLD(domain: string): keyof typeof SERVERS {
-  let tld: keyof typeof SERVERS | null = null
-  let domainStr = domain
-
-  while (true) {
-    const domainData = domainStr.split('.')
-    if (domainData.length < 2) break
-
-    const tldCheck = domainData.slice(1).join('.') as keyof typeof SERVERS
-    const server = SERVERS[tldCheck]
-    if (server) {
-      tld = tldCheck
-      break
+export function getTLD(domain: string): keyof typeof SERVERS {
+  const domainParts = domain.split('.')
+  for (let i = domainParts.length - 1; i > 0; i--) {
+    const possibleTLD = domainParts.slice(i).join('.') as keyof typeof SERVERS
+    if (SERVERS[possibleTLD]) {
+      return possibleTLD
     }
-    domainStr = tldCheck
   }
-
-  if (tld) return tld
-
-  console.debug('TLD is not found in server list. Returning last element after split as TLD!')
-
-  const domainData = domain.split('.')
-  return domainData[domainData.length - 1] as keyof typeof SERVERS
+  // If no match found in SERVERS, return the last part
+  return domainParts[domainParts.length - 1] as keyof typeof SERVERS
 }
 
 // get whois query parameters if exist on parameters.json for whois server
-function getParameters(server: string): string | undefined {
+export function getParameters(server: string): string | undefined {
   return (PARAMETERS as { [key: string]: string })[server]
-}
-
-/**
- * Type of the proxy. Either SOCKS4 or SOCKS5
- * @enum
- */
-export enum ProxyType {
-  /**
-   * SOCKS4 type of proxy
-   */
-  SOCKS4 = 0,
-  /**
-   * SOCKS5 type of proxy
-   */
-  SOCKS5 = 1,
-}
-
-/**
- * Proxy related data
- * @interface
- *
- */
-export interface ProxyData {
-  /**
-   * Proxy IP
-   */
-  ip: string
-  /**
-   * Proxy port
-   */
-  port: number
-  /**
-   * Username to connect to the proxy
-   */
-  username?: string | null
-  /**
-   * Password to connect to the proxy
-   */
-  password?: string | null
-  /**
-   * {@link ProxyType}
-   */
-  type: ProxyType
-}
-
-/**
- * WhoIs options
- * @interface
- */
-export interface WhoIsOptions {
-  /**
-   * TLD of the domain. If the {@link tld} is not provided (or null), then it will be automatically determined as to the given domain name
-   */
-  tld?: string | null
-  /**
-   * The encoding type used for WhoIs server and response. By default UTF-8 is used.
-   */
-  encoding?: string | null
-
-  /** {@link ProxyData} */
-  proxy?: ProxyData | null
-  /**
-   * The WhoIs server to collect data from. If not provided, the server will automatically determined using the {@link tld}
-   */
-  server?: string | null
-  /**
-   * The port of the WhoIs server. By default, port 43 is used.
-   */
-  serverPort?: number | null
-  /**
-   * Which data needs to be extracted/parsed from the WhoIs response.
-   * An object can be passed which contains keys of the fields of the WhoIs response.
-   * A copy of the provided object will be returned with the values filled for the provided keys.
-   *
-   * The keys can have default value of empty string. However, if the WhoIs response has multiple values for the same field (eg: 'Domain Status'),
-   * then all the values can be collected by providing a default value of an Array([]).
-   *
-   * Following example shows an object used to collect 'Domain Name', 'Domain Status' (multiple values) and 'Registrar' from WhoIs response
-   *
-   * @example {'Domain Name': '', 'Domain Status': [], 'Registrar': ''}
-   */
-  parseData?: object | null
-}
-
-/**
- * Response returned from whois function. Contains the raw text from WhoIs server and parsed/fornatted WhoIs data (if parsed is true)
- *
- * @interface
- */
-export interface WhoIsResponse {
-  /**
-   * Raw text response from WhoIs server
-   */
-  _raw: string
-  /**
-   * Parsed/Formatted key-value pairs of the response (if parsed is true)
-   */
-  parsedData: any | null
 }
 
 /**
@@ -354,7 +223,7 @@ export async function tcpWhois(
 }
 
 /**
- * Collect WhoIs data for the mentioned {@link domain}. Parse the reveived response if {@link parse} is true, accordingly.
+ * Collect WhoIs data for the mentioned {@link domain}. Parse the received response if {@link parse} is true, accordingly.
  *
  * @param domain Domain name
  * @param parse Whether the raw text needs to be parsed/formatted or not
@@ -405,7 +274,9 @@ export async function whois(
   const queryOptions = qOptions || ''
 
   try {
+    console.log(`Attempting WHOIS lookup for ${domain} on server ${server}`)
     const rawData = await tcpWhois(domain, queryOptions, server, port, encoding, proxy)
+    console.log(`Raw WHOIS data received:`, rawData)
     if (!parse) {
       const parsedData = WhoIsParser.parseData(rawData, null)
       return {
@@ -439,6 +310,7 @@ export async function whois(
 }
 
 export function lookup(domain: string, options: WhoIsOptions | null = null): Promise<WhoIsResponse> {
+  console.log(`Lookup called for ${domain}`)
   return whois(domain, true, options)
 }
 
@@ -483,3 +355,9 @@ export async function batchWhois(
 
   return response
 }
+
+export * from './constants'
+export * from './types'
+
+export { SocksClient } from 'socks'
+export type { SocksClientOptions } from 'socks'

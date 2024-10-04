@@ -1,10 +1,10 @@
 import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
-import { err, ok } from '@stacksjs/error-handling'
+import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { $ } from 'bun'
-import { FileMigrationProvider, Migrator } from 'kysely'
+import { FileMigrationProvider, type MigrationResult, Migrator } from 'kysely'
 import { generateMysqlMigration, resetMysqlDatabase } from './drivers'
 import { generatePostgresMigration, resetPostgresDatabase } from './drivers'
 import { generateSqliteMigration, resetSqliteDatabase } from './drivers'
@@ -12,7 +12,7 @@ import { db } from './utils'
 
 const driver = database.default || ''
 
-export const migrator = new Migrator({
+export const migrator: Migrator = new Migrator({
   db,
 
   provider: new FileMigrationProvider({
@@ -37,15 +37,14 @@ export const migrator = new Migrator({
 //   }),
 // })
 
-export async function runDatabaseMigration() {
+export async function runDatabaseMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
     log.info('Migrating database...')
 
     const { error, results } = await migrator.migrateToLatest()
 
     if (error) {
-      log.error(error)
-      return err(error)
+      return err(handleError(error))
     }
 
     if (results?.length === 0) {
@@ -58,8 +57,7 @@ export async function runDatabaseMigration() {
     log.success('Database migration completed with no new migrations.')
     return ok('Database migration completed with no new migrations.')
   } catch (error) {
-    console.error('Migration failed:', error)
-    return err(error)
+    return err(handleError('Migration failed', error))
   }
 }
 
@@ -70,9 +68,7 @@ export interface MigrationOptions {
 
 export async function resetDatabase() {
   if (driver === 'sqlite') return resetSqliteDatabase()
-
   if (driver === 'mysql') return resetMysqlDatabase()
-
   if (driver === 'postgres') return resetPostgresDatabase()
 
   throw new Error('Unsupported database driver in resetDatabase')
@@ -135,7 +131,6 @@ export async function lastMigration() {
 
 export async function lastMigrationDate(): Promise<string | undefined> {
   try {
-    // @ts-expect-error the migrations table is not typed yet
     return (await db.selectFrom('migrations').select('timestamp').orderBy('timestamp', 'desc').limit(1).execute())[0]
       .timestamp
   } catch (error) {
@@ -143,3 +138,5 @@ export async function lastMigrationDate(): Promise<string | undefined> {
     return undefined
   }
 }
+
+export type { MigrationResult }
