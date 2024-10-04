@@ -21,6 +21,7 @@
   "scripts": {
     "build": "echo 'wip'",
     "prepublishOnly": "bun run build",
+    "test": "bun test",
     "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {

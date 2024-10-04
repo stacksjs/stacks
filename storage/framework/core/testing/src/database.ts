@@ -28,7 +28,6 @@ export async function refreshDatabase(): Promise<void> {
   await setupDatabase()
 
   if (driver === 'mysql') await truncateMysql()
-
   if (driver === 'sqlite') await truncateSqlite()
 }
 

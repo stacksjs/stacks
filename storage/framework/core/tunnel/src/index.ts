@@ -1,6 +1,6 @@
-import { localTunnel } from './tunnel'
+import { type LocalTunnel, localTunnel } from './tunnel'
 
-export async function createLocalTunnel(port: number) {
+export async function createLocalTunnel(port: number): Promise<LocalTunnel> {
   return await localTunnel({ port })
 }
 

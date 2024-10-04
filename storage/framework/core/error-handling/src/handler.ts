@@ -15,7 +15,7 @@ export class ErrorHandler {
   static shouldExitProcess = true
 
   static handle(err: Error | ErrorMessage | unknown, options?: ErrorOptions): Error {
-    this.shouldExitProcess = options?.shouldExit !== false ?? true
+    this.shouldExitProcess = options?.shouldExit !== false
     if (options?.silent !== true) this.writeErrorToConsole(err)
 
     let error: Error

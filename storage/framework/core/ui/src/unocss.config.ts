@@ -1,7 +1,7 @@
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
 import {
-  defineConfig,
+  type UserConfig as UnoConfig,
   presetAttributify,
   presetIcons,
   presetTypography,
@@ -13,7 +13,7 @@ import {
 } from 'unocss'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
 
-export default defineConfig({
+const config: UnoConfig = {
   shortcuts: ui.shortcuts,
 
   content: {
@@ -74,4 +74,6 @@ export default defineConfig({
       },
     },
   },
-})
+}
+
+export default config

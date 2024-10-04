@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
-import type { Content } from '../src/index'
 import { createSpreadsheet, spreadsheet } from '../src/index'
+import type { Content } from '../src/types'
 
-describe('Bun Spreadsheets', () => {
+describe('bun-spreadsheets', () => {
   let testData: Content
 
   beforeEach(() => {
