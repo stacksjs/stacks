@@ -13,10 +13,10 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
   plugins: [
-    // dts({
-    //   root: './src',
-    //   outdir: './dist',
-    // }),
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
   ],
 })
 

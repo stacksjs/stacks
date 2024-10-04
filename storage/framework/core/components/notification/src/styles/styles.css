@@ -1,4 +1,3 @@
-/* delete data-sonner-toaster to data-notification */
 :where(html[dir='ltr']),
 :where([data-sonner-toaster][dir='ltr']) {
   --toast-icon-margin-start: -3px;
@@ -378,7 +377,7 @@
 }
 
 @media (max-width: 600px) {
-  [data-notification] {
+  [data-sonner-toaster] {
     position: fixed;
     --mobile-offset: 16px;
     right: var(--mobile-offset);
@@ -390,32 +389,32 @@
     left: calc(var(--mobile-offset) * -1);
   }
 
-  [data-notification] [data-sonner-toast] {
+  [data-sonner-toaster] [data-sonner-toast] {
     left: 0;
     right: 0;
     width: calc(100% - var(--mobile-offset) * 2);
   }
 
-  [data-notification][data-x-position='left'] {
+  [data-sonner-toaster][data-x-position='left'] {
     left: var(--mobile-offset);
   }
 
-  [data-notification][data-y-position='bottom'] {
+  [data-sonner-toaster][data-y-position='bottom'] {
     bottom: 20px;
   }
 
-  [data-notification][data-y-position='top'] {
+  [data-sonner-toaster][data-y-position='top'] {
     top: 20px;
   }
 
-  [data-notification][data-x-position='center'] {
+  [data-sonner-toaster][data-x-position='center'] {
     left: var(--mobile-offset);
     right: var(--mobile-offset);
     transform: none;
   }
 }
 
-[data-notification][data-theme='light'] {
+[data-sonner-toaster][data-theme='light'] {
   --normal-bg: #fff;
   --normal-border: var(--gray4);
   --normal-text: var(--gray12);
@@ -437,21 +436,21 @@
   --error-text: hsl(360, 100%, 45%);
 }
 
-[data-notification][data-theme='light']
+[data-sonner-toaster][data-theme='light']
   [data-sonner-toast][data-invert='true'] {
   --normal-bg: #000;
   --normal-border: hsl(0, 0%, 20%);
   --normal-text: var(--gray1);
 }
 
-[data-notification][data-theme='dark']
+[data-sonner-toaster][data-theme='dark']
   [data-sonner-toast][data-invert='true'] {
   --normal-bg: #fff;
   --normal-border: var(--gray3);
   --normal-text: var(--gray12);
 }
 
-[data-notification][data-theme='dark'] {
+[data-sonner-toaster][data-theme='dark'] {
   --normal-bg: #000;
   --normal-border: hsl(0, 0%, 20%);
   --normal-text: var(--gray1);
@@ -512,7 +511,7 @@
   color: var(--warning-text);
 }
 
-[data-rich-colors='true'] [data-sonner-toast][data-type='error'] {
+[data-rich-colors='true'][data-sonner-toast][data-type='error'] {
   background: var(--error-bg);
   border-color: var(--error-border);
   color: var(--error-text);

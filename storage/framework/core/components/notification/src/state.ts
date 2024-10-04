@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { ExternalToast, NotificationTypes, PromiseData, PromiseT, ToastT, ToastToDismiss } from './types'
+import type { ExternalToast, PromiseData, PromiseT, ToastT, ToastToDismiss, ToastTypes } from './types'
 
 let toastsCounter = 0
 
@@ -34,7 +34,7 @@ class Observer {
   create = (
     data: ExternalToast & {
       message?: string | Component
-      type?: NotificationTypes
+      type?: ToastTypes
       promise?: PromiseT
     },
   ) => {
@@ -108,7 +108,7 @@ class Observer {
       return
     }
 
-    let id: string | number | undefined = undefined
+    let id: string | number | undefined
     if (data.loading !== undefined) {
       id = this.create({
         ...data,
@@ -135,10 +135,9 @@ class Observer {
               : data.error
           const description =
             typeof data.description === 'function'
-              ? // @ts-expect-error - we need to check if the promise is a boolean
+              ? // @ts-expect-error
                 await data.description(`HTTP error! status: ${response.status}`)
               : data.description
-
           this.create({ id, type: 'error', message, description })
         } else if (data.success !== undefined) {
           shouldDismiss = false

@@ -434,7 +434,7 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
 
 export async function deleteVpcs(): Promise<Result<string, Error>> {
   const ec2Client = new EC2Client({ region: 'us-east-1' })
-  const vpcNamePattern = `${config.app.name?.toLowerCase()}-` ?? 'stacks-'
+  const vpcNamePattern = config.app.name ? `${config.app.name.toLowerCase()}-` : 'stacks-'
 
   try {
     // Describe all VPCs
@@ -478,7 +478,7 @@ export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
 
 export async function deleteSubnets(): Promise<Result<string, Error>> {
   const ec2Client = new EC2Client({ region: 'us-east-1' })
-  const subnetNamePattern = `${config.app.name?.toLowerCase()}-` ?? 'stacks-'
+  const subnetNamePattern = config.app.name ? `${config.app.name.toLowerCase()}-` : 'stacks-'
 
   try {
     // Describe all subnets

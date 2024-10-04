@@ -6,7 +6,7 @@ import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker
 /**
  * ℹ️ Useful Links
  *
- * vue-component-meta tests: https://github.com/johnsoncodehk/volar/blob/master/vue-language-tools/vue-component-meta/tests/index.spec.ts
+ * vue-component-meta tests: https://github.com/vuejs/language-tools/tree/master/packages/component-meta/tests/index.spec.ts
  * Discord thread about improving vue-component-meta: https://discord.com/channels/793943652350427136/1027819645677350912
  * GitHub issue for improving vue-component-meta based on runtime/dynamic props: https://github.com/johnsoncodehk/volar/issues/1854
  * Discord chat: https://discord.com/channels/793943652350427136/1027819645677350912
