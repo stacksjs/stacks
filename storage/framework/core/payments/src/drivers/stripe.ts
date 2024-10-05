@@ -2,114 +2,155 @@ import Stripe from 'stripe'
 
 const apiKey = ''
 
-const stripe = new Stripe(apiKey, {
-  apiVersion: '2023-10-16',
+const client = new Stripe(apiKey, {
+  apiVersion: '2024-06-20',
 })
 
 // TODO: learn about subscriptions
-export const paymentIntent = (() => {
+export interface PaymentIntent {
+  create: (params: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
+  retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.PaymentIntent>>
+  update: (stripeId: string, params: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
+  cancel: (stripeId: string) => Promise<Stripe.Response<Stripe.PaymentIntent>>
+}
+
+export const paymentIntent: PaymentIntent = (() => {
   async function create(params: Stripe.PaymentIntentCreateParams) {
-    return await stripe.paymentIntents.create(params)
+    return await client.paymentIntents.create(params)
   }
 
   async function retrieve(stripeId: string) {
-    return await stripe.paymentIntents.retrieve(stripeId)
+    return await client.paymentIntents.retrieve(stripeId)
   }
 
   async function update(stripeId: string, params: Stripe.PaymentIntentCreateParams) {
-    return await stripe.paymentIntents.update(stripeId, params)
+    return await client.paymentIntents.update(stripeId, params)
   }
 
   async function cancel(stripeId: string) {
-    return await stripe.paymentIntents.cancel(stripeId)
+    return await client.paymentIntents.cancel(stripeId)
   }
 
   return { create, retrieve, update, cancel }
 })()
 
-export const balance = (() => {
+export interface Balance {
+  retrieve: () => Promise<Stripe.Response<Stripe.Balance>>
+}
+
+export const balance: Balance = (() => {
   async function retrieve() {
-    return await stripe.balance.retrieve()
+    return await client.balance.retrieve()
   }
 
   return { retrieve }
 })()
 
-export const customer = (() => {
+export interface Customer {
+  create: (params: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  update: (stripeId: string, params: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Customer | Stripe.DeletedCustomer>>
+}
+
+export const customer: Customer = (() => {
   async function create(params: Stripe.CustomerCreateParams) {
-    return await stripe.customers.create(params)
+    return await client.customers.create(params)
   }
 
   async function update(stripeId: string, params: Stripe.CustomerCreateParams) {
-    return await stripe.customers.update(stripeId, params)
+    return await client.customers.update(stripeId, params)
   }
 
   async function retrieve(stripeId: string) {
-    return await stripe.customers.retrieve(stripeId)
+    return await client.customers.retrieve(stripeId)
   }
 
   return { create, update, retrieve }
 })()
 
-export const charge = (() => {
+export interface Charge {
+  create: (params: Stripe.ChargeCreateParams) => Promise<Stripe.Response<Stripe.Charge>>
+  update: (stripeId: string, params: Stripe.ChargeCreateParams) => Promise<Stripe.Response<Stripe.Charge>>
+  capture: (stripeId: string) => Promise<Stripe.Response<Stripe.Charge>>
+  retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Charge>>
+}
+
+export const charge: Charge = (() => {
   async function create(params: Stripe.ChargeCreateParams) {
-    return await stripe.charges.create(params)
+    return await client.charges.create(params)
   }
 
   async function update(stripeId: string, params: Stripe.ChargeCreateParams) {
-    return await stripe.charges.update(stripeId, params)
+    return await client.charges.update(stripeId, params)
   }
 
   async function capture(stripeId: string) {
-    return await stripe.charges.capture(stripeId)
+    return await client.charges.capture(stripeId)
   }
 
   async function retrieve(stripeId: string) {
-    return await stripe.charges.retrieve(stripeId)
+    return await client.charges.retrieve(stripeId)
   }
 
   return { create, update, retrieve, capture }
 })()
 
-export const balanceTransactions = (() => {
+export interface BalanceTransactions {
+  retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.BalanceTransaction>>
+  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.BalanceTransaction>>>
+}
+
+export const balanceTransactions: BalanceTransactions = (() => {
   async function retrieve(stripeId: string) {
-    await stripe.balanceTransactions.retrieve(stripeId)
+    return await client.balanceTransactions.retrieve(stripeId)
   }
 
   async function list(limit: number) {
-    await stripe.balanceTransactions.list({ limit })
+    return await client.balanceTransactions.list({ limit })
   }
 
   return { retrieve, list }
 })()
 
-export const dispute = (() => {
+export interface Dispute {
+  retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Dispute>>
+  update: (stripeId: string, params: Stripe.DisputeUpdateParams) => Promise<Stripe.Response<Stripe.Dispute>>
+  close: (stripeId: string) => Promise<Stripe.Response<Stripe.Dispute>>
+  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Dispute>>>
+}
+
+export const dispute: Dispute = (() => {
   async function retrieve(stripeId: string) {
-    return await stripe.disputes.retrieve(stripeId)
+    return await client.disputes.retrieve(stripeId)
   }
 
   async function update(stripeId: string, params: Stripe.DisputeUpdateParams) {
-    return await stripe.disputes.update(stripeId, params)
+    return await client.disputes.update(stripeId, params)
   }
 
   async function close(stripeId: string) {
-    return await stripe.disputes.close(stripeId)
+    return await client.disputes.close(stripeId)
   }
 
   async function list(limit: number) {
-    return await stripe.disputes.list({ limit })
+    return await client.disputes.list({ limit })
   }
 
   return { retrieve, update, close, list }
 })()
 
-export const events = (() => {
+export interface PaymentEvents {
+  retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Event>>
+  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Event>>>
+}
+
+export const events: PaymentEvents = (() => {
   async function retrieve(stripeId: string) {
-    await stripe.events.retrieve(stripeId)
+    return await client.events.retrieve(stripeId)
   }
 
   async function list(limit: number) {
-    await stripe.events.list({ limit })
+    return await client.events.list({ limit })
   }
 
   return { retrieve, list }
