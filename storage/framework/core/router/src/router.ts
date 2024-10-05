@@ -203,14 +203,12 @@ export class Router implements RouterInterface {
   }
 
   public name(name: string): this {
-    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].name = name
 
     return this
   }
 
   public middleware(middleware: Route['middleware']): this {
-    // @ts-expect-error - this is fine for now
     this.routes[this.routes.length - 1].middleware = middleware
 
     return this

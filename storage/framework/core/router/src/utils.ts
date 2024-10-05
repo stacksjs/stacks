@@ -70,7 +70,7 @@ export async function extractModelRequest(action: string) {
   return requestInstance[requestIndex]
 }
 
-export async function findRequestInstance(requestInstance: string) {
+export async function findRequestInstance(requestInstance: string): Promise<Request | null> {
   const frameworkDirectory = path.storagePath('framework/requests')
   const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
   const pathExists = await existsSync(filePath)

@@ -1,3 +1,4 @@
+import type { Kysely as KyselyType } from 'kysely'
 import { Kysely, MysqlDialect as qbMysqlDialect, PostgresDialect as qbPostgresql } from 'kysely'
 import type { Pool } from 'mysql2'
 import { createPool } from 'mysql2'

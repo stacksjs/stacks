@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dts-auto'
 import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -12,6 +13,12 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
   external: ['@stacksjs/tinker'],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
 })
 
 await outro({

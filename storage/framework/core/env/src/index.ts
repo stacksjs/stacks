@@ -29,22 +29,20 @@ const handler = {
 
     // at some point, let's see if we can remove the need for below
     if (value instanceof ValidationEnum) return target[key] as string
-
     if (value instanceof ValidationBoolean) return !!target[key]
-
     if (value instanceof ValidationNumber) return Number(target[key])
 
     return value as string
   },
 }
 
-export function process() {
+export function process(): Env {
   return typeof Bun !== 'undefined' ? (Bun.env as unknown as Env) : (p.env as unknown as Env)
 }
 
 export const env: Env = new Proxy(process(), handler)
 
-export function writeEnv(key: EnvKey, value: string, options?: { path: string }) {
+export function writeEnv(key: EnvKey, value: string, options?: { path: string }): void {
   const envPath = options?.path || projectPath('.env')
   const env = fs.readFileSync(envPath, 'utf-8')
 

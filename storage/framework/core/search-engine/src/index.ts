@@ -1,6 +1,6 @@
 import type { UiEngine } from '@stacksjs/ui'
 import { useStorage } from '@stacksjs/utils'
-import { computed, ref } from 'vue'
+import { type ComputedRef, type Ref, computed, ref } from 'vue'
 
 // import { client as meilisearch } from './drivers/meilisearch'
 import { determineState } from './helpers'
@@ -12,37 +12,37 @@ const totalHits = table.results?.estimatedTotalHits ?? 1
 
 // state
 const pages: UiEngine.Ref<number[]> = ref([])
-export const totalPages = ref(0)
-export const currentPage = computed(() => table.currentPage)
-export const filterName = computed(() => table.filterName)
+export const totalPages: Ref = ref(0)
+export const currentPage: ComputedRef = computed(() => table.currentPage)
+export const filterName: ComputedRef = computed(() => table.filterName)
 
-export const filters = computed(() => table.filters)
-export const goToNextPage = computed(() => table.goToNextPage)
-export const goToPage = computed(() => table.goToPage)
-export const goToPrevPage = computed(() => table.goToPrevPage)
-export const hits = computed(() => table.hits)
-export const index = computed(() => table.index)
-export const lastPageNumber = computed(() => table.lastPageNumber)
-export const perPage = computed(() => table.perPage)
-export const query = computed(() => table.query)
-export const results = computed(() => table.results)
-export const searchFilters = computed(() => table.searchFilters)
-export const searchParams = computed(() => table.searchParams)
-export const setTotalHits = computed(() => table.setTotalHits)
-export const sort = computed(() => table.sort)
-export const sorts = computed(() => table.sorts)
+export const filters: ComputedRef = computed(() => table.filters)
+export const goToNextPage: ComputedRef = computed(() => table.goToNextPage)
+export const goToPage: ComputedRef = computed(() => table.goToPage)
+export const goToPrevPage: ComputedRef = computed(() => table.goToPrevPage)
+export const hits: ComputedRef = computed(() => table.hits)
+export const index: ComputedRef<string> = computed(() => table.index)
+export const lastPageNumber: ComputedRef<number> = computed(() => table.lastPageNumber || 1)
+export const perPage: ComputedRef<number> = computed(() => table.perPage || 10)
+export const query: ComputedRef<string | undefined> = computed(() => table.query)
+export const results: ComputedRef = computed(() => table.results)
+export const searchFilters: ComputedRef = computed(() => table.searchFilters)
+export const searchParams: ComputedRef = computed(() => table.searchParams)
+export const setTotalHits: ComputedRef = computed(() => table.setTotalHits)
+export const sort: ComputedRef = computed(() => table.sort)
+export const sorts: ComputedRef = computed(() => table.sorts)
 
-export function client() {
+export function client(): string {
   // if (searchEngine.driver === 'meilisearch')
   //   return meilisearch
   return 'wip-search-me'
 }
 
-export function useSearchEngine() {
+export function useSearchEngine(): string {
   return client()
 }
 
-export function calculatePagination() {
+export function calculatePagination(): void {
   if (table.perPage) totalPages.value = Math.ceil(totalHits / table.perPage)
 
   const hitPages = [...Array(totalPages.value).keys()].map((i) => i + 1)
