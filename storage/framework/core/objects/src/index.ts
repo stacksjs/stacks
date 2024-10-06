@@ -114,7 +114,7 @@ function isMergeableObject(item: any): item is object {
  *
  * @category Object
  */
-export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false) {
+export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false): Pick<O, T> {
   return keys.reduce(
     (n, k) => {
       if (k in obj) {
@@ -132,7 +132,7 @@ export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[
  * @category Object
  */
 export function clearUndefined<T extends object>(obj: T): T {
-  Object.keys(obj).forEach((key: string) => (obj[key] === undefined ? delete obj[key] : {}))
+  ;(Object.keys(obj) as Array<keyof T>).forEach((key) => obj[key] === undefined && delete obj[key])
   return obj
 }
 
@@ -141,6 +141,6 @@ export function clearUndefined<T extends object>(obj: T): T {
  *
  * @category Object
  */
-export function hasOwnProperty<T>(obj: T, v: PropertyKey) {
+export function hasOwnProperty<T>(obj: T, v: PropertyKey): boolean {
   return obj == null ? false : Object.prototype.hasOwnProperty.call(obj, v)
 }

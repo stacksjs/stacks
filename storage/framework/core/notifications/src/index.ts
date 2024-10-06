@@ -5,19 +5,19 @@ import { err } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { chat, email, sms } from './drivers'
 
-function useChat(driver = 'slack') {
+export function useChat(driver = 'slack'): any {
   return chat[driver as keyof typeof chat]
 }
 
-function useEmail(driver = 'mailtrap') {
+export function useEmail(driver = 'mailtrap'): any {
   return email[driver as keyof typeof email]
 }
 
-function useSMS(driver = 'twilio') {
+export function useSMS(driver = 'twilio'): any {
   return sms[driver as keyof typeof sms]
 }
 
-function useNotification(typeParam = 'email', driverParam = 'mailtrap') {
+export function useNotification(typeParam = 'email', driverParam = 'mailtrap'): any {
   if (!config.default) {
     log.error('No default notification type set in config/notification.ts')
     return process.exit(ExitCode.InvalidArgument)
@@ -38,8 +38,6 @@ function useNotification(typeParam = 'email', driverParam = 'mailtrap') {
   }
 }
 
-function notification() {
+export function notification(): any {
   return useNotification()
 }
-
-export { useEmail, useChat, useSMS, useNotification, notification }

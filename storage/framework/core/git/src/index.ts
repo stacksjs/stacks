@@ -1,6 +1,12 @@
 export * as changelog from 'changelogen'
 
-export function useGitHub() {
+interface UseGitHub {
+  getTimeDifference: (givenDateString: string) => string
+  formatDuration: (durationInSeconds: number) => string
+  getActionRunDuration: (startTime: Date, endTime: Date) => string
+}
+
+export function useGitHub(): UseGitHub {
   function getTimeDifference(givenDateString: string): string {
     // Convert the given date string to a Date object
     const givenDate: Date = new Date(givenDateString)
