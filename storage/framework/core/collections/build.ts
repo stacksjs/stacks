@@ -12,7 +12,12 @@ const result = await Bun.build({
   sourcemap: 'linked',
   minify: true,
 
-  // plugins: [dts()],
+  plugins: [
+    // dts({
+    //   root: './src',
+    //   outdir: './dist',
+    // }),
+  ],
 })
 
 await outro({

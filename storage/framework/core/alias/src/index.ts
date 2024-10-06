@@ -32,6 +32,8 @@ export const alias: Record<string, string> = {
   'stacks/api': p.coreApiPath('src/index.ts'),
   '@stacksjs/auth/*': p.authPath('src/*'),
   'stacks/auth/*': p.authPath('src/*'),
+  '@stacksjs/browser/*': p.browserPath('src/*'),
+  'stacks/browser/*': p.browserPath('src/*'),
   '@stacksjs/build': p.buildPath('src/index.ts'),
   'stacks/build': p.buildPath('src/index.ts'),
   '@stacksjs/build/*': p.buildPath('src/*'),

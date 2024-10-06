@@ -21,7 +21,12 @@ const result = await Bun.build({
     '@stacksjs/validation',
     '@stacksjs/strings',
   ],
-  plugins: [dts({ root: './src', outdir: './dist' })],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
 })
 
 await outro({
