@@ -50,7 +50,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
-    "vite": "^5.4.7",
+    "vite": "^5.4.8",
     "@stacksjs/development": "workspace:*"
   }
 }

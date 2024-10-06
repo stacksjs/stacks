@@ -48,7 +48,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "bun-plugin-dts-auto": "^0.16.0",
+    "bun-plugin-dts-auto": "^0.17.0",
     "vue-docgen-web-types": "^0.1.8"
   },
   "devDependencies": {
