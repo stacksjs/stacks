@@ -5,18 +5,6 @@ import fs from 'fs-extra'
 import type { EnvKey } from '../../../env'
 import type { Env } from './types'
 
-interface EnumObject {
-  [key: string]: string[]
-}
-
-export const envEnum: EnumObject = {
-  APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
-  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'dynamodb'],
-  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
-  SEARCH_ENGINE_DRIVER: ['opensearch'],
-  FRONTEND_APP_ENV: ['development', 'staging', 'production'],
-}
-
 const handler = {
   get: (target: Env, key: EnvKey) => {
     const value = target[key] as any

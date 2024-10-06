@@ -1,9 +1,20 @@
 import { log } from '@stacksjs/logging'
 import { schema } from '@stacksjs/validation'
-import { envEnum } from './index'
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import env from '~/config/env'
 import type { EnvKey } from '../../../env'
+
+interface EnumObject {
+  [key: string]: string[]
+}
+
+export const envEnum: EnumObject = {
+  APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
+  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'dynamodb'],
+  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
+  SEARCH_ENGINE_DRIVER: ['opensearch'],
+  FRONTEND_APP_ENV: ['development', 'staging', 'production'],
+}
 
 // we need to get this into the right format so we can infer the type
 type EnvValue = string | boolean | number | readonly string[]
