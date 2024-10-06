@@ -1,5 +1,6 @@
 import { log } from '@stacksjs/logging'
 import { schema } from '@stacksjs/validation'
+import { envEnum } from './index'
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
 import env from '~/config/env'
 import type { EnvKey } from '../../../env'
@@ -69,7 +70,7 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
 
         // oddly, enums don't trigger schemaName === 'vine.enum'
         if (!schemaName) {
-          validatorType = schema.enum(value as string[])
+          validatorType = schema.enum(envEnum.APP_ENV)
           break
         }
 

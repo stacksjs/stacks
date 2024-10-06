@@ -146,7 +146,7 @@ type StacksEvents = {
   'user:password-changed': object
 }
 
-const events = mitt<StacksEvents>
+const events: Emitter<StacksEvents> = mitt<StacksEvents>()
 const emitter = events()
 const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
 const useEvents = events()

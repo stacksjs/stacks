@@ -33,4 +33,4 @@ class TSPIVPrinter implements PrinterDriver {
 }
 
 // Export the TSP IV printer instance
-export const tspIVPrinter = new TSPIVPrinter()
+export const tspIVPrinter: PrinterDriver = new TSPIVPrinter()

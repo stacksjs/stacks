@@ -3,13 +3,15 @@ import { kolorist as c } from '@stacksjs/cli'
 import { docs } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
+import type { DocsConfig } from '@stacksjs/types'
 import { withPwa } from '@vite-pwa/vitepress'
+import type { ViteDevServer } from 'vite'
 import { defineConfig } from 'vitepress'
-import type { UserConfig } from 'vitepress'
+import type { DefaultTheme, UserConfigExport, UserConfig as VitePressConfig } from 'vitepress'
 import { version } from '../package.json'
 import { pwaDocs as pwa } from './scripts/pwa'
 
-export const frameworkDefaults = {
+export const frameworkDefaults: VitePressConfig = {
   base: '/docs/',
   cleanUrls: true,
   srcDir: p.projectPath('docs'),
@@ -35,7 +37,7 @@ export const frameworkDefaults = {
     plugins: [
       {
         name: 'stacks-plugin',
-        configureServer(server) {
+        configureServer(server: ViteDevServer) {
           // const base = server.config.base || '/'
           // const _print = server.printUrls
           server.printUrls = () => {
@@ -51,9 +53,9 @@ export const frameworkDefaults = {
   },
 
   pwa,
-} satisfies UserConfig
+}
 
-const config: UserConfig = {
+const combinedConfig: VitePressConfig = {
   ...frameworkDefaults,
   ...docs,
 }
@@ -62,4 +64,6 @@ export * from './plugins'
 export * from './scripts/pwa'
 export * from './meta'
 
-export default withPwa(defineConfig(config))
+const conf: Promise<UserConfigExport<DefaultTheme.Config>> = withPwa(defineConfig(combinedConfig))
+
+export default conf

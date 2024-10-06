@@ -8,7 +8,7 @@ export interface RenderOptions {
   i18n?: I18n
 }
 
-export const template = async (path: string, options?: RenderOptions) => {
+export const template = async (path: string, options?: RenderOptions): Promise<string> => {
   const email = config(resourcesPath('emails'), {
     verbose: !!process.env.DEBUG,
     // options: {
