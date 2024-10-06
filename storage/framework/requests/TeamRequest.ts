@@ -1,5 +1,4 @@
 import { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
 import { customValidate } from '@stacksjs/validation'
 
@@ -14,7 +13,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 interface RequestDataTeam {
-  id?: number
+  id: number
   name: string
   company_name: string
   email: string
@@ -41,8 +40,8 @@ export class TeamRequest extends Request<RequestDataTeam> implements TeamRequest
   public is_personal = false
   public accesstoken_id = 0
   public user_id = 0
-  public created_at = ''
-  public updated_at = ''
+  public created_at = new Date()
+  public updated_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -41,7 +41,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     this.headers = headerParams
   }
 
-  public get(element: string): string | number | undefined {
+  public get(element: string): any {
     return this.query[element]
   }
 

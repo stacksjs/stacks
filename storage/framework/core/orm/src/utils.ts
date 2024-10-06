@@ -252,7 +252,7 @@ export async function writeModelRequest(): Promise<void> {
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport type { VineType } from '@stacksjs/types'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = modelFiles[i] as string
     const model = (await import(modeFileElement)).default as Model
@@ -261,7 +261,7 @@ export async function writeModelRequest(): Promise<void> {
     const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
     const attributes = await extractFields(model, modeFileElement)
 
-    fieldString += ` id?: number\n`
+    fieldString += ` id: number\n`
     fieldStringInt += `public id = 1\n`
 
     let keyCounter = 0
@@ -309,8 +309,8 @@ export async function writeModelRequest(): Promise<void> {
     }
 
     if (useTimestamps) {
-      fieldStringInt += `public created_at = ''
-        public updated_at = ''
+      fieldStringInt += `public created_at = new Date
+        public updated_at = new Date
       `
     }
 

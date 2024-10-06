@@ -1,5 +1,4 @@
 import { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
 import { customValidate } from '@stacksjs/validation'
 
@@ -14,7 +13,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 interface RequestDataSubscriberEmail {
-  id?: number
+  id: number
   email: string
   created_at?: Date
   updated_at?: Date
@@ -23,8 +22,8 @@ interface RequestDataSubscriberEmail {
 export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> implements SubscriberEmailRequestType {
   public id = 1
   public email = ''
-  public created_at = ''
-  public updated_at = ''
+  public created_at = new Date()
+  public updated_at = new Date()
 
   public deleted_at = ''
 

@@ -11,7 +11,7 @@ interface CustomAttributes {
   }
 
 interface RequestDataProject {
-       id?: number
+       id: number
  name: string
       description: string
       url: string
@@ -26,7 +26,7 @@ export interface ProjectRequestType extends Request {
  get(key: 'name' | 'description' | 'url' | 'status'): string
 
       all(): RequestDataProject
-       id?: number
+       id: number
  name: string
       description: string
       url: string
@@ -37,7 +37,7 @@ export interface ProjectRequestType extends Request {
     }
 
 interface RequestDataSubscriberEmail {
-       id?: number
+       id: number
  email: string
      created_at?: Date
       updated_at?: Date
@@ -49,7 +49,7 @@ export interface SubscriberEmailRequestType extends Request {
  get(key: 'email'): string
 
       all(): RequestDataSubscriberEmail
-       id?: number
+       id: number
  email: string
      created_at?: Date
       updated_at?: Date
@@ -57,7 +57,7 @@ export interface SubscriberEmailRequestType extends Request {
     }
 
 interface RequestDataAccessToken {
-       id?: number
+       id: number
  name: string
       token: string
       plain_text_token: string
@@ -75,7 +75,7 @@ export interface AccessTokenRequestType extends Request {
  get(key: 'team_id'): string 
 
       all(): RequestDataAccessToken
-       id?: number
+       id: number
  name: string
       token: string
       plain_text_token: string
@@ -87,7 +87,7 @@ export interface AccessTokenRequestType extends Request {
     }
 
 interface RequestDataTeam {
-       id?: number
+       id: number
  name: string
       company_name: string
       email: string
@@ -111,7 +111,7 @@ export interface TeamRequestType extends Request {
  get(key: 'user_id'): string 
 
       all(): RequestDataTeam
-       id?: number
+       id: number
  name: string
       company_name: string
       email: string
@@ -128,7 +128,7 @@ export interface TeamRequestType extends Request {
     }
 
 interface RequestDataSubscriber {
-       id?: number
+       id: number
  subscribed: boolean
       user_id: number
      created_at?: Date
@@ -142,7 +142,7 @@ export interface SubscriberRequestType extends Request {
  get(key: 'user_id'): string 
 
       all(): RequestDataSubscriber
-       id?: number
+       id: number
  subscribed: boolean
       user_id: number
      created_at?: Date
@@ -151,7 +151,7 @@ export interface SubscriberRequestType extends Request {
     }
 
 interface RequestDataDeployment {
-       id?: number
+       id: number
  commit_sha: string
       commit_message: string
       branch: string
@@ -172,7 +172,7 @@ export interface DeploymentRequestType extends Request {
  get(key: 'user_id'): string 
 
       all(): RequestDataDeployment
-       id?: number
+       id: number
  commit_sha: string
       commit_message: string
       branch: string
@@ -187,7 +187,7 @@ export interface DeploymentRequestType extends Request {
     }
 
 interface RequestDataRelease {
-       id?: number
+       id: number
  version: string
      created_at?: Date
       updated_at?: Date
@@ -199,7 +199,7 @@ export interface ReleaseRequestType extends Request {
  get(key: 'version'): string
 
       all(): RequestDataRelease
-       id?: number
+       id: number
  version: string
      created_at?: Date
       updated_at?: Date
@@ -207,7 +207,7 @@ export interface ReleaseRequestType extends Request {
     }
 
 interface RequestDataUser {
-       id?: number
+       id: number
  name: string
       email: string
       job_title: string
@@ -228,7 +228,7 @@ export interface UserRequestType extends Request {
  get(key: 'post_id'): string 
 
       all(): RequestDataUser
-       id?: number
+       id: number
  name: string
       email: string
       job_title: string
@@ -242,7 +242,7 @@ export interface UserRequestType extends Request {
     }
 
 interface RequestDataPost {
-       id?: number
+       id: number
  title: string
       body: string
       user_id: number
@@ -257,7 +257,7 @@ export interface PostRequestType extends Request {
  get(key: 'user_id'): string 
 
       all(): RequestDataPost
-       id?: number
+       id: number
  title: string
       body: string
       user_id: number

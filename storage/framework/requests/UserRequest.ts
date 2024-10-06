@@ -1,5 +1,4 @@
 import { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
 import { customValidate } from '@stacksjs/validation'
 
@@ -14,7 +13,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 interface RequestDataUser {
-  id?: number
+  id: number
   name: string
   email: string
   job_title: string
@@ -35,8 +34,8 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   public team_id = 0
   public deployment_id = 0
   public post_id = 0
-  public created_at = ''
-  public updated_at = ''
+  public created_at = new Date()
+  public updated_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

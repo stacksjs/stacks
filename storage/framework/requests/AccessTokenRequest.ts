@@ -1,5 +1,4 @@
 import { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
 import { customValidate } from '@stacksjs/validation'
 
@@ -14,7 +13,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 interface RequestDataAccessToken {
-  id?: number
+  id: number
   name: string
   token: string
   plain_text_token: string
@@ -31,8 +30,8 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   public plain_text_token = ''
   public abilities = ''
   public team_id = 0
-  public created_at = ''
-  public updated_at = ''
+  public created_at = new Date()
+  public updated_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

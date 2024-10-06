@@ -1,5 +1,4 @@
 import { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
 import { customValidate } from '@stacksjs/validation'
 
@@ -14,7 +13,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 interface RequestDataDeployment {
-  id?: number
+  id: number
   commit_sha: string
   commit_message: string
   branch: string
@@ -37,8 +36,8 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   public deploy_script = ''
   public terminal_output = ''
   public user_id = 0
-  public created_at = ''
-  public updated_at = ''
+  public created_at = new Date()
+  public updated_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -1,5 +1,4 @@
 import { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
 import { validateField } from '@stacksjs/validation'
 import { customValidate } from '@stacksjs/validation'
 
@@ -14,7 +13,7 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 interface RequestDataRelease {
-  id?: number
+  id: number
   version: string
   created_at?: Date
   updated_at?: Date
@@ -23,8 +22,8 @@ interface RequestDataRelease {
 export class ReleaseRequest extends Request<RequestDataRelease> implements ReleaseRequestType {
   public id = 1
   public version = ''
-  public created_at = ''
-  public updated_at = ''
+  public created_at = new Date()
+  public updated_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
