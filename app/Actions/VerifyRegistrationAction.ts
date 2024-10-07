@@ -1,5 +1,5 @@
-import { verifyRegistrationResponse } from '@simplewebauthn/server'
 import { Action } from '@stacksjs/actions'
+import { verifyRegistrationResponse } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 
 export default new Action({

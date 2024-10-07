@@ -1,5 +1,5 @@
-import { generateRegistrationOptions } from '@simplewebauthn/server'
 import { Action } from '@stacksjs/actions'
+import { generateRegistrationOptions } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import User from '../../storage/framework/orm/src/models/User.ts'
 
