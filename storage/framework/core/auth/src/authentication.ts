@@ -5,8 +5,8 @@ import Team, { type TeamModel } from '../../../orm/src/models/Team'
 import User from '../../../orm/src/models/User'
 
 interface Credentials {
-  password: string
-  [key: string]: string | number | undefined
+  password: string | undefined
+  [key: string]: string | undefined
 }
 
 type AuthToken = `${number}:${number}:${string}`

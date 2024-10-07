@@ -1,7 +1,7 @@
 import type { VineType } from '@stacksjs/types'
 
 interface RequestData {
-  [key: string]: string
+  [key: string]: any
 }
 
 type RouteParams = { [key: string]: string | number } | null
@@ -22,7 +22,7 @@ export interface RequestInstance {
 
   addParam(param: RouteParams): void
 
-  get(element: string): string | number | undefined
+  get<T>(element: T): string | undefined
 
   header(element: string): string | number | boolean | null
 

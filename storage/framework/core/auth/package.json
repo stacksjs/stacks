@@ -42,5 +42,9 @@
     "@types/qrcode": "^1.5.5",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^10.0.0",
+    "@simplewebauthn/server": "^10.0.1"
   }
 }

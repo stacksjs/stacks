@@ -1,4 +1,9 @@
-<script setup>
+<script setup lang="ts">
+import { startRegistration } from '@simplewebauthn/browser'
+
+const successMessage = ref('')
+const errorMessage = ref('')
+
 import { ref } from 'vue'
 
 const router = useRouter()
@@ -36,6 +41,33 @@ async function login() {
   }
 
   password.value = ''
+}
+
+async function generateRegistration() {
+  // Reset success/error messages
+  successMessage.value = ''
+  errorMessage.value = ''
+
+  const resp = await fetch('http://localhost:3008/generate-registration-options')
+  const options = await resp.json()
+
+  const attResp = await startRegistration(options)
+
+  const verificationResp = await fetch('http://localhost:3008/verify-registration', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ challenge: options.challenge, attResp }),
+  })
+
+  const verificationJSON = await verificationResp.json()
+
+  if (verificationJSON?.verified) {
+    successMessage.value = 'Success!'
+  } else {
+    errorMessage.value = `Oh no, something went wrong! Response: <pre>${JSON.stringify(verificationJSON)}</pre>`
+  }
 }
 </script>
 
