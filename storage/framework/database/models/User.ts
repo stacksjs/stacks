@@ -12,7 +12,7 @@ export default {
 
   traits: {
     useAuth: {
-      useTwoFactor: true,
+      usePasskey: true,
     },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
@@ -30,9 +30,8 @@ export default {
 
     useApi: {
       uri: 'users', // your-url.com/api/users
-      middleware: ['Api'], // defaults to `[]`
 
-      routes: ['index', 'store'],
+      routes: ['index', 'store', 'show'],
     },
 
     observe: true,

@@ -140,6 +140,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
 
+  if (usePasskey) await createPasskeyMigration()
+
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
@@ -176,6 +178,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
     }
   }
 
+  if (usePasskey) migrationContent += `    .addColumn('public_passkey', 'text')\n`
+
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
     migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
@@ -184,7 +188,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
-  if (usePasskey) migrationContent += `    .addColumn('public_passkey', 'text')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
@@ -198,6 +201,38 @@ async function createTableMigration(modelPath: string): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+async function createPasskeyMigration() {
+  const hasBeenMigrated = await hasTableBeenMigrated('users')
+
+  if (hasBeenMigrated) return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('passkeys')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('cred_public_key', 'text')\n`
+  migrationContent += `    .addColumn('user_id', 'integer')\n`
+  migrationContent += `    .addColumn('webauthn_user_id', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('counter', 'integer')\n`
+  migrationContent += `    .addColumn('backup_eligible', 'boolean')\n`
+  migrationContent += `    .addColumn('backup_status', 'boolean')\n`
+  migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('last_used', 'text')\n`
+  migrationContent += `    .addColumn('created_at', 'text')\n`
+  migrationContent += `    .execute()\n`
+  migrationContent += `    }\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-passkeys-table.ts`
+
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created pivot migration: ${migrationFileName}`)
 }
 
 async function createPivotTableMigration(model: Model, modelPath: string): Promise<void> {
