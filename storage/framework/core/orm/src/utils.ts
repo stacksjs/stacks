@@ -797,6 +797,7 @@ export async function generateModelString(
   let relationMethods = ``
   let relationImports = ``
   let twoFactorStatements = ''
+  let publicPasskeyStatements = ''
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
@@ -956,6 +957,7 @@ export async function generateModelString(
   constructorFields += `this.id = ${formattedModelName}?.id\n   `
 
   const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
+  const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
 
   if (useTwoFactor) {
     declareFields += `public two_factor_secret: string | undefined \n`
@@ -977,6 +979,17 @@ export async function generateModelString(
         }
 
         return isValid
+      }
+    `
+  }
+
+  if (usePasskey) {
+    declareFields += `public public_passkey: string | undefined \n`
+    constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
+
+    publicPasskeyStatements += `
+      async getPublicPasskey() {
+        return this.${formattedModelName}.public_passkey
       }
     `
   }
@@ -1047,9 +1060,8 @@ export async function generateModelString(
     constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
   }
 
-  if (useTwoFactor) {
-    fieldString += `two_factor_secret?: string \n`
-  }
+  if (useTwoFactor) fieldString += `two_factor_secret?: string \n`
+  if (usePasskey) fieldString += `public_passkey?: string \n`
 
   if (useTimestamps) {
     fieldString += `

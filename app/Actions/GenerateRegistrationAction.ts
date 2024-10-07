@@ -8,19 +8,21 @@ export default new Action({
   description: 'Register a Passkey',
   method: 'POST',
   async handle(request: RequestInstance) {
+    const email = request.get('email') ?? ''
+
     const userPasskeys: any[] = [
       { id: 'passkey1', transports: ['usb'] },
       { id: 'passkey2', transports: ['nfc'] },
     ]
 
-    const user = await User.find(1)
+    const user = await User.whereEmail(email)
 
-    const email = user?.email ?? ''
+    const userEmail = user?.email ?? ''
 
     const options = await generateRegistrationOptions({
       rpName: 'Stacks',
       rpID: 'localhost',
-      userName: email,
+      userName: userEmail,
       attestationType: 'none',
       excludeCredentials: userPasskeys.map((passkey) => ({
         id: passkey.id,

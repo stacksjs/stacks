@@ -12,7 +12,7 @@ export default {
 
   traits: {
     useAuth: {
-      useTwoFactor: true,
+      usePasskey: true,
     },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {

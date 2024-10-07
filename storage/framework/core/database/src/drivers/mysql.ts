@@ -138,6 +138,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
+  const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
+
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
@@ -182,6 +184,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+  if (usePasskey) migrationContent += `    .addColumn('public_passkey', 'text')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`

@@ -19,6 +19,7 @@ export interface ModelElement {
 
 export type AuthOptions = {
   useTwoFactor?: boolean
+  usePasskey?: boolean
 }
 
 type ActionPath = string

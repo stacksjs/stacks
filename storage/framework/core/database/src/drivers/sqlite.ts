@@ -1,7 +1,7 @@
 import { italic, log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
-import { ok } from '@stacksjs/error-handling'
+import { type Ok, ok } from '@stacksjs/error-handling'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
@@ -20,7 +20,7 @@ import {
   pluckChanges,
 } from '.'
 
-export async function resetSqliteDatabase() {
+export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
   await deleteMigrationFiles()
   await dropSqliteTables()
@@ -28,7 +28,7 @@ export async function resetSqliteDatabase() {
   return ok('All tables dropped successfully!')
 }
 
-export async function deleteMigrationFiles() {
+export async function deleteMigrationFiles(): Promise<void> {
   const files = await fs.readdir(path.userMigrationsPath())
 
   if (files.length) {
@@ -42,7 +42,7 @@ export async function deleteMigrationFiles() {
   }
 }
 
-export async function deleteFrameworkModels() {
+export async function deleteFrameworkModels(): Promise<void> {
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
   if (modelFiles.length) {
@@ -56,7 +56,7 @@ export async function deleteFrameworkModels() {
   }
 }
 
-export async function dropSqliteTables() {
+export async function dropSqliteTables(): Promise<void> {
   const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const tables = await fetchTables()
 
@@ -84,7 +84,7 @@ export function fetchTestSqliteFile(): string {
   return path.userDatabasePath('stacks_testing.sqlite')
 }
 
-export async function generateSqliteMigration(modelPath: string) {
+export async function generateSqliteMigration(modelPath: string): Promise<void> {
   // check if any files are in the database folder
   // const files = await fs.readdir(path.userMigrationsPath())
 
@@ -144,7 +144,7 @@ export async function generateSqliteMigration(modelPath: string) {
   else await createTableMigration(modelPath)
 }
 
-export async function copyModelFiles(modelPath: string) {
+export async function copyModelFiles(modelPath: string): Promise<void> {
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = await getTableName(model, modelPath)
@@ -182,6 +182,8 @@ async function createTableMigration(modelPath: string) {
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
+
+  const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -225,8 +227,9 @@ async function createTableMigration(modelPath: string) {
     migrationContent += "    .addColumn('updated_at', 'text')\n"
   }
 
-  // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'text')\n`
+
+  if (usePasskey) migrationContent += `    .addColumn('public_passkey', 'text')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`

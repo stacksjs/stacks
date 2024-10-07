@@ -1,2 +1,1 @@
-export { generateRegistrationOptions } from '@simplewebauthn/server'
-export { verifyRegistrationResponse } from '@simplewebauthn/server'
+export { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server'
