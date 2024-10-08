@@ -220,7 +220,7 @@ async function createPasskeyMigration() {
   migrationContent += `    .addColumn('backup_eligible', 'boolean')\n`
   migrationContent += `    .addColumn('backup_status', 'boolean')\n`
   migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('last_used', 'text')\n`
+  migrationContent += `    .addColumn('last_used_at', 'text')\n`
   migrationContent += `    .addColumn('created_at', 'text')\n`
   migrationContent += `    .execute()\n`
   migrationContent += `    }\n`

@@ -11,7 +11,7 @@ export interface PasskeyAttribute {
   backup_status: boolean
   transports: string
   created_at: Date
-  last_used: Date
+  last_used_at: Date
 }
 
 export async function getUserPasskeys(userId: number): Promise<any> {

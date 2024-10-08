@@ -11,6 +11,6 @@ export async function up(db: Database<any>) {
     .addColumn('backup_status', 'boolean')
     .addColumn('transports', 'varchar(255)')
     .addColumn('created_at', 'text')
-    .addColumn('last_used', 'text')
+    .addColumn('last_used_at', 'text')
     .execute()
     }

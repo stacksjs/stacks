@@ -761,7 +761,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += `  backup_status: boolean\n`
   text += `  transports: string\n`
   text += `  created_at: Date\n`
-  text += `  last_used: Date \n`
+  text += `  last_used_at: Date \n`
   text += `}\n`
 
   text += `\nexport interface Database {\n`
@@ -1473,7 +1473,7 @@ export async function generateModelString(
       async firstOrFail(): Promise<${modelName}Model | undefined> {
         const model = await this.query.selectAll().executeTakeFirst()
 
-        if (! model) throw(\`No model results found for this query \`)
+        if (! model) throw(\`No ${modelName} results found for this query\`)
 
         return this.parseResult(new ${modelName}Model(model))
       }
