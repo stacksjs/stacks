@@ -78,7 +78,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
-        'Content-Type': 'json',
+        'Content-Type': 'application/json',
       },
     })
   }
@@ -147,7 +147,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
     return new Response(JSON.stringify(payloadWithoutStatus), {
       headers: {
-        'Content-Type': 'json',
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
       },
@@ -200,7 +200,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   if (isString(foundCallback))
     return new Response(foundCallback, {
       headers: {
-        'Content-Type': 'json',
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
       },
@@ -225,7 +225,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
       return new Response(JSON.stringify(rest), {
         headers: {
-          'Content-Type': 'json',
+          'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         },
@@ -238,7 +238,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
       return new Response(JSON.stringify(rest), {
         headers: {
-          'Content-Type': 'json',
+          'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         },
@@ -251,7 +251,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
       return new Response(JSON.stringify(rest), {
         headers: {
-          'Content-Type': 'json',
+          'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         },
@@ -263,7 +263,11 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       const { status, ...rest } = foundCallback
 
       return new Response(JSON.stringify(rest), {
-        headers: { 'Content-Type': 'json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
         status: 500,
       })
     }
@@ -272,7 +276,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   if (isObject(foundCallback)) {
     return new Response(JSON.stringify(foundCallback), {
       headers: {
-        'Content-Type': 'json',
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
       },
@@ -283,7 +287,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   // If no known type matched, return a generic error.
   return new Response('Unknown callback type.', {
     headers: {
-      'Content-Type': 'json',
+      'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*',
     },

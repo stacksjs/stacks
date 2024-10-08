@@ -29,14 +29,14 @@ export interface MigrationsTable {
   timestamp: string
 }
 export interface PasskeysTable {
-  id: number
+  id: string
   cred_public_key: string
   user_id: number
   webauthn_user_id: string
   counter: number
   backup_eligible: boolean
   backup_status: boolean
-  transports: string
+  transports?: AuthenticatorTransportFuture[]
   created_at: Date
   last_used_at: Date
 }

@@ -427,7 +427,7 @@ export class UserModel {
   async firstOrFail(): Promise<UserModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
 
-    if (!model) throw `No model results found for this query `
+    if (!model) throw `No User results found for this query`
 
     return this.parseResult(new UserModel(model))
   }

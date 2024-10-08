@@ -752,14 +752,14 @@ export async function generateKyselyTypes(): Promise<void> {
   text += `name: string\n timestamp: string \n }`
 
   text += `\nexport interface PasskeysTable {\n`
-  text += `  id: number\n`
+  text += `  id: string\n`
   text += `  cred_public_key: string\n`
   text += `  user_id: number;\n`
   text += `  webauthn_user_id: string\n`
   text += `  counter: number\n`
   text += `  backup_eligible: boolean\n`
   text += `  backup_status: boolean\n`
-  text += `  transports: string\n`
+  text += `  transports?: AuthenticatorTransportFuture[]\n`
   text += `  created_at: Date\n`
   text += `  last_used_at: Date \n`
   text += `}\n`
@@ -1471,9 +1471,9 @@ export async function generateModelString(
       }
         
       async firstOrFail(): Promise<${modelName}Model | undefined> {
-        const model = await this.query.selectAll().executeTakeFirst()
+        const model = await this.query.selectAll().executeTakeFirstOrThrow()
 
-        if (! model) throw(\`No ${modelName} results found for this query\`)
+        if (! model) throw(\`No ${modelName} model results found for this query\`)
 
         return this.parseResult(new ${modelName}Model(model))
       }

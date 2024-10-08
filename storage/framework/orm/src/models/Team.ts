@@ -455,7 +455,7 @@ export class TeamModel {
   async firstOrFail(): Promise<TeamModel | undefined> {
     const model = await this.query.selectAll().executeTakeFirst()
 
-    if (!model) throw `No model results found for this query `
+    if (!model) throw `No Team results found for this query`
 
     return this.parseResult(new TeamModel(model))
   }
