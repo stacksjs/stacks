@@ -757,6 +757,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += `  user_id: number;\n`
   text += `  webauthn_user_id: string\n`
   text += `  counter: number\n`
+  text += `  deviceType: string\n`
   text += `  backup_eligible: boolean\n`
   text += `  backup_status: boolean\n`
   text += `  transports?: AuthenticatorTransportFuture[]\n`

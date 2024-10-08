@@ -25,7 +25,7 @@ export default new Action({
       attestationType: 'none',
       excludeCredentials: userPasskeys.map((passkey) => ({
         id: passkey.id,
-        transports: passkey.transports,
+        transports: ['nfc'],
       })),
       authenticatorSelection: {
         residentKey: 'preferred',
@@ -33,12 +33,6 @@ export default new Action({
         authenticatorAttachment: 'platform',
       },
     })
-
-    try {
-      await setCurrentRegistrationOptions(user, options)
-    } catch (error) {
-      console.log(error)
-    }
 
     return options
   },

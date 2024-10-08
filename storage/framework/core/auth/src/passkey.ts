@@ -1,11 +1,13 @@
+import type { VerifiedRegistrationResponse } from '@simplewebauthn/server'
+import type { AuthenticatorTransportFuture, PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types'
+import { type Insertable, db } from '@stacksjs/database'
+import type { UserModel } from '../../../orm/src/models/User'
 export {
   generateRegistrationOptions,
   verifyRegistrationResponse,
 } from '@simplewebauthn/server'
-import type { AuthenticatorTransportFuture, PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types'
+
 export type * from '@simplewebauthn/types'
-import { type Insertable, db } from '@stacksjs/database'
-import type { UserModel } from '../../../orm/src/models/User'
 
 type PasskeyInsertable = Insertable<PasskeyAttribute>
 
@@ -28,16 +30,18 @@ export async function getUserPasskeys(userId: number): Promise<PasskeyAttribute[
 
 export async function setCurrentRegistrationOptions(
   user: UserModel,
-  options: PublicKeyCredentialCreationOptionsJSON,
+  verified: VerifiedRegistrationResponse,
 ): Promise<void> {
   const passkeyData: PasskeyInsertable = {
-    id: options.user.id || '',
-    cred_public_key: JSON.stringify(options.pubKeyCredParams), // Convert to JSON string if needed
+    id: verified.registrationInfo?.credentialID || '',
+    cred_public_key: JSON.stringify(verified.registrationInfo?.credentialPublicKey), // Convert to JSON string if needed
     user_id: user.id as number,
     webauthn_user_id: user.email || '',
-    counter: 0,
+    counter: verified.registrationInfo?.counter || 0,
+    credential_type: verified.registrationInfo?.credentialType,
+    device_type: verified.registrationInfo?.credentialDeviceType,
     backup_eligible: false,
-    backup_status: false,
+    backup_status: verified.registrationInfo?.credentialBackedUp || false,
     transports: 'internal',
     last_used_at: formatDateTime(),
   }
