@@ -63,6 +63,7 @@ export async function dropSqliteTables(): Promise<void> {
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
+  await db.schema.dropTable('passkeys').ifExists().execute()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -227,8 +228,9 @@ async function createTableMigration(modelPath: string) {
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
-    migrationContent += "    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))\n"
-    migrationContent += "    .addColumn('updated_at', 'text')\n"
+    migrationContent +=
+      "    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))\n"
+    migrationContent += "    .addColumn('updated_at', 'timestamp')\n"
   }
 
   if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'text')\n`
@@ -283,11 +285,11 @@ async function createPasskeyMigration() {
 
   if (hasBeenMigrated) return
 
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('passkeys')\n`
-  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('id', 'text')\n`
   migrationContent += `    .addColumn('cred_public_key', 'text')\n`
   migrationContent += `    .addColumn('user_id', 'integer')\n`
   migrationContent += `    .addColumn('webauthn_user_id', 'varchar(255)')\n`
@@ -296,7 +298,7 @@ async function createPasskeyMigration() {
   migrationContent += `    .addColumn('backup_status', 'boolean')\n`
   migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
   migrationContent += `    .addColumn('last_used_at', 'text')\n`
-  migrationContent += `    .addColumn('created_at', 'text')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n`
   migrationContent += `    }\n`
 

@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
-import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
+import { type Err, type Ok, type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { $ } from 'bun'
@@ -66,15 +66,15 @@ export interface MigrationOptions {
   up: string
 }
 
-export async function resetDatabase() {
-  if (driver === 'sqlite') return resetSqliteDatabase()
-  if (driver === 'mysql') return resetMysqlDatabase()
-  if (driver === 'postgres') return resetPostgresDatabase()
+export async function resetDatabase(): Promise<Ok<string, never>> {
+  if (driver === 'sqlite') return await resetSqliteDatabase()
+  if (driver === 'mysql') return await resetMysqlDatabase()
+  if (driver === 'postgres') return await resetPostgresDatabase()
 
   throw new Error('Unsupported database driver in resetDatabase')
 }
 
-export async function generateMigrations() {
+export async function generateMigrations(): Promise<Ok<string, never> | Err<string, any>> {
   try {
     log.info('Generating migrations...')
 
@@ -93,7 +93,7 @@ export async function generateMigrations() {
   }
 }
 
-export async function generateMigration(modelPath: string) {
+export async function generateMigration(modelPath: string): Promise<void> {
   if (driver === 'sqlite') await generateSqliteMigration(modelPath)
 
   if (driver === 'mysql') await generateMysqlMigration(modelPath)
@@ -101,7 +101,7 @@ export async function generateMigration(modelPath: string) {
   if (driver === 'postgres') await generatePostgresMigration(modelPath)
 }
 
-export async function haveModelFieldsChangedSinceLastMigration(modelPath: string) {
+export async function haveModelFieldsChangedSinceLastMigration(modelPath: string): Promise<boolean> {
   log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
 
   // const model = await import(modelPath)
@@ -119,9 +119,8 @@ export async function haveModelFieldsChangedSinceLastMigration(modelPath: string
   return !!gitHistory
 }
 
-export async function lastMigration() {
+export async function lastMigration(): Promise<any> {
   try {
-    // @ts-expect-error the migrations table is not typed yet
     return await db.selectFrom('migrations').selectAll().orderBy('timestamp', 'desc').limit(1).execute()
   } catch (error) {
     console.error('Failed to get last migration:', error)

@@ -437,9 +437,7 @@ export class DeploymentModel {
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
-
-    if (!model) throw `No Deployment results found for this query`
+    const model = await this.query.selectAll().executeTakeFirstOrThrow()
 
     return this.parseResult(new DeploymentModel(model))
   }

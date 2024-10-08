@@ -20,13 +20,14 @@ import {
   pluckChanges,
 } from '.'
 
-export async function resetMysqlDatabase(): Promise<Ok<string, any>> {
+export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
 
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
+  await db.schema.dropTable('migrations').ifExists().execute()
 
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
@@ -221,7 +222,7 @@ async function createPasskeyMigration() {
   migrationContent += `    .addColumn('backup_status', 'boolean')\n`
   migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
   migrationContent += `    .addColumn('last_used_at', 'text')\n`
-  migrationContent += `    .addColumn('created_at', 'text')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n`
   migrationContent += `    }\n`
 

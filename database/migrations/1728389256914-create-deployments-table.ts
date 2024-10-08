@@ -12,7 +12,7 @@ export async function up(db: Database<any>) {
     .addColumn('execution_time', 'integer')
     .addColumn('deploy_script', 'varchar(255)')
     .addColumn('terminal_output', 'varchar(255)')
-    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
-    .addColumn('updated_at', 'text')
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'timestamp')
     .execute()
 }

@@ -10,7 +10,7 @@ export async function up(db: Database<any>) {
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('job_title', 'varchar(255)', col => col.notNull())
     .addColumn('public_passkey', 'text')
-    .addColumn('created_at', 'text', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
-    .addColumn('updated_at', 'text')
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+    .addColumn('updated_at', 'timestamp')
     .execute()
 }

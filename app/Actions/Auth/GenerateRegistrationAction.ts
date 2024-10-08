@@ -34,7 +34,11 @@ export default new Action({
       },
     })
 
-    await setCurrentRegistrationOptions(user, options)
+    try {
+      await setCurrentRegistrationOptions(user, options)
+    } catch (error) {
+      console.log(error)
+    }
 
     return options
   },

@@ -366,9 +366,7 @@ export class ReleaseModel {
   }
 
   async firstOrFail(): Promise<ReleaseModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
-
-    if (!model) throw `No Release results found for this query`
+    const model = await this.query.selectAll().executeTakeFirstOrThrow()
 
     return this.parseResult(new ReleaseModel(model))
   }

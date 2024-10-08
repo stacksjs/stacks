@@ -370,9 +370,7 @@ export class SubscriberModel {
   }
 
   async firstOrFail(): Promise<SubscriberModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
-
-    if (!model) throw `No Subscriber results found for this query`
+    const model = await this.query.selectAll().executeTakeFirstOrThrow()
 
     return this.parseResult(new SubscriberModel(model))
   }

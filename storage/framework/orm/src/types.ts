@@ -38,7 +38,7 @@ export interface PasskeysTable {
   backup_status: boolean
   transports?: AuthenticatorTransportFuture[]
   created_at: Date
-  last_used_at: Date
+  last_used_at: string
 }
 
 export interface Database {
