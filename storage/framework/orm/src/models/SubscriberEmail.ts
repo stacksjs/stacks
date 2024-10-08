@@ -370,6 +370,14 @@ export class SubscriberEmailModel {
     return this.parseResult(new SubscriberEmailModel(model))
   }
 
+  async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
+
+    return this.parseResult(new SubscriberEmailModel(model))
+  }
+
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 

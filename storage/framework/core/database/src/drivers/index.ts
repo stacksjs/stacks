@@ -175,18 +175,19 @@ export function pluckChanges(array1: string[], array2: string[]): { added: strin
   return { added, removed }
 }
 
-export function arrangeColumns(attributes: Attributes | undefined): Attribute[] | string[] {
+export function arrangeColumns(attributes: Attributes | undefined): Array<[string, Attribute]> {
   if (!attributes) return []
 
   const entries = Object.entries(attributes)
 
+  // Sort the entries based on the 'order' property
   entries.sort(([keyA, valueA], [keyB, valueB]) => {
     const orderA = valueA.order ?? Number.POSITIVE_INFINITY
     const orderB = valueB.order ?? Number.POSITIVE_INFINITY
     return orderA - orderB
   })
 
-  return entries as Attribute[]
+  return entries // Return the sorted key-value pairs
 }
 
 export function isArrayEqual(arr1: (number | undefined)[], arr2: (number | undefined)[]): boolean {

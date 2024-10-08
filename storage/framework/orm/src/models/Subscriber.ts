@@ -369,6 +369,14 @@ export class SubscriberModel {
     return this.parseResult(new SubscriberModel(model))
   }
 
+  async firstOrFail(): Promise<SubscriberModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
+
+    return this.parseResult(new SubscriberModel(model))
+  }
+
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 

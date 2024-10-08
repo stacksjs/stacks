@@ -28,6 +28,19 @@ export interface MigrationsTable {
   name: string
   timestamp: string
 }
+export interface PasskeysTable {
+  id: number
+  cred_public_key: string
+  user_id: number
+  webauthn_user_id: string
+  counter: number
+  backup_eligible: boolean
+  backup_status: boolean
+  transports: string
+  created_at: Date
+  last_used: Date
+}
+
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -41,5 +54,6 @@ export interface Database {
   user_teams: UserTeamsTable
   users: UsersTable
   posts: PostsTable
+  passkeys: PasskeysTable
   migrations: MigrationsTable
 }

@@ -398,6 +398,14 @@ export class ProjectModel {
     return this.parseResult(new ProjectModel(model))
   }
 
+  async firstOrFail(): Promise<ProjectModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
+
+    return this.parseResult(new ProjectModel(model))
+  }
+
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 

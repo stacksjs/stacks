@@ -381,6 +381,14 @@ export class PostModel {
     return this.parseResult(new PostModel(model))
   }
 
+  async firstOrFail(): Promise<PostModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
+
+    return this.parseResult(new PostModel(model))
+  }
+
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 

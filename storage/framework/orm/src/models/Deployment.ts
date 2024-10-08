@@ -436,6 +436,14 @@ export class DeploymentModel {
     return this.parseResult(new DeploymentModel(model))
   }
 
+  async firstOrFail(): Promise<DeploymentModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
+
+    return this.parseResult(new DeploymentModel(model))
+  }
+
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 

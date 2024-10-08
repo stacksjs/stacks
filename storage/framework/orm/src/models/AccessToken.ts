@@ -404,6 +404,14 @@ export class AccessTokenModel {
     return this.parseResult(new AccessTokenModel(model))
   }
 
+  async firstOrFail(): Promise<AccessTokenModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
+
+    return this.parseResult(new AccessTokenModel(model))
+  }
+
   async exists(): Promise<boolean> {
     const model = await this.query.selectAll().executeTakeFirst()
 

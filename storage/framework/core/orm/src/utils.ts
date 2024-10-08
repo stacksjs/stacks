@@ -751,6 +751,19 @@ export async function generateKyselyTypes(): Promise<void> {
   text += `\nexport interface MigrationsTable {\n`
   text += `name: string\n timestamp: string \n }`
 
+  text += `\nexport interface PasskeysTable {\n`
+  text += `  id: number\n`
+  text += `  cred_public_key: string\n`
+  text += `  user_id: number;\n`
+  text += `  webauthn_user_id: string\n`
+  text += `  counter: number\n`
+  text += `  backup_eligible: boolean\n`
+  text += `  backup_status: boolean\n`
+  text += `  transports: string\n`
+  text += `  created_at: Date\n`
+  text += `  last_used: Date \n`
+  text += `}\n`
+
   text += `\nexport interface Database {\n`
 
   for (const modelFile of modelFiles) {
@@ -767,6 +780,7 @@ export async function generateKyselyTypes(): Promise<void> {
     text += `  ${tableName}: ${formattedTableName}\n`
   }
 
+  text += `passkeys: PasskeysTable\n`
   text += `migrations: MigrationsTable`
 
   text += `}`
@@ -992,6 +1006,25 @@ export async function generateModelString(
         return this.${formattedModelName}.public_passkey
       }
     `
+
+    twoFactorStatements += `
+    async generateTwoFactorForModel() {
+      const secret = generateTwoFactorSecret()
+
+      await this.update({ 'two_factor_secret': secret })
+    }
+
+    verifyTwoFactorCode(code: string): boolean {
+      const modelTwoFactorSecret = this.two_factor_secret
+      let isValid = false
+
+      if (typeof modelTwoFactorSecret === 'string') {
+        isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
+      }
+
+      return isValid
+    }
+  `
   }
 
   jsonFields += `\nid: this.id,\n`
@@ -1433,6 +1466,14 @@ export async function generateModelString(
         if (! model) {
           return undefined
         }
+
+        return this.parseResult(new ${modelName}Model(model))
+      }
+        
+      async firstOrFail(): Promise<${modelName}Model | undefined> {
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        if (! model) throw(\`No model results found for this query \`)
 
         return this.parseResult(new ${modelName}Model(model))
       }

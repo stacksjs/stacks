@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { generateRegistrationOptions } from '@stacksjs/auth'
+import { generateRegistrationOptions, getUserPasskeys } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import User from '../../storage/framework/orm/src/models/User.ts'
 
@@ -10,12 +10,11 @@ export default new Action({
   async handle(request: RequestInstance) {
     const email = request.get('email') ?? ''
 
-    const userPasskeys: any[] = [
-      { id: 'passkey1', transports: ['usb'] },
-      { id: 'passkey2', transports: ['nfc'] },
-    ]
+    const user = await User.whereEmail(email).firstOrFail()
 
-    const user = await User.whereEmail(email)
+    if (!user) return
+
+    const userPasskeys = getUserPasskeys(user?.id as number)
 
     const userEmail = user?.email ?? ''
 

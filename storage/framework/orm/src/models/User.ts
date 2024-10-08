@@ -26,7 +26,7 @@ export interface UsersTable {
   team_id?: number
   deployment_id?: number
   post_id?: number
-  two_factor_secret?: string
+  public_passkey?: string
 
   created_at?: Date
 
@@ -73,7 +73,7 @@ export class UserModel {
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
-  public two_factor_secret: string | undefined
+  public public_passkey: string | undefined
   public name: string | undefined
   public email: string | undefined
   public job_title: string | undefined
@@ -87,7 +87,7 @@ export class UserModel {
 
   constructor(user: Partial<UserType> | null) {
     this.id = user?.id
-    this.two_factor_secret = user?.two_factor_secret
+    this.public_passkey = user?.public_passkey
     this.name = user?.name
     this.email = user?.email
     this.job_title = user?.job_title
@@ -420,6 +420,14 @@ export class UserModel {
     if (!model) {
       return undefined
     }
+
+    return this.parseResult(new UserModel(model))
+  }
+
+  async firstOrFail(): Promise<UserModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
+
+    if (!model) throw `No model results found for this query `
 
     return this.parseResult(new UserModel(model))
   }
