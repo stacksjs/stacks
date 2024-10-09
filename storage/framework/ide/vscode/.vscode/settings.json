@@ -2,27 +2,64 @@
   // Disable the default formatter, use eslint instead
   "prettier.enable": false,
   "editor.formatOnSave": false,
-
   // Auto fix
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
   },
-
   // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
-    { "rule": "style/*", "severity": "off", "fixable": true },
-    { "rule": "format/*", "severity": "off", "fixable": true },
-    { "rule": "*-indent", "severity": "off", "fixable": true },
-    { "rule": "*-spacing", "severity": "off", "fixable": true },
-    { "rule": "*-spaces", "severity": "off", "fixable": true },
-    { "rule": "*-order", "severity": "off", "fixable": true },
-    { "rule": "*-dangle", "severity": "off", "fixable": true },
-    { "rule": "*-newline", "severity": "off", "fixable": true },
-    { "rule": "*quotes", "severity": "off", "fixable": true },
-    { "rule": "*semi", "severity": "off", "fixable": true }
+    {
+      "rule": "style/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "format/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-indent",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spacing",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spaces",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-order",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-dangle",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-newline",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*quotes",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*semi",
+      "severity": "off",
+      "fixable": true
+    }
   ],
-
   // Enable eslint for all supported languages
   "eslint.validate": [
     "javascript",
@@ -47,11 +84,9 @@
     "pcss",
     "postcss"
   ],
-
   "[stx]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-
   // TypeScript
   "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
   "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
@@ -59,17 +94,14 @@
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-
   // Markdown
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true
   },
-
   "[dockerfile]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-
   "markdownlint.config": {
     "default": true,
     "MD033": {
@@ -84,7 +116,6 @@
     },
     "MD041": false
   },
-
   // Stacks
   "vue.inlayHints.missingProps": true,
   "typescript.preferGoToSourceDefinition": true,
@@ -98,7 +129,9 @@
   "vsicons.associations.files": [
     {
       "icon": "${workspaceFolder}/public/favicon.svg",
-      "extensions": ["stx"],
+      "extensions": [
+        "stx"
+      ],
       "format": "svg"
     }
   ],

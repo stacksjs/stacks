@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
@@ -59,7 +60,6 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           inspect: await localUrl({ type: 'inspect', https: true }),
         }
 
-        console.log('urls', urls)
         const stacksVersion = `alpha-v${version}`
         const withLocalhost = options?.withLocalhost
 
@@ -101,6 +101,7 @@ export function stacks(options?: StacksPluginOptions): Plugin {
           }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.cyan(urls.library)}`)
+
           console.log(
             `  ${c.green('➜')}  ${c.bold('Network')}: ${c.cyan(await localUrl({ type: 'library', network: true }))}`,
           )

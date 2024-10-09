@@ -6,6 +6,7 @@ import type {
   ListFoundationModelsCommandInput,
   ListFoundationModelsCommandOutput,
 } from '@aws-sdk/client-bedrock'
+import process from 'node:process'
 import {
   BedrockClient,
   CreateModelCustomizationJobCommand,

@@ -4,6 +4,7 @@ import type {
   InvokeModelWithResponseStreamCommandInput,
   InvokeModelWithResponseStreamCommandOutput,
 } from '@aws-sdk/client-bedrock-runtime'
+import process from 'node:process'
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,

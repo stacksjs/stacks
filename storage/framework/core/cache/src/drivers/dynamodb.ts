@@ -1,4 +1,5 @@
 import type { CacheDriver } from './type'
+import process from 'node:process'
 import { BentoCache, bentostore } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 
@@ -13,7 +14,7 @@ const client = new BentoCache({
   stores: {
     dynamo: bentostore().useL2Layer(
       dynamoDbDriver({
-        endpoint: 'http://localhost:8000',
+        endpoint: dynamoEndpoint,
         region,
         table: {
           name: tableName,
