@@ -1,6 +1,6 @@
-export * from 'bun:test'
-
 export * from './database'
-export * from './feature'
 
 export * from './dynamodb'
+export * from './feature'
+
+export * from 'bun:test'

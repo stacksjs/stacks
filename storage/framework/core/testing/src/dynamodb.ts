@@ -1,5 +1,3 @@
-import { dynamoDbTool } from '@stacksjs/cache'
-
 import {
   CreateTableCommand,
   DeleteTableCommand,
@@ -7,6 +5,8 @@ import {
   KeyType,
   ScalarAttributeType,
 } from '@aws-sdk/client-dynamodb'
+
+import { dynamoDbTool } from '@stacksjs/cache'
 
 const client = new DynamoDBClient({
   endpoint: 'http://localhost:8000',
@@ -28,7 +28,7 @@ export async function launchServer(): Promise<void> {
 
 // Function to create a delay
 async function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export async function createStacksTable(): Promise<void> {
@@ -48,7 +48,8 @@ export async function createStacksTable(): Promise<void> {
 
   try {
     const data = await client.send(new CreateTableCommand(params))
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Error Creating Table', err)
   }
 }
@@ -60,7 +61,8 @@ export async function deleteStacksTable(): Promise<void> {
 
   try {
     const data = await client.send(new DeleteTableCommand(params))
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Error deleting table:', err)
   }
 }

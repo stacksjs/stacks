@@ -1,8 +1,8 @@
+import type { CLI } from '@stacksjs/types'
 // triggered via `$your-cli inspire` and `buddy inspire`
 import process from 'node:process'
 import { log, quotes } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI } from '@stacksjs/types'
 
 // for enhanced type-safety & autocompletion,
 // you may want to define the options' interface
@@ -18,7 +18,8 @@ export default function (cli: CLI) {
     })
     .alias('insp')
     .action((options: InspireOptions) => {
-      if (options.two) quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
+      if (options.two)
+        quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
       else log.info(quotes.random())
 
       log.success('Have a great day!')

@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Calendar components for all.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/calendar#readme",
@@ -24,7 +25,6 @@
   },
   "module": "dist/stacks-calendar.js",
   "types": "dist/stacks-calendar.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "lib", "src", "volar.d.ts"],
   "scripts": {
     "dev": "bunx --bun vite",

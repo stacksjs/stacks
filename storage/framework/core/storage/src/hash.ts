@@ -17,7 +17,8 @@ export function hashFileOrDirectory(path: string, hash: Hash): void {
       const filePath = p.join(path, file)
       hashFileOrDirectory(filePath, hash)
     }
-  } else {
+  }
+  else {
     hash.update(fs.readFileSync(path))
   }
 }

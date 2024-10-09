@@ -6,11 +6,11 @@
       </router-link>
     </div>
 
-    <p class="mt-20 text-sm font-medium text-gray-700">
+    <p class="mt-20 text-sm text-gray-700 font-medium">
       404
     </p>
 
-    <h1 class="mt-3 text-lg font-semibold text-gray-900">
+    <h1 class="mt-3 text-lg text-gray-900 font-semibold">
       Page not found
     </h1>
 

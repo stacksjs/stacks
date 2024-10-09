@@ -12,7 +12,7 @@ const companies = ref([
 
 <template>
   <Container class="pb-16 pt-20 text-center lg:pt-32">
-    <h1 class="mx-auto max-w-4xl font-display text-5xl font-medium tracking-tight text-slate-900 sm:text-7xl">
+    <h1 class="font-display mx-auto max-w-4xl text-5xl text-slate-900 font-medium tracking-tight sm:text-7xl">
       Develop modern
       <span class="relative whitespace-nowrap text-blue-600">
         <svg
@@ -27,7 +27,7 @@ const companies = ref([
       </span>
       Faster.
     </h1>
-    <p class="mx-auto mt-6 max-w-2xl text-lg tracking-tight text-slate-700">
+    <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-700 tracking-tight">
       Stacks is a type-safe full-stack framework for Web Artisans.
       <br>Rapid development, for the best full-stack teams, and individuals.
     </p>

@@ -1,10 +1,10 @@
+import type { CacheDriver } from './type'
 import { config } from '@stacksjs/config'
 import { dynamodb } from './dynamodb'
 import { fileSystem } from './filesystem'
 import { memory } from './memory'
-import { redis } from './redis'
 
-import type { CacheDriver } from './type'
+import { redis } from './redis'
 
 const driver = config.cache.driver || 'memory'
 

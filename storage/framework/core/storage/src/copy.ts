@@ -7,8 +7,10 @@ export function copy(src: string | string[], dest: string, exclude: string[] = [
     src.forEach((file) => {
       copy(file, dest, exclude)
     })
-  } else {
-    if (fs.statSync(src).isDirectory()) copyFolder(src, dest, exclude)
+  }
+  else {
+    if (fs.statSync(src).isDirectory())
+      copyFolder(src, dest, exclude)
     else copyFile(src, dest)
   }
 }
@@ -18,7 +20,8 @@ export function copyFile(src: string, dest: string): void {
 }
 
 export function copyFolder(src: string, dest: string, exclude: string[] = []): void {
-  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true })
+  if (!fs.existsSync(dest))
+    fs.mkdirSync(dest, { recursive: true })
 
   if (fs.existsSync(src)) {
     fs.readdirSync(src).forEach((file) => {
@@ -26,7 +29,8 @@ export function copyFolder(src: string, dest: string, exclude: string[] = []): v
         const srcPath = join(src, file)
         const destPath = join(dest, file)
 
-        if (fs.statSync(srcPath).isDirectory()) copyFolder(srcPath, destPath, exclude)
+        if (fs.statSync(srcPath).isDirectory())
+          copyFolder(srcPath, destPath, exclude)
         else fs.copyFileSync(srcPath, destPath)
       }
     })

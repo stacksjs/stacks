@@ -1,6 +1,6 @@
 import type { BentoCache } from 'bentocache'
 
-export type CacheDriver = {
+export interface CacheDriver {
   set: (key: string, value: string, ttl?: number) => Promise<void>
   setForever: (key: string, value: string, ttl?: number) => Promise<void>
   get: (key: string) => Promise<string | undefined | null>

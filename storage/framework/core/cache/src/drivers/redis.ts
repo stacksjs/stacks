@@ -1,6 +1,6 @@
+import type { CacheDriver } from './type'
 import { BentoCache, bentostore } from 'bentocache'
 import { redisDriver } from 'bentocache/drivers/redis'
-import type { CacheDriver } from './type'
 
 const client = new BentoCache({
   default: 'redis',

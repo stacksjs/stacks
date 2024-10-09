@@ -1,17 +1,17 @@
-import { config } from '@stacksjs/config'
 import type { aws_certificatemanager as acm, aws_s3 as s3, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
-import {
-  Duration,
-  CfnOutput as Output,
-  aws_cloudfront as cloudfront,
-  aws_lambda as lambda,
-  aws_cloudfront_origins as origins,
-  aws_route53 as route53,
-  aws_route53_targets as targets,
-} from 'aws-cdk-lib'
 import type { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { config } from '@stacksjs/config'
+import {
+  aws_cloudfront as cloudfront,
+  Duration,
+  aws_lambda as lambda,
+  aws_cloudfront_origins as origins,
+  CfnOutput as Output,
+  aws_route53 as route53,
+  aws_route53_targets as targets,
+} from 'aws-cdk-lib'
 
 export interface CdnStackProps extends NestedCloudProps {
   certificate: acm.Certificate
@@ -64,7 +64,8 @@ export class CdnStack {
         'MainCdn',
         originAccessControl,
       )
-    } else {
+    }
+    else {
       // Not in doc mode, create two distributions
       this.mainDistribution = this.createDistribution(
         scope,

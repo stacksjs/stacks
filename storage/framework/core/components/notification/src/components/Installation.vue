@@ -17,7 +17,7 @@ async function handleCopyCode() {
 
 <template>
   <div class="installation">
-    <h1 class="text-lg font-semibold my-3">
+    <h1 class="my-3 text-lg font-semibold">
       Installation
     </h1>
     <div class="code-block relative">
@@ -30,7 +30,7 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute right-2 top-2 btn-border p-1"
+        class="btn-border absolute right-2 top-2 p-1"
         @click="handleCopyCode"
       >
         <CheckIcon v-if="showCheckIcon" />

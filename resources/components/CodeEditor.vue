@@ -22,11 +22,11 @@ cp`,
 </script>
 
 <template>
-  <header class="flex items-center justify-between p-4 bg-[#373b41] border-b border-[#282a2e] rounded-t-lg">
+  <header class="flex items-center justify-between border-b border-[#282a2e] rounded-t-lg bg-[#373b41] p-4">
     <div class="flex items-center gap-2">
-      <div class="w-3 h-3 rounded-full bg-[#CC6666]" />
-      <div class="w-3 h-3 rounded-full bg-[#E6E074]" />
-      <div class="w-3 h-3 rounded-full bg-[#68B5BD]" />
+      <div class="h-3 w-3 rounded-full bg-[#CC6666]" />
+      <div class="h-3 w-3 rounded-full bg-[#E6E074]" />
+      <div class="h-3 w-3 rounded-full bg-[#68B5BD]" />
     </div>
 
     <span v-if="!live" class="text-sm text-white font-mono">Deploy Script</span>

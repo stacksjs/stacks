@@ -12,10 +12,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="antialiased font-sans">
-    <div class="relative flex items-top justify-center min-h-screen bg-gray-50 dark:bg-blue-gray-900 sm:items-center py-4 sm:pt-0">
-      <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-        <div class="flex justify-center items-center pt-8 sm:justify-between sm:pt-0">
+  <div class="font-sans antialiased">
+    <div class="items-top relative min-h-screen flex justify-center bg-gray-50 py-4 sm:items-center dark:bg-blue-gray-900 sm:pt-0">
+      <div class="mx-auto max-w-6xl lg:px-8 sm:px-6">
+        <div class="flex items-center justify-center pt-8 sm:justify-between sm:pt-0">
           <Logo />
 
           <div
@@ -28,19 +28,19 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="mt-8 bg-white dark:bg-blue-gray-800 overflow-hidden shadow sm:rounded-lg">
+        <div class="mt-8 overflow-hidden bg-white shadow sm:rounded-lg dark:bg-blue-gray-800">
           <div class="grid grid-cols-1 md:grid-cols-2">
             <div class="p-6">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-book-open w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-book-open h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
 
-                <div class="ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg font-semibold leading-7">
                   <a
                     href="https://stacksjs.org/docs"
-                    class="underline text-gray-900 dark:text-white"
+                    class="text-gray-900 underline dark:text-white"
                   >
                     Documentation
                   </a>
@@ -48,22 +48,22 @@ onMounted(() => {
               </div>
 
               <div class="ml-12">
-                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                <div class="mt-2 text-sm text-gray-600 leading-6 dark:text-gray-400">
                   Stacks has a wonderful, thorough documentation covering every aspect of the framework. Whether you are new to the framework or have previous experience with Stacks, we recommend reading all of the documentation from beginning to end.
                 </div>
               </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l">
+            <div class="border-t border-gray-200 p-6 md:border-l md:border-t-0 dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-puzzle w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-puzzle h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class="ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg font-semibold leading-7">
                   <a
                     href="https://stacks.ow3.org/components"
-                    class="underline text-gray-900 dark:text-white"
+                    class="text-gray-900 underline dark:text-white"
                   >
                     UI Engine
                   </a>
@@ -71,23 +71,23 @@ onMounted(() => {
               </div>
 
               <div class="ml-12">
-                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                <div class="mt-2 text-sm text-gray-600 leading-6 dark:text-gray-400">
                   The easiest way to build component libraries and distribute them on npm. Stacks automatically imports all of your components & makes them available to you in your templates.
                   And it automatically builds framework agnostic (e.g. Web & Vue Components) component libraries out of those.
                 </div>
               </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="border-t border-gray-200 p-6 dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-template w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-template h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class="ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg font-semibold leading-7">
                   <a
                     href="https://stacks.ow3.org/functions"
-                    class="underline text-gray-900 dark:text-white"
+                    class="text-gray-900 underline dark:text-white"
                   >
                     FX Engine
                   </a>
@@ -95,22 +95,22 @@ onMounted(() => {
               </div>
 
               <div class="ml-12">
-                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                <div class="mt-2 text-sm text-gray-600 leading-6 dark:text-gray-400">
                   Stacks provides a toolkit to easily develop functions. These “function libraries” may easily be distributed via npm or be served as API endpoints. Because Stacks loves serverless technology, scalability is built-in. <i>Don’t sweat it, it’s simple!</i>
                 </div>
               </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
+            <div class="border-t border-gray-200 p-6 md:border-l dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-variable w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-variable h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class="ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
+                <div class="ml-4 text-lg text-gray-900 font-semibold leading-7 dark:text-white">
                   <a
                     href="https://stacks.ow3.org/pages"
-                    class="underline text-gray-900 dark:text-white"
+                    class="text-gray-900 underline dark:text-white"
                   >
                     Stacks Engine
                   </a>
@@ -118,7 +118,7 @@ onMounted(() => {
               </div>
 
               <div class="ml-12">
-                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                <div class="mt-2 text-sm text-gray-600 leading-6 dark:text-gray-400">
                   A well-designed CI/CD pipeline. Automatic component & function library npm distributions.
                   Linting & formatting enabled by default, without the need of prettier. Semver version
                   control enabled, automatic versioning & changelog generation. Access to a powerful
@@ -136,16 +136,16 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="border-t border-gray-200 p-6 dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-terminal w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-terminal h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class="ml-4 text-lg leading-7 font-semibold">
+                <div class="ml-4 text-lg font-semibold leading-7">
                   <a
                     href="https://stacks.ow3.org/"
-                    class="underline text-gray-900 dark:text-white"
+                    class="text-gray-900 underline dark:text-white"
                   >
                     Modern DX
                   </a>
@@ -153,7 +153,7 @@ onMounted(() => {
               </div>
 
               <div class="ml-12">
-                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                <div class="mt-2 text-sm text-gray-600 leading-6 dark:text-gray-400">
                   Simplistic setup, maintenance & collaboration. Deep IDE integration,
                   auto-formatting, access to powerful APIs, modern git commit conventions, npm
                   package releases, semver powered, pretty changelog generations, PR dependency updates,
@@ -164,57 +164,57 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
+            <div class="border-t border-gray-200 p-6 md:border-l dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-globe w-8 h-8 text-gray-500"
+                  class="i-heroicons-outline-globe h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
-                <div class="ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
+                <div class="ml-4 text-lg text-gray-900 font-semibold leading-7 dark:text-white">
                   Vibrant Ecosystem
                 </div>
               </div>
 
               <div class="ml-12">
-                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm leading-6">
+                <div class="mt-2 text-sm text-gray-600 leading-6 dark:text-gray-400">
                   Stacks has a deep ecosystem of integrations & first-party libraries, including headless/unstyled, fully
                   accessible UI component libraries, designed to integrate beautifully with any tech stack of your choice.
                   <a
                     href="https://github.com/stacksjs/calendar"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Calendar</a>,
                   <a
                     href="https://github.com/stacksjs/table"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Tables</a>,
                   <a
                     href="https://github.com/stacksjs/date-picker"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Command Palettes</a>,
                   <a
                     href="https://github.com/stacksjs/date-picker"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Date Pickers</a>,
                   <a
                     href="https://github.com/stacksjs/file-manager"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >File Manager</a>,
                   <a
                     href="https://github.com/stacksjs/image"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Images</a>,
                   <a
                     href="https://github.com/stacksjs/video"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Videos</a>,
                   <a
                     href="https://github.com/stacksjs/audio"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Audio</a>,
                   and
                   <a
                     href="https://github.com/stacksjs/web"
-                    class="underline text-blue-600 dark:text-blue-200"
+                    class="text-blue-600 underline dark:text-blue-200"
                   >Web</a>
                   libraries.
                 </div>
@@ -223,11 +223,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="flex justify-center mt-4 sm:items-center sm:justify-between">
+        <div class="mt-4 flex justify-center sm:items-center sm:justify-between">
           <div class="text-center text-sm text-gray-500 sm:text-left">
             <div class="flex items-center">
               <i
-                class="-mt-px w-5 h-5 text-gray-400 i-heroicons-outline-heart"
+                class="i-heroicons-outline-heart h-5 w-5 text-gray-400 -mt-px"
                 aria-hidden="true"
               />
               <svg
@@ -244,14 +244,14 @@ onMounted(() => {
 
               <a
                 href="https://github.com/sponsors/chrisbbreuer"
-                class="ml-1 underline text-blue-600 dark:text-blue-200"
+                class="ml-1 text-blue-600 underline dark:text-blue-200"
               >
                 Sponsor
               </a>
             </div>
           </div>
 
-          <div class="ml-4 text-center text-sm text-gray-500 sm:text-right sm:ml-0">
+          <div class="ml-4 text-center text-sm text-gray-500 sm:ml-0 sm:text-right">
             Stacks Alpha (Bun v1.0.21)
           </div>
         </div>

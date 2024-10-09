@@ -27,7 +27,8 @@ export async function outro(options: {
     if (stats.size < 1024 * 1024) {
       const sizeInKb = stats.size / 1024
       sizeStr = `${sizeInKb.toFixed(2)}kb`
-    } else {
+    }
+    else {
       const sizeInMb = stats.size / 1024 / 1024
       sizeStr = `${sizeInMb.toFixed(2)}mb`
     }
@@ -39,12 +40,13 @@ export async function outro(options: {
   console.log(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
-export async function intro(options: { dir: string; pkgName?: string; styled?: boolean }): Promise<{
+export async function intro(options: { dir: string, pkgName?: string, styled?: boolean }): Promise<{
   startTime: number
 }> {
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
-  if (options.styled === false) console.log(`Building ${pkgName}...`)
+  if (options.styled === false)
+    console.log(`Building ${pkgName}...`)
   else log.info(`Building ${italic(pkgName)}...`)
 
   return { startTime: Date.now() }

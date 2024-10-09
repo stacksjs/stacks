@@ -1,15 +1,12 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { generateTwoFactorSecret, verifyTwoFactorCode } from '@stacksjs/auth'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
+import { dispatch } from '@stacksjs/events'
+
 import Post from './Post'
 
 import Subscriber from './Subscriber'
-
-import Deployment from './Deployment'
 
 import Team from './Team'
 
@@ -111,7 +108,8 @@ export class UserModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -126,7 +124,8 @@ export class UserModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -144,7 +143,7 @@ export class UserModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new UserModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
@@ -160,7 +159,8 @@ export class UserModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -180,7 +180,7 @@ export class UserModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new UserModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new UserModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -274,7 +274,8 @@ export class UserModel {
       .execute()
 
     let nextCursor = null
-    if (usersWithExtra.length > (options.limit ?? 10)) nextCursor = usersWithExtra.pop()?.id ?? null
+    if (usersWithExtra.length > (options.limit ?? 10))
+      nextCursor = usersWithExtra.pop()?.id ?? null
 
     return {
       data: usersWithExtra,
@@ -299,7 +300,8 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
-    if (model) dispatch('user:created', model)
+    if (model)
+      dispatch('user:created', model)
 
     return model
   }
@@ -309,7 +311,8 @@ export class UserModel {
 
     const model = (await find(Number(result.insertId))) as UserModel
 
-    if (model) dispatch('user:created', model)
+    if (model)
+      dispatch('user:created', model)
 
     return model
   }
@@ -327,11 +330,13 @@ export class UserModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('users').where('id', '=', id).execute()
     }
 
-    if (model) dispatch('user:deleted', model)
+    if (model)
+      dispatch('user:deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -342,9 +347,11 @@ export class UserModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -363,9 +370,11 @@ export class UserModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -491,7 +500,8 @@ export class UserModel {
   }
 
   async update(user: UserUpdate): Promise<UserModel | undefined> {
-    if (this.id === undefined) throw new Error('User ID is undefined')
+    if (this.id === undefined)
+      throw new Error('User ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(user).filter(([key]) => this.fillable.includes(key)),
@@ -501,39 +511,45 @@ export class UserModel {
 
     const model = await this.find(Number(this.id))
 
-    if (model) dispatch('user:updated', model)
+    if (model)
+      dispatch('user:updated', model)
 
     return model
   }
 
   async forceUpdate(user: UserUpdate): Promise<UserModel | undefined> {
-    if (this.id === undefined) throw new Error('User ID is undefined')
+    if (this.id === undefined)
+      throw new Error('User ID is undefined')
 
     await db.updateTable('users').set(user).where('id', '=', this.id).executeTakeFirst()
 
     const model = await this.find(Number(this.id))
 
-    if (model) dispatch('user:updated', model)
+    if (model)
+      dispatch('user:updated', model)
 
     return model
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('User data is undefined')
+    if (!this)
+      throw new Error('User data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('users')
         .values(this as NewUser)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the user instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('User ID is undefined')
+    if (this.id === undefined)
+      throw new Error('User ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -547,36 +563,43 @@ export class UserModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('users').where('id', '=', this.id).execute()
     }
 
-    if (model) dispatch('user:deleted', model)
+    if (model)
+      dispatch('user:deleted', model)
   }
 
   async post() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const model = Post.where('user_id', '=', this.id).first()
 
-    if (!model) throw new Error('Model Relation Not Found!')
+    if (!model)
+      throw new Error('Model Relation Not Found!')
 
     return model
   }
 
   async subscriber() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const model = Subscriber.where('user_id', '=', this.id).first()
 
-    if (!model) throw new Error('Model Relation Not Found!')
+    if (!model)
+      throw new Error('Model Relation Not Found!')
 
     return model
   }
 
   async deployments() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const results = await db.selectFrom('deployments').where('user_id', '=', this.id).selectAll().execute()
 
@@ -584,13 +607,15 @@ export class UserModel {
   }
 
   async userTeams() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const results = await db.selectFrom('team_users').where('user_id', '=', this.id).selectAll().execute()
 
-    const tableRelationIds = results.map((result) => result.team_id)
+    const tableRelationIds = results.map(result => result.team_id)
 
-    if (!tableRelationIds.length) throw new Error('Relation Error!')
+    if (!tableRelationIds.length)
+      throw new Error('Relation Error!')
 
     const relationResults = await Team.whereIn('id', tableRelationIds).get()
 
@@ -647,7 +672,8 @@ export class UserModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type User = Omit<UserType, 'password'>
@@ -686,7 +712,8 @@ async function find(id: number): Promise<UserModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new UserModel(model)
 }
@@ -715,28 +742,28 @@ export async function whereName(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new UserModel(modelItem))
+  return results.map(modelItem => new UserModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('email', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new UserModel(modelItem))
+  return results.map(modelItem => new UserModel(modelItem))
 }
 
 export async function whereJobTitle(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('job_title', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new UserModel(modelItem))
+  return results.map(modelItem => new UserModel(modelItem))
 }
 
 export async function wherePassword(value: string): Promise<UserModel[]> {
   const query = db.selectFrom('users').where('password', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new UserModel(modelItem))
+  return results.map(modelItem => new UserModel(modelItem))
 }
 
 export const User = UserModel

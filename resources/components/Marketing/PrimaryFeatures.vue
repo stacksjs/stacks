@@ -53,11 +53,11 @@ onUnmounted(() => {
 <template>
   <section id="features" aria-label="Features for running your books" class="relative overflow-hidden bg-blue-600 pb-28 pt-20 sm:py-32">
     <Container class="relative">
-      <div class="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
-        <h2 class="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
+      <div class="max-w-2xl md:mx-auto xl:max-w-none md:text-center">
+        <h2 class="font-display text-3xl text-white tracking-tight md:text-5xl sm:text-4xl">
           Build. Ship. Grow.
         </h2>
-        <p class="mt-6 text-lg tracking-tight text-blue-100">
+        <p class="mt-6 text-lg text-blue-100 tracking-tight">
           Stacks helps you build, ship, and grow your SaaS business with its powerful set of tools.
         </p>
       </div>
@@ -65,11 +65,11 @@ onUnmounted(() => {
       <TabGroup
         v-model="tabIndex"
         as="div"
-        class="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
+        class="grid grid-cols-1 mt-16 items-center gap-y-2 pt-10 lg:grid-cols-12 md:mt-20 sm:gap-y-6 lg:pt-0"
         vertical
       >
         <TabList
-          class="mt-16 -mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5"
+          class="mt-16 flex overflow-x-auto pb-4 lg:col-span-5 -mx-4 sm:mx-0 sm:overflow-visible sm:pb-0"
           :class="selectedIndex === featureIndex
             ? 'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10'
             : 'hover:bg-white/10 lg:hover:bg-white/5'"
@@ -135,49 +135,49 @@ onUnmounted(() => {
 
         <TabPanels class="lg:col-span-7">
           <TabPanel>
-            <div class="relative sm:px-6 lg:hidden">
-              <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
+            <div class="relative lg:hidden sm:px-6">
+              <div class="absolute bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-white/10 ring-inset -inset-x-4 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
                 {{ features?.[0]?.description }}
               </p>
             </div>
-            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
+            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-blue-900/20 shadow-xl lg:mt-0 lg:w-[67.8125rem] sm:w-auto">
               <img src="https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75" alt="" class="w-full">
             </div>
           </TabPanel>
 
           <TabPanel>
-            <div class="relative sm:px-6 lg:hidden">
-              <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
+            <div class="relative lg:hidden sm:px-6">
+              <div class="absolute bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-white/10 ring-inset -inset-x-4 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
                 {{ features?.[1]?.description }}
               </p>
             </div>
-            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
+            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-blue-900/20 shadow-xl lg:mt-0 lg:w-[67.8125rem] sm:w-auto">
               <img :src="features?.[1]?.image" alt="" class="w-full">
             </div>
           </TabPanel>
 
           <TabPanel>
-            <div class="relative sm:px-6 lg:hidden">
-              <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
+            <div class="relative lg:hidden sm:px-6">
+              <div class="absolute bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-white/10 ring-inset -inset-x-4 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
                 {{ features?.[2]?.description }}
               </p>
             </div>
-            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
+            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-blue-900/20 shadow-xl lg:mt-0 lg:w-[67.8125rem] sm:w-auto">
               <img :src="features?.[2]?.image" alt="" class="w-full">
             </div>
           </TabPanel>
 
           <TabPanel>
-            <div class="relative sm:px-6 lg:hidden">
-              <div class="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
+            <div class="relative lg:hidden sm:px-6">
+              <div class="absolute bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-white/10 ring-inset -inset-x-4 sm:inset-x-0 sm:rounded-t-xl" />
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
                 {{ features?.[3]?.description }}
               </p>
             </div>
-            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
+            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-blue-900/20 shadow-xl lg:mt-0 lg:w-[67.8125rem] sm:w-auto">
               <img :src="features?.[3]?.image" alt="" class="w-full">
             </div>
           </TabPanel>

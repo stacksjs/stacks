@@ -8,9 +8,12 @@ interface MakeOptions {
 }
 
 async function make(password: string, options?: MakeOptions): Promise<string> {
-  if (options?.algorithm === 'argon2') return await argon2Encode(password, { type: 'argon2id' })
-  if (options?.algorithm === 'bcrypt') return await bcryptEncode(password)
-  if (options?.algorithm === 'base64') return base64Encode(password)
+  if (options?.algorithm === 'argon2')
+    return await argon2Encode(password, { type: 'argon2id' })
+  if (options?.algorithm === 'bcrypt')
+    return await bcryptEncode(password)
+  if (options?.algorithm === 'base64')
+    return base64Encode(password)
 
   throw new Error('Unsupported algorithm')
 }
@@ -18,15 +21,19 @@ async function make(password: string, options?: MakeOptions): Promise<string> {
 type Algorithm = 'bcrypt' | 'base64' | 'argon2'
 
 async function verify(password: string, hash: string, algorithm?: Algorithm): Promise<boolean> {
-  if (algorithm === 'argon2') return await argon2Verify(password, hash)
-  if (algorithm === 'bcrypt') return await bcryptVerify(password, hash)
-  if (algorithm === 'base64') return base64Verify(password, hash)
+  if (algorithm === 'argon2')
+    return await argon2Verify(password, hash)
+  if (algorithm === 'bcrypt')
+    return await bcryptVerify(password, hash)
+  if (algorithm === 'base64')
+    return base64Verify(password, hash)
 
   throw new Error('Unsupported algorithm')
 }
 
 export async function bcryptEncode(password: string): Promise<string> {
-  if (!hashing.bcrypt) throw new Error('Bcrypt hashing is not configured')
+  if (!hashing.bcrypt)
+    throw new Error('Bcrypt hashing is not configured')
 
   const bcryptHash = await Bun.password.hash(password, {
     algorithm: 'bcrypt',
@@ -40,7 +47,8 @@ export async function argon2Encode(
   password: string,
   options?: { type: 'argon2id' | 'argon2i' | 'argon2d' },
 ): Promise<string> {
-  if (!hashing.argon2) throw new Error('Argon2 hashing is not configured')
+  if (!hashing.argon2)
+    throw new Error('Argon2 hashing is not configured')
 
   const argon2Hash = await Bun.password.hash(password, {
     algorithm: options?.type || 'argon2id',

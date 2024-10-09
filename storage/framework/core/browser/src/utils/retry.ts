@@ -7,10 +7,12 @@ export function retry(fn: Function, options: any): Promise<any> {
     const attempt = async () => {
       try {
         resolve(await fn())
-      } catch (err) {
+      }
+      catch (err) {
         if (attemptCount >= retries) {
           reject(err)
-        } else {
+        }
+        else {
           const delay = calculateDelay(attemptCount, initialDelay, backoffFactor, jitter)
           setTimeout(() => attempt(), delay)
           attemptCount++

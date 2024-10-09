@@ -1,9 +1,9 @@
-import { path as p } from '@stacksjs/path'
 import type { AutoImportsOptions } from '@stacksjs/types'
+import type { Plugin } from 'vite'
+import { path as p } from '@stacksjs/path'
 import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
-import type { Plugin } from 'vite'
 
 export function autoImports(options?: AutoImportsOptions): Plugin {
   return AutoImport({

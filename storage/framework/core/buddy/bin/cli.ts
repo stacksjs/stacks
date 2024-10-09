@@ -1,7 +1,7 @@
+import { $ } from 'bun'
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { $ } from 'bun'
 import { cac } from 'cac'
 import { version } from '../package.json'
 
@@ -13,7 +13,8 @@ cli
   .action(() => {
     const buddyCli = 'buddy'
 
-    if (existsSync(buddyCli)) $`${buddyCli} ${process.argv.slice(2).join(' ')}`
+    if (existsSync(buddyCli))
+      $`${buddyCli} ${process.argv.slice(2).join(' ')}`
 
     let currentDir = process.cwd()
     let found = false
@@ -52,7 +53,8 @@ cli
           const isDirectory = statSync(contentPath).isDirectory()
 
           if (isDirectory) {
-            if (contentPath.includes(target)) return contentPath // Found the target directory
+            if (contentPath.includes(target))
+              return contentPath // Found the target directory
 
             queue.push(contentPath)
           }
@@ -68,7 +70,8 @@ cli
       console.log(`Project found at ${projectPath}.`)
       console.log(`Run 'cd ${projectPath}' to navigate to the project directory.`)
       // $`cd ${projectPath}`
-    } else {
+    }
+    else {
       console.error('Project directory not found.')
     }
   })

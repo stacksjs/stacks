@@ -16,31 +16,31 @@ interface CustomAttributes {
 }
 
 export interface RequestInstance {
-  addQuery(url: URL): void
+  addQuery: (url: URL) => void
 
-  addBodies(params: any): void
+  addBodies: (params: any) => void
 
-  addParam(param: RouteParams): void
+  addParam: (param: RouteParams) => void
 
-  get<T>(element: T): string | undefined
+  get: <T>(element: T) => string | undefined
 
-  header(element: string): string | number | boolean | null
+  header: (element: string) => string | number | boolean | null
 
-  Header(element: string): string | number | boolean | null
+  Header: (element: string) => string | number | boolean | null
 
-  all(): RequestData
+  all: () => RequestData
 
-  validate(attributes: CustomAttributes): void
+  validate: (attributes: CustomAttributes) => void
 
-  has(element: string): boolean
+  has: (element: string) => boolean
 
-  isEmpty(): boolean
+  isEmpty: () => boolean
 
-  extractParamsFromRoute(routePattern: string, pathname: string): void
+  extractParamsFromRoute: (routePattern: string, pathname: string) => void
 
-  getParam(key: string): number | string | null
+  getParam: (key: string) => number | string | null
 
-  getParams(): RouteParams
+  getParams: () => RouteParams
 
-  getParamAsInt(key: string): number | null
+  getParamAsInt: (key: string) => number | null
 }

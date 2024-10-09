@@ -1,5 +1,5 @@
-import { path } from '@stacksjs/path'
 import type { Plugin } from 'vite'
+import { path } from '@stacksjs/path'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export function pwa(): Plugin {

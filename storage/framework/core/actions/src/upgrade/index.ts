@@ -10,13 +10,17 @@ const options: any = parseArgs()
 // if (options?.framework || options?.all)
 //   await updateFramework(options)
 
-if (options?.dependencies || options?.all) await runAction(Action.UpgradeDeps, options)
+if (options?.dependencies || options?.all)
+  await runAction(Action.UpgradeDeps, options)
 
-if (options?.bun || options?.all) await runAction(Action.UpgradeBun, options)
+if (options?.bun || options?.all)
+  await runAction(Action.UpgradeBun, options)
 
-if (options?.shell || options?.all) await runAction(Action.UpgradeShell, options)
+if (options?.shell || options?.all)
+  await runAction(Action.UpgradeShell, options)
 
-if (options?.binary || options?.all) await runAction(Action.UpgradeBinary, options)
+if (options?.binary || options?.all)
+  await runAction(Action.UpgradeBinary, options)
 
 process.exit(ExitCode.InvalidArgument)
 

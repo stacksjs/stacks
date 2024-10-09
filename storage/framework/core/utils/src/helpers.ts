@@ -1,14 +1,14 @@
+import type { NpmScript } from '@stacksjs/enums'
+import type { Result } from '@stacksjs/error-handling'
+import type { CliOptions, Manifest, Subprocess } from '@stacksjs/types'
 import type { AddressInfo } from 'node:net'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import { app, ui } from '@stacksjs/config'
-import type { NpmScript } from '@stacksjs/enums'
 import { Action } from '@stacksjs/enums'
-import type { Result } from '@stacksjs/error-handling'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
-import type { CliOptions, Manifest, Subprocess } from '@stacksjs/types'
 import { parse } from 'yaml'
 
 // import { semver } from './versions'
@@ -19,12 +19,14 @@ export async function packageManager() {
 }
 
 export async function initProject(): Promise<Result<Subprocess, Error>> {
-  if (app.env !== 'production') log.info('Project not yet initialized, generating application key...')
+  if (app.env !== 'production')
+    log.info('Project not yet initialized, generating application key...')
   else handleError('Please run `buddy key:generate` to generate an application key')
 
   const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
-  if (result.isErr()) return err(handleError(result.error))
+  if (result.isErr())
+    return err(handleError(result.error))
 
   log.info('Application key generated.')
 
@@ -32,10 +34,12 @@ export async function initProject(): Promise<Result<Subprocess, Error>> {
 }
 
 export async function ensureProjectIsInitialized() {
-  if (storage.isFile(projectPath('.env'))) return await isAppKeySet()
+  if (storage.isFile(projectPath('.env')))
+    return await isAppKeySet()
 
   // copy the .env.example file to .env
-  if (storage.isFile(projectPath('.env.example'))) await runCommand('cp .env.example .env', { cwd: projectPath() })
+  if (storage.isFile(projectPath('.env.example')))
+    await runCommand('cp .env.example .env', { cwd: projectPath() })
   else console.error('no .env.example file found')
 
   return await isAppKeySet()
@@ -57,7 +61,7 @@ export async function frameworkVersion(): Promise<string> {
 export async function isAppKeySet() {
   const env = await storage.readTextFile('.env', projectPath())
   const lines = env.data.split('\n')
-  const appKey = lines.find((line) => line.startsWith('APP_KEY='))
+  const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
   return !!(appKey && appKey.length > 16)
 }
@@ -69,18 +73,23 @@ export async function isAppKeySet() {
  * @param preset
  */
 export function determineResetPreset(preset?: string) {
-  if (ui.reset) preset = ui.reset
+  if (ui.reset)
+    preset = ui.reset
 
-  if (preset === 'tailwind') return ["import '@unocss/reset/tailwind.css'"]
+  if (preset === 'tailwind')
+    return ['import \'@unocss/reset/tailwind.css\'']
 
-  if (preset === 'normalize') return ["import '@unocss/reset/normalize.css'"]
+  if (preset === 'normalize')
+    return ['import \'@unocss/reset/normalize.css\'']
 
   if (preset === 'sanitize')
-    return ["import '@unocss/reset/sanitize/sanitize.css'", "import '@unocss/reset/sanitize/assets.css"]
+    return ['import \'@unocss/reset/sanitize/sanitize.css\'', 'import \'@unocss/reset/sanitize/assets.css']
 
-  if (preset === 'eric-meyer') return ["import '@unocss/reset/eric-meyer.css'"]
+  if (preset === 'eric-meyer')
+    return ['import \'@unocss/reset/eric-meyer.css\'']
 
-  if (preset === 'antfu') return ["import '@unocss/reset/antfu.css'"]
+  if (preset === 'antfu')
+    return ['import \'@unocss/reset/antfu.css\'']
 
   return []
 }
@@ -90,11 +99,11 @@ export function determineResetPreset(preset?: string) {
  */
 export function isManifest(obj: any): obj is Manifest {
   return (
-    obj &&
-    typeof obj === 'object' &&
-    isOptionalString(obj.name) &&
-    isOptionalString(obj.version) &&
-    isOptionalString(obj.description)
+    obj
+    && typeof obj === 'object'
+    && isOptionalString(obj.name)
+    && isOptionalString(obj.version)
+    && isOptionalString(obj.description)
   )
 }
 
@@ -122,7 +131,8 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions): Pro
   const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
 
   // simple, yet effective check to see if the script exists
-  if (isManifest(manifest) && hasScript(manifest, script)) return await runCommand(`bun run ${script}`, options)
+  if (isManifest(manifest) && hasScript(manifest, script))
+    return await runCommand(`bun run ${script}`, options)
 
   return err(handleError(`The ${script} script does not exist in the package.json file.`))
 }
@@ -133,7 +143,8 @@ export async function runNpmScript(script: NpmScript, options?: CliOptions): Pro
 export function hasScript(manifest: Manifest, script: NpmScript): boolean {
   const scripts = manifest.scripts as Record<NpmScript, string> | undefined
 
-  if (scripts && typeof scripts === 'object') return Boolean(scripts[script])
+  if (scripts && typeof scripts === 'object')
+    return Boolean(scripts[script])
 
   return false
 }
@@ -155,19 +166,20 @@ export function parseYaml(content: any) {
  * @param options
  */
 export function determineDebugLevel(options?: CliOptions) {
-  if (options?.verbose === true) return true
+  if (options?.verbose === true)
+    return true
 
   return app.debug === true
 }
 
 export function isIpv6(address: AddressInfo): boolean {
   return (
-    address.family === 'IPv6' ||
+    address.family === 'IPv6'
     // in node >=18.0 <18.4 this was an integer value. This was changed in a minor version.
     // See: https://github.com/laravel/vite-plugin/issues/103
 
     // @ts-expect-error-next-line
-    address.family === 6
+    || address.family === 6
   )
 }
 

@@ -1,10 +1,12 @@
-import { installPackage } from '@stacksjs/cli'
 import type { AddOptions } from '@stacksjs/types'
+import { installPackage } from '@stacksjs/cli'
 
 export async function invoke(options: AddOptions): Promise<void> {
-  if (options?.table) await addTable()
+  if (options?.table)
+    await addTable()
 
-  if (options?.calendar) await addCalendar()
+  if (options?.calendar)
+    await addCalendar()
 }
 
 export async function add(options: AddOptions): Promise<void> {

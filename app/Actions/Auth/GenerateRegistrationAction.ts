@@ -1,6 +1,6 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { generateRegistrationOptions, getUserPasskeys } from '@stacksjs/auth'
-import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -12,7 +12,8 @@ export default new Action({
 
     const user = await User.where('email', email).first()
 
-    if (!user) return
+    if (!user)
+      return
 
     const userPasskeys = await getUserPasskeys(user?.id as number)
 
@@ -23,9 +24,9 @@ export default new Action({
       rpID: 'localhost',
       userName: userEmail,
       attestationType: 'none',
-      excludeCredentials: userPasskeys.map((passkey) => ({
+      excludeCredentials: userPasskeys.map(passkey => ({
         id: passkey.id,
-        transports: ['internal'], //TODO: Dynamic
+        transports: ['internal'], // TODO: Dynamic
       })),
       authenticatorSelection: {
         residentKey: 'preferred',

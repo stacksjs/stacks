@@ -1,14 +1,14 @@
 <template>
-  <div class="flex flex-col gap-3 items-center ">
+  <div class="flex flex-col items-center gap-3">
     <div class="title-wrapper">
       <div class="toast" />
       <div class="toast" />
       <div class="toast" />
     </div>
-    <h1 class="text-5xl font-bold -mt-5 mb-3 text-neon">
+    <h1 class="text-neon mb-3 text-5xl font-bold -mt-5">
       stacks/stepper
     </h1>
-    <p class="mt-0 mb-3 text-lg">
+    <p class="mb-3 mt-0 text-lg">
       An Stepper component, allowing you to build anything from Onboarding/Welcome to Help screens, and a lot more...
     </p>
     <div class="flex gap-2">

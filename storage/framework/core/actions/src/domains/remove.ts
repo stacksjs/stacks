@@ -19,13 +19,15 @@ const options: RemoveOptions = {
 if (!options.domain) {
   if (app.url) {
     options.domain = app.url
-  } else {
+  }
+  else {
     handleError('there was no domain provided when')
     process.exit(1)
   }
 }
 
-if (options.verbose) log.info(`Removing domain: ${options.domain}`)
+if (options.verbose)
+  log.info(`Removing domain: ${options.domain}`)
 
 // const result = await deleteHostedZone(options.domain)
 const result = await deleteHostedZoneRecords(options.domain)

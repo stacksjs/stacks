@@ -1,30 +1,18 @@
 <script lang="ts" setup>
+import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss } from '../types'
 import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue'
 import { ToastState } from '../state'
-import type { HeightT, NotificationProps, Position, ToastT, ToastToDismiss } from '../types'
-import Toast from './Toast.vue'
 import ErrorIcon from './icons/ErrorIcon.vue'
 import InfoIcon from './icons/InfoIcon.vue'
 import LoaderIcon from './icons/Loader.vue'
 import SuccessIcon from './icons/SuccessIcon.vue'
 import WarningIcon from './icons/WarningIcon.vue'
+import Toast from './Toast.vue'
 
 defineOptions({
   name: 'Toaster',
   inheritAttrs: false,
 })
-
-const VISIBLE_TOASTS_AMOUNT = 3
-
-// Viewport padding
-const VIEWPORT_OFFSET = '32px'
-// Default lifetime of a toasts (in ms)
-const TOAST_LIFETIME = 4000
-// Default toast width
-const TOAST_WIDTH = 356
-// Default gap between toasts
-const GAP = 14
-const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
 
 const props = withDefaults(defineProps<NotificationProps>(), {
   invert: false,
@@ -46,13 +34,27 @@ const props = withDefaults(defineProps<NotificationProps>(), {
   pauseWhenPageIsHidden: false,
 })
 
+const VISIBLE_TOASTS_AMOUNT = 3
+
+// Viewport padding
+const VIEWPORT_OFFSET = '32px'
+// Default lifetime of a toasts (in ms)
+const TOAST_LIFETIME = 4000
+// Default toast width
+const TOAST_WIDTH = 356
+// Default gap between toasts
+const GAP = 14
+const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
+
 function _cn(...classes: (string | undefined)[]) {
   return classes.filter(Boolean).join(' ')
 }
 
 function getDocumentDirection(): NotificationProps['dir'] {
-  if (typeof window === 'undefined') return 'ltr'
-  if (typeof document === 'undefined') return 'ltr' // For Fresh purpose
+  if (typeof window === 'undefined')
+    return 'ltr'
+  if (typeof document === 'undefined')
+    return 'ltr' // For Fresh purpose
 
   const dirAttribute = document.documentElement.getAttribute('dir')
 
@@ -66,7 +68,7 @@ function getDocumentDirection(): NotificationProps['dir'] {
 const attrs = useAttrs()
 const toasts = ref<ToastT[]>([])
 const possiblePositions = computed(() => {
-  const posList = toasts.value.filter((toast) => toast.position).map((toast) => toast.position) as Position[]
+  const posList = toasts.value.filter(toast => toast.position).map(toast => toast.position) as Position[]
   return posList.length > 0 ? Array.from(new Set([props.position].concat(posList))) : [props.position]
 })
 const heights = ref<HeightT[]>([])
@@ -107,7 +109,8 @@ function onBlur(event: FocusEvent | any) {
 function onFocus(event: FocusEvent | any) {
   const isNotDismissible = event.target instanceof HTMLElement && event.target.dataset.dismissible === 'false'
 
-  if (isNotDismissible) return
+  if (isNotDismissible)
+    return
 
   if (!isFocusWithinRef.value) {
     isFocusWithinRef.value = true
@@ -119,7 +122,8 @@ function onPointerDown(event: PointerEvent) {
   if (event.target) {
     const isNotDismissible = event.target instanceof HTMLElement && event.target.dataset.dismissible === 'false'
 
-    if (isNotDismissible) return
+    if (isNotDismissible)
+      return
   }
   interacting.value = false
 }
@@ -127,15 +131,16 @@ function onPointerDown(event: PointerEvent) {
 watchEffect((onInvalidate) => {
   const unsubscribe = ToastState.subscribe((toast) => {
     if ((toast as ToastToDismiss).dismiss) {
-      toasts.value = toasts.value.map((t) => (t.id === toast.id ? { ...t, delete: true } : t))
+      toasts.value = toasts.value.map(t => (t.id === toast.id ? { ...t, delete: true } : t))
       return
     }
 
     nextTick(() => {
-      const indexOfExistingToast = toasts.value.findIndex((t) => t.id === toast.id)
+      const indexOfExistingToast = toasts.value.findIndex(t => t.id === toast.id)
 
       // Update the toast if it already exists
-      if (indexOfExistingToast !== -1) toasts.value.splice(indexOfExistingToast, 1, toast)
+      if (indexOfExistingToast !== -1)
+        toasts.value.splice(indexOfExistingToast, 1, toast)
       // toasts.value = [
       //   ...toasts.value.slice(0, indexOfExistingToast),
       //   { ...toasts.value[indexOfExistingToast], ...toast },
@@ -163,16 +168,19 @@ watch(
       if (window?.matchMedia('(prefers-color-scheme: dark)').matches) {
         // it's currently dark
         actualTheme.value = 'dark'
-      } else {
+      }
+      else {
         // it's not dark
         actualTheme.value = 'light'
       }
     }
 
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
-      if (matches) actualTheme.value = 'dark'
+      if (matches)
+        actualTheme.value = 'dark'
       else actualTheme.value = 'light'
     })
   },
@@ -195,12 +203,13 @@ watch(
 
 watchEffect(() => {
   // Ensure expanded is always false when no toasts are present / only one left
-  if (toasts.value.length <= 1) expanded.value = false
+  if (toasts.value.length <= 1)
+    expanded.value = false
 })
 
 watchEffect((onInvalidate) => {
   function handleKeyDown(event: KeyboardEvent) {
-    const isHotkeyPressed = props.hotkey.every((key) => (event as any)[key] || event.code === key)
+    const isHotkeyPressed = props.hotkey.every(key => (event as any)[key] || event.code === key)
 
     const listRefItem = Array.isArray(listRef.value) ? listRef.value[0] : listRef.value
 
@@ -211,10 +220,12 @@ watchEffect((onInvalidate) => {
 
     const isItemActive = document.activeElement === listRef.value || listRefItem?.contains(document.activeElement)
 
-    if (event.code === 'Escape' && isItemActive) expanded.value = false
+    if (event.code === 'Escape' && isItemActive)
+      expanded.value = false
   }
 
-  if (!isClient) return
+  if (!isClient)
+    return
 
   document.addEventListener('keydown', handleKeyDown)
 

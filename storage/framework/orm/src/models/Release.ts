@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -82,7 +78,8 @@ export class ReleaseModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -97,7 +94,8 @@ export class ReleaseModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -115,7 +113,7 @@ export class ReleaseModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
@@ -131,7 +129,8 @@ export class ReleaseModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -151,7 +150,7 @@ export class ReleaseModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new ReleaseModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -245,7 +244,8 @@ export class ReleaseModel {
       .execute()
 
     let nextCursor = null
-    if (releasesWithExtra.length > (options.limit ?? 10)) nextCursor = releasesWithExtra.pop()?.id ?? null
+    if (releasesWithExtra.length > (options.limit ?? 10))
+      nextCursor = releasesWithExtra.pop()?.id ?? null
 
     return {
       data: releasesWithExtra,
@@ -294,7 +294,8 @@ export class ReleaseModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('releases').where('id', '=', id).execute()
     }
   }
@@ -307,9 +308,11 @@ export class ReleaseModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -328,9 +331,11 @@ export class ReleaseModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -432,7 +437,8 @@ export class ReleaseModel {
   }
 
   async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
-    if (this.id === undefined) throw new Error('Release ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Release ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(release).filter(([key]) => this.fillable.includes(key)),
@@ -446,7 +452,8 @@ export class ReleaseModel {
   }
 
   async forceUpdate(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
-    if (this.id === undefined) throw new Error('Release ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Release ID is undefined')
 
     await db.updateTable('releases').set(release).where('id', '=', this.id).executeTakeFirst()
 
@@ -456,21 +463,24 @@ export class ReleaseModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('Release data is undefined')
+    if (!this)
+      throw new Error('Release data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('releases')
         .values(this as NewRelease)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the release instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Release ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Release ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -484,7 +494,8 @@ export class ReleaseModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('releases').where('id', '=', this.id).execute()
     }
@@ -537,7 +548,8 @@ export class ReleaseModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type Release = Omit<ReleaseType, 'password'>
@@ -559,7 +571,8 @@ async function find(id: number): Promise<ReleaseModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new ReleaseModel(model)
 }
@@ -588,7 +601,7 @@ export async function whereVersion(value: string): Promise<ReleaseModel[]> {
   const query = db.selectFrom('releases').where('version', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new ReleaseModel(modelItem))
+  return results.map(modelItem => new ReleaseModel(modelItem))
 }
 
 export const Release = ReleaseModel

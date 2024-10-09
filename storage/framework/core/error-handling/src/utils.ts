@@ -16,7 +16,8 @@ export function rescue<T, F>(
       })
     }
     return result
-  } catch (error) {
+  }
+  catch (error) {
     if (onError) {
       onError(ErrorHandler.handle(error))
     }

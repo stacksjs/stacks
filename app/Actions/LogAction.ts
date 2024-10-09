@@ -26,7 +26,8 @@ export default new Action({
 
   // handle(request: { message: string, level: 'info' | 'warn' | 'error' }) {
   handle(request?: Request) {
-    if (!request) return 'No request was provided.'
+    if (!request)
+      return 'No request was provided.'
 
     // TODO: need to vine validate
     log[request.level](request.message)

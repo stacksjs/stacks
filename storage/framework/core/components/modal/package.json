@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "A modern modal component.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/modal#readme",
@@ -27,7 +28,6 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite",

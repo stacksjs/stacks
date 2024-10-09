@@ -1,6 +1,6 @@
 import type { UiEngine } from '@stacksjs/ui'
 import { useStorage } from '@stacksjs/utils'
-import { type ComputedRef, type Ref, computed, ref } from 'vue'
+import { computed, type ComputedRef, type Ref, ref } from 'vue'
 
 // import { client as meilisearch } from './drivers/meilisearch'
 import { determineState } from './helpers'
@@ -43,18 +43,21 @@ export function useSearchEngine(): string {
 }
 
 export function calculatePagination(): void {
-  if (table.perPage) totalPages.value = Math.ceil(totalHits / table.perPage)
+  if (table.perPage)
+    totalPages.value = Math.ceil(totalHits / table.perPage)
 
-  const hitPages = [...Array(totalPages.value).keys()].map((i) => i + 1)
+  const hitPages = [...new Array(totalPages.value).keys()].map(i => i + 1)
   const offset = 2
   const currentPage = table.currentPage ?? 1
   const lastPage = hitPages[hitPages.length - 1]
 
   let from = currentPage - offset
-  if (from < 1) from = 1
+  if (from < 1)
+    from = 1
 
   let to = from + offset * 2
-  if (to >= (lastPage as number)) to = lastPage as number
+  if (to >= (lastPage as number))
+    to = lastPage as number
 
   const allPages = []
   for (let page = from; page <= to; page++) allPages.push(page)

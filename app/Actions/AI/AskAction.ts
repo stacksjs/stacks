@@ -3,7 +3,7 @@ import { ask } from '@stacksjs/ai'
 import { schema } from '@stacksjs/validation'
 
 // TODO: this should have been auto-generated
-type Request = {
+interface Request {
   question: string
 }
 
@@ -27,7 +27,8 @@ export default new Action({
       return {
         data: await ask(question),
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error:', error)
 
       return {

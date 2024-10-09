@@ -17,7 +17,7 @@ export interface ModelElement {
   fieldArray: FieldArrayElement | null
 }
 
-export type AuthOptions = {
+export interface AuthOptions {
   useTwoFactor?: boolean
   usePasskey?: boolean
 }
@@ -35,7 +35,7 @@ export interface SeedOptions {
 
 type LogAttribute = string
 
-type ActivityLogOption = {
+interface ActivityLogOption {
   exclude: LogAttribute[]
   include: LogAttribute[] // default to “*”
   logOnly: LogAttribute[]
@@ -54,8 +54,8 @@ export interface ApiSettings {
   middleware: string[]
   routes:
     | {
-        [key in ApiRoutes]: Action
-      }
+      [key in ApiRoutes]: Action
+    }
     | string[]
   openApi: boolean
 }
@@ -76,7 +76,7 @@ export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
 
-type Base = {}
+interface Base {}
 
 /**
  * Model.
@@ -118,24 +118,24 @@ export interface ModelOptions extends Base {
   // relationships
   hasOne?:
     | {
-        model: ModelNames
-        foreignKey?: string
-        relationName?: string
-      }[]
+      model: ModelNames
+      foreignKey?: string
+      relationName?: string
+    }[]
     | string[]
   hasMany?:
     | {
-        model: ModelNames // should be typed as ModelName
-        foreignKey?: string
-        relationName?: string
-      }[]
+      model: ModelNames // should be typed as ModelName
+      foreignKey?: string
+      relationName?: string
+    }[]
     | ModelNames[]
   belongsTo?:
     | {
-        model: ModelNames // should be typed as ModelName
-        foreignKey?: string
-        relationName?: string
-      }[]
+      model: ModelNames // should be typed as ModelName
+      foreignKey?: string
+      relationName?: string
+    }[]
     | ModelNames[] // belongsTo: 'User'
   belongsToMany?: BelongsToManyType[] | ModelNames[]
   hasOneThrough?: {

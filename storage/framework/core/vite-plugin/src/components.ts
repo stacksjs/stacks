@@ -1,7 +1,7 @@
-import { path as p } from '@stacksjs/path'
 import type { ComponentOptions } from '@stacksjs/types'
-import Components from 'unplugin-vue-components/vite'
 import type { Plugin } from 'vite'
+import { path as p } from '@stacksjs/path'
+import Components from 'unplugin-vue-components/vite'
 
 export function components(options?: ComponentOptions): Plugin {
   return Components({

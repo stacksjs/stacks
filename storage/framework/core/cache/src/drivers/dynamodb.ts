@@ -1,6 +1,6 @@
+import type { CacheDriver } from './type'
 import { BentoCache, bentostore } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
-import type { CacheDriver } from './type'
 
 const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID || 'dummy'
 const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || 'dummy'

@@ -1,7 +1,7 @@
+import type { CLI, FreshOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runCommit } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
-import type { CLI, FreshOptions } from '@stacksjs/types'
 
 export function commit(buddy: CLI): void {
   const descriptions = {

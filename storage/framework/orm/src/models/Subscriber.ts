@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -86,7 +82,8 @@ export class SubscriberModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -101,7 +98,8 @@ export class SubscriberModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -119,7 +117,7 @@ export class SubscriberModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {
@@ -135,7 +133,8 @@ export class SubscriberModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -155,7 +154,7 @@ export class SubscriberModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new SubscriberModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -249,7 +248,8 @@ export class SubscriberModel {
       .execute()
 
     let nextCursor = null
-    if (subscribersWithExtra.length > (options.limit ?? 10)) nextCursor = subscribersWithExtra.pop()?.id ?? null
+    if (subscribersWithExtra.length > (options.limit ?? 10))
+      nextCursor = subscribersWithExtra.pop()?.id ?? null
 
     return {
       data: subscribersWithExtra,
@@ -298,7 +298,8 @@ export class SubscriberModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('subscribers').where('id', '=', id).execute()
     }
   }
@@ -311,9 +312,11 @@ export class SubscriberModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -332,9 +335,11 @@ export class SubscriberModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -436,7 +441,8 @@ export class SubscriberModel {
   }
 
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
-    if (this.id === undefined) throw new Error('Subscriber ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Subscriber ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(subscriber).filter(([key]) => this.fillable.includes(key)),
@@ -450,7 +456,8 @@ export class SubscriberModel {
   }
 
   async forceUpdate(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
-    if (this.id === undefined) throw new Error('Subscriber ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Subscriber ID is undefined')
 
     await db.updateTable('subscribers').set(subscriber).where('id', '=', this.id).executeTakeFirst()
 
@@ -460,21 +467,24 @@ export class SubscriberModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('Subscriber data is undefined')
+    if (!this)
+      throw new Error('Subscriber data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('subscribers')
         .values(this as NewSubscriber)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the subscriber instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Subscriber ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Subscriber ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -488,7 +498,8 @@ export class SubscriberModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('subscribers').where('id', '=', this.id).execute()
     }
@@ -541,7 +552,8 @@ export class SubscriberModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type Subscriber = Omit<SubscriberType, 'password'>
@@ -563,7 +575,8 @@ async function find(id: number): Promise<SubscriberModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new SubscriberModel(model)
 }
@@ -592,7 +605,7 @@ export async function whereSubscribed(value: boolean): Promise<SubscriberModel[]
   const query = db.selectFrom('subscribers').where('subscribed', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new SubscriberModel(modelItem))
+  return results.map(modelItem => new SubscriberModel(modelItem))
 }
 
 export const Subscriber = SubscriberModel

@@ -14,10 +14,10 @@ import backgroundImage from '../../assets/images/background-call-to-action.jpg'
     >
     <Container class="relative">
       <div class="mx-auto max-w-lg text-center">
-        <h2 class="font-display text-3xl tracking-tight text-white sm:text-4xl">
+        <h2 class="font-display text-3xl text-white tracking-tight sm:text-4xl">
           Get started today
         </h2>
-        <p class="mt-4 text-lg tracking-tight text-white">
+        <p class="mt-4 text-lg text-white tracking-tight">
           It's time to put away the worries of later when you scale up because everything is built right out of the box. We believe your focus is to just build and grow your business.
         </p>
         <Button href="/register" variant="solid" color="white" class="mt-10">

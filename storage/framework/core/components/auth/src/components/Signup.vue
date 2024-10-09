@@ -12,28 +12,28 @@
           <div>
             <label for="name" class="block text-sm text-gray-900 font-medium leading-6">Full Name</label>
             <div class="mt-2">
-              <input id="name" name="name" type="name" autocomplete="name" required class="block w-full p-2 border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
+              <input id="name" name="name" type="name" autocomplete="name" required class="block w-full border-0 rounded-md p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
             </div>
           </div>
 
           <div>
             <label for="email" class="block text-sm text-gray-900 font-medium leading-6">Email address</label>
             <div class="mt-2">
-              <input id="email" name="email" type="email" autocomplete="email" required class="block w-full p-2 border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
+              <input id="email" name="email" type="email" autocomplete="email" required class="block w-full border-0 rounded-md p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
             </div>
           </div>
 
           <div>
             <label for="confirm_email" class="block text-sm text-gray-900 font-medium leading-6">Confirm Email</label>
             <div class="mt-2">
-              <input id="confirm_email" name="confirm_email" type="confirm_email" autocomplete="confirm_email" required class="block w-full p-2 border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
+              <input id="confirm_email" name="confirm_email" type="confirm_email" autocomplete="confirm_email" required class="block w-full border-0 rounded-md p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
             </div>
           </div>
 
           <div>
             <label for="password" class="block text-sm text-gray-900 font-medium leading-6">Password</label>
             <div class="mt-2">
-              <input id="password" name="password" type="password" autocomplete="current-password" required class="block p-2 w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
+              <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full border-0 rounded-md p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
             </div>
           </div>
 

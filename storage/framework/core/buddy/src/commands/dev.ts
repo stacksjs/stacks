@@ -1,3 +1,4 @@
+import type { CLI, DevOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
   runAction,
@@ -13,7 +14,6 @@ import { intro, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { libsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, DevOptions } from '@stacksjs/types'
 
 export function dev(buddy: CLI): void {
   const descriptions = {
@@ -111,23 +111,30 @@ export function dev(buddy: CLI): void {
 
         if (selectedValue === 'components') {
           await runComponentsDevServer(options)
-        } else if (selectedValue === 'api') {
+        }
+        else if (selectedValue === 'api') {
           await runApiDevServer(options)
-        } else if (selectedValue === 'dashboard') {
+        }
+        else if (selectedValue === 'dashboard') {
           await runDashboardDevServer(options)
         }
         // else if (selectedValue === 'email')
         //   await runEmailDevServer(options)
         else if (selectedValue === 'docs') {
           await runDocsDevServer(options)
-        } else {
+        }
+        else {
           log.error('Invalid option during interactive mode')
           process.exit(ExitCode.InvalidArgument)
         }
-      } else {
-        if (options.components) await runComponentsDevServer(options)
-        if (options.docs) await runDocsDevServer(options)
-        else if (options.api) await runApiDevServer(options)
+      }
+      else {
+        if (options.components)
+          await runComponentsDevServer(options)
+        if (options.docs)
+          await runDocsDevServer(options)
+        else if (options.api)
+          await runApiDevServer(options)
         // else if (options.email)
         //   await runEmailDevServer(options)
       }
@@ -151,7 +158,8 @@ export function dev(buddy: CLI): void {
         // silent: !options.verbose,
       })
 
-      if (options.verbose) log.info('buddy dev:components result', result)
+      if (options.verbose)
+        log.info('buddy dev:components result', result)
 
       if (result.isErr()) {
         await outro(

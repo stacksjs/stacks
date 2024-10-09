@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -86,7 +82,8 @@ export class SubscriberEmailModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -101,7 +98,8 @@ export class SubscriberEmailModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -119,7 +117,7 @@ export class SubscriberEmailModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
@@ -135,7 +133,8 @@ export class SubscriberEmailModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -155,7 +154,7 @@ export class SubscriberEmailModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -299,7 +298,8 @@ export class SubscriberEmailModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('subscriber_emails').where('id', '=', id).execute()
     }
   }
@@ -312,9 +312,11 @@ export class SubscriberEmailModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -333,9 +335,11 @@ export class SubscriberEmailModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -437,7 +441,8 @@ export class SubscriberEmailModel {
   }
 
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
-    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
+    if (this.id === undefined)
+      throw new Error('SubscriberEmail ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
@@ -451,7 +456,8 @@ export class SubscriberEmailModel {
   }
 
   async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
-    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
+    if (this.id === undefined)
+      throw new Error('SubscriberEmail ID is undefined')
 
     await db.updateTable('subscriber_emails').set(subscriberemail).where('id', '=', this.id).executeTakeFirst()
 
@@ -461,21 +467,24 @@ export class SubscriberEmailModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('SubscriberEmail data is undefined')
+    if (!this)
+      throw new Error('SubscriberEmail data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('subscriber_emails')
         .values(this as NewSubscriberEmail)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the subscriberemail instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('SubscriberEmail ID is undefined')
+    if (this.id === undefined)
+      throw new Error('SubscriberEmail ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -489,7 +498,8 @@ export class SubscriberEmailModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('subscriber_emails').where('id', '=', this.id).execute()
     }
@@ -544,7 +554,8 @@ export class SubscriberEmailModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
@@ -566,7 +577,8 @@ async function find(id: number): Promise<SubscriberEmailModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new SubscriberEmailModel(model)
 }
@@ -595,7 +607,7 @@ export async function whereEmail(value: string): Promise<SubscriberEmailModel[]>
   const query = db.selectFrom('subscriber_emails').where('email', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new SubscriberEmailModel(modelItem))
+  return results.map(modelItem => new SubscriberEmailModel(modelItem))
 }
 
 export const SubscriberEmail = SubscriberEmailModel

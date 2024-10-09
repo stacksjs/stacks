@@ -1,17 +1,17 @@
-// waf and encryption
-import { config } from '@stacksjs/config'
 import type { aws_route53 as route53 } from 'aws-cdk-lib'
-import {
-  Duration,
-  RemovalPolicy,
-  Tags,
-  aws_certificatemanager as acm,
-  aws_cloudfront as cloudfront,
-  aws_kms as kms,
-  aws_wafv2 as wafv2,
-} from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+// waf and encryption
+import { config } from '@stacksjs/config'
+import {
+  aws_certificatemanager as acm,
+  aws_cloudfront as cloudfront,
+  Duration,
+  aws_kms as kms,
+  RemovalPolicy,
+  Tags,
+  aws_wafv2 as wafv2,
+} from 'aws-cdk-lib'
 
 export interface StorageStackProps extends NestedCloudProps {
   zone: route53.IHostedZone
@@ -26,7 +26,8 @@ export class SecurityStack {
   constructor(scope: Construct, props: StorageStackProps) {
     const firewallOptions = config.cloud.firewall
 
-    if (!firewallOptions) throw new Error('No firewall options found in config')
+    if (!firewallOptions)
+      throw new Error('No firewall options found in config')
 
     const options = {
       defaultAction: { allow: {} },

@@ -1,8 +1,5 @@
-import { db } from '@stacksjs/database'
-import type { Result } from '@stacksjs/error-handling'
-import { err, handleError, ok } from '@stacksjs/error-handling'
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
-import Team from './Team'
+import { db } from '@stacksjs/database'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -87,12 +84,14 @@ export class AccessTokenModel {
   static async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
-    if (fields) query = query.select(fields)
+    if (fields)
+      query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model)
+      return null
 
     return new this(model)
   }
@@ -121,12 +120,14 @@ export class AccessTokenModel {
   async find(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel | null> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
-    if (fields) query = query.select(fields)
+    if (fields)
+      query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return null
+    if (!model)
+      return null
 
     return this
   }
@@ -134,12 +135,14 @@ export class AccessTokenModel {
   static async findOrFail(id: number, fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel> {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
-    if (fields) query = query.select(fields)
+    if (fields)
+      query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     return new this(model)
   }
@@ -147,12 +150,13 @@ export class AccessTokenModel {
   static async findMany(ids: number[], fields?: (keyof AccessTokenType)[]): Promise<AccessTokenModel[]> {
     let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
 
-    if (fields) query = query.select(fields)
+    if (fields)
+      query = query.select(fields)
     else query = query.selectAll()
 
     const model = await query.execute()
 
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    return model.map(modelItem => new AccessTokenModel(modelItem))
   }
 
   // Method to get a accesstoken by criteria
@@ -160,15 +164,18 @@ export class AccessTokenModel {
     let query = db.selectFrom('personal_access_tokens')
 
     // Apply sorting from options
-    if (options.sort) query = query.orderBy(options.sort.column, options.sort.order)
+    if (options.sort)
+      query = query.orderBy(options.sort.column, options.sort.order)
 
     // Apply limit and offset from options
-    if (options.limit !== undefined) query = query.limit(options.limit)
+    if (options.limit !== undefined)
+      query = query.limit(options.limit)
 
-    if (options.offset !== undefined) query = query.offset(options.offset)
+    if (options.offset !== undefined)
+      query = query.offset(options.offset)
 
     const model = await query.selectAll().execute()
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    return model.map(modelItem => new AccessTokenModel(modelItem))
   }
 
   // Method to get a accesstoken by criteria
@@ -177,7 +184,7 @@ export class AccessTokenModel {
 
     const model = await query.selectAll().execute()
 
-    return model.map((modelItem) => new AccessTokenModel(modelItem))
+    return model.map(modelItem => new AccessTokenModel(modelItem))
   }
 
   // Method to get a accesstoken by criteria
@@ -250,9 +257,11 @@ export class AccessTokenModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -327,7 +336,8 @@ export class AccessTokenModel {
 
   // Method to update the accesstoken instance
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | null> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined)
+      throw new Error('AccessToken ID is undefined')
 
     await db.updateTable('personal_access_tokens').set(accesstoken).where('id', '=', this.id).executeTakeFirst()
 
@@ -336,7 +346,8 @@ export class AccessTokenModel {
 
   // Method to save (insert or update) the accesstoken instance
   async save(): Promise<void> {
-    if (!this.accesstoken) throw new Error('AccessToken data is undefined')
+    if (!this.accesstoken)
+      throw new Error('AccessToken data is undefined')
 
     if (this.accesstoken.id === undefined) {
       // Insert new accesstoken
@@ -344,7 +355,8 @@ export class AccessTokenModel {
         .insertInto('personal_access_tokens')
         .values(this.accesstoken as NewAccessToken)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       // Update existing accesstoken
       await this.update(this.accesstoken)
     }
@@ -352,7 +364,8 @@ export class AccessTokenModel {
 
   // Method to delete the accesstoken instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined)
+      throw new Error('AccessToken ID is undefined')
 
     await db.deleteFrom('personal_access_tokens').where('id', '=', this.id).execute()
   }
@@ -405,7 +418,8 @@ export class AccessTokenModel {
     const output: Partial<AccessTokenType> = { ...this.accesstoken }
 
     this.hidden.forEach((attr) => {
-      if (attr in output) delete output[attr as keyof Partial<AccessTokenType>]
+      if (attr in output)
+        delete output[attr as keyof Partial<AccessTokenType>]
     })
 
     type AccessToken = Omit<AccessTokenType, 'password'>

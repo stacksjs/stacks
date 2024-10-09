@@ -1,6 +1,5 @@
 import os from 'node:os'
 import {
-  type ParsedPath,
   basename,
   delimiter,
   dirname,
@@ -9,6 +8,7 @@ import {
   join,
   normalize,
   parse,
+  type ParsedPath,
   relative,
   resolve,
   sep,
@@ -46,7 +46,8 @@ export function userActionsPath(path?: string, options?: { relative: true }): st
 export function builtUserActionsPath(path?: string, options?: { relative: boolean }): string {
   const absolutePath = frameworkPath(`actions/${path || ''}`)
 
-  if (options?.relative) return relative(process.cwd(), absolutePath)
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -234,7 +235,8 @@ export function aliasPath(): string {
 export function buddyPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = corePath(`buddy/${path || ''}`)
 
-  if (options?.relative) return relative(process.cwd(), absolutePath)
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -639,10 +641,11 @@ export function fakerPath(path?: string): string {
  * @param options.cwd - Specifies a custom working directory.
  * @returns The absolute or relative path to the specified file or directory within the framework directory.
  */
-export function frameworkPath(path?: string, options?: { relative?: boolean; cwd?: string }): string {
+export function frameworkPath(path?: string, options?: { relative?: boolean, cwd?: string }): string {
   const absolutePath = storagePath(`framework/${path || ''}`)
 
-  if (options?.relative) return relative(options.cwd || process.cwd(), absolutePath)
+  if (options?.relative)
+    return relative(options.cwd || process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -708,7 +711,8 @@ export function langPath(path?: string): string {
 export function layoutsPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = resourcesPath(`layouts/${path || ''}`)
 
-  if (options?.relative) return relative(process.cwd(), absolutePath)
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }
@@ -841,8 +845,10 @@ export function onboardingPath(path?: string): string {
  * @returns The absolute path to the specified package.json file within the framework directory.
  */
 export function packageJsonPath(type: LibraryType): string {
-  if (type === 'vue-components') return frameworkPath('libs/components/vue/package.json')
-  if (type === 'web-components') return frameworkPath('libs/components/web/package.json')
+  if (type === 'vue-components')
+    return frameworkPath('libs/components/vue/package.json')
+  if (type === 'web-components')
+    return frameworkPath('libs/components/web/package.json')
 
   return frameworkPath(`libs/${type}/package.json`)
 }
@@ -891,7 +897,8 @@ export function projectPath(filePath = '', options?: { relative: boolean }): str
   const finalPath = resolve(path, filePath)
 
   // If the `relative` option is true, return the path relative to the current working directory
-  if (options?.relative) return relative(process.cwd(), finalPath)
+  if (options?.relative)
+    return relative(process.cwd(), finalPath)
 
   return finalPath
 }
@@ -918,7 +925,8 @@ export async function findProjectPath(project: string): Promise<string> {
   // since we are targeting a specific project, find its path
   const projectPath = projects.find((proj: string) => proj.includes(project))
 
-  if (!projectPath) throw new Error(`Could not find project with name: ${project}`)
+  if (!projectPath)
+    throw new Error(`Could not find project with name: ${project}`)
 
   return projectPath.startsWith('/') ? projectPath : `/${projectPath}`
 }
@@ -1041,7 +1049,8 @@ export function routerPath(path?: string): string {
 export function routesPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = resourcesPath(`routes/${path || ''}`)
 
-  if (options?.relative) return relative(process.cwd(), absolutePath)
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
 
   return projectPath(`routes/${path || ''}`)
 }
@@ -1239,7 +1248,8 @@ export function typesPath(path?: string): string {
 export function uiPath(path?: string, options?: { relative?: boolean }): string {
   const absolutePath = corePath(`ui/${path || ''}`)
 
-  if (options?.relative) return relative(process.cwd(), absolutePath)
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
 
   return absolutePath
 }

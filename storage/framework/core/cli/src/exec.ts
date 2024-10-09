@@ -1,6 +1,6 @@
-import process from 'node:process'
-import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
 import type { CliOptions, ErrorLike, SpawnOptions, Subprocess } from '@stacksjs/types'
+import process from 'node:process'
+import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { italic, log } from './'
 
@@ -25,9 +25,10 @@ import { italic, log } from './'
  * ```
  */
 export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
-  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
 
-  if (!cmd) return err(handleError(`Failed to parse command: ${cmd}`, options))
+  if (!cmd)
+    return err(handleError(`Failed to parse command: ${cmd}`, options))
 
   log.debug('exec:', Array.isArray(command) ? command.join(' ') : command)
   log.debug('cmd:', cmd)
@@ -64,7 +65,8 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   }
 
   const exited = await proc.exited
-  if (exited === ExitCode.Success) return ok(proc)
+  if (exited === ExitCode.Success)
+    return ok(proc)
 
   return err(handleError(`Failed to execute command: ${italic(cmd.join(' '))} in ${italic(cwd)}`, options))
 }
@@ -89,7 +91,7 @@ export async function execSync(command: string | string[], options?: CliOptions)
   log.debug('Running ExecSync:', command)
   log.debug('ExecSync Options:', options)
 
-  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
 
   if (!cmd) {
     log.error(`Failed to parse command: ${cmd}`, options)
@@ -133,5 +135,6 @@ function exitHandler(
     process.exit(ExitCode.FatalError)
   }
 
-  if (exitCode !== ExitCode.Success && exitCode) process.exit(exitCode)
+  if (exitCode !== ExitCode.Success && exitCode)
+    process.exit(exitCode)
 }

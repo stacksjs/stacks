@@ -1,3 +1,4 @@
+import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront'
 import { intro, italic, log, outro, prompts, runCommand, underline } from '@stacksjs/cli'
@@ -16,7 +17,6 @@ import {
   getJumpBoxInstanceId,
 } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
-import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { loop } from '@stacksjs/utils'
 
@@ -103,8 +103,8 @@ export function cloud(buddy: CLI): void {
         const command = new CreateInvalidationCommand(params)
 
         cloudfront.send(command).then(
-          (data) => console.log(data),
-          (err) => console.log(err, err.stack),
+          data => console.log(data),
+          err => console.log(err, err.stack),
         )
 
         await outro('Exited', { startTime, useSeconds: true })
@@ -160,7 +160,7 @@ export function cloud(buddy: CLI): void {
         log.info('The jump-box is getting added to your cloud resources...')
         log.info('This takes a few moments, please be patient.')
         // sleep for 2 seconds to get the user to read the message
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        await new Promise(resolve => setTimeout(resolve, 2000))
 
         const result = await addJumpBox()
 
@@ -238,7 +238,7 @@ export function cloud(buddy: CLI): void {
       console.log(`   ${italic('Backups are scheduled to delete themselves in 30 days.')}`)
 
       // sleep for 2 seconds to get the user to read the message
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise(resolve => setTimeout(resolve, 2000))
 
       const result = await runCommand(`bunx --bun cdk destroy`, {
         ...options,
@@ -282,7 +282,8 @@ export function cloud(buddy: CLI): void {
           useSeconds: true,
         })
         process.exit(ExitCode.Success)
-      } catch (error) {
+      }
+      catch (error) {
         await outro('While cleaning up the cloud, there was an issue', { startTime, useSeconds: true }, error as Error)
         process.exit(ExitCode.FatalError)
       }
@@ -339,7 +340,7 @@ export function cloud(buddy: CLI): void {
       log.info(`Cleaning up your cloud resources will take a while to complete. Please be patient.`)
 
       // sleep for 2 seconds to get the user to read the message
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise(resolve => setTimeout(resolve, 2000))
 
       log.info('Removing any jump-boxes...')
       const result = await deleteJumpBox()
@@ -367,12 +368,13 @@ export function cloud(buddy: CLI): void {
       const result3 = await deleteStacksFunctions()
 
       if (result3.isErr()) {
-        if (result3.error !== 'No stacks functions found')
+        if (result3.error !== 'No stacks functions found') {
           await outro(
             'While deleting the Origin Request Lambda function, there was an issue',
             { startTime, useSeconds: true },
             result3.error,
           )
+        }
 
         process.exit(ExitCode.FatalError)
       }

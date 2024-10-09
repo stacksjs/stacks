@@ -14,55 +14,56 @@ useHead({
 const flag = ref(false)
 
 function getStatus(conclusion: string) {
-  if (conclusion === 'success') return 'Ready'
+  if (conclusion === 'success')
+    return 'Ready'
 
   return 'Failed'
 }
 </script>
 
 <template>
-  <div v-if="gitStore.workflowRun" class="px-4 sm:px-6 lg:px-8 py-8">
+  <div v-if="gitStore.workflowRun" class="px-4 py-8 lg:px-8 sm:px-6">
     <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
       <div class="px-4 sm:px-0">
-        <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">
+        <h3 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
           Latest Deployment
         </h3>
       </div>
       <div class="mt-6 border-t border-gray-100 dark:border-gray-600">
         <dl class="divide-y divide-gray-100 dark:divide-gray-600">
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+            <dt class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
               Status
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 flex items-center sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
+            <dd class="mt-1 flex items-center text-sm text-gray-700 leading-6 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               <span> {{ getStatus(gitStore.workflowRun.conclusion) }} </span>
-              <svg fill="none" class="text-green-500 w-5 h-5 ml-2" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <svg fill="none" class="ml-2 h-5 w-5 text-green-500" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </dd>
           </div>
 
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+            <dt class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
               Duration
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
+            <dd class="mt-1 text-sm text-gray-700 leading-6 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               {{ github.getActionRunDuration(gitStore.workflowRun.created_at, gitStore.workflowRun.updated_at) }}
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+            <dt class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
               Domain
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
+            <dd class="mt-1 text-sm text-gray-700 leading-6 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               www.stacks.com
             </dd>
           </div>
           <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt class="text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
+            <dt class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
               Source
             </dt>
-            <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
+            <dd class="mt-1 text-sm text-gray-700 leading-6 sm:col-span-2 sm:mt-0 dark:text-gray-200 dark:text-gray-200">
               <div class="flex items-center">
                 <svg
                   class="with-icon_icon__MHUeb"
@@ -128,14 +129,14 @@ function getStatus(conclusion: string) {
       </div>
     </div>
 
-    <div class="rounded-lg mt-12   bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
-      <h2 class="text-2xl font-bold leading-10 tracking-tight text-gray-900  dark:text-gray-100">
+    <div class="mt-12 rounded-lg bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
+      <h2 class="text-2xl text-gray-900 font-bold leading-10 tracking-tight dark:text-gray-100">
         Deployment Details
       </h2>
       <div>
         <ul
           role="list"
-          class="border rounded-md divide-y divide-gray-200 dark:divide-gray-600 mt-8"
+          class="mt-8 border rounded-md divide-y divide-gray-200 dark:divide-gray-600"
         >
           <li
             class="relative flex-col cursor-pointer"
@@ -144,7 +145,7 @@ function getStatus(conclusion: string) {
             <div class="flex justify-between px-4 py-5">
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
-                  <div class="text-sm flex items-center font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                  <div class="flex items-center text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
                     <div class="i-heroicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
 
                     <span>
@@ -157,7 +158,7 @@ function getStatus(conclusion: string) {
                 <div
                   class="sm:flex sm:flex-col sm:items-end"
                 >
-                  <div class="i-heroicons-check-circle-20-solid text-green-500 w-6 h-6" />
+                  <div class="i-heroicons-check-circle-20-solid h-6 w-6 text-green-500" />
                 </div>
               </div>
             </div>
@@ -168,7 +169,7 @@ function getStatus(conclusion: string) {
             >
               <pre
                 v-highlightjs
-                class="-mt-5 -mb-10"
+                class="-mb-10 -mt-5"
               >
                 <code class="bash">
   Running build in Cleveland, USA (East) – cle1
@@ -195,7 +196,7 @@ function getStatus(conclusion: string) {
             <div class="flex justify-between px-4 py-5">
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
-                  <div class="text-sm flex items-center font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                  <div class="flex items-center text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
                     <div class="i-heroicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
                     <span>
                       Deployment Summary
@@ -207,7 +208,7 @@ function getStatus(conclusion: string) {
                 <div
                   class="sm:flex sm:flex-col sm:items-end"
                 >
-                  <div class="i-heroicons-check-circle-20-solid text-green-500 w-6 h-6" />
+                  <div class="i-heroicons-check-circle-20-solid h-6 w-6 text-green-500" />
                 </div>
               </div>
             </div>
@@ -218,7 +219,7 @@ function getStatus(conclusion: string) {
             >
               <pre
                 v-highlightjs
-                class="-mt-5 -mb-10"
+                class="-mb-10 -mt-5"
               >
                 <code class="bash">
   Running build in Cleveland, USA (East) – cle1
@@ -245,7 +246,7 @@ function getStatus(conclusion: string) {
             <div class="flex justify-between px-4 py-5">
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
-                  <div class="text-sm flex items-center font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                  <div class="flex items-center text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
                     <div class="i-heroicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
                     <span>
                       Running Checks
@@ -255,9 +256,9 @@ function getStatus(conclusion: string) {
               </div>
               <div class="flex items-center gap-x-4">
                 <div
-                  class=" sm:flex sm:flex-col sm:items-end"
+                  class="sm:flex sm:flex-col sm:items-end"
                 >
-                  <div class="i-heroicons-x-circle-20-solid text-red-500 w-6 h-6" />
+                  <div class="i-heroicons-x-circle-20-solid h-6 w-6 text-red-500" />
                 </div>
               </div>
             </div>
@@ -268,7 +269,7 @@ function getStatus(conclusion: string) {
             >
               <pre
                 v-highlightjs
-                class="-mt-5 -mb-10"
+                class="-mb-10 -mt-5"
               >
                 <code class="bash">
   Running build in Cleveland, USA (East) – cle1

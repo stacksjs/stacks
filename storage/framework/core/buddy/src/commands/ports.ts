@@ -1,12 +1,12 @@
+import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
+import { $ } from 'bun'
 import process from 'node:process'
 import { intro, italic, outro } from '@stacksjs/cli'
 import { ports as projectPorts } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { findProjectPath, path as p, projectPath } from '@stacksjs/path'
-import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
-import { $ } from 'bun'
 
 export function ports(buddy: CLI): void {
   const descriptions = {
@@ -31,7 +31,8 @@ export function ports(buddy: CLI): void {
       log.debug('Running `buddy ports` ...', options)
 
       let perf
-      if (!options.quiet) perf = await intro('buddy ports')
+      if (!options.quiet)
+        perf = await intro('buddy ports')
 
       if (options.project) {
         const path = await findProjectPath(options.project)
@@ -48,7 +49,8 @@ export function ports(buddy: CLI): void {
         outputPorts(projectPorts, options)
       }
 
-      if (!options.quiet) await outro('Exited', { startTime: perf, useSeconds: false })
+      if (!options.quiet)
+        await outro('Exited', { startTime: perf, useSeconds: false })
 
       process.exit(ExitCode.Success)
     })
@@ -64,11 +66,13 @@ export function ports(buddy: CLI): void {
       log.debug('Running `buddy ports:list` ...', options)
 
       let perf
-      if (!options.quiet) perf = await intro('buddy ports:list')
+      if (!options.quiet)
+        perf = await intro('buddy ports:list')
 
       // return the ports for the project
       if (options.project) {
-        if (!options.quiet) log.info(`Listing ports for project: ${italic(options.project)}`)
+        if (!options.quiet)
+          log.info(`Listing ports for project: ${italic(options.project)}`)
 
         const path = await findProjectPath(options.project)
 
@@ -83,7 +87,8 @@ export function ports(buddy: CLI): void {
         outputPorts(projectPorts, options)
       }
 
-      if (!options.quiet) await outro('Exited', { startTime: perf, useSeconds: false })
+      if (!options.quiet)
+        await outro('Exited', { startTime: perf, useSeconds: false })
 
       process.exit(ExitCode.Success)
     })
@@ -99,7 +104,8 @@ export function ports(buddy: CLI): void {
       log.debug('Running `buddy ports:check` ...', options)
 
       let perf
-      if (!options.quiet) perf = await intro('buddy ports:check')
+      if (!options.quiet)
+        perf = await intro('buddy ports:check')
 
       const projects = await findStacksProjects(undefined, { quiet: true })
 
@@ -113,7 +119,8 @@ export function ports(buddy: CLI): void {
 
       log.info('ProjectsPorts:', projectsPorts)
 
-      if (!options.quiet) await outro('Exited', { startTime: perf, useSeconds: false })
+      if (!options.quiet)
+        await outro('Exited', { startTime: perf, useSeconds: false })
 
       process.exit(ExitCode.Success)
     })
@@ -125,7 +132,8 @@ export function ports(buddy: CLI): void {
 }
 
 async function getPortsForProjectPath(path: string, options: PortsOptions) {
-  if (!options.quiet) log.info(`Checking ports for project: ${italic(path)}`)
+  if (!options.quiet)
+    log.info(`Checking ports for project: ${italic(path)}`)
 
   $.cwd(path)
   // load the .env file for the project
@@ -137,13 +145,13 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
   // get the list of all Stacks project paths (on the system)
   const projects = projectList
     .split('\n')
-    .filter((line) => line.startsWith('   - '))
-    .map((line) => line.trim().substring(4))
+    .filter(line => line.startsWith('   - '))
+    .map(line => line.trim().substring(4))
   log.debug('Projects:', projects)
 
   // since we are targeting a specific project, find its path
   const ppath = options.project ?? p.projectPath()
-  let projectPath = projects.find((project) => project.includes(ppath))
+  let projectPath = projects.find(project => project.includes(ppath))
 
   log.debug(`Checking ports for project: ${projectPath}`)
   if (projectPath === '' || !projectPath)
@@ -159,7 +167,7 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
   let validJsonString = response.replace(/(\w+)(?=\s*:)/g, '"$1"')
 
   // Step 2: Remove potential trailing commas before closing braces
-  validJsonString = validJsonString.replace(/,(\s*})/g, '$1')
+  validJsonString = validJsonString.replace(/,(\s*\})/g, '$1')
 
   // Now we can parse it into an object
   const ports = JSON.parse(validJsonString) as Ports
@@ -170,9 +178,11 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
 }
 
 function outputPorts(ports: Ports, options: PortsOptions) {
-  if (!options.quiet) console.log('')
+  if (!options.quiet)
+    console.log('')
 
   console.log(ports)
 
-  if (!options.quiet) console.log('')
+  if (!options.quiet)
+    console.log('')
 }

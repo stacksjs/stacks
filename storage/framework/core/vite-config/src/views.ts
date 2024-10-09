@@ -1,7 +1,7 @@
+import type { ViteConfig } from '@stacksjs/types'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
-import type { ViteConfig } from '@stacksjs/types'
 import {
   autoImports,
   components,
@@ -93,7 +93,7 @@ export const viewsConfig: ViteConfig = {
 
     includedRoutes(paths, routes) {
       // exclude all the route paths that contains 'errors', 'system-tray', or 'dashboard'
-      return paths.filter((i) => !i.includes('errors') && !i.includes('system-tray') && !i.includes('dashboard'))
+      return paths.filter(i => !i.includes('errors') && !i.includes('system-tray') && !i.includes('dashboard'))
     },
 
     onFinished() {

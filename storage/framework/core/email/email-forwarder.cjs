@@ -60,12 +60,12 @@ const defaultConfig = {
 exports.parseEvent = (data) => {
   // Validate characteristics of a SES event record.
   if (
-    !data.event ||
-    !data.event.hasOwn('Records') ||
-    data.event.Records.length !== 1 ||
-    !data.event.Records[0].hasOwn('eventSource') ||
-    data.event.Records[0].eventSource !== 'aws:ses' ||
-    data.event.Records[0].eventVersion !== '1.0'
+    !data.event
+    || !data.event.hasOwn('Records')
+    || data.event.Records.length !== 1
+    || !data.event.Records[0].hasOwn('eventSource')
+    || data.event.Records[0].eventSource !== 'aws:ses'
+    || data.event.Records[0].eventVersion !== '1.0'
   ) {
     data.log({
       message: 'parseEvent() received invalid SES message:',
@@ -92,28 +92,33 @@ exports.transformRecipients = (data) => {
   data.originalRecipients = data.recipients
   data.recipients.forEach((origEmail) => {
     let origEmailKey = origEmail.toLowerCase()
-    if (data.config.allowPlusSign) origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
+    if (data.config.allowPlusSign)
+      origEmailKey = origEmailKey.replace(/\+.*?@/, '@')
 
     if (data.config.forwardMapping.hasOwn(origEmailKey)) {
       newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailKey])
       data.originalRecipient = origEmail
-    } else {
+    }
+    else {
       let origEmailDomain
       let origEmailUser
       const pos = origEmailKey.lastIndexOf('@')
       if (pos === -1) {
         origEmailUser = origEmailKey
-      } else {
+      }
+      else {
         origEmailDomain = origEmailKey.slice(pos)
         origEmailUser = origEmailKey.slice(0, pos)
       }
       if (origEmailDomain && data.config.forwardMapping.hasOwn(origEmailDomain)) {
         newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailDomain])
         data.originalRecipient = origEmail
-      } else if (origEmailUser && data.config.forwardMapping.hasOwn(origEmailUser)) {
+      }
+      else if (origEmailUser && data.config.forwardMapping.hasOwn(origEmailUser)) {
         newRecipients = newRecipients.concat(data.config.forwardMapping[origEmailUser])
         data.originalRecipient = origEmail
-      } else if (data.config.forwardMapping.hasOwn('@')) {
+      }
+      else if (data.config.forwardMapping.hasOwn('@')) {
         newRecipients = newRecipients.concat(data.config.forwardMapping['@'])
         data.originalRecipient = origEmail
       }
@@ -210,7 +215,7 @@ exports.processMessage = (data) => {
 
   // Add "Reply-To:" with the "From" address if it doesn't already exists
   if (!/^reply-to:[\t ]?/im.test(header)) {
-    match = header.match(/^from:[\t ]?(.*(?:\r?\n\s+.*)*\r?\n)/im)
+    match = header.match(/^from:[\t ]?(.*(?:\r?\n\s+(?:\S.*)?)*\r?\n)/im)
     const from = match?.[1] ? match[1] : ''
     if (from) {
       header = `${header}Reply-To: ${from}`
@@ -218,7 +223,8 @@ exports.processMessage = (data) => {
         level: 'info',
         message: `Added Reply-To address of: ${from}`,
       })
-    } else {
+    }
+    else {
       data.log({
         level: 'info',
         message: 'Reply-To address not added because From address was not ' + 'properly extracted.',
@@ -233,7 +239,8 @@ exports.processMessage = (data) => {
     let fromText
     if (data.config.fromEmail) {
       fromText = `From: ${from.replace(/<(.*)>/, '').trim()} <${data.config.fromEmail}>`
-    } else {
+    }
+    else {
       fromText = `From: ${from.replace('<', 'at ').replace('>', '')} <${data.originalRecipient}>`
     }
     return fromText
@@ -264,7 +271,7 @@ exports.processMessage = (data) => {
   // "InvalidParameterValue: Duplicate header 'DKIM-Signature'" error.
   // These signatures will likely be invalid anyways, since the From
   // header was modified.
-  header = header.replace(/^dkim-signature:[\t ]?.*\r?\n(\s+.*\r?\n)*/gim, '')
+  header = header.replace(/^dkim-signature:.*\r?\n(\s+(?:\S.*)?\r?\n)*/gim, '')
 
   data.emailData = header + body
   return Promise.resolve(data)

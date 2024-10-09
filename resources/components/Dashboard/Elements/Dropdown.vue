@@ -17,7 +17,8 @@ watch(isOpen, () => {
   const elements = (list.value?.children ?? []) as HTMLLIElement[]
 
   elements.forEach((element, index) => {
-    if (!isOpen.value) element.style.display = 'none'
+    if (!isOpen.value)
+      element.style.display = 'none'
 
     setTimeout(() => {
       element.style.display = 'block'
@@ -28,17 +29,17 @@ watch(isOpen, () => {
 
 <template>
   <div class="flex flex-col gap-y-2 overflow-hidden">
-    <a @click="isOpen = !isOpen" class="flex items-center justify-between gap-x-2">
-      <span class="text-sm font-medium text-dark">
+    <a class="flex items-center justify-between gap-x-2" @click="isOpen = !isOpen">
+      <span class="text-sm text-dark font-medium">
         {{ props.label }}
       </span>
 
-      <span v-if="isOpen" :class="[
-        'i-heroicons-minus',
-      ]" />
-      <span v-else :class="[
-        'i-heroicons-chevron-down',
-      ]" />
+      <span
+        v-if="isOpen" class="i-heroicons-minus"
+      />
+      <span
+        v-else class="i-heroicons-chevron-down"
+      />
     </a>
 
     <ul ref="list">

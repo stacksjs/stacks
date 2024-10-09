@@ -52,7 +52,8 @@ export function stopRedisServer(): void {
     redisProcess.kill() // Kills the Redis process
     console.log('Redis server process killed.')
     redisProcess = null // Reset the process variable
-  } else {
+  }
+  else {
     console.log('Redis server is not running.')
   }
 }

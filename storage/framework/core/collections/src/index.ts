@@ -31,14 +31,14 @@ export class Collection<T> {
 
     if (isFunction(key)) {
       return (
-        Number(new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).sum(key)) /
-        Number(this.items.length)
+        Number(new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).sum(key))
+        / Number(this.items.length)
       )
     }
 
     return (
-      Number(new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).pluck(key).sum()) /
-      Number(this.items.length)
+      Number(new (this.constructor as new (items: typeof this.items) => typeof this)(this.items).pluck(key).sum())
+      / Number(this.items.length)
     )
   }
 
@@ -65,7 +65,7 @@ export class Collection<T> {
     }
 
     if (!Array.isArray(values)) {
-      throw new Error('The values must be an array or a string')
+      throw new TypeError('The values must be an array or a string')
     }
 
     const collection = {}
@@ -85,7 +85,8 @@ export class Collection<T> {
 
     if (collectionOrArrayOrObject instanceof this.constructor) {
       list = collectionOrArrayOrObject.all()
-    } else if (typeof collectionOrArrayOrObject === 'object') {
+    }
+    else if (typeof collectionOrArrayOrObject === 'object') {
       list = []
       Object.keys(collectionOrArrayOrObject).forEach((property) => {
         list.push(collectionOrArrayOrObject[property])
@@ -96,8 +97,9 @@ export class Collection<T> {
 
     list.forEach((item) => {
       if (typeof item === 'object') {
-        Object.keys(item).forEach((key) => collection.push(item[key]))
-      } else {
+        Object.keys(item).forEach(key => collection.push(item[key]))
+      }
+      else {
         collection.push(item)
       }
     })
@@ -116,12 +118,12 @@ export class Collection<T> {
 
     if (value !== undefined) {
       if (Array.isArray(this.items)) {
-        return this.items.some((item) => item[key as keyof T] !== undefined && item[key as keyof T] === value)
+        return this.items.some(item => item[key as keyof T] !== undefined && item[key as keyof T] === value)
       }
 
       return (
-        (key as string | number | symbol) in this.items &&
-        (this.items as Record<keyof T, any>)[key as keyof T] === value
+        (key as string | number | symbol) in this.items
+        && (this.items as Record<keyof T, any>)[key as keyof T] === value
       )
     }
 
@@ -175,7 +177,8 @@ export class Collection<T> {
 
         if (last) {
           result.push(collectionCopy)
-        } else {
+        }
+        else {
           result = result.concat(join(collectionCopy, constructor, rest))
         }
       }
@@ -196,11 +199,12 @@ export class Collection<T> {
 
     if (values instanceof this.constructor) {
       valuesToDiff = values.all()
-    } else {
+    }
+    else {
       valuesToDiff = values
     }
 
-    const collection = this.items.filter((item) => valuesToDiff.indexOf(item) === -1)
+    const collection = this.items.filter(item => !valuesToDiff.includes(item))
 
     return new this.constructor(collection)
   }
@@ -228,13 +232,14 @@ export class Collection<T> {
 
     if (object instanceof this.constructor) {
       objectToDiff = object.all()
-    } else {
+    }
+    else {
       objectToDiff = object
     }
 
     const objectKeys = Object.keys(objectToDiff)
 
-    const remainingKeys = Object.keys(this.items).filter((item) => objectKeys.indexOf(item) === -1)
+    const remainingKeys = Object.keys(this.items).filter(item => !objectKeys.includes(item))
 
     return new this.constructor(this.items).only(remainingKeys)
   }
@@ -300,19 +305,22 @@ export class Collection<T> {
       this.items.forEach((value, index) => {
         const valueAsString = stringifiedValue(value)
 
-        if (occuredValues.indexOf(valueAsString) === -1) {
+        if (!occuredValues.includes(valueAsString)) {
           occuredValues.push(valueAsString)
-        } else {
+        }
+        else {
           duplicateValues[index] = value
         }
       })
-    } else if (typeof this.items === 'object') {
+    }
+    else if (typeof this.items === 'object') {
       Object.keys(this.items).forEach((key) => {
         const valueAsString = stringifiedValue(this.items[key])
 
-        if (occuredValues.indexOf(valueAsString) === -1) {
+        if (!occuredValues.includes(valueAsString)) {
           occuredValues.push(valueAsString)
-        } else {
+        }
+        else {
           duplicateValues[key] = this.items[key]
         }
       })
@@ -330,7 +338,8 @@ export class Collection<T> {
       for (let index = 0; index < length && !stop; index += 1) {
         stop = fn(this.items[index], index, this.items) === false
       }
-    } else {
+    }
+    else {
       const keys = Object.keys(this.items)
       const { length } = keys
 
@@ -361,7 +370,7 @@ export class Collection<T> {
   except(keys: string | string[]): Collection<T> {
     const result = { ...this.items }
     const keysArray = Array.isArray(keys) ? keys : [keys]
-    keysArray.forEach((key) => delete result[key])
+    keysArray.forEach(key => delete result[key])
     return new Collection(result)
   }
 
@@ -450,9 +459,9 @@ export class Collection<T> {
       }
       return d > 0
         ? Object.values(item).reduce(
-            (acc, val) => acc.concat(Array.isArray(val) || typeof val === 'object' ? flatten(val, d - 1) : val),
-            [],
-          )
+          (acc, val) => acc.concat(Array.isArray(val) || typeof val === 'object' ? flatten(val, d - 1) : val),
+          [],
+        )
         : Array.isArray(item)
           ? [...item]
           : [item]
@@ -467,7 +476,8 @@ export class Collection<T> {
       this.items.forEach((value, index) => {
         flipped[value] = index
       })
-    } else {
+    }
+    else {
       Object.entries(this.items).forEach(([key, value]) => {
         flipped[value] = key
       })
@@ -480,7 +490,8 @@ export class Collection<T> {
 
     if (Array.isArray(this.items)) {
       collection = this.items.slice(page * chunk - chunk, page * chunk)
-    } else {
+    }
+    else {
       Object.keys(this.items)
         .slice(page * chunk - chunk, page * chunk)
         .forEach((key) => {
@@ -494,7 +505,8 @@ export class Collection<T> {
   forget(key: string): Collection<T> {
     if (Array.isArray(this.items)) {
       this.items = this.items.filter((item, index) => index !== Number.parseInt(key, 10))
-    } else if (typeof this.items === 'object' && this.items !== null) {
+    }
+    else if (typeof this.items === 'object' && this.items !== null) {
       delete this.items[key]
     }
 
@@ -543,7 +555,7 @@ export class Collection<T> {
       return this.items.includes(key as T)
     }
 
-    return Object.values(this.items).some((item) => item === key)
+    return Object.values(this.items).includes(key)
   }
 
   intersect(values: Collection<T> | T[]): Collection<T> {
@@ -553,7 +565,7 @@ export class Collection<T> {
       intersectValues = values.all()
     }
 
-    const collection = this.items.filter((item) => intersectValues.indexOf(item) !== -1)
+    const collection = this.items.filter(item => intersectValues.includes(item))
 
     return new this.constructor(collection)
   }
@@ -568,7 +580,7 @@ export class Collection<T> {
     const collection = {}
 
     Object.keys(this.items).forEach((key) => {
-      if (intersectKeys.indexOf(key) !== -1) {
+      if (intersectKeys.includes(key)) {
         collection[key] = this.items[key]
       }
     })
@@ -613,7 +625,8 @@ export class Collection<T> {
       this.items.forEach((item) => {
         collection[key(item)] = item
       })
-    } else {
+    }
+    else {
       this.items.forEach((item) => {
         const keyValue = nestedValue(item, key)
 
@@ -685,7 +698,8 @@ export class Collection<T> {
 
       if (collection[key] === undefined) {
         collection[key] = [value]
-      } else {
+      }
+      else {
         collection[key].push(value)
       }
     })
@@ -705,7 +719,8 @@ export class Collection<T> {
 
       if (collection[keyed] === undefined) {
         collection[keyed] = [value]
-      } else {
+      }
+      else {
         collection[keyed].push(value)
       }
     })
@@ -721,7 +736,8 @@ export class Collection<T> {
         const [keyed, value] = fn(item, index)
         collection[keyed] = value
       })
-    } else {
+    }
+    else {
       Object.keys(this.items).forEach((key) => {
         const [keyed, value] = fn(this.items[key], Number(key))
         collection[keyed] = value
@@ -733,9 +749,9 @@ export class Collection<T> {
 
   max(key?: string): number {
     if (typeof key === 'string') {
-      const filtered = this.items.filter((item) => item[key] !== undefined)
+      const filtered = this.items.filter(item => item[key] !== undefined)
 
-      return Math.max(...filtered.map((item) => item[key]))
+      return Math.max(...filtered.map(item => item[key]))
     }
 
     return Math.max(...this.items)
@@ -774,19 +790,23 @@ export class Collection<T> {
       mergedKeys.forEach((key) => {
         if (target[key] === undefined && source[key] !== undefined) {
           merged[key] = source[key]
-        } else if (target[key] !== undefined && source[key] === undefined) {
+        }
+        else if (target[key] !== undefined && source[key] === undefined) {
           merged[key] = target[key]
-        } else if (target[key] !== undefined && source[key] !== undefined) {
+        }
+        else if (target[key] !== undefined && source[key] !== undefined) {
           if (target[key] === source[key]) {
             merged[key] = target[key]
-          } else if (
-            !Array.isArray(target[key]) &&
-            typeof target[key] === 'object' &&
-            !Array.isArray(source[key]) &&
-            typeof source[key] === 'object'
+          }
+          else if (
+            !Array.isArray(target[key])
+            && typeof target[key] === 'object'
+            && !Array.isArray(source[key])
+            && typeof source[key] === 'object'
           ) {
             merged[key] = merge(target[key], source[key])
-          } else {
+          }
+          else {
             merged[key] = [].concat(target[key], source[key])
           }
         }
@@ -808,9 +828,9 @@ export class Collection<T> {
 
   min(key?: string): number {
     if (key !== undefined) {
-      const filtered = this.items.filter((item) => item[key] !== undefined)
+      const filtered = this.items.filter(item => item[key] !== undefined)
 
-      return Math.min(...filtered.map((item) => item[key]))
+      return Math.min(...filtered.map(item => item[key]))
     }
 
     return Math.min(...this.items)
@@ -836,10 +856,12 @@ export class Collection<T> {
       if (!tempValues.length) {
         if (key !== undefined) {
           values.push({ key: item[key], count: 1 })
-        } else {
+        }
+        else {
           values.push({ key: item, count: 1 })
         }
-      } else {
+      }
+      else {
         tempValues[0].count += 1
         const { count } = tempValues[0]
 
@@ -849,7 +871,7 @@ export class Collection<T> {
       }
     })
 
-    return values.filter((value) => value.count === highestCount).map((value) => value.key)
+    return values.filter(value => value.count === highestCount).map(value => value.key)
   }
 
   nth(n: number, offset = 0): Collection<T> {
@@ -863,7 +885,8 @@ export class Collection<T> {
   only(keys: string[]): Collection<T> {
     const result = {}
     keys.forEach((key) => {
-      if (key in this.items) result[key] = this.items[key]
+      if (key in this.items)
+        result[key] = this.items[key]
     })
     return new Collection(result)
   }
@@ -881,16 +904,19 @@ export class Collection<T> {
     const isArray = Array.isArray(this.items)
     const prepend = size < 0
 
-    for (let iterator = 0; iterator < diff; ) {
+    for (let iterator = 0; iterator < diff;) {
       if (!isArray) {
         if (items[iterator] !== undefined) {
           diff += 1
-        } else {
+        }
+        else {
           items[iterator] = value
         }
-      } else if (prepend) {
+      }
+      else if (prepend) {
         items.unshift(value)
-      } else {
+      }
+      else {
         items.push(value)
       }
 
@@ -909,11 +935,13 @@ export class Collection<T> {
       this.items.forEach((item) => {
         if (fn(item) === true) {
           arrays[0].push(item)
-        } else {
+        }
+        else {
           arrays[1].push(item)
         }
       })
-    } else {
+    }
+    else {
       arrays = [new this.constructor({}), new this.constructor({})]
 
       Object.keys(this.items).forEach((prop) => {
@@ -921,7 +949,8 @@ export class Collection<T> {
 
         if (fn(value) === true) {
           arrays[0].put(prop, value)
-        } else {
+        }
+        else {
           arrays[1].put(prop, value)
         }
       })
@@ -935,7 +964,7 @@ export class Collection<T> {
   }
 
   pluck(value: string, key?: string) {
-    if (value.indexOf('*') !== -1) {
+    if (value.includes('*')) {
       const keyPathMap = buildKeyPathMap(this.items)
       const keyMatches = []
 
@@ -991,7 +1020,8 @@ export class Collection<T> {
       this.items.forEach((item) => {
         if (nestedValue(item, value) !== undefined) {
           collection[item[key] || ''] = nestedValue(item, value)
-        } else {
+        }
+        else {
           collection[item[key] || ''] = null
         }
       })
@@ -1062,7 +1092,8 @@ export class Collection<T> {
   pull(key: string | number, defaultValue: T | null = null): T | null {
     if (Array.isArray(this.items)) {
       const index = Number(key)
-      if (Number.isNaN(index)) return defaultValue
+      if (Number.isNaN(index))
+        return defaultValue
       const value = this.items[index]
       this.items.splice(index, 1)
       return value ?? defaultValue
@@ -1107,7 +1138,8 @@ export class Collection<T> {
       this.items.forEach((item) => {
         reduceCarry = fn(reduceCarry, item)
       })
-    } else {
+    }
+    else {
       Object.keys(this.items).forEach((key) => {
         reduceCarry = fn(reduceCarry, this.items[key], key)
       })
@@ -1117,7 +1149,7 @@ export class Collection<T> {
   }
 
   reject(fn) {
-    return new this.constructor(this.items).filter((item) => !fn(item))
+    return new this.constructor(this.items).filter(item => !fn(item))
   }
 
   replace(items) {
@@ -1151,22 +1183,28 @@ export class Collection<T> {
       mergedKeys.forEach((key) => {
         if (!Array.isArray(source[key]) && typeof source[key] === 'object') {
           replaced[key] = replace(target[key], source[key])
-        } else if (target[key] === undefined && source[key] !== undefined) {
+        }
+        else if (target[key] === undefined && source[key] !== undefined) {
           if (typeof target[key] === 'object') {
             replaced[key] = { ...source[key] }
-          } else {
+          }
+          else {
             replaced[key] = source[key]
           }
-        } else if (target[key] !== undefined && source[key] === undefined) {
+        }
+        else if (target[key] !== undefined && source[key] === undefined) {
           if (typeof target[key] === 'object') {
             replaced[key] = { ...target[key] }
-          } else {
+          }
+          else {
             replaced[key] = target[key]
           }
-        } else if (target[key] !== undefined && source[key] !== undefined) {
+        }
+        else if (target[key] !== undefined && source[key] !== undefined) {
           if (typeof source[key] === 'object') {
             replaced[key] = { ...source[key] }
-          } else {
+          }
+          else {
             replaced[key] = source[key]
           }
         }
@@ -1213,8 +1251,9 @@ export class Collection<T> {
 
     if (isArray(this.items)) {
       result = this.items.findIndex(find)
-    } else if (isObject(this.items)) {
-      result = Object.keys(this.items).find((key) => find(this.items[key], key))
+    }
+    else if (isObject(this.items)) {
+      result = Object.keys(this.items).find(key => find(this.items[key], key))
     }
 
     if (result === undefined || result < 0) {
@@ -1302,7 +1341,7 @@ export class Collection<T> {
     let previous = null
     let items
 
-    let callback = (value) => value === valueOrFunction
+    let callback = value => value === valueOrFunction
     if (isFunction(valueOrFunction)) {
       callback = valueOrFunction
     }
@@ -1338,7 +1377,7 @@ export class Collection<T> {
     let previous = null
     let items
 
-    let callback = (value) => value === valueOrFunction
+    let callback = value => value === valueOrFunction
     if (isFunction(valueOrFunction)) {
       callback = valueOrFunction
     }
@@ -1388,19 +1427,21 @@ export class Collection<T> {
   }
 
   some(key: string): boolean {
-    return this.items.some((item) => item.hasOwnProperty(key))
+    return this.items.some(item => item.hasOwnProperty(key))
   }
 
   sort(fn: (a: T, b: T) => number): Collection<T> {
     const collection = [].concat(this.items)
 
     if (fn === undefined) {
-      if (this.every((item) => typeof item === 'number')) {
+      if (this.every(item => typeof item === 'number')) {
         collection.sort((a, b) => a - b)
-      } else {
+      }
+      else {
         collection.sort()
       }
-    } else {
+    }
+    else {
       collection.sort(fn)
     }
 
@@ -1509,11 +1550,13 @@ export class Collection<T> {
       for (let i = 0, { length } = items; i < length; i += 1) {
         total += Number.parseFloat(items[i])
       }
-    } else if (isFunction(key)) {
+    }
+    else if (isFunction(key)) {
       for (let i = 0, { length } = items; i < length; i += 1) {
         total += Number.parseFloat(key(items[i]))
       }
-    } else {
+    }
+    else {
       for (let i = 0, { length } = items; i < length; i += 1) {
         total += Number.parseFloat(items[i][key])
       }
@@ -1529,14 +1572,15 @@ export class Collection<T> {
 
       if (length < 0) {
         slicedKeys = keys.slice(length)
-      } else {
+      }
+      else {
         slicedKeys = keys.slice(0, length)
       }
 
       const collection = {}
 
       keys.forEach((prop) => {
-        if (slicedKeys.indexOf(prop) !== -1) {
+        if (slicedKeys.includes(prop)) {
           collection[prop] = this.items[prop]
         }
       })
@@ -1555,7 +1599,7 @@ export class Collection<T> {
     let previous = null
     let items
 
-    let callback = (value) => value === valueOrFunction
+    let callback = value => value === valueOrFunction
     if (isFunction(valueOrFunction)) {
       callback = valueOrFunction
     }
@@ -1591,7 +1635,7 @@ export class Collection<T> {
     let previous = null
     let items
 
-    let callback = (value) => value === valueOrFunction
+    let callback = value => value === valueOrFunction
     if (isFunction(valueOrFunction)) {
       callback = valueOrFunction
     }
@@ -1648,7 +1692,8 @@ export class Collection<T> {
   transform(fn: (item: T, key: string) => T): Collection<T> {
     if (Array.isArray(this.items)) {
       this.items = this.items.map(fn)
-    } else {
+    }
+    else {
       const collection = {}
 
       Object.keys(this.items).forEach((key) => {
@@ -1669,7 +1714,7 @@ export class Collection<T> {
     let collection = {}
 
     Object.keys(this.items).forEach((key) => {
-      if (key.indexOf('.') !== -1) {
+      if (key.includes('.')) {
         const obj = collection
 
         key.split('.').reduce((acc, current, index, array) => {
@@ -1685,7 +1730,8 @@ export class Collection<T> {
         }, obj)
 
         collection = { ...collection, ...obj }
-      } else {
+      }
+      else {
         collection[key] = this.items[key]
       }
     })
@@ -1698,7 +1744,8 @@ export class Collection<T> {
       return fn(this)
     }
 
-    if (defaultFn) return defaultFn()
+    if (defaultFn)
+      return defaultFn()
     return undefined
   }
 
@@ -1750,7 +1797,8 @@ export class Collection<T> {
   ): Collection<T> {
     if (value) {
       callback(this, value)
-    } else if (defaultCallback) {
+    }
+    else if (defaultCallback) {
       defaultCallback()
     }
     return this
@@ -1800,7 +1848,7 @@ export class Collection<T> {
   where(key: string, operator?: any, value?: any): Collection<T> {
     // If only one argument is passed, we're checking for existence
     if (arguments.length === 1) {
-      return new Collection(this.items.filter((item) => item[key] !== undefined))
+      return new Collection(this.items.filter(item => item[key] !== undefined))
     }
 
     // If two arguments are passed, the second one is the value
@@ -1830,7 +1878,7 @@ export class Collection<T> {
       }
     }
 
-    return new Collection(this.items.filter((item) => compareValues(item, key, value, operator)))
+    return new Collection(this.items.filter(item => compareValues(item, key, value, operator)))
   }
 
   whereBetween(key: string, values: [number, number]): Collection<T> {
@@ -1860,7 +1908,8 @@ export class Collection<T> {
       let value = item
 
       for (const k of keys) {
-        if (value[k] === undefined) return true
+        if (value[k] === undefined)
+          return true
         value = value[k]
       }
 
@@ -1876,7 +1925,7 @@ export class Collection<T> {
   }
 
   whereInstanceOf(type: any): Collection<T> {
-    return this.filter((item) => item instanceof type)
+    return this.filter(item => item instanceof type)
   }
 
   whereNotNull(key: string): Collection<T> {
@@ -1888,7 +1937,8 @@ export class Collection<T> {
   }
 
   static wrap<T>(value: T | T[] | Collection<T>): Collection<T> {
-    if (value instanceof Collection) return value
+    if (value instanceof Collection)
+      return value
     return new Collection(Array.isArray(value) ? value : [value])
   }
 
@@ -1913,7 +1963,7 @@ export class Collection<T> {
   }
 
   zip(...arrays: any[]): Collection<any> {
-    const arrayOfArrays = arrays.map((arg) => this.constructor.wrap(arg).all())
+    const arrayOfArrays = arrays.map(arg => this.constructor.wrap(arg).all())
     const zipped = this.items.map((item, index) => {
       const values = [item]
       arrayOfArrays.forEach((array) => {
@@ -1934,7 +1984,8 @@ const buildKeyPathMap = function buildKeyPathMap(items: any) {
         Object.keys(val).forEach((prop) => {
           buildKeyPath(val[prop], `${keyPath}.${prop}`)
         })
-      } else if (isArray(val)) {
+      }
+      else if (isArray(val)) {
         val.forEach((v, i) => {
           buildKeyPath(v, `${keyPath}.${i}`)
         })

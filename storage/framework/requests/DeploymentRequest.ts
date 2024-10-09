@@ -1,8 +1,6 @@
-import { Request } from '@stacksjs/router'
-import { validateField } from '@stacksjs/validation'
-import { customValidate } from '@stacksjs/validation'
-
 import type { DeploymentRequestType } from '../types/requests'
+import { Request } from '@stacksjs/router'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -42,7 +40,8 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('Deployment', this.all())
-    } else {
+    }
+    else {
       await customValidate(attributes, this.all())
     }
   }

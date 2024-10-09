@@ -40,7 +40,8 @@ const registrar: string = (await whois(domain, true)).parsedData.Registrar
 if (registrar.includes('Amazon')) {
   if (options.deploy) {
     await runCommand('buddy deploy')
-  } else {
+  }
+  else {
     log.info('')
     log.info('You can now continue your deployment process by re-running:')
     log.info('')

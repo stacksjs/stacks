@@ -1,11 +1,11 @@
+import type { aws_cloudfront as cloudfront, aws_s3 as s3 } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
 import { docsSourceHash, websiteSourceHash } from '@stacksjs/utils'
-import type { aws_cloudfront as cloudfront, aws_s3 as s3 } from 'aws-cdk-lib'
 import { AssetHashType, aws_s3_deployment as s3deploy } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
-import type { NestedCloudProps } from '../types'
 
 export interface DeploymentStackProps extends NestedCloudProps {
   publicBucket: s3.Bucket
@@ -59,7 +59,8 @@ export class DeploymentStack {
         sources: [s3deploy.Source.asset(this.privateSource)],
         destinationBucket: props.privateBucket,
       })
-    } else {
+    }
+    else {
       console.error(`The path ${this.privateSource} does not have any files`)
     }
   }

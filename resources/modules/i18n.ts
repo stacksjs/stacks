@@ -1,8 +1,8 @@
+import type { UserModule } from '@stacksjs/types'
+import type { Locale } from 'vue-i18n'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import type { UserModule } from '@stacksjs/types'
 import yaml from 'js-yaml'
-import type { Locale } from 'vue-i18n'
 import { createI18n } from 'vue-i18n'
 
 const i18n = createI18n({
@@ -20,7 +20,8 @@ export const install: UserModule = async ({ app }) => {
   // Check if the directory exists
   try {
     await fs.access(langPath)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`The lang directory does not exist: ${langPath}`)
     return // Exit the function if the directory doesn't exist
   }
@@ -53,14 +54,17 @@ async function loadLanguageAsync(
   localesMap: Record<Locale, () => Promise<{ default: Record<string, string> }>>,
 ): Promise<Locale> {
   // If the same language
-  if (i18n.global.locale.value === lang) return setI18nLanguage(lang)
+  if (i18n.global.locale.value === lang)
+    return setI18nLanguage(lang)
 
   // If the language was already loaded
-  if (loadedLanguages.includes(lang)) return setI18nLanguage(lang)
+  if (loadedLanguages.includes(lang))
+    return setI18nLanguage(lang)
 
   // If the language hasn't been loaded yet
   const messages = await localesMap[lang]?.()
-  if (!messages) return setI18nLanguage(lang)
+  if (!messages)
+    return setI18nLanguage(lang)
   i18n.global.setLocaleMessage(lang, messages.default)
   loadedLanguages.push(lang)
 
@@ -69,6 +73,7 @@ async function loadLanguageAsync(
 
 function setI18nLanguage(lang: Locale) {
   i18n.global.locale.value = lang as any
-  if (typeof document !== 'undefined') document.querySelector('html')?.setAttribute('lang', lang)
+  if (typeof document !== 'undefined')
+    document.querySelector('html')?.setAttribute('lang', lang)
   return lang
 }

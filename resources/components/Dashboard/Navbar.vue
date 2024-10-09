@@ -4,7 +4,8 @@ const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
 
 watch(theme, (currentVal) => {
-  if (currentVal === 'light') isDark.value = false
+  if (currentVal === 'light')
+    isDark.value = false
   else isDark.value = true
 
   useToggle(isDark)
@@ -12,8 +13,8 @@ watch(theme, (currentVal) => {
 </script>
 
 <template>
-  <div class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-blue-gray-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-    <button type="button" class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
+  <div class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6">
+    <button type="button" class="p-2.5 text-gray-700 -m-2.5 lg:hidden">
       <span class="sr-only">Open sidebar</span>
       <div class="i-heroicons-bars-3 h-6 w-6" />
     </button>
@@ -21,7 +22,7 @@ watch(theme, (currentVal) => {
     <!-- Separator -->
     <div class="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true" />
 
-    <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+    <div class="flex flex-1 self-stretch gap-x-4 lg:gap-x-6">
       <form
         class="relative flex flex-1"
         action="#"
@@ -32,7 +33,7 @@ watch(theme, (currentVal) => {
         <div class="i-heroicons-magnifying-glass pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
         <input
           id="search-field"
-          class="block h-full w-full border-none dark:bg-blue-gray-900 py-0 pl-8 pr-0 dark:text-gray-100 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+          class="block h-full w-full border-none py-0 pl-8 pr-0 text-gray-900 dark:bg-blue-gray-900 sm:text-sm dark:text-gray-100 placeholder:text-gray-400 focus:ring-0"
           placeholder="Search..."
           type="search"
           name="search"
@@ -41,30 +42,30 @@ watch(theme, (currentVal) => {
       <div class="flex items-center gap-x-4 lg:gap-x-6">
         <button
           type="button"
-          class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
+          class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
         >
           <span class="sr-only">View Errors</span>
           <RouterLink to="/health">
-            <div class="i-heroicons-exclamation-triangle w-6 h-6 transition duration-150 ease-in-out" />
+            <div class="i-heroicons-exclamation-triangle h-6 w-6 transition duration-150 ease-in-out" />
           </RouterLink>
         </button>
 
         <button
           type="button"
-          class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
+          class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
         >
           <span class="sr-only">View Health Page</span>
           <RouterLink to="/health">
-            <div class="i-heroicons-heart w-6 h-6 transition duration-150 ease-in-out" />
+            <div class="i-heroicons-heart h-6 w-6 transition duration-150 ease-in-out" />
           </RouterLink>
         </button>
 
         <button
           type="button"
-          class="-m-2.5 p-2.5 text-gray-400 hover:text-blue-gray-500"
+          class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
         >
           <span class="sr-only">View notifications</span>
-          <div class="i-heroicons-bell w-6 h-6" />
+          <div class="i-heroicons-bell h-6 w-6" />
         </button>
 
         <!-- Separator -->
@@ -76,7 +77,7 @@ watch(theme, (currentVal) => {
         <!-- Profile dropdown -->
         <div class="relative ml-3">
           <div>
-            <button id="user-menu-button" type="button" class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" aria-expanded="false" aria-haspopup="true" @click="showDropdown = !showDropdown">
+            <button id="user-menu-button" type="button" class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-800" aria-expanded="false" aria-haspopup="true" @click="showDropdown = !showDropdown">
               <span class="absolute -inset-1.5" />
               <span class="sr-only">Open user menu</span>
               <img class="h-8 w-8 rounded-full" src="https://pbs.twimg.com/profile_images/1707883193054228480/n98q6t1L_400x400.jpg" alt="">
@@ -101,18 +102,18 @@ watch(theme, (currentVal) => {
               <a
                 id="user-menu-item-4"
                 href="#"
-                class="flex justify-between px-4 py-2 text-sm my-1 leading-6 text-gray-500 dark-hover:bg-gray-600 hover:bg-blue-gray-50 hover:text-blue-gray-600"
+                class="my-1 flex justify-between px-4 py-2 text-sm text-gray-500 leading-6 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark-hover:bg-gray-600"
                 role="menuitem"
                 tabindex="-1"
               >
-                <label for="small" class="self-center mr-2 text-sm text-gray-500 dark:text-gray-300">
+                <label for="small" class="mr-2 self-center text-sm text-gray-500 dark:text-gray-300">
                   Theme
                 </label>
 
                 <select
                   id="small"
                   v-model="theme"
-                  class="text-sm text-gray-500 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-blue-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  class="border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-500 dark:border-gray-600 focus:border-blue-500 dark:bg-blue-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>

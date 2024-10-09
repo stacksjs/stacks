@@ -1,3 +1,4 @@
+import type { GeneratorOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { generateOpenApi } from '@stacksjs/api'
 import { runCommand } from '@stacksjs/cli'
@@ -5,7 +6,6 @@ import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { generateModelFiles } from '@stacksjs/orm'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import type { GeneratorOptions } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
@@ -13,15 +13,24 @@ import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vsco
 // import { files } from '@stacksjs/storage'
 
 export async function invoke(options?: GeneratorOptions): Promise<void> {
-  if (options?.types) await generateTypes(options)
-  else if (options?.entries) await generateLibEntries(options)
-  else if (options?.webTypes) await generateWebTypes(options)
-  else if (options?.customData) await generateVsCodeCustomData(options)
-  else if (options?.ideHelpers) await generateIdeHelpers(options)
-  else if (options?.componentMeta) await generateComponentMeta(options)
-  else if (options?.coreSymlink) await generateCoreSymlink()
-  else if (options?.modelFiles) await generateModelFiles(undefined, options)
-  else if (options?.openApiSpec) await generateOpenApiSpec()
+  if (options?.types)
+    await generateTypes(options)
+  else if (options?.entries)
+    await generateLibEntries(options)
+  else if (options?.webTypes)
+    await generateWebTypes(options)
+  else if (options?.customData)
+    await generateVsCodeCustomData(options)
+  else if (options?.ideHelpers)
+    await generateIdeHelpers(options)
+  else if (options?.componentMeta)
+    await generateComponentMeta(options)
+  else if (options?.coreSymlink)
+    await generateCoreSymlink()
+  else if (options?.modelFiles)
+    await generateModelFiles(undefined, options)
+  else if (options?.openApiSpec)
+    await generateOpenApiSpec()
 }
 
 export function generate(options: GeneratorOptions): Promise<void> {

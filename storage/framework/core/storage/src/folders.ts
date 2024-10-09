@@ -7,7 +7,8 @@ import { fs } from './fs'
 export function isFolder(path: string): boolean {
   try {
     return fs.statSync(path).isDirectory()
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -27,7 +28,8 @@ export function doesFolderExist(path: string): boolean {
 export function createFolder(dir: string): Promise<void> {
   return new Promise((resolve, reject) => {
     fs.mkdirs(dir, (err: any) => {
-      if (err) reject(err)
+      if (err)
+        reject(err)
       else resolve()
     })
   })
@@ -39,7 +41,7 @@ export function getFolders(dir: string): string[] {
   })
 }
 
-export type Folders = {
+export interface Folders {
   isFolder: (path: string) => boolean
   doesFolderExist: (path: string) => boolean
   createFolder: (dir: string) => Promise<void>

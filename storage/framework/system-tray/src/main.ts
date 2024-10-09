@@ -1,10 +1,10 @@
-import { setupLayouts } from 'virtual:generated-layouts'
-import '@unocss/reset/tailwind.css'
 import { createPinia } from 'pinia'
-import 'unocss'
+import { setupLayouts } from 'virtual:generated-layouts'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import App from './App.vue'
+import '@unocss/reset/tailwind.css'
+import 'unocss'
 import './styles/main.css'
 
 const pinia = createPinia()

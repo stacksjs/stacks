@@ -6,7 +6,8 @@ import { hashPaths } from '@stacksjs/storage'
 export function originRequestFunctionHash() {
   try {
     return hashPaths(p.cloudPath('src/edge'))
-  } catch (error: any) {
+  }
+  catch (error: any) {
     log.error('Are we in a Docker container? Failed to hash paths. Error below:')
     log.error(error)
     return undefined

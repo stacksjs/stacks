@@ -29,7 +29,7 @@ const testimonials = [
   [
     {
       content:
-        "Getting started with Stacks was incredibly easy. The Buddy toolkit has been a game changer for my project. I suggest you guys give it a try today! It's probably one of the best decisions you'll ever do for yourself this year.",
+        'Getting started with Stacks was incredibly easy. The Buddy toolkit has been a game changer for my project. I suggest you guys give it a try today! It\'s probably one of the best decisions you\'ll ever do for yourself this year.',
       author: {
         name: 'Leland Kiehn',
         role: 'Founder of Kiehn and Sons',
@@ -76,24 +76,24 @@ const testimonials = [
   >
     <Container>
       <div class="mx-auto max-w-2xl md:text-center">
-        <h2 class="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
+        <h2 class="font-display text-3xl text-slate-900 tracking-tight sm:text-4xl">
           Enjoyed by businesses and highly recommended by devs across the globe.
         </h2>
-        <p class="mt-4 text-lg tracking-tight text-slate-700">
+        <p class="mt-4 text-lg text-slate-700 tracking-tight">
           The goal of the framework is to help you create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. Stacks is a rapid development framework, meeting all your full stack needs.
         </p>
       </div>
       <ul
         role="list"
-        class="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:gap-8 lg:mt-20 lg:max-w-none lg:grid-cols-3"
+        class="grid grid-cols-1 mx-auto mt-16 max-w-2xl gap-6 lg:grid-cols-3 lg:mt-20 lg:max-w-none sm:gap-8"
       >
         <li v-for="(column, columnIndex) in testimonials" :key="columnIndex">
           <ul role="list" class="flex flex-col gap-y-6 sm:gap-y-8">
             <li v-for="(testimonial, testimonialIndex) in column" :key="testimonialIndex">
-              <figure class="relative rounded-2xl bg-white p-6 shadow-xl shadow-slate-900/10">
+              <figure class="relative rounded-2xl bg-white p-6 shadow-slate-900/10 shadow-xl">
                 <!-- <QuoteIcon class="absolute left-6 top-6 fill-slate-100" /> -->
                 <blockquote class="relative">
-                  <p class="text-lg tracking-tight text-slate-900">
+                  <p class="text-lg text-slate-900 tracking-tight">
                     {{ testimonial.content }}
                   </p>
                 </blockquote>

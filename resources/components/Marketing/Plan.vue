@@ -16,7 +16,7 @@ defineProps<{
       featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
     ]"
   >
-    <h3 class="mt-5 font-display text-lg text-white">
+    <h3 class="font-display mt-5 text-lg text-white">
       {{ name }}
     </h3>
     <p
@@ -27,7 +27,7 @@ defineProps<{
     >
       {{ description }}
     </p>
-    <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+    <p class="font-display order-first text-5xl text-white font-light tracking-tight">
       {{ price }}
     </p>
     <ul

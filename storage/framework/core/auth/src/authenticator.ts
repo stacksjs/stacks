@@ -29,7 +29,6 @@ export function generateQrCode(): void {
   qrcode.toDataURL(otpauth, (err: any, imageUrl: any) => {
     if (err) {
       handleError('Error with QR')
-      return
     }
   })
 }

@@ -1,8 +1,4 @@
-import process from 'node:process'
-import { log, runCommands } from '@stacksjs/cli'
-import { NpmScript } from '@stacksjs/enums'
-import { projectPath } from '@stacksjs/path'
-import { ExitCode } from '@stacksjs/types'
+import { log } from '@stacksjs/cli'
 
 log.info('Ensuring Code Style...')
 

@@ -31,12 +31,12 @@ export interface ApiOptions {
 
   routes:
     | {
-        index: boolean
-        show: boolean
-        store: boolean
-        update: boolean
-        destroy: boolean
-      }
+      index: boolean
+      show: boolean
+      store: boolean
+      update: boolean
+      destroy: boolean
+    }
     | boolean
 
   /**

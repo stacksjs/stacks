@@ -1,6 +1,5 @@
-export * from '@stacksjs/browser'
-
 export * from './clean'
+
 export * from './config'
 export * from './equal'
 export * from './export-size'
@@ -10,3 +9,4 @@ export * from './hash'
 export * from './helpers'
 export * from './macroable'
 export * from './versions'
+export * from '@stacksjs/browser'

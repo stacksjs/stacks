@@ -1,9 +1,8 @@
 import type { Action } from '@stacksjs/actions'
+import type { Job, RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
-import type { Job } from '@stacksjs/types'
-import type { RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
@@ -22,7 +21,7 @@ export class Router implements RouterInterface {
   ): this {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
     const pattern = new RegExp(
-      `^${uri.replace(/:[a-zA-Z]+/g, (_match) => {
+      `^${uri.replace(/:[a-z]+/gi, (_match) => {
         return '([a-zA-Z0-9-]+)'
       })}$`,
     )
@@ -94,7 +93,8 @@ export class Router implements RouterInterface {
   }
 
   public async action(path: ActionPath | Route['path']): Promise<this> {
-    if (!path) return this
+    if (!path)
+      return this
 
     // check if action is a file anywhere in ./app/Actions/**/*.ts
     if (path?.endsWith('.ts')) {
@@ -110,7 +110,8 @@ export class Router implements RouterInterface {
       const action = (await import(p.userActionsPath(path))).default as Action
 
       return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
-    } catch (error) {
+    }
+    catch (error) {
       log.error(`Could not find Action for path: ${path}`)
 
       return this
@@ -160,7 +161,8 @@ export class Router implements RouterInterface {
   }
 
   public group(options: string | RouteGroupOptions, callback?: () => void): this {
-    if (typeof options === 'string') options = options.startsWith('/') ? options.slice(1) : options
+    if (typeof options === 'string')
+      options = options.startsWith('/') ? options.slice(1) : options
 
     let cb: () => void
 
@@ -171,7 +173,8 @@ export class Router implements RouterInterface {
       options = {}
     }
 
-    if (!callback) throw new Error('Missing callback function for your route group.')
+    if (!callback)
+      throw new Error('Missing callback function for your route group.')
 
     cb = callback
 
@@ -190,7 +193,8 @@ export class Router implements RouterInterface {
     this.routes.forEach((r) => {
       r.uri = `${prefix}${r.uri}`
 
-      if (middleware.length) r.middleware = middleware
+      if (middleware.length)
+        r.middleware = middleware
 
       originalRoutes.push(r)
       return this
@@ -252,7 +256,6 @@ export class Router implements RouterInterface {
     }
 
     this.setGroupPrefix('', options)
-    return
   }
 
   public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
@@ -261,7 +264,8 @@ export class Router implements RouterInterface {
       return actionModule.default
     }
 
-    if (typeof callback === 'string') return await this.importCallbackFromPath(callback, this.path)
+    if (typeof callback === 'string')
+      return await this.importCallbackFromPath(callback, this.path)
 
     // in this case, the callback ends up being a function
     return callback
@@ -271,16 +275,20 @@ export class Router implements RouterInterface {
     let modulePath = callbackPath
     let importPathFunction = p.appPath // Default import path function
 
-    if (callbackPath.startsWith('../')) importPathFunction = p.routesPath
-    if (modulePath.includes('OrmAction')) importPathFunction = p.storagePath
+    if (callbackPath.startsWith('../'))
+      importPathFunction = p.routesPath
+    if (modulePath.includes('OrmAction'))
+      importPathFunction = p.storagePath
 
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
     let actionModule = null
 
-    if (modulePath.includes('storage/framework/orm')) actionModule = await import(modulePath)
-    else if (modulePath.includes('app/Actions')) actionModule = await import(modulePath)
+    if (modulePath.includes('storage/framework/orm'))
+      actionModule = await import(modulePath)
+    else if (modulePath.includes('app/Actions'))
+      actionModule = await import(modulePath)
     else if (modulePath.includes('OrmAction'))
       actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
     else actionModule = await import(importPathFunction(modulePath))
@@ -300,7 +308,8 @@ export class Router implements RouterInterface {
 
     if (actionModule.default.requestFile) {
       requestInstance = await findRequestInstance(actionModule.default.requestFile)
-    } else {
+    }
+    else {
       requestInstance = await extractDefaultRequest(modulePath)
     }
 
@@ -309,7 +318,8 @@ export class Router implements RouterInterface {
         await customValidate(actionModule.default.validations, requestInstance.all())
 
       return await actionModule.default.handle(requestInstance)
-    } catch (error: any) {
+    }
+    catch (error: any) {
       return { status: error.status, errors: error.errors }
     }
   }
@@ -320,7 +330,8 @@ export class Router implements RouterInterface {
 
   public prepareUri(path: string): string {
     // if string starts with / then remove it because we are adding it back in the next line
-    if (path.startsWith('/')) path = path.slice(1)
+    if (path.startsWith('/'))
+      path = path.slice(1)
 
     path = `${this.groupPrefix}/${path}`
 

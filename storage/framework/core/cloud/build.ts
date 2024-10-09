@@ -40,7 +40,8 @@ const res = await Bun.build({
   // Specify any additional options if needed
 })
 
-if (!res.success) throw new Error('Failed to build edge/origin-request')
+if (!res.success)
+  throw new Error('Failed to build edge/origin-request')
 
 await outro({
   dir: import.meta.dir,

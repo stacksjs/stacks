@@ -1,6 +1,6 @@
+import type { CacheDriver } from './type'
 import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
-import type { CacheDriver } from './type'
 
 const client = new BentoCache({
   default: 'memory',

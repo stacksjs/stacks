@@ -49,7 +49,7 @@
 </script>
 
 <template>
-  <div class="bg-white flex border-gray-200 py-3 items-center justify-end">
+  <div class="flex items-center justify-end border-gray-200 bg-white py-3">
     <!-- <div class="flex flex-1 justify-between sm:hidden">
       <a href="#"
         class="bg-white border rounded-md font-medium border-gray-300 text-sm py-2 px-4 text-gray-700 relative inline-flex items-center hover:bg-gray-50"
@@ -63,7 +63,7 @@
       </a>
     </div> -->
     <div
-      class="min-w-full py-2 hidden inline-block align-middle sm:flex sm:flex-1 sm:items-center sm:justify-between md:px-6 lg:px-8"
+      class="inline-block hidden min-w-full py-2 align-middle sm:flex sm:flex-1 sm:items-center sm:justify-between lg:px-8 md:px-6"
     >
       <div>
         <!-- <p class="text-sm text-gray-700">
@@ -79,7 +79,7 @@
 
       <div>
         <nav
-          class="-space-x-px rounded-md shadow-sm z-0 relative inline-flex"
+          class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
           aria-label="Pagination"
         >
           <!-- <a href="#"

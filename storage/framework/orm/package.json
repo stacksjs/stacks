@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Your custom ORM.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/validation#readme",
@@ -28,7 +29,6 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun build.ts",

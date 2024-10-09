@@ -13,13 +13,14 @@ export function updateConfigFile(filePath: string, newConfig: Record<string, unk
     try {
       fs.writeFileSync(filePath, JSON.stringify(config, null, 2))
       resolve()
-    } catch (error) {
+    }
+    catch (error) {
       reject(error)
     }
   })
 }
 
-type Helpers = {
+interface Helpers {
   _dirname: string
   updateConfigFile: (filePath: string, newConfig: Record<string, unknown>) => Promise<void>
 }

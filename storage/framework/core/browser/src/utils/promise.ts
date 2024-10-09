@@ -1,5 +1,3 @@
-import { remove } from '@stacksjs/arrays'
-
 export interface SingletonPromiseReturn<T> {
   (): Promise<T>
   /**
@@ -28,14 +26,16 @@ export function createSingletonPromise<T>(fn: () => Promise<T>): SingletonPromis
   let _promise: Promise<T> | undefined
 
   function wrapper() {
-    if (!_promise) _promise = fn()
+    if (!_promise)
+      _promise = fn()
     return _promise
   }
 
   wrapper.reset = async () => {
     const _prev = _promise
     _promise = undefined
-    if (_prev) await _prev
+    if (_prev)
+      await _prev
   }
 
   return wrapper
@@ -75,7 +75,8 @@ export function createPromiseLock() {
         .catch(() => {})
         .finally(() => {
           const index = queue.indexOf(taskPromise)
-          if (index > -1) queue.splice(index, 1)
+          if (index > -1)
+            queue.splice(index, 1)
         }) as Promise<void>
 
       return taskPromise

@@ -48,7 +48,7 @@ describe('@stacksjs/ai', () => {
         headers: {
           ...request.headers,
           'X-Amz-Date': '20230101T000000Z',
-          Authorization: 'AWS4-HMAC-SHA256 Credential=test/20230101/us-east-1/bedrock/aws4_request',
+          'Authorization': 'AWS4-HMAC-SHA256 Credential=test/20230101/us-east-1/bedrock/aws4_request',
         },
       }),
     }))

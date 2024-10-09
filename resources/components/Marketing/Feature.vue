@@ -22,7 +22,7 @@ const props = defineProps<{
     <h3 class="mt-6 text-sm font-medium" :class="[props.isActive ? 'text-blue-600' : 'text-slate-600']">
       {{ props.feature.name }}
     </h3>
-    <p class="mt-2 font-display text-xl text-slate-900">
+    <p class="font-display mt-2 text-xl text-slate-900">
       {{ props.feature.summary }}
     </p>
     <p class="mt-4 text-sm text-slate-600">

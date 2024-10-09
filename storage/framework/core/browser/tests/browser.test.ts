@@ -15,7 +15,7 @@ describe('@stacksjs/browser', () => {
     let originalSetTimeout: typeof setTimeout
     let originalClearTimeout: typeof clearTimeout
     let mockTime: number
-    let timeoutCallbacks: Array<{ callback: Function; delay: number }>
+    let timeoutCallbacks: Array<{ callback: Function, delay: number }>
 
     beforeEach(() => {
       mockTime = 0
@@ -240,7 +240,7 @@ describe('@stacksjs/browser', () => {
       it('reports waiting status correctly', async () => {
         const lock = browser.createPromiseLock()
         expect(lock.isWaiting()).toBe(false)
-        const promise = lock.run(() => new Promise<void>((resolve) => setTimeout(resolve, 50)))
+        const promise = lock.run(() => new Promise<void>(resolve => setTimeout(resolve, 50)))
         expect(lock.isWaiting()).toBe(true)
         await promise
         expect(lock.isWaiting()).toBe(false)
@@ -248,8 +248,8 @@ describe('@stacksjs/browser', () => {
 
       it('clears all pending tasks', async () => {
         const lock = browser.createPromiseLock()
-        lock.run(() => new Promise<void>((resolve) => setTimeout(resolve, 50)))
-        lock.run(() => new Promise<void>((resolve) => setTimeout(resolve, 100)))
+        lock.run(() => new Promise<void>(resolve => setTimeout(resolve, 50)))
+        lock.run(() => new Promise<void>(resolve => setTimeout(resolve, 100)))
         expect(lock.isWaiting()).toBe(true)
         lock.clear()
         expect(lock.isWaiting()).toBe(false)

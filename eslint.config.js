@@ -21,7 +21,7 @@ export default stacks({
     '**/fixtures',
     '**/cdk.out',
     '**/framework/server',
-    "**/.vite-ssg-temp"
+    '**/.vite-ssg-temp',
     // ...globs
   ],
 })

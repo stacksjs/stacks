@@ -6,7 +6,7 @@ interface PrinterDriver {
 
 type Path = string
 
-type Receipt = {
+interface Receipt {
   id: string | number
   name: string
   price: number

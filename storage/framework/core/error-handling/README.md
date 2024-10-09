@@ -28,16 +28,16 @@ You can now use it in your project:
 ```js
 import {
   Err,
-  Ok,
-  Result,
-  ResultAsync,
   err,
   errAsync,
   fromPromise,
   fromSafePromise,
   fromThrowable,
+  Ok,
   ok,
   okAsync,
+  Result,
+  ResultAsync,
 } from '@stacksjs/error-handling'
 
 // ...

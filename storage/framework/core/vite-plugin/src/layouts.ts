@@ -1,7 +1,7 @@
-import { path as p } from '@stacksjs/path'
 import type { Plugin } from 'vite'
-import Layouts from 'vite-plugin-vue-layouts'
 import type { UserOptions as LayoutOptions } from 'vite-plugin-vue-layouts'
+import { path as p } from '@stacksjs/path'
+import Layouts from 'vite-plugin-vue-layouts'
 
 export function layouts(options?: LayoutOptions): Plugin {
   return Layouts({

@@ -1,6 +1,6 @@
+import type { UserRequestType } from '../../types/requests'
 import { Action } from '@stacksjs/actions'
 import User from '../../orm/src/models/User'
-import type { UserRequestType } from '../../types/requests'
 
 export default new Action({
   name: 'User Store',

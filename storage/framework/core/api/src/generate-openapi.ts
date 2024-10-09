@@ -16,7 +16,7 @@ export async function generateOpenApi(): Promise<void> {
     },
   }
   routeLists.forEach((route) => {
-    const path = route.url.replace(/{([^}]+)}/g, '{$1}')
+    const path = route.url.replace(/\{([^}]+)\}/g, '{$1}')
     if (!openAPISpec.paths[path]) {
       openAPISpec.paths[path] = {}
     }

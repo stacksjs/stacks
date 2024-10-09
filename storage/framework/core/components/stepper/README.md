@@ -29,7 +29,6 @@ const stepper = ref(null)
 
 <Stepper ref='stepper' :steps="steps" v-model='step' />
 
-
 <template v-if="step === 1">
   <div> </div>
 </template>

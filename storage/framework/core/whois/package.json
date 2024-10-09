@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Easily get whois info.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/whois#readme",
@@ -27,8 +28,8 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
       "bun": "./src/*",
@@ -36,7 +37,6 @@
     }
   },
   "types": "./dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun build.ts",

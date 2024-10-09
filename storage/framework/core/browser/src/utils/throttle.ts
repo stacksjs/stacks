@@ -28,7 +28,8 @@ export function throttle(fn: Function, wait = 300) {
 
       lastTime = Date.now()
       inThrottle = true
-    } else {
+    }
+    else {
       clearTimeout(lastFn)
 
       lastFn = setTimeout(

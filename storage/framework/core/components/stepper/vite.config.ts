@@ -1,3 +1,4 @@
+import type { UserConfig } from 'vite'
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
 import presetWind from '@unocss/preset-wind'
@@ -8,7 +9,6 @@ import UnoCSS from 'unocss/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
-import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 
 function minify(code: string) {
@@ -96,7 +96,8 @@ export default defineConfig(({ command, mode }) => {
         name: 'inline-css',
         transform(code, id) {
           const isCSS = (path: string) => /\.css$/.test(path)
-          if (!isCSS(id)) return
+          if (!isCSS(id))
+            return
 
           const cssCode = minify(code)
           cssCodeStr = cssCode
@@ -107,7 +108,8 @@ export default defineConfig(({ command, mode }) => {
         },
 
         renderChunk(code, { isEntry }) {
-          if (!isEntry) return
+          if (!isEntry)
+            return
 
           return {
             code: `\

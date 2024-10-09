@@ -1,10 +1,10 @@
+import type { UpgradeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
-import type { UpgradeOptions } from '@stacksjs/types'
 import { version } from '../package.json'
 
 // import { determineDebugLevel } from '@stacksjs/utils'
@@ -16,7 +16,8 @@ export function checkForUncommittedChanges(options: UpgradeOptions): void {
     // check if the stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/
     // await spawn(`git diff --quiet HEAD -- ${path}`, { stdio, cwd: projectPath() })
-  } catch (error: any) {
+  }
+  catch (error: any) {
     // if (error.status === 1) {
     // even though the ./stacks folder should not be edited, instead config values should be adjusted,
     // there is a chance that users may apply local core edits, as it’s totally acceptable, as long as
@@ -40,7 +41,8 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions): Promise<
   const tempFolderName = 'updates'
   const tempUpdatePath = projectPath(tempFolderName)
 
-  if (storage.doesFolderExist(tempUpdatePath)) await storage.deleteFolder(tempUpdatePath)
+  if (storage.doesFolderExist(tempUpdatePath))
+    await storage.deleteFolder(tempUpdatePath)
 
   log.info('Downloading framework updates...')
   await runCommand(`giget stacks ${tempFolderName}`, options)

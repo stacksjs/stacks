@@ -1,5 +1,5 @@
-import { storagePath } from '@stacksjs/path'
 import type { LoggingConfig } from '@stacksjs/types'
+import { storagePath } from '@stacksjs/path'
 
 /**
  * **Logging Configuration**

@@ -1,8 +1,8 @@
+import type { BuildOptions, CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import type { BuildOptions, CLI } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export function build(buddy: CLI): void {
@@ -99,21 +99,32 @@ export function build(buddy: CLI): void {
         })
 
         console.log('answers', answers)
-        if (answers !== null) process.exit(ExitCode.InvalidArgument)
-      } else {
+        if (answers !== null)
+          process.exit(ExitCode.InvalidArgument)
+      }
+      else {
         // eslint-disable-next-line no-console
         console.log('has op')
       }
 
-      if (options.docs) await runAction(Action.BuildDocs)
-      if (options.components) await runAction(Action.BuildComponentLibs)
-      if (options.vueComponents) await runAction(Action.BuildVueComponentLib)
-      if (options.webComponents) await runAction(Action.BuildWebComponentLib)
-      if (options.functions) await runAction(Action.BuildFunctionLib)
-      if (options.views) await runAction(Action.BuildViews)
-      if (options.stacks) await runAction(Action.BuildStacks)
-      if (options.buddy) await runAction(Action.BuildCli)
-      if (options.server) await runAction(Action.BuildServer)
+      if (options.docs)
+        await runAction(Action.BuildDocs)
+      if (options.components)
+        await runAction(Action.BuildComponentLibs)
+      if (options.vueComponents)
+        await runAction(Action.BuildVueComponentLib)
+      if (options.webComponents)
+        await runAction(Action.BuildWebComponentLib)
+      if (options.functions)
+        await runAction(Action.BuildFunctionLib)
+      if (options.views)
+        await runAction(Action.BuildViews)
+      if (options.stacks)
+        await runAction(Action.BuildStacks)
+      if (options.buddy)
+        await runAction(Action.BuildCli)
+      if (options.server)
+        await runAction(Action.BuildServer)
       process.exit(ExitCode.Success)
     })
 
@@ -277,14 +288,14 @@ export function build(buddy: CLI): void {
 
 function hasNoOptions(options: BuildOptions) {
   return (
-    !options.components &&
-    !options.vueComponents &&
-    !options.webComponents &&
-    !options.elements &&
-    !options.functions &&
-    !options.views &&
-    !options.docs &&
-    !options.stacks &&
-    !options.buddy
+    !options.components
+    && !options.vueComponents
+    && !options.webComponents
+    && !options.elements
+    && !options.functions
+    && !options.views
+    && !options.docs
+    && !options.stacks
+    && !options.buddy
   )
 }

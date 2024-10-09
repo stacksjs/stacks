@@ -9,7 +9,7 @@
     <tr>
       <th
         scope="col"
-        class="relative w-12 px-6 sm:px-8 sm:w-16"
+        class="relative w-12 px-6 sm:w-16 sm:px-8"
       >
         <!-- <input type="checkbox"
           class="absolute w-4 h-4 -mt-2 text-blue-600 border-gray-300 rounded top-1/2 left-4 sm:left-6 focus:ring-blue-500"
@@ -41,10 +41,10 @@
         </a>
       </th> -->
 
-      <th class="font-semibold text-left text-sm py-3.5 pr-3 pl-4 sm:pl-6 text-gray-900">
+      <th class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
         <a
           href="#"
-          class="inline-flex group"
+          class="group inline-flex"
         >
           <!-- {{ readableLastColumn }}
           <span v-if="isColumnSortable(lastColumn[0])"

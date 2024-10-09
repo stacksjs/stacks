@@ -1,6 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test'
 import type { UserModel } from '../../../orm/src/models/User'
-import { events, all, dispatch, listen, mitt, off, useEvent, useEvents } from '../src'
+import { describe, expect, mock, test } from 'bun:test'
+import { all, dispatch, events, listen, mitt, off, useEvent, useEvents } from '../src'
 
 describe('@stacksjs/events', () => {
   test('mitt creates a functional event emitter', () => {
@@ -25,7 +25,7 @@ describe('@stacksjs/events', () => {
   })
 
   test('wildcard listeners receive all events', () => {
-    const emitter = mitt<{ test1: string; test2: number }>()
+    const emitter = mitt<{ test1: string, test2: number }>()
     const handler = mock((type: string, data: any) => {})
 
     emitter.on('*', handler)

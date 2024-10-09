@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 import AccessToken from './AccessToken'
 
 import User from './User'
@@ -113,7 +109,8 @@ export class TeamModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -128,7 +125,8 @@ export class TeamModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -146,7 +144,7 @@ export class TeamModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {
@@ -162,7 +160,8 @@ export class TeamModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -182,7 +181,7 @@ export class TeamModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new TeamModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -276,7 +275,8 @@ export class TeamModel {
       .execute()
 
     let nextCursor = null
-    if (teamsWithExtra.length > (options.limit ?? 10)) nextCursor = teamsWithExtra.pop()?.id ?? null
+    if (teamsWithExtra.length > (options.limit ?? 10))
+      nextCursor = teamsWithExtra.pop()?.id ?? null
 
     return {
       data: teamsWithExtra,
@@ -325,7 +325,8 @@ export class TeamModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('teams').where('id', '=', id).execute()
     }
   }
@@ -338,9 +339,11 @@ export class TeamModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -359,9 +362,11 @@ export class TeamModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -519,7 +524,8 @@ export class TeamModel {
   }
 
   async update(team: TeamUpdate): Promise<TeamModel | undefined> {
-    if (this.id === undefined) throw new Error('Team ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Team ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(team).filter(([key]) => this.fillable.includes(key)),
@@ -533,7 +539,8 @@ export class TeamModel {
   }
 
   async forceUpdate(team: TeamUpdate): Promise<TeamModel | undefined> {
-    if (this.id === undefined) throw new Error('Team ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Team ID is undefined')
 
     await db.updateTable('teams').set(team).where('id', '=', this.id).executeTakeFirst()
 
@@ -543,21 +550,24 @@ export class TeamModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('Team data is undefined')
+    if (!this)
+      throw new Error('Team data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('teams')
         .values(this as NewTeam)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the team instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Team ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Team ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -571,14 +581,16 @@ export class TeamModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('teams').where('id', '=', this.id).execute()
     }
   }
 
   async teamAccessTokens() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const results = await db
       .selectFrom('personal_access_token_teams')
@@ -586,9 +598,10 @@ export class TeamModel {
       .selectAll()
       .execute()
 
-    const tableRelationIds = results.map((result) => result.personal_access_token_id)
+    const tableRelationIds = results.map(result => result.personal_access_token_id)
 
-    if (!tableRelationIds.length) throw new Error('Relation Error!')
+    if (!tableRelationIds.length)
+      throw new Error('Relation Error!')
 
     const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
 
@@ -596,13 +609,15 @@ export class TeamModel {
   }
 
   async teamUsers() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const results = await db.selectFrom('team_users').where('team_id', '=', this.id).selectAll().execute()
 
-    const tableRelationIds = results.map((result) => result.user_id)
+    const tableRelationIds = results.map(result => result.user_id)
 
-    if (!tableRelationIds.length) throw new Error('Relation Error!')
+    if (!tableRelationIds.length)
+      throw new Error('Relation Error!')
 
     const relationResults = await User.whereIn('id', tableRelationIds).get()
 
@@ -663,7 +678,8 @@ export class TeamModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type Team = Omit<TeamType, 'password'>
@@ -685,7 +701,8 @@ async function find(id: number): Promise<TeamModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new TeamModel(model)
 }
@@ -714,56 +731,56 @@ export async function whereName(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereCompanyName(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('company_name', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('email', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereBillingEmail(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('billing_email', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('description', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function wherePath(value: string): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('path', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereIsPersonal(value: boolean): Promise<TeamModel[]> {
   const query = db.selectFrom('teams').where('is_personal', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new TeamModel(modelItem))
+  return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export const Team = TeamModel

@@ -1,6 +1,5 @@
-import type { RequestInstance, RouteParam } from '@stacksjs/types'
+import type { RequestInstance, RouteParam, VineType } from '@stacksjs/types'
 
-import type { VineType } from '@stacksjs/types'
 import { customValidate, validateField } from '@stacksjs/validation'
 
 interface RequestData {
@@ -52,7 +51,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('Release', this.all())
-    } else {
+    }
+    else {
       await customValidate(attributes, this.all())
     }
   }
@@ -69,7 +69,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     const pattern = new RegExp(`^${routePattern.replace(/:(\w+)/g, (match, paramName) => `(?<${paramName}>\\w+)`)}$`)
     const match = pattern.exec(pathname)
 
-    if (match?.groups) this.params = match.groups
+    if (match?.groups)
+      this.params = match.groups
   }
 
   public header(headerParam: string): string | number | boolean | null {

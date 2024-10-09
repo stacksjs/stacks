@@ -1,13 +1,12 @@
+import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { type Ok, ok } from '@stacksjs/error-handling'
-import { getModelName, getTableName } from '@stacksjs/orm'
-import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, globSync } from '@stacksjs/storage'
 
+import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   arrangeColumns,
   checkPivotMigration,
@@ -45,7 +44,8 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
       if (modelFile.endsWith('.ts')) {
         const modelPath = path.frameworkPath(`database/models/${modelFile}`)
 
-        if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
+        if (fs.existsSync(modelPath))
+          await Bun.$`rm ${modelPath}`
       }
     }
   }
@@ -55,7 +55,8 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
       if (file.endsWith('.ts')) {
         const migrationPath = path.userMigrationsPath(`${file}`)
 
-        if (fs.existsSync(migrationPath)) await Bun.$`rm ${migrationPath}`
+        if (fs.existsSync(migrationPath))
+          await Bun.$`rm ${migrationPath}`
       }
     }
   }
@@ -105,7 +106,8 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
 
     haveFieldsChanged = true
     log.debug(`Fields have changed for ${tableName}`)
-  } else {
+  }
+  else {
     log.debug(`Fields have not been generated for ${tableName}`)
   }
 
@@ -120,7 +122,8 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
-  if (haveFieldsChanged) await createAlterTableMigration(modelPath)
+  if (haveFieldsChanged)
+    await createAlterTableMigration(modelPath)
   else await createTableMigration(modelPath)
 }
 
@@ -130,8 +133,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const model = (await import(modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
-  const twoFactorEnabled =
-    model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
+  const twoFactorEnabled
+    = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
@@ -141,7 +144,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
 
-  if (usePasskey) await createPasskeyMigration()
+  if (usePasskey)
+    await createPasskeyMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -159,15 +163,17 @@ async function createTableMigration(modelPath: string): Promise<void> {
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions?.required) {
       migrationContent += `, col => col`
-      if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions?.required) migrationContent += `.notNull()`
+      if (fieldOptions.unique)
+        migrationContent += `.unique()`
+      if (fieldOptions?.required)
+        migrationContent += `.notNull()`
       migrationContent += ``
     }
 
     migrationContent += `)\n`
   }
 
-  if (false !== twoFactorEnabled && twoFactorEnabled) {
+  if (twoFactorEnabled !== false && twoFactorEnabled) {
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
   }
 
@@ -179,7 +185,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
     }
   }
 
-  if (usePasskey) migrationContent += `    .addColumn('public_passkey', 'text')\n`
+  if (usePasskey)
+    migrationContent += `    .addColumn('public_passkey', 'text')\n`
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
@@ -188,7 +195,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
   }
 
   // Append deleted_at column if useSoftDeletes is true
-  if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+  if (useSoftDeletes)
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
@@ -207,7 +215,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
 async function createPasskeyMigration() {
   const hasBeenMigrated = await hasTableBeenMigrated('users')
 
-  if (hasBeenMigrated) return
+  if (hasBeenMigrated)
+    return
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
@@ -240,12 +249,14 @@ async function createPasskeyMigration() {
 async function createPivotTableMigration(model: Model, modelPath: string): Promise<void> {
   const pivotTables = await getPivotTables(model, modelPath)
 
-  if (!pivotTables.length) return
+  if (!pivotTables.length)
+    return
 
   for (const pivotTable of pivotTables) {
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
 
-    if (hasBeenMigrated) return
+    if (hasBeenMigrated)
+      return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
@@ -320,8 +331,10 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
     // Check if there are configurations that require the lambda function
     if (options.unique || options?.required) {
       migrationContent += `, col => col`
-      if (options.unique) migrationContent += `.unique()`
-      if (options?.required) migrationContent += `.notNull()`
+      if (options.unique)
+        migrationContent += `.unique()`
+      if (options?.required)
+        migrationContent += `.notNull()`
       migrationContent += ``
     }
 
@@ -331,10 +344,11 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
   // Remove fields that no longer exist
   for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
 
-  if (fieldsToAdd.length || fieldsToRemove.length) migrationContent += `    .execute();\n`
+  if (fieldsToAdd.length || fieldsToRemove.length)
+    migrationContent += `    .execute();\n`
 
-  const lastFieldOrder = Object.values(lastFields).map((attr) => attr.order)
-  const currentFieldOrder = Object.values(currentFields).map((attr) => attr.order)
+  const lastFieldOrder = Object.values(lastFields).map(attr => attr.order)
+  const currentFieldOrder = Object.values(currentFields).map(attr => attr.order)
 
   if (!isArrayEqual(lastFieldOrder, currentFieldOrder)) {
     hasChanged = true

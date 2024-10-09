@@ -1,8 +1,6 @@
-import { Request } from '@stacksjs/router'
-import { validateField } from '@stacksjs/validation'
-import { customValidate } from '@stacksjs/validation'
-
 import type { ProjectRequestType } from '../types/requests'
+import { Request } from '@stacksjs/router'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -34,7 +32,8 @@ export class ProjectRequest extends Request<RequestDataProject> implements Proje
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('Project', this.all())
-    } else {
+    }
+    else {
       await customValidate(attributes, this.all())
     }
   }

@@ -39,7 +39,8 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
 
   const foundProjects = await searchDirectory(dir)
 
-  if (!foundProjects) throw new Error('No Stacks projects found')
+  if (!foundProjects)
+    throw new Error('No Stacks projects found')
 
   return foundProjects
 }
@@ -49,16 +50,18 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
 // dir with a 'framework/core/buddy' structure
 async function searchDirectory(directory: string): Promise<string[]> {
   const foundProjects: string[] = []
-  const isExcluded = excludePatterns.some((pattern) =>
+  const isExcluded = excludePatterns.some(pattern =>
     typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory),
   )
 
-  if (isExcluded) return foundProjects
+  if (isExcluded)
+    return foundProjects
 
   let items: Dirent[]
   try {
     items = await fs.readdir(directory, { withFileTypes: true })
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Error reading directory ${directory}:`, error)
     return foundProjects
   }
@@ -78,7 +81,8 @@ async function searchDirectory(directory: string): Promise<string[]> {
           const storagePath = path.join(fullPath, 'framework/core/buddy')
           await fs.access(storagePath)
           storageDirFound = true
-        } catch (error) {
+        }
+        catch (error) {
           // The specific directory structure does not exist
         }
       }

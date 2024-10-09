@@ -1,6 +1,6 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { type AuthenticationResponseJSON, getUserPasskey, verifyAuthenticationResponse } from '@stacksjs/auth'
-import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -18,7 +18,8 @@ export default new Action({
 
     const userPasskey = await getUserPasskey(user?.id as number, body.res.id as string)
 
-    if (!user || !userPasskey) return
+    if (!user || !userPasskey)
+      return
 
     const pubkeyString = userPasskey.cred_public_key
 
@@ -41,7 +42,8 @@ export default new Action({
       })
 
       return verification
-    } catch (error) {
+    }
+    catch (error) {
       console.error(error)
     }
   },

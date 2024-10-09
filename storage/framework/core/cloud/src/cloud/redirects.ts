@@ -1,7 +1,7 @@
-import { config } from '@stacksjs/config'
-import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { config } from '@stacksjs/config'
+import { RemovalPolicy, aws_route53 as route53, aws_s3 as s3 } from 'aws-cdk-lib'
 
 export interface RedirectsStackProps extends NestedCloudProps {
   //

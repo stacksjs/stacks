@@ -1,6 +1,6 @@
 import type { Arrayable, Nullable } from '@stacksjs/types'
-import { contains, containsAll, containsAny, containsNone, containsOnly, doesNotContain } from './contains'
 import type { PartitionFilter } from './helpers'
+import { contains, containsAll, containsAny, containsNone, containsOnly, doesNotContain } from './contains'
 import {
   at,
   clampArrayRange,

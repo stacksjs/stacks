@@ -1,10 +1,10 @@
+import { $ } from 'bun'
 import process from 'node:process'
 import { italic, runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { writeFile } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { $ } from 'bun'
 
 const homePath = (await $`echo $HOME`.text()).trim()
 const zshrcPath = p.join(homePath, '.zshrc')
@@ -33,7 +33,7 @@ if (match) {
   if (!plugins.includes('buddy')) {
     plugins.push('buddy')
     // Trim each plugin name and ensure it’s formatted correctly
-    const formattedPlugins = plugins.map((plugin) => plugin.trim()).join('\n    ')
+    const formattedPlugins = plugins.map(plugin => plugin.trim()).join('\n    ')
     const newPluginLine = `plugins=(\n    ${formattedPlugins}\n)`
     // Replace the old plugin line with the new one
     data = data.replace(pluginLineRegex, newPluginLine)
@@ -49,7 +49,8 @@ if (match) {
     // await runCommand(`source ${customPath}/src/buddy.plugin.zsh`)
 
     log.success('Copied buddy zsh plugin')
-  } else {
+  }
+  else {
     log.info('Buddy is already set up') // in other words, it is integrated in their shell
     log.info('Ensuring `buddy` is updated...')
     await runCommand(`cp -rf ${pluginPath} ${customPath}`)
@@ -61,4 +62,5 @@ log.success('Oh My Zsh Setup Complete')
 log.info(italic('To see changes reflect, you may need to open a new terminal window'))
 
 // if using the vscode terminal, show the message
-if (process.env.TERM_PROGRAM === 'vscode') log.info('⌘⇧P terminal.create.new.terminal')
+if (process.env.TERM_PROGRAM === 'vscode')
+  log.info('⌘⇧P terminal.create.new.terminal')

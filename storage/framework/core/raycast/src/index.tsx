@@ -20,7 +20,7 @@ export default function Buddy() {
       searchBarPlaceholder="Search for a buddy command..."
       searchBarAccessory={<VersionSelect versions={versions} setVersion={setVersion} />}
     >
-      {commands?.map((command) => (
+      {commands?.map(command => (
         <List.Item
           title={command.signature}
           key={command.signature + (search ?? '')}

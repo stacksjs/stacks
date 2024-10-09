@@ -4,7 +4,7 @@ import type { Fn, Nullable } from '@stacksjs/types'
  * Call every function in an array
  */
 export function batchInvoke(functions: Nullable<Fn>[]): void {
-  functions.forEach((fn) => fn?.())
+  functions.forEach(fn => fn?.())
 }
 
 // /**

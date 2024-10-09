@@ -4,6 +4,7 @@
   "version": "",
   "description": "Your Vue component library description",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/components#readme",
   "repository": {
@@ -22,7 +23,6 @@
     "typescript",
     "javascript"
   ],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

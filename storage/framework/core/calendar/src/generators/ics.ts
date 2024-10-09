@@ -1,6 +1,6 @@
+import type { CalendarLink } from '../types'
 import { useDateFormat, useMax } from '@stacksjs/browser'
 import md5 from 'crypto-js/md5'
-import type { CalendarLink } from '../types'
 
 export function generateIcs(link: CalendarLink): string {
   const dateFormat = 'YYYYMMDD'
@@ -26,14 +26,17 @@ export function generateIcs(link: CalendarLink): string {
     url.push(`DTSTAMP;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DTSTART:${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DURATION:P${useMax(1, dateDiffInDays(link.from, link.to)).value}D`)
-  } else {
+  }
+  else {
     url.push(`DTSTAMP;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DTSTART;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
     url.push(`DTEND;TZID=${useDateFormat(link.to, dateTimeFormat).value}`)
   }
 
-  if (link.description) url.push(`X-ALT-DESC;FMTTYPE=text/html:${link.description}`)
-  if (link.address) url.push(`LOCATION:${link.address}`)
+  if (link.description)
+    url.push(`X-ALT-DESC;FMTTYPE=text/html:${link.description}`)
+  if (link.address)
+    url.push(`LOCATION:${link.address}`)
 
   url.push('END:VEVENT')
   url.push('END:VCALENDAR')

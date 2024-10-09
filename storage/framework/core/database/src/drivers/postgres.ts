@@ -1,12 +1,11 @@
+import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
-import { getTableName } from '@stacksjs/orm'
-import { fetchOtherModelRelations, getPivotTables } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getPivotTables, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { fs, glob, globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import {
   arrangeColumns,
   checkPivotMigration,
@@ -42,7 +41,8 @@ export async function resetPostgresDatabase() {
       if (modelFile.endsWith('.ts')) {
         const modelPath = path.frameworkPath(`database/models/${modelFile}`)
 
-        if (fs.existsSync(modelPath)) await Bun.$`rm ${modelPath}`
+        if (fs.existsSync(modelPath))
+          await Bun.$`rm ${modelPath}`
       }
     }
   }
@@ -52,7 +52,8 @@ export async function resetPostgresDatabase() {
       if (file.endsWith('.ts')) {
         const migrationPath = path.userMigrationsPath(`${file}`)
 
-        if (fs.existsSync(migrationPath)) await Bun.$`rm ${migrationPath}`
+        if (fs.existsSync(migrationPath))
+          await Bun.$`rm ${migrationPath}`
       }
     }
   }
@@ -74,7 +75,8 @@ export async function generatePostgresMigration(modelPath: string) {
       log.debug('No existing model files in framework path...')
 
       for (const file of modelFiles) {
-        if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
+        if (file.endsWith('.ts'))
+          await fs.unlink(path.frameworkPath(`database/models/${file}`))
       }
     }
   }
@@ -102,7 +104,8 @@ export async function generatePostgresMigration(modelPath: string) {
 
     haveFieldsChanged = true
     log.debug(`Fields have changed for ${tableName}`)
-  } else {
+  }
+  else {
     log.debug(`Fields have not been generated for ${tableName}`)
   }
 
@@ -117,7 +120,8 @@ export async function generatePostgresMigration(modelPath: string) {
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
-  if (haveFieldsChanged) await createAlterTableMigration(modelPath)
+  if (haveFieldsChanged)
+    await createAlterTableMigration(modelPath)
   else await createTableMigration(modelPath)
 }
 
@@ -149,8 +153,10 @@ async function createTableMigration(modelPath: string) {
     // Check if there are configurations that require the lambda function
     if (fieldOptions.unique || fieldOptions.validation?.rule?.required) {
       migrationContent += `, col => col`
-      if (fieldOptions.unique) migrationContent += `.unique()`
-      if (fieldOptions.validation?.rule?.required) migrationContent += `.notNull()`
+      if (fieldOptions.unique)
+        migrationContent += `.unique()`
+      if (fieldOptions.validation?.rule?.required)
+        migrationContent += `.notNull()`
       migrationContent += ``
     }
 
@@ -172,7 +178,8 @@ async function createTableMigration(modelPath: string) {
   }
 
   // Append deleted_at column if useSoftDeletes is true
-  if (useSoftDeletes) migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+  if (useSoftDeletes)
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
@@ -190,11 +197,13 @@ async function createTableMigration(modelPath: string) {
 async function createPivotTableMigration(model: Model, modelPath: string) {
   const pivotTables = await getPivotTables(model, modelPath)
 
-  if (!pivotTables.length) return
+  if (!pivotTables.length)
+    return
   for (const pivotTable of pivotTables) {
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
 
-    if (hasBeenMigrated) return
+    if (hasBeenMigrated)
+      return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`

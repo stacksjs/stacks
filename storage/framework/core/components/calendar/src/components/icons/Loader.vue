@@ -3,7 +3,7 @@ defineProps<{
   visible: boolean
 }>()
 
-const bars = Array(12).fill(0)
+const bars = Array.from({ length: 12 }).fill(0)
 </script>
 
 <template>

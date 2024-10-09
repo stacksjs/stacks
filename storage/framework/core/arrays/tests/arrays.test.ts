@@ -54,7 +54,7 @@ describe('@stacksjs/arrays', () => {
     })
 
     test('partition', () => {
-      const [odd, even] = partition([1, 2, 3, 4], (i) => i % 2 !== 0)
+      const [odd, even] = partition([1, 2, 3, 4], i => i % 2 !== 0)
       expect(odd).toEqual([1, 3])
       expect(even).toEqual([2, 4])
     })
@@ -92,7 +92,7 @@ describe('@stacksjs/arrays', () => {
       const arr = [1, 2, 3, 4, 5]
       const result = sample(arr, 2)
       expect(result.length).toBe(2)
-      result.forEach((item) => expect(arr).toContain(item))
+      result.forEach(item => expect(arr).toContain(item))
     })
 
     test('shuffle', () => {
@@ -228,7 +228,7 @@ describe('@stacksjs/arrays', () => {
       const arr = [1, 2, 3, 4, 5]
       const result = Arr.random(arr, 2)
       expect(result.length).toBe(2)
-      result.forEach((item) => expect(arr).toContain(item))
+      result.forEach(item => expect(arr).toContain(item))
     })
 
     test('Arr.sum', () => {

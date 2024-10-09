@@ -1,5 +1,5 @@
-import { ports } from '@stacksjs/config'
 import type { ServerOptions } from '@stacksjs/types'
+import { ports } from '@stacksjs/config'
 
 export function config(options: ServerOptions): {
   host: string
@@ -7,48 +7,48 @@ export function config(options: ServerOptions): {
   open: boolean
 } {
   const serversMap = {
-    frontend: {
+    'frontend': {
       host: 'localhost',
       port: ports.frontend,
     },
 
-    backend: {
+    'backend': {
       host: 'localhost',
       port: ports.backend,
     },
 
-    api: {
+    'api': {
       host: 'localhost',
       port: ports.api,
     },
 
-    admin: {
+    'admin': {
       host: 'localhost',
       port: ports.admin,
     },
 
-    library: {
+    'library': {
       // component library
       host: 'localhost',
       port: ports.library,
     },
 
-    desktop: {
+    'desktop': {
       host: 'localhost',
       port: ports.desktop,
     },
 
-    docs: {
+    'docs': {
       host: 'localhost',
       port: ports.docs,
     },
 
-    email: {
+    'email': {
       host: 'localhost',
       port: ports.email,
     },
 
-    inspect: {
+    'inspect': {
       host: 'localhost',
       port: ports.inspect,
     },
@@ -58,15 +58,15 @@ export function config(options: ServerOptions): {
       port: ports.systemTray,
     },
 
-    database: {
+    'database': {
       host: 'localhost',
       port: ports.database,
     },
   }
 
   if (
-    options.type &&
-    ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(
+    options.type
+    && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(
       options.type,
     )
   ) {

@@ -1,12 +1,11 @@
 import type { Action as ActionType } from '@stacksjs/actions'
-import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
+import type { ActionOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
-import type { Readable, Subprocess, Writable } from '@stacksjs/types'
-import type { ActionOptions, CommandError } from '@stacksjs/types'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 type ActionName = string // TODO: narrow this by automating its generation
@@ -39,7 +38,8 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         console.log('a.name matches', a.name)
         return await a.handle()
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.log('error', error)
       process.exit()
     }
@@ -73,11 +73,13 @@ export async function runActions(
 ): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[] | Err<never, string>> {
   log.debug('runActions:', actions, options)
 
-  if (!actions.length) return err('No actions were specified')
+  if (!actions.length)
+    return err('No actions were specified')
 
   for (const action of actions) {
     log.debug(`running action "${action}"`)
-    if (!hasAction(action)) return err(`The specified action "${action}" does not exist`)
+    if (!hasAction(action))
+      return err(`The specified action "${action}" does not exist`)
   }
 
   const opts = buddyOptions()
@@ -87,7 +89,7 @@ export async function runActions(
     ...options,
   }
 
-  const commands = actions.map((action) => `bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
+  const commands = actions.map(action => `bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
 
   log.debug('commands:', commands)
 
@@ -110,10 +112,10 @@ export function hasAction(action: Action): boolean {
   const actionPatterns = [`src/${action}.ts`, `src/${action}`, `${action}.ts`, `${action}`]
 
   // Check user actions path with its specific patterns
-  const userActionFiles = globSync(userActionPatterns.map((pattern) => p.userActionsPath(pattern)))
+  const userActionFiles = globSync(userActionPatterns.map(pattern => p.userActionsPath(pattern)))
 
   // Check actions path with its specific patterns
-  const actionFiles = globSync(actionPatterns.map((pattern) => p.actionsPath(pattern)))
+  const actionFiles = globSync(actionPatterns.map(pattern => p.actionsPath(pattern)))
 
   return userActionFiles.length > 0 || actionFiles.length > 0
 

@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks#readme",
@@ -50,7 +51,6 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "bin": {
     "stacks": "dist/cli.mjs",
     "stx": "dist/cli.mjs",

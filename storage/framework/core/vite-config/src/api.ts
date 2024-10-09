@@ -1,6 +1,6 @@
+import type { ViteConfig } from '@stacksjs/types'
 import { ports } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import type { ViteConfig } from '@stacksjs/types'
 
 export const apiConfig: ViteConfig = {
   base: '/api/',

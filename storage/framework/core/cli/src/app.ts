@@ -1,16 +1,16 @@
 // slightly modified version of @clack/prompts
 // many thanks to bombshell-dev for the original work
 import {
+  block,
   ConfirmPrompt,
   GroupMultiSelectPrompt,
+  isCancel,
   MultiSelectPrompt,
   PasswordPrompt,
   SelectKeyPrompt,
   SelectPrompt,
   type State,
   TextPrompt,
-  block,
-  isCancel,
 } from '@clack/core'
 import isUnicodeSupported from 'is-unicode-supported'
 import color from 'picocolors'
@@ -41,7 +41,7 @@ const S_CORNER_TOP_RIGHT = s('╮', '+')
 const S_CONNECT_LEFT = s('├', '+')
 const S_CORNER_BOTTOM_RIGHT = s('╯', '+')
 
-const symbol = (state: State) => {
+function symbol(state: State) {
   switch (state) {
     case 'initial':
     case 'active':
@@ -62,7 +62,7 @@ interface LimitOptionsParams<TOption> {
   style: (option: TOption, active: boolean) => string
 }
 
-const limitOptions = <TOption>(params: LimitOptionsParams<TOption>): string[] => {
+function limitOptions<TOption>(params: LimitOptionsParams<TOption>): string[] {
   const { cursor, options, style } = params
 
   const paramMaxItems = params.maxItems ?? Number.POSITIVE_INFINITY
@@ -73,7 +73,8 @@ const limitOptions = <TOption>(params: LimitOptionsParams<TOption>): string[] =>
 
   if (cursor >= slidingWindowLocation + maxItems - 3) {
     slidingWindowLocation = Math.max(Math.min(cursor - maxItems + 3, options.length - maxItems), 0)
-  } else if (cursor < slidingWindowLocation + 2) {
+  }
+  else if (cursor < slidingWindowLocation + 2) {
     slidingWindowLocation = Math.max(cursor - 2, 0)
   }
 
@@ -94,7 +95,7 @@ export interface TextOptions {
   initialValue?: string
   validate?: (value: string) => string | void
 }
-export const text = (opts: TextOptions) => {
+export function text(opts: TextOptions) {
   return new TextPrompt({
     validate: opts.validate,
     placeholder: opts.placeholder,
@@ -130,7 +131,7 @@ export interface PasswordOptions {
   mask?: string
   validate?: (value: string) => string | void
 }
-export const password = (opts: PasswordOptions) => {
+export function password(opts: PasswordOptions) {
   return new PasswordPrompt({
     validate: opts.validate,
     mask: opts.mask ?? S_PASSWORD_MASK,
@@ -163,7 +164,7 @@ export interface ConfirmOptions {
   inactive?: string
   initialValue?: boolean
 }
-export const confirm = (opts: ConfirmOptions) => {
+export function confirm(opts: ConfirmOptions) {
   const active = opts.active ?? 'Yes'
   const inactive = opts.inactive ?? 'No'
   return new ConfirmPrompt({
@@ -198,8 +199,8 @@ export const confirm = (opts: ConfirmOptions) => {
 type Primitive = Readonly<string | boolean | number>
 
 type Option<Value> = Value extends Primitive
-  ? { value: Value; label?: string; hint?: string }
-  : { value: Value; label: string; hint?: string }
+  ? { value: Value, label?: string, hint?: string }
+  : { value: Value, label: string, hint?: string }
 
 export interface SelectOptions<Value> {
   message: string
@@ -208,7 +209,7 @@ export interface SelectOptions<Value> {
   maxItems?: number
 }
 
-export const select = <Value>(opts: SelectOptions<Value>) => {
+export function select<Value>(opts: SelectOptions<Value>) {
   const opt = (option: Option<Value>, state: 'inactive' | 'active' | 'selected' | 'cancelled') => {
     const label = option.label ?? String(option.value)
     switch (state) {
@@ -247,7 +248,7 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
   }).prompt() as Promise<Value | symbol>
 }
 
-export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
+export function selectKey<Value extends string>(opts: SelectOptions<Value>) {
   const opt = (option: Option<Value>, state: 'inactive' | 'active' | 'selected' | 'cancelled' = 'inactive') => {
     const label = option.label ?? String(option.value)
 
@@ -279,7 +280,7 @@ export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
       switch (this.state) {
         case 'submit':
           return `${title}${color.gray(S_BAR)}  ${opt(
-            this.options.find((opt) => opt.value === this.value)!,
+            this.options.find(opt => opt.value === this.value)!,
             'selected',
           )}`
         case 'cancel':
@@ -302,7 +303,7 @@ export interface MultiSelectOptions<Value> {
   required?: boolean
   cursorAt?: Value
 }
-export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
+export function multiselect<Value>(opts: MultiSelectOptions<Value>) {
   const opt = (
     option: Option<Value>,
     state: 'inactive' | 'active' | 'selected' | 'active-selected' | 'submitted' | 'cancelled',
@@ -338,7 +339,7 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
     required: opts.required ?? true,
     cursorAt: opts.cursorAt,
     validate(selected: Value[]) {
-      if (this.required && selected.length === 0)
+      if (this.required && selected.length === 0) {
         return `Please select at least one option.\n${color.reset(
           color.dim(
             `Press ${color.gray(color.bgWhite(color.inverse(' space ')))} to select, ${color.gray(
@@ -346,6 +347,7 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
             )} to submit`,
           ),
         )}`
+      }
     },
     render() {
       const title = `${color.gray(S_BAR)}\n${symbol(this.state)}  ${opts.message}\n`
@@ -366,14 +368,14 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
           return `${title}${color.gray(S_BAR)}  ${
             this.options
               .filter(({ value }) => this.value.includes(value))
-              .map((option) => opt(option, 'submitted'))
+              .map(option => opt(option, 'submitted'))
               .join(color.dim(', ')) || color.dim('none')
           }`
         }
         case 'cancel': {
           const label = this.options
             .filter(({ value }) => this.value.includes(value))
-            .map((option) => opt(option, 'cancelled'))
+            .map(option => opt(option, 'cancelled'))
             .join(color.dim(', '))
           return `${title}${color.gray(S_BAR)}  ${label.trim() ? `${label}\n${color.gray(S_BAR)}` : ''}`
         }
@@ -413,7 +415,7 @@ export interface GroupMultiSelectOptions<Value> {
   required?: boolean
   cursorAt?: Value
 }
-export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) => {
+export function groupMultiselect<Value>(opts: GroupMultiSelectOptions<Value>) {
   const opt = (
     option: Option<Value>,
     state:
@@ -474,7 +476,7 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
     required: opts.required ?? true,
     cursorAt: opts.cursorAt,
     validate(selected: Value[]) {
-      if (this.required && selected.length === 0)
+      if (this.required && selected.length === 0) {
         return `Please select at least one option.\n${color.reset(
           color.dim(
             `Press ${color.gray(color.bgWhite(color.inverse(' space ')))} to select, ${color.gray(
@@ -482,6 +484,7 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
             )} to submit`,
           ),
         )}`
+      }
     },
     render() {
       const title = `${color.gray(S_BAR)}\n${symbol(this.state)}  ${opts.message}\n`
@@ -490,13 +493,13 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
         case 'submit': {
           return `${title}${color.gray(S_BAR)}  ${this.options
             .filter(({ value }) => this.value.includes(value))
-            .map((option) => opt(option, 'submitted'))
+            .map(option => opt(option, 'submitted'))
             .join(color.dim(', '))}`
         }
         case 'cancel': {
           const label = this.options
             .filter(({ value }) => this.value.includes(value))
-            .map((option) => opt(option, 'cancelled'))
+            .map(option => opt(option, 'cancelled'))
             .join(color.dim(', '))
           return `${title}${color.gray(S_BAR)}  ${label.trim() ? `${label}\n${color.gray(S_BAR)}` : ''}`
         }
@@ -507,11 +510,11 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
             .join('\n')
           return `${title}${color.yellow(S_BAR)}  ${this.options
             .map((option, i, options) => {
-              const selected =
-                this.value.includes(option.value) || (option.group === true && this.isGroupSelected(`${option.value}`))
+              const selected
+                = this.value.includes(option.value) || (option.group === true && this.isGroupSelected(`${option.value}`))
               const active = i === this.cursor
-              const groupActive =
-                !active && typeof option.group === 'string' && this.options[this.cursor]!.value === option.group
+              const groupActive
+                = !active && typeof option.group === 'string' && this.options[this.cursor]!.value === option.group
               if (groupActive) {
                 return opt(option, selected ? 'group-active-selected' : 'group-active', options)
               }
@@ -528,11 +531,11 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
         default: {
           return `${title}${color.cyan(S_BAR)}  ${this.options
             .map((option, i, options) => {
-              const selected =
-                this.value.includes(option.value) || (option.group === true && this.isGroupSelected(`${option.value}`))
+              const selected
+                = this.value.includes(option.value) || (option.group === true && this.isGroupSelected(`${option.value}`))
               const active = i === this.cursor
-              const groupActive =
-                !active && typeof option.group === 'string' && this.options[this.cursor]!.value === option.group
+              const groupActive
+                = !active && typeof option.group === 'string' && this.options[this.cursor]!.value === option.group
               if (groupActive) {
                 return opt(option, selected ? 'group-active-selected' : 'group-active', options)
               }
@@ -555,11 +558,11 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
 }
 
 const strip = (str: string) => str.replace(ansiRegex(), '')
-export const note = (message = '', title = ''): void => {
+export function note(message = '', title = ''): void {
   const lines = `\n${message}\n`.split('\n')
   const titleLen = strip(title).length
-  const len =
-    Math.max(
+  const len
+    = Math.max(
       lines.reduce((sum, ln) => {
         ln = strip(ln)
         return ln.length > sum ? ln.length : sum
@@ -567,7 +570,7 @@ export const note = (message = '', title = ''): void => {
       titleLen,
     ) + 2
   const msg = lines
-    .map((ln) => `${color.gray(S_BAR)}  ${color.dim(ln)}${' '.repeat(len - strip(ln).length)}${color.gray(S_BAR)}`)
+    .map(ln => `${color.gray(S_BAR)}  ${color.dim(ln)}${' '.repeat(len - strip(ln).length)}${color.gray(S_BAR)}`)
     .join('\n')
   process.stdout.write(
     `${color.gray(S_BAR)}\n${color.green(S_STEP_SUBMIT)}  ${color.reset(title)} ${color.gray(
@@ -576,25 +579,25 @@ export const note = (message = '', title = ''): void => {
   )
 }
 
-export const cancel = (message = ''): void => {
+export function cancel(message = ''): void {
   process.stdout.write(`${color.gray(S_BAR_END)}  ${color.red(message)}\n\n`)
 }
 
-export const intro = (title = ''): void => {
+export function intro(title = ''): void {
   process.stdout.write(`${color.gray(S_BAR_START)}  ${title}\n`)
 }
 
-export const outro = (message = ''): void => {
+export function outro(message = ''): void {
   process.stdout.write(`${color.gray(S_BAR)}\n${color.gray(S_BAR_END)}  ${message}\n\n`)
 }
 
-type Spinner = {
+interface Spinner {
   start: (msg: string) => void
   stop: (msg: string, code: number) => void
   message: (msg: string) => void
 }
 
-export const spinner = (): Spinner => {
+export function spinner(): Spinner {
   const frames = unicode ? ['◒', '◐', '◓', '◑'] : ['•', 'o', 'O', '0']
   const delay = unicode ? 80 : 120
 
@@ -605,7 +608,8 @@ export const spinner = (): Spinner => {
 
   const handleExit = (code: number) => {
     const msg = code > 1 ? 'Something went wrong' : 'Canceled'
-    if (isSpinnerActive) stop(msg, code)
+    if (isSpinnerActive)
+      stop(msg, code)
   }
 
   const errorEventHandler = () => handleExit(2)
@@ -655,8 +659,8 @@ export const spinner = (): Spinner => {
     _message = msg ?? _message
     isSpinnerActive = false
     clearInterval(loop as NodeJS.Timeout)
-    const step =
-      code === 0 ? color.green(S_STEP_SUBMIT) : code === 1 ? color.red(S_STEP_CANCEL) : color.red(S_STEP_ERROR)
+    const step
+      = code === 0 ? color.green(S_STEP_SUBMIT) : code === 1 ? color.red(S_STEP_CANCEL) : color.red(S_STEP_ERROR)
     process.stdout.write(cursor.move(-999, 0))
     process.stdout.write(erase.down(1))
     process.stdout.write(`${step}  ${_message}\n`)
@@ -669,9 +673,9 @@ export const spinner = (): Spinner => {
   }
 
   const spinner = {
-    start: start,
-    stop: stop,
-    message: message,
+    start,
+    stop,
+    message,
   }
 
   return spinner
@@ -714,10 +718,7 @@ export type PromptGroup<T> = {
  * Define a group of prompts to be displayed
  * and return a results of objects within the group
  */
-export const group = async <T>(
-  prompts: PromptGroup<T>,
-  opts?: PromptGroupOptions<T>,
-): Promise<Prettify<PromptGroupAwaitedReturn<T>>> => {
+export async function group<T>(prompts: PromptGroup<T>, opts?: PromptGroupOptions<T>): Promise<Prettify<PromptGroupAwaitedReturn<T>>> {
   const results = {} as any
   const promptNames = Object.keys(prompts)
 
@@ -742,7 +743,7 @@ export const group = async <T>(
   return results
 }
 
-export type Task = {
+export interface Task {
   /**
    * Task title
    */
@@ -761,9 +762,10 @@ export type Task = {
 /**
  * Define a group of tasks to be executed
  */
-export const tasks = async (tasks: Task[]): Promise<void> => {
+export async function tasks(tasks: Task[]): Promise<void> {
   for (const task of tasks) {
-    if (task.enabled === false) continue
+    if (task.enabled === false)
+      continue
 
     const s = spinner()
     s.start(task.title)

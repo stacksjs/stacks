@@ -1,10 +1,10 @@
-export type SettingsMenuOption = {
+export interface SettingsMenuOption {
   label: string
   path: string
   icon?: MenuIcon
 }
 
-export type MenuIcon = {
+export interface MenuIcon {
   name?: string
   source?: string
 }

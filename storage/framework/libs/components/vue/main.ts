@@ -1,5 +1,5 @@
-import 'unocss'
 import { createApp } from 'vue'
+import 'unocss'
 
 // import Previewer from 'virtual:vue-component-preview'
 import Demo from '../../../../../resources/components/Playground.vue'

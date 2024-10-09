@@ -1,6 +1,6 @@
+import type { ToastT } from '../types'
 import { type Ref, ref, watchEffect } from 'vue'
 import { ToastState } from '../state'
-import type { ToastT } from '../types'
 
 export function useNotification(): {
   activeToasts: Ref<ToastT[]>
@@ -10,10 +10,10 @@ export function useNotification(): {
   watchEffect((onInvalidate) => {
     const unsubscribe = ToastState.subscribe((toast) => {
       if ('dismiss' in toast && toast.dismiss) {
-        return activeToasts.value.filter((t) => t.id !== toast.id)
+        return activeToasts.value.filter(t => t.id !== toast.id)
       }
 
-      const existingToastIndex = activeToasts.value.findIndex((t) => t.id === toast.id)
+      const existingToastIndex = activeToasts.value.findIndex(t => t.id === toast.id)
       if (existingToastIndex !== -1) {
         const updatedToasts = [...activeToasts.value]
         updatedToasts[existingToastIndex] = {
@@ -22,7 +22,8 @@ export function useNotification(): {
         }
 
         activeToasts.value = updatedToasts
-      } else {
+      }
+      else {
         activeToasts.value = [toast, ...activeToasts.value]
       }
     })

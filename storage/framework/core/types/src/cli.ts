@@ -3,7 +3,7 @@ import type { Ports } from './ports'
 
 type ArrayBufferView = NodeJS.TypedArray | DataView
 
-export type { Subprocess, SyncSubprocess, SpawnOptions, ErrorLike } from 'bun'
+export type { ErrorLike, SpawnOptions, Subprocess, SyncSubprocess } from 'bun'
 export type Readable =
   | 'pipe'
   | 'inherit'
@@ -194,7 +194,7 @@ export type ActionOptions = {
   count?: number
   dryRun?: boolean // used in buddy release
 } & CliOptions &
-  DomainsOptions
+DomainsOptions
 
 export type BuildOption =
   | 'components'

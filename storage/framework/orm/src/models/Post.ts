@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 import User from './User'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -90,7 +86,8 @@ export class PostModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -105,7 +102,8 @@ export class PostModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -123,7 +121,7 @@ export class PostModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new PostModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<PostModel> {
@@ -139,7 +137,8 @@ export class PostModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -159,7 +158,7 @@ export class PostModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new PostModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -253,7 +252,8 @@ export class PostModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10)) nextCursor = postsWithExtra.pop()?.id ?? null
+    if (postsWithExtra.length > (options.limit ?? 10))
+      nextCursor = postsWithExtra.pop()?.id ?? null
 
     return {
       data: postsWithExtra,
@@ -302,7 +302,8 @@ export class PostModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('posts').where('id', '=', id).execute()
     }
   }
@@ -315,9 +316,11 @@ export class PostModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -336,9 +339,11 @@ export class PostModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -448,7 +453,8 @@ export class PostModel {
   }
 
   async update(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined) throw new Error('Post ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Post ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(post).filter(([key]) => this.fillable.includes(key)),
@@ -462,7 +468,8 @@ export class PostModel {
   }
 
   async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined) throw new Error('Post ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Post ID is undefined')
 
     await db.updateTable('posts').set(post).where('id', '=', this.id).executeTakeFirst()
 
@@ -472,21 +479,24 @@ export class PostModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('Post data is undefined')
+    if (!this)
+      throw new Error('Post data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('posts')
         .values(this as NewPost)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the post instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Post ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Post ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -500,18 +510,21 @@ export class PostModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('posts').where('id', '=', this.id).execute()
     }
   }
 
   async user() {
-    if (this.post_id === undefined) throw new Error('Relation Error!')
+    if (this.post_id === undefined)
+      throw new Error('Relation Error!')
 
     const model = await User.where('id', '=', post_id).first()
 
-    if (!model) throw new Error('Model Relation Not Found!')
+    if (!model)
+      throw new Error('Model Relation Not Found!')
 
     return model
   }
@@ -564,7 +577,8 @@ export class PostModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type Post = Omit<PostType, 'password'>
@@ -586,7 +600,8 @@ async function find(id: number): Promise<PostModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new PostModel(model)
 }
@@ -615,14 +630,14 @@ export async function whereTitle(value: string): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('title', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new PostModel(modelItem))
+  return results.map(modelItem => new PostModel(modelItem))
 }
 
 export async function whereBody(value: string): Promise<PostModel[]> {
   const query = db.selectFrom('posts').where('body', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new PostModel(modelItem))
+  return results.map(modelItem => new PostModel(modelItem))
 }
 
 export const Post = PostModel

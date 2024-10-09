@@ -1,6 +1,6 @@
+import type { LibraryType } from '@stacksjs/path'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import type { LibraryType } from '@stacksjs/path'
 import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { kebabCase } from '@stacksjs/strings'
@@ -19,11 +19,14 @@ export async function generateLibEntry(type: LibraryType): Promise<void> {
 }
 
 export async function createLibraryEntryPoint(type: LibraryType): Promise<void> {
-  if (type === 'vue-components') await createVueLibraryEntryPoint()
+  if (type === 'vue-components')
+    await createVueLibraryEntryPoint()
 
-  if (type === 'web-components') await createWebComponentLibraryEntryPoint()
+  if (type === 'web-components')
+    await createWebComponentLibraryEntryPoint()
 
-  if (type === 'functions') await createFunctionLibraryEntryPoint()
+  if (type === 'functions')
+    await createFunctionLibraryEntryPoint()
 }
 
 export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components'): Promise<void> {
@@ -82,7 +85,8 @@ export function generateEntryPointData(type: LibraryType): string {
     }
 
     for (const fx of library.functions.files) {
-      if (Array.isArray(fx)) arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
+      if (Array.isArray(fx))
+        arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
       else arr.push(`export * from '${functionsPath(fx)}'`)
     }
 
@@ -102,7 +106,7 @@ export function generateEntryPointData(type: LibraryType): string {
 
     arr = determineResetPreset()
 
-    for (const component of library.vueComponents.tags.map((tag) => tag.name)) {
+    for (const component of library.vueComponents.tags.map(tag => tag.name)) {
       if (Array.isArray(component))
         arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.vue'`)
       else arr.push(`export { default as ${component} } from '${componentsPath(component)}.vue'`)
@@ -114,7 +118,7 @@ export function generateEntryPointData(type: LibraryType): string {
 
   // at this point, we know it is a Web Component we are building
   arr = determineResetPreset()
-  const imports = [...arr, "import { defineCustomElement } from 'vue'"]
+  const imports = [...arr, 'import { defineCustomElement } from \'vue\'']
   const declarations = []
   const definitions = []
 
@@ -127,12 +131,13 @@ export function generateEntryPointData(type: LibraryType): string {
     process.exit()
   }
 
-  for (const component of library.webComponents.tags.map((tag) => tag.name)) {
+  for (const component of library.webComponents.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
       imports.push(`import ${component[1]} from '${componentsPath(component[0])}.vue'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1] as string)}', ${component[1]}CustomElement)`)
-    } else {
+    }
+    else {
       imports.push(`import ${component} from '${componentsPath(component)}.vue'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)

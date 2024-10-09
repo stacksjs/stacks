@@ -1,6 +1,6 @@
 export {
   Combobox,
   ComboboxInput,
-  ComboboxOptions,
   ComboboxOption,
+  ComboboxOptions,
 } from '@headlessui/vue'

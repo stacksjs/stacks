@@ -1,8 +1,7 @@
+import type { ViteConfig } from '@stacksjs/types'
+import type { ViteBuildOptions } from '.'
 import { alias } from '@stacksjs/alias'
 import { frameworkPath, functionsPath, libraryEntryPath, projectPath } from '@stacksjs/path'
-import type { ViteConfig } from '@stacksjs/types'
-import { defineConfig } from 'vite'
-import type { ViteBuildOptions } from '.'
 
 export const functionsConfig: ViteConfig = {
   root: functionsPath(),
@@ -32,7 +31,8 @@ export function functionsBuildOptions(): ViteBuildOptions {
       // name: library.functions?.name,
       formats: ['es'],
       fileName: (format: string) => {
-        if (format === 'es') return 'index.mjs'
+        if (format === 'es')
+          return 'index.mjs'
 
         return 'index.?.js'
       },

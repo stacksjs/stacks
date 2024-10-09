@@ -54,7 +54,8 @@ export function useGitHub(): UseGitHub {
     const minutes = Math.floor(durationInSeconds / 60)
     const seconds = durationInSeconds % 60
 
-    if (minutes > 1) return `${minutes}m ${seconds}s`
+    if (minutes > 1)
+      return `${minutes}m ${seconds}s`
 
     return `${seconds}s`
   }

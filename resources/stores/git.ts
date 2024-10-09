@@ -69,4 +69,5 @@ export const useGitStore = defineStore('git', {
   },
 })
 
-if (import.meta.hot) import.meta.hot.accept(acceptHMRUpdate(useGitStore, import.meta.hot))
+if (import.meta.hot)
+  import.meta.hot.accept(acceptHMRUpdate(useGitStore, import.meta.hot))

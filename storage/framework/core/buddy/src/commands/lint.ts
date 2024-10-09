@@ -1,8 +1,8 @@
+import type { CLI, LintOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import type { CLI, LintOptions } from '@stacksjs/types'
 
 export function lint(buddy: CLI): void {
   const descriptions = {
@@ -22,7 +22,8 @@ export function lint(buddy: CLI): void {
 
       const startTime = await intro('buddy lint')
 
-      if (options.fix) await runAction(Action.LintFix, { ...options })
+      if (options.fix)
+        await runAction(Action.LintFix, { ...options })
       else await runCommand('bunx --bun eslint .')
 
       await outro('Linted your project', { startTime, useSeconds: true })

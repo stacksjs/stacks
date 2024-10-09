@@ -1,13 +1,12 @@
+import type { ViteDevServer } from 'vite'
+import type { DefaultTheme, UserConfigExport, UserConfig as VitePressConfig } from 'vitepress'
 import { alias } from '@stacksjs/alias'
 import { kolorist as c } from '@stacksjs/cli'
 import { docs } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
-import type { DocsConfig } from '@stacksjs/types'
 import { withPwa } from '@vite-pwa/vitepress'
-import type { ViteDevServer } from 'vite'
 import { defineConfig } from 'vitepress'
-import type { DefaultTheme, UserConfigExport, UserConfig as VitePressConfig } from 'vitepress'
 import { version } from '../package.json'
 import { pwaDocs as pwa } from './scripts/pwa'
 
@@ -60,9 +59,9 @@ const combinedConfig: VitePressConfig = {
   ...docs,
 }
 
+export * from './meta'
 export * from './plugins'
 export * from './scripts/pwa'
-export * from './meta'
 
 const conf: Promise<UserConfigExport<DefaultTheme.Config>> = withPwa(defineConfig(combinedConfig))
 

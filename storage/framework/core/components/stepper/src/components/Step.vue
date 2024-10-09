@@ -1,10 +1,13 @@
-
 <script setup lang="ts">
 import { computed, onMounted, useSlots } from 'vue'
 
 defineOptions({
   name: 'Step',
 })
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<(e: 'change', index: number) => void>()
 
 interface Props {
   index: number
@@ -16,10 +19,6 @@ interface Props {
   debug: boolean
   isLastStep: boolean
 }
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<(e: 'change', index: number) => void>()
 
 onMounted(() => {})
 
@@ -65,31 +64,32 @@ function handleChange() {
 </script>
 
 <template>
-  <div :class="['step flex-1 opacity-55 box-border transition-opacity duration-700', classes]">
+  <div class="step box-border flex-1 opacity-55 transition-opacity duration-700" :class="[classes]">
     <input
+      v-show="debug"
       :id="id"
       class="input"
       type="radio"
-      v-show="debug"
       :checked="active"
       :name="computedName"
       @change="handleChange"
     >
     <label class="label flex flex-row items-center" :for="id">
       <slot name="index-root" v-bind="scope">
-        <span :class="[
-            'w-14 h-14 flex flex-shrink-0 text-xl rounded-full mr-2 text-white items-center justify-center border border-gray-200',
-            props.active  ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
-          ]">
+        <span
+          class="mr-2 h-14 w-14 flex flex-shrink-0 items-center justify-center border border-gray-200 rounded-full text-xl text-white" :class="[
+            props.active ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300',
+          ]"
+        >
           <slot name="index" v-bind="scope">
             {{ scope.displayIndex }}
           </slot>
         </span>
       </slot>
-      <span class="title text-white" v-if="defaultSlot">
-        <slot v-bind="scope"></slot>
+      <span v-if="defaultSlot" class="title text-white">
+        <slot v-bind="scope" />
       </span>
-      <span class="w-full ml-2 border-b border-gray shadow-md" v-if="withDivider && !isLastStep"></span>
+      <span v-if="withDivider && !isLastStep" class="ml-2 w-full border-b border-gray shadow-md" />
     </label>
   </div>
 </template>

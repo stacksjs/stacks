@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 
-import { createStacksTable, deleteStacksTable, launchServer } from '@stacksjs/testing'
+import { deleteStacksTable, launchServer } from '@stacksjs/testing'
 import { dynamodb } from '../src/drivers/dynamodb'
 
 beforeAll(async () => {

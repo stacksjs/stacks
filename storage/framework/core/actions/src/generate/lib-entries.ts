@@ -10,11 +10,13 @@ export async function generateLibEntries(): Promise<void> {
   if (library.releaseable && hasComponents()) {
     await generateLibEntry('vue-components')
     await generateLibEntry('web-components')
-  } else {
+  }
+  else {
     log.info('No components found. Skipping building component entry points.')
   }
 
-  if (library.releaseable && hasFunctions()) await generateLibEntry('functions')
+  if (library.releaseable && hasFunctions())
+    await generateLibEntry('functions')
   else log.info('No functions found. Skipping building function entry point.')
 }
 

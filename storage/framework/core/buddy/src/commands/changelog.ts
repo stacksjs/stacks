@@ -1,8 +1,8 @@
+import type { CLI, FreshOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import type { CLI, FreshOptions } from '@stacksjs/types'
 
 export function changelog(buddy: CLI): void {
   const descriptions = {

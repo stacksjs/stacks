@@ -1,8 +1,8 @@
+import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI } from '@stacksjs/types'
 
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'

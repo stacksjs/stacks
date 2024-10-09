@@ -63,7 +63,7 @@ const faqs = [
     class="relative overflow-hidden bg-slate-50 py-20 sm:py-32"
   >
     <img
-      class="absolute left-1/2 top-0 max-w-none -translate-y-1/4 translate-x-[-30%]"
+      class="absolute left-1/2 top-0 max-w-none translate-x-[-30%] -translate-y-1/4"
       :src="backgroundImage"
       alt=""
       width="1558"
@@ -73,22 +73,22 @@ const faqs = [
       <div class="mx-auto max-w-2xl lg:mx-0">
         <h2
           id="faq-title"
-          class="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl"
+          class="font-display text-3xl text-slate-900 tracking-tight sm:text-4xl"
         >
           Frequently asked questions
         </h2>
-        <p class="mt-4 text-lg tracking-tight text-slate-700">
+        <p class="mt-4 text-lg text-slate-700 tracking-tight">
           If you can’t find what you’re looking for, we're just one email away.
         </p>
       </div>
       <ul
         role="list"
-        class="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-3"
+        class="grid grid-cols-1 mx-auto mt-16 max-w-2xl gap-8 lg:grid-cols-3 lg:max-w-none"
       >
         <li v-for="(column, columnIndex) in faqs" :key="columnIndex">
           <ul role="list" class="flex flex-col gap-y-8">
             <li v-for="(faq, faqIndex) in column" :key="faqIndex">
-              <h3 class="font-display text-lg leading-7 text-slate-900">
+              <h3 class="font-display text-lg text-slate-900 leading-7">
                 {{ faq.question }}
               </h3>
               <p class="mt-4 text-sm text-slate-700">

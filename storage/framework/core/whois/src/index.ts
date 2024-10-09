@@ -1,10 +1,10 @@
+import type { SocksClientOptions } from 'socks'
+import type { ProxyData, WhoIsOptions, WhoIsResponse } from './types'
 import Net from 'node:net'
 import fetch from 'node-fetch'
-import type { SocksClientOptions } from 'socks'
 import { SocksClient } from 'socks'
 import { IANA_CHK_URL, PARAMETERS, SERVERS } from './constants'
 import { ProxyType } from './types'
-import type { ProxyData, WhoIsOptions, WhoIsResponse } from './types'
 import { shallowCopy } from './utils'
 
 /**
@@ -21,9 +21,11 @@ export async function findWhoIsServer(tld: string): Promise<string> {
     if (res.ok) {
       const body = await res.text()
       const server = body.match(/whois:\s+(.*)\s+/)
-      if (server?.[1]) return server[1]
+      if (server?.[1])
+        return server[1]
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Error in getting WhoIs server data from IANA', err)
   }
 
@@ -37,7 +39,8 @@ export async function findWhoIsServer(tld: string): Promise<string> {
  * @returns WhoIs server which hosts the information for the domains of the TLD
  */
 export function getWhoIsServer(tld: keyof typeof SERVERS): string | undefined {
-  if (tld === 'com') return 'whois.verisign-grs.com'
+  if (tld === 'com')
+    return 'whois.verisign-grs.com'
   return SERVERS[tld]
 }
 
@@ -89,22 +92,26 @@ export class WhoIsParser {
       if (letter === '\n' || (lastLetter === ':' && letter === ' ')) {
         if (lastStr.trim() in outputData) {
           lastField = lastStr.trim()
-        } else if (lastField !== null) {
+        }
+        else if (lastField !== null) {
           const x = lastStr.trim()
           if (x !== '') {
             const obj = outputData[lastField]
-            if (Array.isArray(obj)) obj.push(x)
+            if (Array.isArray(obj))
+              obj.push(x)
             else outputData[lastField] = x
 
             lastField = null
           }
         }
         lastStr = ''
-      } else if (letter !== ':') {
+      }
+      else if (letter !== ':') {
         lastStr = lastStr + letter
       }
       lastLetter = letter as string
-      if (lastStr === 'Record maintained by' || lastStr === '>>>') break
+      if (lastStr === 'Record maintained by' || lastStr === '>>>')
+        break
     }
 
     return outputData
@@ -125,7 +132,7 @@ export class WhoIsParser {
         'Updated Date': '',
         'Registry Expiry Date': '',
         'Domain Status': [],
-        Registrar: '',
+        'Registrar': '',
       }
     }
 
@@ -162,7 +169,8 @@ export async function tcpWhois(
     return new Promise((resolve, reject) => {
       try {
         socket.connect({ port, host: server }, () => {
-          if (queryOptions !== '') socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
+          if (queryOptions !== '')
+            socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
           else socket.write(encoder.encode(`${domain}\r\n`))
         })
 
@@ -173,7 +181,8 @@ export async function tcpWhois(
         socket.on('error', (error) => {
           reject(error)
         })
-      } catch (e) {
+      }
+      catch (e) {
         reject(e)
       }
     })
@@ -203,12 +212,15 @@ export async function tcpWhois(
     SocksClient.createConnection(options, (err, info) => {
       if (err) {
         reject(err)
-      } else {
-        if (!info) reject(new Error('No socket info received!'))
+      }
+      else {
+        if (!info)
+          reject(new Error('No socket info received!'))
 
         if (queryOptions !== '') {
           info?.socket.write(encoder.encode(`${queryOptions} ${domain}\r\n`))
-        } else {
+        }
+        else {
           info?.socket.write(encoder.encode(`${domain}\r\n`))
         }
 
@@ -244,7 +256,8 @@ export async function whois(
   if (!options) {
     tld = getTLD(domain)
     proxy = null
-  } else {
+  }
+  else {
     tld = options.tld ? options.tld : getTLD(domain)
     encoding = options.encoding ? options.encoding : 'utf-8'
     proxy = options.proxy ? options.proxy : null
@@ -286,7 +299,8 @@ export async function whois(
     }
 
     let outputData: any | null = null
-    if (options?.parseData) outputData = shallowCopy(options.parseData)
+    if (options?.parseData)
+      outputData = shallowCopy(options.parseData)
 
     try {
       const parsedData = WhoIsParser.parseData(rawData, outputData)
@@ -294,14 +308,16 @@ export async function whois(
         _raw: rawData,
         parsedData,
       }
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error in parsing WhoIs data!', err)
       return {
         _raw: rawData,
         parsedData: null,
       }
     }
-  } catch (err) {
+  }
+  catch (err) {
     return {
       _raw: '',
       parsedData: null,
@@ -336,7 +352,8 @@ export async function batchWhois(
   let response: WhoIsResponse[] = []
 
   if (parallel) {
-    if (threads > domains.length) threads = domains.length
+    if (threads > domains.length)
+      threads = domains.length
 
     for (let i = 0; i < domains.length; i += threads) {
       const batch = domains.slice(i, i + threads)
@@ -346,7 +363,8 @@ export async function batchWhois(
         }),
       )
     }
-  } else {
+  }
+  else {
     for (let i = 0; i < domains.length; i++) {
       const res = await whois(domains[i] as string, parse, options)
       response.push(res)

@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 import User from './User'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -105,7 +101,8 @@ export class DeploymentModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -120,7 +117,8 @@ export class DeploymentModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -138,7 +136,7 @@ export class DeploymentModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
@@ -154,7 +152,8 @@ export class DeploymentModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -174,7 +173,7 @@ export class DeploymentModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new DeploymentModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -268,7 +267,8 @@ export class DeploymentModel {
       .execute()
 
     let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10)) nextCursor = deploymentsWithExtra.pop()?.id ?? null
+    if (deploymentsWithExtra.length > (options.limit ?? 10))
+      nextCursor = deploymentsWithExtra.pop()?.id ?? null
 
     return {
       data: deploymentsWithExtra,
@@ -317,7 +317,8 @@ export class DeploymentModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('deployments').where('id', '=', id).execute()
     }
   }
@@ -330,9 +331,11 @@ export class DeploymentModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -351,9 +354,11 @@ export class DeploymentModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -503,7 +508,8 @@ export class DeploymentModel {
   }
 
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
-    if (this.id === undefined) throw new Error('Deployment ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Deployment ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
@@ -517,7 +523,8 @@ export class DeploymentModel {
   }
 
   async forceUpdate(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
-    if (this.id === undefined) throw new Error('Deployment ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Deployment ID is undefined')
 
     await db.updateTable('deployments').set(deployment).where('id', '=', this.id).executeTakeFirst()
 
@@ -527,21 +534,24 @@ export class DeploymentModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('Deployment data is undefined')
+    if (!this)
+      throw new Error('Deployment data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('deployments')
         .values(this as NewDeployment)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the deployment instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Deployment ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Deployment ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -555,18 +565,21 @@ export class DeploymentModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('deployments').where('id', '=', this.id).execute()
     }
   }
 
   async user() {
-    if (this.deployment_id === undefined) throw new Error('Relation Error!')
+    if (this.deployment_id === undefined)
+      throw new Error('Relation Error!')
 
     const model = await User.where('id', '=', deployment_id).first()
 
-    if (!model) throw new Error('Model Relation Not Found!')
+    if (!model)
+      throw new Error('Model Relation Not Found!')
 
     return model
   }
@@ -624,7 +637,8 @@ export class DeploymentModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type Deployment = Omit<DeploymentType, 'password'>
@@ -646,7 +660,8 @@ async function find(id: number): Promise<DeploymentModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new DeploymentModel(model)
 }
@@ -675,49 +690,49 @@ export async function whereCommitSha(value: string): Promise<DeploymentModel[]> 
   const query = db.selectFrom('deployments').where('commit_sha', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereCommitMessage(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('commit_message', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereBranch(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('branch', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereExecutionTime(value: number): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('execution_time', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereDeployScript(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('deploy_script', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereTerminalOutput(value: string): Promise<DeploymentModel[]> {
   const query = db.selectFrom('deployments').where('terminal_output', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new DeploymentModel(modelItem))
+  return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export const Deployment = DeploymentModel

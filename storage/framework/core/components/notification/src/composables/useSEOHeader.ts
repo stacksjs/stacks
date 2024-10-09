@@ -3,7 +3,7 @@ import { useHead, useSeoMeta } from '@vueuse/head'
 function useSEOHeader() {
   useHead({
     title: 'stacks/notification',
-    titleTemplate: (title) => `${title} | A basic notification/toast component.`,
+    titleTemplate: title => `${title} | A basic notification/toast component.`,
     meta: [
       {
         name: 'author',

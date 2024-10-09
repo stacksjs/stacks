@@ -12,7 +12,8 @@ export function shallowCopy<T>(obj: T): T {
   if (typeof obj === 'object' && obj !== null) {
     const copy: any = {}
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) copy[key] = shallowCopy(obj[key])
+      if (Object.prototype.hasOwnProperty.call(obj, key))
+        copy[key] = shallowCopy(obj[key])
     }
     return copy as T
   }

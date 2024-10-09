@@ -1,8 +1,7 @@
-import schema from '@vinejs/vine'
-import { SimpleMessagesProvider, errors as VineError } from '@vinejs/vine'
+import schema, { SimpleMessagesProvider, errors as VineError } from '@vinejs/vine'
 import rule from 'validator'
 
-export { schema, rule, SimpleMessagesProvider, VineError }
+export { rule, schema, SimpleMessagesProvider, VineError }
 
 type SchemaString = string
 type SchemaNumber = number
@@ -11,8 +10,8 @@ type SchemaEnum = string[]
 
 export type SchemaType = SchemaString | SchemaNumber | SchemaBoolean | SchemaEnum
 
+export { VineBoolean, VineDate, VineEnum, VineNumber, VineString } from '@vinejs/vine'
 export type { Infer } from '@vinejs/vine/types'
-export { VineString, VineBoolean, VineEnum, VineNumber, VineDate } from '@vinejs/vine'
 
 export const validate = {
   string: (defaultValue = ''): SchemaString => defaultValue,

@@ -1,9 +1,9 @@
+import type { CLI, ReleaseOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, ReleaseOptions } from '@stacksjs/types'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
@@ -21,7 +21,8 @@ export function release(buddy: CLI): void {
     .action(async (options: ReleaseOptions) => {
       log.debug('Running `buddy release` ...', options)
 
-      if (options.dryRun) log.warn('Dry run enabled. No changes will be made or committed.')
+      if (options.dryRun)
+        log.warn('Dry run enabled. No changes will be made or committed.')
 
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, {

@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { Action } from '@stacksjs/actions'
 
 /**

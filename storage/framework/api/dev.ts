@@ -1,9 +1,9 @@
 import { watch } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import process from 'node:process'
-import { italic, log, runCommandSync } from '@stacksjs/cli'
+import { log, runCommandSync } from '@stacksjs/cli'
 import { app, ports } from '@stacksjs/config'
-import { path, join } from '@stacksjs/path'
+import { join, path } from '@stacksjs/path'
 import { serve } from '@stacksjs/router'
 
 declare global {
@@ -26,14 +26,16 @@ async function watchFolders() {
     const ignore = ['dist', 'bun-create', 'lint', 'components']
 
     // no need to build these directories
-    if (ignore.includes(dir.name)) return
+    if (ignore.includes(dir.name))
+      return
 
     if (dir.isDirectory()) {
       log.debug(`Watching ${dir.name} for changes ...`)
 
       const srcPath = join(path.corePath(), dir.name, 'src')
       watch(srcPath, { recursive: true }, (event: string, filename: string | null) => {
-        if (filename === null) return
+        if (filename === null)
+          return
 
         log.info(`Detected ${event} in ./core/${filename}`)
         log.info(`Rebuilding package ...`)
@@ -47,14 +49,16 @@ async function watchFolders() {
   })
 
   watch(path.routesPath(), (event: string, filename: string | null) => {
-    if (filename === null) return
+    if (filename === null)
+      return
 
     log.info(`Detected ${event} in ./routes/${filename}`)
   })
 }
 
 // @ts-expect-error - somehow type is not recognized
-if (globalThis.counter === 1) watchFolders().catch(log.error)
+if (globalThis.counter === 1)
+  watchFolders().catch(log.error)
 else log.debug(`Skipping watching folders`)
 
 serve({
@@ -68,6 +72,7 @@ process.on('SIGINT', () => {
 })
 
 // @ts-expect-error - somehow type is not recognized
-if (globalThis.counter === 1) log.info(`Listening on http://localhost:${ports.api} ...`)
+if (globalThis.counter === 1)
+  log.info(`Listening on http://localhost:${ports.api} ...`)
 // @ts-expect-error - somehow type is not recognized
 else log.info(`#${globalThis.counter}: Listening on http://localhost:${ports.api} ...`)

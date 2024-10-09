@@ -1,5 +1,5 @@
-import { env } from '@stacksjs/env'
 import type { DatabaseConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Database Configuration**

@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Stacks enums.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/enums#readme",
@@ -16,7 +17,6 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": ["enums", "utilities", "functions", "stacks"],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "exports": {
     ".": {
       "bun": "./src/index.ts",

@@ -34,7 +34,8 @@ export function avg(arr: number[]): number {
  * ```
  */
 export function median(arr: number[]): number {
-  if (arr.length === 0) throw new Error('Cannot compute median of an empty array')
+  if (arr.length === 0)
+    throw new Error('Cannot compute median of an empty array')
 
   const sorted = [...arr].sort((a, b) => a - b)
 
@@ -42,7 +43,8 @@ export function median(arr: number[]): number {
 
   let medianValue: number
 
-  if (sorted.length % 2 !== 0) medianValue = sorted[mid] as number
+  if (sorted.length % 2 !== 0)
+    medianValue = sorted[mid] as number
   else medianValue = ((sorted[mid] as number) + (sorted[mid - 1] as number)) / 2 // or (sorted[mid - 1] + sorted[mid]) / 2
 
   return medianValue
@@ -62,7 +64,7 @@ export function median(arr: number[]): number {
  * ```
  */
 export function mode(arr: number[]): number {
-  return arr.sort((a, b) => arr.filter((v) => v === a).length - arr.filter((v) => v === b).length).pop() as number
+  return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop() as number
 }
 
 /**
@@ -146,7 +148,7 @@ export function range(array: readonly number[]): number {
  */
 export function variance(array: number[]): number {
   const mean = average(array)
-  return average(array.map((num) => (num - mean) ** 2))
+  return average(array.map(num => (num - mean) ** 2))
 }
 
 /**
@@ -199,7 +201,8 @@ export function percentile(array: number[], num: number): number {
   const upper = Math.ceil(index)
   const weight = index - lower
 
-  if (upper === lower) return sorted[index] ?? 0
+  if (upper === lower)
+    return sorted[index] ?? 0
   return (1 - weight) * (sorted[lower] ?? 0) + weight * (sorted[upper] ?? 0)
 }
 
@@ -232,7 +235,8 @@ export function interquartileRange(array: number[]): number {
  * ```
  */
 export function covariance(array1: number[], array2: number[]): number {
-  if (array1.length !== array2.length) throw new Error('Arrays must have the same length')
+  if (array1.length !== array2.length)
+    throw new Error('Arrays must have the same length')
 
   const mean1 = average(array1)
   const mean2 = average(array2)

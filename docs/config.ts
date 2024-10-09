@@ -1,5 +1,5 @@
-import { SocialLinkIcon } from '@stacksjs/types'
 import type { DocsConfig } from '@stacksjs/types'
+import { SocialLinkIcon } from '@stacksjs/types'
 
 const nav = [
   {

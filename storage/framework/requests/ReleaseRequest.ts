@@ -1,8 +1,6 @@
-import { Request } from '@stacksjs/router'
-import { validateField } from '@stacksjs/validation'
-import { customValidate } from '@stacksjs/validation'
-
 import type { ReleaseRequestType } from '../types/requests'
+import { Request } from '@stacksjs/router'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -28,7 +26,8 @@ export class ReleaseRequest extends Request<RequestDataRelease> implements Relea
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('Release', this.all())
-    } else {
+    }
+    else {
       await customValidate(attributes, this.all())
     }
   }

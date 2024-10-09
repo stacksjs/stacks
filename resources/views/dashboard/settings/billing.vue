@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { loadStripe } from '@stripe/stripe-js'
 import type { Stripe } from '@stripe/stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
 
 let elements
 
@@ -58,9 +58,9 @@ async function payPlan() {
 </script>
 
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="px-4 py-8 lg:px-8 sm:px-6">
     <div class="flex space-x-4">
-      <div v-show="!loading" class="bg-white shadow-md px-8 py-6 rounded-md w-2/3">
+      <div v-show="!loading" class="w-2/3 rounded-md bg-white px-8 py-6 shadow-md">
         <form id="payment-form">
           <div id="link-authentication-element">
           <!-- Stripe.js injects the Link Authentication Element -->
@@ -78,10 +78,10 @@ async function payPlan() {
     </div>
   </div>
 
-  <div class="px-4 sm:px-6 lg:px-8 pb-12">
+  <div class="px-4 pb-12 lg:px-8 sm:px-6">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base font-semibold leading-6 text-gray-900">
+        <h1 class="text-base text-gray-900 font-semibold leading-6">
           Transaction History
         </h1>
         <p class="mt-2 text-sm text-gray-700">
@@ -91,25 +91,25 @@ async function payPlan() {
     </div>
 
     <div class="mt-8 flow-root">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
+        <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
                     Transaction
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
                     Date
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
                     Amount
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
                     Payment Method
                   </th>
 
@@ -119,9 +119,9 @@ async function payPlan() {
                 </tr>
               </thead>
 
-              <tbody class="divide-y divide-gray-200 bg-white">
+              <tbody class="bg-white divide-y divide-gray-200">
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
                     Dashboard Subscription <em class="italic">(monthly)</em>
                   </td>
 
@@ -148,14 +148,14 @@ async function payPlan() {
       </div>
     </div>
 
-    <div class="bg-white mt-16 px-8 py-6 w-2/3 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+    <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
       <div class="flex items-center">
         <img
           src="/images/logos/logo.svg"
           alt=""
-          class="w-12 h-12 rounded-md"
+          class="h-12 w-12 rounded-md"
         >
-        <h2 class="text-lg font-medium text-gray-900 ml-4">
+        <h2 class="ml-4 text-lg text-gray-900 font-medium">
           Stacks Dashboard
         </h2>
       </div>
@@ -165,22 +165,22 @@ async function payPlan() {
           Switch your subscription to a different type, such as a monthly plan, annual plan, or student plan.
         </p>
 
-        <p class="text-gray-700 pt-4 font-semibold text-sm">
+        <p class="pt-4 text-sm text-gray-700 font-semibold">
           Next payment of $20 (yearly) occurs on August 30, 2023
         </p>
       </div>
 
-      <div class="flex mt-8">
+      <div class="mt-8 flex">
         <button
           type="button"
-          class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
         >
           Cancel Plan
         </button>
 
         <button
           type="button"
-          class="rounded-md ml-4  bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
           @click="payPlan()"
         >
           Change Plan

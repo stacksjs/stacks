@@ -5,6 +5,7 @@
   "private": "true",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/dashboard#readme",
@@ -31,7 +32,6 @@
   ],
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "dev": "bunx --bun vite -c ../../core/vite-config/src/dashboard.ts",

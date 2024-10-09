@@ -1,7 +1,7 @@
 import type { Plugin } from 'vue'
+import type { NotificationProps } from './types'
 import { Toaster as Notification } from './components'
 import { notification } from './state'
-import type { NotificationProps } from './types'
 
 export { Notification, notification, type NotificationProps }
 

@@ -31,7 +31,7 @@ watch(
         class="flex-shrink-0"
       >
         <svg
-          class="w-6 h-6 text-yellow-400"
+          class="h-6 w-6 text-yellow-400"
           fill="none"
           stroke="currentColor"
           stroke-width="1.5"
@@ -51,7 +51,7 @@ watch(
         class="flex-shrink-0"
       >
         <svg
-          class="w-6 h-6 text-green-400"
+          class="h-6 w-6 text-green-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke-width="1.5"
@@ -70,7 +70,7 @@ watch(
         class="flex-shrink-0"
       >
         <svg
-          class="w-6 h-6 text-red-400"
+          class="h-6 w-6 text-red-400"
           fill="none"
           stroke="currentColor"
           stroke-width="1.5"
@@ -90,7 +90,7 @@ watch(
         class="flex-shrink-0"
       >
         <svg
-          class="w-6 h-6 text-blue-400"
+          class="h-6 w-6 text-blue-400"
           fill="none"
           stroke="currentColor"
           stroke-width="1.5"
@@ -107,7 +107,7 @@ watch(
       </div>
 
       <div class="ml-3 w-0 flex-1 pt-0.5">
-        <p class="text-sm font-medium text-left text-gray-900 dark:text-gray-100">
+        <p class="text-left text-sm text-gray-900 font-medium dark:text-gray-100">
           sample title
         </p>
       </div>

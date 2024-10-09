@@ -1,4 +1,4 @@
-import type { CSSProperties, Component } from 'vue'
+import type { Component, CSSProperties } from 'vue'
 
 export type ToastTypes = 'normal' | 'action' | 'success' | 'info' | 'warning' | 'error' | 'loading' | 'default'
 export type NotificationTypes = ToastTypes

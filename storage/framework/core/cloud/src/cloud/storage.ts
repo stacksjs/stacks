@@ -1,10 +1,10 @@
+import type { aws_cloudfront as cloudfront, aws_kms as kms } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { hasFiles } from '@stacksjs/storage'
-import type { aws_cloudfront as cloudfront, aws_kms as kms } from 'aws-cdk-lib'
-import { RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
-import type { NestedCloudProps } from '../types'
+import { aws_backup as backup, aws_iam as iam, RemovalPolicy, aws_s3 as s3, Tags } from 'aws-cdk-lib'
 
 export interface StorageStackProps extends NestedCloudProps {
   kmsKey: kms.Key

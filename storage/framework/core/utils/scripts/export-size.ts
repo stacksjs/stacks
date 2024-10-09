@@ -1,6 +1,6 @@
+import type { PackageManifest } from '@vueuse/metadata'
 // inspired by vue-use
 import { fs } from '@stacksjs/storage'
-import type { PackageManifest } from '@vueuse/metadata'
 import { filesize } from 'filesize'
 import { markdownTable } from 'markdown-table'
 import { version } from '../package.json'

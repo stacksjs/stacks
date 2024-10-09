@@ -1,5 +1,5 @@
-import { userMiddlewarePath } from '@stacksjs/path'
 import type { MiddlewareOptions } from '@stacksjs/types'
+import { userMiddlewarePath } from '@stacksjs/path'
 
 export class Middleware implements MiddlewareOptions {
   name: string
@@ -30,6 +30,6 @@ async function importMiddlewares(directory: string): Promise<string[]> {
   return [directory] // fix this: return array of middlewares
 }
 
-export const middlewares = async (): Promise<string[]> => {
+export async function middlewares(): Promise<string[]> {
   return await importMiddlewares(userMiddlewarePath())
 }

@@ -1,5 +1,5 @@
-import { List } from '@raycast/api'
 import type { BuddyCommand } from '../types'
+import { List } from '@raycast/api'
 
 export function DetailsView({ command }: { command: BuddyCommand }) {
   return <List.Item.Detail markdown={buildMarkdown(command)} />

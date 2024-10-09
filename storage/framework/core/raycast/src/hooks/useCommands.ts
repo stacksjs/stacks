@@ -1,6 +1,6 @@
+import type { BuddyCommand } from '../types'
 import { useFetch } from '@raycast/utils'
 import { API_URL } from '../config'
-import type { BuddyCommand } from '../types'
 
 interface UseCommandsOptions {
   search?: string
@@ -18,7 +18,7 @@ export function useCommands({ search, version }: UseCommandsOptions) {
   })
 
   return {
-    commands: data?.commands?.filter((c) => !c?.signature?.startsWith('_')),
+    commands: data?.commands?.filter(c => !c?.signature?.startsWith('_')),
     isLoading,
   }
 }

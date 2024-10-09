@@ -1,6 +1,6 @@
+import type { CAC } from '@stacksjs/cli'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import type { CAC } from '@stacksjs/cli'
 import { cli, log } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
@@ -32,7 +32,8 @@ async function main() {
   const isAppKeySet = await ensureProjectIsInitialized()
   if (isAppKeySet) {
     log.debug('Project is initialized')
-  } else {
+  }
+  else {
     log.info('Your `APP_KEY` is not yet set')
     log.info('Generating application key...')
     const result = await runAction(Action.KeyGenerate)
@@ -93,10 +94,12 @@ async function dynamicImports(buddy: CAC) {
     const dynamicImport = await import(commandPath)
 
     // Correctly use the default export function
-    if (typeof dynamicImport.default === 'function') dynamicImport.default(buddy)
+    if (typeof dynamicImport.default === 'function')
+      dynamicImport.default(buddy)
     else console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
   }
 
   const listenerImport = await import(p.listenersPath('Console.ts'))
-  if (typeof listenerImport.default === 'function') listenerImport.default(buddy)
+  if (typeof listenerImport.default === 'function')
+    listenerImport.default(buddy)
 }

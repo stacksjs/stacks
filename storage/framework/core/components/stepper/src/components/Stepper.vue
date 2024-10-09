@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue'
 import type { OptionParams, StepperProps } from '../types'
+import { computed, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue'
 import Step from './Step.vue'
 
 defineOptions({
@@ -18,9 +18,9 @@ const props = withDefaults(defineProps<StepperProps>(), {
   debug: false,
 })
 
-const modelValue = defineModel()
-
 const emit = defineEmits(['reset'])
+
+const modelValue = defineModel()
 
 const namespace = { kebab: 'stepper', capitalize: 'Stepper' }
 const stepsArr = ref(getStepsArr())
@@ -53,7 +53,8 @@ onMounted(() => {
     if (storage) {
       stepsArr.value = storage.stepsArr
       currentIndex.value = storage.index
-    } else {
+    }
+    else {
       setStorage()
     }
   }
@@ -72,7 +73,7 @@ function getSlotName(suffix: string, displayIndex: string, options: Partial<Opti
   const name = []
 
   if (Number.isNaN(displayIndex)) {
-    throw new Error(`[Stepper.Utils.getSlotName warn]: Cannot generate name without a "displayIndex".`)
+    throw new TypeError(`[Stepper.Utils.getSlotName warn]: Cannot generate name without a "displayIndex".`)
   }
   if (prefix) {
     name.push(prefix)
@@ -129,13 +130,14 @@ function handleChange(stepIndex: number) {
 
       emitValue(toValue(stepIndex))
     }
-  } else {
+  }
+  else {
     setStep(oldIndex, 'visited', true)
     emitValue(toValue(stepIndex))
   }
 }
 function getStepsArr() {
-  return Array.from(Array(props.steps), (step, index) => {
+  return Array.from(new Array(props.steps), (step, index) => {
     const isFirst = index === 0
     const isNext = index - 1 === 0
     let disabled = false
@@ -193,45 +195,47 @@ defineExpose({
   reset,
 })
 </script>
+
 <template>
-  <div class="flex w-full select-none box-border justify-between ">
-    <step
+  <div class="box-border w-full flex select-none justify-between">
+    <Step
       v-for="(step, $index) in stepsArr"
-      :name="id"
       :key="$index"
+      :name="id"
       :debug="debug"
       :index="$index"
-      @change="handleChange"
       :visited="step.visited"
       :disabled="step.disabled"
       :with-divider="withDivider"
       :active="step.index === toIndex(modelValue)"
-      :isLastStep="steps === ($index + 1)"
+      :is-last-step="steps === ($index + 1)"
+      @change="handleChange"
     >
-        <template
-        v-slot:index-root="scope"
+      <template
         v-if="withSlot(getSlotName('index-root', $index + 1))"
-        >
-        <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope"></slot>
+        #index-root="scope"
+      >
+        <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope" />
       </template>
 
       <template
         v-if="withoutSlot(getSlotName('index-root', $index + 1))"
-        v-slot:index="scope">
+        #index="scope"
+      >
         <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
           {{ scope.displayIndex }}
         </slot>
       </template>
 
-        <template v-slot:defaultSlot="scope" >
-        <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope">2</slot>
+      <template #defaultSlot="scope">
+        <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope">
+          2
+        </slot>
       </template>
-
-    </step>
+    </Step>
   </div>
 </template>
 
 <style scoped>
   @unocss-placeholder
 </style>
-

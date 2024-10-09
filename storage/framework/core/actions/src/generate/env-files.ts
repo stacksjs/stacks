@@ -22,9 +22,10 @@ declare module 'bun' {
 
         if (!value) {
           if (envEnum[key]) {
-            type = envEnum[key]?.map((item) => `'${item}'`).join(' | ')
+            type = envEnum[key]?.map(item => `'${item}'`).join(' | ')
             value = envEnum[key]?.[0] // default to the first enum value
-          } else {
+          }
+          else {
             switch (type) {
               case 'number':
                 value = '0'
@@ -42,15 +43,19 @@ declare module 'bun' {
         if (typeof value === 'string') {
           if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
             type = 'boolean'
-          } else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
-            type = 'number'
-          } else if (envEnum[key]) {
-            // @ts-expect-error envEnum[key] is defined
-            type = envEnum[key].map((item) => `'${item}'`).join(' | ')
           }
-        } else if (typeof value === 'number') {
+          else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
+            type = 'number'
+          }
+          else if (envEnum[key]) {
+            // @ts-expect-error envEnum[key] is defined
+            type = envEnum[key].map(item => `'${item}'`).join(' | ')
+          }
+        }
+        else if (typeof value === 'number') {
           type = 'number'
-        } else if (typeof value === 'boolean') {
+        }
+        else if (typeof value === 'boolean') {
           type = 'boolean'
         }
 
@@ -73,7 +78,7 @@ const env = `
 // For more information, please visit: https://stacksjs.org/docs
 
 export const envKeys = [
-  ${envKeys.map((key) => `'${key}'`).join(',\n  ')}
+  ${envKeys.map(key => `'${key}'`).join(',\n  ')}
 ] as const
 
 export type EnvKey = typeof envKeys[number]

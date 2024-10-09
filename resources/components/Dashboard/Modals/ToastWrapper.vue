@@ -40,27 +40,27 @@ function closeToast() {
           'flex justify-end mt-4': position === 'top-right',
           'flex justify-start': position === 'top-left',
         }"
-        class="p-4 my-8 text-center sm:items-center sm:p-0"
+        class="my-8 p-4 text-center sm:items-center sm:p-0"
       >
         <!-- Global notification live region, render this permanently at the end of the document -->
         <div
           aria-live="assertive"
-          class="fixed inset-0 flex items-end px-4 py-6 pointer-events-none sm:items-start sm:p-6"
+          class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6"
         >
-          <div class="flex flex-col items-center w-full space-y-4 sm:items-end">
-            <div class="w-full max-w-sm overflow-hidden bg-white rounded-lg shadow-lg pointer-events-auto dark:bg-gray-700 ring-1 ring-black ring-opacity-5">
+          <div class="w-full flex flex-col items-center sm:items-end space-y-4">
+            <div class="pointer-events-auto max-w-sm w-full overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700">
               <div class="p-4">
                 <div class="flex items-center">
                   <slot name="modal-body" />
-                  <div class="flex flex-shrink-0 ml-4">
+                  <div class="ml-4 flex flex-shrink-0">
                     <button
                       type="button"
-                      class="inline-flex text-gray-400 rounded-md hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      class="inline-flex rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       @click="closeToast()"
                     >
                       <span class="sr-only">Close</span>
                       <svg
-                        class="w-5 h-5"
+                        class="h-5 w-5"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"

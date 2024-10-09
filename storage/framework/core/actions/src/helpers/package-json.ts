@@ -19,13 +19,15 @@ export async function generatePackageJson(type: PackageJsonType): Promise<void> 
     directory = 'components'
     keywords = library.vueComponents?.keywords
     config = 'vue-components'
-  } else if (type === 'web-components') {
+  }
+  else if (type === 'web-components') {
     name = library.webComponents?.name
     description = library.webComponents?.description
     directory = 'components'
     keywords = library.webComponents?.keywords
     config = 'web-components'
-  } else if (type === 'functions') {
+  }
+  else if (type === 'functions') {
     name = library.functions?.name
     description = library.functions?.description
     directory = 'functions'
@@ -82,12 +84,16 @@ export async function generatePackageJson(type: PackageJsonType): Promise<void> 
 `,
     })
 
-    if (type === 'vue-components') prettyName = 'Vue Component library'
-    else if (type === 'web-components') prettyName = 'Web Component library'
-    else if (type === 'functions') prettyName = 'Function Library'
+    if (type === 'vue-components')
+      prettyName = 'Vue Component library'
+    else if (type === 'web-components')
+      prettyName = 'Web Component library'
+    else if (type === 'functions')
+      prettyName = 'Function Library'
 
     log.success(`Created ${prettyName} package.json file`)
-  } catch (err) {
+  }
+  catch (err) {
     log.error(`There was an error creating the ${prettyName} package.json`, err)
   }
 }

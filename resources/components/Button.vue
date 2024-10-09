@@ -32,10 +32,13 @@ const variantStyles = {
 const className = computed(() => {
   let classes = baseStyles[props.variant ?? 'solid']
 
-  if (props.variant === 'outline') classes += ` ${variantStyles.outline[props.color ?? 'slate']}`
-  else if (props.variant === 'solid') classes += ` ${variantStyles.solid[props.color ?? 'slate']}`
+  if (props.variant === 'outline')
+    classes += ` ${variantStyles.outline[props.color ?? 'slate']}`
+  else if (props.variant === 'solid')
+    classes += ` ${variantStyles.solid[props.color ?? 'slate']}`
 
-  if (props.className) classes += ` ${props.className}`
+  if (props.className)
+    classes += ` ${props.className}`
 
   return classes
 })

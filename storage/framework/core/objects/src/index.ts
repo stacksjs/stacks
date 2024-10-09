@@ -79,10 +79,12 @@ export function deepMerge<T extends object = object, S extends object = T>(
   target: T,
   ...sources: S[]
 ): DeepMerge<T, S> {
-  if (!sources.length) return target as any
+  if (!sources.length)
+    return target as any
 
   const source = sources.shift()
-  if (source === undefined) return target as any
+  if (source === undefined)
+    return target as any
 
   if (isMergeableObject(target) && isMergeableObject(source)) {
     objectKeys(source).forEach((key) => {
@@ -95,7 +97,8 @@ export function deepMerge<T extends object = object, S extends object = T>(
 
         // @ts-expect-error some description
         deepMerge(target[key], source[key])
-      } else {
+      }
+      else {
         // @ts-expect-error some description
         target[key] = source[key]
       }
@@ -118,7 +121,8 @@ export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[
   return keys.reduce(
     (n, k) => {
       if (k in obj) {
-        if (!omitUndefined || obj[k] !== undefined) n[k] = obj[k]
+        if (!omitUndefined || obj[k] !== undefined)
+          n[k] = obj[k]
       }
       return n
     },
@@ -132,7 +136,7 @@ export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[
  * @category Object
  */
 export function clearUndefined<T extends object>(obj: T): T {
-  ;(Object.keys(obj) as Array<keyof T>).forEach((key) => obj[key] === undefined && delete obj[key])
+  ;(Object.keys(obj) as Array<keyof T>).forEach(key => obj[key] === undefined && delete obj[key])
   return obj
 }
 

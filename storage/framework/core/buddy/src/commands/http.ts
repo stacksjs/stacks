@@ -1,7 +1,7 @@
+import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI } from '@stacksjs/types'
 
 // import { path } from '@stacksjs/path'
 import { log, runCommandSync } from '@stacksjs/cli'

@@ -1,4 +1,4 @@
-import { InvokeModelCommand, client } from './utils/client-bedrock-runtime'
+import { client, InvokeModelCommand } from './utils/client-bedrock-runtime'
 
 export interface AiOptions {
   maxTokenCount?: number
@@ -31,7 +31,8 @@ export async function summarize(text: string, options: SummarizeOptions = {}): P
     const response = await client.send(command)
     const responseBody = JSON.parse(new TextDecoder().decode(response.body))
     return responseBody.results[0].outputText
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error summarizing text:', error)
     throw error
   }
@@ -60,7 +61,8 @@ export async function ask(question: string, options: AskOptions = {}): Promise<s
     const responseBody = JSON.parse(new TextDecoder().decode(response.body))
 
     return responseBody.results[0].outputText
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error asking question:', error)
     throw error
   }

@@ -1,6 +1,6 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { setCurrentRegistrationOptions, verifyRegistrationResponse } from '@stacksjs/auth'
-import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -14,7 +14,8 @@ export default new Action({
 
     const user = await User.where('email', email).first()
 
-    if (!user) return
+    if (!user)
+      return
 
     try {
       const verification = await verifyRegistrationResponse({
@@ -28,7 +29,8 @@ export default new Action({
 
       console.log(verification)
       return verification
-    } catch (error) {
+    }
+    catch (error) {
       console.error(error)
     }
 

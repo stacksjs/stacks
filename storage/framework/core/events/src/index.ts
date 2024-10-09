@@ -38,7 +38,8 @@ export interface Emitter<Events extends Record<EventType, unknown>> {
 export default function mitt<Events extends Record<EventType, unknown>>(
   all?: EventHandlerMap<Events>,
 ): Emitter<Events> {
-  if (!all) all = new Map()
+  if (!all)
+    all = new Map()
 
   return {
     /**
@@ -56,12 +57,15 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = (
         all as EventHandlerMap<Events>
       ).get(type)
-      if (handlers) handlers.push(handler as Handler<Events[Key]> | WildcardHandler<Events>)
+      if (handlers) {
+        handlers.push(handler as Handler<Events[Key]> | WildcardHandler<Events>)
+      }
       // Explicitly assert the type of the handler array being set in the map. Unsure if there is a better way to do this
-      else
+      else {
         (all as EventHandlerMap<Events>).set(type, [handler] as
-          | EventHandlerList<Events[keyof Events]>
-          | WildCardEventHandlerList<Events>)
+        | EventHandlerList<Events[keyof Events]>
+        | WildCardEventHandlerList<Events>)
+      }
     },
 
     /**
@@ -78,8 +82,10 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       if (handlers) {
         if (handler) {
           const index = handlers.indexOf(handler as Handler<Events[Key]> | WildcardHandler<Events>)
-          if (index > -1) handlers.splice(index, 1)
-        } else {
+          if (index > -1)
+            handlers.splice(index, 1)
+        }
+        else {
           ;(all as EventHandlerMap<Events>).set(type, [])
         }
       }
@@ -99,13 +105,15 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       let handlers = (all as EventHandlerMap<Events>).get(type)
       if (handlers) {
         ;(handlers as EventHandlerList<Events[keyof Events]>).slice().forEach((handler) => {
-          if (evt !== undefined) handler(evt)
+          if (evt !== undefined)
+            handler(evt)
         })
       }
       handlers = (all as EventHandlerMap<Events>).get('*')
       if (handlers) {
         ;(handlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
-          if (evt !== undefined) handler(type, evt)
+          if (evt !== undefined)
+            handler(type, evt)
         })
       }
     },
@@ -135,7 +143,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  */
 
 // TODO: need to create an action that auto generates this Events type from the ./app/Events
-type StacksEvents = {
+interface StacksEvents {
   'user:registered': object
   'user:logged-in': object
   'user:logged-out': object

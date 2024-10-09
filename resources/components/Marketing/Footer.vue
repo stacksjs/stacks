@@ -9,7 +9,7 @@ const currentYear = computed(() => new Date().getFullYear())
       <div class="py-16">
         <!-- <Logo class="mx-auto h-10 w-auto" /> -->
         <nav class="mt-10 text-sm" aria-label="quick links">
-          <div class="-my-1 flex justify-center gap-x-6">
+          <div class="flex justify-center gap-x-6 -my-1">
             <!-- <h3 class="inline-block rounded-lg px-2 py-1 text-sm text-slate-200 hover:bg-slate-100 hover:text-slate-900 italic text-xl font-bold">
               Stay tuned
             </h3> -->

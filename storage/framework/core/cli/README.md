@@ -20,7 +20,7 @@ Now, you can use it in your project:
 ```js
 // command.ts
 // you may create create a relatively complex CLI UI/UX via the following:
-import { ExitCode, command, italic, prompts, spawn, spinner } from '@stacksjs/cli'
+import { command, ExitCode, italic, prompts, spawn, spinner } from '@stacksjs/cli'
 
 const stacks = command('stacks')
 
@@ -79,11 +79,11 @@ bun command.ts
 The `intro` and `outro` functions will print a message to begin or end a prompt session, respectively.
 
 ```js
-import { intro, outro } from '@stacksjs/cli';
+import { intro, outro } from '@stacksjs/cli'
 
-intro(`create-my-app`);
+intro(`create-my-app`)
 // Do stuff
-outro(`You're all set!`);
+outro(`You're all set!`)
 ```
 
 ### Cancellation
@@ -91,13 +91,13 @@ outro(`You're all set!`);
 The `isCancel` function is a guard that detects when a user cancels a question with `CTRL + C`. You should handle this situation for each prompt, optionally providing a nice cancellation message with the `cancel` utility.
 
 ```js
-import { isCancel, cancel, text } from '@stacksjs/cli';
+import { cancel, isCancel, text } from '@stacksjs/cli'
 
-const value = await text(/* TODO */);
+const value = await text(/* TODO */)
 
 if (isCancel(value)) {
-  cancel('Operation cancelled.');
-  process.exit(0);
+  cancel('Operation cancelled.')
+  process.exit(0)
 }
 ```
 
@@ -108,16 +108,17 @@ if (isCancel(value)) {
 The text component accepts a single line of text.
 
 ```js
-import { text } from '@stacksjs/cli';
+import { text } from '@stacksjs/cli'
 
 const meaning = await text({
   message: 'What is the meaning of life?',
   placeholder: 'Not sure',
   initialValue: '42',
   validate(value) {
-    if (value.length === 0) return `Value is required!`;
+    if (value.length === 0)
+      return `Value is required!`
   },
-});
+})
 ```
 
 ### Confirm
@@ -125,11 +126,11 @@ const meaning = await text({
 The confirm component accepts a yes or no answer. The result is a boolean value of `true` or `false`.
 
 ```js
-import { confirm } from '@stacksjs/cli';
+import { confirm } from '@stacksjs/cli'
 
 const shouldContinue = await confirm({
   message: 'Do you want to continue?',
-});
+})
 ```
 
 ### Select
@@ -137,7 +138,7 @@ const shouldContinue = await confirm({
 The select component allows a user to choose one value from a list of options. The result is the `value` prop of a given option.
 
 ```js
-import { select } from '@stacksjs/cli';
+import { select } from '@stacksjs/cli'
 
 const projectType = await select({
   message: 'Pick a project type.',
@@ -146,7 +147,7 @@ const projectType = await select({
     { value: 'js', label: 'JavaScript' },
     { value: 'coffee', label: 'CoffeeScript', hint: 'oh no' },
   ],
-});
+})
 ```
 
 ### Multi-Select
@@ -154,7 +155,7 @@ const projectType = await select({
 The `multiselect` component allows a user to choose many values from a list of options. The result is an array with all selected `value` props.
 
 ```js
-import { multiselect } from '@stacksjs/cli';
+import { multiselect } from '@stacksjs/cli'
 
 const additionalTools = await multiselect({
   message: 'Select additional tools.',
@@ -164,7 +165,7 @@ const additionalTools = await multiselect({
     { value: 'gh-action', label: 'GitHub Action' },
   ],
   required: false,
-});
+})
 ```
 
 ### Spinner
@@ -172,12 +173,12 @@ const additionalTools = await multiselect({
 The spinner component surfaces a pending action, such as a long-running download or dependency installation.
 
 ```js
-import { spinner } from '@stacksjs/cli';
+import { spinner } from '@stacksjs/cli'
 
-const s = spinner();
-s.start('Installing via npm');
+const s = spinner()
+s.start('Installing via npm')
 // Do installation here
-s.stop('Installed via npm');
+s.stop('Installed via npm')
 ```
 
 ## Utilities
@@ -187,7 +188,7 @@ s.stop('Installed via npm');
 Grouping prompts together is a great way to keep your code organized. This accepts a JSON object with a name that can be used to reference the group later. The second argument is an optional but has a `onCancel` callback that will be called if the user cancels one of the prompts in the group.
 
 ```js
-import * as p from '@stacksjs/cli';
+import * as p from '@stacksjs/cli'
 
 const group = await p.group(
   {
@@ -207,13 +208,13 @@ const group = await p.group(
     // On Cancel callback that wraps the group
     // So if the user cancels one of the prompts in the group this function will be called
     onCancel: ({ results }) => {
-      p.cancel('Operation cancelled.');
-      process.exit(0);
+      p.cancel('Operation cancelled.')
+      process.exit(0)
     },
   }
-);
+)
 
-console.log(group.name, group.age, group.color);
+console.log(group.name, group.age, group.color)
 ```
 
 ### Tasks
@@ -226,10 +227,10 @@ await p.tasks([
     title: 'Installing via npm',
     task: async (message) => {
       // Do installation here
-      return 'Installed via npm';
+      return 'Installed via npm'
     },
   },
-]);
+])
 ```
 
 To view a more detailed example, check out [Buddy](../../buddy/).

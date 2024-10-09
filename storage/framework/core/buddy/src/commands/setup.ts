@@ -1,3 +1,4 @@
+import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
@@ -6,7 +7,6 @@ import { handleError } from '@stacksjs/error-handling'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, CliOptions } from '@stacksjs/types'
 
 export function setup(buddy: CLI): void {
   const descriptions = {
@@ -25,7 +25,8 @@ export function setup(buddy: CLI): void {
     .action(async (options: CliOptions) => {
       log.debug('Running `buddy setup` ...', options)
 
-      if (!(await isPkgxInstalled())) await installPkgx()
+      if (!(await isPkgxInstalled()))
+        await installPkgx()
 
       // ensure the minimal amount of deps are written to ./pkgx.yaml
       await optimizePkgxDeps()
@@ -59,7 +60,8 @@ export function setup(buddy: CLI): void {
 async function isPkgxInstalled(): Promise<boolean> {
   const result = await runCommand('pkgx --version', { silent: true })
 
-  if (result.isOk()) return true
+  if (result.isOk())
+    return true
 
   return false
 }
@@ -67,7 +69,8 @@ async function isPkgxInstalled(): Promise<boolean> {
 async function installPkgx(): Promise<void> {
   const result = await runCommand(p.frameworkPath('scripts/pkgx-install'))
 
-  if (result.isOk()) return
+  if (result.isOk())
+    return
 
   handleError(result.error)
   process.exit(ExitCode.FatalError)
@@ -118,7 +121,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 }
 
 export async function optimizePkgxDeps(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 300))
+  return new Promise(resolve => setTimeout(resolve, 300))
 }
 
 export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
@@ -135,7 +138,8 @@ export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
     }
 
     log.success('.env created')
-  } else {
+  }
+  else {
     log.success('.env existed')
   }
 }

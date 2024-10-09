@@ -72,12 +72,12 @@ export function isArray(v: any): boolean {
 export function isPrimitive(v: any): boolean {
   const type = getTypeName(v)
   return (
-    type === 'null' ||
-    type === 'undefined' ||
-    type === 'string' ||
-    type === 'number' ||
-    type === 'boolean' ||
-    type === 'symbol'
+    type === 'null'
+    || type === 'undefined'
+    || type === 'string'
+    || type === 'number'
+    || type === 'boolean'
+    || type === 'symbol'
   )
 }
 

@@ -1,6 +1,6 @@
-import { aws_ec2 as ec2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { aws_ec2 as ec2 } from 'aws-cdk-lib'
 
 export interface NetworkStackProps extends NestedCloudProps {
   //

@@ -1,15 +1,15 @@
 import type { CreateHostedZoneCommandOutput, HostedZone } from '@aws-sdk/client-route-53'
+import type { Result } from '@stacksjs/error-handling'
+import type { CommandError, DeployOptions, Subprocess } from '@stacksjs/types'
 import { Route53 } from '@aws-sdk/client-route-53'
 import { Route53Domains } from '@aws-sdk/client-route-53-domains'
 import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
-import type { Result } from '@stacksjs/error-handling'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import type { CommandError, DeployOptions, Subprocess } from '@stacksjs/types'
 
 export async function deleteHostedZone(domainName: string): Promise<Result<string, Error>> {
   const route53 = new Route53()
@@ -21,8 +21,9 @@ export async function deleteHostedZone(domainName: string): Promise<Result<strin
   if (!hostedZones || !hostedZones.HostedZones)
     return err(handleError(`No hosted zones found for domain: ${domainName}`))
 
-  const hostedZone = hostedZones.HostedZones.find((zone) => zone.Name === `${domainName}.`)
-  if (!hostedZone) return err(handleError(`Hosted Zone not found for domain: ${domainName}`))
+  const hostedZone = hostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
+  if (!hostedZone)
+    return err(handleError(`Hosted Zone not found for domain: ${domainName}`))
 
   // Delete all record sets
   const recordSets = await route53.listResourceRecordSets({
@@ -67,8 +68,9 @@ export async function deleteHostedZoneRecords(domainName: string): Promise<Resul
   if (!hostedZones || !hostedZones.HostedZones)
     return err(handleError(`No hosted zones found for domain: ${domainName}`))
 
-  const hostedZone = hostedZones.HostedZones.find((zone) => zone.Name === `${domainName}.`)
-  if (!hostedZone) return err(handleError(`Hosted Zone not found for domain: ${domainName}`))
+  const hostedZone = hostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
+  if (!hostedZone)
+    return err(handleError(`Hosted Zone not found for domain: ${domainName}`))
 
   // Delete all record sets
   const recordSets = await route53.listResourceRecordSets({
@@ -107,10 +109,11 @@ export async function createHostedZone(
   const existingHostedZones = await route53.listHostedZonesByName({
     DNSName: domainName,
   })
-  const existingHostedZone = existingHostedZones.HostedZones?.find((zone) => zone.Name === `${domainName}.`)
+  const existingHostedZone = existingHostedZones.HostedZones?.find(zone => zone.Name === `${domainName}.`)
 
   // if the hosted zone already exists, then we want to
-  if (existingHostedZone) return ok(existingHostedZone)
+  if (existingHostedZone)
+    return ok(existingHostedZone)
 
   // Create the hosted zone
   const createHostedZoneOutput = await route53.createHostedZone({
@@ -118,7 +121,8 @@ export async function createHostedZone(
     CallerReference: `${Date.now()}`,
   })
 
-  if (!createHostedZoneOutput.HostedZone) return err(handleError('Failed to create hosted zone'))
+  if (!createHostedZoneOutput.HostedZone)
+    return err(handleError('Failed to create hosted zone'))
 
   return ok(createHostedZoneOutput)
 }
@@ -129,12 +133,13 @@ export function writeNameserversToConfig(nameservers: string[]): void {
     const fileContent = fs.readFileSync(path, 'utf-8')
     const modifiedContent = fileContent.replace(
       /nameservers: \[.*?\]/s,
-      `nameservers: [${nameservers.map((ns) => `'${ns}'`).join(', ')}]`,
+      `nameservers: [${nameservers.map(ns => `'${ns}'`).join(', ')}]`,
     )
     fs.writeFileSync(path, modifiedContent, 'utf-8')
 
     log.info('Nameservers have been set.')
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Error updating nameservers:', err)
   }
 }
@@ -146,23 +151,27 @@ export async function findHostedZone(domain: string): Promise<Result<string | nu
       DNSName: domain,
     })
 
-    if (!HostedZones) return err(handleError(`No hosted zones found for domain ${domain}`))
+    if (!HostedZones)
+      return err(handleError(`No hosted zones found for domain ${domain}`))
 
     // The API returns hosted zones sorted by name in ASCII order,
     // so the desired hosted zone (if it exists) should be the first one in the list
     const hostedZone = HostedZones[0]
 
-    if (hostedZone && hostedZone.Name === `${domain}.`) return ok(hostedZone.Id)
+    if (hostedZone && hostedZone.Name === `${domain}.`)
+      return ok(hostedZone.Id)
 
     return ok(null)
-  } catch (error) {
+  }
+  catch (error) {
     return err(handleError(`Failed to find hosted zone for domain ${domain}`, error))
   }
 }
 
 export async function getNameservers(domainName?: string): Promise<string[] | undefined> {
   log.debug('Getting nameservers for domain:', domainName)
-  if (!domainName) return []
+  if (!domainName)
+    return []
 
   try {
     const route53Domains = new Route53Domains()
@@ -170,8 +179,9 @@ export async function getNameservers(domainName?: string): Promise<string[] | un
       DomainName: domainName,
     })
 
-    return domainDetail?.Nameservers?.map((ns) => ns.Name as string) || []
-  } catch (error) {
+    return domainDetail?.Nameservers?.map(ns => ns.Name as string) || []
+  }
+  catch (error) {
     handleError('Error getting domain detail', error)
   }
 }
@@ -180,13 +190,14 @@ export async function updateNameservers(
   hostedZoneNameservers: string[],
   domainName?: string,
 ): Promise<boolean | undefined> {
-  if (!domainName) domainName = config.app.url
+  if (!domainName)
+    domainName = config.app.url
 
   const domainNameservers = await getNameservers(domainName)
   if (
-    domainNameservers &&
-    hostedZoneNameservers &&
-    JSON.stringify(domainNameservers.sort()) !== JSON.stringify(hostedZoneNameservers.sort())
+    domainNameservers
+    && hostedZoneNameservers
+    && JSON.stringify(domainNameservers.sort()) !== JSON.stringify(hostedZoneNameservers.sort())
   ) {
     log.info('Updating your domain nameservers to match the ones in your hosted zone...')
     log.debug('Hosted zone nameservers:', hostedZoneNameservers)
@@ -195,7 +206,7 @@ export async function updateNameservers(
 
     await route53Domains.updateDomainNameservers({
       DomainName: domainName,
-      Nameservers: hostedZoneNameservers.map((ns) => ({ Name: ns })),
+      Nameservers: hostedZoneNameservers.map(ns => ({ Name: ns })),
     })
 
     writeNameserversToConfig(hostedZoneNameservers)
@@ -210,7 +221,8 @@ export async function updateNameservers(
 // please note, this function also updates the user's nameservers if they are out of date
 export async function hasUserDomainBeenAddedToCloud(domainName?: string): Promise<boolean> {
   log.debug('Checking if domain has been added to cloud...')
-  if (!domainName) domainName = config.app.url
+  if (!domainName)
+    domainName = config.app.url
   log.debug('domainName:', domainName)
 
   // check if the hosted zone already exists
@@ -220,9 +232,10 @@ export async function hasUserDomainBeenAddedToCloud(domainName?: string): Promis
   })
   log.debug('Existing hosted zones:', existingHostedZones)
 
-  if (!existingHostedZones || !existingHostedZones.HostedZones) return false
+  if (!existingHostedZones || !existingHostedZones.HostedZones)
+    return false
 
-  const existingHostedZone = existingHostedZones.HostedZones.find((zone) => zone.Name === `${domainName}.`)
+  const existingHostedZone = existingHostedZones.HostedZones.find(zone => zone.Name === `${domainName}.`)
 
   if (existingHostedZone) {
     log.debug('Hosted zone found:', existingHostedZone)

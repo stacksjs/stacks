@@ -7,4 +7,5 @@ const result = await runCommand(
   },
 )
 
-if (result.isErr()) log.error(result.error)
+if (result.isErr())
+  log.error(result.error)

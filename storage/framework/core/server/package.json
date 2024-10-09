@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/server#readme",
@@ -36,7 +37,6 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "build": "bun build.ts",
@@ -50,7 +50,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "devDependencies": {
-    "vite": "^5.4.8",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "vite": "^5.4.8"
   }
 }

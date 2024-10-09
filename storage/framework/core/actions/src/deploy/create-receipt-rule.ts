@@ -16,7 +16,8 @@ const s3 = new S3({ apiVersion: '2006-03-01' })
 let bucketName: string | undefined
 const data = await s3.listBuckets({})
 
-if (data.Buckets) bucketName = data.Buckets.find((bucket) => bucket.Name?.includes('-email-'))?.Name
+if (data.Buckets)
+  bucketName = data.Buckets.find(bucket => bucket.Name?.includes('-email-'))?.Name
 
 console.log('Bucket Name:', bucketName)
 
@@ -46,6 +47,7 @@ const params: any = {
 try {
   const data = await ses.createReceiptRule(params)
   log.info('Success', data)
-} catch (error) {
+}
+catch (error) {
   console.error(error)
 }

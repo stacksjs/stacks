@@ -1,8 +1,8 @@
 # preload these modules before running bun
-preload = ["./resources/preloader/main.ts"]
+preload = [ "./resources/preloader/main.ts" ]
 
 [test]
-preload = ["./resources/preloader/test.ts"]
+preload = [ "./resources/preloader/test.ts" ]
 coverage = true
 
 [install]

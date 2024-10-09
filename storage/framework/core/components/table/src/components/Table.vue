@@ -49,25 +49,29 @@ const {
 } = defineProps<Props>()
 
 const parsedColumns = computed((): string[] => {
-  if (isString(columns)) return (columns as string).split(',').map((col) => col.trim())
+  if (isString(columns))
+    return (columns as string).split(',').map(col => col.trim())
 
   return columns as string[]
 })
 
 const parsedSorts = computed((): string[] => {
-  if (isString(sorts)) return (sorts as string).split(',').map((col) => col.trim())
+  if (isString(sorts))
+    return (sorts as string).split(',').map(col => col.trim())
 
   return sorts as string[]
 })
 
 const parsedFilters = computed((): string[] => {
-  if (isString(filters)) return (filters as string).split(',').map((col) => col.trim())
+  if (isString(filters))
+    return (filters as string).split(',').map(col => col.trim())
 
   return filters as string[]
 })
 
 const itemsPerPage = computed((): number => {
-  if (isString(perPage)) return Number.parseInt(perPage as string)
+  if (isString(perPage))
+    return Number.parseInt(perPage as string)
 
   return perPage as number
 })
@@ -123,11 +127,11 @@ table.results = results as SearchResponse
 </script>
 
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col mt-8">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-black ring-1 ring-opacity-5 md:rounded-lg">
+  <div class="px-4 lg:px-8 sm:px-6">
+    <div class="mt-8 flex flex-col">
+      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
+        <div class="inline-block min-w-full py-2 align-middle lg:px-8 md:px-6">
+          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
               <TableHead />
               <TableBody>

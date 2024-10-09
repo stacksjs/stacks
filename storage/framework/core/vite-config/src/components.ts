@@ -1,10 +1,10 @@
+import type { ViteConfig } from '@stacksjs/types'
+import type { ViteBuildOptions } from '.'
 import { alias } from '@stacksjs/alias'
 import { config as c } from '@stacksjs/config'
 import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
-import type { ViteConfig } from '@stacksjs/types'
 import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
-import type { ViteBuildOptions } from '.'
 
 export const componentsConfig: ViteConfig = {
   root: libsPath('components/vue'),
@@ -50,7 +50,8 @@ export function vueComponentsBuildOptions(): ViteBuildOptions {
       name: c.library.vueComponents?.name,
       formats: ['es'],
       fileName: (format: string) => {
-        if (format === 'es') return 'index.js'
+        if (format === 'es')
+          return 'index.js'
 
         return 'index.?.js'
       },

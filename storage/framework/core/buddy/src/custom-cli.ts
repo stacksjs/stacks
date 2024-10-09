@@ -24,7 +24,8 @@ async function main() {
     const dynamicImport = await import(commandPath)
 
     // Correctly use the default export function
-    if (typeof dynamicImport.default === 'function') dynamicImport.default(buddy)
+    if (typeof dynamicImport.default === 'function')
+      dynamicImport.default(buddy)
     else console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
   }
 

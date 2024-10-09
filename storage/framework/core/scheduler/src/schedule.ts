@@ -1,5 +1,5 @@
-import { log, runCommand } from '@stacksjs/cli'
 import type { DateTime } from 'luxon'
+import { log, runCommand } from '@stacksjs/cli'
 import { CronJob, CronTime } from './'
 
 export class Schedule {

@@ -1,6 +1,6 @@
+import type { Plugin } from 'vite'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { path as p } from '@stacksjs/path'
-import type { Plugin } from 'vite'
 
 export function i18n(): Plugin {
   // @ts-expect-error - somehow a pwa error happens when we type `name` in this plugin

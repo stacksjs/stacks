@@ -55,7 +55,7 @@ const plans = [
   >
     <Container>
       <div class="md:text-center">
-        <h2 class="font-display text-3xl tracking-tight text-white sm:text-4xl">
+        <h2 class="font-display text-3xl text-white tracking-tight sm:text-4xl">
           <span class="relative whitespace-nowrap">
             <svg
               aria-hidden="true"
@@ -78,7 +78,7 @@ const plans = [
           work well for you.
         </p>
       </div>
-      <div class="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-3 xl:mx-0 xl:gap-x-8">
+      <div class="grid grid-cols-1 mt-16 max-w-2xl gap-y-10 lg:grid-cols-3 -mx-4 sm:mx-auto xl:mx-0 lg:max-w-none xl:gap-x-8 lg:-mx-8">
         <!-- <Plan
           :key="index"
           :name="plans[0].name"
@@ -94,7 +94,7 @@ const plans = [
             false ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
           ]"
         >
-          <h3 class="mt-5 font-display text-lg text-white">
+          <h3 class="font-display mt-5 text-lg text-white">
             {{ plans?.[0]?.name }}
           </h3>
           <p
@@ -105,7 +105,7 @@ const plans = [
           >
             {{ plans?.[0]?.description }}
           </p>
-          <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+          <p class="font-display order-first text-5xl text-white font-light tracking-tight">
             {{ plans?.[0]?.price }}
           </p>
           <ul
@@ -132,7 +132,7 @@ const plans = [
             true ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
           ]"
         >
-          <h3 class="mt-5 font-display text-lg text-white">
+          <h3 class="font-display mt-5 text-lg text-white">
             {{ plans?.[1]?.name }}
           </h3>
           <p
@@ -143,7 +143,7 @@ const plans = [
           >
             {{ plans?.[1]?.description }}
           </p>
-          <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+          <p class="font-display order-first text-5xl text-white font-light tracking-tight">
             {{ plans?.[1]?.price }}
           </p>
           <ul
@@ -170,7 +170,7 @@ const plans = [
             false ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
           ]"
         >
-          <h3 class="mt-5 font-display text-lg text-white">
+          <h3 class="font-display mt-5 text-lg text-white">
             {{ plans?.[2]?.name }}
           </h3>
           <p
@@ -181,7 +181,7 @@ const plans = [
           >
             {{ plans?.[2]?.description }}
           </p>
-          <p class="order-first font-display text-5xl font-light tracking-tight text-white">
+          <p class="font-display order-first text-5xl text-white font-light tracking-tight">
             {{ plans?.[2]?.price }}
           </p>
           <ul

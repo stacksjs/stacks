@@ -1,3 +1,4 @@
+import type { CLI, MakeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
   createModel,
@@ -15,7 +16,6 @@ import { intro, italic, outro, runCommand } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
-import type { CLI, MakeOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export function make(buddy: CLI): void {

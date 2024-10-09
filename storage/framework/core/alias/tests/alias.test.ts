@@ -30,7 +30,7 @@ describe('@stacksjs/alias', () => {
   it('should have all aliases starting with "@stacksjs/" or "stacks/" or "~/" or "framework/" or be "stacks"', () => {
     const validPrefixes = ['@stacksjs/', 'stacks/', '~/', 'framework/']
     Object.keys(alias).forEach((key) => {
-      expect(validPrefixes.some((prefix) => key.startsWith(prefix) || key === 'stacks')).toBe(true)
+      expect(validPrefixes.some(prefix => key.startsWith(prefix) || key === 'stacks')).toBe(true)
     })
   })
 

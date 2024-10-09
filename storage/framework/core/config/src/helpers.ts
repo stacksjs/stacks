@@ -1,4 +1,3 @@
-import { createLocalTunnel } from '@stacksjs/tunnel'
 import type {
   AppConfig,
   CacheConfig,
@@ -25,6 +24,7 @@ import type {
   StorageConfig,
   UiConfig,
 } from '@stacksjs/types'
+import { createLocalTunnel } from '@stacksjs/tunnel'
 import { config } from '.'
 
 export type LocalUrlType =
@@ -51,53 +51,71 @@ export async function localUrl({
   localhost?: boolean
   https?: boolean
 } = {}): Promise<string> {
-  let url = domain.replace(/\.[^\.]+$/, '.localhost')
+  let url = domain.replace(/\.[^.]+$/, '.localhost')
 
   switch (type) {
     case 'frontend':
-      if (network) return await createLocalTunnel(config.ports?.frontend || 3000)
-      if (localhost) return `http://localhost:${config.ports?.frontend}`
+      if (network)
+        return await createLocalTunnel(config.ports?.frontend || 3000)
+      if (localhost)
+        return `http://localhost:${config.ports?.frontend}`
       break
     case 'backend':
-      if (network) return await createLocalTunnel(config.ports?.backend || 3001)
-      if (localhost) return `http://localhost:${config.ports?.backend}`
+      if (network)
+        return await createLocalTunnel(config.ports?.backend || 3001)
+      if (localhost)
+        return `http://localhost:${config.ports?.backend}`
       url = `api.${url}`
       break
     case 'admin':
-      if (network) return await createLocalTunnel(config.ports?.admin || 3002)
-      if (localhost) return `http://localhost:${config.ports?.admin}`
+      if (network)
+        return await createLocalTunnel(config.ports?.admin || 3002)
+      if (localhost)
+        return `http://localhost:${config.ports?.admin}`
       url = `admin.${url}`
       break
     case 'library':
-      if (network) return await createLocalTunnel(config.ports?.library || 3003)
-      if (localhost) return `http://localhost:${config.ports?.library}`
+      if (network)
+        return await createLocalTunnel(config.ports?.library || 3003)
+      if (localhost)
+        return `http://localhost:${config.ports?.library}`
       url = `libs.${url}`
       break
     case 'email':
-      if (network) return await createLocalTunnel(config.ports?.email || 3005)
-      if (localhost) return `http://localhost:${config.ports?.email}`
+      if (network)
+        return await createLocalTunnel(config.ports?.email || 3005)
+      if (localhost)
+        return `http://localhost:${config.ports?.email}`
       url = `email.${url}`
       break
     case 'desktop':
-      if (network) return await createLocalTunnel(config.ports?.desktop || 3004)
-      if (localhost) return `http://localhost:${config.ports?.desktop}`
+      if (network)
+        return await createLocalTunnel(config.ports?.desktop || 3004)
+      if (localhost)
+        return `http://localhost:${config.ports?.desktop}`
       url = `desktop.${url}`
       break
     case 'docs':
-      if (network) return await createLocalTunnel(config.ports?.docs || 3006)
-      if (localhost) return `http://localhost:${config.ports?.docs}`
+      if (network)
+        return await createLocalTunnel(config.ports?.docs || 3006)
+      if (localhost)
+        return `http://localhost:${config.ports?.docs}`
       url = `docs.${url}`
       break
     case 'inspect':
-      if (network) return await createLocalTunnel(config.ports?.inspect || 3007)
-      if (localhost) return `http://localhost:${config.ports?.inspect}`
+      if (network)
+        return await createLocalTunnel(config.ports?.inspect || 3007)
+      if (localhost)
+        return `http://localhost:${config.ports?.inspect}`
       url = `inspect.${url}`
       break
     default:
-      if (localhost) return `http://localhost:${config.ports?.frontend}`
+      if (localhost)
+        return `http://localhost:${config.ports?.frontend}`
   }
 
-  if (https) return `https://${url}`
+  if (https)
+    return `https://${url}`
   return `http://${url}`
 }
 

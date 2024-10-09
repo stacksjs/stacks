@@ -16,13 +16,17 @@ interface Props {
 }
 
 const buttonBackground = computed(() => {
-  if (type === 'info') return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+  if (type === 'info')
+    return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
 
-  if (type === 'warning') return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
+  if (type === 'warning')
+    return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
 
-  if (type === 'danger') return 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+  if (type === 'danger')
+    return 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
 
-  if (type === 'success') return 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+  if (type === 'success')
+    return 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
 
   return 'bg-white-600 hover:bg-gray-50  '
 })
@@ -38,16 +42,16 @@ function confirmAction() {
 <template>
   <BaseModal @close-modal="abortAction()">
     <template #modal-body>
-      <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
+      <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
         <button
           type="button"
-          class="text-gray-400 rounded-md dark:text-gray-200 dark-hover:text-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          class="rounded-md text-gray-400 dark:text-gray-200 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark-hover:text-gray-100"
           @click="abortAction()"
         >
           <span class="sr-only">Close</span>
           <!-- Heroicon name: outline/x-mark -->
           <svg
-            class="w-6 h-6"
+            class="h-6 w-6"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -67,11 +71,11 @@ function confirmAction() {
       <div class="sm:flex sm:items-start">
         <div
           v-if="type === 'warning'"
-          class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-yellow-100 rounded-full sm:mx-0 sm:h-10 sm:w-10"
+          class="mx-auto h-12 w-12 flex flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10"
         >
           <!-- Heroicon name: outline/exclamation-triangle -->
           <svg
-            class="w-6 h-6 text-yellow-600"
+            class="h-6 w-6 text-yellow-600"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -88,10 +92,10 @@ function confirmAction() {
         </div>
         <div
           v-if="type === 'success'"
-          class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-green-100 rounded-full sm:mx-0 sm:h-10 sm:w-10"
+          class="mx-auto h-12 w-12 flex flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10"
         >
           <svg
-            class="w-6 h-6 text-green-600"
+            class="h-6 w-6 text-green-600"
             fill="none"
             stroke="currentColor"
             stroke-width="1.5"
@@ -108,10 +112,10 @@ function confirmAction() {
         </div>
         <div
           v-if="type === 'error'"
-          class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full sm:mx-0 sm:h-10 sm:w-10"
+          class="mx-auto h-12 w-12 flex flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
         >
           <svg
-            class="w-6 h-6 text-red-600"
+            class="h-6 w-6 text-red-600"
             fill="none"
             stroke="currentColor"
             stroke-width="1.5"
@@ -128,10 +132,10 @@ function confirmAction() {
         </div>
         <div
           v-if="type === 'info'"
-          class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-blue-100 rounded-full sm:mx-0 sm:h-10 sm:w-10"
+          class="mx-auto h-12 w-12 flex flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10"
         >
           <svg
-            class="w-6 h-6 text-blue-600"
+            class="h-6 w-6 text-blue-600"
             fill="none"
             stroke="currentColor"
             stroke-width="1.5"
@@ -147,10 +151,10 @@ function confirmAction() {
           </svg>
         </div>
 
-        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
           <h3
             id="modal-title"
-            class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+            class="text-lg text-gray-900 font-medium leading-6 dark:text-gray-100"
           >
             {{ title }}
           </h3>
@@ -174,7 +178,7 @@ function confirmAction() {
       <button
         v-if="abortText"
         type="button"
-        class="mr-4 secondary-button"
+        class="secondary-button mr-4"
         @click="abortAction()"
       >
         {{ abortText }}

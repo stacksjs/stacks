@@ -1,21 +1,21 @@
 import type { Plugin } from 'vue'
+import type { Action, ExternalToast, NotificationProps, ToastClasses, ToastT, ToastToDismiss } from './types'
 import { Toaster as Notification, Toaster } from './components'
 import { useNotification } from './composables/useNotification'
 import { notification, toast } from './state'
-import type { Action, ExternalToast, NotificationProps, ToastClasses, ToastT, ToastToDismiss } from './types'
 
 export {
-  useNotification,
-  Notification,
-  Toaster,
-  notification,
-  toast,
-  type NotificationProps,
-  type ToastT,
-  type ToastToDismiss,
   type Action,
   type ExternalToast,
+  Notification,
+  notification,
+  type NotificationProps,
+  toast,
   type ToastClasses,
+  Toaster,
+  type ToastT,
+  type ToastToDismiss,
+  useNotification,
 }
 
 const plugin: Plugin = {

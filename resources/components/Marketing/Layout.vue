@@ -29,7 +29,7 @@ const lexend = {
       lexend.variable,
     ]"
   >
-    <body class="flex h-full flex-col">
+    <body class="h-full flex flex-col">
       <slot />
     </body>
   </html>

@@ -1,11 +1,12 @@
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server'
-import { type Insertable, db } from '@stacksjs/database'
 import type { UserModel } from '../../../orm/src/models/User'
+import { db, type Insertable } from '@stacksjs/database'
+
 export {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
   generateAuthenticationOptions,
+  generateRegistrationOptions,
   verifyAuthenticationResponse,
+  verifyRegistrationResponse,
 } from '@simplewebauthn/server'
 
 export type * from '@simplewebauthn/types'

@@ -1,7 +1,7 @@
-import { defu } from 'defu'
 import type { Options, TreeNode } from 'unplugin-vue-router'
-import VueRouter from 'unplugin-vue-router/vite'
 import type { Plugin } from 'vite'
+import { defu } from 'defu'
+import VueRouter from 'unplugin-vue-router/vite'
 
 // https://github.com/posva/unplugin-vue-router
 export function pages(options?: Options): Plugin {
@@ -18,7 +18,8 @@ export function pages(options?: Options): Plugin {
 
 function getFileBasedRouteName(node: TreeNode): string {
   // Base case: If node doesn't have a parent, return an empty string
-  if (!node.parent) return ''
+  if (!node.parent)
+    return ''
 
   // Recursive case: Concatenate the parent's value with the current node's value
   const segment = node.value.rawSegment === 'index' ? '' : node.value.rawSegment

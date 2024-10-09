@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -91,7 +87,8 @@ export class ProjectModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -106,7 +103,8 @@ export class ProjectModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -124,7 +122,7 @@ export class ProjectModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {
@@ -140,7 +138,8 @@ export class ProjectModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -160,7 +159,7 @@ export class ProjectModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new ProjectModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -254,7 +253,8 @@ export class ProjectModel {
       .execute()
 
     let nextCursor = null
-    if (projectsWithExtra.length > (options.limit ?? 10)) nextCursor = projectsWithExtra.pop()?.id ?? null
+    if (projectsWithExtra.length > (options.limit ?? 10))
+      nextCursor = projectsWithExtra.pop()?.id ?? null
 
     return {
       data: projectsWithExtra,
@@ -303,7 +303,8 @@ export class ProjectModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('projects').where('id', '=', id).execute()
     }
   }
@@ -316,9 +317,11 @@ export class ProjectModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -337,9 +340,11 @@ export class ProjectModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -465,7 +470,8 @@ export class ProjectModel {
   }
 
   async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined) throw new Error('Project ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Project ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(project).filter(([key]) => this.fillable.includes(key)),
@@ -479,7 +485,8 @@ export class ProjectModel {
   }
 
   async forceUpdate(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined) throw new Error('Project ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Project ID is undefined')
 
     await db.updateTable('projects').set(project).where('id', '=', this.id).executeTakeFirst()
 
@@ -489,21 +496,24 @@ export class ProjectModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('Project data is undefined')
+    if (!this)
+      throw new Error('Project data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('projects')
         .values(this as NewProject)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the project instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('Project ID is undefined')
+    if (this.id === undefined)
+      throw new Error('Project ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -517,7 +527,8 @@ export class ProjectModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('projects').where('id', '=', this.id).execute()
     }
@@ -573,7 +584,8 @@ export class ProjectModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type Project = Omit<ProjectType, 'password'>
@@ -595,7 +607,8 @@ async function find(id: number): Promise<ProjectModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new ProjectModel(model)
 }
@@ -624,28 +637,28 @@ export async function whereName(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('description', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export async function whereUrl(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('url', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProjectModel[]> {
   const query = db.selectFrom('projects').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new ProjectModel(modelItem))
+  return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export const Project = ProjectModel

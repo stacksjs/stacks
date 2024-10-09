@@ -14,7 +14,7 @@ export function sleep(ms: number): Promise<void> {
     throw new Error('sleep() requires a non-negative integer')
   }
 
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -27,7 +27,7 @@ export function wait(ms: number): Promise<void> {
     throw new Error('wait() requires a non-negative integer')
   }
 
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -40,10 +40,10 @@ export function delay(ms: number): Promise<void> {
     throw new Error('delay() requires a non-negative integer')
   }
 
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export type WaitOptions = {
+export interface WaitOptions {
   interval?: number
   timeout?: number
 }
@@ -67,7 +67,8 @@ export function waitUntil(condition: () => boolean, options: WaitOptions = {}): 
     const check = () => {
       if (condition()) {
         resolve()
-      } else {
+      }
+      else {
         setTimeout(check, interval)
       }
     }
@@ -99,7 +100,8 @@ export function waitWhile(condition: () => boolean, options: WaitOptions = {}): 
     const check = () => {
       if (!condition()) {
         resolve()
-      } else {
+      }
+      else {
         setTimeout(check, interval)
       }
     }

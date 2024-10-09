@@ -1,3 +1,5 @@
+import type { CLI, DeployOptions } from '@stacksjs/types'
+import { $ } from 'bun'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
@@ -6,8 +8,6 @@ import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, DeployOptions } from '@stacksjs/types'
-import { $ } from 'bun'
 
 export function deploy(buddy: CLI): void {
   const descriptions = {
@@ -36,7 +36,8 @@ export function deploy(buddy: CLI): void {
       const startTime = await intro('buddy deploy')
       const domain = options.domain || app.url
 
-      if ((options.prod || env === 'production' || env === 'prod') && !options.yes) await confirmProductionDeployment()
+      if ((options.prod || env === 'production' || env === 'prod') && !options.yes)
+        await confirmProductionDeployment()
 
       if (!domain) {
         log.info('No domain found in your .env or ./config/app.ts')
@@ -169,7 +170,8 @@ async function checkIfAwsIsBootstrapped() {
     log.success('AWS is bootstrapped')
 
     return true
-  } catch (err: any) {
+  }
+  catch (err: any) {
     log.debug(`Not yet bootstrapped. Failed with code ${err.exitCode}`)
     log.debug(err.stdout.toString())
     log.debug(err.stderr.toString())
@@ -182,7 +184,8 @@ async function checkIfAwsIsBootstrapped() {
       const result = await $`bun run bootstrap`
       console.log(result)
       return true
-    } catch (error) {
+    }
+    catch (error) {
       log.error('Failed to bootstrap AWS')
       console.error(error)
       process.exit(ExitCode.FatalError)

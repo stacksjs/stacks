@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
+import type { Position } from '../types'
 import { computed, ref } from 'vue'
 import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
-import type { Position } from '../types'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 
@@ -25,7 +25,8 @@ function handleChangePosition(activePosition: Position) {
   emit('update:position', activePosition)
 
   // No need to show a toast when there is already one
-  if (toastsAmount > 0 && props.position !== activePosition) return
+  if (toastsAmount > 0 && props.position !== activePosition)
+    return
 
   notification('Event has been created', {
     description: 'Monday, January 3rd at 6:00pm',
@@ -40,10 +41,10 @@ async function handleCopyCode() {
 
 <template>
   <div class="types">
-    <h1 class="text-lg font-semibold my-2">
+    <h1 class="my-2 text-lg font-semibold">
       Position
     </h1>
-    <p class="text-base my-3">
+    <p class="my-3 text-base">
       You can customize the type of toast you want to render, and pass an
       options object as the second argument.
     </p>
@@ -60,7 +61,7 @@ async function handleCopyCode() {
         {{ position }}
       </button>
     </div>
-    <div class="code-block relative group">
+    <div class="code-block group relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -70,7 +71,7 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute right-2 top-2 btn-border p-1 hidden group-hover:block"
+        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
         <CheckIcon v-if="showCheckIcon" />

@@ -35,12 +35,12 @@ async function handleCopyCode() {
 
 <template>
   <div class="types">
-    <h1 class="text-lg font-semibold my-2">
+    <h1 class="my-2 text-lg font-semibold">
       Expand
     </h1>
-    <p class="text-base my-3">
+    <p class="my-3 text-base">
       You can change the number of visible toasts through the
-      <code class="text-xs !bg-neutral-200/66 p-1 mx-1 rounded-md">
+      <code class="mx-1 rounded-md p-1 text-xs !bg-neutral-200/66">
         visibleToasts
       </code>
       prop, the default is 3 toasts.
@@ -65,7 +65,7 @@ async function handleCopyCode() {
         Default
       </button>
     </div>
-    <div class="code-block relative group">
+    <div class="code-block group relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -75,7 +75,7 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute right-2 top-2 btn-border p-1 hidden group-hover:block"
+        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
         <CheckIcon v-if="showCheckIcon" />

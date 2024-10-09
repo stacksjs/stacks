@@ -8,13 +8,13 @@
       <div class="border-b border-gray-900/10 pb-12">
         <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <div class="sm:col-span-3">
-            <label for="default-config" class="block text-sm font-medium leading-6 text-gray-900">Deploy AI
+            <label for="default-config" class="block text-sm text-gray-900 font-medium leading-6">Deploy AI
               Endpoints</label>
             <div class="mt-2">
               <!-- Enabled: "bg-indigo-600", Not Enabled: "bg-gray-200" -->
               <button
                 type="button"
-                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+                class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                 role="switch" aria-checked="false"
               >
                 <span class="sr-only">Deploy</span>
@@ -31,11 +31,11 @@
 
           <div class="sm:col-span-3">
             <div>
-              <label for="combobox" class="block text-sm font-medium leading-6 text-gray-900">Models</label>
+              <label for="combobox" class="block text-sm text-gray-900 font-medium leading-6">Models</label>
               <div class="relative mt-2">
                 <input
                   id="combobox" type="text"
-                  class="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  class="w-full border-0 rounded-md bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset"
                   role="combobox" aria-controls="options" aria-expanded="false"
                   value="meta.llama2-70b-chat-v1"
                 >
@@ -54,7 +54,7 @@
 
                 <ul
                   id="options"
-                  class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                  class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 sm:text-sm focus:outline-none"
                   role="listbox"
                 >
                   <!--
@@ -64,7 +64,7 @@
                   -->
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -79,7 +79,7 @@
                   </li>
                   <li
                     id="option-1"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -94,7 +94,7 @@
                   </li>
                   <li
                     id="option-1"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -109,7 +109,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -124,7 +124,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -139,7 +139,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -154,7 +154,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -169,7 +169,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -184,7 +184,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -199,7 +199,7 @@
                   </li>
                   <li
                     id="option-2"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -214,7 +214,7 @@
                   </li>
                   <li
                     id="option-0"
-                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:text-white hover:bg-indigo-600"
+                    class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white"
                     role="option" tabindex="-1"
                   >
                     <div class="flex items-center">
@@ -253,12 +253,12 @@
     </div>
 
     <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm font-semibold leading-6 text-gray-900">
+      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
         Cancel
       </button>
       <Button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
       >
         Save
       </Button>

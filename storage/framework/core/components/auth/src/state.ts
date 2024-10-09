@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { ExternalToast, HeightT, NotificationTypes, PromiseData, PromiseT, ToastT, ToastToDismiss } from './types'
+import type { ExternalToast, NotificationTypes, PromiseData, PromiseT, ToastT, ToastToDismiss } from './types'
 
 let toastsCounter = 0
 
@@ -23,7 +23,7 @@ class Observer {
   }
 
   publish = (data: ToastT) => {
-    this.subscribers.forEach((subscriber) => subscriber(data))
+    this.subscribers.forEach(subscriber => subscriber(data))
   }
 
   addToast = (data: ToastT) => {
@@ -60,7 +60,8 @@ class Observer {
 
         return toast
       })
-    } else {
+    }
+    else {
       this.addToast({ title: message, ...rest, dismissible, id })
     }
 
@@ -70,11 +71,11 @@ class Observer {
   dismiss = (id?: number | string) => {
     if (!id) {
       this.toasts.forEach((toast) => {
-        this.subscribers.forEach((subscriber) => subscriber({ id: toast.id, dismiss: true }))
+        this.subscribers.forEach(subscriber => subscriber({ id: toast.id, dismiss: true }))
       })
     }
 
-    this.subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }))
+    this.subscribers.forEach(subscriber => subscriber({ id, dismiss: true }))
     return id
   }
 
@@ -125,31 +126,32 @@ class Observer {
 
     p.then((promiseData) => {
       if (
-        promiseData &&
+        promiseData
         // @ts-expect-error - we need to check if the promise is a boolean
-        typeof promiseData.ok === 'boolean' &&
+        && typeof promiseData.ok === 'boolean'
         // @ts-expect-error - we need to check if the promise is a boolean
-        !promiseData.ok
+        && !promiseData.ok
       ) {
         shouldDismiss = false
-        const message =
-          typeof data.error === 'function'
+        const message
+          = typeof data.error === 'function'
             ? // @ts-expect-error - we need to check if the promise is a boolean
-              data.error(`HTTP error! status: ${response.status}`)
+            data.error(`HTTP error! status: ${response.status}`)
             : data.error
-        const description =
-          typeof data.description === 'function'
+        const description
+          = typeof data.description === 'function'
             ? // @ts-expect-error - we need to check if the promise is a boolean
-              data.description(`HTTP error! status: ${response.status}`)
+            data.description(`HTTP error! status: ${response.status}`)
             : data.description
         this.create({ id, type: 'error', message, description })
-      } else if (data.success !== undefined) {
+      }
+      else if (data.success !== undefined) {
         shouldDismiss = false
         const message = typeof data.success === 'function' ? data.success(promiseData) : data.success
-        const description =
-          typeof data.description === 'function'
+        const description
+          = typeof data.description === 'function'
             ? // @ts-expect-error - we need to check if the promise is a boolean
-              data.description(promiseData)
+            data.description(promiseData)
             : data.description
         this.create({ id, type: 'success', message, description })
       }
@@ -158,10 +160,10 @@ class Observer {
         if (data.error !== undefined) {
           shouldDismiss = false
           const message = typeof data.error === 'function' ? data.error(error) : data.error
-          const description =
-            typeof data.description === 'function'
+          const description
+            = typeof data.description === 'function'
               ? // @ts-expect-error - we need to check if the promise is a boolean
-                data.description(error)
+              data.description(error)
               : data.description
           this.create({ id, type: 'error', message, description })
         }

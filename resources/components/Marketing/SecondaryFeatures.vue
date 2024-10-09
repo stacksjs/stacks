@@ -15,7 +15,7 @@ const features = [
     name: 'Buddy CLI',
     summary: 'The Stacks runtime.',
     description:
-      "The Buddy toolkit makes it easy to interact with all your application needs. From development to releases and upgrades, this handy yet incredible tool is the last thing you'll ever need.",
+      'The Buddy toolkit makes it easy to interact with all your application needs. From development to releases and upgrades, this handy yet incredible tool is the last thing you\'ll ever need.',
     image:
       'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
     icon: '',
@@ -38,13 +38,13 @@ const selectedIndex = computed(() => tabIndex.value)
 </script>
 
 <template>
-  <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 sm:pb-20 sm:pt-32 lg:pb-32">
+  <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 lg:pb-32 sm:pb-20 sm:pt-32">
     <Container>
       <div class="mx-auto max-w-2xl md:text-center">
-        <h2 class="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
+        <h2 class="font-display text-3xl text-slate-900 tracking-tight sm:text-4xl">
           A Developer Experience Like No Other
         </h2>
-        <p class="mt-4 text-lg tracking-tight text-slate-700">
+        <p class="mt-4 text-lg text-slate-700 tracking-tight">
           Remove the boilerplate. Remove the repetition. Focus on what matters.
         </p>
       </div>
@@ -74,7 +74,7 @@ const selectedIndex = computed(() => tabIndex.value)
             <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 0 === selectedIndex, 'text-slate-600': 0 !== selectedIndex }">
               <Tab>{{ features?.[0]?.name }}</Tab>
             </h3>
-            <p class="mt-2 font-display text-xl text-slate-900">
+            <p class="font-display mt-2 text-xl text-slate-900">
               {{ features?.[0]?.summary }}
             </p>
             <p class="mt-4 text-sm text-slate-600">
@@ -91,7 +91,7 @@ const selectedIndex = computed(() => tabIndex.value)
             <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 1 === selectedIndex, 'text-slate-600': 1 !== selectedIndex }">
               <Tab>{{ features?.[1]?.name }}</Tab>
             </h3>
-            <p class="mt-2 font-display text-xl text-slate-900">
+            <p class="font-display mt-2 text-xl text-slate-900">
               {{ features?.[1]?.summary }}
             </p>
             <p class="mt-4 text-sm text-slate-600">
@@ -108,7 +108,7 @@ const selectedIndex = computed(() => tabIndex.value)
             <h3 class="mt-6 text-sm font-medium" :class="{ 'text-blue-600': 2 === selectedIndex, 'text-slate-600': 2 !== selectedIndex }">
               <Tab>{{ features?.[2]?.name }}</Tab>
             </h3>
-            <p class="mt-2 font-display text-xl text-slate-900">
+            <p class="font-display mt-2 text-xl text-slate-900">
               {{ features?.[2]?.summary }}
             </p>
             <p class="mt-4 text-sm text-slate-600">
@@ -117,8 +117,8 @@ const selectedIndex = computed(() => tabIndex.value)
           </div>
         </TabList>
 
-        <TabPanels class="relative mt-20 overflow-hidden rounded-4xl bg-slate-200 px-14 py-16 xl:px-16">
-          <div class="-mx-5 flex">
+        <TabPanels class="rounded-4xl relative mt-20 overflow-hidden bg-slate-200 px-14 py-16 xl:px-16">
+          <div class="flex -mx-5">
             <TabPanel :key="features?.[0]?.summary" class="px-5 transition duration-500 ease-in-out ui-not-focus-visible:outline-none" :class="{ 'opacity-60': 0 !== selectedIndex }" :style="{ transform: `translateX(-${selectedIndex * 100}%)` }" :aria-hidden="0 !== selectedIndex">
               <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
                 <img class="w-full" :src="features?.[0]?.image" alt="" sizes="52.75rem">
@@ -137,7 +137,7 @@ const selectedIndex = computed(() => tabIndex.value)
               </div>
             </TabPanel>
           </div>
-          <div class="pointer-events-none absolute inset-0 rounded-4xl ring-1 ring-inset ring-slate-900/10" />
+          <div class="rounded-4xl pointer-events-none absolute inset-0 ring-1 ring-slate-900/10 ring-inset" />
         </TabPanels>
       </TabGroup>
     </Container>

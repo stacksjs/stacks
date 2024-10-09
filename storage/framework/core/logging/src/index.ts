@@ -18,7 +18,8 @@ export function logLevel(): number {
   const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
   const opts = buddyOptions()
 
-  if (verboseRegex.test(opts)) return 4
+  if (verboseRegex.test(opts))
+    return 4
 
   // const config = await import('@stacksjs/config')
   // console.log('config', config)
@@ -46,10 +47,10 @@ export { consola, createConsola }
 type ErrorMessage = string
 export type ErrorOptions =
   | {
-      shouldExit: boolean
-      silent?: boolean
-      message?: ErrorMessage
-    }
+    shouldExit: boolean
+    silent?: boolean
+    message?: ErrorMessage
+  }
   | any
   | Error
 
@@ -70,32 +71,36 @@ export interface Log {
   echo: (...args: any[]) => void
 }
 
-export type LogOptions = {
+export interface LogOptions {
   styled?: boolean
 }
 
 export const log: Log = {
   info: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false) console.log(message)
+    if (options?.styled === false)
+      console.log(message)
     else logger.info(message)
     await writeToLogFile(`INFO: ${stripAnsi(message)}`)
   },
 
   success: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false) console.log(message)
+    if (options?.styled === false)
+      console.log(message)
     else logger.success(message)
     await writeToLogFile(`SUCCESS: ${stripAnsi(message)}`)
   },
 
   warn: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false) console.log(message)
+    if (options?.styled === false)
+      console.log(message)
     else logger.warn(message)
     await writeToLogFile(`WARN: ${stripAnsi(message)}`)
   },
 
   /** alias for `log.warn()`. */
   warning: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false) console.log(message)
+    if (options?.styled === false)
+      console.log(message)
     else logger.warn(message)
     await writeToLogFile(`WARN: ${stripAnsi(message)}`)
   },
@@ -105,25 +110,26 @@ export const log: Log = {
   },
 
   debug: async (...args: any[]) => {
-    const formattedArgs = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
+    const formattedArgs = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
     const message = `DEBUG: ${formattedArgs.join(' ')}`
 
-    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod') return writeToLogFile(message)
+    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
+      return writeToLogFile(message)
 
     logger.debug(message)
     await writeToLogFile(stripAnsi(message))
   },
 
-  dump: (...args: any[]) => args.forEach((arg) => console.log(arg)),
+  dump: (...args: any[]) => args.forEach(arg => console.log(arg)),
   dd: (...args: any[]) => {
-    args.forEach((arg) => console.log(arg))
+    args.forEach(arg => console.log(arg))
     process.exit(ExitCode.FatalError)
   },
   echo: (...args: any[]) => console.log(...args),
 }
 
 export function dump(...args: any[]): void {
-  args.forEach((arg) => log.debug(arg))
+  args.forEach(arg => log.debug(arg))
 }
 
 export function dd(...args: any[]): void {

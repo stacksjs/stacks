@@ -1,9 +1,9 @@
+import type { CLI, SeedOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, SeedOptions } from '@stacksjs/types'
 
 export function seed(buddy: CLI): void {
   const descriptions = {

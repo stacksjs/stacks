@@ -8,7 +8,7 @@ interface VersionSelectProps {
 export function VersionSelect({ versions, setVersion }: VersionSelectProps) {
   return (
     <List.Dropdown tooltip="Select Version" storeValue={true} onChange={setVersion}>
-      {versions?.map((version) => (
+      {versions?.map(version => (
         <List.Dropdown.Item key={version} value={version} title={version} />
       ))}
     </List.Dropdown>

@@ -33,15 +33,15 @@ export const fathomAnalyticsHead: HeadConfig[] = [
   [
     'script',
     {
-      src: 'https://cdn.usefathom.com/script.js',
+      'src': 'https://cdn.usefathom.com/script.js',
       'data-site': analytics.drivers?.fathom?.siteId || '',
-      defer: '',
+      'defer': '',
     },
   ],
 ]
 
-export const analyticsHead =
-  analytics.driver === 'fathom'
+export const analyticsHead
+  = analytics.driver === 'fathom'
     ? fathomAnalyticsHead
     : analytics.driver === 'google-analytics'
       ? googleAnalyticsHead

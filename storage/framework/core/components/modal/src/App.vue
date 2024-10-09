@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { Position, Theme } from './types'
 import { ref } from 'vue'
 // import { Notification } from '.'
 import Expand from './components/Expand.vue'
@@ -12,7 +13,6 @@ import Theming from './components/Theming.vue'
 import Types from './components/Types.vue'
 import Usage from './components/Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
-import type { Position, Theme } from './types'
 // import { toggleDarkMode, isDark } from './composables/useDarkMode'
 
 useSEOHeader()
@@ -25,14 +25,14 @@ const theme = ref<Theme>('light')
 </script>
 
 <template>
-  <div class="bg-neutral-100/66 dark:bg-neutral-900 px-4">
-    <div class="container mx-auto max-w-full sm:max-w-2xl relative">
-      <header class="py-20 flex-center flex-col">
+  <div class="bg-neutral-100/66 px-4 dark:bg-neutral-900">
+    <div class="relative mx-auto max-w-full container sm:max-w-2xl">
+      <header class="flex-center flex-col py-20">
         <Hero />
       </header>
 
       <main
-        class="grid grid-cols-1 gap-8 text-xs 2xl:text-sm text-primary pb-20"
+        class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
       >
         <Installation />
         <Usage />

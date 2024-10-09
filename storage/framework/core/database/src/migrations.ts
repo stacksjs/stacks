@@ -1,13 +1,11 @@
+import { $ } from 'bun'
 import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
-import { type Err, type Ok, type Result, err, handleError, ok } from '@stacksjs/error-handling'
+import { type Err, err, handleError, type Ok, ok, type Result } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
-import { $ } from 'bun'
 import { FileMigrationProvider, type MigrationResult, Migrator } from 'kysely'
-import { generateMysqlMigration, resetMysqlDatabase } from './drivers'
-import { generatePostgresMigration, resetPostgresDatabase } from './drivers'
-import { generateSqliteMigration, resetSqliteDatabase } from './drivers'
+import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { db } from './utils'
 
 const driver = database.default || ''
@@ -52,11 +50,13 @@ export async function runDatabaseMigration(): Promise<Result<MigrationResult[] |
       return ok('No new migrations were executed')
     }
 
-    if (results) return ok(results)
+    if (results)
+      return ok(results)
 
     log.success('Database migration completed with no new migrations.')
     return ok('Database migration completed with no new migrations.')
-  } catch (error) {
+  }
+  catch (error) {
     return err(handleError('Migration failed', error))
   }
 }
@@ -67,9 +67,12 @@ export interface MigrationOptions {
 }
 
 export async function resetDatabase(): Promise<Ok<string, never>> {
-  if (driver === 'sqlite') return await resetSqliteDatabase()
-  if (driver === 'mysql') return await resetMysqlDatabase()
-  if (driver === 'postgres') return await resetPostgresDatabase()
+  if (driver === 'sqlite')
+    return await resetSqliteDatabase()
+  if (driver === 'mysql')
+    return await resetMysqlDatabase()
+  if (driver === 'postgres')
+    return await resetPostgresDatabase()
 
   throw new Error('Unsupported database driver in resetDatabase')
 }
@@ -88,17 +91,21 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
 
     log.success('Migrations generated')
     return ok('Migrations generated')
-  } catch (error) {
+  }
+  catch (error) {
     return err(error)
   }
 }
 
 export async function generateMigration(modelPath: string): Promise<void> {
-  if (driver === 'sqlite') await generateSqliteMigration(modelPath)
+  if (driver === 'sqlite')
+    await generateSqliteMigration(modelPath)
 
-  if (driver === 'mysql') await generateMysqlMigration(modelPath)
+  if (driver === 'mysql')
+    await generateMysqlMigration(modelPath)
 
-  if (driver === 'postgres') await generatePostgresMigration(modelPath)
+  if (driver === 'postgres')
+    await generatePostgresMigration(modelPath)
 }
 
 export async function haveModelFieldsChangedSinceLastMigration(modelPath: string): Promise<boolean> {
@@ -122,7 +129,8 @@ export async function haveModelFieldsChangedSinceLastMigration(modelPath: string
 export async function lastMigration(): Promise<any> {
   try {
     return await db.selectFrom('migrations').selectAll().orderBy('timestamp', 'desc').limit(1).execute()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to get last migration:', error)
     return { error }
   }
@@ -132,7 +140,8 @@ export async function lastMigrationDate(): Promise<string | undefined> {
   try {
     return (await db.selectFrom('migrations').select('timestamp').orderBy('timestamp', 'desc').limit(1).execute())[0]
       .timestamp
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to get last migration date:', error)
     return undefined
   }

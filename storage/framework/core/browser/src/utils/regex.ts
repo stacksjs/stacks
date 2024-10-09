@@ -1,15 +1,15 @@
 export type {
   Flag,
+  Input,
   MagicRegExp,
   MagicRegExpMatchArray,
-  Input,
   MapToStringCapturedBy,
   StringCapturedBy,
 } from 'magic-regexp'
 export {
-  caseInsensitive,
   anyOf,
   carriageReturn,
+  caseInsensitive,
   char,
   charIn,
   charNotIn,

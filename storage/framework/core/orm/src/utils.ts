@@ -1,8 +1,3 @@
-import { generator, parser, traverse } from '@stacksjs/build'
-import { italic, log } from '@stacksjs/cli'
-import { path } from '@stacksjs/path'
-import { fs, globSync } from '@stacksjs/storage'
-import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import type {
   Attributes,
   FieldArrayElement,
@@ -11,6 +6,11 @@ import type {
   ModelElement,
   RelationConfig,
 } from '@stacksjs/types'
+import { generator, parser, traverse } from '@stacksjs/build'
+import { italic, log } from '@stacksjs/cli'
+import { path } from '@stacksjs/path'
+import { fs, globSync } from '@stacksjs/storage'
+import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
@@ -25,7 +25,8 @@ export async function modelTableName(model: Model | ModelPath): Promise<string> 
 }
 
 export function getModelName(model: Model, modelPath: string): string {
-  if (model.name) return model.name
+  if (model.name)
+    return model.name
 
   const baseName = path.basename(modelPath)
 
@@ -33,7 +34,8 @@ export function getModelName(model: Model, modelPath: string): string {
 }
 
 export function getTableName(model: Model, modelPath: string): string {
-  if (model.table) return model.table
+  if (model.table)
+    return model.table
 
   return snakeCase(plural(getModelName(model, modelPath)))
 }
@@ -84,8 +86,8 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable:
-            relationInstance?.pivotTable ||
-            getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
+            relationInstance?.pivotTable
+            || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
         })
       }
     }
@@ -99,11 +101,14 @@ export function getRelationType(relation: string): string {
   const hasType = /has/
   const throughType = /Through/
 
-  if (throughType.test(relation)) return 'throughType'
+  if (throughType.test(relation))
+    return 'throughType'
 
-  if (belongToType.test(relation)) return 'belongsType'
+  if (belongToType.test(relation))
+    return 'belongsType'
 
-  if (hasType.test(relation)) return 'hasType'
+  if (hasType.test(relation))
+    return 'hasType'
 
   return ''
 }
@@ -112,9 +117,11 @@ export function getRelationCount(relation: string): string {
   const singular = /One/
   const plural = /Many/
 
-  if (plural.test(relation)) return 'many'
+  if (plural.test(relation))
+    return 'many'
 
-  if (singular.test(relation)) return 'one'
+  if (singular.test(relation))
+    return 'one'
 
   return ''
 }
@@ -122,7 +129,7 @@ export function getRelationCount(relation: string): string {
 export async function getPivotTables(
   model: Model,
   modelPath: string,
-): Promise<{ table: string; firstForeignKey?: string; secondForeignKey?: string }[]> {
+): Promise<{ table: string, firstForeignKey?: string, secondForeignKey?: string }[]> {
   const pivotTable = []
 
   if ('belongsToMany' in model) {
@@ -133,13 +140,13 @@ export async function getPivotTables(
       const modelName = getModelName(model, modelPath)
       const formattedModelName = modelName.toLowerCase()
 
-      const firstForeignKey =
-        typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
+      const firstForeignKey
+        = typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
           ? belongsToManyRelation.firstForeignKey
           : `${modelName.toLowerCase()}_${model.primaryKey}`
 
-      const secondForeignKey =
-        typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
+      const secondForeignKey
+        = typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
           ? belongsToManyRelation.secondForeignKey
           : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
@@ -169,41 +176,48 @@ export async function fetchOtherModelRelations(model: Model, modelName?: string)
     const modelFileElement = modelFiles[i] as string
     const modelFile = await import(modelFileElement)
 
-    if (modelName === modelFile.default.name) continue
+    if (modelName === modelFile.default.name)
+      continue
 
     const otherModelName = getModelName(modelFile, modelFileElement)
     const relations = await getRelations(modelFile.default, otherModelName)
 
-    if (!relations.length) continue
+    if (!relations.length)
+      continue
 
-    const relation = relations.find((relation) => relation.model === modelName)
+    const relation = relations.find(relation => relation.model === modelName)
 
-    if (relation) modelRelations.push(relation)
+    if (relation)
+      modelRelations.push(relation)
   }
 
   return modelRelations
 }
 
 export function getHiddenAttributes(attributes: Attributes | undefined): string[] {
-  if (attributes === undefined) return []
+  if (attributes === undefined)
+    return []
 
   return Object.keys(attributes).filter((key) => {
-    if (attributes === undefined) return false
+    if (attributes === undefined)
+      return false
 
     return attributes[key]?.hidden === true
   })
 }
 
 export function getFillableAttributes(attributes: Attributes | undefined): string[] {
-  if (attributes === undefined) return []
+  if (attributes === undefined)
+    return []
 
   return Object.keys(attributes)
     .filter((key) => {
-      if (attributes === undefined) return false
+      if (attributes === undefined)
+        return false
 
       return attributes[key]?.fillable === true
     })
-    .map((attribute) => snakeCase(attribute))
+    .map(attribute => snakeCase(attribute))
 }
 
 export async function writeModelNames(): Promise<void> {
@@ -275,8 +289,10 @@ export async function writeModelRequest(): Promise<void> {
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
       let defaultValue: any = `''`
 
-      if (attribute.fieldArray?.entity === 'boolean') defaultValue = false
-      if (attribute.fieldArray?.entity === 'number') defaultValue = 0
+      if (attribute.fieldArray?.entity === 'boolean')
+        defaultValue = false
+      if (attribute.fieldArray?.entity === 'number')
+        defaultValue = 0
 
       // Convert the field name to snake_case
       const snakeField = snakeCase(attribute.field)
@@ -284,7 +300,8 @@ export async function writeModelRequest(): Promise<void> {
       if (typeof entity === 'string') {
         if (entityGroups[entity]) {
           entityGroups[entity].push(`'${snakeField}'`)
-        } else {
+        }
+        else {
           entityGroups[entity] = [`'${snakeField}'`]
         }
 
@@ -329,7 +346,8 @@ export async function writeModelRequest(): Promise<void> {
     importTypes = `${modelName}RequestType`
     importTypesString += `${importTypes}`
 
-    if (i < modelFiles.length - 1) importTypesString += ` | `
+    if (i < modelFiles.length - 1)
+      importTypesString += ` | `
 
     fileString += `import type { ${importTypes} } from '../types/requests'\n\n`
     fileString += `interface ValidationField {
@@ -384,7 +402,7 @@ export async function writeModelRequest(): Promise<void> {
   requestWrite.write(typeString)
 }
 
-export async function writeOrmActions(apiRoute: string, modelName: String, actionPath?: string): Promise<void> {
+export async function writeOrmActions(apiRoute: string, modelName: string, actionPath?: string): Promise<void> {
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let method = 'GET'
@@ -461,7 +479,8 @@ export async function writeOrmActions(apiRoute: string, modelName: String, actio
 
   const actionFile = path.builtUserActionsPath(`src/${actionName}`)
 
-  if (fs.existsSync(actionFile)) return
+  if (fs.existsSync(actionFile))
+    return
 
   const file = Bun.file(actionFile)
 
@@ -474,7 +493,8 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
   // TODO: we can improve this type
   let fields: Record<string, any> | undefined = model.attributes
 
-  if (!fields) fields = {}
+  if (!fields)
+    fields = {}
 
   const fieldKeys = Object.keys(fields)
   const rules: string[] = []
@@ -513,12 +533,15 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
 function parseRule(rule: string): FieldArrayElement | null {
   const parts = rule.split('rule: schema.')
 
-  if (parts.length !== 2) return null
-  if (!parts[1]) parts[1] = ''
+  if (parts.length !== 2)
+    return null
+  if (!parts[1])
+    parts[1] = ''
 
   const extractedString = parts[1].replace(/,/g, '')
 
-  if (!extractedString) return null
+  if (!extractedString)
+    return null
 
   const extractedParts = extractedString.split('.')
   const regex = /\(([^)]+)\)/
@@ -589,14 +612,15 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
                 }
               }
             }
-          } else {
+          }
+          else {
             if (typeof apiRoutes === 'object') {
               for (const apiRoute in apiRoutes) {
                 if (Object.prototype.hasOwnProperty.call(apiRoutes, apiRoute)) {
                   const routePath = apiRoutes[apiRoute as keyof typeof apiRoutes]
                   await writeOrmActions(apiRoute, modelName, routePath)
                   if (typeof routePath !== 'string') {
-                    throw new Error(`Invalid route path for ${apiRoute}`)
+                    throw new TypeError(`Invalid route path for ${apiRoute}`)
                   }
                   const pathAction = `${routePath}.ts`
                   if (apiRoute === 'index')
@@ -630,9 +654,12 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
             relative: true,
           })
 
-          if (apiRoute === 'index') routeString += `route.get('${uri}', '${pathAction}').middleware(['Api'])\n\n`
-          if (apiRoute === 'show') routeString += `route.get('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
-          if (apiRoute === 'store') routeString += `route.post('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'index')
+            routeString += `route.get('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'show')
+            routeString += `route.get('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+          if (apiRoute === 'store')
+            routeString += `route.post('${uri}', '${pathAction}').middleware(['Api'])\n\n`
           if (apiRoute === 'update')
             routeString += `route.patch('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
           if (apiRoute === 'destroy')
@@ -648,11 +675,13 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
 
 export async function deleteExistingModels(modelStringFile?: string): Promise<void> {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
-  if (fs.existsSync(typePath)) await fs.promises.unlink(typePath)
+  if (fs.existsSync(typePath))
+    await fs.promises.unlink(typePath)
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
-    if (fs.existsSync(modelPath)) await fs.promises.unlink(modelPath)
+    if (fs.existsSync(modelPath))
+      await fs.promises.unlink(modelPath)
 
     return
   }
@@ -667,14 +696,13 @@ export async function deleteExistingModels(modelStringFile?: string): Promise<vo
       }
     }),
   )
-
-  return
 }
 
 export async function deleteExistingOrmActions(modelStringFile?: string): Promise<void> {
   if (modelStringFile) {
     const ormPath = path.builtUserActionsPath(`src/${modelStringFile}.ts`)
-    if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
+    if (fs.existsSync(ormPath))
+      await fs.promises.unlink(ormPath)
 
     return
   }
@@ -682,35 +710,41 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
   const ormPaths = globSync([path.builtUserActionsPath(`**/*.ts`)], { absolute: true })
 
   for (const ormPath of ormPaths) {
-    if (fs.existsSync(ormPath)) await fs.promises.unlink(ormPath)
+    if (fs.existsSync(ormPath))
+      await fs.promises.unlink(ormPath)
   }
 }
 
 export async function deleteExistingModelNameTypes(): Promise<void> {
   const typeFile = path.corePath(`types/src/model-names.ts`)
-  if (fs.existsSync(typeFile)) await fs.promises.unlink(typeFile)
+  if (fs.existsSync(typeFile))
+    await fs.promises.unlink(typeFile)
 }
 
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
-  if (fs.existsSync(requestD)) await fs.promises.unlink(requestD)
+  if (fs.existsSync(requestD))
+    await fs.promises.unlink(requestD)
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
-    if (fs.existsSync(requestFile)) await fs.promises.unlink(requestFile)
+    if (fs.existsSync(requestFile))
+      await fs.promises.unlink(requestFile)
 
     return
   }
 
   const requestFiles = globSync([path.frameworkPath(`requests/*.ts`)], { absolute: true })
   for (const requestFile of requestFiles) {
-    if (fs.existsSync(requestFile)) await fs.promises.unlink(requestFile)
+    if (fs.existsSync(requestFile))
+      await fs.promises.unlink(requestFile)
   }
 }
 
 export async function deleteExistingOrmRoute(): Promise<void> {
   const ormRoute = path.frameworkPath('orm/routes.ts')
-  if (fs.existsSync(ormRoute)) await fs.promises.unlink(ormRoute)
+  if (fs.existsSync(ormRoute))
+    await fs.promises.unlink(ormRoute)
 }
 
 export async function generateKyselyTypes(): Promise<void> {
@@ -722,7 +756,7 @@ export async function generateKyselyTypes(): Promise<void> {
     const tableName = getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
     const words = tableName.split('_')
-    const pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
+    const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
 
     text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
   }
@@ -738,7 +772,7 @@ export async function generateKyselyTypes(): Promise<void> {
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
 
-      pivotFormatted = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+      pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
         id?: Generated<number>
@@ -777,7 +811,7 @@ export async function generateKyselyTypes(): Promise<void> {
     for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
 
     const words = tableName.split('_')
-    const formattedTableName = `${words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+    const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
     text += `  ${tableName}: ${formattedTableName}\n`
   }
@@ -862,7 +896,8 @@ export async function generateModelString(
       const relationName = relation.relationName || formattedModelName + modelRelation
       const throughRelation = relation.throughModel
 
-      if (relation.throughModel === undefined) continue
+      if (relation.throughModel === undefined)
+        continue
 
       const formattedThroughRelation = relation?.throughModel?.toLowerCase()
       const throughTableRelation = throughRelation
@@ -1095,8 +1130,10 @@ export async function generateModelString(
     constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
   }
 
-  if (useTwoFactor) fieldString += `two_factor_secret?: string \n`
-  if (usePasskey) fieldString += `public_passkey?: string \n`
+  if (useTwoFactor)
+    fieldString += `two_factor_secret?: string \n`
+  if (usePasskey)
+    fieldString += `public_passkey?: string \n`
 
   if (useTimestamps) {
     fieldString += `
@@ -1747,7 +1784,8 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.info('Writing Model Names...')
     try {
       await writeModelNames()
-    } catch (error) {
+    }
+    catch (error) {
       console.log('error', error)
       process.exit(ExitCode.FatalError)
     }
@@ -1756,7 +1794,8 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.info('Writing Model Requests...')
     try {
       await writeModelRequest()
-    } catch (error) {
+    }
+    catch (error) {
       console.log('error', error)
       process.exit(ExitCode.FatalError)
     }
@@ -1768,7 +1807,8 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
     log.success('Generated API Routes')
 
     for (const modelFile of modelFiles) {
-      if (modelStringFile && modelStringFile !== modelFile) continue
+      if (modelStringFile && modelStringFile !== modelFile)
+        continue
       log.info(`Processing Model: ${italic(modelFile)}`)
 
       const model = (await import(modelFile)).default as Model
@@ -1805,14 +1845,16 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
 
       while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+        if (done)
+          break
         output += new TextDecoder().decode(value)
       }
 
       const stderrReader = process.stderr.getReader()
       while (true) {
         const { done, value } = await stderrReader.read()
-        if (done) break
+        if (done)
+          break
         // Collect stderr output but do not log it
         output += new TextDecoder().decode(value)
       }
@@ -1823,17 +1865,20 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
         log.debug(
           'There was an error fixing your code style but we are ignoring it because we fixed the auto-generated code already.',
         )
-      } else {
+      }
+      else {
         log.success('Code style fixed successfully.')
       }
-    } catch (error) {
+    }
+    catch (error) {
       log.error('There was an error fixing your code style.')
       log.error(error)
       process.exit(ExitCode.FatalError)
     }
 
     log.success('Linted')
-  } catch (error) {
+  }
+  catch (error) {
     log.error('There was an error generating your model files', error)
     process.exit(ExitCode.FatalError)
   }
@@ -1854,10 +1899,10 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
     ObjectExpression(path) {
       // Look for the `fields` key in the object
       const fieldsProperty = path.node.properties.find(
-        (property) =>
-          property.type === 'ObjectProperty' &&
-          property.key.type === 'Identifier' &&
-          property.key.name === 'attributes',
+        property =>
+          property.type === 'ObjectProperty'
+          && property.key.type === 'Identifier'
+          && property.key.name === 'attributes',
       )
 
       if (fieldsProperty && fieldsProperty.type === 'ObjectProperty' && fieldsProperty.value) {

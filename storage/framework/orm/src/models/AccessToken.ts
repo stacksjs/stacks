@@ -1,10 +1,6 @@
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
-import { dispatch } from '@stacksjs/events'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 import Team from './Team'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -96,7 +92,8 @@ export class AccessTokenModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -111,7 +108,8 @@ export class AccessTokenModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -129,7 +127,7 @@ export class AccessTokenModel {
 
     const results = await query.execute()
 
-    return results.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
+    return results.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {
@@ -145,7 +143,8 @@ export class AccessTokenModel {
 
     const model = await query.executeTakeFirst()
 
-    if (!model) throw `No model results found for ${id} `
+    if (!model)
+      throw `No model results found for ${id} `
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -165,7 +164,7 @@ export class AccessTokenModel {
 
     const model = await query.execute()
 
-    return model.map((modelItem) => instance.parseResult(new AccessTokenModel(modelItem)))
+    return model.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   // Method to get a User by criteria
@@ -309,7 +308,8 @@ export class AccessTokenModel {
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db.deleteFrom('personal_access_tokens').where('id', '=', id).execute()
     }
   }
@@ -322,9 +322,11 @@ export class AccessTokenModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -343,9 +345,11 @@ export class AccessTokenModel {
     if (args.length === 2) {
       ;[column, value] = args
       operator = '='
-    } else if (args.length === 3) {
+    }
+    else if (args.length === 3) {
       ;[column, operator, value] = args
-    } else {
+    }
+    else {
       throw new Error('Invalid number of arguments')
     }
 
@@ -471,7 +475,8 @@ export class AccessTokenModel {
   }
 
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined)
+      throw new Error('AccessToken ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(accesstoken).filter(([key]) => this.fillable.includes(key)),
@@ -485,7 +490,8 @@ export class AccessTokenModel {
   }
 
   async forceUpdate(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined)
+      throw new Error('AccessToken ID is undefined')
 
     await db.updateTable('personal_access_tokens').set(accesstoken).where('id', '=', this.id).executeTakeFirst()
 
@@ -495,21 +501,24 @@ export class AccessTokenModel {
   }
 
   async save(): Promise<void> {
-    if (!this) throw new Error('AccessToken data is undefined')
+    if (!this)
+      throw new Error('AccessToken data is undefined')
 
     if (this.id === undefined) {
       await db
         .insertInto('personal_access_tokens')
         .values(this as NewAccessToken)
         .executeTakeFirstOrThrow()
-    } else {
+    }
+    else {
       await this.update(this)
     }
   }
 
   // Method to delete (soft delete) the accesstoken instance
   async delete(): Promise<void> {
-    if (this.id === undefined) throw new Error('AccessToken ID is undefined')
+    if (this.id === undefined)
+      throw new Error('AccessToken ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -523,18 +532,21 @@ export class AccessTokenModel {
         })
         .where('id', '=', this.id)
         .execute()
-    } else {
+    }
+    else {
       // Perform a hard delete
       await db.deleteFrom('personal_access_tokens').where('id', '=', this.id).execute()
     }
   }
 
   async team() {
-    if (this.id === undefined) throw new Error('Relation Error!')
+    if (this.id === undefined)
+      throw new Error('Relation Error!')
 
     const model = Team.where('accesstoken_id', '=', this.id).first()
 
-    if (!model) throw new Error('Model Relation Not Found!')
+    if (!model)
+      throw new Error('Model Relation Not Found!')
 
     return model
   }
@@ -589,7 +601,8 @@ export class AccessTokenModel {
     }
 
     this.hidden.forEach((attr: string) => {
-      if (attr in output) delete (output as Record<string, any>)[attr]
+      if (attr in output)
+        delete (output as Record<string, any>)[attr]
     })
 
     type AccessToken = Omit<AccessTokenType, 'password'>
@@ -611,7 +624,8 @@ async function find(id: number): Promise<AccessTokenModel | undefined> {
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   return new AccessTokenModel(model)
 }
@@ -640,28 +654,28 @@ export async function whereName(value: string): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export async function whereToken(value: string): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('token', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export async function wherePlainTextToken(value: string): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export async function whereAbilities(value: string[]): Promise<AccessTokenModel[]> {
   const query = db.selectFrom('personal_access_tokens').where('abilities', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem) => new AccessTokenModel(modelItem))
+  return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export const AccessToken = AccessTokenModel

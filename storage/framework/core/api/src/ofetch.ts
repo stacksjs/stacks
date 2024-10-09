@@ -1,16 +1,16 @@
-import { type FetchOptions, ofetch } from 'ofetch'
+import { ofetch } from 'ofetch'
 
 interface Params {
   [key: string]: any // Replace 'any' with more specific types if possible
 }
 
 interface ApiFetch {
-  get(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
-  post(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
-  destroy(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
-  patch(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
-  put(url: string, params?: Params, header?: Headers): Promise<FetchResponse>
-  setToken(authToken: string): void
+  get: (url: string, params?: Params, header?: Headers) => Promise<FetchResponse>
+  post: (url: string, params?: Params, header?: Headers) => Promise<FetchResponse>
+  destroy: (url: string, params?: Params, header?: Headers) => Promise<FetchResponse>
+  patch: (url: string, params?: Params, header?: Headers) => Promise<FetchResponse>
+  put: (url: string, params?: Params, header?: Headers) => Promise<FetchResponse>
+  setToken: (authToken: string) => void
   baseURL: '/' | string
   loading: boolean
   token: string
@@ -23,13 +23,19 @@ let token = ''
 const baseURL = '/'
 
 async function get(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) if (token) headers.set('Authorization', `Bearer ${token}`)
+  if (headers) {
+    if (token)
+      headers.set('Authorization', `Bearer ${token}`)
+  }
 
   return await ofetch(url, { method: 'GET', baseURL, params, headers })
 }
 
 async function post(url: string, params?: Params, headers?: Headers): Promise<any> {
-  if (headers) if (token) headers.set('Authorization', `Bearer ${token}`)
+  if (headers) {
+    if (token)
+      headers.set('Authorization', `Bearer ${token}`)
+  }
 
   loading = true
 
@@ -43,7 +49,8 @@ async function post(url: string, params?: Params, headers?: Headers): Promise<an
 
     loading = false
     return result
-  } catch (err: any) {
+  }
+  catch (err: any) {
     loading = false
 
     throw err
@@ -51,7 +58,10 @@ async function post(url: string, params?: Params, headers?: Headers): Promise<an
 }
 
 async function patch(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) if (token) headers.set('Authorization', `Bearer ${token}`)
+  if (headers) {
+    if (token)
+      headers.set('Authorization', `Bearer ${token}`)
+  }
 
   loading = true
 
@@ -64,7 +74,10 @@ async function patch(url: string, params?: Params, headers?: Headers): Promise<F
 }
 
 async function put(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) if (token) headers.set('Authorization', `Bearer ${token}`)
+  if (headers) {
+    if (token)
+      headers.set('Authorization', `Bearer ${token}`)
+  }
 
   loading = true
 
@@ -77,7 +90,10 @@ async function put(url: string, params?: Params, headers?: Headers): Promise<Fet
 }
 
 async function destroy(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) if (token) headers.set('Authorization', `Bearer ${token}`)
+  if (headers) {
+    if (token)
+      headers.set('Authorization', `Bearer ${token}`)
+  }
 
   const parameters = {
     ...params,
@@ -103,13 +119,13 @@ function setToken(authToken: string): void {
 }
 
 export const Fetch: ApiFetch = {
-  get: get,
-  post: post,
-  patch: patch,
-  put: put,
-  destroy: destroy,
-  baseURL: baseURL,
-  token: token,
-  setToken: setToken,
-  loading: loading,
+  get,
+  post,
+  patch,
+  put,
+  destroy,
+  baseURL,
+  token,
+  setToken,
+  loading,
 }

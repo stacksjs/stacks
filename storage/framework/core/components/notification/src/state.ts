@@ -23,7 +23,7 @@ class Observer {
   }
 
   publish = (data: ToastT) => {
-    this.subscribers.forEach((subscriber) => subscriber(data))
+    this.subscribers.forEach(subscriber => subscriber(data))
   }
 
   addToast = (data: ToastT) => {
@@ -60,7 +60,8 @@ class Observer {
 
         return toast
       })
-    } else {
+    }
+    else {
       this.addToast({ title: message, ...rest, dismissible, id })
     }
 
@@ -70,11 +71,11 @@ class Observer {
   dismiss = (id?: number | string) => {
     if (!id) {
       this.toasts.forEach((toast) => {
-        this.subscribers.forEach((subscriber) => subscriber({ id: toast.id, dismiss: true }))
+        this.subscribers.forEach(subscriber => subscriber({ id: toast.id, dismiss: true }))
       })
     }
 
-    this.subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }))
+    this.subscribers.forEach(subscriber => subscriber({ id, dismiss: true }))
     return id
   }
 
@@ -129,24 +130,25 @@ class Observer {
         result = ['resolve', response]
         if (isHttpResponse(response) && !response.ok) {
           shouldDismiss = false
-          const message =
-            typeof data.error === 'function'
+          const message
+            = typeof data.error === 'function'
               ? await (data.error as (msg: string) => Promise<string>)(`HTTP error! status: ${response.status}`)
               : data.error
-          const description =
-            typeof data.description === 'function'
+          const description
+            = typeof data.description === 'function'
               ? // @ts-expect-error
-                await data.description(`HTTP error! status: ${response.status}`)
+              await data.description(`HTTP error! status: ${response.status}`)
               : data.description
           this.create({ id, type: 'error', message, description })
-        } else if (data.success !== undefined) {
+        }
+        else if (data.success !== undefined) {
           shouldDismiss = false
-          const message =
-            typeof data.success === 'function'
+          const message
+            = typeof data.success === 'function'
               ? await (data.success as (response: ToastData) => Promise<string>)(response)
               : data.success
-          const description =
-            typeof data.description === 'function'
+          const description
+            = typeof data.description === 'function'
               ? await (data.description as (response: ToastData) => Promise<string>)(response)
               : data.description
           this.create({ id, type: 'success', message, description })
@@ -156,12 +158,12 @@ class Observer {
         result = ['reject', error]
         if (data.error !== undefined) {
           shouldDismiss = false
-          const message =
-            typeof data.error === 'function'
+          const message
+            = typeof data.error === 'function'
               ? await (data.error as (error: unknown) => Promise<string>)(error)
               : data.error
-          const description =
-            typeof data.description === 'function'
+          const description
+            = typeof data.description === 'function'
               ? await (data.description as (error: unknown) => Promise<string>)(error)
               : data.description
           this.create({ id, type: 'error', message, description })
@@ -214,14 +216,14 @@ function toastFunction(message: string | Component, data?: ExternalToast) {
   return id
 }
 
-const isHttpResponse = (data: any): data is Response => {
+function isHttpResponse(data: any): data is Response {
   return (
-    data &&
-    typeof data === 'object' &&
-    'ok' in data &&
-    typeof data.ok === 'boolean' &&
-    'status' in data &&
-    typeof data.status === 'number'
+    data
+    && typeof data === 'object'
+    && 'ok' in data
+    && typeof data.ok === 'boolean'
+    && 'status' in data
+    && typeof data.status === 'number'
   )
 }
 

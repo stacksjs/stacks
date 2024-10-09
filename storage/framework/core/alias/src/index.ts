@@ -5,7 +5,7 @@
 import { path as p } from '@stacksjs/path'
 
 export const alias: Record<string, string> = {
-  stacks: p.frameworkPath('core/index.ts'),
+  'stacks': p.frameworkPath('core/index.ts'),
   '@stacksjs/ai': p.aiPath('src/index.ts'),
   'stacks/ai': p.aiPath('src/index.ts'),
   '@stacksjs/ai/*': p.aiPath('src/*'),

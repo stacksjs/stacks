@@ -1,10 +1,10 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import {
-  type PublicKeyCredentialRequestOptionsJSON,
   generateAuthenticationOptions,
   getUserPasskeys,
+  type PublicKeyCredentialRequestOptionsJSON,
 } from '@stacksjs/auth'
-import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -21,7 +21,7 @@ export default new Action({
     const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
       rpID: 'localhost',
       // Require users to use a previously-registered authenticator
-      allowCredentials: userPasskeys.map((passkey) => ({
+      allowCredentials: userPasskeys.map(passkey => ({
         id: passkey.id,
         transports: ['internal'],
       })),

@@ -1,1 +1,1 @@
-export { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+export { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'

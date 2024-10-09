@@ -2,11 +2,11 @@
 import AIForm from './Forms/AIForm.vue'
 import AnalyticsForm from './Forms/AnalyticsForm.vue'
 import AppForm from './Forms/AppForm.vue'
-import CliForm from './Forms/CLIForm.vue'
 import CacheForm from './Forms/CacheForm.vue'
+import CliForm from './Forms/CLIForm.vue'
 import CloudForm from './Forms/CloudForm.vue'
-import DNSForm from './Forms/DNSForm.vue'
 import DatabaseForm from './Forms/DatabaseForm.vue'
+import DNSForm from './Forms/DNSForm.vue'
 import EmailForm from './Forms/EmailForm.vue'
 import FileSystemForm from './Forms/FileSystemForm.vue'
 import HashingForm from './Forms/HashingForm.vue'
@@ -112,16 +112,16 @@ const options = [
     label: 'UI',
   },
 ]
-const pageTitle = computed<String>(() => options.find((option) => option.key === name.value)?.label || name.value)
+const pageTitle = computed<string>(() => options.find(option => option.key === name.value)?.label || name.value)
 </script>
 
 <template>
   <main>
-    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2 px-4 py-6 sm:px-6 lg:px-8">
-      <h2 class="text-base font-semibold leading-7 text-gray-900">
+    <div class="bg-white px-4 py-6 shadow-sm ring-1 ring-gray-900/5 md:col-span-2 sm:rounded-xl lg:px-8 sm:px-6">
+      <h2 class="text-base text-gray-900 font-semibold leading-7">
         {{ pageTitle }} Configuration
       </h2>
-      <p class="mt-1 text-sm leading-6 text-gray-600">
+      <p class="mt-1 text-sm text-gray-600 leading-6">
         This configuration defines all of your {{ pageTitle }} options.
       </p>
 
@@ -182,8 +182,8 @@ const pageTitle = computed<String>(() => options.find((option) => option.key ===
         </template>
         <template v-else>
           <div class="text-center">
-            <div class="i-heroicons-cog-8-tooth text-gray-400 w-12 h-12 dark:text-gray-200 transition-all duration-150 ease-in-out" />
-            <h3 class="mt-2 text-sm font-semibold text-gray-900">
+            <div class="i-heroicons-cog-8-tooth h-12 w-12 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200" />
+            <h3 class="mt-2 text-sm text-gray-900 font-semibold">
               Settings <span class="font-bold">{{ pageTitle }}</span> Form not created yet
             </h3>
             <p class="mt-1 text-sm text-gray-500">

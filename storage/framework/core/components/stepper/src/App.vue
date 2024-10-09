@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
-import Hero from './components/Hero.vue'
-
+import { ref } from 'vue'
 import { Stepper } from '.'
+
+import Hero from './components/Hero.vue'
 
 const step = ref(1)
 const steps = ref(5)
@@ -28,13 +28,13 @@ function previous() {
 </script>
 
 <template>
-  <div class="bg-neutral-100/66 dark:bg-neutral-900 px-4">
-    <div class="container mx-auto max-w-full sm:max-w-2xl relative">
-      <header class="py-20 flex-center flex-col">
+  <div class="bg-neutral-100/66 px-4 dark:bg-neutral-900">
+    <div class="relative mx-auto max-w-full container sm:max-w-2xl">
+      <header class="flex-center flex-col py-20">
         <Hero />
       </header>
       <main
-        class="grid grid-cols-1 gap-8 text-xs 2xl:text-sm text-primary pb-20"
+        class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
       >
         <Stepper ref="stepperRef" v-model="step" :steps="steps" />
         <!-- <div class="w-full mx-auto text-center">

@@ -23,7 +23,8 @@ describe('@stacksjs/whois', () => {
       console.log('Raw WHOIS result:', result._raw)
       expect(result._raw).toContain('Domain Name: EXAMPLE.COM')
       expect(result.parsedData).toBeNull() // because parse is false by default
-    } catch (error) {
+    }
+    catch (error) {
       console.error('WHOIS lookup error:', error)
       throw error
     }
@@ -35,7 +36,8 @@ describe('@stacksjs/whois', () => {
       console.log('Parsed WHOIS result:', result)
       expect(result._raw).toContain('Domain Name: EXAMPLE.COM')
       expect(result.parsedData).toHaveProperty('Domain Name', 'EXAMPLE.COM')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Parsed WHOIS lookup error:', error)
       throw error
     }

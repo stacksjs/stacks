@@ -1,18 +1,18 @@
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 import { config } from '@stacksjs/config'
 import {
   Duration,
-  RemovalPolicy,
-  Stack,
-  Tags,
   aws_iam as iam,
   aws_lambda as lambda,
+  RemovalPolicy,
   aws_route53 as route53,
   aws_s3 as s3,
   aws_s3_notifications as s3n,
   aws_ses as ses,
+  Stack,
+  Tags,
 } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
-import type { NestedCloudProps } from '../types'
 
 export interface EmailStackProps extends NestedCloudProps {
   zone: route53.IHostedZone

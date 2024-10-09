@@ -14,6 +14,7 @@ try {
   }
 
   log.info('No Stacks Projects found.')
-} catch (error: any) {
+}
+catch (error: any) {
   log.error('Error searching for Stacks projects:', error)
 }

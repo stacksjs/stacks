@@ -1,8 +1,8 @@
+import type { CalendarLink } from './types'
 import { generateGoogle } from './generators/google'
 import { generateIcs } from './generators/ics'
 import { generateOutlook } from './generators/weboutlook'
 import { generateYahoo } from './generators/yahoo'
-import type { CalendarLink } from './types'
 
 export function exportCalendarGoogle(link: CalendarLink): string {
   return generateGoogle(link)

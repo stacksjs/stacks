@@ -39,7 +39,7 @@ export interface TimeTableStyle {
 export interface CalendarLink {
   from: Date
   to: Date
-  allDay: Boolean
+  allDay: boolean
   address: string
   title: string
   description: string

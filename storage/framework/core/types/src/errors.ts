@@ -11,50 +11,50 @@ export type CommandError = Error
 
 export interface ErrorOptions {
   messages: {
-    string: string
-    email: string
-    regex: string
-    url: string
-    activeUrl: string
-    alpha: string
-    alphaNumeric: string
-    minLength: string
-    maxLength: string
-    fixedLength: string
-    confirmed: string
-    endsWith: string
-    startsWith: string
-    sameAs: string
-    notSameAs: string
-    in: string
-    notIn: string
-    ipAddress: string
-    uuid: string
-    ascii: string
-    creditCard: string
-    hexCode: string
-    iban: string
-    jwt: string
-    coordinates: string
-    mobile: string
-    passport: string
-    postalCode: string
+    'string': string
+    'email': string
+    'regex': string
+    'url': string
+    'activeUrl': string
+    'alpha': string
+    'alphaNumeric': string
+    'minLength': string
+    'maxLength': string
+    'fixedLength': string
+    'confirmed': string
+    'endsWith': string
+    'startsWith': string
+    'sameAs': string
+    'notSameAs': string
+    'in': string
+    'notIn': string
+    'ipAddress': string
+    'uuid': string
+    'ascii': string
+    'creditCard': string
+    'hexCode': string
+    'iban': string
+    'jwt': string
+    'coordinates': string
+    'mobile': string
+    'passport': string
+    'postalCode': string
 
     // boolean
-    boolean: string
+    'boolean': string
 
     // number
-    number: string
-    min: string
-    max: string
-    range: string
-    positive: string
-    negative: string
-    decimal: string
-    withoutDecimals: string
+    'number': string
+    'min': string
+    'max': string
+    'range': string
+    'positive': string
+    'negative': string
+    'decimal': string
+    'withoutDecimals': string
 
     // date
-    date: string
+    'date': string
     'date.equals': string
     'date.after': string
     'date.before': string
@@ -65,38 +65,38 @@ export interface ErrorOptions {
     'date.afterField': string
 
     // accepted
-    accepted: string
+    'accepted': string
 
     // enum
-    enum: string
+    'enum': string
 
     // literal
-    literal: string
+    'literal': string
 
     // object
-    object: string
+    'object': string
 
     // record
-    record: string
+    'record': string
     'record.minLength': string
     'record.maxLength': string
     'record.fixedLength': string
 
     // array
-    array: string
+    'array': string
     'array.minLength': string
     'array.maxLength': string
     'array.fixedLength': string
-    notEmpty: string
-    distinct: string
+    'notEmpty': string
+    'distinct': string
 
     // tuple
-    tuple: string
+    'tuple': string
 
     // union
-    union: string
-    unionGroup: string
-    unionOfTypes: string
+    'union': string
+    'unionGroup': string
+    'unionOfTypes': string
   }
 }
 

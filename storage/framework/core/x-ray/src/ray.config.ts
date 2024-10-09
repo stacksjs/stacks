@@ -16,7 +16,8 @@ export default {
   },
 
   sending_payload_callback: (rayInstance: any, payloads: any) => {
-    if (payloads[0].getType() === 'custom') payloads[0].html += ' <strong>- modified!</strong>'
+    if (payloads[0].getType() === 'custom')
+      payloads[0].html += ' <strong>- modified!</strong>'
   },
 
   sent_payload_callback: (rayInstance: any) => {

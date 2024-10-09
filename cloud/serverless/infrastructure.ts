@@ -1,3 +1,5 @@
+import type { Construct } from 'constructs'
+import type { CloudOptions } from '../types'
 import {
   AiStack,
   CdnStack,
@@ -18,8 +20,6 @@ import {
 } from '@stacksjs/cloud'
 import { config } from '@stacksjs/config'
 import { Stack } from 'aws-cdk-lib'
-import type { Construct } from 'constructs'
-import type { CloudOptions } from '../types'
 
 // import { DashboardStack } from './dashboard'
 

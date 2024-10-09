@@ -1,6 +1,6 @@
+import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
-import type { ViteDevServer as DevServer, Plugin } from 'vite'
 import { version } from '../../package.json'
 
 interface StacksPluginOptions {
@@ -17,7 +17,8 @@ interface StacksPluginOptions {
 
 // https://github.com/hannoeru/vite-plugin-pages
 export function stacks(options?: StacksPluginOptions): Plugin {
-  if (!options) options = parseOptions() as StacksPluginOptions
+  if (!options)
+    options = parseOptions() as StacksPluginOptions
 
   return {
     name: 'stacks',
@@ -66,21 +67,23 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         console.log('')
 
         for (const [option, url] of Object.entries(urls)) {
-          if (options?.[option as keyof StacksPluginOptions])
+          if (options?.[option as keyof StacksPluginOptions]) {
             console.log(
               `  ${c.green('➜')}  ${c.bold(option.charAt(0).toUpperCase() + option.slice(1))}: ${c.green(url)}`,
             )
+          }
         }
 
         // there is a chance the above loop is not triggered, in a case we are serving a single dev server
         // that's why the below is needed
         if (options?.config?.includes('frontend')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
                 await localUrl({ type: 'frontend', localhost: true }),
               )}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Frontend')}: ${c.cyan(urls.frontend)}`)
           console.log(
@@ -89,12 +92,13 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('components')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
                 await localUrl({ type: 'library', localhost: true }),
               )}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Library')}: ${c.cyan(urls.library)}`)
           console.log(
@@ -103,10 +107,11 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('email')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(await localUrl({ type: 'email', localhost: true }))}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Email')}: ${c.cyan(urls.email)}`)
           console.log(
@@ -115,10 +120,11 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('docs')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}: ${c.cyan(await localUrl({ type: 'docs', localhost: true }))}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan(urls.docs)}`)
           console.log(
@@ -127,12 +133,13 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('inspect')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
                 await localUrl({ type: 'inspect', localhost: true }),
               )}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Inspect')}: ${c.cyan(urls.inspect)}`)
           console.log(
@@ -141,10 +148,11 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('admin')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:   ${c.cyan(await localUrl({ type: 'admin', localhost: true }))}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Admin')}:   ${c.cyan(urls.admin)}`)
           console.log(
@@ -153,12 +161,13 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('backend')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:   ${c.cyan(
                 await localUrl({ type: 'backend', localhost: true }),
               )}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.cyan(urls.backend)}`)
           console.log(
@@ -167,12 +176,13 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('backend')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
                 await localUrl({ type: 'backend', localhost: true }),
               )}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Backend')}: ${c.cyan(urls.backend)}`)
           console.log(
@@ -181,12 +191,13 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
 
         if (options?.config?.includes('desktop')) {
-          if (withLocalhost)
+          if (withLocalhost) {
             console.log(
               `  ${c.green('➜')}  ${c.bold('Local')}:    ${c.cyan(
                 await localUrl({ type: 'desktop', localhost: true }),
               )}`,
             )
+          }
 
           console.log(`  ${c.green('➜')}  ${c.bold('Desktop')}: ${c.cyan(urls.desktop)}`)
           console.log(

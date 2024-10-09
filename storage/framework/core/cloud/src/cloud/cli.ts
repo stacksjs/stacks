@@ -1,6 +1,6 @@
-import { CfnOutput as Output } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { CfnOutput as Output } from 'aws-cdk-lib'
 
 export interface CliStackProps extends NestedCloudProps {}
 

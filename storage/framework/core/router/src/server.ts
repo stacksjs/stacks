@@ -1,9 +1,9 @@
+import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
-import { path, extname } from '@stacksjs/path'
+import { extname, path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
-import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
@@ -24,7 +24,8 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const port = options.port || 3000
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
 
-  if (options.timezone) process.env.TZ = options.timezone
+  if (options.timezone)
+    process.env.TZ = options.timezone
 
   Bun.serve({
     hostname,
@@ -87,7 +88,8 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
 
   if (!body) {
     await addRouteQuery(url)
-  } else {
+  }
+  else {
     await addBody(body)
   }
 
@@ -117,7 +119,7 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
   if (!match) {
     return null
   }
-  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map((m) => m[1])
+  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1])
   const dynamicSegmentValues = match.slice(1) // First match is the whole string, so we slice it off
 
   const dynamicSegments: { [key: string]: string } = {}
@@ -137,9 +139,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   const middlewarePayload = await executeMiddleware(foundRoute)
 
   if (
-    middlewarePayload !== null &&
-    typeof middlewarePayload === 'object' &&
-    Object.keys(middlewarePayload).length > 0
+    middlewarePayload !== null
+    && typeof middlewarePayload === 'object'
+    && Object.keys(middlewarePayload).length > 0
   ) {
     const middlewareStatus = middlewarePayload.status
 
@@ -155,7 +157,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
-  if (!statusCode) statusCode = 200
+  if (!statusCode)
+    statusCode = 200
 
   if (foundRoute?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
     const callback = String(foundCallback)
@@ -186,7 +189,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
           'Access-Control-Allow-Headers': '*',
         },
       })
-    } catch (error) {
+    }
+    catch (error) {
       return new Response('Error reading the HTML file', {
         status: 500,
         headers: {
@@ -197,7 +201,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
   }
 
-  if (isString(foundCallback))
+  if (isString(foundCallback)) {
     return new Response(foundCallback, {
       headers: {
         'Content-Type': 'application/json',
@@ -206,6 +210,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       },
       status: 200,
     })
+  }
 
   if (isFunction(foundCallback)) {
     const result = foundCallback()
@@ -386,10 +391,12 @@ async function executeMiddleware(route: Route): Promise<any> {
 
       try {
         await middlewareInstance.handle()
-      } catch (error: any) {
+      }
+      catch (error: any) {
         return error
       }
-    } else {
+    }
+    else {
       for (const middlewareElement of middleware) {
         const middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
 
@@ -397,7 +404,8 @@ async function executeMiddleware(route: Route): Promise<any> {
 
         try {
           await middlewareInstance.handle()
-        } catch (error: any) {
+        }
+        catch (error: any) {
           return error
         }
       }

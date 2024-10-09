@@ -1,9 +1,8 @@
+import type { Model, VineType } from '@stacksjs/types'
+import type { SchemaTypes } from '@vinejs/vine/types'
 import { path } from '@stacksjs/path'
 import { snakeCase } from '@stacksjs/strings'
-import type { Model } from '@stacksjs/types'
-import type { VineType } from '@stacksjs/types'
-import type { SchemaTypes } from '@vinejs/vine/types'
-import { SimpleMessagesProvider, VineError, reportError, schema } from './'
+import { reportError, schema, SimpleMessagesProvider, VineError } from './'
 
 interface RequestData {
   [key: string]: any
@@ -19,7 +18,8 @@ interface CustomAttributes {
 }
 
 export function isObjectNotEmpty(obj: object | undefined): boolean {
-  if (obj === undefined) return false
+  if (obj === undefined)
+    return false
 
   return Object.keys(obj).length > 0
 }
@@ -49,8 +49,10 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     const vineSchema = schema.object(ruleObject)
     const validator = schema.compile(vineSchema)
     await validator.validate(params)
-  } catch (error: any) {
-    if (error instanceof VineError.E_VALIDATION_ERROR) reportError(error.messages)
+  }
+  catch (error: any) {
+    if (error instanceof VineError.E_VALIDATION_ERROR)
+      reportError(error.messages)
 
     throw { status: 422, errors: error.messages }
   }
@@ -63,7 +65,8 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const rule = attributes[key]?.rule
-      if (rule) ruleObject[key] = rule as SchemaTypes
+      if (rule)
+        ruleObject[key] = rule as SchemaTypes
 
       const validatorMessages = attributes[key]?.message
 
@@ -80,8 +83,10 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     const vineSchema = schema.object(ruleObject)
     const validator = schema.compile(vineSchema)
     await validator.validate(params)
-  } catch (error: any) {
-    if (error instanceof VineError.E_VALIDATION_ERROR) reportError(error.messages)
+  }
+  catch (error: any) {
+    if (error instanceof VineError.E_VALIDATION_ERROR)
+      reportError(error.messages)
 
     throw { status: 422, errors: error.messages }
   }

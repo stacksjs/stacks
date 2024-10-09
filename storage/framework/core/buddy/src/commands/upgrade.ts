@@ -1,9 +1,9 @@
+import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import type { CLI, UpgradeOptions } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
 export function upgrade(buddy: CLI): void {
@@ -57,9 +57,11 @@ export function upgrade(buddy: CLI): void {
 
         let answersValue = answers.value
 
-        if (answersValue !== null) process.exit(ExitCode.InvalidArgument)
+        if (answersValue !== null)
+          process.exit(ExitCode.InvalidArgument)
 
-        if (isString(answersValue)) answersValue = [answersValue]
+        if (isString(answersValue))
+          answersValue = [answersValue]
 
         // creates an object out of array and sets answers to true
         options = answersValue.reduce((a: any, v: any) => {

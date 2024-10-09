@@ -12,12 +12,14 @@ for (const key in events) {
 
       if (isFunction(modulePath)) {
         await modulePath()
-      } else {
+      }
+      else {
         try {
           const actionModule = await import(p.projectPath(`Actions/${modulePath}.ts`))
 
-          listen(eventKey, (e) => actionModule.default.handle(e))
-        } catch (error) {
+          listen(eventKey, e => actionModule.default.handle(e))
+        }
+        catch (error) {
           console.error('Module not found:', modulePath)
         }
       }

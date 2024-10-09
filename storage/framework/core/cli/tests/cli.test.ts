@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
+import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
 import { CAC } from 'cac'
@@ -15,8 +15,8 @@ import {
   parseArgv,
   parseOptions,
   runCommand,
-  runCommandSync,
   runCommands,
+  runCommandSync,
   spinner,
 } from '../src'
 import * as originalModule from '../src'
@@ -88,7 +88,7 @@ describe('@stacksjs/cli', () => {
       expect(result).toEqual({
         args: ['command'],
         options: {
-          flag: true,
+          'flag': true,
           'no-verbose': true,
         },
       })
@@ -141,7 +141,7 @@ describe('@stacksjs/cli', () => {
     it('runs multiple commands', async () => {
       const results = await runCommands(['echo test1', 'echo test2'])
       expect(results.length).toBe(2)
-      expect(results.every((r) => r.isOk())).toBe(true)
+      expect(results.every(r => r.isOk())).toBe(true)
       expect(mockExec).toHaveBeenCalledTimes(3)
     })
   })

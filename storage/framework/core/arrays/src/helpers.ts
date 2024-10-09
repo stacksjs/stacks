@@ -45,7 +45,7 @@ export function flatten<T>(array?: Nullable<Arrayable<T | T[]>>): T[] {
  * ```
  */
 export function mergeArrayable<T>(...args: Nullable<Arrayable<T>>[]): Array<T> {
-  return args.flatMap((i) => toArray(i))
+  return args.flatMap(i => toArray(i))
 }
 
 export type PartitionFilter<T> = (i: T, idx: number, arr: readonly T[]) => any
@@ -150,7 +150,8 @@ export function unique<T>(array: readonly T[]): T[] {
 export function uniqueBy<T>(array: readonly T[], equalFn: (a: any, b: any) => boolean): T[] {
   return array.reduce((acc: T[], cur: any) => {
     const index = acc.findIndex((item: any) => equalFn(cur, item))
-    if (index === -1) acc.push(cur)
+    if (index === -1)
+      acc.push(cur)
     return acc
   }, [])
 }
@@ -182,7 +183,8 @@ export function last<T>(array: readonly T[]): T | undefined {
  * console.log(arr) // [1, 3]
  */
 export function remove<T>(array: T[], value: T): boolean {
-  if (!array) return false
+  if (!array)
+    return false
 
   const index = array.indexOf(value)
   if (index >= 0) {
@@ -209,9 +211,11 @@ export function at(array: readonly [], index: number): undefined
 export function at<T>(array: readonly T[], index: number): T
 export function at<T>(array: readonly T[] | [], index: number): T | undefined {
   const len = array.length
-  if (!len) return undefined
+  if (!len)
+    return undefined
 
-  if (index < 0) index += len
+  if (index < 0)
+    index += len
 
   return array[index]
 }
@@ -234,11 +238,14 @@ export function at<T>(array: readonly T[] | [], index: number): T | undefined {
  */
 export function move<T>(array: T[], from: number, to: number): T[] {
   const len = array.length
-  if (!len) return []
+  if (!len)
+    return []
 
-  if (from < 0) from += len
+  if (from < 0)
+    from += len
 
-  if (to < 0) to += len
+  if (to < 0)
+    to += len
 
   const item = array.splice(from, 1)[0]
   array.splice(to, 0, item as T)

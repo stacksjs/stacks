@@ -1,20 +1,21 @@
-import { type Collection, collect } from '@stacksjs/collections'
+import { collect, type Collection } from '@stacksjs/collections'
+
+export {
+  align,
+  box,
+  centerAlign,
+  colorize,
+  colors,
+  getColor,
+  leftAlign,
+  rightAlign,
+  stripAnsi,
+} from 'consola/utils'
 
 export * as kolorist from 'kolorist'
 
 export {
-  stripAnsi,
-  centerAlign,
-  rightAlign,
-  leftAlign,
-  align,
-  box,
-  colors,
-  getColor,
-  colorize,
-} from 'consola/utils'
-
-export {
+  ansi256,
   ansi256Bg,
   bgBlack,
   bgBlue,
@@ -54,13 +55,12 @@ export {
   red,
   reset,
   strikethrough,
+  stripColors,
+  trueColor,
+  trueColorBg,
   underline,
   white,
   yellow,
-  ansi256,
-  trueColor,
-  trueColorBg,
-  stripColors,
 } from 'kolorist'
 
 export const quotes: Collection<string> = collect([

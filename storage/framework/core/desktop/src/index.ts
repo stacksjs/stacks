@@ -1,6 +1,5 @@
-import { open as shellOpen } from '@tauri-apps/api/shell'
-
 import * as app from '@tauri-apps/api/app'
+
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as dialog from '@tauri-apps/api/dialog'
 import * as event from '@tauri-apps/api/event'
@@ -12,6 +11,7 @@ import * as notification from '@tauri-apps/api/notification'
 import * as os from '@tauri-apps/api/os'
 import * as path from '@tauri-apps/api/path'
 import * as process from '@tauri-apps/api/process'
+import { open as shellOpen } from '@tauri-apps/api/shell'
 import * as shell from '@tauri-apps/api/shell'
 import * as tauri from '@tauri-apps/api/tauri'
 import * as updater from '@tauri-apps/api/updater'

@@ -1,21 +1,21 @@
+import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
+import type { Construct } from 'constructs'
+import type { EnvKey } from '../../../../env'
+import type { NestedCloudProps } from '../types'
 import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
-import type { aws_certificatemanager as acm, aws_efs as efs } from 'aws-cdk-lib'
 import {
   Duration,
-  CfnOutput as Output,
-  RemovalPolicy,
   aws_ec2 as ec2,
   aws_ecs as ecs,
+  CfnOutput as Output,
+  RemovalPolicy,
   aws_route53 as route53,
   aws_route53_targets as route53Targets,
   aws_secretsmanager as secretsmanager,
 } from 'aws-cdk-lib'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import { LogGroup } from 'aws-cdk-lib/aws-logs'
-import type { Construct } from 'constructs'
-import type { EnvKey } from '../../../../env'
-import type { NestedCloudProps } from '../types'
 
 export interface ComputeStackProps extends NestedCloudProps {
   vpc: ec2.Vpc
@@ -33,7 +33,8 @@ export class ComputeStack {
     const vpc = props.vpc
     const fileSystem = props.fileSystem
 
-    if (!fileSystem) throw new Error('The file system is missing. Please make sure it was created properly.')
+    if (!fileSystem)
+      throw new Error('The file system is missing. Please make sure it was created properly.')
 
     this.cluster = new ecs.Cluster(scope, 'StacksCluster', {
       clusterName: `${props.slug}-${props.appEnv}-web-server-cluster`,
@@ -211,7 +212,7 @@ export class ComputeStack {
       'LAMBDA_RUNTIME_DIR',
       '_',
     ]
-    keysToRemove.forEach((key) => delete env[key as EnvKey])
+    keysToRemove.forEach(key => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
       secretName: `${props.slug}-${props.appEnv}-secrets`,
@@ -225,7 +226,8 @@ export class ComputeStack {
     if (service.taskDefinition.executionRole) {
       secrets.grantRead(service.taskDefinition.executionRole)
       container.addEnvironment('SECRETS_ARN', secrets.secretArn)
-    } else {
+    }
+    else {
       throw new Error('Service task execution role is undefined.')
     }
 

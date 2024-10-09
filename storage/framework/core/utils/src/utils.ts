@@ -6,10 +6,10 @@ const ignore = ['readme-md']
 
 export const components = fs
   .readdirSync(resolve(__dirname, './resources/components'))
-  .map((item) => kebabCase(item.replace(/\.(stx|vue)/g, '')))
-  .filter((item) => !ignore.includes(item))
+  .map(item => kebabCase(item.replace(/\.(stx|vue)/g, '')))
+  .filter(item => !ignore.includes(item))
 
 export const functions = fs
   .readdirSync(resolve(__dirname, './resources/functions'))
-  .map((item) => kebabCase(item.replace(/.ts/g, '')))
-  .filter((item) => !ignore.includes(item))
+  .map(item => kebabCase(item.replace(/.ts/g, '')))
+  .filter(item => !ignore.includes(item))

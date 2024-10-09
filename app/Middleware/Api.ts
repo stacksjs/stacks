@@ -1,5 +1,4 @@
-import { Middleware } from '@stacksjs/router'
-import { request } from '@stacksjs/router'
+import { Middleware, request } from '@stacksjs/router'
 import { AccessToken, Team } from '../../storage/framework/orm/src'
 
 export default new Middleware({
@@ -34,7 +33,7 @@ export default new Middleware({
       throw { message: 'Invalid bearer token', status: 401 }
     }
 
-    const accessTokenIds = accessTokens.map((accessToken) => accessToken.id)
+    const accessTokenIds = accessTokens.map(accessToken => accessToken.id)
 
     if (!accessTokenIds.includes(tokenId)) {
       throw { message: 'Invalid bearer token', status: 401 }

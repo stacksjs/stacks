@@ -1,5 +1,5 @@
+import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
-import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
@@ -18,7 +18,8 @@ export async function generateVsCodeCustomData(): Promise<Result<void, string>> 
     log.success('Generated custom-elements.json for IDEs.')
 
     return ok(undefined)
-  } catch (e) {
+  }
+  catch (e) {
     log.error('There was an error generating the custom-elements.json file.', e)
     return err('There was an error generating the custom-elements.json file.')
   }

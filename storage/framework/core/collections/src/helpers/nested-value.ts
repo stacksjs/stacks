@@ -8,7 +8,8 @@
 export function nestedValue<T>(mainObject: T, key: string): any {
   try {
     return key.split('.').reduce((obj: any, property: string) => obj[property], mainObject)
-  } catch (err) {
+  }
+  catch (err) {
     // If we end up here, we're not working with an object, and mainObject is the value itself
     return mainObject
   }

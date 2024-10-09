@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks#readme",
@@ -334,7 +335,6 @@
     }
   },
   "types": "./types/dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["buddy", "core", "ide", "package.json", "stubs", "vcs"],
   "scripts": {
     "buddy": "bun run ./buddy/src/cli.ts",

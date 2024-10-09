@@ -13,7 +13,7 @@ type AuthToken = `${number}:${number}:${string}`
 
 const authConfig = { username: 'email', password: 'password' }
 
-let authUser: any = undefined
+let authUser: any
 
 export async function attempt(credentials: Credentials, remember?: boolean): Promise<boolean> {
   let hashCheck = false
@@ -21,7 +21,8 @@ export async function attempt(credentials: Credentials, remember?: boolean): Pro
   const user = await User.where(authConfig.username, credentials[authConfig.username]).first()
   const authPass = credentials[authConfig.password]
 
-  if (typeof authPass === 'string' && user?.password) hashCheck = await verifyHash(authPass, user?.password, 'bcrypt')
+  if (typeof authPass === 'string' && user?.password)
+    hashCheck = await verifyHash(authPass, user?.password, 'bcrypt')
 
   if (hashCheck) {
     if (user) {
@@ -38,7 +39,7 @@ export async function team(): Promise<TeamModel | undefined> {
   if (authUser) {
     const teams = await authUser.userTeams()
 
-    //TODO: reconfigure model instance
+    // TODO: reconfigure model instance
     return teams[0].team
   }
 

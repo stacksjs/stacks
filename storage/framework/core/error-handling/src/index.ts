@@ -2,14 +2,14 @@ export * from './handler'
 export * from './utils'
 export {
   err,
+  Err,
   errAsync,
   fromPromise,
   fromSafePromise,
   fromThrowable,
   ok,
-  okAsync,
-  Err,
   Ok,
+  okAsync,
   Result,
   ResultAsync,
 } from 'neverthrow'

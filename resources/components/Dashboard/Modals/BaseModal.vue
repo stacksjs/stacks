@@ -18,7 +18,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="fixed inset-x-0 bottom-0 px-4 pb-6 sm:inset-0 sm:p-0 sm:flex sm:items-center sm:justify-center"
+    class="fixed inset-x-0 bottom-0 px-4 pb-6 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-0"
     :style="statusTransition ? 'z-index: 20' : 'z-index: -1' "
   >
     <Transition
@@ -39,7 +39,7 @@ onUnmounted(() => {
       </div>
     </Transition>
 
-    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" />&#8203;
+    <span class="hidden sm:inline-block sm:h-screen sm:align-middle" />&#8203;
 
     <Transition
       enter-active-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95"
@@ -51,20 +51,20 @@ onUnmounted(() => {
     >
       <div
         v-show="status"
-        class="max-w-md px-4 pt-5 pb-4 max-h-[32rem] overflow-y-auto overflow-hidden transition-all transform bg-white rounded-lg shadow-xl md:max-w-xl dark:bg-blue-gray-700 sm:w-full sm:p-6"
+        class="max-h-[32rem] max-w-md transform overflow-hidden overflow-y-auto rounded-lg bg-white px-4 pb-4 pt-5 shadow-xl transition-all md:max-w-xl sm:w-full dark:bg-blue-gray-700 sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-headline"
       >
-        <div class="absolute top-0 right-0 pt-4 pr-4">
+        <div class="absolute right-0 top-0 pr-4 pt-4">
           <button
             type="button"
-            class="text-gray-400 transition duration-150 ease-in-out hover:text-blue-gray-500 focus:outline-none focus:text-gray-500"
+            class="text-gray-400 transition duration-150 ease-in-out focus:text-gray-500 hover:text-blue-gray-500 focus:outline-none"
             aria-label="Close"
             @click="emit('closeModal')"
           >
             <svg
-              class="w-6 h-6"
+              class="h-6 w-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -82,7 +82,7 @@ onUnmounted(() => {
           <slot name="modal-body" />
         </div>
 
-        <div class="mt-5 space-y-4 sm:mt-4 sm:flex md:space-y-0 sm:flex-row-reverse">
+        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse space-y-4 md:space-y-0">
           <slot name="modal-actions" />
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useDateFormat } from '@stacksjs/browser'
 import type { CalendarLink } from '../types'
+import { useDateFormat } from '@stacksjs/browser'
 
 const dateFormat = 'YYYYMMDD'
 const timeFormat = 'YYYYMMDDThhmmss'
@@ -16,12 +16,15 @@ export function generateGoogle(link: CalendarLink): string {
     useDateFormat(utcEndDateTime, dateTimeFormat).value
   }`
 
-  if (link.timezone) url = `${url}&ctz=${link.timezone}`
+  if (link.timezone)
+    url = `${url}&ctz=${link.timezone}`
 
   url = `${url}&text=${encodeURIComponent(link.title)}`
 
-  if (link.description) url = `${url}&details=${encodeURIComponent(link.description)}`
-  if (link.address) url = `${url}&location=${encodeURIComponent(link.address)}`
+  if (link.description)
+    url = `${url}&details=${encodeURIComponent(link.description)}`
+  if (link.address)
+    url = `${url}&location=${encodeURIComponent(link.address)}`
 
   return url
 }

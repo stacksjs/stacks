@@ -1,7 +1,7 @@
 import type { aws_ec2 as ec2 } from 'aws-cdk-lib'
-import { RemovalPolicy, aws_dynamodb as dynamodb } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { aws_dynamodb as dynamodb, RemovalPolicy } from 'aws-cdk-lib'
 
 export interface DatabaseStackProps extends NestedCloudProps {
   vpc: ec2.Vpc

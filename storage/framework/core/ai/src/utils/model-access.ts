@@ -8,7 +8,8 @@ export async function requestModelAccess(): Promise<void> {
   const credentials = await defaultProvider()()
 
   const models = ai.models
-  if (!models) throw new Error('No AI models found. Please set ./config/ai.ts values.')
+  if (!models)
+    throw new Error('No AI models found. Please set ./config/ai.ts values.')
 
   for (const model of models) {
     try {
@@ -38,7 +39,8 @@ export async function requestModelAccess(): Promise<void> {
 
       const data = await response.json()
       log.info(`Response for model ${model}:`, data)
-    } catch (error) {
+    }
+    catch (error) {
       log.error(`Error requesting access to model ${model}:`, error)
     }
   }

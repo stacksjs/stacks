@@ -1,8 +1,8 @@
+import type { Options } from 'unplugin-vue-router'
+import type { Plugin } from 'vite'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import type { Options } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
-import type { Plugin } from 'vite'
 
 interface RouterOptions extends Options {
   type?: 'views'

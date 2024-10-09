@@ -1,12 +1,12 @@
+import type { Cluster, TaskDefinition } from 'aws-cdk-lib/aws-ecs'
+import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { pascalCase, slug } from '@stacksjs/strings'
 import { aws_ec2 as ec2 } from 'aws-cdk-lib'
-import type { Cluster, TaskDefinition } from 'aws-cdk-lib/aws-ecs'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { EcsTask } from 'aws-cdk-lib/aws-events-targets'
-import type { Construct } from 'constructs'
-import type { NestedCloudProps } from '../types'
 
 export interface QueueStackProps extends NestedCloudProps {
   cluster: Cluster
@@ -34,7 +34,8 @@ export class QueueStack {
 
     // then, need to loop through all app/Jobs/*.ts and create a rule for each, potentially overwriting the Schedule.ts jobs
     for (const file of jobFiles) {
-      if (!file.endsWith('.ts')) continue
+      if (!file.endsWith('.ts'))
+        continue
 
       const jobPath = path.jobsPath(file)
 
@@ -45,7 +46,8 @@ export class QueueStack {
     }
 
     for (const ormFile of ormActionFiles) {
-      if (!ormFile.endsWith('.ts')) continue
+      if (!ormFile.endsWith('.ts'))
+        continue
 
       const ormActionPath = path.builtUserActionsPath(`src/${ormFile}`)
 
@@ -56,7 +58,8 @@ export class QueueStack {
     }
 
     for (const file of actionFiles) {
-      if (!file.endsWith('.ts')) continue
+      if (!file.endsWith('.ts'))
+        continue
 
       const actionPath = path.appPath(`Actions/${file}`)
 
@@ -98,7 +101,8 @@ export class QueueStack {
     const rate = module.default?.rate
 
     // if no rate or job is disabled, no need to schedule, skip
-    if (!rate || module.default?.enabled === false) return
+    if (!rate || module.default?.enabled === false)
+      return
 
     // Convert the rate to a Schedule object
     const schedule = Schedule.cron(this.cronScheduleFromRate(rate))

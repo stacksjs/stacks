@@ -3,12 +3,12 @@
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 items-center">
-    <h1 class="text-5xl font-bold -mt-5 mb-3 text-neon">
+  <div class="flex flex-col items-center gap-3">
+    <h1 class="text-neon mb-3 text-5xl font-bold -mt-5">
       stacks/modal
     </h1>
 
-    <p class="mt-0 mb-3 text-lg">
+    <p class="mb-3 mt-0 text-lg">
       An opinionated modal component.
     </p>
 

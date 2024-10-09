@@ -1,7 +1,6 @@
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
 import {
-  type UserConfig as UnoConfig,
   presetAttributify,
   presetIcons,
   presetTypography,
@@ -10,6 +9,7 @@ import {
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
+  type UserConfig as UnoConfig,
 } from 'unocss'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
 
@@ -34,10 +34,10 @@ const config: UnoConfig = {
       prefix: 'i-',
       warn: true,
       collections: {
-        heroicons: () => import('@iconify-json/heroicons/icons.json').then((i) => i.default as any),
+        heroicons: () => import('@iconify-json/heroicons/icons.json').then(i => i.default as any),
       },
       extraProperties: {
-        display: 'inline-block',
+        'display': 'inline-block',
         'vertical-align': 'middle',
       },
     }),

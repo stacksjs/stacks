@@ -1,8 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test'
 import { requestModelAccess } from '@stacksjs/ai'
 import { ai } from '@stacksjs/config'
-import { config } from 'aws-sdk'
-import * as AWS4 from 'aws4'
 
 describe('requestModelAccess', () => {
   it('should request access to AI models', async () => {

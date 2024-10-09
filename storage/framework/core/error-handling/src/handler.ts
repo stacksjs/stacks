@@ -1,9 +1,8 @@
+import type { ErrorOptions } from '@stacksjs/logging'
 import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { italic } from '@stacksjs/cli'
-import { stripAnsi } from '@stacksjs/cli'
+import { italic, stripAnsi } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
-import type { ErrorOptions } from '@stacksjs/logging'
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
@@ -16,7 +15,8 @@ export class ErrorHandler {
 
   static handle(err: Error | ErrorMessage | unknown, options?: ErrorOptions): Error {
     this.shouldExitProcess = options?.shouldExit !== false
-    if (options?.silent !== true) this.writeErrorToConsole(err)
+    if (options?.silent !== true)
+      this.writeErrorToConsole(err)
 
     let error: Error
     let errorMessage: string
@@ -24,11 +24,14 @@ export class ErrorHandler {
     if (options?.message) {
       // Use the message from options if provided
       errorMessage = options.message
-    } else if (err instanceof Error) {
+    }
+    else if (err instanceof Error) {
       errorMessage = err.message
-    } else if (typeof err === 'string') {
+    }
+    else if (typeof err === 'string') {
       errorMessage = err
-    } else {
+    }
+    else {
       errorMessage = JSON.stringify(err)
     }
 
@@ -40,7 +43,7 @@ export class ErrorHandler {
       Object.assign(error, err)
     }
 
-    this.writeErrorToFile(error).catch((e) => console.error(e))
+    this.writeErrorToFile(error).catch(e => console.error(e))
 
     return error
   }
@@ -62,7 +65,8 @@ export class ErrorHandler {
     try {
       await mkdir(path.dirname(logFilePath), { recursive: true })
       await appendFile(logFilePath, formattedError)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to write to error file:', error)
     }
   }
@@ -73,9 +77,9 @@ export class ErrorHandler {
     const errorString = typeof err === 'string' ? err : err instanceof Error ? err.message : JSON.stringify(err)
 
     if (
-      errorString.includes('bunx --bun cdk destroy') ||
-      errorString === `Failed to execute command: ${italic('bunx --bun eslint . --fix')}` ||
-      errorString === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
+      errorString.includes('bunx --bun cdk destroy')
+      || errorString === `Failed to execute command: ${italic('bunx --bun eslint . --fix')}`
+      || errorString === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
     ) {
       if (!this.isTestEnvironment) {
         console.log(
@@ -96,11 +100,14 @@ export function handleError(err: string | Error | object | unknown, options?: Er
 
   if (isString(err)) {
     errorMessage = err
-  } else if (err instanceof Error) {
+  }
+  else if (err instanceof Error) {
     errorMessage = err.message
-  } else if (options instanceof Error) {
+  }
+  else if (options instanceof Error) {
     errorMessage = options.message
-  } else {
+  }
+  else {
     errorMessage = String(err)
   }
 
@@ -109,7 +116,7 @@ export function handleError(err: string | Error | object | unknown, options?: Er
   return ErrorHandler.handle(err, options)
 }
 
-type WriteOptions = {
+interface WriteOptions {
   logFile?: string
 }
 
@@ -122,7 +129,8 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
     try {
       // Check if the file exists
       await access(logFile)
-    } catch {
+    }
+    catch {
       // File doesn't exist, create the directory
       console.log('Creating log file directory...', logFile)
       await mkdir(dirname(logFile), { recursive: true })
@@ -130,7 +138,8 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
 
     // Append the message to the log file
     await appendFile(logFile, formattedMessage)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to write to log file:', error)
   }
 }

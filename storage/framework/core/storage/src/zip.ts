@@ -1,7 +1,7 @@
-import { runCommand } from '@stacksjs/cli'
 import type { Result } from '@stacksjs/error-handling'
 import type { CommandError, Subprocess } from '@stacksjs/types'
 import type { ZlibCompressionOptions } from 'bun'
+import { runCommand } from '@stacksjs/cli'
 
 interface ZipOptions {
   cwd?: string
@@ -15,13 +15,15 @@ export async function zip(
   const toPath = to || 'archive.zip'
   const fromPath = Array.isArray(from) ? from.join(' ') : from
 
-  if (Array.isArray(from)) return runCommand(`zip -r ${toPath} ${fromPath}`, options)
+  if (Array.isArray(from))
+    return runCommand(`zip -r ${toPath} ${fromPath}`, options)
 
   return runCommand(`zip -r ${to} ${from}`, options)
 }
 
 export async function unzip(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  if (Array.isArray(paths)) return runCommand(`unzip ${paths.join(' ')}`)
+  if (Array.isArray(paths))
+    return runCommand(`unzip ${paths.join(' ')}`)
 
   return runCommand(`unzip ${paths}`)
 }

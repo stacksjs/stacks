@@ -5,4 +5,4 @@ import * as CssEngine from 'unocss'
 import * as UiEngine from 'vue'
 import UnocssConfig from './unocss.config'
 
-export { CssEngine, UiEngine, Store, presetForms, UnocssConfig, ui }
+export { CssEngine, presetForms, Store, ui, UiEngine, UnocssConfig }

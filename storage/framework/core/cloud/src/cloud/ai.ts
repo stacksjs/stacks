@@ -1,7 +1,7 @@
-import { config } from '@stacksjs/config'
-import { Duration, CfnOutput as Output, aws_iam as iam, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { config } from '@stacksjs/config'
+import { aws_iam as iam } from 'aws-cdk-lib'
 
 export interface AiStackProps extends NestedCloudProps {}
 

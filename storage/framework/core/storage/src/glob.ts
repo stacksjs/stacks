@@ -1,4 +1,5 @@
 import { globSync as gs } from 'tinyglobby'
+
 export { glob } from 'tinyglobby'
 
 export interface GlobOptions {
@@ -13,7 +14,7 @@ export interface GlobOptions {
   onlyFiles?: boolean
 }
 
-export const globSync = (patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): string[] => {
+export function globSync(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): string[] {
   if (typeof patterns === 'string') {
     return gs([patterns], options)
   }

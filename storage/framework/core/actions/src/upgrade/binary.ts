@@ -33,9 +33,11 @@ if (await storage.exists(source)) {
     await fs.move(source, destination, { overwrite: true })
 
     log.success('Binary Latest Version Is Used')
-  } catch (err: any) {
+  }
+  catch (err: any) {
     log.error(err)
   }
-} else {
+}
+else {
   log.error(`Binary source not found: ${source}`)
 }

@@ -1,7 +1,7 @@
+import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { log, outro, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 
 export function configure(buddy: CLI): void {
@@ -77,7 +77,8 @@ async function configureAws(options?: ConfigureOptions) {
     process.exit(ExitCode.FatalError)
   }
 
-  if (options?.quiet) return
+  if (options?.quiet)
+    return
 
   await outro('Exited', { startTime, useSeconds: true })
 }
