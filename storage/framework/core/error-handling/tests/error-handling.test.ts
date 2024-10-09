@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, describe, expect, it, mock, spyOn } from 'bun:test'
 import { italic } from '@stacksjs/cli'
+import { afterAll, beforeAll, describe, expect, it, mock, spyOn } from 'bun:test'
 import fs from 'fs-extra'
 import { ErrorHandler, handleError } from '../src/handler'
 import { rescue } from '../src/utils'
@@ -13,7 +13,9 @@ describe('@stacksjs/error-handling', () => {
     originalConsoleError = console.error
     console.error = () => {} // No-op function
 
+    // eslint-disable-next-line no-console
     originalConsoleLog = console.log
+    // eslint-disable-next-line no-console
     console.log = () => {} // No-op function
 
     originalProcessExit = process.exit
@@ -27,6 +29,7 @@ describe('@stacksjs/error-handling', () => {
 
   afterAll(() => {
     console.error = originalConsoleError
+    // eslint-disable-next-line no-console
     console.log = originalConsoleLog
     process.exit = originalProcessExit
     ErrorHandler.isTestEnvironment = false

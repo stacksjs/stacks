@@ -48,7 +48,7 @@ export async function createStacksTable(): Promise<void> {
   }
 
   try {
-    const data = await client.send(new CreateTableCommand(params))
+    await client.send(new CreateTableCommand(params))
   }
   catch (err) {
     console.error('Error Creating Table', err)

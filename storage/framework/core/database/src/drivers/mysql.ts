@@ -205,6 +205,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
+  // eslint-disable-next-line no-console
   console.log(migrationFilePath)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -280,8 +281,6 @@ async function createPivotTableMigration(model: Model, modelPath: string): Promi
 }
 
 export async function createAlterTableMigration(modelPath: string): Promise<void> {
-  console.log('createAlterTableMigration')
-
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)

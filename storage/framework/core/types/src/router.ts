@@ -25,6 +25,7 @@ export interface MiddlewareOptions {
   name: string
   description?: string
   priority: number
+  // eslint-disable-next-line ts/no-unsafe-function-type
   handle: Function
 }
 

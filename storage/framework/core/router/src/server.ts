@@ -1,5 +1,6 @@
 import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import process from 'node:process'
+import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
@@ -191,6 +192,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       })
     }
     catch (error) {
+      handleError('Error reading the HTML file', error)
       return new Response('Error reading the HTML file', {
         status: 500,
         headers: {
@@ -420,6 +422,7 @@ function isObjectNotEmpty(obj: object): boolean {
   return Object.keys(obj).length > 0
 }
 
+// eslint-disable-next-line ts/no-unsafe-function-type
 function isFunction(val: unknown): val is Function {
   return typeof val === 'function'
 }

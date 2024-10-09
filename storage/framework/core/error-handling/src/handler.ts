@@ -1,6 +1,7 @@
 import type { ErrorOptions } from '@stacksjs/logging'
 import { access, appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
+import process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import * as path from '@stacksjs/path'
@@ -18,7 +19,6 @@ export class ErrorHandler {
     if (options?.silent !== true)
       this.writeErrorToConsole(err)
 
-    let error: Error
     let errorMessage: string
 
     if (options?.message) {
@@ -36,7 +36,7 @@ export class ErrorHandler {
     }
 
     // Create a new Error with the determined message
-    error = new Error(errorMessage)
+    const error = new Error(errorMessage)
 
     // If the original err was an Error instance, copy its properties
     if (err instanceof Error) {
@@ -82,9 +82,11 @@ export class ErrorHandler {
       || errorString === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
     ) {
       if (!this.isTestEnvironment) {
+        // eslint-disable-next-line no-console
         console.log(
           'No need to worry. The edge function is currently being destroyed. Please run `buddy undeploy` shortly again, and continue doing so until it succeeds running.',
         )
+        // eslint-disable-next-line no-console
         console.log('Hoping to see you back soon!')
       }
     }
@@ -132,6 +134,7 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
     }
     catch {
       // File doesn't exist, create the directory
+      // eslint-disable-next-line no-console
       console.log('Creating log file directory...', logFile)
       await mkdir(dirname(logFile), { recursive: true })
     }

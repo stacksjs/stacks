@@ -9,6 +9,7 @@ export interface JobOptions {
    */
   name?: string
 
+  // eslint-disable-next-line ts/no-unsafe-function-type
   handle?: string | Function
   action?: string
   description?: string

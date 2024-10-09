@@ -261,7 +261,7 @@ export interface CloudOptions {
 
   api: ApiConfig
 
-  storage: {}
+  storage: object
 
   /**
    * **Firewall Settings**

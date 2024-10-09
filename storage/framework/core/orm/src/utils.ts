@@ -6,6 +6,7 @@ import type {
   ModelElement,
   RelationConfig,
 } from '@stacksjs/types'
+import process from 'node:process'
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'

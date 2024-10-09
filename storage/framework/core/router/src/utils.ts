@@ -7,6 +7,7 @@ import { route } from './router'
 export async function listRoutes(): Promise<Ok<string, any>> {
   const routeLists = await route.getRoutes()
 
+  // eslint-disable-next-line no-console
   console.table(routeLists)
 
   return ok('Successfully listed routes!')
@@ -60,7 +61,7 @@ export function extractDynamicAction(action: string): string | undefined {
   return match ? match[1] : ''
 }
 
-export async function extractModelRequest(action: string) {
+export async function extractModelRequest(action: string): Promise<Request | null> {
   const extractedModel = extractModelFromAction(action)
   const lowerCaseModel = camelCase(extractedModel)
   const requestPath = path.frameworkPath(`requests/${extractedModel}Request.ts`)
@@ -94,7 +95,7 @@ export async function findRequestInstance(requestInstance: string): Promise<Requ
   return null
 }
 
-export async function extractDefaultRequest(action: string) {
+export async function extractDefaultRequest(action: string): Promise<Request> {
   const requestPath = path.frameworkPath(`core/router/src/request.ts`)
   const requestInstance = await import(requestPath)
 

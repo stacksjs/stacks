@@ -61,7 +61,7 @@ export async function resetPostgresDatabase() {
   return ok('All tables dropped successfully!')
 }
 
-export async function generatePostgresMigration(modelPath: string) {
+export async function generatePostgresMigration(modelPath: string): Promise<void> {
   // check if any files are in the database folder
   const files = await fs.readdir(path.userMigrationsPath())
 
@@ -228,22 +228,17 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 }
 
 async function createAlterTableMigration(modelPath: string) {
-  console.log('createAlterTableMigration')
-
   const model = (await import(modelPath)).default as Model
   const modelName = path.basename(modelPath)
-  const tableName = await getTableName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
 
   // Assuming you have a function to get the fields from the last migration
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
   const currentFields = model.attributes as Attributes
-
   const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
-
   const fieldsToAdd = changes?.added || []
-
   const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
@@ -280,8 +275,7 @@ export async function fetchPostgresTables(): Promise<string[]> {
 
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default
-
-    const tableName = await getTableName(model, modelPath)
+    const tableName = getTableName(model, modelPath)
 
     tables.push(tableName)
   }

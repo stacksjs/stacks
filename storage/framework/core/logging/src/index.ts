@@ -16,7 +16,7 @@ export function logLevel(): number {
    *
    * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
    */
-  const verboseRegex = /--verbose(?!(\s*=\s*false|\s+false))(\s+|=true)?($|\s)/
+  const verboseRegex = /--verbose(?!\s*=\s*false|\s+false)(?:\s+|=true)?(?:$|\s)/
   const opts = buddyOptions()
 
   if (verboseRegex.test(opts))
