@@ -6,9 +6,9 @@
 import type {
   HeightT,
   Position,
+  ToasterProps,
   ToastT,
   ToastToDismiss,
-  ToasterProps
 } from '../types'
 import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue'
 import { ToastState } from '../state'
@@ -19,22 +19,6 @@ import LoaderIcon from './icons/Loader.vue'
 import SuccessIcon from './icons/SuccessIcon.vue'
 import WarningIcon from './icons/WarningIcon.vue'
 import Toast from './Toast.vue'
-const VISIBLE_TOASTS_AMOUNT = 3
-
-// Viewport padding
-const VIEWPORT_OFFSET = '32px'
-
-// Default toast width
-const TOAST_WIDTH = 356
-
-// Default gap between toasts
-const GAP = 14
-
-const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
-
-function _cn(...classes: (string | undefined)[]) {
-  return classes.filter(Boolean).join(' ')
-}
 
 defineOptions({
   name: 'Toaster',
@@ -60,6 +44,23 @@ const props = withDefaults(defineProps<ToasterProps>(), {
   pauseWhenPageIsHidden: false,
   cn: _cn,
 })
+
+const VISIBLE_TOASTS_AMOUNT = 3
+
+// Viewport padding
+const VIEWPORT_OFFSET = '32px'
+
+// Default toast width
+const TOAST_WIDTH = 356
+
+// Default gap between toasts
+const GAP = 14
+
+const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
+
+function _cn(...classes: (string | undefined)[]) {
+  return classes.filter(Boolean).join(' ')
+}
 
 function getDocumentDirection(): ToasterProps['dir'] {
   if (typeof window === 'undefined')
@@ -329,7 +330,7 @@ watchEffect((onInvalidate) => {
         <template
           v-for="(toast, idx) in toasts.filter(
             (toast) =>
-              (!toast.position && index === 0) || toast.position === pos
+              (!toast.position && index === 0) || toast.position === pos,
           )"
           :key="toast.id"
         >
@@ -338,32 +339,32 @@ watchEffect((onInvalidate) => {
             :icons="icons"
             :index="idx"
             :toast="toast"
-            :defaultRichColors="richColors"
+            :default-rich-colors="richColors"
             :duration="toastOptions?.duration ?? duration"
             :class="toastOptions?.class ?? ''"
-            :descriptionClass="toastOptions?.descriptionClass"
+            :description-class="toastOptions?.descriptionClass"
             :invert="invert"
-            :visibleToasts="visibleToasts"
-            :closeButton="toastOptions?.closeButton ?? closeButton"
+            :visible-toasts="visibleToasts"
+            :close-button="toastOptions?.closeButton ?? closeButton"
             :interacting="interacting"
             :position="pos"
             :style="toastOptions?.style"
             :unstyled="toastOptions?.unstyled"
             :classes="toastOptions?.classes"
-            :cancelButtonStyle="toastOptions?.cancelButtonStyle"
-            :actionButtonStyle="toastOptions?.actionButtonStyle"
+            :cancel-button-style="toastOptions?.cancelButtonStyle"
+            :action-button-style="toastOptions?.actionButtonStyle"
             :toasts="toasts.filter((t) => t.position === toast.position)"
-            :expandByDefault="expand"
+            :expand-by-default="expand"
             :gap="gap"
             :expanded="expanded"
-            :pauseWhenPageIsHidden="pauseWhenPageIsHidden"
+            :pause-when-page-is-hidden="pauseWhenPageIsHidden"
             :cn="cn"
             @update:heights="
               (h) => {
                 heights = h
               }
             "
-            @removeToast="removeToast"
+            @remove-toast="removeToast"
           >
             <template #close-icon>
               <slot name="close-icon">
