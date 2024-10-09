@@ -1,4 +1,4 @@
-import stacks from '@stacksjs/lint'
+import stacks from '@stacksjs/eslint-config'
 
 export default stacks({
   // Enable stylistic formatting rules
