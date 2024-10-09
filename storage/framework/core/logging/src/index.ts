@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 import process from 'node:process'
 import { buddyOptions, stripAnsi } from '@stacksjs/cli'
 import { handleError, writeToLogFile } from '@stacksjs/error-handling'

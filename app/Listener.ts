@@ -3,7 +3,7 @@ import { path as p } from '@stacksjs/path'
 import events from './Events'
 
 for (const key in events) {
-  if (events.hasOwnProperty(key)) {
+  if (Object.hasOwn(events, key)) {
     const eventKey = key
     const eventListeners = events[key]
 
@@ -20,13 +20,13 @@ for (const key in events) {
           listen(eventKey, e => actionModule.default.handle(e))
         }
         catch (error) {
-          console.error('Module not found:', modulePath)
+          handleError(`Module not found: ${modulePath}`, error)
         }
       }
     }
   }
 }
 
-function isFunction(val: unknown): val is Function {
+function isFunction(val: unknown) {
   return typeof val === 'function'
 }

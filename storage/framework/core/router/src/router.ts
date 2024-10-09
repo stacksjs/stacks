@@ -1,5 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 import type { Job, RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
@@ -112,7 +113,7 @@ export class Router implements RouterInterface {
       return this.addRoute(action.method ?? 'GET', this.prepareUri(path), action.handle, 200)
     }
     catch (error) {
-      log.error(`Could not find Action for path: ${path}`)
+      handleError(`Could not find Action for path: ${path}`, error)
 
       return this
     }

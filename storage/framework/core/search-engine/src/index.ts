@@ -46,7 +46,7 @@ export function calculatePagination(): void {
   if (table.perPage)
     totalPages.value = Math.ceil(totalHits / table.perPage)
 
-  const hitPages = [...new Array(totalPages.value).keys()].map(i => i + 1)
+  const hitPages = Array.from({ length: totalPages.value }, (_, i) => i + 1)
   const offset = 2
   const currentPage = table.currentPage ?? 1
   const lastPage = hitPages[hitPages.length - 1]

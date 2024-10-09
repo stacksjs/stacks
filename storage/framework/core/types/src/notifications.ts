@@ -145,11 +145,7 @@ export interface NotificationOptions {
         secret: string
       }
 
-      discord?: {
-        // appId: string
-        // clientId: string
-        // secret: string
-      }
+      // discord?: {}
     }
   }
 }

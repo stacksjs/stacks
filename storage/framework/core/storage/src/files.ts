@@ -1,5 +1,6 @@
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { contains } from '@stacksjs/arrays'
+import { log } from '@stacksjs/logging'
 import { dirname, join, path as p } from '@stacksjs/path'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { createFolder, isFolder } from './'
@@ -108,6 +109,7 @@ export function hasFiles(folder: string): boolean {
     return fs.readdirSync(folder).length > 0
   }
   catch (err) {
+    log.debug(`Error reading folder: ${folder}`, err)
     return false
   }
 }

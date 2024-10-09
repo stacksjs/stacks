@@ -103,6 +103,7 @@ export class Schedule {
   }
 
   start(): void {
+    // eslint-disable-next-line no-new
     new CronJob(this.cronPattern, this.task, null, true, this.timezone)
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
   }

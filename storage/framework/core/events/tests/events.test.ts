@@ -5,7 +5,7 @@ import { all, dispatch, events, listen, mitt, off, useEvent, useEvents } from '.
 describe('@stacksjs/events', () => {
   test('mitt creates a functional event emitter', () => {
     const emitter = mitt<{ test: string }>()
-    const handler = mock((data: string) => {})
+    const handler = mock(() => {})
 
     emitter.on('test', handler)
     emitter.emit('test', 'hello')
@@ -15,7 +15,7 @@ describe('@stacksjs/events', () => {
 
   test('off removes event listeners', () => {
     const emitter = mitt<{ test: string }>()
-    const handler = mock((data: string) => {})
+    const handler = mock(() => {})
 
     emitter.on('test', handler)
     emitter.off('test', handler)
@@ -26,7 +26,7 @@ describe('@stacksjs/events', () => {
 
   test('wildcard listeners receive all events', () => {
     const emitter = mitt<{ test1: string, test2: number }>()
-    const handler = mock((type: string, data: any) => {})
+    const handler = mock(() => {})
 
     emitter.on('*', handler)
     emitter.emit('test1', 'hello')
@@ -39,8 +39,8 @@ describe('@stacksjs/events', () => {
 
   test('off removes all listeners of a given type when no handler is provided', () => {
     const emitter = mitt<{ test: string }>()
-    const handler1 = mock((data: string) => {})
-    const handler2 = mock((data: string) => {})
+    const handler1 = mock(() => {})
+    const handler2 = mock(() => {})
 
     emitter.on('test', handler1)
     emitter.on('test', handler2)
@@ -52,28 +52,28 @@ describe('@stacksjs/events', () => {
   })
 
   test('events creates a mitt instance with StacksEvents', () => {
-    const emitter = events()
+    const emitter = events
     expect(emitter).toHaveProperty('on')
     expect(emitter).toHaveProperty('off')
     expect(emitter).toHaveProperty('emit')
   })
 
   test('listen is an alias for on', () => {
-    const handler = mock((data: object) => {})
+    const handler = mock(() => {})
     listen('user:registered', handler)
     dispatch('user:registered', { name: 'John Doe' })
     expect(handler).toHaveBeenCalledWith({ name: 'John Doe' })
   })
 
   test('dispatch is an alias for emit', () => {
-    const handler = mock((data: object) => {})
+    const handler = mock(() => {})
     listen('user:logged-in', handler)
     dispatch('user:logged-in', { userId: 1 })
     expect(handler).toHaveBeenCalledWith({ userId: 1 })
   })
 
   test('useEvent is an alias for emit', () => {
-    const handler = mock((data: object) => {})
+    const handler = mock(() => {})
     listen('user:logged-out', handler)
     useEvent('user:logged-out', { userId: 1 })
     expect(handler).toHaveBeenCalledWith({ userId: 1 })
@@ -86,13 +86,13 @@ describe('@stacksjs/events', () => {
   })
 
   test('all provides access to the event handler map', () => {
-    const handler = mock((data: Partial<UserModel>) => {})
+    const handler = mock(() => {})
     listen('user:updated', handler)
     expect(all.get('user:updated')).toContain(handler)
   })
 
   test('off removes a specific listener', () => {
-    const handler = mock((data: object) => {})
+    const handler = mock(() => {})
     listen('user:password-changed', handler)
     off('user:password-changed', handler)
     dispatch('user:password-changed', { userId: 1 })
@@ -100,8 +100,8 @@ describe('@stacksjs/events', () => {
   })
 
   test('multiple events can be handled', () => {
-    const registeredHandler = mock((data: object) => {})
-    const updatedHandler = mock((data: UserModel) => {})
+    const registeredHandler = mock(() => {})
+    const updatedHandler = mock(() => {})
 
     listen('user:registered', registeredHandler)
     listen('user:updated', updatedHandler)
