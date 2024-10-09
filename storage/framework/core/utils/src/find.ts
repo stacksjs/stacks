@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 import type { Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import os from 'node:os'
@@ -16,7 +17,7 @@ const excludePatterns = [
   `${os.homedir()}/Pictures`,
   `${os.homedir()}/Library`,
   `${os.homedir()}/.Trash`,
-  /.*out.*|.*\.out.*|out-.*/, // exclude any folder with 'out' in the name
+  /.*out.*/, // exclude any folder with 'out' in the name
   /.*\/\..*/, // exclude any folder that starts with a dot
 ]
 
@@ -77,13 +78,13 @@ async function searchDirectory(directory: string): Promise<string[]> {
     if (item.isDirectory()) {
       const fullPath = path.join(directory, item.name)
       if (item.name === 'storage') {
+        const storagePath = path.join(fullPath, 'framework/core/buddy')
         try {
-          const storagePath = path.join(fullPath, 'framework/core/buddy')
           await fs.access(storagePath)
           storageDirFound = true
         }
         catch (error) {
-          // The specific directory structure does not exist
+          console.error(`Error accessing directory ${storagePath}:`, error)
         }
       }
 
