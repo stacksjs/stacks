@@ -112,7 +112,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx eslint . --fix"
+    "*": "bunx --bun eslint . --fix"
   },
   "config": {
     "commitizen": {

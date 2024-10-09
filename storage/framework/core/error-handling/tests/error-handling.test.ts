@@ -123,7 +123,7 @@ describe('@stacksjs/error-handling', () => {
       const consoleErrorSpy = spyOn(console, 'error')
       const consoleLogSpy = spyOn(console, 'log')
 
-      const error = `Failed to execute command: ${italic('bunx eslint . --fix')}`
+      const error = `Failed to execute command: ${italic('bunx --bun eslint . --fix')}`
       ErrorHandler.writeErrorToConsole(error)
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(error)

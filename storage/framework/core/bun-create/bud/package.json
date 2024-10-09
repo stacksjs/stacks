@@ -4,6 +4,7 @@
   "version": "0.64.6",
   "description": "Your project description.",
   "author": "your-name <your-email>",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -27,7 +28,6 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "files": ["README.md", "dist", "src"],
   "scripts": {
     "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
@@ -113,7 +113,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx eslint . --fix"
+    "*": "bunx --bun eslint . --fix"
   },
   "config": {
     "commitizen": {
