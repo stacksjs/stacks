@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 

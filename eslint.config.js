@@ -2,7 +2,7 @@ import stacks from '@stacksjs/eslint-config'
 
 export default stacks({
   // Enable stylistic formatting rules
-  stylistic: true,
+  // stylistic: true,
 
   // Or customize the stylistic rules
   stylistic: {

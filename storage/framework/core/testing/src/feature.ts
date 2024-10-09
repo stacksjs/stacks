@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
 export function enableBrowserFeatures(): void {

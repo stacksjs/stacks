@@ -82,7 +82,6 @@ export function build(buddy: CLI): void {
 
       // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
-        // eslint-disable-next-line no-console
         console.log('has no')
         const answers = await prompts({
           type: 'multiselect',
@@ -103,7 +102,6 @@ export function build(buddy: CLI): void {
           process.exit(ExitCode.InvalidArgument)
       }
       else {
-        // eslint-disable-next-line no-console
         console.log('has op')
       }
 

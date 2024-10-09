@@ -4,6 +4,7 @@ import process from 'node:process'
 export default function (cli: CLI) {
   // Listen to the `inspire:three` command
   cli.on('inspire:three', () => {
+    // eslint-disable-next-line no-console
     console.log('inspiring with three quotes')
     // Do something
   })
