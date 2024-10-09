@@ -23,7 +23,7 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint')
 
       if (options.fix) await runAction(Action.LintFix, { ...options })
-      else await runCommand('bunx --bun biome check')
+      else await runCommand('bunx eslint .')
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })

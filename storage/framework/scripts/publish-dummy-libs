@@ -21,12 +21,7 @@ for dir in $dirs; do
   # Change to the directory
   cd $dir
 
-  # Update package.json peer, dev, and regular dependencies with the "latest" version
-  # TODO: needs to delete the tmp.json file after - but I feel like this is something that should be handled by Bun's release feature (to be released)
-  jq -r '.dependencies |= with_entries(if .value == "workspace:*" then .value = "latest" else . end)' package.json > tmp.json && mv tmp.json package.json
-  jq -r '.devDependencies |= with_entries(if .value == "workspace:*" then .value = "latest" else . end)' package.json > tmp.json && mv tmp.json package.json
-
-  npm publish --access public --no-git-checks || echo "Failed to publish $dir"
+  bun publish --access public || echo "Failed to publish $dir"
 
   # Check if the build command was successful
   if [ $? -ne 0 ]; then

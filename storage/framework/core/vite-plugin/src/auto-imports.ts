@@ -29,11 +29,9 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
     // dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
     vueTemplate: true,
 
-    // Generate corresponding .biomelintrc-auto-import.json file.
-    // biomejs extends Docs - https://biomejs.dev/guides/how-biome-works/#the-extends-option
-    biomelintrc: {
+    eslintrc: {
       enabled: true, // Default `false`
-      filepath: p.frameworkPath('.biomelintrc-auto-import.json'), // Default `./.biomelintrc-auto-import.json`
+      filepath: p.frameworkPath('.eslintrc-auto-import.json'),
     },
 
     ...options,

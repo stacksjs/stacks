@@ -7,7 +7,7 @@ _Please note, the Stacks framework auto-configures any extension that needs to b
 ## Extensions Included
 
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Language support
-- [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) - Linting & formatting
+- [ESlint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Linting & formatting
 - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) - Markdown linting
 - [UnoCSS](https://marketplace.visualstudio.com/items?itemName=antfu.unocss) - Atomic CSS framework support
 - [Goto Definition Alias](https://marketplace.visualstudio.com/items?itemName=antfu.goto-definition-alias) - Allows jumping to the definition of an aliased import

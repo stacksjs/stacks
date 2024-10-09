@@ -11,8 +11,7 @@ coverage = true
 # will automatically install dependencies on the fly during execution.
 # auto = true
 
-# set default registry as a string
-registry = "https://registry.npmjs.org"
+registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
 
 # where `bun install --global` installs packages
 globalDir = "~/.stacks/bun/install/global"

@@ -272,7 +272,6 @@ export function clampArrayRange(arr: readonly unknown[], n: number): number {
  * ```
  */
 export function sample<T>(arr: T[], count: number): T[] {
-  // biome-ignore lint/style/noNonNullAssertion: it should be fine, open to improvements
   return Array.from({ length: count }, () => arr[Math.floor(Math.random() * arr.length)]!)
 }
 

@@ -119,11 +119,11 @@ describe('@stacksjs/error-handling', () => {
       consoleLogSpy.mockRestore()
     })
 
-    it('should handle biome check command errors', () => {
+    it('should handle eslint check command errors', () => {
       const consoleErrorSpy = spyOn(console, 'error')
       const consoleLogSpy = spyOn(console, 'log')
 
-      const error = `Failed to execute command: ${italic('bunx --bun biome check --fix')}`
+      const error = `Failed to execute command: ${italic('bunx eslint . --fix')}`
       ErrorHandler.writeErrorToConsole(error)
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(error)

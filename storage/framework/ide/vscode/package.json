@@ -42,7 +42,7 @@
     "amazonwebservices.aws-toolkit-vscode",
     "antfu.unocss",
     "antfu.goto-alias",
-    "biomejs.biome",
+    "dbaeumer.vscode-eslint",
     "christian-kohler.npm-intellisense",
     "davidanson.vscode-markdownlint",
     "foxundermoon.shell-format",

@@ -3,7 +3,6 @@ import { path as p } from '@stacksjs/path'
 import events from './Events'
 
 for (const key in events) {
-  // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
   if (events.hasOwnProperty(key)) {
     const eventKey = key
     const eventListeners = events[key]

@@ -112,7 +112,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx --bun biome check --fix"
+    "*": "bunx eslint . --fix"
   },
   "config": {
     "commitizen": {

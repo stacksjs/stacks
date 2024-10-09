@@ -224,11 +224,9 @@ describe('@stacksjs/browser', () => {
         })
 
         // console.log('Resolving promise 2')
-        // biome-ignore lint/style/noNonNullAssertion: we know it is defined here
         resolve2!()
         await browser.sleep(10)
         // console.log('Resolving promise 1')
-        // biome-ignore lint/style/noNonNullAssertion: we know it is defined here
         resolve1!()
 
         // console.log('Waiting for lock')

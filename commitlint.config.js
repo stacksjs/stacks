@@ -1,21 +1,21 @@
 import { components, functions } from '@stacksjs/utils'
 import git from './config/git'
 
-const scopes = [...git.scopes, ...components, ...functions]
-const uniqueScopes = [...new Set(scopes)]
+const scopes = [...new Set([...git.scopes, ...components, ...functions])]
 
 /** @type {import('cz-git').UserConfig} */
 export default {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
-    'scope-enum': [2, 'always', uniqueScopes],
+    'scope-enum': [2, 'always', scopes],
   },
+
   prompt: {
     messages: git.messages,
     types: git.types,
     useEmoji: false,
     themeColorCode: '',
-    scopes: uniqueScopes,
+    scopes,
     allowCustomScopes: true,
     allowEmptyScopes: true,
     customScopesAlign: 'bottom',

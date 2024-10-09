@@ -1471,7 +1471,7 @@ export async function generateModelString(
 
         return this.parseResult(new ${modelName}Model(model))
       }
-        
+
       async firstOrFail(): Promise<${modelName}Model | undefined> {
         const model = await this.query.selectAll().executeTakeFirstOrThrow()
 
@@ -1794,7 +1794,7 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       // we run this in background in background, because we simply need to lint:fix the auto-generated code
       // the reason we run it in background is because we don't care whether it fails or not, given there
       // is a chance that the codebase has lint issues unrelating to our auto-generated code
-      const process = Bun.spawn(['bunx', 'biome', 'check', '--fix'], {
+      const process = Bun.spawn(['bunx', 'eslint', '.', '--fix'], {
         stdio: ['ignore', 'pipe', 'pipe'],
         cwd: path.projectPath(),
         detached: true,

@@ -92,7 +92,6 @@ export interface TextOptions {
   placeholder?: string
   defaultValue?: string
   initialValue?: string
-  // biome-ignore lint/suspicious/noConfusingVoidType: originally shipped this
   validate?: (value: string) => string | void
 }
 export const text = (opts: TextOptions) => {
@@ -129,7 +128,6 @@ export const text = (opts: TextOptions) => {
 export interface PasswordOptions {
   message: string
   mask?: string
-  // biome-ignore lint/suspicious/noConfusingVoidType: originally shipped this
   validate?: (value: string) => string | void
 }
 export const password = (opts: PasswordOptions) => {
@@ -233,10 +231,8 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
 
       switch (this.state) {
         case 'submit':
-          // biome-ignore lint/style/noNonNullAssertion: will be set
           return `${title}${color.gray(S_BAR)}  ${opt(this.options[this.cursor]!, 'selected')}`
         case 'cancel':
-          // biome-ignore lint/style/noNonNullAssertion: will be set
           return `${title}${color.gray(S_BAR)}  ${opt(this.options[this.cursor]!, 'cancelled')}\n${color.gray(S_BAR)}`
         default: {
           return `${title}${color.cyan(S_BAR)}  ${limitOptions({
@@ -283,12 +279,10 @@ export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
       switch (this.state) {
         case 'submit':
           return `${title}${color.gray(S_BAR)}  ${opt(
-            // biome-ignore lint/style/noNonNullAssertion: will be set
             this.options.find((opt) => opt.value === this.value)!,
             'selected',
           )}`
         case 'cancel':
-          // biome-ignore lint/style/noNonNullAssertion: will be set
           return `${title}${color.gray(S_BAR)}  ${opt(this.options[0]!, 'cancelled')}\n${color.gray(S_BAR)}`
         default: {
           return `${title}${color.cyan(S_BAR)}  ${this.options
@@ -517,7 +511,6 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
                 this.value.includes(option.value) || (option.group === true && this.isGroupSelected(`${option.value}`))
               const active = i === this.cursor
               const groupActive =
-                // biome-ignore lint/style/noNonNullAssertion: will be set
                 !active && typeof option.group === 'string' && this.options[this.cursor]!.value === option.group
               if (groupActive) {
                 return opt(option, selected ? 'group-active-selected' : 'group-active', options)
@@ -539,7 +532,6 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
                 this.value.includes(option.value) || (option.group === true && this.isGroupSelected(`${option.value}`))
               const active = i === this.cursor
               const groupActive =
-                // biome-ignore lint/style/noNonNullAssertion: will be set
                 !active && typeof option.group === 'string' && this.options[this.cursor]!.value === option.group
               if (groupActive) {
                 return opt(option, selected ? 'group-active-selected' : 'group-active', options)
@@ -715,7 +707,6 @@ type Prettify<T> = {
 export type PromptGroup<T> = {
   [P in keyof T]: (opts: {
     results: Prettify<Partial<PromptGroupAwaitedReturn<Omit<T, P>>>>
-    // biome-ignore lint/suspicious/noConfusingVoidType: originally shipped this
   }) => void | Promise<T[P] | void>
 }
 

@@ -24,8 +24,6 @@ bazelproject
 bazelrc
 bentocache
 bentostore
-biomejs
-biomelintrc
 boject
 booleanish
 Bootcamp
@@ -35,6 +33,7 @@ browserslist
 bumpp
 bundleconfig
 bunnel
+bunx
 bunx --bun
 cardano
 cback
@@ -289,6 +288,7 @@ singleline
 singlestore
 sisteransi
 sizecheck
+slidev
 solana
 sonner
 Spatie
