@@ -1,5 +1,16 @@
 <script lang="ts">
 // Visible toasts amount
+const VISIBLE_TOASTS_AMOUNT = 3
+// Viewport padding
+const VIEWPORT_OFFSET = '32px'
+// Default toast width
+const TOAST_WIDTH = 356
+// Default gap between toasts
+const GAP = 14
+
+function _cn(...classes: (string | undefined)[]) {
+  return classes.filter(Boolean).join(' ')
+}
 </script>
 
 <script lang="ts" setup>
@@ -25,15 +36,6 @@ defineOptions({
   inheritAttrs: false,
 })
 
-
-const VISIBLE_TOASTS_AMOUNT = 3
-// Viewport padding
-const VIEWPORT_OFFSET = '32px'
-// Default toast width
-const TOAST_WIDTH = 356
-// Default gap between toasts
-const GAP = 14
-
 const props = withDefaults(defineProps<ToasterProps>(), {
   invert: false,
   position: 'bottom-right',
@@ -55,10 +57,6 @@ const props = withDefaults(defineProps<ToasterProps>(), {
 })
 
 const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
-
-function _cn(...classes: (string | undefined)[]) {
-  return classes.filter(Boolean).join(' ')
-}
 
 function getDocumentDirection(): ToasterProps['dir'] {
   if (typeof window === 'undefined')
