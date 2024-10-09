@@ -1,79 +1,92 @@
 <script setup lang="ts">
+import { startAuthentication } from '@simplewebauthn/browser'
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types'
+// Imports
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+// Reactive state for form inputs and messages
+const email = ref('')
+const password = ref('')
 const successMessage = ref('')
 const errorMessage = ref('')
 
-import { ref } from 'vue'
-
+// Router instance
 const router = useRouter()
 
-// Reactive state for the email input
-const email = ref('')
-const password = ref('')
-
-// Method to handle email submission
+// Method to handle email and password login
 async function login() {
   const body = {
     email: email.value,
     password: password.value,
   }
 
-  const url = 'http://localhost:3008/api/login'
+  try {
+    const url = 'http://localhost:3008/api/login'
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
 
-  if (!response.ok) {
-    const res = await response.json()
-  } else {
     const data = await response.json()
 
-    localStorage.setItem('token', data.token)
-
-    router.push({ path: '/dashboard' })
+    if (!response.ok) {
+      errorMessage.value = data.error || 'Login failed'
+    } else {
+      localStorage.setItem('token', data.token)
+      router.push({ path: '/dashboard' })
+    }
+  } catch (error) {
+    errorMessage.value = 'An error occurred during login'
+  } finally {
+    // Clear password after login attempt
+    password.value = ''
   }
-
-  password.value = ''
 }
 
-import { startAuthentication } from '@simplewebauthn/browser'
-
+// Method to handle passkey login
 async function loginPasskey() {
   // Reset success/error messages
   successMessage.value = ''
   errorMessage.value = ''
 
-  const resp = await fetch(`http://localhost:3008/generate-authentication-options?email=${email.value}`)
+  try {
+    // Fetch authentication options based on email
+    const resp = await fetch(`http://localhost:3008/generate-authentication-options?email=${email.value}`)
+    const options: PublicKeyCredentialRequestOptionsJSON = await resp.json()
 
-  const options: PublicKeyCredentialRequestOptionsJSON = await resp.json()
+    // Start the WebAuthn authentication process
+    const asseResp = await startAuthentication(options)
 
-  const asseResp = await startAuthentication(options)
+    // Verify the authentication response with the backend
+    const verificationResp = await fetch('http://localhost:3008/verify-authentication', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        res: asseResp,
+        email: email.value,
+        challenge: options.challenge,
+      }),
+    })
 
-  const verificationResp = await fetch('http://localhost:3008/verify-authentication', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ res: asseResp, email: email.value, challenge: options.challenge }),
-  })
+    // const verificationJSON = await verificationResp.json()
 
-  // const verificationJSON = await verificationResp.json()
-
-  //   if (verificationJSON?.verified) {
-  //     successMessage.value = 'Success!'
-  //   }
-  //   else {
-  //     errorMessage.value = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
-  //       verificationJSON,
-  //     )}</pre>`
-  //   }
+    // if (verificationJSON?.verified) {
+    //   successMessage.value = 'Authentication successful!'
+    //   router.push({ path: '/dashboard' })
+    // } else {
+    //   errorMessage.value = `Authentication failed. Response: ${JSON.stringify(verificationJSON)}`
+    // }
+  } catch (error) {
+    errorMessage.value = 'An error occurred during passkey authentication'
+  }
 }
 </script>
 

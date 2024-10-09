@@ -20,6 +20,12 @@ export default new Action({
 
     if (!user || !userPasskey) return
 
+    const pubkeyString = userPasskey.cred_public_key
+
+    const jsonParse = JSON.parse(pubkeyString) as JSON
+
+    const uint8Array = new Uint8Array(Object.values(jsonParse))
+
     try {
       const verification = await verifyAuthenticationResponse({
         response: passkeyRes,
@@ -28,7 +34,7 @@ export default new Action({
         expectedRPID: 'localhost',
         authenticator: {
           credentialID: userPasskey?.id,
-          credentialPublicKey: userPasskey?.cred_public_key,
+          credentialPublicKey: uint8Array,
           counter: userPasskey.counter,
           transports: ['internal'],
         },

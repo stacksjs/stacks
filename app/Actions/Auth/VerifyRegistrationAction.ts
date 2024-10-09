@@ -26,6 +26,7 @@ export default new Action({
 
       await setCurrentRegistrationOptions(user, verification)
 
+      console.log(verification)
       return verification
     } catch (error) {
       console.error(error)
