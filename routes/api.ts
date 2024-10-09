@@ -16,6 +16,8 @@ route.post('/email/subscribe', 'Actions/SubscriberEmailAction')
 route.post('/login', 'Actions/LoginAction')
 route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction')
 route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction')
+route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction')
+route.post('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
 
 // route.email('/welcome')
 route.health() // adds a GET `/health` route

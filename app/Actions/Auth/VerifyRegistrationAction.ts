@@ -1,11 +1,11 @@
 import { Action } from '@stacksjs/actions'
-import { getUserPasskeys, setCurrentRegistrationOptions, verifyRegistrationResponse } from '@stacksjs/auth'
+import { setCurrentRegistrationOptions, verifyRegistrationResponse } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
-  name: 'PasskeyRegistrationAction',
-  description: 'Register a Passkey',
+  name: 'VerifyRegistrationAction',
+  description: 'Verify the registration passkey',
   method: 'POST',
   async handle(request: RequestInstance) {
     const body = request.all()

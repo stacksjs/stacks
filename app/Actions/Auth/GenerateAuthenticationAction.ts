@@ -1,0 +1,32 @@
+import { Action } from '@stacksjs/actions'
+import {
+  type PublicKeyCredentialRequestOptionsJSON,
+  generateAuthenticationOptions,
+  getUserPasskeys,
+} from '@stacksjs/auth'
+import type { RequestInstance } from '@stacksjs/types'
+import User from '../../../storage/framework/orm/src/models/User.ts'
+
+export default new Action({
+  name: 'PasskeyRegistrationAction',
+  description: 'Register a Passkey',
+  method: 'POST',
+  async handle(request: RequestInstance) {
+    const email = request.get('email')
+
+    const user = await User.where('email', email).first()
+
+    const userPasskeys = await getUserPasskeys(user?.id as number)
+
+    const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
+      rpID: 'localhost',
+      // Require users to use a previously-registered authenticator
+      allowCredentials: userPasskeys.map((passkey) => ({
+        id: passkey.id,
+        transports: ['internal'],
+      })),
+    })
+
+    return options
+  },
+})

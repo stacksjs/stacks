@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { generateRegistrationOptions, getUserPasskeys, setCurrentRegistrationOptions } from '@stacksjs/auth'
+import { generateRegistrationOptions, getUserPasskeys } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
@@ -15,8 +15,6 @@ export default new Action({
     if (!user) return
 
     const userPasskeys = await getUserPasskeys(user?.id as number)
-
-    console.log(userPasskeys)
 
     const userEmail = user?.email ?? ''
 

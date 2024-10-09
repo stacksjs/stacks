@@ -1,10 +1,11 @@
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server'
-import type { AuthenticatorTransportFuture, PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types'
 import { type Insertable, db } from '@stacksjs/database'
 import type { UserModel } from '../../../orm/src/models/User'
 export {
   generateRegistrationOptions,
   verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } from '@simplewebauthn/server'
 
 export type * from '@simplewebauthn/types'
@@ -28,6 +29,15 @@ export interface PasskeyAttribute {
 
 export async function getUserPasskeys(userId: number): Promise<PasskeyAttribute[]> {
   return await db.selectFrom('passkeys').selectAll().where('user_id', '=', userId).execute()
+}
+
+export async function getUserPasskey(userId: number, passkeyId: string): Promise<PasskeyAttribute | undefined> {
+  return await db
+    .selectFrom('passkeys')
+    .selectAll()
+    .where('id', '=', passkeyId)
+    .where('user_id', '=', userId)
+    .executeTakeFirst()
 }
 
 export async function setCurrentRegistrationOptions(
