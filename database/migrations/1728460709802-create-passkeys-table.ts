@@ -10,6 +10,7 @@ export async function up(db: Database<any>) {
     .addColumn('webauthn_user_id', 'varchar(255)')
     .addColumn('counter', 'integer')
     .addColumn('device_type', 'varchar(255)')
+    .addColumn('credential_type', 'varchar(255)')
     .addColumn('backup_eligible', 'boolean')
     .addColumn('backup_status', 'boolean')
     .addColumn('transports', 'varchar(255)')

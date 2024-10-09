@@ -16,6 +16,8 @@ export default new Action({
 
     const userPasskeys = await getUserPasskeys(user?.id as number)
 
+    console.log(userPasskeys)
+
     const userEmail = user?.email ?? ''
 
     const options = await generateRegistrationOptions({
@@ -25,7 +27,7 @@ export default new Action({
       attestationType: 'none',
       excludeCredentials: userPasskeys.map((passkey) => ({
         id: passkey.id,
-        transports: ['nfc'],
+        transports: ['internal'], //TODO: Dynamic
       })),
       authenticatorSelection: {
         residentKey: 'preferred',

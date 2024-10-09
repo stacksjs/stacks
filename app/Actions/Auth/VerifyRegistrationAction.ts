@@ -1,11 +1,7 @@
 import { Action } from '@stacksjs/actions'
-import {
-  type VerifiedRegistrationResponse,
-  getUserPasskeys,
-  setCurrentRegistrationOptions,
-  verifyRegistrationResponse,
-} from '@stacksjs/auth'
+import { getUserPasskeys, setCurrentRegistrationOptions, verifyRegistrationResponse } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
+import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
   name: 'PasskeyRegistrationAction',
@@ -20,10 +16,6 @@ export default new Action({
 
     if (!user) return
 
-    const userPasskeys = await getUserPasskeys(user?.id as number)
-
-    const userEmail = user?.email ?? ''
-
     try {
       const verification = await verifyRegistrationResponse({
         response: body.attResp,
@@ -31,12 +23,14 @@ export default new Action({
         expectedOrigin: 'http://localhost:3333',
         expectedRPID: 'localhost',
       })
+
+      await setCurrentRegistrationOptions(user, verification)
+
+      return verification
     } catch (error) {
       console.error(error)
     }
 
-    await setCurrentRegistrationOptions(user, verification)
-
-    return verification
+    return user
   },
 })

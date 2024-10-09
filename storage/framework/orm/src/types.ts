@@ -34,10 +34,12 @@ export interface PasskeysTable {
   user_id: number
   webauthn_user_id: string
   counter: number
+  credential_type: string
+  device_type: string
   backup_eligible: boolean
   backup_status: boolean
-  transports?: AuthenticatorTransportFuture[]
-  created_at: Date
+  transports?: string
+  created_at?: Date
   last_used_at: string
 }
 

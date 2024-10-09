@@ -295,6 +295,7 @@ async function createPasskeyMigration() {
   migrationContent += `    .addColumn('webauthn_user_id', 'varchar(255)')\n`
   migrationContent += `    .addColumn('counter', 'integer')\n`
   migrationContent += `    .addColumn('device_type', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('credential_type', 'varchar(255)')\n`
   migrationContent += `    .addColumn('backup_eligible', 'boolean')\n`
   migrationContent += `    .addColumn('backup_status', 'boolean')\n`
   migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
