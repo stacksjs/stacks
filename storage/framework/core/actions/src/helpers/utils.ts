@@ -1,6 +1,7 @@
 import type { Action as ActionType } from '@stacksjs/actions'
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'

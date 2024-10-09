@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log, parseOptions, runCommand } from '@stacksjs/cli'
 import { NpmScript } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'

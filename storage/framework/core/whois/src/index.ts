@@ -21,7 +21,7 @@ export async function findWhoIsServer(tld: string): Promise<string> {
     const res = await fetch(chkURL)
     if (res.ok) {
       const body = await res.text()
-      const server = body.match(/whois:\s+(.*)\s+/)
+      const server = body.match(/whois:\s+(\S+)/)
       if (server?.[1])
         return server[1]
     }

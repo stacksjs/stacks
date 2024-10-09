@@ -25,6 +25,15 @@ defineOptions({
   inheritAttrs: false,
 })
 
+
+const VISIBLE_TOASTS_AMOUNT = 3
+// Viewport padding
+const VIEWPORT_OFFSET = '32px'
+// Default toast width
+const TOAST_WIDTH = 356
+// Default gap between toasts
+const GAP = 14
+
 const props = withDefaults(defineProps<ToasterProps>(), {
   invert: false,
   position: 'bottom-right',
@@ -44,17 +53,6 @@ const props = withDefaults(defineProps<ToasterProps>(), {
   pauseWhenPageIsHidden: false,
   cn: _cn,
 })
-
-const VISIBLE_TOASTS_AMOUNT = 3
-
-// Viewport padding
-const VIEWPORT_OFFSET = '32px'
-
-// Default toast width
-const TOAST_WIDTH = 356
-
-// Default gap between toasts
-const GAP = 14
 
 const isClient = typeof window !== 'undefined' && typeof document !== 'undefined'
 
