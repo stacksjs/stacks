@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import process from 'node:process'
 
 // Define the redisProcess variable to hold the Redis process
 let redisProcess: any | null = null

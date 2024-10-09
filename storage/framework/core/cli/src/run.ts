@@ -1,5 +1,6 @@
 import type { Ok, Result } from '@stacksjs/error-handling'
 import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import process from 'node:process'
 import { ExitCode } from '@stacksjs/types'
 import { log } from './console'
 import { exec, execSync } from './exec'

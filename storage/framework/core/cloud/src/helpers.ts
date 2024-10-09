@@ -762,7 +762,7 @@ export async function getOrCreateTimestamp(): Promise<string> {
   }
   catch (error: any) {
     const timestamp = new Date().getTime().toString()
-    log.debug(`Creating timestamp parameter ${parameterName} with value ${timestamp}`)
+    log.debug(`Creating timestamp parameter ${parameterName} with value ${timestamp}`, error)
 
     await ssm.putParameter({
       Name: parameterName,

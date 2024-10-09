@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { clone, deleteKeys, isArray, isFunction, isObject, nestedValue, values } from './helpers/'
 
 type IsArray<T> = T extends any[] ? true : false

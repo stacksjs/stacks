@@ -1,3 +1,4 @@
+import process from 'node:process'
 // slightly modified version of @clack/prompts
 // many thanks to bombshell-dev for the original work
 import {
