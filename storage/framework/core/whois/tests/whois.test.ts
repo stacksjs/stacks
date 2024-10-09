@@ -33,7 +33,7 @@ describe('@stacksjs/whois', () => {
   it('should perform parsed whois lookup', async () => {
     try {
       const result = await lookup('example.com')
-      console.log('Parsed WHOIS result:', result)
+      // console.log('Parsed WHOIS result:', result)
       expect(result._raw).toContain('Domain Name: EXAMPLE.COM')
       expect(result.parsedData).toHaveProperty('Domain Name', 'EXAMPLE.COM')
     }

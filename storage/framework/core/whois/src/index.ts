@@ -1,6 +1,7 @@
 import type { SocksClientOptions } from 'socks'
 import type { ProxyData, WhoIsOptions, WhoIsResponse } from './types'
 import Net from 'node:net'
+import { log } from '@stacksjs/logging'
 import fetch from 'node-fetch'
 import { SocksClient } from 'socks'
 import { IANA_CHK_URL, PARAMETERS, SERVERS } from './constants'
@@ -268,16 +269,16 @@ export async function whois(
   if (server === '') {
     let serverData = getWhoIsServer(tld as keyof typeof SERVERS)
     if (!serverData) {
-      console.debug(`No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`)
+      log.debug(`No WhoIs server found for TLD: ${tld}! Attempting IANA WhoIs database for server!`)
       serverData = await findWhoIsServer(tld)
       if (!serverData) {
-        console.debug('WhoIs server could not be found!')
+        log.debug('WhoIs server could not be found!')
         return {
           _raw: '',
           parsedData: null,
         }
       }
-      console.debug(`WhoIs sever found for ${tld}: ${server}`)
+      log.debug(`WhoIs sever found for ${tld}: ${server}`)
     }
 
     server = serverData
@@ -287,9 +288,9 @@ export async function whois(
   const queryOptions = qOptions || ''
 
   try {
-    console.log(`Attempting WHOIS lookup for ${domain} on server ${server}`)
+    log.debug(`Attempting WHOIS lookup for ${domain} on server ${server}`)
     const rawData = await tcpWhois(domain, queryOptions, server, port, encoding, proxy)
-    console.log(`Raw WHOIS data received:`, rawData)
+    log.debug(`Raw WHOIS data received:`, rawData)
     if (!parse) {
       const parsedData = WhoIsParser.parseData(rawData, null)
       return {
@@ -317,7 +318,8 @@ export async function whois(
       }
     }
   }
-  catch (err) {
+  catch (err: any) {
+    log.debug(`Error in WHOIS lookup for ${domain} on server ${server}`, err)
     return {
       _raw: '',
       parsedData: null,
@@ -326,7 +328,7 @@ export async function whois(
 }
 
 export function lookup(domain: string, options: WhoIsOptions | null = null): Promise<WhoIsResponse> {
-  console.log(`Lookup called for ${domain}`)
+  log.debug(`Lookup called for ${domain}`)
   return whois(domain, true, options)
 }
 
