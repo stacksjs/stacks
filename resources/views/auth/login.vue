@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { startRegistration } from '@simplewebauthn/browser'
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types'
 
 const successMessage = ref('')
 const errorMessage = ref('')
@@ -43,31 +43,37 @@ async function login() {
   password.value = ''
 }
 
-async function generateRegistration() {
+import { startAuthentication } from '@simplewebauthn/browser'
+
+async function loginPasskey() {
   // Reset success/error messages
   successMessage.value = ''
   errorMessage.value = ''
 
-  const resp = await fetch('http://localhost:3008/generate-registration-options')
-  const options = await resp.json()
+  const resp = await fetch(`http://localhost:3008/generate-authentication-options?email=${email.value}`)
 
-  const attResp = await startRegistration(options)
+  const options: PublicKeyCredentialRequestOptionsJSON = await resp.json()
 
-  const verificationResp = await fetch('http://localhost:3008/verify-registration', {
+  const asseResp = await startAuthentication(options)
+
+  const verificationResp = await fetch('http://localhost:3008/verify-authentication', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ challenge: options.challenge, attResp }),
+    body: JSON.stringify({ res: asseResp, email: email.value, challenge: options.challenge }),
   })
 
-  const verificationJSON = await verificationResp.json()
+  // const verificationJSON = await verificationResp.json()
 
-  if (verificationJSON?.verified) {
-    successMessage.value = 'Success!'
-  } else {
-    errorMessage.value = `Oh no, something went wrong! Response: <pre>${JSON.stringify(verificationJSON)}</pre>`
-  }
+  //   if (verificationJSON?.verified) {
+  //     successMessage.value = 'Success!'
+  //   }
+  //   else {
+  //     errorMessage.value = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
+  //       verificationJSON,
+  //     )}</pre>`
+  //   }
 }
 </script>
 
