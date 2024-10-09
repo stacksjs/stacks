@@ -29,13 +29,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Biome
-        uses: biomejs/setup-biome@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Use cached node_modules
+        uses: actions/cache@v4
         with:
-          version: latest
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            node-modules-
+
+      - name: Install dependencies
+        run: bun install
 
       - name: Lint
-        run: biome ci .
+        run: bunx --bun eslint .
 
   typecheck:
     runs-on: ${{ matrix.os }}
