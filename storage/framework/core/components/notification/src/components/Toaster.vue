@@ -14,6 +14,7 @@ function _cn(...classes: (string | undefined)[]) {
 </script>
 
 <script lang="ts" setup>
+/* eslint import/first: 0 */
 import type {
   HeightT,
   Position,
