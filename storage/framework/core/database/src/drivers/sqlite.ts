@@ -250,8 +250,6 @@ async function createTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  console.log(migrationFilePath)
-
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
@@ -326,8 +324,6 @@ async function createPasskeyMigration() {
 }
 
 async function createAlterTableMigration(modelPath: string) {
-  console.log('createAlterTableMigration')
-
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)

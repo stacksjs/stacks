@@ -47,6 +47,7 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   try {
     return await db.selectFrom('migrations').select('name').execute()
   }
+
   catch (error) {
     return []
   }
@@ -190,6 +191,7 @@ export function arrangeColumns(attributes: Attributes | undefined): Array<[strin
   const entries = Object.entries(attributes)
 
   // Sort the entries based on the 'order' property
+
   entries.sort(([keyA, valueA], [keyB, valueB]) => {
     const orderA = valueA.order ?? Number.POSITIVE_INFINITY
     const orderB = valueB.order ?? Number.POSITIVE_INFINITY

@@ -1,7 +1,6 @@
 import type {
   Attributes,
   FieldArrayElement,
-  GeneratorOptions,
   Model,
   ModelElement,
   RelationConfig,
@@ -151,8 +150,6 @@ export async function getPivotTables(
           ? belongsToManyRelation.secondForeignKey
           : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
 
-      console.log('formattedModelName', `${formattedModelName}_${modelRelation.table}`)
-
       pivotTable.push({
         table:
           (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
@@ -279,8 +276,6 @@ export async function writeModelRequest(): Promise<void> {
     fieldString += ` id: number\n`
     fieldStringInt += `public id = 1\n`
 
-    let keyCounter = 0
-    let keyCounterForeign = 0
     fieldStringType += ` get(key: 'id'): number\n`
 
     const entityGroups: Record<string, string[]> = {}
@@ -308,7 +303,6 @@ export async function writeModelRequest(): Promise<void> {
 
         fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
         fieldStringInt += `public ${snakeField} = ${defaultValue}\n`
-        keyCounter++
       }
     }
 
@@ -323,7 +317,6 @@ export async function writeModelRequest(): Promise<void> {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
       fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
-      keyCounterForeign++
     }
 
     if (useTimestamps) {
@@ -779,7 +772,7 @@ export async function generateKyselyTypes(): Promise<void> {
         id?: Generated<number>
         ${pivotTable.firstForeignKey}: number
         ${pivotTable.secondForeignKey}: number
-      }`
+      }\n\n`
     }
   }
 
@@ -799,7 +792,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  transports?: string\n'
   text += '  created_at?: Date\n'
   text += '  last_used_at: string \n'
-  text += '}\n'
+  text += '}\n\n'
 
   text += '\nexport interface Database {\n'
 
@@ -848,7 +841,6 @@ export async function generateModelString(
   let relationMethods = ``
   let relationImports = ``
   let twoFactorStatements = ''
-  let publicPasskeyStatements = ''
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
@@ -1038,12 +1030,6 @@ export async function generateModelString(
   if (usePasskey) {
     declareFields += 'public public_passkey: string | undefined \n'
     constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
-
-    publicPasskeyStatements += `
-      async getPublicPasskey() {
-        return this.${formattedModelName}.public_passkey
-      }
-    `
 
     twoFactorStatements += `
     async generateTwoFactorForModel() {
@@ -1758,7 +1744,7 @@ export async function generateModelString(
     `
 }
 
-export async function generateModelFiles(modelStringFile?: string, options?: GeneratorOptions): Promise<void> {
+export async function generateModelFiles(modelStringFile?: string): Promise<void> {
   try {
     log.info('Cleanup of older Models...')
     await deleteExistingModels(modelStringFile)
@@ -1781,6 +1767,7 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       await writeModelNames()
     }
     catch (error) {
+      /* eslint-disable-next-line no-console */
       console.log('error', error)
       process.exit(ExitCode.FatalError)
     }
@@ -1791,6 +1778,7 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       await writeModelRequest()
     }
     catch (error) {
+      /* eslint-disable-next-line no-console */
       console.log('error', error)
       process.exit(ExitCode.FatalError)
     }
@@ -1836,22 +1824,22 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       })
 
       const reader = process.stdout.getReader()
-      let output = ''
+      // let output = ''
 
       while (true) {
-        const { done, value } = await reader.read()
+        const { done } = await reader.read()
         if (done)
           break
-        output += new TextDecoder().decode(value)
+        // output += new TextDecoder().decode(value)
       }
 
       const stderrReader = process.stderr.getReader()
       while (true) {
-        const { done, value } = await stderrReader.read()
+        const { done } = await stderrReader.read()
         if (done)
           break
         // Collect stderr output but do not log it
-        output += new TextDecoder().decode(value)
+        // output += new TextDecoder().decode(value)
       }
 
       const exitCode = await process.exited

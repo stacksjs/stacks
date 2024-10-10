@@ -91,7 +91,7 @@ export const viewsConfig: ViteConfig = {
     //   reduceInlineStyles: false,
     // },
 
-    includedRoutes(paths, routes) {
+    includedRoutes(paths) {
       // exclude all the route paths that contains 'errors', 'system-tray', or 'dashboard'
       return paths.filter(i => !i.includes('errors') && !i.includes('system-tray') && !i.includes('dashboard'))
     },

@@ -13,15 +13,20 @@ export interface TeamPersonalAccessTokensTable {
   id?: Generated<number>
   team_id: number
   accesstoken_id: number
-} export interface TeamUsersTable {
+}
+
+export interface TeamUsersTable {
   id?: Generated<number>
   team_id: number
   user_id: number
-} export interface UserTeamsTable {
+}
+
+export interface UserTeamsTable {
   id?: Generated<number>
   user_id: number
   team_id: number
 }
+
 export interface MigrationsTable {
   name: string
   timestamp: string
