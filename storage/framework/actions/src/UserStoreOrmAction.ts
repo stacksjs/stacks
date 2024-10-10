@@ -6,6 +6,7 @@ export default new Action({
   name: 'User Store',
   description: 'User Store ORM Action',
   method: 'POST',
+  requestFile: 'UserRequest',
   async handle(request: UserRequestType) {
     await request.validate()
 

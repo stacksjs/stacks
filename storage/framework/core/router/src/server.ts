@@ -137,7 +137,17 @@ type CallbackWithStatus = Route['callback'] & { status: number }
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
   const foundCallback: CallbackWithStatus = await route.resolveCallback(foundRoute.callback)
 
+  //   return new Response(`<html><body><h1>Error</h1><p>${foundCallback}</p><pre></pre></body></html>`, {
+  //   headers: {
+  //     'Content-Type': 'text/html',
+  //     'Access-Control-Allow-Origin': '*',
+  //     'Access-Control-Allow-Headers': '*',
+  //   },
+  //   status: 500,
+  // })
+  
   const middlewarePayload = await executeMiddleware(foundRoute)
+  
 
   if (
     middlewarePayload !== null
@@ -239,7 +249,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
-      const { status, ...rest } = foundCallback
+      const { status, ...rest } = await foundCallback
 
       return new Response(JSON.stringify(rest), {
         headers: {
@@ -251,8 +261,22 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       })
     }
 
+    if (foundCallback.status === 404) {
+      const { status, ...rest } = await foundCallback
+
+      const { errors } = rest
+      return new Response(JSON.stringify(errors), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: 404,
+      })
+    }
+
     if (foundCallback.status === 403) {
-      const { status, ...rest } = foundCallback
+      const { status, ...rest } = await foundCallback
 
       return new Response(JSON.stringify(rest), {
         headers: {
@@ -265,7 +289,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 422) {
-      const { status, ...rest } = foundCallback
+      const { status, ...rest } = await foundCallback
 
       return new Response(JSON.stringify(rest), {
         headers: {
@@ -278,9 +302,10 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 500) {
-      const { status, ...rest } = foundCallback
+      const { status, ...rest } = await foundCallback
 
-      return new Response(JSON.stringify(rest), {
+      const { errors } = rest
+      return new Response(`<html><body><h1>Error</h1><p>${errors}</p><pre></pre></body></html>`, {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',

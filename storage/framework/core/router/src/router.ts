@@ -307,12 +307,15 @@ export class Router implements RouterInterface {
     // if fails, return validation error
     let requestInstance
 
+    console.log(actionModule.default)
+
     if (actionModule.default.requestFile) {
       requestInstance = await findRequestInstance(actionModule.default.requestFile)
     }
     else {
-      requestInstance = await extractDefaultRequest(modulePath)
+      requestInstance = await extractDefaultRequest()
     }
+
 
     try {
       if (isObjectNotEmpty(actionModule.default.validations))
@@ -321,7 +324,10 @@ export class Router implements RouterInterface {
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {
-      return { status: error.status, errors: error.errors }
+      if (!error.status) 
+        return { status: 500, errors: error }
+      
+      return { status: error.status, errors: error }
     }
   }
 
