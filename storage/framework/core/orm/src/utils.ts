@@ -1075,7 +1075,7 @@ export async function generateModelString(
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.where('${attribute.field}', '=', value)
 
@@ -1227,7 +1227,7 @@ export async function generateModelString(
       static async find(id: number): Promise<${modelName}Model | undefined> {
         let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         const model = await query.executeTakeFirst()
 
@@ -1236,13 +1236,13 @@ export async function generateModelString(
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return instance.parseResult(new this(model))
+        return instance.parseResult(new ${modelName}Model(model))
       }
 
       static async all(): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').selectAll()
 
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         if (instance.softDeletes) {
           query = query.where('deleted_at', 'is', null)
@@ -1257,7 +1257,7 @@ export async function generateModelString(
       static async findOrFail(id: number): Promise<${modelName}Model> {
         let query = db.selectFrom('${tableName}').where('id', '=', id)
 
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         if (instance.softDeletes) {
           query = query.where('deleted_at', 'is', null);
@@ -1272,13 +1272,13 @@ export async function generateModelString(
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return instance.parseResult(new this(model))
+        return instance.parseResult(new ${modelName}Model(model))
       }
 
       static async findMany(ids: number[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         if (instance.softDeletes) {
           query = query.where('deleted_at', 'is', null);
@@ -1293,7 +1293,7 @@ export async function generateModelString(
 
       // Method to get a User by criteria
       static async get(): Promise<UserModel[]> {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         if (instance.hasSelect) {
           if (instance.softDeletes) {
@@ -1338,7 +1338,7 @@ export async function generateModelString(
       }
 
       static async count(): Promise<number> {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         if (instance.softDeletes) {
           instance.query = instance.query.where('deleted_at', 'is', null);
@@ -1399,7 +1399,7 @@ export async function generateModelString(
 
       // Method to create a new ${formattedModelName}
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
          const filteredValues = Object.fromEntries(
           Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
@@ -1430,7 +1430,7 @@ export async function generateModelString(
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
         const model = await instance.find(id)
 
        if (instance.softDeletes) {
@@ -1474,7 +1474,7 @@ export async function generateModelString(
         let operator: any
         let value: any
 
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         if (args.length === 2) {
           [column, value] = args
@@ -1493,7 +1493,7 @@ export async function generateModelString(
        ${whereStatements}
 
       static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.where(column, 'in', values)
 
@@ -1540,7 +1540,7 @@ export async function generateModelString(
       }
 
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.orderBy(column, order)
 
@@ -1554,7 +1554,7 @@ export async function generateModelString(
       }
 
       static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.orderBy(column, 'desc')
 
@@ -1568,7 +1568,7 @@ export async function generateModelString(
       }
 
       static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.orderBy(column, 'asc')
 
@@ -1671,7 +1671,7 @@ export async function generateModelString(
       }
 
       static distinct(column: keyof ${modelName}Type): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.select(column).distinct()
 
@@ -1687,7 +1687,7 @@ export async function generateModelString(
       }
 
       static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
-        const instance = new this(null)
+        const instance = new ${modelName}Model(null)
 
         instance.query = instance.query.innerJoin(table, firstCol, secondCol)
 
@@ -1701,9 +1701,6 @@ export async function generateModelString(
       toJSON() {
         const output: Partial<${modelName}Type> = ${jsonFields}
 
-        this.hidden.forEach((attr: string) => {
-          if (attr in output) delete (output as Record<string, any>)[attr]
-        })
 
         type ${modelName} = Omit<${modelName}Type, 'password'>
 
