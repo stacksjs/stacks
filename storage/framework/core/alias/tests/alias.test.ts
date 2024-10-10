@@ -21,7 +21,7 @@ describe('@stacksjs/alias', () => {
 
     expect(stacksjsAliases.length).toBe(stacksAliases.length)
 
-    stacksjsAliases.forEach(([key, value], index) => {
+    stacksjsAliases.forEach(([key, value]) => {
       const stacksKey = `stacks/${key.slice('@stacksjs/'.length)}`
       expect(alias[stacksKey]).toBe(value)
     })
@@ -36,7 +36,7 @@ describe('@stacksjs/alias', () => {
 
   it('should have consistent naming conventions', () => {
     Object.keys(alias).forEach((key) => {
-      expect(key).toMatch(/^(@stacksjs\/|stacks\/|~\/|framework\/)?([a-z-]+\/?)*(\*)?$/)
+      expect(key).toMatch(/^(@stacksjs\/|stacks\/|~\/|framework\/)?[a-z-]+(\/[a-z-]+)*(\*)?$/)
     })
   })
 

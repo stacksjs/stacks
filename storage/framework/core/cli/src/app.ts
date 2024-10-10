@@ -1,3 +1,4 @@
+/* eslint-disable ts/no-use-before-define, regexp/no-useless-non-capturing-group, regexp/no-trivially-nested-quantifier, regexp/no-useless-quantifier, regexp/prefer-w,regexp/no-useless-escape */
 import process from 'node:process'
 // slightly modified version of @clack/prompts
 // many thanks to bombshell-dev for the original work
