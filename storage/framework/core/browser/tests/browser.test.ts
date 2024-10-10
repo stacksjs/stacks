@@ -15,6 +15,7 @@ describe('@stacksjs/browser', () => {
     let originalSetTimeout: typeof setTimeout
     let originalClearTimeout: typeof clearTimeout
     let mockTime: number
+    // eslint-disable-next-line ts/no-unsafe-function-type
     let timeoutCallbacks: Array<{ callback: Function, delay: number }>
 
     beforeEach(() => {
@@ -23,6 +24,7 @@ describe('@stacksjs/browser', () => {
       originalSetTimeout = globalThis.setTimeout
       originalClearTimeout = globalThis.clearTimeout
 
+      // eslint-disable-next-line ts/no-unsafe-function-type
       globalThis.setTimeout = ((callback: Function, delay: number) => {
         timeoutCallbacks.push({ callback, delay })
         return timeoutCallbacks.length
@@ -300,12 +302,13 @@ describe('@stacksjs/browser', () => {
         backoffFactor: 2,
         jitter: true,
       }
-      originalSetTimeout = global.setTimeout
-      global.setTimeout = ((cb: Function) => cb()) as any
+      originalSetTimeout = globalThis.setTimeout
+      // eslint-disable-next-line ts/no-unsafe-function-type
+      globalThis.setTimeout = ((cb: Function) => cb()) as any
     })
 
     afterEach(() => {
-      global.setTimeout = originalSetTimeout
+      globalThis.setTimeout = originalSetTimeout
       mock.restore()
     })
 

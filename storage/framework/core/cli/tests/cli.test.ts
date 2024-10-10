@@ -1,3 +1,4 @@
+/* eslint perfectionist/sort-imports: 0 */
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
 import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'

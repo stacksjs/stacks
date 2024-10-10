@@ -45,6 +45,7 @@ const className = computed(() => {
 
 // easily use any of the lifecycle hooks without needing to import them
 onMounted(() => {
+  // eslint-disable-next-line no-console
   console.log('Button component mounted')
 })
 </script>

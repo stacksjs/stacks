@@ -17,6 +17,7 @@
  * )
  * ```
  */
+// eslint-disable-next-line ts/no-unsafe-function-type
 export function throttle(fn: Function, wait = 300) {
   let inThrottle: boolean
   let lastFn: ReturnType<typeof setTimeout>

@@ -44,6 +44,7 @@ async function login() {
     }
   }
   catch (error) {
+    console.error(error)
     errorMessage.value = 'An error occurred during login'
   }
   finally {

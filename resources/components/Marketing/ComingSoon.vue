@@ -94,14 +94,14 @@ async function submitEmail() {
                 <input id="email" v-model="email" type="email" name="email" class="block w-full border-0 rounded-none rounded-l-md py-1.5 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-blue-600 focus:ring-inset" placeholder="may-we-ask@your-email.org">
               </div>
 
-              <BaseButton button-text="Stay in Touch" class-string="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 w-120px" :loading="loading" @click.native="submitEmail" />
+              <BaseButton button-text="Stay in Touch" class-string="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 w-120px" :loading="loading" @click="submitEmail" />
             </div>
           </div>
 
           <a href="https://docs.stacksjs.org" class="text-sm text-gray-900 font-semibold leading-6">Learn more <span aria-hidden="true">→</span></a>
         </div>
 
-        <p v-for="error in errors" class="pt-2 text-xs text-red-500">
+        <p v-for="error in errors" :key="error" class="pt-2 text-xs text-red-500">
           {{ error.message }}
         </p>
 

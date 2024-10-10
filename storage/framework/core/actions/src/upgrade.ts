@@ -12,12 +12,14 @@ import { version } from '../package.json'
 // export async function checkForUncommittedChanges(path = './stacks', options: UpgradeOptions) {
 export function checkForUncommittedChanges(options: UpgradeOptions): void {
   try {
+    console.log('checkForUncommittedChanges', options)
     // const stdio = determineDebugLevel(options) ? 'inherit' : 'ignore'
     // check if the stacks folder has any updates
     // https://carlosbecker.com/posts/git-changed/
     // await spawn(`git diff --quiet HEAD -- ${path}`, { stdio, cwd: projectPath() })
   }
   catch (error: any) {
+    console.error(error)
     // if (error.status === 1) {
     // even though the ./stacks folder should not be edited, instead config values should be adjusted,
     // there is a chance that users may apply local core edits, as it’s totally acceptable, as long as

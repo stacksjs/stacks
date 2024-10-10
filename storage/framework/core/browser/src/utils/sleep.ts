@@ -43,7 +43,7 @@ export function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export interface WaitOptions {
+export type WaitOptions = number | {
   interval?: number
   timeout?: number
 }
@@ -56,7 +56,7 @@ export interface WaitOptions {
  */
 export function waitUntil(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
-    const { interval = 100, timeout = 0 } = options
+    const { interval, timeout } = normalizeOptions(options)
 
     // Immediately resolve if the condition is initially true
     if (condition()) {
@@ -79,6 +79,16 @@ export function waitUntil(condition: () => boolean, options: WaitOptions = {}): 
 
     check()
   })
+}
+
+function normalizeOptions(options: WaitOptions): { interval: number, timeout: number } {
+  if (typeof options === 'number') {
+    return { interval: 100, timeout: options }
+  }
+  return {
+    interval: options.interval ?? 100,
+    timeout: options.timeout ?? 0,
+  }
 }
 
 /**
