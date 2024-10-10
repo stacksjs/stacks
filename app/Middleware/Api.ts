@@ -24,25 +24,25 @@ export default new Middleware({
     const team = await Team.find(Number(teamId))
 
     if (!team) {
-      throw { message: 'Invalid bearer token', status: 401 }
+      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
     }
 
     const accessTokens = await team.teamAccessTokens()
 
     if (!accessTokens.length) {
-      throw { message: 'Invalid bearer token', status: 401 }
+      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
     }
 
     const accessTokenIds = accessTokens.map(accessToken => accessToken.id)
 
     if (!accessTokenIds.includes(tokenId)) {
-      throw { message: 'Invalid bearer token', status: 401 }
+      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
     }
 
     const teamBearerToken = await AccessToken.where('token', plainString).first()
 
     if (!teamBearerToken) {
-      throw { message: 'Invalid bearer token', status: 401 }
+      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
     }
   },
 })

@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import {
   BedrockClient,
   CreateModelCustomizationJobCommand,
@@ -8,6 +7,7 @@ import {
 import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
 import { mockClient } from 'aws-sdk-client-mock'
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import {
   createModelCustomizationJob,
   getModelCustomizationJob,

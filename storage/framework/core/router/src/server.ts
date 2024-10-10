@@ -214,6 +214,17 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
+  if (foundCallback === undefined || foundCallback === null) {
+    return new Response('', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
+      status: 204,
+    })
+  }
+
   if (isFunction(foundCallback)) {
     const result = foundCallback()
 

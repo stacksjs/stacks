@@ -844,6 +844,7 @@ export async function generateModelString(
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
+  let mittDeleteFindStatement = ``
 
   const relations = await getRelations(model, modelName)
 
@@ -860,6 +861,8 @@ export async function generateModelString(
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model)`
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
+
+      mittDeleteFindStatement += 'const model = await instance.find(id)'
     }
   }
 
@@ -872,6 +875,7 @@ export async function generateModelString(
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model);`
     }
     if (observer.includes('delete')) {
+      mittDeleteFindStatement += 'const model = await instance.find(id)'
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model);`
     }
   }
@@ -1417,7 +1421,8 @@ export async function generateModelString(
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
         const instance = new ${modelName}Model(null)
-
+        ${mittDeleteFindStatement}
+        
         if (instance.softDeletes) {
         await db.updateTable('${tableName}')
           .set({

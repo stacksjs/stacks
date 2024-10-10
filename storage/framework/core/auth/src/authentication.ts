@@ -15,7 +15,8 @@ const authConfig = { username: 'email', password: 'password' }
 
 let authUser: any
 
-export async function attempt(credentials: Credentials, remember?: boolean): Promise<boolean> {
+// TODO: restore remember param
+export async function attempt(credentials: Credentials): Promise<boolean> {
   let hashCheck = false
 
   const user = await User.where(authConfig.username, credentials[authConfig.username]).first()

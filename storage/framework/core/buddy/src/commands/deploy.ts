@@ -1,5 +1,4 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
-import { $ } from 'bun'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
@@ -8,6 +7,7 @@ import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { $ } from 'bun'
 
 export function deploy(buddy: CLI): void {
   const descriptions = {

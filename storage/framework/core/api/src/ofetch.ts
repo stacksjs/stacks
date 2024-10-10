@@ -94,16 +94,7 @@ async function destroy(url: string, params?: Params, headers?: Headers): Promise
     if (token)
       headers.set('Authorization', `Bearer ${token}`)
   }
-
-  const parameters = {
-    ...params,
-    ...{
-      headers,
-      method: 'DELETE',
-      baseURL,
-    },
-  }
-
+  
   loading = true
 
   return await ofetch(url, {

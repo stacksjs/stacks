@@ -33,7 +33,7 @@ async function login() {
       body: JSON.stringify(body),
     })
 
-    const data = await response.json()
+    const data: any = await response.json()
 
     if (!response.ok) {
       errorMessage.value = data.error || 'Login failed'
@@ -62,13 +62,13 @@ async function loginPasskey() {
   try {
     // Fetch authentication options based on email
     const resp = await fetch(`http://localhost:3008/generate-authentication-options?email=${email.value}`)
-    const options: PublicKeyCredentialRequestOptionsJSON = await resp.json()
+    const options: any = await resp.json()
 
     // Start the WebAuthn authentication process
     const asseResp = await startAuthentication(options)
 
     // Verify the authentication response with the backend
-    const verificationResp = await fetch('http://localhost:3008/verify-authentication', {
+    const verificationResp: any = await fetch('http://localhost:3008/verify-authentication', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,14 +80,14 @@ async function loginPasskey() {
       }),
     })
 
-    // const verificationJSON = await verificationResp.json()
+    const verificationJSON = await verificationResp.json()
 
-    // if (verificationJSON?.verified) {
-    //   successMessage.value = 'Authentication successful!'
-    //   router.push({ path: '/dashboard' })
-    // } else {
-    //   errorMessage.value = `Authentication failed. Response: ${JSON.stringify(verificationJSON)}`
-    // }
+    if (verificationJSON?.verified) {
+      successMessage.value = 'Authentication successful!'
+      router.push({ path: '/dashboard' })
+    } else {
+      errorMessage.value = `Authentication failed. Response: ${JSON.stringify(verificationJSON)}`
+    }
   }
   catch (error) {
     errorMessage.value = 'An error occurred during passkey authentication'
@@ -133,7 +133,7 @@ async function loginPasskey() {
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="login">
+            <button @click="loginPasskey" type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="login">
               Sign in
             </button>
           </div>

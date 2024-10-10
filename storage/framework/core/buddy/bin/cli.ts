@@ -1,7 +1,7 @@
-import { $ } from 'bun'
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
+import { $ } from 'bun'
 import { cac } from 'cac'
 import { version } from '../package.json'
 
