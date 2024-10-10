@@ -1832,7 +1832,7 @@ export async function generateModelFiles(modelStringFile?: string, options?: Gen
       // we run this in background in background, because we simply need to lint:fix the auto-generated code
       // the reason we run it in background is because we don't care whether it fails or not, given there
       // is a chance that the codebase has lint issues unrelating to our auto-generated code
-      const process = Bun.spawn(['bunx', 'eslint', '.', '--fix'], {
+      const process = Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
         stdio: ['ignore', 'pipe', 'pipe'],
         cwd: path.projectPath(),
         detached: true,

@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/cli'
 
-log.info('Ensuring Code Style...')
+log.info('Checking Code Style...')
 
 // TODO: somehow, we currently cannot trigger bunx --bun using $`` syntax
 // $.cwd(projectPath())
