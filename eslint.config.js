@@ -16,12 +16,8 @@ export default stacks({
   yaml: true,
   unocss: true,
 
-  // `.eslintignore` is no longer supported in Flat config, use `ignores` instead
   ignores: [
     '**/fixtures',
-    '**/cdk.out',
-    '**/framework/server',
-    '**/.vite-ssg-temp',
     // ...globs
   ],
 })
