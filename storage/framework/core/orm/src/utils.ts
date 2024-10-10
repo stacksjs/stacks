@@ -1257,8 +1257,8 @@ export async function generateModelString(
 
         const model = await query.executeTakeFirst()
 
-        if (!model)
-          throw new Error(\`No model results found for \${id}\ \`)
+        if (model === undefined)
+          throw new Error(JSON.stringify({ status: 404, message: No model results found for query }))
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
@@ -1501,7 +1501,10 @@ export async function generateModelString(
       }
 
       async firstOrFail(): Promise<${modelName}Model | undefined> {
-        const model = await this.query.selectAll().executeTakeFirstOrThrow()
+        const model = await this.query.selectAll().executeTakeFirst()
+
+        if (model === undefined)
+          throw new Error(JSON.stringify({ status: 404, message: No model results found for query }))
 
         return this.parseResult(new ${modelName}Model(model))
       }
@@ -1626,7 +1629,9 @@ export async function generateModelString(
       // Method to delete (soft delete) the ${formattedModelName} instance
       async delete(): Promise<void> {
           if (this.id === undefined)
-              throw new Error('${modelName} ID is undefined');
+              throw new Error('${modelName} ID is undefined')
+
+          ${mittDeleteFindStatement}
 
           // Check if soft deletes are enabled
           if (this.softDeletes) {
@@ -1645,7 +1650,7 @@ export async function generateModelString(
           }
 
 
-            ${mittDeleteStatement}
+          ${mittDeleteStatement}
       }
 
       ${relationMethods}

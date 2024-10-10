@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types'
 import { startAuthentication } from '@simplewebauthn/browser'
 // Imports
 import { ref } from 'vue'
@@ -85,7 +84,8 @@ async function loginPasskey() {
     if (verificationJSON?.verified) {
       successMessage.value = 'Authentication successful!'
       router.push({ path: '/dashboard' })
-    } else {
+    }
+    else {
       errorMessage.value = `Authentication failed. Response: ${JSON.stringify(verificationJSON)}`
     }
   }
@@ -133,7 +133,7 @@ async function loginPasskey() {
           </div>
 
           <div>
-            <button @click="loginPasskey" type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="login">
+            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="loginPasskey" @click="login">
               Sign in
             </button>
           </div>
