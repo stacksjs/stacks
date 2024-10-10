@@ -102,6 +102,7 @@ const { table, search, columnName } = await useTable({
 
 // console.log('running initial search')
 const results = await search()
+// eslint-disable-next-line no-console
 console.log('initial search complete', results)
 
 // now that we have the search results, let's update/set the state of the table

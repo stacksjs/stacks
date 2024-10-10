@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
+import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { CAC } from 'cac'
 import {
   buddyOptions,
@@ -23,10 +23,15 @@ import * as originalModule from '../src'
 
 mock.module('@stacksjs/logging', () => ({
   log: {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     debug: mock((...args: any[]) => {}),
+    // eslint-disable-next-line unused-imports/no-unused-vars
     info: mock((...args: any[]) => {}),
+    // eslint-disable-next-line unused-imports/no-unused-vars
     error: mock((...args: any[]) => {}),
+    // eslint-disable-next-line unused-imports/no-unused-vars
     success: mock((...args: any[]) => {}),
+    // eslint-disable-next-line unused-imports/no-unused-vars
     warn: mock((...args: any[]) => {}),
   },
 }))

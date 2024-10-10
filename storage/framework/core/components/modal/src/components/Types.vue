@@ -1,20 +1,21 @@
 <script lang="ts" setup>
-import { defineComponent, h, ref } from 'vue'
+import { ref } from 'vue'
+// import { defineComponent, h, ref } from 'vue'
 // import { notification } from '../'
 // import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 
-const promiseCode = '`${data.name} notification has been added`'
+// const promiseCode = '`${data.name} notification has been added`'
 
-const CustomDiv = defineComponent({
-  setup() {
-    return () =>
-      h('div', {
-        innerHTML: 'A custom toast with unstyling',
-      })
-  },
-})
+// const CustomDiv = defineComponent({
+//   setup() {
+//     return () =>
+//       h('div', {
+//         innerHTML: 'A custom toast with unstyling',
+//       })
+//   },
+// })
 
 // const allTypes = [
 //   {

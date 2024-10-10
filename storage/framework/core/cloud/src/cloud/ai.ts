@@ -6,6 +6,7 @@ import { aws_iam as iam } from 'aws-cdk-lib'
 export interface AiStackProps extends NestedCloudProps {}
 
 export class AiStack {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   constructor(scope: Construct, props: AiStackProps) {
     const bedrockAccessPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,

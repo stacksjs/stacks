@@ -140,7 +140,8 @@ function onPointerDown(event: PointerEvent) {
   pointerStartRef.value = { x: event.clientX, y: event.clientY }
 }
 
-function onPointerUp(event: PointerEvent) {
+// function onPointerUp(event: PointerEvent) {
+function onPointerUp() {
   if (swipeOut.value)
     return
   pointerStartRef.value = null

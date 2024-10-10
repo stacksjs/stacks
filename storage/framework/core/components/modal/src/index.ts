@@ -6,7 +6,8 @@ import type { NotificationProps } from './types'
 export type { NotificationProps }
 
 const plugin: Plugin = {
-  install(app) {
+  install() {
+  // install(app) {
     // app.component('Notification', Notification)
   },
 }

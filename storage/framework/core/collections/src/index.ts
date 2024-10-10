@@ -191,6 +191,7 @@ export class Collection<T> {
   }
 
   dd(): void {
+    // eslint-disable-next-line no-console
     console.log(JSON.stringify(this.all(), null, 2))
     process.exit()
   }
@@ -246,7 +247,9 @@ export class Collection<T> {
   }
 
   diffUsing(array: any[] | null, callback: (a: any, b: any) => number): Collection<T> {
+    // eslint-disable-next-line no-console
     console.log('Original collection:', this.items)
+    // eslint-disable-next-line no-console
     console.log('Array to compare:', array)
 
     if (array === null) {
@@ -266,26 +269,32 @@ export class Collection<T> {
   }
 
   doesntContain(key: string | number | symbol | ((item: T, index: number) => boolean), value?: any): boolean {
+    // eslint-disable-next-line no-console
     console.log('doesntContain called with:', { key, value })
 
     if (typeof key === 'function') {
+      // eslint-disable-next-line no-console
       console.log('Function branch')
       return !this.contains(key)
     }
 
     if (value !== undefined) {
+      // eslint-disable-next-line no-console
       console.log('Key-value pair branch')
       return !this.contains((item) => {
+        // eslint-disable-next-line no-console
         console.log('Comparing:', item[key], 'with', value)
         return item[key] === value
       })
     }
 
+    // eslint-disable-next-line no-console
     console.log('Single value branch')
     return !this.contains(key)
   }
 
   dump(): this {
+    // eslint-disable-next-line no-console
     console.log(this.items)
     return this
   }
@@ -376,23 +385,30 @@ export class Collection<T> {
   }
 
   filter(callback?: (item: T, index: number) => boolean): Collection<T> {
+    // eslint-disable-next-line no-console
     console.log('Filter method called with callback:', callback)
+    // eslint-disable-next-line no-console
     console.log('Current items:', this.items)
 
     if (typeof callback !== 'function') {
+      // eslint-disable-next-line no-console
       console.log('No callback provided, removing falsy values')
       const filteredItems = this.items.filter((item) => {
+        // eslint-disable-next-line no-console
         console.log('Filtering item:', item)
         return Boolean(item)
       })
+      // eslint-disable-next-line no-console
       console.log('Filtered items:', filteredItems)
       return new Collection(filteredItems)
     }
 
     const filteredItems = this.items.filter((item, index) => {
+      // eslint-disable-next-line no-console
       console.log('Filtering item:', item, 'at index:', index)
       return callback(item, index)
     })
+    // eslint-disable-next-line no-console
     console.log('Filtered items:', filteredItems)
     return new Collection(filteredItems)
   }

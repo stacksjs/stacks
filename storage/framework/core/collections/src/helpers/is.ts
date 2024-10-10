@@ -19,4 +19,5 @@ export function isObject(item: unknown): item is object {
  * @param item - The item to check.
  * @returns A boolean indicating whether the item is a function.
  */
+// eslint-disable-next-line ts/no-unsafe-function-type
 export const isFunction = (item: unknown): item is Function => typeof item === 'function'

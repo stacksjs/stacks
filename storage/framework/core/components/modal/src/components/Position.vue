@@ -21,12 +21,12 @@ const renderedCode = computed(() => {
 const showCheckIcon = ref(false)
 
 function handleChangePosition(activePosition: Position) {
-  const toastsAmount = document.querySelectorAll('[data-sonner-toast]').length
+  // const toastsAmount = document.querySelectorAll('[data-sonner-toast]').length
   emit('update:position', activePosition)
 
   // No need to show a toast when there is already one
-  if (toastsAmount > 0 && props.position !== activePosition)
-    return
+  // if (toastsAmount > 0 && props.position !== activePosition)
+  //   return
 
   // notification('Event has been created', {
   //   description: 'Monday, January 3rd at 6:00pm',

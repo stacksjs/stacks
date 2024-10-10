@@ -140,7 +140,8 @@ function onPointerDown(event: PointerEvent) {
   pointerStartRef.value = { x: event.clientX, y: event.clientY }
 }
 
-function onPointerUp(event: PointerEvent) {
+// function onPointerUp(event: PointerEvent) {
+function onPointerUp() {
   if (swipeOut.value)
     return
   pointerStartRef.value = null
@@ -150,7 +151,7 @@ function onPointerUp(event: PointerEvent) {
   const timeTaken = new Date().getTime() - (dragStartTime.value?.getTime() || 0)
   const velocity = Math.abs(swipeAmount) / timeTaken
 
-  // Remove only if treshold is met
+  // Remove only if threshold is met
   if (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11) {
     offsetBeforeRemove.value = offset.value
     props.toast.onDismiss?.(props.toast)

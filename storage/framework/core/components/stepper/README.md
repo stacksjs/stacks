@@ -18,12 +18,11 @@ bun install -d @stacksjs/stepper
 ```
 
 ```ts
-
 // App.vue
 import { Stepper } from '@stacksjs/stepper'
 
 const steps = ref(5)
-const step  = ref(1)
+const step = ref(1)
 const stepper = ref(null)
 
 // <Stepper ref='stepper' :steps="steps" v-model='step' />

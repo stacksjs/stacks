@@ -677,14 +677,18 @@ describe('@stacksjs/collections', () => {
       const collection = collect([1, 2, 3, 4, 5])
       const array = [2, 3, 4, 5, 6]
 
+      // eslint-disable-next-line no-console
       console.log('Collection:', collection.all())
+      // eslint-disable-next-line no-console
       console.log('Array:', array)
 
       const diff = collection.diffUsing(array, (a, b) => {
+        // eslint-disable-next-line no-console
         console.log('Comparing:', a, b)
         return a === b
       })
 
+      // eslint-disable-next-line no-console
       console.log('Diff result:', diff.all())
 
       expect(diff.all()).toEqual([1])
@@ -692,13 +696,16 @@ describe('@stacksjs/collections', () => {
 
     it('does not return a difference when the comparison is null', () => {
       const collection = collect(['apple', 'banana', 'cherry'])
+      // eslint-disable-next-line no-console
       console.log('Initial collection:', collection.all())
 
       const diff = collection.diffUsing(null, (a, b) => {
+        // eslint-disable-next-line no-console
         console.log('Comparing:', a, 'with', b)
         return a.localeCompare(b)
       })
 
+      // eslint-disable-next-line no-console
       console.log('Resulting diff:', diff.all())
 
       expect(diff.all()).toEqual(['apple', 'banana', 'cherry'])
@@ -1273,7 +1280,7 @@ describe('@stacksjs/collections', () => {
         () => false,
         () => true,
         () => {
-          throw new Error()
+          throw new Error('some error message')
         },
       ])
 

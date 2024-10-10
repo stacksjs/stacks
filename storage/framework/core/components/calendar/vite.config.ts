@@ -16,7 +16,7 @@ function minify(code: string) {
 
 let cssCodeStr = ''
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   const userConfig: UserConfig = {}
 
   const commonPlugins = [
