@@ -284,7 +284,6 @@ export class ReleaseModel {
   // Method to remove a Release
   static async remove(id: number): Promise<void> {
     const instance = new ReleaseModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('releases')
@@ -492,8 +491,6 @@ export class ReleaseModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('Release ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

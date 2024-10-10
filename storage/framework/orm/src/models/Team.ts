@@ -315,7 +315,6 @@ export class TeamModel {
   // Method to remove a Team
   static async remove(id: number): Promise<void> {
     const instance = new TeamModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('teams')
@@ -579,8 +578,6 @@ export class TeamModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('Team ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

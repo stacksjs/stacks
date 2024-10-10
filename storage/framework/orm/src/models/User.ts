@@ -320,7 +320,6 @@ export class UserModel {
   // Method to remove a User
   static async remove(id: number): Promise<void> {
     const instance = new UserModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('users')
@@ -561,8 +560,6 @@ export class UserModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('User ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

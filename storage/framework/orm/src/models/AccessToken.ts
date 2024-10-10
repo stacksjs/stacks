@@ -298,7 +298,6 @@ export class AccessTokenModel {
   // Method to remove a AccessToken
   static async remove(id: number): Promise<void> {
     const instance = new AccessTokenModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('personal_access_tokens')
@@ -530,8 +529,6 @@ export class AccessTokenModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('AccessToken ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

@@ -40,7 +40,12 @@ export function relativeActionsPath(path?: string): string {
 }
 
 export function userActionsPath(path?: string, options?: { relative: true }): string {
-  return appPath(`Actions/${path || ''}`)
+  const absolutePath = appPath(`Actions/${path || ''}`)
+
+  if (options?.relative)
+    return relative(process.cwd(), absolutePath)
+
+  return absolutePath
 }
 
 export function builtUserActionsPath(path?: string, options?: { relative: boolean }): string {

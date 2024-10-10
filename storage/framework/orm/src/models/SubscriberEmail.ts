@@ -288,7 +288,6 @@ export class SubscriberEmailModel {
   // Method to remove a SubscriberEmail
   static async remove(id: number): Promise<void> {
     const instance = new SubscriberEmailModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('subscriber_emails')
@@ -496,8 +495,6 @@ export class SubscriberEmailModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('SubscriberEmail ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

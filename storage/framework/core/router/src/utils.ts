@@ -95,7 +95,7 @@ export async function findRequestInstance(requestInstance: string): Promise<Requ
   return null
 }
 
-export async function extractDefaultRequest(action: string): Promise<Request> {
+export async function extractDefaultRequest(): Promise<Request> {
   const requestPath = path.frameworkPath(`core/router/src/request.ts`)
   const requestInstance = await import(requestPath)
 

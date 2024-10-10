@@ -4,7 +4,7 @@ import { userMiddlewarePath } from '@stacksjs/path'
 export class Middleware implements MiddlewareOptions {
   name: string
   priority: number
-  handle: Function
+  handle: () => Promise<void>
 
   constructor(data: MiddlewareOptions) {
     this.name = data.name

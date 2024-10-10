@@ -61,7 +61,7 @@ export async function deleteStacksTable(): Promise<void> {
   }
 
   try {
-    const data = await client.send(new DeleteTableCommand(params))
+    await client.send(new DeleteTableCommand(params))
   }
   catch (err) {
     console.error('Error deleting table:', err)

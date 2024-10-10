@@ -293,7 +293,6 @@ export class ProjectModel {
   // Method to remove a Project
   static async remove(id: number): Promise<void> {
     const instance = new ProjectModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('projects')
@@ -525,8 +524,6 @@ export class ProjectModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('Project ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

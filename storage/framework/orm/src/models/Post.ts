@@ -292,7 +292,6 @@ export class PostModel {
   // Method to remove a Post
   static async remove(id: number): Promise<void> {
     const instance = new PostModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('posts')
@@ -508,8 +507,6 @@ export class PostModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('Post ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

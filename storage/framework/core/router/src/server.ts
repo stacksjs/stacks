@@ -100,7 +100,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
 
-function handleOptions(req: Request) {
+function handleOptions() {
   return new Response(null, {
     status: 204,
     headers: {

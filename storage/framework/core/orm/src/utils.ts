@@ -1431,9 +1431,8 @@ export async function generateModelString(
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
         const instance = new ${modelName}Model(null)
-        const model = await instance.find(id)
 
-       if (instance.softDeletes) {
+        if (instance.softDeletes) {
         await db.updateTable('${tableName}')
           .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP')
@@ -1637,8 +1636,6 @@ export async function generateModelString(
       async delete(): Promise<void> {
           if (this.id === undefined)
               throw new Error('${modelName} ID is undefined');
-
-          const model = await this.find(this.id)
 
           // Check if soft deletes are enabled
           if (this.softDeletes) {

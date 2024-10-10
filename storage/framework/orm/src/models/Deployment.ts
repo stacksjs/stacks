@@ -307,7 +307,6 @@ export class DeploymentModel {
   // Method to remove a Deployment
   static async remove(id: number): Promise<void> {
     const instance = new DeploymentModel(null)
-    const model = await instance.find(id)
 
     if (instance.softDeletes) {
       await db.updateTable('deployments')
@@ -563,8 +562,6 @@ export class DeploymentModel {
   async delete(): Promise<void> {
     if (this.id === undefined)
       throw new Error('Deployment ID is undefined')
-
-    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
