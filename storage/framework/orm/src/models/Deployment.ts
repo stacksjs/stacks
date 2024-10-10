@@ -151,7 +151,7 @@ export class DeploymentModel {
     const model = await query.executeTakeFirst()
 
     if (!model)
-      throw (`No model results found for ${id} `)
+      throw new Error(`No model results found for ${id} `)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 

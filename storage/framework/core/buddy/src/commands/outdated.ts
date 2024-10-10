@@ -1,8 +1,8 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
-import { $ } from 'bun'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
+import { $ } from 'bun'
 
 export function outdated(buddy: CLI): void {
   const descriptions = {

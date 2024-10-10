@@ -132,7 +132,7 @@ export class SubscriberEmailModel {
     const model = await query.executeTakeFirst()
 
     if (!model)
-      throw (`No model results found for ${id} `)
+      throw new Error(`No model results found for ${id} `)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 

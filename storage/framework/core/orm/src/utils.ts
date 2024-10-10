@@ -1268,7 +1268,7 @@ export async function generateModelString(
         const model = await query.executeTakeFirst()
 
         if (!model)
-          throw(\`No model results found for \${id}\ \`)
+          throw new Error(\`No model results found for \${id}\ \`)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
