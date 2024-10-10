@@ -4,7 +4,9 @@
   "version": "0.64.6",
   "description": "A modern stepper component.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/stepper#readme",
@@ -16,8 +18,15 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["steppers", "components", "library", "stacks"],
-  "sideEffects": ["**/*.css"],
+  "keywords": [
+    "steppers",
+    "components",
+    "library",
+    "stacks"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,7 +36,11 @@
       "import": "./dist/*"
     }
   },
-  "files": ["README.md", "dist", "src"],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build --mode lib",
@@ -48,7 +61,7 @@
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.5.1",
     "clean-css": "^5.3.3",
-    "unocss": "0.63.4",
+    "unocss": "0.61.0",
     "unplugin-icons": "^0.19.3"
   }
 }

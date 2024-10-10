@@ -1,9 +1,9 @@
+import { $ } from 'bun'
 import process from 'node:process'
 import { dim, italic, log } from '@stacksjs/cli'
 import { corePath } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { $ } from 'bun'
 
 log.info('Building core packages')
 

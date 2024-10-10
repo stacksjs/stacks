@@ -1,6 +1,6 @@
+import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
-import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { CAC } from 'cac'
 import {
   buddyOptions,
