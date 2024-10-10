@@ -1,3 +1,4 @@
+const Buffer = require('node:buffer').Buffer
 const { CopyObjectCommand, GetObjectCommand, S3Client } = require('@aws-sdk/client-s3')
 const { SendEmailCommand, SESv2Client } = require('@aws-sdk/client-sesv2')
 
@@ -332,6 +333,7 @@ exports.sendMessage = (data) => {
  * configuration, SES object, and S3 object.
  */
 exports.handler = (event, context, callback, overrides) => {
+  // eslint-disable-next-line no-console
   console.log('AWS Lambda SES Forwarder')
 
   const steps = overrides?.steps
@@ -348,6 +350,7 @@ exports.handler = (event, context, callback, overrides) => {
     callback,
     context,
     config: overrides.config ? overrides.config : defaultConfig,
+    // eslint-disable-next-line no-console
     log: overrides.log ? overrides.log : console.log,
     ses: overrides.ses ? overrides.ses : new SESv2Client(),
     s3: overrides.s3 ? overrides.s3 : new S3Client({ signatureVersion: 'v4' }),

@@ -24,19 +24,17 @@ import { Stepper } from '@stacksjs/stepper'
 
 const steps = ref(5)
 const step  = ref(1)
-
 const stepper = ref(null)
 
-<Stepper ref='stepper' :steps="steps" v-model='step' />
+// <Stepper ref='stepper' :steps="steps" v-model='step' />
 
-<template v-if="step === 1">
-  <div> </div>
-</template>
+// <template v-if="step === 1">
+//   <div> </div>
+// </template>
 
-<template v-if="step === 2">
-  <div> </div>
-</template>
-
+// <template v-if="step === 2">
+//   <div> </div>
+// </template>
 ```
 
 To view the full documentation, please visit [stacksjs.org/docs/components/stepper](stacksjs.org/docs/components/stepper).

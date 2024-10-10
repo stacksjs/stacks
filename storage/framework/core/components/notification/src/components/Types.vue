@@ -5,6 +5,7 @@ import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 
+// eslint-disable-next-line no-template-curly-in-string
 const promiseCode = '`${data.name} notification has been added`'
 
 const CustomDiv = defineComponent({
@@ -64,6 +65,7 @@ const allTypes = [
       notification.message('Event has been created', {
         action: {
           label: 'Undo',
+          // eslint-disable-next-line no-console
           onClick: () => console.log('Undo'),
         },
         duration: 10000000,
@@ -93,7 +95,7 @@ notification.promise(promise, {
           success: (data: any) => {
             return `${data.name} toast has been added`
           },
-          error: (data: any) => 'Error',
+          error: () => 'Error',
           duration: 10000000,
         },
       ),

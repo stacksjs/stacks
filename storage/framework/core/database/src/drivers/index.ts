@@ -1,6 +1,7 @@
 import type { Attribute, Attributes, Model, VineType } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { handleError } from '@stacksjs/error-handling'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
@@ -49,6 +50,7 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   }
 
   catch (error) {
+    handleError(error, { shouldExitProcess: false })
     return []
   }
 }
@@ -192,6 +194,7 @@ export function arrangeColumns(attributes: Attributes | undefined): Array<[strin
 
   // Sort the entries based on the 'order' property
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   entries.sort(([keyA, valueA], [keyB, valueB]) => {
     const orderA = valueA.order ?? Number.POSITIVE_INFINITY
     const orderB = valueB.order ?? Number.POSITIVE_INFINITY

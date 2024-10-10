@@ -8,23 +8,23 @@ const step = ref(1)
 const steps = ref(5)
 const stepperRef = ref(null)
 
-function next() {
-  if (stepperRef.value) {
-    stepperRef.value.next()
-  }
-}
+// function next() {
+//   if (stepperRef.value) {
+//     stepperRef.value.next()
+//   }
+// }
 
-function reset() {
-  if (stepperRef.value) {
-    stepperRef.value.reset()
-  }
-}
+// function reset() {
+//   if (stepperRef.value) {
+//     stepperRef.value.reset()
+//   }
+// }
 
-function previous() {
-  if (stepperRef.value) {
-    stepperRef.value.previous()
-  }
-}
+// function previous() {
+//   if (stepperRef.value) {
+//     stepperRef.value.previous()
+//   }
+// }
 </script>
 
 <template>

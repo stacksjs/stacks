@@ -137,7 +137,7 @@ function handleChange(stepIndex: number) {
   }
 }
 function getStepsArr() {
-  return Array.from(new Array(props.steps), (step, index) => {
+  return Array.from({ length: props.steps }, (_, index) => {
     const isFirst = index === 0
     const isNext = index - 1 === 0
     let disabled = false

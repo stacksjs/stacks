@@ -16,6 +16,7 @@ const result = await Bun.build({
   minify: true,
 })
 
+/* eslint-disable-next-line antfu/no-top-level-await */
 await outro({
   dir: import.meta.dir,
   startTime,

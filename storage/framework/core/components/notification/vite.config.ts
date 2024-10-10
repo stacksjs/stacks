@@ -16,7 +16,7 @@ function minify(code: string) {
   return cleanCssInstance.minify(code).styles
 }
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   let cssCodeStr = ''
   const userConfig: UserConfig = {
     optimizeDeps: {

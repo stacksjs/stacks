@@ -14,7 +14,7 @@ const handler = {
       return Number(value)
 
     // if value is a string but only contains boolean values, return it as a boolean
-    if (typeof value === 'string' && /^(true|false)$/.test(value))
+    if (typeof value === 'string' && /^true|false$/.test(value))
       return value === 'true'
 
     // at some point, let's see if we can remove the need for below

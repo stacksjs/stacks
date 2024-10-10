@@ -51,12 +51,12 @@ const classes = computed(() => ({
   'is-disabled': props.disabled,
 }))
 
-const indexClasses = computed(() => {
-  const defaultClass = ' '
-  const additionalClass = props.active ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
+// const indexClasses = computed(() => {
+//   const defaultClass = ' '
+//   const additionalClass = props.active ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300'
 
-  return defaultClass + additionalClass
-})
+//   return defaultClass + additionalClass
+// })
 
 function handleChange() {
   emit('change', props.index)

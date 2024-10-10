@@ -130,15 +130,12 @@ class Observer {
         result = ['resolve', response]
         if (isHttpResponse(response) && !response.ok) {
           shouldDismiss = false
-          const message
-            = typeof data.error === 'function'
-              ? await (data.error as (msg: string) => Promise<string>)(`HTTP error! status: ${response.status}`)
-              : data.error
-          const description
-            = typeof data.description === 'function'
-              ? // @ts-expect-error
-              await data.description(`HTTP error! status: ${response.status}`)
-              : data.description
+          const message = typeof data.error === 'function'
+            ? await (data.error as (msg: string) => Promise<string>)(`HTTP error! status: ${response.status}`)
+            : data.error
+          const description = typeof data.description === 'function'
+            ? await data.description(`HTTP error! status: ${response.status}`)
+            : data.description
           this.create({ id, type: 'error', message, description })
         }
         else if (data.success !== undefined) {

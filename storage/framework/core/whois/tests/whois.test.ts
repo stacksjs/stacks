@@ -20,7 +20,7 @@ describe('@stacksjs/whois', () => {
   it('should perform whois lookup', async () => {
     try {
       const result = await whois('example.com')
-      console.log('Raw WHOIS result:', result._raw)
+      // console.log('Raw WHOIS result:', result._raw)
       expect(result._raw).toContain('Domain Name: EXAMPLE.COM')
       expect(result.parsedData).toBeNull() // because parse is false by default
     }
