@@ -1258,7 +1258,7 @@ export async function generateModelString(
         const model = await query.executeTakeFirst()
 
         if (model === undefined)
-          throw new Error(JSON.stringify({ status: 404, message: No model results found for query }))
+          throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
@@ -1504,7 +1504,7 @@ export async function generateModelString(
         const model = await this.query.selectAll().executeTakeFirst()
 
         if (model === undefined)
-          throw new Error(JSON.stringify({ status: 404, message: No model results found for query }))
+          throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
 
         return this.parseResult(new ${modelName}Model(model))
       }

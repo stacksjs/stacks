@@ -54,7 +54,7 @@ async function handleCopyCode() {
         Dark
       </button>
     </div>
-    <div class="code-block group relative">
+    <div class="group code-block relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"

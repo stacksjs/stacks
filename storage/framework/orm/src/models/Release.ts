@@ -1,655 +1,622 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { db } from '@stacksjs/database'
-    import { sql } from '@stacksjs/database'
-    import { dispatch } from '@stacksjs/events'
-    import { generateTwoFactorSecret } from '@stacksjs/auth'
-    import { verifyTwoFactorCode } from '@stacksjs/auth'
-    import { cache } from '@stacksjs/cache'
-    
-    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-    // import { Pool } from 'pg'
+import { cache } from '@stacksjs/cache'
+import { db, sql } from '@stacksjs/database'
 
-    // TODO: we need an action that auto-generates these table interfaces
-    export interface ReleasesTable {
-      id: Generated<number>
-      version?: string
-     
-      created_at?: Date
+// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
+// import { Pool } from 'pg'
 
-      updated_at?: Date
-    
-    deleted_at?: Date
-  
-    }
+// TODO: we need an action that auto-generates these table interfaces
+export interface ReleasesTable {
+  id: Generated<number>
+  version?: string
 
-    interface ReleaseResponse {
-      data: Releases
-      paging: {
-        total_records: number
-        page: number
-        total_pages: number
-      }
-      next_cursor: number | null
-    }
+  created_at?: Date
 
-    export type ReleaseType = Selectable<ReleasesTable>
-    export type NewRelease = Insertable<ReleasesTable>
-    export type ReleaseUpdate = Updateable<ReleasesTable>
-    export type Releases = ReleaseType[]
+  updated_at?: Date
 
-    export type ReleaseColumn = Releases
-    export type ReleaseColumns = Array<keyof Releases>
+  deleted_at?: Date
+
+}
+
+interface ReleaseResponse {
+  data: Releases
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export type ReleaseType = Selectable<ReleasesTable>
+export type NewRelease = Insertable<ReleasesTable>
+export type ReleaseUpdate = Updateable<ReleasesTable>
+export type Releases = ReleaseType[]
+
+export type ReleaseColumn = Releases
+export type ReleaseColumns = Array<keyof Releases>
 
     type SortDirection = 'asc' | 'desc'
-    interface SortOptions { column: ReleaseType, order: SortDirection }
-    // Define a type for the options parameter
-    interface QueryOptions {
-      sort?: SortOptions
-      limit?: number
-      offset?: number
-      page?: number
+interface SortOptions { column: ReleaseType, order: SortDirection }
+// Define a type for the options parameter
+interface QueryOptions {
+  sort?: SortOptions
+  limit?: number
+  offset?: number
+  page?: number
+}
+
+export class ReleaseModel {
+  private hidden = []
+  private fillable = []
+  private softDeletes = false
+  protected query: any
+  protected hasSelect: boolean
+  public id: number | undefined
+  public version: string | undefined
+
+  public created_at: Date | undefined
+  public updated_at: Date | undefined
+
+  constructor(release: Partial<ReleaseType> | null) {
+    this.id = release?.id
+    this.version = release?.version
+
+    this.created_at = release?.created_at
+
+    this.updated_at = release?.updated_at
+
+    this.query = db.selectFrom('releases')
+    this.hasSelect = false
+  }
+
+  // Method to find a Release by ID
+  async find(id: number): Promise<ReleaseModel | undefined> {
+    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
+    return this.parseResult(new ReleaseModel(model))
+  }
+
+  // Method to find a Release by ID
+  static async find(id: number): Promise<ReleaseModel | undefined> {
+    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
+
+    const instance = new ReleaseModel(null)
+
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
+    return instance.parseResult(new ReleaseModel(model))
+  }
+
+  static async all(): Promise<ReleaseModel[]> {
+    let query = db.selectFrom('releases').selectAll()
+
+    const instance = new ReleaseModel(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
     }
 
-    export class ReleaseModel {
-      private hidden = []
-      private fillable = []
-      private softDeletes = false
-      protected query: any
-      protected hasSelect: boolean
-      public id: number | undefined 
-   public version: string | undefined 
-   
-      public created_at: Date | undefined
-      public updated_at: Date | undefined
-    
-      constructor(release: Partial<ReleaseType> | null) {
-        this.id = release?.id
-   this.version = release?.version
-   
-      this.created_at = release?.created_at
+    const results = await query.execute()
 
-      this.updated_at = release?.updated_at
+    return results.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
+  }
 
-    
+  static async findOrFail(id: number): Promise<ReleaseModel> {
+    let query = db.selectFrom('releases').where('id', '=', id)
 
-        this.query = db.selectFrom('releases')
-        this.hasSelect = false
+    const instance = new ReleaseModel(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
+
+    const model = await query.executeTakeFirst()
+
+    if (model === undefined)
+      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
+    return instance.parseResult(new ReleaseModel(model))
+  }
+
+  static async findMany(ids: number[]): Promise<ReleaseModel[]> {
+    let query = db.selectFrom('releases').where('id', 'in', ids)
+
+    const instance = new ReleaseModel(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    query = query.selectAll()
+
+    const model = await query.execute()
+
+    return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
+  }
+
+  // Method to get a User by criteria
+  static async get(): Promise<UserModel[]> {
+    const instance = new ReleaseModel(null)
+
+    if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        instance.query = instance.query.where('deleted_at', 'is', null)
       }
 
-      // Method to find a Release by ID
-      async find(id: number): Promise<ReleaseModel | undefined> {
-        let query = db.selectFrom('releases').where('id', '=', id).selectAll()
+      const model = await instance.query.execute()
 
-        const model = await query.executeTakeFirst()
+      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+    }
 
-        if (!model)
-          return undefined
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
 
-        cache.getOrSet(`release:${id}`, JSON.stringify(model))
+    const model = await instance.query.selectAll().execute()
 
-        return this.parseResult(new ReleaseModel(model))
+    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+  }
+
+  // Method to get a Release by criteria
+  async get(): Promise<ReleaseModel[]> {
+    if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
       }
 
-      // Method to find a Release by ID
-      static async find(id: number): Promise<ReleaseModel | undefined> {
-        let query = db.selectFrom('releases').where('id', '=', id).selectAll()
+      const model = await this.query.execute()
 
-        const instance = new ReleaseModel(null)
+      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+    }
 
-        const model = await query.executeTakeFirst()
+    if (this.softDeletes) {
+      this.query = this.query.where('deleted_at', 'is', null)
+    }
 
-        if (!model)
-          return undefined
+    const model = await this.query.selectAll().execute()
 
-        cache.getOrSet(`release:${id}`, JSON.stringify(model))
+    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+  }
 
-        return instance.parseResult(new ReleaseModel(model))
+  static async count(): Promise<number> {
+    const instance = new ReleaseModel(null)
+
+    if (instance.softDeletes) {
+      instance.query = instance.query.where('deleted_at', 'is', null)
+    }
+
+    const results = await instance.query.selectAll().execute()
+
+    return results.length
+  }
+
+  async count(): Promise<number> {
+    if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.query = this.query.where('deleted_at', 'is', null)
       }
 
-      static async all(): Promise<ReleaseModel[]> {
-        let query = db.selectFrom('releases').selectAll()
+      const results = await this.query.execute()
+
+      return results.length
+    }
+
+    const results = await this.query.selectAll().execute()
+
+    return results.length
+  }
+
+  // Method to get all releases
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
+    const totalRecordsResult = await db.selectFrom('releases')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    const releasesWithExtra = await db.selectFrom('releases')
+      .selectAll()
+      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+      .limit((options.limit ?? 10) + 1) // Fetch one extra record
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (releasesWithExtra.length > (options.limit ?? 10))
+      nextCursor = releasesWithExtra.pop()?.id ?? null
+
+    return {
+      data: releasesWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
+  // Method to create a new release
+  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
+    const instance = new ReleaseModel(null)
+
+    const filteredValues = Object.fromEntries(
+      Object.entries(newRelease).filter(([key]) => instance.fillable.includes(key)),
+    ) as NewRelease
+
+    const result = await db.insertInto('releases')
+      .values(filteredValues)
+      .executeTakeFirstOrThrow()
+
+    const model = await find(Number(result.insertId)) as ReleaseModel
+
+    return model
+  }
+
+  static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel> {
+    const result = await db.insertInto('releases')
+      .values(newRelease)
+      .executeTakeFirstOrThrow()
+
+    const model = await find(Number(result.insertId)) as ReleaseModel
+
+    return model
+  }
+
+  // Method to remove a Release
+  static async remove(id: number): Promise<void> {
+    const instance = new ReleaseModel(null)
+
+    if (instance.softDeletes) {
+      await db.updateTable('releases')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    }
+    else {
+      await db.deleteFrom('releases')
+        .where('id', '=', id)
+        .execute()
+    }
+  }
+
+  where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new Error('Invalid number of arguments')
+    }
 
-        const instance = new ReleaseModel(null)
+    this.query = this.query.where(column, operator, value)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null)
-        }
+    return this
+  }
 
-        const results = await query.execute();
+  static where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
+    let column: any
+    let operator: any
+    let value: any
 
-        return results.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)));
-      }
+    const instance = new ReleaseModel(null)
 
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new Error('Invalid number of arguments')
+    }
 
-      static async findOrFail(id: number): Promise<ReleaseModel> {
-        let query = db.selectFrom('releases').where('id', '=', id)
+    instance.query = instance.query.where(column, operator, value)
 
-        const instance = new ReleaseModel(null)
+    return instance
+  }
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+  static whereVersion(value: string): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-        query = query.selectAll()
+    instance.query = instance.query.where('version', '=', value)
 
-        const model = await query.executeTakeFirst()
+    return instance
+  }
 
-        if (model === undefined)
-          throw new Error(JSON.stringify({ status: 404, message: No model results found for query }))
+  static whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-        cache.getOrSet(`release:${id}`, JSON.stringify(model))
+    instance.query = instance.query.where(column, 'in', values)
 
-        return instance.parseResult(new ReleaseModel(model))
-      }
+    return instance
+  }
 
-      static async findMany(ids: number[]): Promise<ReleaseModel[]> {
-        let query = db.selectFrom('releases').where('id', 'in', ids)
+  async first(): Promise<ReleaseModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
 
-        const instance = new ReleaseModel(null)
+    if (!model) {
+      return undefined
+    }
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+    return this.parseResult(new ReleaseModel(model))
+  }
 
-        query = query.selectAll()
+  async firstOrFail(): Promise<ReleaseModel | undefined> {
+    const model = await this.query.selectAll().executeTakeFirst()
 
-        const model = await query.execute()
+    if (model === undefined)
+      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
 
-        return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
-      }
+    return this.parseResult(new ReleaseModel(model))
+  }
 
-      // Method to get a User by criteria
-      static async get(): Promise<UserModel[]> {
-        const instance = new ReleaseModel(null)
+  async exists(): Promise<boolean> {
+    const model = await this.query.selectAll().executeTakeFirst()
 
-        if (instance.hasSelect) {
-          if (instance.softDeletes) {
-            instance.query = instance.query.where('deleted_at', 'is', null)
-          }
+    return model !== null || model !== undefined
+  }
 
-          const model = await instance.query.execute()
+  static async first(): Promise<ReleaseType | undefined> {
+    return await db.selectFrom('releases')
+      .selectAll()
+      .executeTakeFirst()
+  }
 
-          return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
-        }
+  async last(): Promise<ReleaseType | undefined> {
+    return await db.selectFrom('releases')
+      .selectAll()
+      .orderBy('id', 'desc')
+      .executeTakeFirst()
+  }
 
-        if (instance.softDeletes) {
-          instance.query = instance.query.where('deleted_at', 'is', null)
-        }
+  static async last(): Promise<ReleaseType | undefined> {
+    return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  }
 
-        const model = await instance.query.selectAll().execute()
+  static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-       return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
-      }
+    instance.query = instance.query.orderBy(column, order)
 
+    return instance
+  }
 
-      // Method to get a Release by criteria
-      async get(): Promise<ReleaseModel[]> {
-        if (this.hasSelect) {
+  orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+    this.query = this.query.orderBy(column, order)
 
-          if (this.softDeletes) {
-            this.query = this.query.where('deleted_at', 'is', null);
-          }
+    return this
+  }
 
-          const model = await this.query.execute()
+  static orderByDesc(column: keyof ReleaseType): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-          return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
-        }
+    instance.query = instance.query.orderBy(column, 'desc')
 
-        if (this.softDeletes) {
-          this.query = this.query.where('deleted_at', 'is', null);
-        }
+    return instance
+  }
 
-        const model = await this.query.selectAll().execute()
+  orderByDesc(column: keyof ReleaseType): ReleaseModel {
+    this.query = this.orderBy(column, 'desc')
 
-        return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
-      }
+    return this
+  }
 
-      static async count(): Promise<number> {
-        const instance = new ReleaseModel(null)
+  static orderByAsc(column: keyof ReleaseType): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-        if (instance.softDeletes) {
-          instance.query = instance.query.where('deleted_at', 'is', null);
-        }
+    instance.query = instance.query.orderBy(column, 'asc')
 
-        const results = await instance.query.selectAll().execute()
-
-        return results.length
-      }
+    return instance
+  }
 
-      async count(): Promise<number> {
-        if (this.hasSelect) {
+  orderByAsc(column: keyof ReleaseType): ReleaseModel {
+    this.query = this.query.orderBy(column, 'desc')
 
-          if (this.softDeletes) {
-            this.query = this.query.where('deleted_at', 'is', null);
-          }
+    return this
+  }
 
-          const results = await this.query.execute()
+  async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
+    if (this.id === undefined)
+      throw new Error('Release ID is undefined')
 
-          return results.length
-        }
-
-        const results = await this.query.selectAll().execute()
-
-        return results.length
-      }
-
-      // Method to get all releases
-      static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
-        const totalRecordsResult = await db.selectFrom('releases')
-          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-          .executeTakeFirst()
+    const filteredValues = Object.fromEntries(
+      Object.entries(release).filter(([key]) => this.fillable.includes(key)),
+    ) as NewRelease
 
-        const totalRecords = Number(totalRecordsResult?.total) || 0
-        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+    await db.updateTable('releases')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
 
-        const releasesWithExtra = await db.selectFrom('releases')
-          .selectAll()
-          .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-          .limit((options.limit ?? 10) + 1) // Fetch one extra record
-          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-          .execute()
-
-
-          let nextCursor = null
-          if (releasesWithExtra.length > (options.limit ?? 10)) nextCursor = releasesWithExtra.pop()?.id ?? null
-
-        return {
-          data: releasesWithExtra,
-          paging: {
-            total_records: totalRecords,
-            page: options.page || 1,
-            total_pages: totalPages,
-          },
-          next_cursor: nextCursor,
-        }
-      }
+    const model = await this.find(Number(this.id))
 
-      // Method to create a new release
-      static async create(newRelease: NewRelease): Promise<ReleaseModel> {
-        const instance = new ReleaseModel(null)
+    return model
+  }
 
-         const filteredValues = Object.fromEntries(
-          Object.entries(newRelease).filter(([key]) => instance.fillable.includes(key)),
-        ) as NewRelease
+  async forceUpdate(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
+    if (this.id === undefined)
+      throw new Error('Release ID is undefined')
 
-        const result = await db.insertInto('releases')
-          .values(filteredValues)
-          .executeTakeFirstOrThrow()
+    await db.updateTable('releases')
+      .set(release)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
 
-        const model = await find(Number(result.insertId)) as ReleaseModel
+    const model = await this.find(Number(this.id))
 
-        
+    return model
+  }
 
-        return model
-      }
+  async save(): Promise<void> {
+    if (!this)
+      throw new Error('Release data is undefined')
 
-      static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel> {
-        const result = await db.insertInto('releases')
-          .values(newRelease)
-          .executeTakeFirstOrThrow()
+    if (this.id === undefined) {
+      await db.insertInto('releases')
+        .values(this as NewRelease)
+        .executeTakeFirstOrThrow()
+    }
+    else {
+      await this.update(this)
+    }
+  }
 
-        const model = await find(Number(result.insertId)) as ReleaseModel
+  // Method to delete (soft delete) the release instance
+  async delete(): Promise<void> {
+    if (this.id === undefined)
+      throw new Error('Release ID is undefined')
 
-        
+    // Check if soft deletes are enabled
+    if (this.softDeletes) {
+      // Update the deleted_at column with the current timestamp
+      await db.updateTable('releases')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    }
+    else {
+      // Perform a hard delete
+      await db.deleteFrom('releases')
+        .where('id', '=', this.id)
+        .execute()
+    }
+  }
 
-        return model
-      }
+  distinct(column: keyof ReleaseType): ReleaseModel {
+    this.query = this.query.select(column).distinct()
 
-      // Method to remove a Release
-      static async remove(id: number): Promise<void> {
-        const instance = new ReleaseModel(null)
-        
-        
-        if (instance.softDeletes) {
-        await db.updateTable('releases')
-          .set({
-            deleted_at: sql.raw('CURRENT_TIMESTAMP')
-          })
-          .where('id', '=', id)
-          .execute();
-        } else {
-          await db.deleteFrom('releases')
-            .where('id', '=', id)
-            .execute();
-        }
+    this.hasSelect = true
 
+    return this
+  }
 
-        
-      }
+  static distinct(column: keyof ReleaseType): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-      where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
-        let column: any
-        let operator: any
-        let value: any
+    instance.query = instance.query.select(column).distinct()
 
-        if (args.length === 2) {
-          [column, value] = args
-          operator = '='
-        } else if (args.length === 3) {
-            [column, operator, value] = args
-        } else {
-            throw new Error("Invalid number of arguments")
-        }
+    instance.hasSelect = true
 
-        this.query = this.query.where(column, operator, value)
+    return instance
+  }
 
-        return this
-      }
+  join(table: string, firstCol: string, secondCol: string): ReleaseModel {
+    this.query = this.query.innerJoin(table, firstCol, secondCol)
 
-      static where(...args: (string | number | boolean | undefined | null)[]): ReleaseModel {
-        let column: any
-        let operator: any
-        let value: any
+    return this
+  }
 
-        const instance = new ReleaseModel(null)
+  static join(table: string, firstCol: string, secondCol: string): ReleaseModel {
+    const instance = new ReleaseModel(null)
 
-        if (args.length === 2) {
-          [column, value] = args
-          operator = '='
-        } else if (args.length === 3) {
-            [column, operator, value] = args
-        } else {
-            throw new Error("Invalid number of arguments")
-        }
+    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
 
-        instance.query = instance.query.where(column, operator, value)
+    return instance
+  }
 
-        return instance
-      }
+  static async rawQuery(rawQuery: string): Promise<any> {
+    return await sql`${rawQuery}`.execute(db)
+  }
 
-       static whereVersion(value: string): ReleaseModel {
-        const instance = new ReleaseModel(null)
+  toJSON() {
+    const output: Partial<ReleaseType> = {
 
-        instance.query = instance.query.where('version', '=', value)
+      id: this.id,
+      version: this.version,
 
-        return instance
-      } 
-
-
-
-      static whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
-        const instance = new ReleaseModel(null)
-
-        instance.query = instance.query.where(column, 'in', values)
-
-        return instance
-      }
-
-      async first(): Promise<ReleaseModel | undefined> {
-        const model = await this.query.selectAll().executeTakeFirst()
-
-        if (! model) {
-          return undefined
-        }
-
-        return this.parseResult(new ReleaseModel(model))
-      }
-
-      async firstOrFail(): Promise<ReleaseModel | undefined> {
-        const model = await this.query.selectAll().executeTakeFirst()
-
-        if (model === undefined)
-          throw new Error(JSON.stringify({ status: 404, message: No model results found for query }))
-
-        return this.parseResult(new ReleaseModel(model))
-      }
-
-      async exists(): Promise<boolean> {
-        const model = await this.query.selectAll().executeTakeFirst()
-
-        return model !== null || model !== undefined
-      }
-
-      static async first(): Promise<ReleaseType | undefined> {
-        return await db.selectFrom('releases')
-          .selectAll()
-          .executeTakeFirst()
-      }
-
-      async last(): Promise<ReleaseType | undefined> {
-        return await db.selectFrom('releases')
-          .selectAll()
-          .orderBy('id', 'desc')
-          .executeTakeFirst()
-      }
-
-      static async last(): Promise<ReleaseType | undefined> {
-        return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
-      }
-
-      static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
-        const instance = new ReleaseModel(null)
-
-        instance.query = instance.query.orderBy(column, order)
-
-        return instance
-      }
-
-      orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
-        this.query = this.query.orderBy(column, order)
-
-        return this
-      }
-
-      static orderByDesc(column: keyof ReleaseType): ReleaseModel {
-        const instance = new ReleaseModel(null)
-
-        instance.query = instance.query.orderBy(column, 'desc')
-
-        return instance
-      }
-
-      orderByDesc(column: keyof ReleaseType): ReleaseModel {
-        this.query = this.orderBy(column, 'desc')
-
-        return this
-      }
-
-      static orderByAsc(column: keyof ReleaseType): ReleaseModel {
-        const instance = new ReleaseModel(null)
-
-        instance.query = instance.query.orderBy(column, 'asc')
-
-        return instance
-      }
-
-      orderByAsc(column: keyof ReleaseType): ReleaseModel {
-        this.query = this.query.orderBy(column, 'desc')
-
-        return this
-      }
-
-      async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
-        if (this.id === undefined)
-          throw new Error('Release ID is undefined')
-
-        const filteredValues = Object.fromEntries(
-          Object.entries(release).filter(([key]) => this.fillable.includes(key)),
-        ) as NewRelease
-
-        await db.updateTable('releases')
-          .set(filteredValues)
-          .where('id', '=', this.id)
-          .executeTakeFirst()
-
-        const model = await this.find(Number(this.id))
-
-
-          
-
-        return model
-      }
-
-      async forceUpdate(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
-        if (this.id === undefined)
-          throw new Error('Release ID is undefined')
-
-        await db.updateTable('releases')
-          .set(release)
-          .where('id', '=', this.id)
-          .executeTakeFirst()
-
-        const model = await this.find(Number(this.id))
-
-
-          
-
-        return model
-      }
-
-      async save(): Promise<void> {
-        if (!this)
-          throw new Error('Release data is undefined')
-
-        if (this.id === undefined) {
-          await db.insertInto('releases')
-            .values(this as NewRelease)
-            .executeTakeFirstOrThrow()
-        }
-        else {
-          await this.update(this)
-        }
-      }
-
-      // Method to delete (soft delete) the release instance
-      async delete(): Promise<void> {
-          if (this.id === undefined)
-              throw new Error('Release ID is undefined')
-
-          
-
-          // Check if soft deletes are enabled
-          if (this.softDeletes) {
-              // Update the deleted_at column with the current timestamp
-              await db.updateTable('releases')
-                  .set({
-                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
-                  })
-                  .where('id', '=', this.id)
-                  .execute();
-          } else {
-              // Perform a hard delete
-              await db.deleteFrom('releases')
-                .where('id', '=', this.id)
-                .execute();
-          }
-
-
-          
-      }
-
-      
-
-      distinct(column: keyof ReleaseType): ReleaseModel {
-        this.query = this.query.select(column).distinct()
-
-        this.hasSelect = true
-
-        return this
-      }
-
-      static distinct(column: keyof ReleaseType): ReleaseModel {
-        const instance = new ReleaseModel(null)
-
-        instance.query = instance.query.select(column).distinct()
-
-        instance.hasSelect = true
-
-        return instance
-      }
-
-      join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-        this.query = this.query.innerJoin(table, firstCol, secondCol)
-
-        return this
-      }
-
-      static join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-        const instance = new ReleaseModel(null)
-
-        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
-
-        return instance
-      }
-
-      static async rawQuery(rawQuery: string): Promise<any> {
-        return await sql`${rawQuery}`.execute(db)
-      }
-
-      toJSON() {
-        const output: Partial<ReleaseType> = {
-
-id: this.id,
-version: this.version,
-   
       created_at: this.created_at,
 
       updated_at: this.updated_at,
 
     }
 
-
         type Release = Omit<ReleaseType, 'password'>
 
         return output as Release
-      }
+  }
 
-        parseResult(model: ReleaseModel): ReleaseModel {
-          for (const hiddenAttribute of this.hidden) {
-            delete model[hiddenAttribute as keyof ReleaseModel]
-          }
-
-          return model
-        }
-
-      
+  parseResult(model: ReleaseModel): ReleaseModel {
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute as keyof ReleaseModel]
     }
 
-    async function find(id: number): Promise<ReleaseModel | undefined> {
-      let query = db.selectFrom('releases').where('id', '=', id).selectAll()
+    return model
+  }
+}
 
-      const model = await query.executeTakeFirst()
+async function find(id: number): Promise<ReleaseModel | undefined> {
+  const query = db.selectFrom('releases').where('id', '=', id).selectAll()
 
-      if (!model) return undefined
+  const model = await query.executeTakeFirst()
 
-      return new ReleaseModel(model)
-    }
+  if (!model)
+    return undefined
 
-    export async function count(): Promise<number> {
-      const results = await ReleaseModel.count()
+  return new ReleaseModel(model)
+}
 
-      return results
-    }
+export async function count(): Promise<number> {
+  const results = await ReleaseModel.count()
 
-    export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
+  return results
+}
 
-      const result = await db.insertInto('releases')
-        .values(newRelease)
-        .executeTakeFirstOrThrow()
+export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
+  const result = await db.insertInto('releases')
+    .values(newRelease)
+    .executeTakeFirstOrThrow()
 
-      return await find(Number(result.insertId)) as ReleaseModel
-    }
+  return await find(Number(result.insertId)) as ReleaseModel
+}
 
-    export async function rawQuery(rawQuery: string): Promise<any> {
-      return await sql`${rawQuery}`.execute(db)
-    }
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(db)
+}
 
-    export async function remove(id: number): Promise<void> {
-      await db.deleteFrom('releases')
-        .where('id', '=', id)
-        .execute()
-    }
+export async function remove(id: number): Promise<void> {
+  await db.deleteFrom('releases')
+    .where('id', '=', id)
+    .execute()
+}
 
-    export async function whereVersion(value: string): Promise<ReleaseModel[]> {
-        const query = db.selectFrom('releases').where('version', '=', value)
-        const results = await query.execute()
+export async function whereVersion(value: string): Promise<ReleaseModel[]> {
+  const query = db.selectFrom('releases').where('version', '=', value)
+  const results = await query.execute()
 
-        return results.map(modelItem => new ReleaseModel(modelItem))
-      } 
+  return results.map(modelItem => new ReleaseModel(modelItem))
+}
 
+export const Release = ReleaseModel
 
-
-    export const Release = ReleaseModel
-
-    export default Release
-    
+export default Release
