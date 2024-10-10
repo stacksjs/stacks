@@ -708,7 +708,7 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
     return
   }
 
-  const ormPaths = globSync([path.builtUserActionsPath(`**/*.ts`)], { absolute: true })
+  const ormPaths = globSync([path.builtUserActionsPath('**/*.ts')], { absolute: true })
 
   for (const ormPath of ormPaths) {
     if (fs.existsSync(ormPath))
@@ -717,7 +717,7 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
 }
 
 export async function deleteExistingModelNameTypes(): Promise<void> {
-  const typeFile = path.corePath(`types/src/model-names.ts`)
+  const typeFile = path.corePath('types/src/model-names.ts')
   if (fs.existsSync(typeFile))
     await fs.promises.unlink(typeFile)
 }
@@ -735,7 +735,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string): Prom
     return
   }
 
-  const requestFiles = globSync([path.frameworkPath(`requests/*.ts`)], { absolute: true })
+  const requestFiles = globSync([path.frameworkPath('requests/*.ts')], { absolute: true })
   for (const requestFile of requestFiles) {
     if (fs.existsSync(requestFile))
       await fs.promises.unlink(requestFile)
@@ -783,25 +783,25 @@ export async function generateKyselyTypes(): Promise<void> {
     }
   }
 
-  text += `\nexport interface MigrationsTable {\n`
-  text += `name: string\n timestamp: string \n }`
+  text += '\nexport interface MigrationsTable {\n'
+  text += 'name: string\n timestamp: string \n }'
 
-  text += `\nexport interface PasskeysTable {\n`
-  text += `  id: string\n`
-  text += `  cred_public_key: string\n`
-  text += `  user_id: number;\n`
-  text += `  webauthn_user_id: string\n`
-  text += `  counter: number\n`
-  text += `  credential_type: string\n`
-  text += `  device_type: string\n`
-  text += `  backup_eligible: boolean\n`
-  text += `  backup_status: boolean\n`
-  text += `  transports?: string\n`
-  text += `  created_at?: Date\n`
-  text += `  last_used_at: string \n`
-  text += `}\n`
+  text += '\nexport interface PasskeysTable {\n'
+  text += '  id: string\n'
+  text += '  cred_public_key: string\n'
+  text += '  user_id: number;\n'
+  text += '  webauthn_user_id: string\n'
+  text += '  counter: number\n'
+  text += '  credential_type: string\n'
+  text += '  device_type: string\n'
+  text += '  backup_eligible: boolean\n'
+  text += '  backup_status: boolean\n'
+  text += '  transports?: string\n'
+  text += '  created_at?: Date\n'
+  text += '  last_used_at: string \n'
+  text += '}\n'
 
-  text += `\nexport interface Database {\n`
+  text += '\nexport interface Database {\n'
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -817,12 +817,12 @@ export async function generateKyselyTypes(): Promise<void> {
     text += `  ${tableName}: ${formattedTableName}\n`
   }
 
-  text += `passkeys: PasskeysTable\n`
-  text += `migrations: MigrationsTable`
+  text += 'passkeys: PasskeysTable\n'
+  text += 'migrations: MigrationsTable'
 
-  text += `}`
+  text += '}'
 
-  const file = Bun.file(path.frameworkPath(`orm/src/types.ts`))
+  const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
   const writer = file.writer()
 
   writer.write(text)
@@ -1036,7 +1036,7 @@ export async function generateModelString(
   }
 
   if (usePasskey) {
-    declareFields += `public public_passkey: string | undefined \n`
+    declareFields += 'public public_passkey: string | undefined \n'
     constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
 
     publicPasskeyStatements += `
@@ -1065,7 +1065,7 @@ export async function generateModelString(
   `
   }
 
-  jsonFields += `\nid: this.id,\n`
+  jsonFields += '\nid: this.id,\n'
   for (const attribute of attributes) {
     const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
@@ -1132,9 +1132,9 @@ export async function generateModelString(
   }
 
   if (useTwoFactor)
-    fieldString += `two_factor_secret?: string \n`
+    fieldString += 'two_factor_secret?: string \n'
   if (usePasskey)
-    fieldString += `public_passkey?: string \n`
+    fieldString += 'public_passkey?: string \n'
 
   if (useTimestamps) {
     fieldString += `
