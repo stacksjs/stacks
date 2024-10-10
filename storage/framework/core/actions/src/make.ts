@@ -4,6 +4,7 @@ import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { frameworkPath, path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
+import { handleError } from '@stacksjs/error-handling'
 
 export async function invoke(options: MakeOptions): Promise<void> {
   if (options.component)
@@ -272,6 +273,7 @@ function send(): ${importOption} {
     return true
   }
   catch (error) {
+    handleError('Error creating notification', error)
     return false
   }
 }

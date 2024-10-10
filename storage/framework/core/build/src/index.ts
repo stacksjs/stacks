@@ -14,6 +14,7 @@ export async function outro(options: {
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
   if (!options.result.success) {
+    // eslint-disable-next-line no-console
     console.log(options.result.logs[0])
     process.exit(1)
   }
@@ -34,9 +35,11 @@ export async function outro(options: {
     }
 
     const relativeFilePath = p.relative(options.dir, file).replace('dist/', '')
+    // eslint-disable-next-line no-console
     console.log(`${bold(dim(`[${sizeStr}]`))} ${dim('dist/')}${relativeFilePath}`)
   }
 
+  // eslint-disable-next-line no-console
   console.log(`${bold(dim(`[${timeTaken}ms]`))} Built ${italic(bold(green(pkgName)))}`)
 }
 
@@ -45,7 +48,7 @@ export async function intro(options: { dir: string, pkgName?: string, styled?: b
 }> {
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
-  if (options.styled === false)
+  if (options.styled === false) // eslint-disable-next-line no-console
     console.log(`Building ${pkgName}...`)
   else log.info(`Building ${italic(pkgName)}...`)
 

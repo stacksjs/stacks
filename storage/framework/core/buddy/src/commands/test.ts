@@ -133,9 +133,7 @@ export function test(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TestOptions) => {
       const perf = await intro('buddy test:feature')
-      let result
-
-      result = await runAction(Action.TestFeature, {
+      const result = await runAction(Action.TestFeature, {
         ...options,
         verbose: true,
         cwd: projectPath(),

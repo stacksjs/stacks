@@ -59,7 +59,7 @@ export async function setCurrentRegistrationOptions(
     last_used_at: formatDateTime(),
   }
 
-  const result = await db.insertInto('passkeys').values(passkeyData).executeTakeFirstOrThrow()
+  await db.insertInto('passkeys').values(passkeyData).executeTakeFirstOrThrow()
 }
 
 function formatDateTime(): string {

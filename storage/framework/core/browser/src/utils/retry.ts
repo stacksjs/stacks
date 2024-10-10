@@ -1,3 +1,4 @@
+// eslint-disable-next-line ts/no-unsafe-function-type
 export function retry(fn: Function, options: any): Promise<any> {
   const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
 

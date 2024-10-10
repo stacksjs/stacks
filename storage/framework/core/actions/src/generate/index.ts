@@ -62,7 +62,7 @@ export async function generateWebTypes(options?: GeneratorOptions): Promise<void
   log.success('Successfully generated the web-types.json file')
 }
 
-export async function generateVsCodeCustomData(options?: GeneratorOptions): Promise<void> {
+export async function generateVsCodeCustomData(): Promise<void> {
   const result = await genVsCodeCustomData()
 
   if (result.isErr()) {
@@ -87,7 +87,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions): Promise<vo
   log.success('Successfully generated IDE helpers')
 }
 
-export async function generateComponentMeta(options?: GeneratorOptions): Promise<void> {
+export async function generateComponentMeta(): Promise<void> {
   const result = await genVsCodeCustomData()
 
   if (result.isErr()) {

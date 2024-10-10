@@ -26,9 +26,10 @@ export function generateQrCode(): void {
   const secret = generateTwoFactorSecret()
   const otpauth = authenticator.keyuri(user, service, secret)
 
-  qrcode.toDataURL(otpauth, (err: any, imageUrl: any) => {
+  qrcode.toDataURL(otpauth, (err: any) => {
+    // qrcode.toDataURL(otpauth, (err: any, imageUrl: any) => {
     if (err) {
-      handleError('Error with QR')
+      handleError('Error with QR', err)
     }
   })
 }

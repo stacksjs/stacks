@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import {
   BedrockClient,
   CreateModelCustomizationJobCommand,
@@ -8,6 +7,7 @@ import {
 import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
 import { mockClient } from 'aws-sdk-client-mock'
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import {
   createModelCustomizationJob,
   getModelCustomizationJob,
@@ -54,7 +54,7 @@ describe('@stacksjs/ai', () => {
     }))
 
     // Mock fetch function
-    global.fetch = mock(() =>
+    globalThis.fetch = mock(() =>
       Promise.resolve({
         json: () => Promise.resolve({ status: 'success' }),
       } as Response),
@@ -89,7 +89,7 @@ describe('@stacksjs/ai', () => {
 
   it('should handle errors when requesting access', async () => {
     const errorSpy = spyOn(log, 'error')
-    global.fetch = mock(() => Promise.reject(new Error('Network error')))
+    globalThis.fetch = mock(() => Promise.reject(new Error('Network error')))
 
     await requestModelAccess()
 

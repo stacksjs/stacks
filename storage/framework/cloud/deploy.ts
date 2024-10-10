@@ -55,6 +55,7 @@ const usEnv = {
 }
 
 try {
+  // eslint-disable-next-line antfu/no-top-level-await
   timestamp = await getOrCreateTimestamp()
 }
 catch (error) {
@@ -77,6 +78,7 @@ const cloud = new Cloud(app, name, {
   description: `The Stacks Cloud`,
 })
 
+// eslint-disable-next-line antfu/no-top-level-await
 await cloud.init()
 
 app.synth()

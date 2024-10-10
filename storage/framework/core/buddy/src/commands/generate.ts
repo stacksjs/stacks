@@ -145,7 +145,7 @@ export function generate(buddy: CLI): void {
     .command('generate:model-files', descriptions.modelFiles)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: GeneratorOptions) => {
+    .action(async () => {
       const perf = await intro('buddy generate:model-files')
 
       try {

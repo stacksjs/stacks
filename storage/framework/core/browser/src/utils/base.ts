@@ -8,5 +8,5 @@ export { toString } from '@stacksjs/strings'
 // export function noop() {}
 
 export async function loop(times: number, callback: any): Promise<void> {
-  ;[...new Array(times)].forEach(async (item, i) => await callback(i))
+  Array.from({ length: times }).forEach(async (_, i) => await callback(i))
 }

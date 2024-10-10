@@ -288,6 +288,7 @@ describe('@stacksjs/browser', () => {
   })
 
   describe('retry', () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const dummy = mock()
     type Mock = typeof dummy
     let mockFn: Mock

@@ -1,3 +1,4 @@
+/* eslint perfectionist/sort-imports: 0 */
 import { requestModelAccess } from '@stacksjs/ai'
 import { ai } from '@stacksjs/config'
 import { describe, expect, it, mock } from 'bun:test'
@@ -22,7 +23,7 @@ describe('requestModelAccess', () => {
     }))
 
     // Mock fetch function
-    global.fetch = mock(() =>
+    globalThis.fetch = mock(() =>
       Promise.resolve({
         json: () => Promise.resolve({ status: 'success' }),
       }),

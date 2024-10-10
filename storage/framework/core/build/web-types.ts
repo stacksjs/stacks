@@ -4,12 +4,15 @@ import { componentsPath, frameworkPath } from '@stacksjs/path'
 import { frameworkVersion } from '@stacksjs/utils'
 import library from '~/config/library'
 
-export default {
+const config: WebTypesBuilderConfig = {
   cwd: process.cwd(),
   componentsRoot: componentsPath(),
   components: '**/[a-zA-Z]*.vue',
   outFile: frameworkPath('web-types.json'),
   packageName: library.name || 'stacks',
+  // eslint-disable-next-line antfu/no-top-level-await
   packageVersion: await frameworkVersion(),
   watch: false,
-} satisfies WebTypesBuilderConfig
+}
+
+export default config

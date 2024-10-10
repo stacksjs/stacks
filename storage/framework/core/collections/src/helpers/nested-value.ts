@@ -9,6 +9,7 @@ export function nestedValue<T>(mainObject: T, key: string): any {
   try {
     return key.split('.').reduce((obj: any, property: string) => obj[property], mainObject)
   }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   catch (err) {
     // If we end up here, we're not working with an object, and mainObject is the value itself
     return mainObject
