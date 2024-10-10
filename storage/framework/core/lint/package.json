@@ -54,7 +54,7 @@
     "@eslint-community/eslint-plugin-eslint-comments": "^4.4.0",
     "@eslint/markdown": "^6.2.0",
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/eslint-config": "^3.7.3-stacks-1.5",
+    "@stacksjs/eslint-config": "^3.7.3-stacks-1.6",
     "@stylistic/eslint-plugin": "^2.9.0",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@unocss/eslint-plugin": "0.61.0",

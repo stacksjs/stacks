@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import logoLaravel from '../../assets/images/logos/laravel.svg'
+// import logoLaravel from '../../assets/images/logos/laravel.svg'
 
-const companies = ref([
-  [
-    { name: 'Laravel', logo: logoLaravel },
-    { name: 'Laravel', logo: logoLaravel },
-    { name: 'Laravel', logo: logoLaravel },
-  ],
-])
+// const companies = ref([
+//   [
+//     { name: 'Laravel', logo: logoLaravel },
+//     { name: 'Laravel', logo: logoLaravel },
+//     { name: 'Laravel', logo: logoLaravel },
+//   ],
+// ])
 </script>
 
 <template>
@@ -32,7 +32,11 @@ const companies = ref([
       <br>Rapid development, for the best full-stack teams, and individuals.
     </p>
     <div class="mt-10 flex justify-center gap-x-6">
-      <Button variant="solid" color="black" href="/register">
+      <Button
+        variant="solid"
+        color="blue"
+        href="/register"
+      >
         View Documentation
       </Button>
 

@@ -2,6 +2,7 @@ import type { UserModule } from '@stacksjs/types'
 import type { Locale } from 'vue-i18n'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { handleError } from '@stacksjs/error-handling'
 import yaml from 'js-yaml'
 import { createI18n } from 'vue-i18n'
 
@@ -22,7 +23,8 @@ export const install: UserModule = async ({ app }) => {
     await fs.access(langPath)
   }
   catch (error) {
-    console.error(`The lang directory does not exist: ${langPath}`)
+    handleError(`The lang directory does not exist: ${langPath}`, { shouldExit: false })
+    handleError(error, { shouldExit: false })
     return // Exit the function if the directory doesn't exist
   }
 
