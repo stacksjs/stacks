@@ -245,4 +245,18 @@ export interface PostRequestType extends Request {
   deleted_at?: Date
 }
 
+type ModelRequestMap = {
+  'ProjectRequest': ProjectRequestType
+  'SubscriberEmailRequest': SubscriberEmailRequestType
+  'AccessTokenRequest': AccessTokenRequestType
+  'TeamRequest': TeamRequestType
+  'SubscriberRequest': SubscriberRequestType
+  'DeploymentRequest': DeploymentRequestType
+  'ReleaseRequest': ReleaseRequestType
+  'UserRequest': UserRequestType
+  'PostRequest': PostRequestType
+}
+
 export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType
+
+

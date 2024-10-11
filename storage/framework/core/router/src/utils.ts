@@ -3,6 +3,7 @@ import { path } from '@stacksjs/path'
 import { existsSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
+import type { ModelRequest, RequestInstance } from '@stacksjs/types'
 
 export async function listRoutes(): Promise<Ok<string, any>> {
   const routeLists = await route.getRoutes()
@@ -61,7 +62,7 @@ export function extractDynamicAction(action: string): string | undefined {
   return match ? match[1] : ''
 }
 
-export async function extractModelRequest(action: string): Promise<Request | null> {
+export async function extractModelRequest(action: string): Promise<RequestInstance | null> {
   const extractedModel = extractModelFromAction(action)
   const lowerCaseModel = camelCase(extractedModel)
   const requestPath = path.frameworkPath(`requests/${extractedModel}Request.ts`)
@@ -71,31 +72,17 @@ export async function extractModelRequest(action: string): Promise<Request | nul
   return requestInstance[requestIndex]
 }
 
-export async function findRequestInstance(requestInstance: string): Promise<Request | null> {
+export async function findRequestInstance(requestInstance: string): Promise<ModelRequest> {
   const frameworkDirectory = path.storagePath('framework/requests')
   const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
   const pathExists = await existsSync(filePath)
 
-  // Check if the directory exists
-  if (pathExists) {
-    const requestInstance = await import(filePath)
+  const reqInstance = await import(filePath)
 
-    return requestInstance.request
-  }
-
-  const defaultRequestPath = path.storagePath('framework/core/router/src/request.ts')
-  const fileExists = await existsSync(defaultRequestPath)
-
-  if (fileExists) {
-    const requestInstance = await import(defaultRequestPath)
-
-    return requestInstance.request
-  }
-
-  return null
+  return reqInstance.request
 }
 
-export async function extractDefaultRequest(): Promise<Request> {
+export async function extractDefaultRequest(): Promise<RequestInstance> {
   const requestPath = path.frameworkPath(`core/router/src/request.ts`)
   const requestInstance = await import(requestPath)
 

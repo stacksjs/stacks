@@ -75,7 +75,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
 
   if (!foundRoute) {
     // TODO: create a pretty 404 page
-    return new Response('Pretty 404 page coming soon', {
+    return new Response('<html><body><h1>Page not found!</h1<pre></pre></body></html>', {
       status: 404,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -305,7 +305,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       const { status, ...rest } = await foundCallback
 
       const { errors } = rest
-      return new Response(`<html><body><h1>Error</h1><p>${errors}</p><pre></pre></body></html>`, {
+      return new Response(`<html><body><p>${errors}</p><pre></pre></body></html>`, {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',

@@ -1,5 +1,5 @@
 import type { Action } from '@stacksjs/actions'
-import type { Job, RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import type { Job, RedirectCode, Route, RouteGroupOptions, RouterInterface, StatusCode, RequestInstance } from '@stacksjs/types'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
@@ -305,28 +305,27 @@ export class Router implements RouterInterface {
     // then validate
     // if succeeds, run the handle
     // if fails, return validation error
-    let requestInstance
+    let requestInstance: RequestInstance
 
-    console.log(actionModule.default)
 
     if (actionModule.default.requestFile) {
       requestInstance = await findRequestInstance(actionModule.default.requestFile)
     }
     else {
-      requestInstance = await extractDefaultRequest()
+      requestInstance  = await extractDefaultRequest()
     }
 
 
     try {
-      if (isObjectNotEmpty(actionModule.default.validations))
-        await customValidate(actionModule.default.validations, requestInstance.all())
+      if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
+        await customValidate(actionModule.default.validations, requestInstance.all()  )
 
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {
       if (!error.status) 
         return { status: 500, errors: error }
-      
+
       return { status: error.status, errors: error }
     }
   }
