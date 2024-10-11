@@ -26,7 +26,6 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
 
     dts: p.frameworkPath('types/auto-imports.d.ts'),
     dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.browserPath('src')],
-    // dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
     vueTemplate: true,
 
     eslintrc: {

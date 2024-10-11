@@ -1,9 +1,7 @@
 <script setup lang="ts">
 defineOptions({
-  name: 'Stacks.js. Next generation app & library development.',
+  name: 'HomePage',
 })
-
-// import { app } from '@stacksjs/config'
 
 // https://github.com/vueuse/head
 // you can use this to manipulate the document head in any components,

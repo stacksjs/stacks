@@ -1,6 +1,4 @@
 <script setup>
-// import BaseButton from '../Buttons/BaseButton.vue'
-
 // Reactive state for the email input
 const email = ref('')
 const loading = ref(false)
