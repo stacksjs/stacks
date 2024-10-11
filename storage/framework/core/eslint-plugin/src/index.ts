@@ -3,10 +3,12 @@ import configsRecommended from './configs/recommended'
 import { plugin } from './plugin'
 import './types'
 
-export default {
+const p: any = {
   ...plugin,
   configs: {
     recommended: configsRecommended,
     flat: configsFlat,
   },
 }
+
+export default p

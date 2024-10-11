@@ -588,6 +588,16 @@ export function enumsPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `eslint-plugin` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the eslint-plugin directory.
+ * @returns The absolute path to the specified file or directory within the eslint-plugin directory.
+ */
+export function eslintPluginPath(path?: string): string {
+  return corePath(`eslint-plugin/${path || ''}`)
+}
+
+/**
  * Returns the path to the `error-handling` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the error-handling directory.
@@ -1359,6 +1369,7 @@ export interface Path {
   dnsPath: (path?: string) => string
   emailPath: (path?: string) => string
   enumsPath: (path?: string) => string
+  eslintPlugin: (path?: string) => string
   errorHandlingPath: (path?: string) => string
   eventsPath: (path?: string) => string
   coreEnvPath: (path?: string) => string

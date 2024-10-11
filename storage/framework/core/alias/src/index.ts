@@ -94,6 +94,8 @@ export const alias: Record<string, string> = {
   'stacks/enums': p.enumsPath('src/index.ts'),
   '@stacksjs/enums/*': p.enumsPath('src/*'),
   'stacks/enums/*': p.enumsPath('src/*'),
+  '@stacksjs/eslint-plugin/*': p.eslintPlugin('src/*'),
+  'stacks/eslint-plugin/*': p.eslintPlugin('src/*'),
   '@stacksjs/env': p.coreEnvPath('src/index.ts'),
   'stacks/env': p.coreEnvPath('src/index.ts'),
   '@stacksjs/env/*': p.coreEnvPath('src/*'),

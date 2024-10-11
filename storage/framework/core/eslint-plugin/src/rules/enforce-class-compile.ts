@@ -30,7 +30,8 @@ const rule: any = createRule<[{ prefix: string, enableFix: boolean }], 'missing'
     }],
   },
   defaultOptions: [{ prefix: ':uno:', enableFix: true }],
-  create(context, [mergedOptions]) {
+  // @ts-expect-error any is okay for the moment
+  create(context: any, [mergedOptions]) {
     const CLASS_COMPILE_PREFIX = `${mergedOptions.prefix} `
     const ENABLE_FIX = mergedOptions.enableFix
 
@@ -40,6 +41,7 @@ const rule: any = createRule<[{ prefix: string, enableFix: boolean }], 'missing'
         loc: node.loc,
         messageId: 'missing',
         data: { prefix: CLASS_COMPILE_PREFIX.trim() },
+        // @ts-expect-error any is okay for the moment
         fix: (...args) => ENABLE_FIX ? fix(...args) : null,
       })
     }
