@@ -1,6 +1,6 @@
 import { plugin } from '../plugin'
 
-export default {
+const p: any = {
   plugins: {
     unocss: plugin,
   },
@@ -9,3 +9,5 @@ export default {
     'unocss/order-attributify': 'warn',
   } as const,
 }
+
+export default p
