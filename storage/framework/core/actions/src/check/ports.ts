@@ -1,7 +1,7 @@
+import { $ } from 'bun'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { findStacksProjects } from '@stacksjs/utils'
-import { $ } from 'bun'
 
 const projects = await findStacksProjects(undefined, { quiet: true })
 

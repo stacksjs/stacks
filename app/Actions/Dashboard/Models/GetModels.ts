@@ -1,7 +1,7 @@
 import type { Model } from '@stacksjs/types'
+import { Glob } from 'bun'
 import { Action } from '@stacksjs/actions'
 import { path } from '@stacksjs/path'
-import { Glob } from 'bun'
 
 export default new Action({
   name: 'GetModels',

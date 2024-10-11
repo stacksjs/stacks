@@ -5,7 +5,7 @@ import UnoCSS from 'unocss/vite'
 export function cssEngine(isWebComponent = false): Plugin {
   // @ts-expect-error - somehow a pwa error happens when we type `name` in antfus plugins
   return UnoCSS({
-    configFile: p.uiPath('src/unocss.config.ts'),
+    configFile: p.uiPath('src/uno.config.ts'),
     mode: isWebComponent ? 'shadow-dom' : 'vue-scoped',
     // content: {
     //   pipeline: {
