@@ -1369,7 +1369,7 @@ export interface Path {
   dnsPath: (path?: string) => string
   emailPath: (path?: string) => string
   enumsPath: (path?: string) => string
-  eslintPlugin: (path?: string) => string
+  eslintPluginPath: (path?: string) => string
   errorHandlingPath: (path?: string) => string
   eventsPath: (path?: string) => string
   coreEnvPath: (path?: string) => string
@@ -1431,7 +1431,7 @@ export interface Path {
   testsPath: (path?: string) => string
   tinkerPath: (path?: string) => string
   typesPath: (path?: string) => string
-  uiPath: (path?: string) => string
+  uiPath: (path?: string, options?: { relative?: boolean }) => string
   userDatabasePath: (path?: string) => string
   userMigrationsPath: (path?: string) => string
   userEventsPath: (path?: string) => string
@@ -1500,6 +1500,7 @@ export const path: Path = {
   dnsPath,
   emailPath,
   enumsPath,
+  eslintPluginPath,
   errorHandlingPath,
   eventsPath,
   coreEnvPath,

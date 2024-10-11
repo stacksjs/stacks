@@ -1,5 +1,6 @@
 import type { BlocklistMeta, UnoGenerator } from '@unocss/core'
 import process from 'node:process'
+import { path } from '@stacksjs/path'
 import { loadConfig } from '@unocss/config'
 import { createGenerator } from '@unocss/core'
 import { runAsWorker } from 'synckit'
@@ -12,11 +13,13 @@ process.env.ESLINT ||= 'true'
 
 async function _getGenerator(configPath?: string) {
   const { config, sources } = await loadConfig(
-    process.cwd(),
+    path.uiPath(),
     configPath,
   )
+
   if (!sources.length)
     throw new Error('[@stacksjs/eslint-plugin] No config file found, create a `uno.config.ts` file in your project root and try again.')
+
   return createGenerator({
     ...config,
     warn: false,
