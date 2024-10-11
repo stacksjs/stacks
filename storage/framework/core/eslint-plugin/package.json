@@ -1,0 +1,62 @@
+{
+  "name": "@stacksjs/eslint-plugin",
+  "type": "module",
+  "version": "0.64.6",
+  "description": "The Stacks way to lint.",
+  "author": "Chris Breuer",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/lint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/lint"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "eslint-plugin",
+    "formatter",
+    "eslint",
+    "antfu",
+    "pre-configured",
+    "zero-config",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.8.1",
+    "@unocss/config": "0.61.0",
+    "@unocss/core": "0.61.0",
+    "magic-string": "^0.30.12",
+    "synckit": "^0.9.2"
+  },
+  "devDependencies": {
+    "vue-eslint-parser": "catalog:"
+  }
+}

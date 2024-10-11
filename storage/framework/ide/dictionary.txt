@@ -47,6 +47,7 @@ chrisbbreuer
 chrisbreuer
 circleci
 clangd
+classname
 classpath
 clippy
 cmake
@@ -303,6 +304,7 @@ styleci
 stylelint
 suffixless
 supabase
+synckit
 synctex
 tauri
 taze
@@ -319,6 +321,7 @@ tlsx
 treeshaking
 triggerable
 tsdoc
+TSES
 TSPIV
 tsup
 twoslash
