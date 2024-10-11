@@ -54,7 +54,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     if (error instanceof VineError.E_VALIDATION_ERROR)
       reportError(error.messages)
 
-    throw new Error(JSON.stringify({ status: 422, errors: error.messages }))
+    throw { status: 422, errors: error.messages }
   }
 }
 
@@ -88,6 +88,6 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     if (error instanceof VineError.E_VALIDATION_ERROR)
       reportError(error.messages)
 
-    throw new Error(JSON.stringify({ status: 422, errors: error.messages }))
+    throw { status: 422, errors: error.messages }
   }
 }

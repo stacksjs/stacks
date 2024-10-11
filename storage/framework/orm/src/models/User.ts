@@ -438,7 +438,7 @@ export class UserModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No model results found for query' }
+      throw { status: 404, message: 'No UserModel results found for query' }
 
     return this.parseResult(new UserModel(model))
   }

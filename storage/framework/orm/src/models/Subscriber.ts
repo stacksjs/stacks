@@ -378,7 +378,7 @@ export class SubscriberModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw { status: 404, message: 'No SubscriberModel results found for query' }
 
     return this.parseResult(new SubscriberModel(model))
   }

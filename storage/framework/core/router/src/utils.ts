@@ -1,9 +1,9 @@
+import type { ModelRequest, RequestInstance } from '@stacksjs/types'
 import { type Ok, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { existsSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
-import type { ModelRequest, RequestInstance } from '@stacksjs/types'
 
 export async function listRoutes(): Promise<Ok<string, any>> {
   const routeLists = await route.getRoutes()

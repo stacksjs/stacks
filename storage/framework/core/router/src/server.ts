@@ -145,9 +145,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   //   },
   //   status: 500,
   // })
-  
+
   const middlewarePayload = await executeMiddleware(foundRoute)
-  
 
   if (
     middlewarePayload !== null
@@ -307,7 +306,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       const { errors } = rest
       return new Response(`<html><body><p>${errors}</p><pre></pre></body></html>`, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/html',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         },

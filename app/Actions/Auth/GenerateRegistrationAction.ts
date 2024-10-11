@@ -10,7 +10,7 @@ export default new Action({
   async handle(request: RequestInstance) {
     const email = request.get('email') ?? ''
 
-    // const user = await User.where('email', email).firstOrFail()
+    const user = await User.where('email', email).firstOrFail()
 
     if (!user)
       return

@@ -5,8 +5,6 @@ interface RequestData {
   [key: string]: any
 }
 
-
-
 type RouteParams = { [key: string]: string | number } | null
 
 interface ValidationField {

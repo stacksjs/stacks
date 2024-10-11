@@ -412,7 +412,7 @@ export class AccessTokenModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw { status: 404, message: 'No AccessTokenModel results found for query' }
 
     return this.parseResult(new AccessTokenModel(model))
   }
