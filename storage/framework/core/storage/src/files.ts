@@ -174,7 +174,6 @@ export interface Files {
   readTextFile: typeof readTextFile
   writeJsonFile: typeof writeJsonFile
   writeTextFile: typeof writeTextFile
-  isFile: typeof isFile
   hasFiles: typeof hasFiles
   hasComponents: typeof hasComponents
   hasFunctions: typeof hasFunctions
@@ -190,7 +189,6 @@ export const files: Files = {
   readTextFile,
   writeJsonFile,
   writeTextFile,
-  isFile,
   hasFiles,
   hasComponents,
   hasFunctions,

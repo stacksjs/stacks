@@ -2,7 +2,6 @@ import type { Result } from '@stacksjs/error-handling'
 import { italic, log } from '@stacksjs/cli'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { join } from '@stacksjs/path'
-import { isFile } from './files'
 import { isFolder } from './folders'
 import { fs } from './fs'
 import { glob } from './glob'
@@ -85,7 +84,7 @@ export async function deleteEmptyFolders(dir: string): Promise<Result<string, Er
 export function deleteFile(path: string): Promise<Result<string, Error>> {
   return new Promise((resolve, reject) => {
     try {
-      if (isFile(path)) {
+      if (fs.statSync(path).isFile()) {
         fs.rmSync(path, { recursive: true, force: true })
         return resolve(ok(`Deleted ${path}`))
       }
@@ -118,7 +117,7 @@ export async function deleteGlob(path: string): Promise<Result<string, Error>> {
 }
 
 export async function del(path: string): Promise<Result<string, Error>> {
-  if (isFile(path))
+  if (fs.existsSync(path) && fs.statSync(path).isFile())
     return await deleteFile(path)
 
   if (isFolder(path))

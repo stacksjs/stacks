@@ -1423,7 +1423,7 @@ export async function generateModelString(
       static async remove(id: number): Promise<void> {
         const instance = new ${modelName}Model(null)
         ${mittDeleteFindStatement}
-        
+
         if (instance.softDeletes) {
         await db.updateTable('${tableName}')
           .set({
@@ -1825,48 +1825,15 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
 
     log.info('Ensuring Code Style...')
     try {
-      // we run this in background in background, because we simply need to lint:fix the auto-generated code
-      // the reason we run it in background is because we don't care whether it fails or not, given there
-      // is a chance that the codebase has lint issues unrelating to our auto-generated code
-      const process = Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
-        stdio: ['ignore', 'pipe', 'pipe'],
+      Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
+        stdio: ['ignore', 'ignore', 'ignore'],
         cwd: path.projectPath(),
         detached: true,
       })
-
-      const reader = process.stdout.getReader()
-      // let output = ''
-
-      while (true) {
-        const { done } = await reader.read()
-        if (done)
-          break
-        // output += new TextDecoder().decode(value)
-      }
-
-      const stderrReader = process.stderr.getReader()
-      while (true) {
-        const { done } = await stderrReader.read()
-        if (done)
-          break
-        // Collect stderr output but do not log it
-        // output += new TextDecoder().decode(value)
-      }
-
-      const exitCode = await process.exited
-
-      if (exitCode !== 0) {
-        log.debug(
-          'There was an error fixing your code style but we are ignoring it because we fixed the auto-generated code already.',
-        )
-      }
-      else {
-        log.success('Code style fixed successfully.')
-      }
+      log.success('Code style fixing started in background.')
     }
     catch (error) {
-      handleError('There was an error fixing your code style.', error)
-      process.exit(ExitCode.FatalError)
+      handleError('There was an error starting the code style fixing process.', error)
     }
 
     log.success('Linted')
