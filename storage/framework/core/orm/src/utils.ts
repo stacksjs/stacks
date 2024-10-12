@@ -8,6 +8,7 @@ import type {
 import process from 'node:process'
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
+import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
@@ -1864,8 +1865,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       }
     }
     catch (error) {
-      log.error('There was an error fixing your code style.')
-      log.error(error)
+      handleError('There was an error fixing your code style.', error)
       process.exit(ExitCode.FatalError)
     }
 
