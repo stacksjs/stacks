@@ -89,7 +89,7 @@ export async function writeTextFile(file: TextFile): Promise<number> {
 /**
  * Determine whether a path exists.
  */
-export function isFile(path: string): boolean {
+function isFile(path: string): boolean {
   return fs.existsSync(path)
 }
 

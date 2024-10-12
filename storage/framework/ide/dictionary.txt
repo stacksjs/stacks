@@ -112,6 +112,7 @@ filesize
 flareapp
 flowconfig
 FLUSHALL
+flystorage
 fontshare
 formkit
 foxundermoon

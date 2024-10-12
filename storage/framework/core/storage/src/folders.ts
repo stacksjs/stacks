@@ -13,9 +13,9 @@ export function isFolder(path: string): boolean {
   }
 }
 
-export function isDirectory(path: string): boolean {
-  return isFolder(path)
-}
+// export function isDirectory(path: string): boolean {
+//   return isFolder(path)
+// }
 
 export function isDir(path: string): boolean {
   return isFolder(path)
