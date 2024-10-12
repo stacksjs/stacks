@@ -1,12 +1,11 @@
-// import type { NestedStackProps } from 'aws-cdk-lib'
-import { NestedStack } from 'aws-cdk-lib'
-// import type { Construct } from 'constructs'
+import { S3Client } from '@aws-sdk/client-s3'
+import { AwsS3StorageAdapter } from '@flystorage/aws-s3'
+import { FileStorage } from '@flystorage/file-storage'
 
-export class StorageStack extends NestedStack {
-  // constructor(scope: Construct, id: string, props?: NestedStackProps) {
-  //   super(scope, id, props)
-  // if (!storage.name)
-  //   throw new Error('./config storage.name is not defined')
-  // new s3.Bucket(this, storage.name)
-  // }
-}
+const client = new S3Client()
+const adapter = new AwsS3StorageAdapter(client, {
+  bucket: '{your-bucket-name}',
+  prefix: '{optional-path-prefix}',
+})
+
+export const storage: FileStorage = new FileStorage(adapter)
