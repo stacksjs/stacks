@@ -27,19 +27,22 @@ import { italic, log } from './'
 export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
   const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
 
+  log.debug('exec:', Array.isArray(command) ? command.join(' ') : command, options)
+  log.debug('cmd:', cmd)
+
   if (!cmd)
     return err(handleError(`Failed to parse command: ${cmd}`, options))
 
-  log.debug('exec:', Array.isArray(command) ? command.join(' ') : command)
-  log.debug('cmd:', cmd)
-  log.debug('exec options:', options)
+  let stdio: [SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable] | undefined = options?.stdio
+
+  if (!stdio)
+    stdio = (options?.silent || options?.quiet) ? ['ignore', 'pipe', 'pipe'] : [options?.stdin ?? 'inherit', 'pipe', 'pipe']
 
   const cwd = options?.cwd ?? process.cwd()
+
   const proc = Bun.spawn(cmd, {
     ...options,
-    stdout:
-      options?.silent || options?.quiet ? 'ignore' : options?.stdin ? options.stdin : options?.stdout || 'inherit',
-    stderr: options?.silent || options?.quiet ? 'ignore' : options?.stderr || 'inherit',
+    stdio,
     detached: options?.background || false,
     cwd,
     // env: { ...e, ...options?.env },
@@ -88,8 +91,8 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  * ```
  */
 export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
-  log.debug('Running ExecSync:', command)
-  log.debug('ExecSync Options:', options)
+  log.debug('Running execSync:', command)
+  log.debug('execSync options:', options)
 
   const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
 

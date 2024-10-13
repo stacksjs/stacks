@@ -1,10 +1,10 @@
 import type { Ok, Result } from '@stacksjs/error-handling'
 import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
 import process from 'node:process'
+import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { log } from './console'
 import { exec, execSync } from './exec'
-import { italic } from './utils'
 
 /**
  * Run a command.
@@ -32,15 +32,13 @@ import { italic } from './utils'
  * ```
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  log.debug('runCommand:', command)
-  log.debug('options:', options)
+  log.debug('runCommand:', command, options)
 
   return await exec(command, options)
 }
 
 export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  log.debug('runProcess:', italic(command))
-  log.debug('runProcess Options:', options)
+  log.debug('runProcess:', command, options)
 
   return await exec(command, options)
 }
@@ -71,17 +69,9 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  * ```
  */
 export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
-  log.debug('runCommandSync:', italic(command))
-  log.debug('runCommandSync Options:', options)
+  log.debug('runCommandSync:', command, options)
 
-  const result = await execSync(command, options)
-
-  // if (result.isErr())
-  //   return err(result.error)
-
-  // return ok(result.value)
-
-  return result
+  return await execSync(command, options)
 }
 
 /**
@@ -101,7 +91,7 @@ export async function runCommands(
     const result = await runCommand(command, options)
 
     if (result.isErr()) {
-      log.error(result.error)
+      handleError('Error during runCommands', result.error)
       process.exit(ExitCode.FatalError)
     }
 

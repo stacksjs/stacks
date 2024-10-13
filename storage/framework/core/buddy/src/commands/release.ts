@@ -25,10 +25,7 @@ export function release(buddy: CLI): void {
         log.warn('Dry run enabled. No changes will be made or committed.')
 
       const startTime = await intro('buddy release')
-      const result = await runAction(Action.Release, {
-        stdin: 'inherit',
-        ...options,
-      })
+      const result = await runAction(Action.Release, options)
 
       if (result.isErr()) {
         log.error('Failed to release', result.error)

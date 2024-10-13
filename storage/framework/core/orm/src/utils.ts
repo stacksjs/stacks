@@ -1817,6 +1817,9 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await generateKyselyTypes()
     log.success('Generated Query Builder types')
 
+    // we need to lint:fix the auto-generated code, given there is a chance that
+    // the codebase has lint issues unrelating to our auto-generated code, we
+    // ignore the the console output
     await ensureCodeStyle()
   }
   catch (error) {

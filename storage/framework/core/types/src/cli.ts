@@ -1,3 +1,4 @@
+import type { SpawnOptions } from '@stacksjs/types'
 import type { BunFile } from 'bun'
 import type { Ports } from './ports'
 
@@ -140,6 +141,14 @@ export interface CliOptions {
    * @default projectPath()
    */
   cwd?: string
+
+  /**
+   * **stdio**
+   *
+   * The `stdio` option lets you configure the standard I/O of the spawned process.
+   *
+   */
+  stdio?: [SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable]
 
   /**
    * @default 'pipe'

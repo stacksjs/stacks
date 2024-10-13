@@ -15,7 +15,6 @@ await runActions(
   {
     // debug mode needs to be enabled to see the output due to the interactive prompts
     cwd: projectPath(),
-    stdin: 'inherit',
   },
 )
 

@@ -8,13 +8,13 @@ import { app, ui } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
-import * as storage from '@stacksjs/storage'
+import { fs, readJsonFile, readPackageJson, readTextFile, writeTextFile } from '@stacksjs/storage'
 import { parse } from 'yaml'
 
 // import { semver } from './versions'
 
-export async function packageManager() {
-  const { packageManager } = await storage.readPackageJson(frameworkPath('package.json'))
+export async function packageManager(): Promise<string> {
+  const { packageManager } = await readPackageJson(frameworkPath('package.json'))
   return packageManager
 }
 
@@ -33,19 +33,20 @@ export async function initProject(): Promise<Result<Subprocess, Error>> {
   return ok(result.value)
 }
 
-export async function ensureProjectIsInitialized() {
-  if (storage.isFile(projectPath('.env')))
+export async function ensureProjectIsInitialized(): Promise<boolean> {
+  // if (storage.isFile(projectPath('.env')))
+  if (fs.existsSync(projectPath('.env')))
     return await isAppKeySet()
 
   // copy the .env.example file to .env
-  if (storage.isFile(projectPath('.env.example')))
+  if (fs.existsSync(projectPath('.env.example')))
     await runCommand('cp .env.example .env', { cwd: projectPath() })
   else console.error('no .env.example file found')
 
   return await isAppKeySet()
 }
 
-export async function installIfVersionMismatch() {
+export async function installIfVersionMismatch(): Promise<void> {
   // const requiredBunVersion = '0.8.1'
   // const installedBunVersion = process.version
   // if (!semver.satisfies(installedBunVersion, requiredBunVersion)) {
@@ -55,11 +56,11 @@ export async function installIfVersionMismatch() {
 }
 
 export async function frameworkVersion(): Promise<string> {
-  return (await storage.readPackageJson(frameworkPath('package.json'))).version
+  return (await readPackageJson(frameworkPath('package.json'))).version
 }
 
-export async function isAppKeySet() {
-  const env = await storage.readTextFile('.env', projectPath())
+export async function isAppKeySet(): Promise<boolean> {
+  const env = await readTextFile('.env', projectPath())
   const lines = env.data.split('\n')
   const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
@@ -72,7 +73,7 @@ export async function isAppKeySet() {
  * @url https://www.npmjs.com/package/@unocss/reset
  * @param preset
  */
-export function determineResetPreset(preset?: string) {
+export function determineResetPreset(preset?: string): string[] {
   if (ui.reset)
     preset = ui.reset
 
@@ -115,10 +116,10 @@ export function isOptionalString(value: any): value is string | undefined {
   return value === null || type === 'undefined' || type === 'string'
 }
 
-export async function setEnvValue(key: string, value: string) {
-  const file = await storage.readTextFile(projectPath('.env'))
+export async function setEnvValue(key: string, value: string): Promise<void> {
+  const file = await readTextFile(projectPath('.env'))
 
-  await storage.writeTextFile({
+  await writeTextFile({
     path: projectPath('.env'),
     data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
   })
@@ -128,7 +129,7 @@ export async function setEnvValue(key: string, value: string) {
  * Runs the specified NPM script in the package.json file.
  */
 export async function runNpmScript(script: NpmScript, options?: CliOptions): Promise<Result<Subprocess, Error>> {
-  const { data: manifest } = await storage.readJsonFile('package.json', frameworkPath())
+  const { data: manifest } = await readJsonFile('package.json', frameworkPath())
 
   // simple, yet effective check to see if the script exists
   if (isManifest(manifest) && hasScript(manifest, script))
@@ -149,7 +150,7 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
   return false
 }
 
-export function parseYaml(content: any) {
+export function parseYaml(content: any): any {
   return parse(content)
 }
 
@@ -165,7 +166,7 @@ export function parseYaml(content: any) {
  *
  * @param options
  */
-export function determineDebugLevel(options?: CliOptions) {
+export function determineDebugLevel(options?: CliOptions): boolean {
   if (options?.verbose === true)
     return true
 

@@ -3,7 +3,7 @@ import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { hashPaths } from '@stacksjs/storage'
 
-export function originRequestFunctionHash() {
+export function originRequestFunctionHash(): string | undefined {
   try {
     return hashPaths(p.cloudPath('src/edge'))
   }
@@ -16,7 +16,7 @@ export function originRequestFunctionHash() {
 
 const docsSrc = [p.projectPath('docs'), p.frameworkPath('docs/dist')]
 
-export function websiteSourceHash() {
+export function websiteSourceHash(): string | undefined {
   const websiteSrc = [
     p.projectPath('resources/views'),
     p.projectPath('resources/assets'),
@@ -31,6 +31,6 @@ export function websiteSourceHash() {
   return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
 }
 
-export function docsSourceHash() {
+export function docsSourceHash(): string | undefined {
   return hashPaths(docsSrc)
 }
