@@ -5,14 +5,12 @@ import type {
   ModelElement,
   RelationConfig,
 } from '@stacksjs/types'
-import process from 'node:process'
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
-import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
@@ -1773,27 +1771,23 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await deleteExistingOrmRoute()
     log.success('Deleted Model Routes')
 
-    log.info('Writing Model Names...')
     try {
+      log.info('Writing Model Names...')
       await writeModelNames()
+      log.success('Wrote Model Names')
     }
     catch (error) {
-      /* eslint-disable-next-line no-console */
-      console.log('error', error)
-      process.exit(ExitCode.FatalError)
+      handleError('Error while writing Model Names', error)
     }
-    log.success('Wrote Model Names')
 
-    log.info('Writing Model Requests...')
     try {
+      log.info('Writing Model Requests...')
       await writeModelRequest()
+      log.success('Wrote Model Requests')
     }
     catch (error) {
-      /* eslint-disable-next-line no-console */
-      console.log('error', error)
-      process.exit(ExitCode.FatalError)
+      handleError('Error while writing Model Requests', error)
     }
-    log.success('Wrote Model Requests')
 
     log.info('Generating API Routes...')
     const modelFiles = globSync([path.userModelsPath('**/*.ts')], { absolute: true })
@@ -1823,24 +1817,10 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await generateKyselyTypes()
     log.success('Generated Query Builder types')
 
-    log.info('Ensuring Code Style...')
-    try {
-      Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
-        stdio: ['ignore', 'ignore', 'ignore'],
-        cwd: path.projectPath(),
-        detached: true,
-      })
-      log.success('Code style fixing started in background.')
-    }
-    catch (error) {
-      handleError('There was an error starting the code style fixing process.', error)
-    }
-
-    log.success('Linted')
+    await ensureCodeStyle()
   }
   catch (error) {
-    log.error('There was an error generating your model files', error)
-    process.exit(ExitCode.FatalError)
+    handleError('Error while generating model files', error)
   }
 }
 
@@ -1875,6 +1855,39 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
   })
 
   return fields as Attributes
+}
+
+async function ensureCodeStyle(): Promise<void> {
+  log.info('Linting code style...')
+  const proc = Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: path.projectPath(),
+  })
+
+  // Consume stdout without logging
+  const stdoutReader = proc.stdout.getReader()
+  while (true) {
+    const { done } = await stdoutReader.read()
+    if (done)
+      break
+  }
+
+  // Consume stderr without logging
+  const stderrReader = proc.stderr.getReader()
+  while (true) {
+    const { done } = await stderrReader.read()
+    if (done)
+      break
+  }
+
+  const exitCode = await proc.exited
+
+  if (exitCode !== 0) {
+    log.debug('There was an error fixing your code style but we are ignoring it because we fixed the auto-generated code already. Run bunx eslint . --fix to fix the rest of the code.')
+  }
+  else {
+    log.debug('Code style fixed successfully.')
+  }
 }
 
 // TODO: https://github.com/oven-sh/bun/issues/6060
