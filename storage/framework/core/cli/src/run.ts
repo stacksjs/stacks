@@ -34,13 +34,25 @@ import { exec, execSync } from './exec'
 export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug('runCommand:', command, options)
 
-  return await exec(command, options)
+  const opts: CliOptions = {
+    ...options,
+    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    verbose: options?.verbose ?? false,
+  }
+
+  return await exec(command, opts)
 }
 
 export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug('runProcess:', command, options)
 
-  return await exec(command, options)
+  const opts: CliOptions = {
+    ...options,
+    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    verbose: options?.verbose ?? false,
+  }
+
+  return await exec(command, opts)
 }
 
 /**
@@ -71,7 +83,13 @@ export async function runProcess(command: string, options?: CliOptions): Promise
 export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
   log.debug('runCommandSync:', command, options)
 
-  return await execSync(command, options)
+  const opts: CliOptions = {
+    ...options,
+    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    verbose: options?.verbose ?? false,
+  }
+
+  return await execSync(command, opts)
 }
 
 /**

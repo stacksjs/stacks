@@ -41,9 +41,7 @@
   </div>
 </template>
 
-
 <style scoped>
-
 .modalWrapper {
   display: flex;
   flex-direction: column;
@@ -154,4 +152,5 @@
   .notificationWrapper {
     width: 100%;
   }
-}</style>
+}
+</style>

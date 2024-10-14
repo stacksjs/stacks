@@ -3,6 +3,7 @@ import { path as p } from '@stacksjs/path'
 import { exists, glob } from '@stacksjs/storage'
 
 // import { $ } from 'bun'
+console.log('Building in here...')
 
 const dirs = await glob([p.resolve('./', '*')], { onlyDirectories: true, absolute: true })
 dirs.sort((a, b) => a.localeCompare(b))

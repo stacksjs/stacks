@@ -63,7 +63,7 @@ export {
   yellow,
 } from 'kolorist'
 
-export const quotes: Collection<string> = collect([
+export const quotes: Collection<string[]> = collect([
   // could be queried from any API or database
   'The best way to get started is to quit talking and begin doing.',
   'The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.',

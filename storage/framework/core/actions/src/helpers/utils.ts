@@ -1,6 +1,6 @@
 import type { Action as ActionType } from '@stacksjs/actions'
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
-import type { ActionOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import type { ActionOptions, CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
 import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
@@ -20,6 +20,8 @@ type Action = ActionPath | ActionName | string
  * @returns The result of the command.
  */
 export async function runAction(action: Action, options?: ActionOptions): Promise<Result<Subprocess, CommandError>> {
+  log.debug('runAction:', action, options)
+
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
   const glob = new Bun.Glob('**/*.{ts,js}')
@@ -50,13 +52,15 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   const opts = buddyOptions()
   const path = p.relativeActionsPath(`src/${action}.ts`)
   const cmd = `bun ${path} ${opts}`.trimEnd()
-  const optionsWithCwd = {
+
+  const optionsWithCwd: CliOptions = {
     cwd: options?.cwd || p.projectPath(),
+    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
     ...options,
   }
 
-  log.debug('runAction:', cmd)
-  log.debug('action options:', optionsWithCwd)
+  log.debug('action cmd:', cmd)
+  log.debug('optionsWithCwd:', optionsWithCwd)
 
   return await runCommand(cmd, optionsWithCwd)
 }

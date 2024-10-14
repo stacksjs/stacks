@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
-import type { Position } from '../types'
+// import type { Position } from '../types'
 import { computed, ref } from 'vue'
 import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
+
+export type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
 
 const props = defineProps({
   position: String as PropType<Position>,

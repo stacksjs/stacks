@@ -33,17 +33,15 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (!cmd)
     return err(handleError(`Failed to parse command: ${cmd}`, options))
 
-  let stdio: [SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable] | undefined = options?.stdio
-
-  if (!stdio)
-    stdio = (options?.silent || options?.quiet) ? ['ignore', 'pipe', 'pipe'] : [options?.stdin ?? 'inherit', 'pipe', 'pipe']
-
   const cwd = options?.cwd ?? process.cwd()
 
   const proc = Bun.spawn(cmd, {
-    ...options,
-    stdio,
-    detached: options?.background || false,
+    // ...options,
+    stdin: options?.stdin ?? 'inherit',
+    stdout: (options?.silent || options?.quiet) ? 'ignore' : options?.stdin ? options.stdin : (options?.stdout || 'inherit'),
+    stderr: (options?.silent || options?.quiet) ? 'ignore' : (options?.stderr || 'inherit'),
+
+    // detached: options?.background || false,
     cwd,
     // env: { ...e, ...options?.env },
     onExit(

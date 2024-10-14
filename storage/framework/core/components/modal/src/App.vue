@@ -1,31 +1,24 @@
 <script lang="ts" setup>
-import type { Position, Theme } from './types'
+// import type { Position, Theme } from './types'
 import { ref } from 'vue'
 import { Modal } from './components'
-import Expand from './components/Expand.vue'
-import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
-import Others from './components/Others.vue'
-import Pos from './components/Position.vue'
-import Styling from './components/Styling.vue'
-import Theming from './components/Theming.vue'
-import Types from './components/Types.vue'
 import Usage from './components/Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 // import { toggleDarkMode, isDark } from './composables/useDarkMode'
 
 useSEOHeader()
 
-const expand = ref(false)
-const position = ref<Position>('top-right')
-const richColors = ref(false)
-const closeButton = ref(false)
-const theme = ref<Theme>('light')
+// const expand = ref(false)
+// const position = ref<Position>('top-right')
+// const richColors = ref(false)
+// const closeButton = ref(false)
+// const theme = ref<Theme>('light')
 
 const visible = ref(true)
 
-const handleClose = () => {
+function handleClose() {
   visible.value = false
 }
 </script>
@@ -43,8 +36,9 @@ const handleClose = () => {
         <Installation />
         <Usage />
 
-        <button @click="visible = true">Open Modal</button>
-
+        <button @click="visible = true">
+          Open Modal
+        </button>
       </main>
 
       <!-- <Footer /> -->
