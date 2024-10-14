@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+## v0.65.1...v0.66.0
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.65.1...v0.66.0)
+
+### 🏡 Chore
+
+- Wip ([17edc5ac6](https://github.com/stacksjs/stacks/commit/17edc5ac6))
+- Wip ([10fa860df](https://github.com/stacksjs/stacks/commit/10fa860df))
+- Wip ([90c76a31d](https://github.com/stacksjs/stacks/commit/90c76a31d))
+- Wip ([287f6fa97](https://github.com/stacksjs/stacks/commit/287f6fa97))
+- Wip ([655b9543a](https://github.com/stacksjs/stacks/commit/655b9543a))
+- Wip ([eaab70536](https://github.com/stacksjs/stacks/commit/eaab70536))
+- Wip ([fbafee6fb](https://github.com/stacksjs/stacks/commit/fbafee6fb))
+- Wip ([30fb8a8d2](https://github.com/stacksjs/stacks/commit/30fb8a8d2))
+- Wip ([ed1f3605b](https://github.com/stacksjs/stacks/commit/ed1f3605b))
+- Wip ([cf176be0c](https://github.com/stacksjs/stacks/commit/cf176be0c))
+- Wip ([f06250c75](https://github.com/stacksjs/stacks/commit/f06250c75))
+- Wip ([34e73969b](https://github.com/stacksjs/stacks/commit/34e73969b))
+- Wip ([9e8b30e79](https://github.com/stacksjs/stacks/commit/9e8b30e79))
+- Wip ([afefcbb33](https://github.com/stacksjs/stacks/commit/afefcbb33))
+- Wip ([3d4fa56a7](https://github.com/stacksjs/stacks/commit/3d4fa56a7))
+- Modal component wip ([2df842402](https://github.com/stacksjs/stacks/commit/2df842402))
+- Release v0.66.0 ([753b7e329](https://github.com/stacksjs/stacks/commit/753b7e329))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Michael ([@cab-mikee](http://github.com/cab-mikee))
+- Glennmichael123 ([@glennmichael123](http://github.com/glennmichael123))
+
 ## v0.65.0...v0.65.1
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.65.0...v0.65.1)
