@@ -297,13 +297,21 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       const { status, ...rest } = await foundCallback
 
       const { errors } = rest
-      return new Response(`<html><body><p>${errors}</p><pre></pre></body></html>`, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 500,
+
+      const file = Bun.file(path.corePath('error-handling/src/views/500.html'))
+
+      return file.text().then((htmlContent) => {
+        // Replace the placeholder with the actual error message
+        const modifiedHtml = htmlContent.replace('{{ERROR_MESSAGE}}', errors)
+
+        return new Response(modifiedHtml, {
+          headers: {
+            'Content-Type': 'text/html',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+          },
+          status: 500,
+        })
       })
     }
   }
