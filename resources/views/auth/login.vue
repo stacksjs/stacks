@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { startAuthentication } from '@simplewebauthn/browser'
 // Imports
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -7,7 +6,6 @@ import { useRouter } from 'vue-router'
 // Reactive state for form inputs and messages
 const email = ref('')
 const password = ref('')
-const successMessage = ref('')
 const errorMessage = ref('')
 
 // Router instance
@@ -51,48 +49,6 @@ async function login() {
     password.value = ''
   }
 }
-
-// Method to handle passkey login
-async function loginPasskey() {
-  // Reset success/error messages
-  successMessage.value = ''
-  errorMessage.value = ''
-
-  try {
-    // Fetch authentication options based on email
-    const resp = await fetch(`http://localhost:3008/generate-authentication-options?email=${email.value}`)
-    const options: any = await resp.json()
-
-    // Start the WebAuthn authentication process
-    const asseResp = await startAuthentication(options)
-
-    // Verify the authentication response with the backend
-    const verificationResp: any = await fetch('http://localhost:3008/verify-authentication', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        res: asseResp,
-        email: email.value,
-        challenge: options.challenge,
-      }),
-    })
-
-    const verificationJSON = await verificationResp.json()
-
-    if (verificationJSON?.verified) {
-      successMessage.value = 'Authentication successful!'
-      router.push({ path: '/dashboard' })
-    }
-    else {
-      errorMessage.value = `Authentication failed. Response: ${JSON.stringify(verificationJSON)}`
-    }
-  }
-  catch (error) {
-    errorMessage.value = 'An error occurred during passkey authentication'
-  }
-}
 </script>
 
 <template>
@@ -133,7 +89,7 @@ async function loginPasskey() {
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="loginPasskey" @click="login">
+            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="login">
               Sign in
             </button>
           </div>

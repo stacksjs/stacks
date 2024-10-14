@@ -16,13 +16,21 @@ const client = new BentoCache({
 
 export const fileSystem: CacheDriver = {
   async set(key: string, value: string, ttl?: number): Promise<void> {
-    await client.set({
+    const data: { key: string, value: string, gracePeriod?: { enabled: boolean, duration: string } } = {
       key,
       value,
-      gracePeriod: { enabled: true, duration: '5m' },
-    })
+    }
+
+    if (ttl) {
+      data.gracePeriod = {
+        enabled: true,
+        duration: `${ttl}m`,
+      }
+    }
+
+    await client.set(data)
   },
-  async setForever(key: string, value: string, ttl?: number): Promise<void> {
+  async setForever(key: string, value: string): Promise<void> {
     await client.setForever({
       key,
       value,

@@ -1,3 +1,4 @@
+import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { verifyHash } from '@stacksjs/security'
 import AccessToken from '../../../orm/src/models/AccessToken'
@@ -53,9 +54,8 @@ export async function team(): Promise<TeamModel | undefined> {
 
   const parts = bearerToken.split(':')
 
-  if (parts.length !== 3) {
-    throw { message: 'Invalid bearer token format', status: 401 }
-  }
+  if (parts.length !== 3)
+    throw new HttpError(401, 'Invalid bearer token format')
 
   const tokenId = Number(parts[0])
   const teamId = parts[1]
@@ -83,9 +83,8 @@ export async function authToken(): Promise<AuthToken | undefined> {
 
     const tokenId = accessToken?.id
 
-    if (!accessToken) {
-      throw { error: 'Error generating token!' }
-    }
+    if (!accessToken)
+      throw new HttpError(500, 'Error generating token!')
 
     return `${tokenId}:${team.id}:${accessToken.token}`
   }

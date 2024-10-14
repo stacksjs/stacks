@@ -1,4 +1,5 @@
 import type { Model } from '@stacksjs/types'
+import type { UserModel } from '../../storage/framework/orm/src/models/User'
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
 import { capitalize } from '@stacksjs/strings'
@@ -107,7 +108,7 @@ export default {
   },
 
   get: {
-    fullName: (user: User) => capitalize(user.name),
+    fullName: (user: UserModel) => capitalize(user.name || ''),
   },
 
   set: {

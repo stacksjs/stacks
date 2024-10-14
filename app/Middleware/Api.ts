@@ -1,4 +1,5 @@
 import { Middleware, request } from '@stacksjs/router'
+import { HttpError } from 'index'
 import { AccessToken, Team } from '../../storage/framework/orm/src'
 
 export default new Middleware({
@@ -7,15 +8,13 @@ export default new Middleware({
   async handle() {
     const bearerToken = request.bearerToken() || ''
 
-    if (!bearerToken) {
-      throw { message: 'Unauthorized.', status: 401 }
-    }
+    if (!bearerToken)
+      throw new HttpError(401, 'Unauthorized.')
 
     const parts = bearerToken.split(':')
 
-    if (parts.length !== 3) {
-      throw { message: 'Invalid bearer token format', status: 401 }
-    }
+    if (parts.length !== 3)
+      throw new HttpError(401, 'Invalid bearer token format')
 
     const tokenId = Number(parts[0])
     const teamId = parts[1] as string
@@ -23,26 +22,22 @@ export default new Middleware({
 
     const team = await Team.find(Number(teamId))
 
-    if (!team) {
-      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
-    }
+    if (!team)
+      throw new HttpError(401, 'Invalid bearer token')
 
     const accessTokens = await team.teamAccessTokens()
 
-    if (!accessTokens.length) {
-      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
-    }
+    if (!accessTokens.length)
+      throw new HttpError(401, 'Invalid bearer token')
 
     const accessTokenIds = accessTokens.map(accessToken => accessToken.id)
 
-    if (!accessTokenIds.includes(tokenId)) {
-      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
-    }
+    if (!accessTokenIds.includes(tokenId))
+      throw new HttpError(401, 'Invalid bearer token')
 
     const teamBearerToken = await AccessToken.where('token', plainString).first()
 
-    if (!teamBearerToken) {
-      throw new Error(JSON.stringify({ message: 'Invalid bearer token', status: 401 }))
-    }
+    if (!teamBearerToken)
+      throw new HttpError(401, 'Invalid bearer token')
   },
 })

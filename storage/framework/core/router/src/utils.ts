@@ -1,7 +1,6 @@
 import type { ModelRequest, RequestInstance } from '@stacksjs/types'
 import { type Ok, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { existsSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
 
@@ -75,7 +74,6 @@ export async function extractModelRequest(action: string): Promise<RequestInstan
 export async function findRequestInstance(requestInstance: string): Promise<ModelRequest> {
   const frameworkDirectory = path.storagePath('framework/requests')
   const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
-  const pathExists = await existsSync(filePath)
 
   const reqInstance = await import(filePath)
 

@@ -1,6 +1,6 @@
 import type { UserModel } from '../models/User'
-import { refreshDatabase } from '@stacksjs/testing'
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { refreshDatabase } from '@stacksjs/testing'
 import User from '../models/User'
 
 beforeEach(async () => {

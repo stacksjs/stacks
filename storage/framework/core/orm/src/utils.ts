@@ -402,10 +402,9 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   let actionString = `import { Action } from '@stacksjs/actions'\n`
   actionString += `import ${modelName} from '../../orm/src/models/${modelName}'\n`
   let handleString = ``
-  actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
 
   if (apiRoute === 'index') {
-    handleString += `async handle(request: ${modelName}RequestType) {
+    handleString += `async handle() {
         return await ${modelName}.all()
       },`
 
@@ -413,6 +412,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   }
 
   if (apiRoute === 'show') {
+    actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         const id = await request.getParam('id')
 
@@ -423,6 +423,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   }
 
   if (apiRoute === 'destroy') {
+    actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         const id = request.getParam('id')
 
@@ -437,6 +438,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   }
 
   if (apiRoute === 'store') {
+    actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
         const model = await ${modelName}.create(request.all())
@@ -448,6 +450,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   }
 
   if (apiRoute === 'update') {
+    actionString += `  import type { ${modelName}RequestType } from '../../types/requests'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
 
