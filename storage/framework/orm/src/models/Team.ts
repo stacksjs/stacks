@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import AccessToken from './AccessToken'
 
 import User from './User'
@@ -159,7 +160,7 @@ export class TeamModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No TeamModel results found for query')
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -295,7 +296,7 @@ export class TeamModel {
 
     const result = await db.insertInto('teams')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as TeamModel
 
@@ -305,7 +306,7 @@ export class TeamModel {
   static async forceCreate(newTeam: NewTeam): Promise<TeamModel> {
     const result = await db.insertInto('teams')
       .values(newTeam)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as TeamModel
 
@@ -344,7 +345,7 @@ export class TeamModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -367,7 +368,7 @@ export class TeamModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -461,7 +462,7 @@ export class TeamModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No TeamModel results found for query' }
+      throw new HttpError(404, 'No TeamModel results found for query')
 
     return this.parseResult(new TeamModel(model))
   }
@@ -533,7 +534,7 @@ export class TeamModel {
 
   async update(team: TeamUpdate): Promise<TeamModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Team ID is undefined')
+      throw new HttpError(500, 'Team ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(team).filter(([key]) => this.fillable.includes(key)),
@@ -551,7 +552,7 @@ export class TeamModel {
 
   async forceUpdate(team: TeamUpdate): Promise<TeamModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Team ID is undefined')
+      throw new HttpError(500, 'Team ID is undefined')
 
     await db.updateTable('teams')
       .set(team)
@@ -565,7 +566,7 @@ export class TeamModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('Team data is undefined')
+      throw new HttpError(500, 'Team data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('teams')
@@ -580,7 +581,7 @@ export class TeamModel {
   // Method to delete (soft delete) the team instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('Team ID is undefined')
+      throw new HttpError(500, 'Team ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -602,7 +603,7 @@ export class TeamModel {
 
   async teamAccessTokens() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('personal_access_token_teams')
       .where('team_id', '=', this.id)
@@ -612,7 +613,7 @@ export class TeamModel {
     const tableRelationIds = results.map(result => result.personal_access_token_id)
 
     if (!tableRelationIds.length)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
 
@@ -621,7 +622,7 @@ export class TeamModel {
 
   async teamUsers() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
       .where('team_id', '=', this.id)
@@ -631,7 +632,7 @@ export class TeamModel {
     const tableRelationIds = results.map(result => result.user_id)
 
     if (!tableRelationIds.length)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const relationResults = await User.whereIn('id', tableRelationIds).get()
 

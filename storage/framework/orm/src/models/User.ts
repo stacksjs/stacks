@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import Post from './Post'
@@ -157,7 +158,7 @@ export class UserModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No UserModel results found for query')
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -293,7 +294,7 @@ export class UserModel {
 
     const result = await db.insertInto('users')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as UserModel
 
@@ -306,7 +307,7 @@ export class UserModel {
   static async forceCreate(newUser: NewUser): Promise<UserModel> {
     const result = await db.insertInto('users')
       .values(newUser)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as UserModel
 
@@ -352,7 +353,7 @@ export class UserModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -375,7 +376,7 @@ export class UserModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -437,7 +438,7 @@ export class UserModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No UserModel results found for query' }
+      throw new HttpError(404, 'No UserModel results found for query')
 
     return this.parseResult(new UserModel(model))
   }
@@ -509,7 +510,7 @@ export class UserModel {
 
   async update(user: UserUpdate): Promise<UserModel | undefined> {
     if (this.id === undefined)
-      throw new Error('User ID is undefined')
+      throw new HttpError(500, 'User ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(user).filter(([key]) => this.fillable.includes(key)),
@@ -530,7 +531,7 @@ export class UserModel {
 
   async forceUpdate(user: UserUpdate): Promise<UserModel | undefined> {
     if (this.id === undefined)
-      throw new Error('User ID is undefined')
+      throw new HttpError(500, 'User ID is undefined')
 
     await db.updateTable('users')
       .set(user)
@@ -547,7 +548,7 @@ export class UserModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('User data is undefined')
+      throw new HttpError(500, 'User data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('users')
@@ -562,7 +563,7 @@ export class UserModel {
   // Method to delete (soft delete) the user instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('User ID is undefined')
+      throw new HttpError(500, 'User ID is undefined')
 
     const model = await this.find(this.id)
 
@@ -589,35 +590,35 @@ export class UserModel {
 
   async post() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const model = Post
       .where('user_id', '=', this.id)
       .first()
 
     if (!model)
-      throw new Error('Model Relation Not Found!')
+      throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
   }
 
   async subscriber() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const model = Subscriber
       .where('user_id', '=', this.id)
       .first()
 
     if (!model)
-      throw new Error('Model Relation Not Found!')
+      throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
   }
 
   async deployments() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('deployments')
       .where('user_id', '=', this.id)
@@ -629,7 +630,7 @@ export class UserModel {
 
   async userTeams() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
       .where('user_id', '=', this.id)
@@ -639,7 +640,7 @@ export class UserModel {
     const tableRelationIds = results.map(result => result.team_id)
 
     if (!tableRelationIds.length)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const relationResults = await Team.whereIn('id', tableRelationIds).get()
 

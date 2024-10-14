@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -132,7 +133,7 @@ export class SubscriberEmailModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No SubscriberEmailModel results found for query')
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -268,7 +269,7 @@ export class SubscriberEmailModel {
 
     const result = await db.insertInto('subscriber_emails')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as SubscriberEmailModel
 
@@ -278,7 +279,7 @@ export class SubscriberEmailModel {
   static async forceCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const result = await db.insertInto('subscriber_emails')
       .values(newSubscriberEmail)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as SubscriberEmailModel
 
@@ -317,7 +318,7 @@ export class SubscriberEmailModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -340,7 +341,7 @@ export class SubscriberEmailModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -378,7 +379,7 @@ export class SubscriberEmailModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No SubscriberEmailModel results found for query' }
+      throw new HttpError(404, 'No SubscriberEmailModel results found for query')
 
     return this.parseResult(new SubscriberEmailModel(model))
   }
@@ -450,7 +451,7 @@ export class SubscriberEmailModel {
 
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     if (this.id === undefined)
-      throw new Error('SubscriberEmail ID is undefined')
+      throw new HttpError(500, 'SubscriberEmail ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
@@ -468,7 +469,7 @@ export class SubscriberEmailModel {
 
   async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     if (this.id === undefined)
-      throw new Error('SubscriberEmail ID is undefined')
+      throw new HttpError(500, 'SubscriberEmail ID is undefined')
 
     await db.updateTable('subscriber_emails')
       .set(subscriberemail)
@@ -482,7 +483,7 @@ export class SubscriberEmailModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('SubscriberEmail data is undefined')
+      throw new HttpError(500, 'SubscriberEmail data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('subscriber_emails')
@@ -497,7 +498,7 @@ export class SubscriberEmailModel {
   // Method to delete (soft delete) the subscriberemail instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('SubscriberEmail ID is undefined')
+      throw new HttpError(500, 'SubscriberEmail ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

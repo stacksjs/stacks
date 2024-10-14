@@ -904,7 +904,7 @@ export async function generateModelString(
       relationMethods += `
       async ${relationName}() {
         if (this.id === undefined)
-          throw new Error('Relation Error!')
+          throw new HttpError(500, 'Relation Error!')
 
         const firstModel = await db.selectFrom('${throughTableRelation}')
           .where('${foreignKeyRelation}', '=', this.id)
@@ -912,7 +912,7 @@ export async function generateModelString(
           .executeTakeFirst()
 
         if (! firstModel)
-          throw new Error('Model Relation Not Found!')
+          throw new HttpError(500, 'Model Relation Not Found!')
 
         const finalModel = ${modelRelation}
           .where('${foreignKeyThroughRelation}', '=', firstModel.id)
@@ -928,7 +928,7 @@ export async function generateModelString(
       relationMethods += `
       async ${relationName}() {
         if (this.id === undefined)
-          throw new Error('Relation Error!')
+          throw new HttpError(500, 'Relation Error!')
 
         const results = await db.selectFrom('${tableRelation}')
           .where('${foreignKeyRelation}', '=', this.id)
@@ -944,13 +944,13 @@ export async function generateModelString(
       relationMethods += `
       async ${relationName}() {
         if (this.id === undefined)
-          throw new Error('Relation Error!')
+           throw new HttpError(500, 'Relation Error!')
 
         const model = ${modelRelation}
         .where('${foreignKeyRelation}', '=', this.id).first()
 
         if (! model)
-          throw new Error('Model Relation Not Found!')
+          throw new HttpError(500, 'Model Relation Not Found!')
 
         return model
       }\n\n`
@@ -962,14 +962,14 @@ export async function generateModelString(
       relationMethods += `
       async ${relationName}() {
         if (this.${foreignKeyRelation} === undefined)
-          throw new Error('Relation Error!')
+          throw new HttpError(500, 'Relation Error!')
 
         const model = await ${modelRelation}
           .where('id', '=', ${foreignKeyRelation})
           .first()
 
         if (! model)
-          throw new Error('Model Relation Not Found!')
+          throw new HttpError(500, 'Model Relation Not Found!')
 
         return model
       }\n\n`
@@ -982,7 +982,7 @@ export async function generateModelString(
       relationMethods += `
       async ${relationName}() {
         if (this.id === undefined)
-          throw new Error('Relation Error!')
+          throw new HttpError(500, 'Relation Error!')
 
         const results = await db.selectFrom('${pivotTable}')
           .where('${foreignKeyRelation}', '=', this.id)
@@ -992,7 +992,7 @@ export async function generateModelString(
           const tableRelationIds = results.map(result => result.${singular(tableRelation)}_id)
 
           if (! tableRelationIds.length)
-            throw new Error('Relation Error!')
+            throw new HttpError(500, 'Relation Error!')
 
           const relationResults = await ${modelRelation}.whereIn('id', tableRelationIds).get()
 
@@ -1123,8 +1123,8 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model.attributes))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { db } from '@stacksjs/database'
-    import { sql } from '@stacksjs/database'
+    import { db, sql } from '@stacksjs/database'
+    import { HttpError } from '@stacksjs/error-handling'
     import { dispatch } from '@stacksjs/events'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
     import { verifyTwoFactorCode } from '@stacksjs/auth'
@@ -1240,7 +1240,7 @@ export async function generateModelString(
         const model = await query.executeTakeFirst()
 
         if (model === undefined)
-          throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+          throw new HttpError(404, 'No ${modelName}Model results found for query')
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
@@ -1379,7 +1379,7 @@ export async function generateModelString(
 
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
 
         const model = await find(Number(result.insertId)) as ${modelName}Model
 
@@ -1391,7 +1391,7 @@ export async function generateModelString(
       static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const result = await db.insertInto('${tableName}')
           .values(new${modelName})
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
 
         const model = await find(Number(result.insertId)) as ${modelName}Model
 
@@ -1433,7 +1433,7 @@ export async function generateModelString(
         } else if (args.length === 3) {
             [column, operator, value] = args
         } else {
-            throw new Error("Invalid number of arguments")
+          throw new HttpError(500, "Invalid number of arguments")
         }
 
         this.query = this.query.where(column, operator, value)
@@ -1454,7 +1454,7 @@ export async function generateModelString(
         } else if (args.length === 3) {
             [column, operator, value] = args
         } else {
-            throw new Error("Invalid number of arguments")
+          throw new HttpError(500, "Invalid number of arguments")
         }
 
         instance.query = instance.query.where(column, operator, value)
@@ -1486,7 +1486,7 @@ export async function generateModelString(
         const model = await this.query.selectAll().executeTakeFirst()
 
         if (model === undefined)
-          throw { status: 404, message: 'No ${modelName}Model results found for query' }
+          throw new HttpError(404, 'No ${modelName}Model results found for query')
 
         return this.parseResult(new ${modelName}Model(model))
       }
@@ -1558,7 +1558,7 @@ export async function generateModelString(
 
       async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
         if (this.id === undefined)
-          throw new Error('${modelName} ID is undefined')
+          throw new HttpError(500, '${modelName} ID is undefined')
 
         const filteredValues = Object.fromEntries(
           Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
@@ -1571,15 +1571,14 @@ export async function generateModelString(
 
         const model = await this.find(Number(this.id))
 
-
-          ${mittUpdateStatement}
+        ${mittUpdateStatement}
 
         return model
       }
 
       async forceUpdate(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
         if (this.id === undefined)
-          throw new Error('${modelName} ID is undefined')
+          throw new HttpError(500, '${modelName} ID is undefined')
 
         await db.updateTable('${tableName}')
           .set(${formattedModelName})
@@ -1596,7 +1595,7 @@ export async function generateModelString(
 
       async save(): Promise<void> {
         if (!this)
-          throw new Error('${modelName} data is undefined')
+          throw new HttpError(500, '${modelName} data is undefined')
 
         if (this.id === undefined) {
           await db.insertInto('${tableName}')
@@ -1611,7 +1610,7 @@ export async function generateModelString(
       // Method to delete (soft delete) the ${formattedModelName} instance
       async delete(): Promise<void> {
           if (this.id === undefined)
-              throw new Error('${modelName} ID is undefined')
+              throw new HttpError(500, '${modelName} ID is undefined')
 
           ${mittDeleteFindStatement}
 

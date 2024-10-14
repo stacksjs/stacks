@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -128,7 +129,7 @@ export class ReleaseModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No ReleaseModel results found for query')
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -264,7 +265,7 @@ export class ReleaseModel {
 
     const result = await db.insertInto('releases')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as ReleaseModel
 
@@ -274,7 +275,7 @@ export class ReleaseModel {
   static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel> {
     const result = await db.insertInto('releases')
       .values(newRelease)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as ReleaseModel
 
@@ -313,7 +314,7 @@ export class ReleaseModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -336,7 +337,7 @@ export class ReleaseModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -374,7 +375,7 @@ export class ReleaseModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No ReleaseModel results found for query' }
+      throw new HttpError(404, 'No ReleaseModel results found for query')
 
     return this.parseResult(new ReleaseModel(model))
   }
@@ -446,7 +447,7 @@ export class ReleaseModel {
 
   async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Release ID is undefined')
+      throw new HttpError(500, 'Release ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(release).filter(([key]) => this.fillable.includes(key)),
@@ -464,7 +465,7 @@ export class ReleaseModel {
 
   async forceUpdate(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Release ID is undefined')
+      throw new HttpError(500, 'Release ID is undefined')
 
     await db.updateTable('releases')
       .set(release)
@@ -478,7 +479,7 @@ export class ReleaseModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('Release data is undefined')
+      throw new HttpError(500, 'Release data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('releases')
@@ -493,7 +494,7 @@ export class ReleaseModel {
   // Method to delete (soft delete) the release instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('Release ID is undefined')
+      throw new HttpError(500, 'Release ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

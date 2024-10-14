@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -137,7 +138,7 @@ export class ProjectModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No ProjectModel results found for query')
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -273,7 +274,7 @@ export class ProjectModel {
 
     const result = await db.insertInto('projects')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as ProjectModel
 
@@ -283,7 +284,7 @@ export class ProjectModel {
   static async forceCreate(newProject: NewProject): Promise<ProjectModel> {
     const result = await db.insertInto('projects')
       .values(newProject)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as ProjectModel
 
@@ -322,7 +323,7 @@ export class ProjectModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -345,7 +346,7 @@ export class ProjectModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -407,7 +408,7 @@ export class ProjectModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No ProjectModel results found for query' }
+      throw new HttpError(404, 'No ProjectModel results found for query')
 
     return this.parseResult(new ProjectModel(model))
   }
@@ -479,7 +480,7 @@ export class ProjectModel {
 
   async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Project ID is undefined')
+      throw new HttpError(500, 'Project ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(project).filter(([key]) => this.fillable.includes(key)),
@@ -497,7 +498,7 @@ export class ProjectModel {
 
   async forceUpdate(project: ProjectUpdate): Promise<ProjectModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Project ID is undefined')
+      throw new HttpError(500, 'Project ID is undefined')
 
     await db.updateTable('projects')
       .set(project)
@@ -511,7 +512,7 @@ export class ProjectModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('Project data is undefined')
+      throw new HttpError(500, 'Project data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('projects')
@@ -526,7 +527,7 @@ export class ProjectModel {
   // Method to delete (soft delete) the project instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('Project ID is undefined')
+      throw new HttpError(500, 'Project ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

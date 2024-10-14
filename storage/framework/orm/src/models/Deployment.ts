@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -151,7 +152,7 @@ export class DeploymentModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No DeploymentModel results found for query')
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -287,7 +288,7 @@ export class DeploymentModel {
 
     const result = await db.insertInto('deployments')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as DeploymentModel
 
@@ -297,7 +298,7 @@ export class DeploymentModel {
   static async forceCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const result = await db.insertInto('deployments')
       .values(newDeployment)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as DeploymentModel
 
@@ -336,7 +337,7 @@ export class DeploymentModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -359,7 +360,7 @@ export class DeploymentModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -445,7 +446,7 @@ export class DeploymentModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No DeploymentModel results found for query' }
+      throw new HttpError(404, 'No DeploymentModel results found for query')
 
     return this.parseResult(new DeploymentModel(model))
   }
@@ -517,7 +518,7 @@ export class DeploymentModel {
 
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Deployment ID is undefined')
+      throw new HttpError(500, 'Deployment ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
@@ -535,7 +536,7 @@ export class DeploymentModel {
 
   async forceUpdate(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Deployment ID is undefined')
+      throw new HttpError(500, 'Deployment ID is undefined')
 
     await db.updateTable('deployments')
       .set(deployment)
@@ -549,7 +550,7 @@ export class DeploymentModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('Deployment data is undefined')
+      throw new HttpError(500, 'Deployment data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('deployments')
@@ -564,7 +565,7 @@ export class DeploymentModel {
   // Method to delete (soft delete) the deployment instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('Deployment ID is undefined')
+      throw new HttpError(500, 'Deployment ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -586,14 +587,14 @@ export class DeploymentModel {
 
   async user() {
     if (this.deployment_id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const model = await User
       .where('id', '=', deployment_id)
       .first()
 
     if (!model)
-      throw new Error('Model Relation Not Found!')
+      throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
   }

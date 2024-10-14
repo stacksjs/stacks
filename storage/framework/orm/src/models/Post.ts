@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -136,7 +137,7 @@ export class PostModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No PostModel results found for query')
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -272,7 +273,7 @@ export class PostModel {
 
     const result = await db.insertInto('posts')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as PostModel
 
@@ -282,7 +283,7 @@ export class PostModel {
   static async forceCreate(newPost: NewPost): Promise<PostModel> {
     const result = await db.insertInto('posts')
       .values(newPost)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as PostModel
 
@@ -321,7 +322,7 @@ export class PostModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -344,7 +345,7 @@ export class PostModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -390,7 +391,7 @@ export class PostModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No PostModel results found for query' }
+      throw new HttpError(404, 'No PostModel results found for query')
 
     return this.parseResult(new PostModel(model))
   }
@@ -462,7 +463,7 @@ export class PostModel {
 
   async update(post: PostUpdate): Promise<PostModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Post ID is undefined')
+      throw new HttpError(500, 'Post ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(post).filter(([key]) => this.fillable.includes(key)),
@@ -480,7 +481,7 @@ export class PostModel {
 
   async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
     if (this.id === undefined)
-      throw new Error('Post ID is undefined')
+      throw new HttpError(500, 'Post ID is undefined')
 
     await db.updateTable('posts')
       .set(post)
@@ -494,7 +495,7 @@ export class PostModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('Post data is undefined')
+      throw new HttpError(500, 'Post data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('posts')
@@ -509,7 +510,7 @@ export class PostModel {
   // Method to delete (soft delete) the post instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('Post ID is undefined')
+      throw new HttpError(500, 'Post ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -531,14 +532,14 @@ export class PostModel {
 
   async user() {
     if (this.post_id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const model = await User
       .where('id', '=', post_id)
       .first()
 
     if (!model)
-      throw new Error('Model Relation Not Found!')
+      throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
   }

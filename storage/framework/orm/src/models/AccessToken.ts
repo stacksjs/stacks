@@ -1,6 +1,7 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import Team from './Team'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
@@ -142,7 +143,7 @@ export class AccessTokenModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new Error(JSON.stringify({ status: 404, message: 'No model results found for query' }))
+      throw new HttpError(404, 'No AccessTokenModel results found for query')
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -278,7 +279,7 @@ export class AccessTokenModel {
 
     const result = await db.insertInto('personal_access_tokens')
       .values(filteredValues)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as AccessTokenModel
 
@@ -288,7 +289,7 @@ export class AccessTokenModel {
   static async forceCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const result = await db.insertInto('personal_access_tokens')
       .values(newAccessToken)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
 
     const model = await find(Number(result.insertId)) as AccessTokenModel
 
@@ -327,7 +328,7 @@ export class AccessTokenModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     this.query = this.query.where(column, operator, value)
@@ -350,7 +351,7 @@ export class AccessTokenModel {
       [column, operator, value] = args
     }
     else {
-      throw new Error('Invalid number of arguments')
+      throw new HttpError(500, 'Invalid number of arguments')
     }
 
     instance.query = instance.query.where(column, operator, value)
@@ -412,7 +413,7 @@ export class AccessTokenModel {
     const model = await this.query.selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw { status: 404, message: 'No AccessTokenModel results found for query' }
+      throw new HttpError(404, 'No AccessTokenModel results found for query')
 
     return this.parseResult(new AccessTokenModel(model))
   }
@@ -484,7 +485,7 @@ export class AccessTokenModel {
 
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
     if (this.id === undefined)
-      throw new Error('AccessToken ID is undefined')
+      throw new HttpError(500, 'AccessToken ID is undefined')
 
     const filteredValues = Object.fromEntries(
       Object.entries(accesstoken).filter(([key]) => this.fillable.includes(key)),
@@ -502,7 +503,7 @@ export class AccessTokenModel {
 
   async forceUpdate(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
     if (this.id === undefined)
-      throw new Error('AccessToken ID is undefined')
+      throw new HttpError(500, 'AccessToken ID is undefined')
 
     await db.updateTable('personal_access_tokens')
       .set(accesstoken)
@@ -516,7 +517,7 @@ export class AccessTokenModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new Error('AccessToken data is undefined')
+      throw new HttpError(500, 'AccessToken data is undefined')
 
     if (this.id === undefined) {
       await db.insertInto('personal_access_tokens')
@@ -531,7 +532,7 @@ export class AccessTokenModel {
   // Method to delete (soft delete) the accesstoken instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new Error('AccessToken ID is undefined')
+      throw new HttpError(500, 'AccessToken ID is undefined')
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -553,14 +554,14 @@ export class AccessTokenModel {
 
   async team() {
     if (this.id === undefined)
-      throw new Error('Relation Error!')
+      throw new HttpError(500, 'Relation Error!')
 
     const model = Team
       .where('accesstoken_id', '=', this.id)
       .first()
 
     if (!model)
-      throw new Error('Model Relation Not Found!')
+      throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
   }
