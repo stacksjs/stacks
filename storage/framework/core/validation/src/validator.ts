@@ -1,5 +1,6 @@
 import type { Model, VineType } from '@stacksjs/types'
 import type { SchemaTypes } from '@vinejs/vine/types'
+import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { snakeCase } from '@stacksjs/strings'
 import { reportError, schema, SimpleMessagesProvider, VineError } from './'
@@ -54,7 +55,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     if (error instanceof VineError.E_VALIDATION_ERROR)
       reportError(error.messages)
 
-    throw { status: 422, errors: error.messages }
+    throw new HttpError(422, JSON.stringify(error.messages))
   }
 }
 
@@ -88,6 +89,6 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     if (error instanceof VineError.E_VALIDATION_ERROR)
       reportError(error.messages)
 
-    throw { status: 422, errors: error.messages }
+    throw new HttpError(422, JSON.stringify(error.messages))
   }
 }

@@ -1,6 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 import type { Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
-import { handleError } from '@stacksjs/error-handling'
+import { handleError, HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
@@ -321,11 +321,13 @@ export class Router implements RouterInterface {
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {
-      console.log(error)
-      if (!error.status)
-        return { status: 500, errors: error }
+      if (error.status === 422)
+        return { status: 422, errors: JSON.parse(error.message) }
 
-      return { status: error.status, errors: error }
+      if (!error.status)
+        return { status: 500, errors: error.message }
+
+      return { status: error.status, errors: error.message }
     }
   }
 

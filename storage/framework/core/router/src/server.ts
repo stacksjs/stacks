@@ -137,15 +137,6 @@ type CallbackWithStatus = Route['callback'] & { status: number }
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
   const foundCallback: CallbackWithStatus = await route.resolveCallback(foundRoute.callback)
 
-  //   return new Response(`<html><body><h1>Error</h1><p>${foundCallback}</p><pre></pre></body></html>`, {
-  //   headers: {
-  //     'Content-Type': 'text/html',
-  //     'Access-Control-Allow-Origin': '*',
-  //     'Access-Control-Allow-Headers': '*',
-  //   },
-  //   status: 500,
-  // })
-
   const middlewarePayload = await executeMiddleware(foundRoute)
 
   if (
@@ -264,6 +255,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       const { status, ...rest } = await foundCallback
 
       const { errors } = rest
+
       return new Response(JSON.stringify(errors), {
         headers: {
           'Content-Type': 'application/json',
@@ -276,8 +268,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
     if (foundCallback.status === 403) {
       const { status, ...rest } = await foundCallback
-
-      return new Response(JSON.stringify(rest), {
+      const { errors } = rest
+      return new Response(JSON.stringify(errors), {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
@@ -290,7 +282,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     if (foundCallback.status === 422) {
       const { status, ...rest } = await foundCallback
 
-      return new Response(JSON.stringify(rest), {
+      const { errors } = rest
+      return new Response(JSON.stringify(errors), {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
