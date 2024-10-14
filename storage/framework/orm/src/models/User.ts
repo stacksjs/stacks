@@ -1,5 +1,4 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-import { generateTwoFactorSecret, verifyTwoFactorCode } from '@stacksjs/auth'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { dispatch } from '@stacksjs/events'
@@ -565,7 +564,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new Error('User ID is undefined')
 
-    const model = await instance.find(id)
+    const model = await this.find(this.id)
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -709,23 +708,6 @@ export class UserModel {
     }
 
     return model
-  }
-
-  async generateTwoFactorForModel() {
-    const secret = generateTwoFactorSecret()
-
-    await this.update({ two_factor_secret: secret })
-  }
-
-  verifyTwoFactorCode(code: string): boolean {
-    const modelTwoFactorSecret = this.two_factor_secret
-    let isValid = false
-
-    if (typeof modelTwoFactorSecret === 'string') {
-      isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
-    }
-
-    return isValid
   }
 }
 

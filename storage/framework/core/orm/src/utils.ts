@@ -843,6 +843,7 @@ export async function generateModelString(
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
+  let mittDeleteStaticFindStatement = ``
   let mittDeleteFindStatement = ``
 
   const relations = await getRelations(model, modelName)
@@ -861,7 +862,8 @@ export async function generateModelString(
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
 
-      mittDeleteFindStatement += 'const model = await instance.find(id)'
+      mittDeleteStaticFindStatement += 'const model = await instance.find(id)'
+      mittDeleteFindStatement += 'const model = await this.find(this.id)'
     }
   }
 
@@ -874,7 +876,7 @@ export async function generateModelString(
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model);`
     }
     if (observer.includes('delete')) {
-      mittDeleteFindStatement += 'const model = await instance.find(id)'
+      mittDeleteStaticFindStatement += 'const model = await instance.find(id)'
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model);`
     }
   }
@@ -1033,25 +1035,6 @@ export async function generateModelString(
   if (usePasskey) {
     declareFields += 'public public_passkey: string | undefined \n'
     constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
-
-    twoFactorStatements += `
-    async generateTwoFactorForModel() {
-      const secret = generateTwoFactorSecret()
-
-      await this.update({ 'two_factor_secret': secret })
-    }
-
-    verifyTwoFactorCode(code: string): boolean {
-      const modelTwoFactorSecret = this.two_factor_secret
-      let isValid = false
-
-      if (typeof modelTwoFactorSecret === 'string') {
-        isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
-      }
-
-      return isValid
-    }
-  `
   }
 
   jsonFields += '\nid: this.id,\n'
@@ -1420,7 +1403,7 @@ export async function generateModelString(
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
         const instance = new ${modelName}Model(null)
-        ${mittDeleteFindStatement}
+        ${mittDeleteStaticFindStatement}
 
         if (instance.softDeletes) {
         await db.updateTable('${tableName}')

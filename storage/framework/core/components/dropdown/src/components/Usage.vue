@@ -35,7 +35,7 @@ async function handleCopyCode() {
     <p class="my-3 text-base">
       Render the toaster in the root of your app.
     </p>
-    <div class="group code-block relative">
+    <div class="code-block group relative">
       <Highlight
         class-name="rounded-md text-xs"
         language="xml"
