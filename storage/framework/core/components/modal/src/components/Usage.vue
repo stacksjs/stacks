@@ -7,14 +7,22 @@ import CopyIcon from './icons/CopyIcon.vue'
 
 const code = `<!-- App.vue -->
 <script lang="ts" setup>
-import { modal, useModal } from '@stacksjs/modal'
+import { Modal } from '@stacksjs/modal'
+
+const visible = ref(false)
+
+const handleClose = () => {
+  visible.value = false
+}
 <\/script>
 
 <template>
   <!-- ... -->
-  <Notification />
-  <button @click="() => notification('My first notification')">
-    Give me a notification
+  <Modal :visible="visible" @close="handleClose">
+    <div>Hello</div>
+  </Modal>
+  <button @click="visible = true">
+    Open Modal
   </button>
 </template>
 `
@@ -37,7 +45,7 @@ async function handleCopyCode() {
     </p>
     <div class="group code-block relative">
       <Highlight
-        class-name="rounded-md text-xs"
+        class-name="hightlight-rounded-md text-xs"
         language="xml"
         :autodetect="false"
         :code="code"

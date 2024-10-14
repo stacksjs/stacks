@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Position, Theme } from './types'
 import { ref } from 'vue'
-// import { Notification } from '.'
+import { Modal } from './components'
 import Expand from './components/Expand.vue'
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
@@ -22,6 +22,12 @@ const position = ref<Position>('top-right')
 const richColors = ref(false)
 const closeButton = ref(false)
 const theme = ref<Theme>('light')
+
+const visible = ref(true)
+
+const handleClose = () => {
+  visible.value = false
+}
 </script>
 
 <template>
@@ -36,26 +42,16 @@ const theme = ref<Theme>('light')
       >
         <Installation />
         <Usage />
-        <Types />
-        <Pos v-model:position="position" />
-        <Expand v-model:expand="expand" />
-        <Theming @set-theme="(newTheme: Theme) => (theme = newTheme)" />
-        <Styling />
-        <Others
-          @set-rich-colors="richColors = true"
-          @set-close-button="closeButton = true"
-        />
+
+        <button @click="visible = true">Open Modal</button>
+
       </main>
 
-      <Footer />
+      <!-- <Footer /> -->
     </div>
 
-    <!-- <Notification
-      :position="position"
-      :expand="expand"
-      :rich-colors="richColors"
-      :close-button="closeButton"
-      :theme="theme"
-    /> -->
+    <Modal :visible="visible" @close="handleClose">
+      <div>Hello</div>
+    </Modal>
   </div>
 </template>

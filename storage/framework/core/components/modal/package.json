@@ -30,8 +30,8 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist", "src"],
   "scripts": {
-    "dev": "bunx --bun vite",
-    "build": "echo 'vite build --mode lib && bun run build:types'",
+    "dev": "bunx --bun vite -c ./vite.config.ts",
+    "build": "bunx --bun vite build --mode lib",
     "build:demo": "bunx --bun vite build",
     "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
     "preview": "bunx --bun vite preview"
@@ -43,10 +43,12 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.47.9",
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.5.1",
     "clean-css": "^5.3.3",
+    "unocss": "0.61.0",
     "unplugin-icons": "^0.19.3"
   }
 }

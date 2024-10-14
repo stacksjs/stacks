@@ -22,6 +22,7 @@ declare module 'vue' {
     Installation: typeof import('./src/components/Installation.vue')['default']
     Loader: typeof import('./src/components/icons/Loader.vue')['default']
     'Mdi:heart': typeof import('~icons/mdi/heart')['default']
+    Modal: typeof import('./src/components/Modal.vue')['default']
     Others: typeof import('./src/components/Others.vue')['default']
     Position: typeof import('./src/components/Position.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

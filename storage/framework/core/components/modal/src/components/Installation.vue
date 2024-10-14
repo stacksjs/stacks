@@ -1,11 +1,10 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-// import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 
-const code = `bun install @stacksjs/notification`
+const code = `bun install @stacksjs/modal`
 
 const showCheckIcon = ref(false)
 
