@@ -1240,8 +1240,8 @@ export async function generateModelString(
         const model = await query.executeTakeFirst()
 
         if (model === undefined)
-          throw new HttpError(404, 'No ${modelName}Model results found for query')
-
+          throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
+        
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
         return instance.parseResult(new ${modelName}Model(model))

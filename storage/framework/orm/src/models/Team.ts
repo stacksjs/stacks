@@ -160,7 +160,7 @@ export class TeamModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No TeamModel results found for query')
+      throw new HttpError(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 

@@ -129,7 +129,7 @@ export class ReleaseModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No ReleaseModel results found for query')
+      throw new HttpError(404, `No ReleaseModel results for ${id}`)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 

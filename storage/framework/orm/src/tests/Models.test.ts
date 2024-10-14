@@ -1,6 +1,6 @@
 import type { UserModel } from '../models/User'
-import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
+import { beforeEach, describe, expect, it } from 'bun:test'
 import User from '../models/User'
 
 beforeEach(async () => {
@@ -120,7 +120,7 @@ describe('Models test', () => {
   })
 
   it('should throw an exception when record is not found by ID in models', async () => {
-    await expect(User.findOrFail(99999)).rejects.toThrowError('No model results found for 99999')
+    await expect(User.findOrFail(99999)).rejects.toThrowError('No UserModel results for 99999')
   })
 
   it('should fetch the last record in models', async () => {

@@ -137,7 +137,7 @@ export class PostModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No PostModel results found for query')
+      throw new HttpError(404, `No PostModel results for ${id}`)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 

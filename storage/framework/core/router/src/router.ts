@@ -1,6 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 import type { Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
-import { handleError, HttpError } from '@stacksjs/error-handling'
+import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { kebabCase, pascalCase } from '@stacksjs/strings'

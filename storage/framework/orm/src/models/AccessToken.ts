@@ -143,7 +143,7 @@ export class AccessTokenModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No AccessTokenModel results found for query')
+      throw new HttpError(404, `No AccessTokenModel results for ${id}`)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 

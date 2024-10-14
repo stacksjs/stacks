@@ -152,7 +152,7 @@ export class DeploymentModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No DeploymentModel results found for query')
+      throw new HttpError(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 

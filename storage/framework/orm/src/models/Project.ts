@@ -138,7 +138,7 @@ export class ProjectModel {
     const model = await query.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No ProjectModel results found for query')
+      throw new HttpError(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
