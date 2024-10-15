@@ -33,9 +33,9 @@ export default new Action({
         expectedChallenge: body.challenge,
         expectedOrigin: 'http://localhost:3333',
         expectedRPID: 'localhost',
-        authenticator: {
-          credentialID: userPasskey?.id,
-          credentialPublicKey: uint8Array,
+        credential: {
+          id: userPasskey?.id,
+          publicKey: uint8Array,
           counter: userPasskey.counter,
           transports: ['internal'],
         },

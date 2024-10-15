@@ -8,4 +8,4 @@ const adapter = new AwsS3StorageAdapter(client, {
   prefix: '{optional-path-prefix}',
 })
 
-export const storage: FileStorage = new FileStorage(adapter)
+export const awsStorage: FileStorage = new FileStorage(adapter)

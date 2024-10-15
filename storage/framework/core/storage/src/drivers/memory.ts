@@ -3,4 +3,4 @@ import { InMemoryStorageAdapter } from '@flystorage/in-memory'
 
 const adapter = new InMemoryStorageAdapter()
 
-export const storage: FileStorage = new FileStorage(adapter)
+export const memoryStorage: FileStorage = new FileStorage(adapter)

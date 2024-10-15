@@ -51,7 +51,7 @@ export async function setCurrentRegistrationOptions(
     user_id: user.id as number,
     webauthn_user_id: user.email || '',
     counter: verified.registrationInfo?.credential.counter || 0,
-    credential_type: verified.registrationInfo?.c || '',
+    credential_type: verified.registrationInfo?.credentialType || '',
     device_type: verified.registrationInfo?.credentialDeviceType || '',
     backup_eligible: false,
     backup_status: verified.registrationInfo?.credentialBackedUp || false,
