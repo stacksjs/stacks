@@ -36,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@simplewebauthn/browser": "^10.0.0",
+    "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0"
   },
   "devDependencies": {
