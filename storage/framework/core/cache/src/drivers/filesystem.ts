@@ -1,4 +1,4 @@
-import type { CacheDriver } from './type'
+import type { CacheDriver } from '@stacksjs/types'
 import { BentoCache, bentostore } from 'bentocache'
 import { fileDriver } from 'bentocache/drivers/file'
 

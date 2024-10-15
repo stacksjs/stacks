@@ -1,4 +1,4 @@
-import type { CacheDriver } from './type'
+import type { CacheDriver } from '@stacksjs/types'
 import process from 'node:process'
 import { BentoCache, bentostore } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
