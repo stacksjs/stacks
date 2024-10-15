@@ -15,7 +15,7 @@ export interface StorageOptions {
 export type StorageConfig = Partial<StorageOptions>
 
 export interface StorageDriver {
-  list: (path: string, options?: any) => Promise<any>
+  list: (path: string, options?: any) => DirectoryListing
   changeVisibility: (path: string, visibility: string) => Promise<void>
   visibility: (path: string) => Promise<string>
   fileExists: (path: string) => Promise<boolean>
@@ -27,4 +27,10 @@ export interface StorageDriver {
   lastModified: (path: string) => Promise<number>
   fileSize: (path: string) => Promise<number>
   read: (path: string) => Promise<FileContents>
+  deleteFile: (path: string) => Promise<void>
+  copyFile: (from: string, to: string) => Promise<void>
+  moveFile: (from: string, to: string) => Promise<void>
+  stat: (path: string) => Promise<StatEntry>
+  createDirectory: (path: string) => Promise<void>
+  write: (path: string, contents: FileContents) => Promise<void>
 }
