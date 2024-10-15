@@ -1,7 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 
-type ActionPath = string // TODO: narrow this by automating its generation
-
+type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
 

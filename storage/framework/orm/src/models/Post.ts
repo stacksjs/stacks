@@ -7,7 +7,6 @@ import User from './User'
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
 
-// TODO: we need an action that auto-generates these table interfaces
 export interface PostsTable {
   id: Generated<number>
   title?: string

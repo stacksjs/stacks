@@ -46,12 +46,12 @@ export async function setCurrentRegistrationOptions(
   verified: VerifiedRegistrationResponse,
 ): Promise<void> {
   const passkeyData: PasskeyInsertable = {
-    id: verified.registrationInfo?.credentialID || '',
-    cred_public_key: JSON.stringify(verified.registrationInfo?.credentialPublicKey), // Convert to JSON string if needed
+    id: verified.registrationInfo?.credential.id || '',
+    cred_public_key: JSON.stringify(verified.registrationInfo?.credential.publicKey), // Convert to JSON string if needed
     user_id: user.id as number,
     webauthn_user_id: user.email || '',
-    counter: verified.registrationInfo?.counter || 0,
-    credential_type: verified.registrationInfo?.credentialType || '',
+    counter: verified.registrationInfo?.credential.counter || 0,
+    credential_type: verified.registrationInfo?.c || '',
     device_type: verified.registrationInfo?.credentialDeviceType || '',
     backup_eligible: false,
     backup_status: verified.registrationInfo?.credentialBackedUp || false,

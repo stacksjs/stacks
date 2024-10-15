@@ -1136,7 +1136,6 @@ export async function generateModelString(
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
 
-    // TODO: we need an action that auto-generates these table interfaces
     export interface ${formattedTableName}Table {
       id: Generated<number>
      ${fieldString}
