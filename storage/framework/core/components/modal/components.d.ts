@@ -32,8 +32,6 @@ declare module 'vue' {
     Styling: typeof import('./src/components/Styling.vue')['default']
     SuccessIcon: typeof import('./src/components/icons/SuccessIcon.vue')['default']
     Theming: typeof import('./src/components/Theming.vue')['default']
-    Toast: typeof import('./src/components/Toast.vue')['default']
-    Toaster: typeof import('./src/components/Toaster.vue')['default']
     Types: typeof import('./src/components/Types.vue')['default']
     Usage: typeof import('./src/components/Usage.vue')['default']
     WarningIcon: typeof import('./src/components/icons/WarningIcon.vue')['default']

@@ -60,3 +60,7 @@
     </div>
   </footer>
 </template>
+
+<style scoped>
+/* @unocss-placeholder  */
+</style>

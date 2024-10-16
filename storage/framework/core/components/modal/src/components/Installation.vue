@@ -38,3 +38,7 @@ async function handleCopyCode() {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* @unocss-placeholder */
+</style>

@@ -41,7 +41,7 @@ async function handleCopyCode() {
       Usage
     </h1>
     <p class="my-3 text-base">
-      Render the toaster in the root of your app.
+      Render the modal in the root of your app.
     </p>
     <div class="group code-block relative">
       <Highlight
@@ -62,3 +62,7 @@ async function handleCopyCode() {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* @unocss-placeholder */
+</style>

@@ -23,7 +23,9 @@ export default defineConfig(({ mode }) => {
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
-    UnoCSS(),
+    UnoCSS({
+      mode: 'shadow-dom',
+    }),
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
