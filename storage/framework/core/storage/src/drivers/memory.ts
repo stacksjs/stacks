@@ -2,6 +2,8 @@ import type { ChecksumOptions, DirectoryListing, FileContents, MimeTypeOptions, 
 
 import type { StorageDriver } from '@stacksjs/types'
 
+import type { Buffer } from 'node:buffer'
+
 import { FileStorage } from '@flystorage/file-storage'
 import { InMemoryStorageAdapter } from '@flystorage/in-memory'
 
@@ -80,6 +82,21 @@ export const memory: StorageDriver = {
 
   async read(path: string): Promise<FileContents> {
     const contents = await localStorage.read(path)
+
+    return contents
+  },
+  async readToString(path: string): Promise<string> {
+    const contents = await localStorage.readToString(path)
+
+    return contents
+  },
+  async readToBuffer(path: string): Promise<Buffer> {
+    const contents = await localStorage.readToBuffer(path)
+
+    return contents
+  },
+  async readToUint8Array(path: string): Promise<Uint8Array> {
+    const contents = await localStorage.readToUint8Array(path)
 
     return contents
   },

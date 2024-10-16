@@ -1,13 +1,14 @@
 import type { ChecksumOptions, DirectoryListing, FileContents, MimeTypeOptions, PublicUrlOptions, StatEntry, TemporaryUrlOptions } from '@flystorage/file-storage'
 import type { StorageDriver } from '@stacksjs/types'
 
+import type { Buffer } from 'node:buffer'
 import { resolve } from 'node:path'
 
 import process from 'node:process'
 import { FileStorage } from '@flystorage/file-storage'
 import { LocalStorageAdapter } from '@flystorage/local-fs'
 
-const rootDirectory = resolve(process.cwd(), 'my-files')
+const rootDirectory = resolve(process.cwd())
 const adapter = new LocalStorageAdapter(rootDirectory)
 
 export const localStorage: FileStorage = new FileStorage(adapter)
@@ -83,6 +84,22 @@ export const local: StorageDriver = {
 
   async read(path: string): Promise<FileContents> {
     const contents = await localStorage.read(path)
+
+    return contents
+  },
+
+  async readToString(path: string): Promise<string> {
+    const contents = await localStorage.readToString(path)
+
+    return contents
+  },
+  async readToBuffer(path: string): Promise<Buffer> {
+    const contents = await localStorage.readToBuffer(path)
+
+    return contents
+  },
+  async readToUint8Array(path: string): Promise<Uint8Array> {
+    const contents = await localStorage.readToUint8Array(path)
 
     return contents
   },
