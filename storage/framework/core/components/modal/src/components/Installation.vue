@@ -10,7 +10,6 @@ const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  // notification('Copied to your clipboard!')
 }
 </script>
 
