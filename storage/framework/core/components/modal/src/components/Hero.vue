@@ -1,5 +1,12 @@
 <script lang="ts" setup>
-// import { notification } from '../'
+
+const emit = defineEmits(['open'])
+
+
+function handleOpen() {
+  emit('open', true)
+}
+
 </script>
 
 <template>
@@ -20,13 +27,7 @@
     <div class="flex gap-2">
       <button
         class="button btn-primary"
-        @click="
-          () => {
-            // notification('stacks/notification', {
-            //   description: 'An opinionated toast component for Stacks.',
-            // })
-          }
-        "
+        @click="handleOpen"
       >
         Render a Modal
       </button>

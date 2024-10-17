@@ -5,41 +5,60 @@ import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
 
-const currentAction = ref('all')
+const currentAction = ref('default')
 const showCheckIcon = ref(false)
+const visible = ref(false)
+
+const handleClose = () => {
+  visible.value = false
+}
 
 const renderedCode = computed(() => {
-  return currentAction.value === 'all'
-    ? `<Notification
-  :toastOptions="{
-    style: { background: '#fda4af' },
-    class: 'my-toast',
-    descriptionClass: 'my-toast-description'
-  }"
-/>`
-    : `notification('Event has been created', {
-  style: {
-    background: '#6ee7b7'
-  },
-  class: 'my-toast',
-  descriptionClass: 'my-toast-description'
-})`
+  if (currentAction.value === 'default') {
+    return `<Modal :visible="visible" @close="handleClose">
+    <div>
+      <p class="text-sm text-gray-500">
+        Here is the content of the modal
+      </p>
+    </div>
+</Modal>`
+  }
+
+  if (currentAction.value === 'close') {
+    return `<Modal close-button :visible="visible" @close="handleClose">
+    <div>
+      <p class="text-sm text-gray-500">
+        Here is the content of the modal
+      </p>
+    </div>
+</Modal>`
+  }
+
+  if (currentAction.value === 'header') {
+    return `<Modal :visible="visible" @close="handleClose">
+    <template v-slot:header>
+      <h1 class="text-lg font-semibold">
+        Greetings
+      </h1>
+    </template>
+    <div>
+      <p class="text-sm text-gray-500">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
+      </p>
+    </div>
+</Modal>`
+  }
+
+  return ``
 })
 
 function handleClick(action: string) {
   currentAction.value = action
-  // notification('Event has been created', {
-  //   style: {
-  //     background: currentAction.value === 'all' ? '#fda4af' : '#6ee7b7',
-  //   },
-  //   class: 'my-toast',
-  //   descriptionClass: 'my-toast-description',
-  // })
+  visible.value = true
 }
 
 async function handleCopyCode() {
   await useCopyCode({ code: renderedCode.value, checkIconRef: showCheckIcon })
-  // notification('Copied to your clipboard!')
 }
 </script>
 
@@ -49,31 +68,36 @@ async function handleCopyCode() {
       Styling
     </h1>
     <p class="my-3 text-base">
-      You can style your toasts globally with the
-      <code class="mx-1 rounded-md p-1 text-xs !bg-neutral-200/66">
-        toastOptions
-      </code>
-      prop in the Toaster component.
+      You can style your modal globally with the prop in the Modal component.
     </p>
     <div class="mb-4 flex gap-3 overflow-auto">
       <button
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentAction === 'all',
+          'bg-neutral-200/50 border-neutral-400/50': currentAction === 'default',
         }"
-        @click="(e) => handleClick('all')"
+        @click="handleClick('default')"
       >
-        For all toasts
+        Default
+      </button>
+      <button
+        class="btn-default"
+        :class="{
+          'bg-neutral-200/50 border-neutral-400/50': currentAction === 'close',
+        }"
+        @click="handleClick('close')"
+      >
+        Modal with close button
       </button>
       <button
         class="btn-default"
         :class="{
           'bg-neutral-200/50 border-neutral-400/50':
-            currentAction === 'individual',
+            currentAction === 'header',
         }"
-        @click="(e) => handleClick('individual')"
+        @click="handleClick('header')"
       >
-        For individual toast
+        Modal with header
       </button>
     </div>
     <div class="code-block group relative">
@@ -93,5 +117,50 @@ async function handleCopyCode() {
         <CopyIcon v-else />
       </button>
     </div>
+
+    <Modal v-if="currentAction === 'default'" :visible="visible" @close="handleClose">
+      <div>
+        <p class="text-sm text-gray-500">
+          Here is the content of the modal
+        </p>
+      </div>
+    </Modal>
+
+    <Modal v-if="currentAction === 'close'" close-button :visible="visible" @close="handleClose">
+      <div>
+        <p class="text-sm text-gray-500">
+          Here is the content of the modal
+        </p>
+      </div>
+    </Modal>
+
+    <Modal v-if="currentAction === 'header'" :visible="visible" @close="handleClose">
+      <template #header>
+        <h1 class="text-lg font-semibold">
+          Greetings
+        </h1>
+      </template>
+
+      <div>
+        <div class="sm:flex">
+          <div class="mt-3 sm:mt-0">
+            <div class="mt-2">
+              <p class="text-sm text-gray-500">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5 justify-center sm:mt-4 sm:flex sm:flex-row-reverse">
+          <button type="button" class="w-full inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="handleClose">
+            Close
+          </button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
+
+<style scoped>
+/* @unocss-placeholder */
+</style>

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-// import { notification } from '../'
+
 import { useCopyCode } from '../composables/useCopyCode'
 import CheckIcon from './icons/CheckIcon.vue'
 import CopyIcon from './icons/CopyIcon.vue'
@@ -11,6 +11,7 @@ import { Modal } from '@stacksjs/modal'
 
 const visible = ref(false)
 
+
 const handleClose = () => {
   visible.value = false
 }
@@ -18,9 +19,10 @@ const handleClose = () => {
 
 <template>
   <!-- ... -->
-  <Modal :visible="visible" @close="handleClose">
-    <div>Hello</div>
+  <Modal close-button :visible="visible" @close="handleClose">
+    <div>Here is the content of the modal</div>
   </Modal>
+
   <button @click="visible = true">
     Open Modal
   </button>
@@ -31,7 +33,6 @@ const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  // notification('Copied to your clipboard!')
 }
 </script>
 
@@ -64,5 +65,5 @@ async function handleCopyCode() {
 </template>
 
 <style scoped>
-/* @unocss-placeholder */
+/* @unocss-placeholder  */
 </style>

@@ -13,7 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits<(e: 'update:position', position: Position) => void>()
 
-const positions = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as const
+const toastPositions = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as const
 
 const renderedCode = computed(() => {
   return `<Notification position="${props.position}" />`
@@ -50,15 +50,15 @@ async function handleCopyCode() {
     </p>
     <div class="mb-4 flex gap-3 overflow-auto">
       <button
-        v-for="position in positions"
-        :key="position"
+        v-for="toastPosition in toastPositions"
+        :key="toastPosition"
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': props.position === position,
+          'bg-neutral-200/50 border-neutral-400/50': props.position === toastPosition,
         }"
-        @click="() => handleChangePosition(position)"
+        @click="() => handleChangePosition(toastPosition)"
       >
-        {{ position }}
+        {{ toastPosition }}
       </button>
     </div>
     <div class="group code-block relative">

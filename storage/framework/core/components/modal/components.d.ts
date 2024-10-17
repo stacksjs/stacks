@@ -7,8 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    'Carbon:cafe': typeof import('~icons/carbon/cafe')['default']
-    'Carbon:logoTwitter': typeof import('~icons/carbon/logo-twitter')['default']
     CheckIcon: typeof import('./src/components/icons/CheckIcon.vue')['default']
     CloseIcon: typeof import('./src/components/icons/CloseIcon.vue')['default']
     CopyIcon: typeof import('./src/components/icons/CopyIcon.vue')['default']
@@ -21,9 +19,7 @@ declare module 'vue' {
     InfoIcon: typeof import('./src/components/icons/InfoIcon.vue')['default']
     Installation: typeof import('./src/components/Installation.vue')['default']
     Loader: typeof import('./src/components/icons/Loader.vue')['default']
-    'Mdi:heart': typeof import('~icons/mdi/heart')['default']
     Modal: typeof import('./src/components/Modal.vue')['default']
-    Others: typeof import('./src/components/Others.vue')['default']
     Position: typeof import('./src/components/Position.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -31,8 +27,6 @@ declare module 'vue' {
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     Styling: typeof import('./src/components/Styling.vue')['default']
     SuccessIcon: typeof import('./src/components/icons/SuccessIcon.vue')['default']
-    Theming: typeof import('./src/components/Theming.vue')['default']
-    Types: typeof import('./src/components/Types.vue')['default']
     Usage: typeof import('./src/components/Usage.vue')['default']
     WarningIcon: typeof import('./src/components/icons/WarningIcon.vue')['default']
   }

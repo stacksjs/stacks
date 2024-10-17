@@ -1,5 +1,7 @@
 <script setup lang="ts">
 defineProps<{ msg?: string }>()
+
+defineEmits(['closeToast'])
 </script>
 
 <template>
