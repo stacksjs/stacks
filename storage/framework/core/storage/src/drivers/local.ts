@@ -38,7 +38,7 @@ export const local: StorageDriver = {
     return await localStorage.stat(path)
   },
 
-  list(path: string, options: { deep: boolean }): DirectoryListing {
+  list(path: string, options: { deep: false }): DirectoryListing {
     return localStorage.list(path, options)
   },
 
