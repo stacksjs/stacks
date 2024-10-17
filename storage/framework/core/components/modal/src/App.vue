@@ -2,8 +2,8 @@
 import { defineCustomElement, ref } from 'vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
-import Usage from './components/Usage.vue'
 import Styling from './components/Styling.vue'
+import Usage from './components/Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()
@@ -39,7 +39,7 @@ defineCustomElement({
       </main>
 
       <Modal close-button :visible="visible" @close="handleClose">
-        <template v-slot:header>
+        <template #header>
           <h2>
             Modal with title
           </h2>

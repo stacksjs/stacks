@@ -1,12 +1,9 @@
 <script lang="ts" setup>
-
 const emit = defineEmits(['open'])
-
 
 function handleOpen() {
   emit('open', true)
 }
-
 </script>
 
 <template>

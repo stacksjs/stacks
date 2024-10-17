@@ -52,15 +52,15 @@ async function handleCopyCode() {
     </p>
     <div class="mb-4 flex gap-3 overflow-auto">
       <button
-        v-for="position in positions"
-        :key="position"
+        v-for="pos in positions"
+        :key="pos"
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': props.position === position,
+          'bg-neutral-200/50 border-neutral-400/50': props.position === pos,
         }"
-        @click="() => handleChangePosition(position)"
+        @click="() => handleChangePosition(pos)"
       >
-        {{ position }}
+        {{ pos }}
       </button>
     </div>
     <div class="group code-block relative">

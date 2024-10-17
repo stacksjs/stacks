@@ -9,7 +9,7 @@ const currentAction = ref('default')
 const showCheckIcon = ref(false)
 const visible = ref(false)
 
-const handleClose = () => {
+function handleClose() {
   visible.value = false
 }
 
@@ -100,7 +100,7 @@ async function handleCopyCode() {
         Modal with header
       </button>
     </div>
-    <div class="code-block group relative">
+    <div class="group code-block relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
