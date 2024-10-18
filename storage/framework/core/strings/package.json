@@ -36,11 +36,9 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
@@ -54,21 +52,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "change-case": "^5.4.4",
-    "detect-indent": "^7.0.1",
-    "detect-newline": "^4.0.1",
     "macroable": "^7.0.2",
-    "pluralize": "^8.0.0",
-    "slugify": "^1.6.6",
-    "string-ts": "^2.2.0",
-    "title-case": "^4.3.2",
     "validator": "^13.12.0"
   },
   "devDependencies": {
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@types/pluralize": "^0.0.33",
+    "@stacksjs/types": "workspace:*",
     "@types/validator": "^13.12.2"
   }
 }

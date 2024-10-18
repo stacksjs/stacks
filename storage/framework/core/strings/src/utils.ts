@@ -1,4 +1,4 @@
-import slugify from 'slugify'
+import { slugify } from './slug'
 
 interface SlugOptions {
   replacement?: string
@@ -112,5 +112,5 @@ export function slug(str: string, options?: SlugOptions): string {
   })
 }
 
-export { default as detectIndent } from 'detect-indent'
-export { detectNewline } from 'detect-newline'
+export { detectIndent } from './detect-indent'
+export * from './detect-newline'
