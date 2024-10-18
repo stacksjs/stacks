@@ -45,7 +45,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^4.8.0",
     "@vue-stripe/vue-stripe": "^4.5.0",
-    "stripe": "^17.2.0"
+    "stripe": "^17.2.1"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
