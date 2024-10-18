@@ -19,7 +19,6 @@
   "keywords": ["datetime", "date", "time", "helpers", "composables", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

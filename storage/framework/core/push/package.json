@@ -19,7 +19,6 @@
   "keywords": ["push", "aws", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

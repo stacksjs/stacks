@@ -38,12 +38,11 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts"
+      "import": "./dist/index.js"
     },
     "./cli": {
-      "bun": "./src/cli.ts",
       "types": "./dist/cli.d.ts",
-      "import": "./dist/cli.mjs"
+      "import": "./dist/cli.js"
     },
     "./*": {
       "bun": "./*"

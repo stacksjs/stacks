@@ -19,7 +19,6 @@
   "keywords": ["alias", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     }
   },

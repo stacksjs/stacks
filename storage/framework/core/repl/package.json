@@ -19,7 +19,6 @@
   "keywords": ["ts", "repl", "tsx", "vue", "sfc", "functions", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

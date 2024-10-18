@@ -19,12 +19,10 @@
   "keywords": ["vite", "configs", "vite-plugin", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./plugin": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },

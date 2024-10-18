@@ -19,7 +19,6 @@
   "keywords": ["faker", "fakerjs", "factory", "functions", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

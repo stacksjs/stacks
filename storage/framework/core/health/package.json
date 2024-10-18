@@ -19,7 +19,6 @@
   "keywords": ["health", "oh dear", "stacks", "api", "headless"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

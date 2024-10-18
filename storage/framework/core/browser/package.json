@@ -19,7 +19,6 @@
   "keywords": ["frontend", "browser", "stacks", "api"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

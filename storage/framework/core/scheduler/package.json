@@ -19,7 +19,6 @@
   "keywords": ["scheduler", "node-cron", "jobs", "bun", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

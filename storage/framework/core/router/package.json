@@ -19,7 +19,6 @@
   "keywords": ["router", "stacks", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

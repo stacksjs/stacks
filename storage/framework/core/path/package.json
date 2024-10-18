@@ -19,7 +19,6 @@
   "keywords": ["path", "paths", "utilities", "functions", "bun", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     }
   },

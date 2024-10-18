@@ -19,7 +19,6 @@
   "keywords": ["slugs", "models", "urls", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
