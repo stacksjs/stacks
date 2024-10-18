@@ -5,7 +5,6 @@ export interface PluralizeOptions {
 
 type Rule = [RegExp, string]
 type StringOrRegExp = string | RegExp
-type RuleSet = [StringOrRegExp, string]
 
 interface PluralizeFunction {
   (word: string, options?: PluralizeOptions): string
@@ -42,17 +41,17 @@ function restoreCase(word: string, token: string): string {
   return token.toLowerCase()
 }
 
-function interpolate(str: string, args: IArguments | any[]): string {
+function interpolate(str: string, ...args: any[]): string {
   return str.replace(/\$(\d{1,2})/g, (match, index) => args[Number(index)] || '')
 }
 
 function replace(word: string, rule: Rule): string {
-  return word.replace(rule[0], function (match, index) {
-    const result = interpolate(rule[1], arguments)
-    if (match === '') {
-      return restoreCase(word[index - 1], result)
+  return word.replace(rule[0], (...matchArgs) => {
+    const result = interpolate(rule[1], ...matchArgs)
+    if (matchArgs[0] === '') {
+      return restoreCase(word[matchArgs[matchArgs.length - 2] - 1], result)
     }
-    return restoreCase(match, result)
+    return restoreCase(matchArgs[0], result)
   })
 }
 
@@ -191,7 +190,7 @@ pluralize.addIrregularRule = (single: string, plural: string): void => {
 // Add plural rules
 [
   [/s?$/i, 's'],
-  [/[^\u0000-\u007F]$/, '$0'],
+  [/[^\x20-\x7F]$/, '$0'],
   [/([^aeiou]ese)$/i, '$1'],
   [/(ax|test)is$/i, '$1es'],
   [/(alias|[^aou]us|t[lm]as|gas|ris)$/i, '$1es'],

@@ -24,14 +24,15 @@ onBeforeUnmount(() => {
   }
 })
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const loading = ref(false)
 
-function handleSubmit() {
-  loading.value = true
-  // Placeholder for future submission logic
-  console.log('Payment submitted, but no backend logic yet.')
-  loading.value = false
-}
+// function handleSubmit() {
+//   loading.value = true
+//   // Placeholder for future submission logic
+//   console.log('Payment submitted, but no backend logic yet.')
+//   loading.value = false
+// }
 </script>
 
 <template>

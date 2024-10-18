@@ -50,9 +50,6 @@ export type WaitOptions = number | {
 
 /**
  * Pauses execution until a specified condition is met.
- * @param condition The condition to wait for.
- * @param interval The interval at which to check the condition, in milliseconds. Defaults to 1000.
- * @returns A promise that resolves when the condition is met.
  */
 export function waitUntil(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
@@ -93,9 +90,6 @@ function normalizeOptions(options: WaitOptions): { interval: number, timeout: nu
 
 /**
  * Pauses execution while a specified condition is met.
- * @param condition The condition to wait while.
- * @param interval The interval at which to check the condition, in milliseconds. Defaults to 1000.
- * @returns A promise that resolves when the condition is no longer met.
  */
 export function waitWhile(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
