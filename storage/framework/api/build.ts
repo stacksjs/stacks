@@ -8,8 +8,8 @@ const result = await Bun.build({
   entrypoints: ['./dev.ts'],
   outdir: './dist',
   format: 'esm',
-  sourcemap: 'linked',
-  minify: true,
+  // sourcemap: 'linked',
+  minify: false,
   target: 'bun',
 })
 

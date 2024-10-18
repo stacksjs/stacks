@@ -34,17 +34,15 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

@@ -304,6 +304,6 @@ function splitPrefixSuffix(
   ]
 }
 
-export * from './title-case'
-export * from './swap-case'
 export * from './sponge-case'
+export * from './swap-case'
+export * from './title-case'

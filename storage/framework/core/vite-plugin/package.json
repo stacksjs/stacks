@@ -74,7 +74,7 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

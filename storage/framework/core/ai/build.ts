@@ -10,7 +10,7 @@ const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
-  sourcemap: 'linked',
+  // sourcemap: 'linked',
   target: 'bun',
   minify: true,
   plugins: [

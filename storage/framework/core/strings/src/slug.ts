@@ -17,7 +17,7 @@ const locales: LocaleMap = JSON.parse('{"bg":{"Й":"Y","Ц":"Ts","Щ":"Sht","Ъ"
 
 export function slugify(string: string, options: SlugifyOptions = {}): string {
   if (typeof string !== 'string') {
-    throw new Error('slugify: string argument expected')
+    throw new TypeError('slugify: string argument expected')
   }
 
   const {

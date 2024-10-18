@@ -4,8 +4,8 @@ import * as helpers from '../src/helpers'
 import * as strings from '../src/index'
 import * as is from '../src/is'
 import { Str } from '../src/macro'
-import * as utils from '../src/utils'
 import { pluralize } from '../src/pluralize'
+import * as utils from '../src/utils'
 
 describe('@stacksjs/strings', () => {
   describe('Case utilities', () => {

@@ -42,7 +42,7 @@ async function main() {
     outdir: './dist',
     format: 'esm',
     target: 'bun',
-    sourcemap: 'linked',
+    // sourcemap: 'linked',
     // minify: true,
   })
 
@@ -83,7 +83,7 @@ async function main() {
     outdir: path.frameworkPath('server/app'),
     format: 'esm',
     target: 'bun',
-    sourcemap: 'linked',
+    // sourcemap: 'linked',
     // minify: true,
     splitting: true,
     external: ['@swc/wasm'],

@@ -25,18 +25,16 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "dev": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",
     "dev:local": "./dev local",

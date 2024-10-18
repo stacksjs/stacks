@@ -17,7 +17,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": ["tinker-stack", "repl", "ts", "vue", "stacks"],
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "echo 'wip'",
     "prepublishOnly": "bun run build",

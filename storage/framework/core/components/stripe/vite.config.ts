@@ -76,7 +76,7 @@ export default defineConfig(({ mode }) => {
             map: { mappings: '' },
           }
         },
-      
+
       },
     ]
   }

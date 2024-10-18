@@ -23,13 +23,12 @@
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "bun build.ts",
     "build:inbound": "bun build-inbound.ts",

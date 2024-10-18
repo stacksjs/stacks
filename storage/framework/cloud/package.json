@@ -30,13 +30,12 @@
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "bootstrap": "bunx --bun cdk bootstrap",
     "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../cloud && bunx --bun cdk deploy --require-approval never",

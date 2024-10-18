@@ -57,7 +57,7 @@
     "buddy": "dist/cli.mjs",
     "bud": "dist/cli.mjs"
   },
-  "files": ["README.md", "dist", "src"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "buddy": "bunx --bun ./src/cli.ts",
     "build": "bun build.ts && bun run compile",

@@ -10,8 +10,9 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
-  sourcemap: 'linked',
-  minify: true,
+  // // sourcemap: 'linked',
+  minify: false,
+
   entrypoints: [
     './src/build/component-libs.ts',
     './src/build/core.ts',
@@ -57,24 +58,6 @@ const result = await Bun.build({
     './src/typecheck.ts',
     './src/types.ts',
     './src/upgrade.ts',
-  ],
-
-  external: [
-    '@stacksjs/api',
-    '@stacksjs/path',
-    '@stacksjs/cli',
-    '@stacksjs/types',
-    '@stacksjs/logging',
-    '@stacksjs/enums',
-    '@stacksjs/storage',
-    '@stacksjs/utils',
-    '@stacksjs/strings',
-    '@stacksjs/config',
-    '@stacksjs/error-handling',
-    '@stacksjs/env',
-    '@stacksjs/security',
-    '@stacksjs/database',
-    'bun',
   ],
 
   plugins: [
