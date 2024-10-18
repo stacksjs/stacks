@@ -1,0 +1,50 @@
+{
+  "name": "@stacksjs/payment",
+  "type": "module",
+  "version": "0.10.0",
+  "description": "An opinionated notification component for Stacks.",
+  "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/components/notification"
+  },
+  "sideEffects": ["**/*.css"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./src/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["README.md", "dist", "src"],
+  "scripts": {
+    "dev": "bunx --bun vite -c ./vite.config.ts",
+    "build": "bunx --bun vite build --mode lib",
+    "build:demo": "bunx --bun vite build",
+    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "preview": "bunx --bun vite preview"
+  },
+  "dependencies": {
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.10.0",
+    "vue": "^3.5.11"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.47.9",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
+    "@vue/tsconfig": "^0.5.1",
+    "clean-css": "^5.3.3",
+    "unplugin-icons": "^0.19.3"
+  }
+}
