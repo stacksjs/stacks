@@ -53,9 +53,9 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^1.6.0",
-    "@tauri-apps/cli": "^1.6.2",
+    "@tauri-apps/cli": "^1.6.3",
     "unified-network": "^0.6.4",
-    "vue": "^3.5.11"
+    "vue": "^3.5.12"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -59,7 +59,7 @@
     "tinyglobby": "^0.2.9"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.670.0",
+    "@aws-sdk/client-s3": "^3.675.0",
     "@flystorage/aws-s3": "^0.1.5",
     "@flystorage/chaos": "^0.1.2",
     "@flystorage/file-storage": "^0.1.5",
