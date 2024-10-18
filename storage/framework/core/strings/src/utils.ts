@@ -112,5 +112,5 @@ export function slug(str: string, options?: SlugOptions): string {
   })
 }
 
-export { detectIndent } from './detect-indent'
+export * from './detect-indent'
 export * from './detect-newline'

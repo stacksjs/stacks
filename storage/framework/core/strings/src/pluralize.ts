@@ -102,6 +102,14 @@ export const pluralize: PluralizeFunction = ((word: string, options: PluralizeOp
   return inclusive ? `${count} ${pluralized}` : pluralized
 }) as PluralizeFunction
 
+export const singular: PluralizeFunction = ((word: string): string => {
+  return pluralize.singular(word)
+}) as PluralizeFunction
+
+export const plural: PluralizeFunction = ((word: string, count: number = 2): string => {
+  return pluralize(word, { count })
+}) as PluralizeFunction
+
 pluralize.plural = replaceWord(irregularSingles, irregularPlurals, pluralRules)
 pluralize.isPlural = checkWord(irregularSingles, irregularPlurals, pluralRules)
 pluralize.singular = replaceWord(irregularPlurals, irregularSingles, singularRules)
