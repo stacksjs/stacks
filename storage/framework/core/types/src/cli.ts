@@ -141,6 +141,8 @@ export interface CliOptions {
    */
   cwd?: string
 
+  stdio?: [In, Out, Out]
+
   /**
    * **stdio**
    *

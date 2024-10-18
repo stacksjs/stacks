@@ -1,9 +1,8 @@
 import type { Action as ActionType } from '@stacksjs/actions'
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
-import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
-import { err } from '@stacksjs/error-handling'
+import { err, handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
@@ -43,8 +42,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       }
     }
     catch (error) {
-      console.log('error', error)
-      process.exit()
+      handleError(error)
     }
   }
 
