@@ -14,8 +14,6 @@ function minify(code: string) {
   return cleanCssInstance.minify(code).styles
 }
 
-let cssCodeStr = ''
-
 export default defineConfig(({ mode }) => {
   const userConfig: UserConfig = {}
 
@@ -23,9 +21,7 @@ export default defineConfig(({ mode }) => {
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
-    UnoCSS({
-      mode: 'shadow-dom',
-    }),
+    UnoCSS(),
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
