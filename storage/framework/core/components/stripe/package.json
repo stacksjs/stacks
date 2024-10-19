@@ -35,11 +35,11 @@
   },
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
-    "unocss": "0.61.0",
-    "vue": "^3.5.11"
+    "unocss": "0.63.4",
+    "vue": "^3.5.12"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.47.9",
+    "@microsoft/api-extractor": "^7.47.11",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",
