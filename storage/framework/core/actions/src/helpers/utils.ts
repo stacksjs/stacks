@@ -2,7 +2,7 @@ import type { Action as ActionType } from '@stacksjs/actions'
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
-import { err, handleError } from '@stacksjs/error-handling'
+import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
@@ -24,25 +24,24 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // check if action is a file anywhere in ./app/Actions/**/*.ts
   // if it is, return and await the action
   const glob = new Bun.Glob('**/*.{ts,js}')
-  const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true }
+  const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true, absolute: true }
 
   for await (const file of glob.scan(scanOptions)) {
-    if (file === `${action}.ts` || file.endsWith(`${action}.ts`))
-      return ((await import(p.userActionsPath(file))).default as ActionType).handle()
-
-    if (file === `${action}.js` || file.endsWith(`${action}.js`))
-      return ((await import(p.userActionsPath(file))).default as ActionType).handle()
+    if (file.endsWith(`${action}.ts`) || file.endsWith(`${action}.js`))
+      return ((await import(file)).default as ActionType).handle()
 
     // if a custom model name is used, we need to check for it
     try {
-      const a = await import(p.userActionsPath(file))
+      log.debug('trying to import', file)
+      const a = await import(file)
       if (a.name === action) {
-        console.log('a.name matches', a.name)
+        log.debug('a.name matches', a.name)
         return await a.handle()
       }
     }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     catch (error) {
-      handleError(error)
+      // handleError(error, { shouldExit: false })
     }
   }
 
