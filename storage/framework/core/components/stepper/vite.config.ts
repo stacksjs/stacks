@@ -1,30 +1,30 @@
 import type { UserConfig } from 'vite'
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
-import presetWind from '@unocss/preset-wind'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
-import { presetAttributify, presetIcons, presetUno } from 'unocss'
 import UnoCSS from 'unocss/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 
+const cleanCssInstance = new CleanCSS({})
 function minify(code: string) {
-  const cleanCssInstance = new CleanCSS({})
   return cleanCssInstance.minify(code).styles
 }
 
+let cssCodeStr = ''
+
 export default defineConfig(({ mode }) => {
   const userConfig: UserConfig = {}
+
   const commonPlugins = [
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
 
     UnoCSS({
-      presets: [presetUno(), presetAttributify(), presetIcons(), presetWind()],
       mode: 'shadow-dom',
     }),
 
@@ -41,8 +41,6 @@ export default defineConfig(({ mode }) => {
     Icons(),
   ]
 
-  let cssCodeStr = ''
-
   if (mode === 'lib') {
     userConfig.build = {
       lib: {
@@ -50,37 +48,13 @@ export default defineConfig(({ mode }) => {
         name: 'StacksStepper',
         fileName: 'index',
       },
-
       outDir: 'dist',
-      emptyOutDir: false,
-      // cssCodeSplit: true,
+      emptyOutDir: true,
+      cssCodeSplit: false,
       sourcemap: true,
-
       rollupOptions: {
-        external: [
-          'vue',
-          'fs',
-          'path',
-          'node:v8',
-          'node:util',
-          'node:path',
-          'node:process',
-          'node:fs',
-          'node:module',
-          'stream',
-          'node:url',
-          'os',
-          'node:assert',
-          'assert',
-          'child_process',
-          'node:fs/promises',
-          'node:assert',
-        ],
+        external: ['vue'],
         output: [
-          // {
-          //   format: 'cjs',
-          //   entryFileNames: `stacks-notification.cjs`,
-          // },
           {
             format: 'es',
             entryFileNames: `index.js`,
@@ -106,7 +80,6 @@ export default defineConfig(({ mode }) => {
             map: { mappings: '' },
           }
         },
-
         renderChunk(code, { isEntry }) {
           if (!isEntry)
             return

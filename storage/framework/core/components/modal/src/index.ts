@@ -8,3 +8,5 @@ const plugin: Plugin = {
 }
 
 export default plugin
+
+export { Modal }

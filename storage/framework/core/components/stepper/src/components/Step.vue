@@ -90,11 +90,12 @@ function handleChange() {
         <slot v-bind="scope" />
       </span>
       <span v-if="withDivider && !isLastStep" class="ml-2 w-full border-b border-gray shadow-md" />
+      ss
     </label>
   </div>
 </template>
 
-<style>
+<style scoped>
 .step:hover:not(.is-disabled) {
   opacity: 0.85;
 }
@@ -128,5 +129,6 @@ function handleChange() {
     margin-right: 0.5rem; /* Assuming mr-2 maps to 0.5rem */
   }
 }
-@unocss-placeholder
+
+/* @unocss-placeholder */
 </style>

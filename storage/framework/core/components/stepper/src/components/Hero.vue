@@ -1,3 +1,13 @@
+<script lang="ts" setup>
+const emit = defineEmits<{
+  (event: 'show'): void
+}>()
+
+function handleShow() {
+  emit('show')
+}
+</script>
+
 <template>
   <div class="flex flex-col items-center gap-3">
     <div class="title-wrapper">
@@ -9,16 +19,15 @@
       stacks/stepper
     </h1>
     <p class="mb-3 mt-0 text-lg">
-      An Stepper component, allowing you to build anything from Onboarding/Welcome to Help screens, and a lot more...
+      A versatile Stepper component, perfect for creating Onboarding, Welcome, Help screens, and much more...
     </p>
     <div class="flex gap-2">
-      <a
+      <button
         class="button btn-primary"
-        href="https://stacksjs.org/"
-        target="_blank"
+        @click="handleShow"
       >
-        View Documentation
-      </a>
+        Render a Stepper
+      </button>
       <a
         class="button btn-secondary"
         href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification"
@@ -143,5 +152,5 @@
   }
 }
 
-@unocss-placeholder
+/* @unocss-placeholder */
 </style>
