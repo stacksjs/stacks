@@ -17,7 +17,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": ["ohmyzsh", "zsh", "stacks"],
-  "files": ["buddy.plugin.zsh", "dist", "src"],
+  "files": ["buddy.plugin.zsh", "dist"],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

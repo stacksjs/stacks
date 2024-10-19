@@ -38,13 +38,13 @@ jobs:
       - name: Publish Dummy Libraries
         run: bun --filter='./storage/framework' run publish:dummy-libs
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
         run: |
           cd storage/framework/ide/vscode
           bun install
-          bunx vsce publish
+          bunx --bun vsce publish
           cd ../../../../
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

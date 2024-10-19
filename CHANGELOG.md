@@ -1,5 +1,44 @@
 # Stacks Changelog
 
+## v0.66.0...v0.67.0
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.66.0...v0.67.0)
+
+### 🏡 Chore
+
+- Wip ([8b5ea97bf](https://github.com/stacksjs/stacks/commit/8b5ea97bf))
+- Wip ([2e0311974](https://github.com/stacksjs/stacks/commit/2e0311974))
+- Wip ([dd9bfd8d9](https://github.com/stacksjs/stacks/commit/dd9bfd8d9))
+- Wip ([07ed2b61e](https://github.com/stacksjs/stacks/commit/07ed2b61e))
+- Wip ([4760efe48](https://github.com/stacksjs/stacks/commit/4760efe48))
+- Wip ([8131f005e](https://github.com/stacksjs/stacks/commit/8131f005e))
+- Wip ([77c60c6fd](https://github.com/stacksjs/stacks/commit/77c60c6fd))
+- Wip ([a81625924](https://github.com/stacksjs/stacks/commit/a81625924))
+- Wip ([b7dac02d6](https://github.com/stacksjs/stacks/commit/b7dac02d6))
+- Add outside click close ([ca689f668](https://github.com/stacksjs/stacks/commit/ca689f668))
+- Wip ([e7cbcfb2e](https://github.com/stacksjs/stacks/commit/e7cbcfb2e))
+- Lint fix ([67cad46d5](https://github.com/stacksjs/stacks/commit/67cad46d5))
+- Wip ([7740aa3b1](https://github.com/stacksjs/stacks/commit/7740aa3b1))
+- Wip ([fb2b8f3ab](https://github.com/stacksjs/stacks/commit/fb2b8f3ab))
+- Wip ([2bde01bdc](https://github.com/stacksjs/stacks/commit/2bde01bdc))
+- Wip ([c8be56e5d](https://github.com/stacksjs/stacks/commit/c8be56e5d))
+- Wip ([bb8954aad](https://github.com/stacksjs/stacks/commit/bb8954aad))
+- Wip ([db285c06a](https://github.com/stacksjs/stacks/commit/db285c06a))
+- Wip ([f0c9e44ed](https://github.com/stacksjs/stacks/commit/f0c9e44ed))
+- Wip ([8f01705ff](https://github.com/stacksjs/stacks/commit/8f01705ff))
+- Wip ([aa524c18e](https://github.com/stacksjs/stacks/commit/aa524c18e))
+- Wip ([939f07ef7](https://github.com/stacksjs/stacks/commit/939f07ef7))
+- Wip ([cab5ffe30](https://github.com/stacksjs/stacks/commit/cab5ffe30))
+- Wip ([f8c42bab0](https://github.com/stacksjs/stacks/commit/f8c42bab0))
+- Wip ([9f9dbe3ff](https://github.com/stacksjs/stacks/commit/9f9dbe3ff))
+- Release v0.67.0 ([db27e89f5](https://github.com/stacksjs/stacks/commit/db27e89f5))
+
+### ❤️ Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+- Michael ([@cab-mikee](http://github.com/cab-mikee))
+- Glennmichael123 ([@glennmichael123](http://github.com/glennmichael123))
+
 ## v0.65.1...v0.66.0
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.65.1...v0.66.0)

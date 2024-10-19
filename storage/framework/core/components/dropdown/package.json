@@ -25,7 +25,7 @@
   },
   "module": "dist/stacks-dropdown.js",
   "types": "dist/stacks-dropdown.d.ts",
-  "files": ["README.md", "lib", "src", "volar.d.ts"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "echo 'wip bunx --bun vite build'",
