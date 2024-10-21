@@ -107,11 +107,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias,
     },
-
     plugins: [...commonPlugins],
-    server: {
-      port: 3000,
-    },
     ...userConfig,
   }
 })

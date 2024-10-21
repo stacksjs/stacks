@@ -10,7 +10,7 @@ export default new Action({
     const amount = Number(request.get('amount'))
 
     const paymentIntent = await stripe.paymentIntent.create({
-      amount, 
+      amount,
       currency: 'usd',
     })
 

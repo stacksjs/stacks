@@ -24,12 +24,7 @@ import type {
 } from '../types'
 import { computed, nextTick, ref, useAttrs, watch, watchEffect } from 'vue'
 import { ToastState } from '../state'
-import CloseIcon from './icons/CloseIcon.vue'
-import ErrorIcon from './icons/ErrorIcon.vue'
-import InfoIcon from './icons/InfoIcon.vue'
 import LoaderIcon from './icons/Loader.vue'
-import SuccessIcon from './icons/SuccessIcon.vue'
-import WarningIcon from './icons/WarningIcon.vue'
 import Toast from './Toast.vue'
 
 defineOptions({
@@ -365,7 +360,7 @@ watchEffect((onInvalidate) => {
           >
             <template #close-icon>
               <slot name="close-icon">
-                <CloseIcon />
+                <div class="i-ic:outline-close h-5 w-5" />
               </slot>
             </template>
 
@@ -377,25 +372,25 @@ watchEffect((onInvalidate) => {
 
             <template #success-icon>
               <slot name="success-icon">
-                <SuccessIcon />
+                <div class="i-ic:baseline-check-circle h-5 w-5" />
               </slot>
             </template>
 
             <template #error-icon>
               <slot name="error-icon">
-                <ErrorIcon />
+                <div class="i-ic:baseline-error h-5 w-5" />
               </slot>
             </template>
 
             <template #warning-icon>
               <slot name="warning-icon">
-                <WarningIcon />
+                <div class="i-ic:baseline-warning h-5 w-5" />
               </slot>
             </template>
 
             <template #info-icon>
               <slot name="info-icon">
-                <InfoIcon />
+                <div class="i-ic:baseline-info h-5 w-5" />
               </slot>
             </template>
           </Toast>

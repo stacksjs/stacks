@@ -51,9 +51,7 @@ defineCustomElement({
               <div class="absolute right-0 top-0 pr-4 pt-4 sm:block">
                 <button type="button" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" @click="handleClose">
                   <span class="sr-only">Close</span>
-                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
+                  <div class="i-ic:outline-close h-8 w-8" />
                 </button>
               </div>
             </slot>

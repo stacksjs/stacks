@@ -4,8 +4,6 @@ import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 import HeadlessToast from './HeadlessToast.vue'
 import HeadlessToastWithProps from './HeadlessToastWithProps.vue'
-import CheckIcon from './icons/CheckIcon.vue'
-import CopyIcon from './icons/CopyIcon.vue'
 
 const emit = defineEmits(['setRichColors', 'setCloseButton'])
 
@@ -163,8 +161,8 @@ async function handleCopyCode() {
         class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <CheckIcon v-if="showCheckIcon" />
-        <CopyIcon v-else />
+        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
+        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
       </button>
     </div>
   </div>

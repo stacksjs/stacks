@@ -4,8 +4,6 @@ import type { PropType } from 'vue'
 import { computed, ref } from 'vue'
 import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
-import CheckIcon from './icons/CheckIcon.vue'
-import CopyIcon from './icons/CopyIcon.vue'
 
 export type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
 
@@ -76,8 +74,8 @@ async function handleCopyCode() {
         class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <CheckIcon v-if="showCheckIcon" />
-        <CopyIcon v-else />
+        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
+        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
       </button>
     </div>
   </div>

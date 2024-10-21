@@ -2,8 +2,6 @@
 import { ref } from 'vue'
 import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
-import CheckIcon from './icons/CheckIcon.vue'
-import CopyIcon from './icons/CopyIcon.vue'
 
 const code = `bun install @stacksjs/notification`
 
@@ -33,8 +31,8 @@ async function handleCopyCode() {
         class="btn-border absolute right-2 top-2 p-1"
         @click="handleCopyCode"
       >
-        <CheckIcon v-if="showCheckIcon" />
-        <CopyIcon v-else />
+        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
+        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
       </button>
     </div>
   </div>
