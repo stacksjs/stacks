@@ -25,6 +25,10 @@ route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
+route.post('/create-payment-intent', 'Actions/Payment/CreatePaymentIntentAction')
+
+
+
 // route.group('/some-path', async () => {...})
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // route.action('Dashboard/GetProjects')
