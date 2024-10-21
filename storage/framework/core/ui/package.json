@@ -61,7 +61,7 @@
     "@iconify-json/heroicons": "^1.2.1",
     "@iconify-json/heroicons-outline": "^1.2.0",
     "@iconify-json/heroicons-solid": "^1.2.0",
-    "@iconify/json": "^2.2.261",
+    "@iconify/json": "^2.2.262",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
