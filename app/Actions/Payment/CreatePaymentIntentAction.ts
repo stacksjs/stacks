@@ -12,6 +12,7 @@ export default new Action({
     const paymentIntent = await stripe.paymentIntent.create({
       amount,
       currency: 'usd',
+      payment_method_types: ['card'],
     })
 
     return paymentIntent
