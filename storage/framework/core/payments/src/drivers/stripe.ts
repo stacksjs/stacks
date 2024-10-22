@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 
 const apiKey = process.env.STRIPE_PUBLIC_KEY || ''
 
+
 const client = new Stripe(apiKey, {
   apiVersion: '2024-09-30.acacia',
 })
