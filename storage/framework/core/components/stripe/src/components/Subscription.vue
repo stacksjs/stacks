@@ -72,12 +72,7 @@ async function loadElements() {
 
 async function handleSubmit() {
   if (stripe && elements) {
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: props.redirectUrl, // Redirect URL after payment
-      },
-    })
+    const { error } = await stripe.confirmPayment({ elements, redirect: 'if_required' })
   }
 }
 </script> 
