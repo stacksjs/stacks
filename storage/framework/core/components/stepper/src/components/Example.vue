@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Modal } from '@stacksjs/modal'
-import Stepper from './Stepper.vue'
 import { ref } from 'vue'
+import Stepper from './Stepper.vue'
 
 const props = defineProps<{
   visible: boolean

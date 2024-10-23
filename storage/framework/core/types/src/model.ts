@@ -110,6 +110,7 @@ export interface ModelOptions extends Base {
     searchable?: boolean | SearchOptions // useSearch alias
     useApi?: ApiOptions | boolean
     observe?: string[] | boolean
+    billable?: boolean
     useActivityLog?: boolean | ActivityLogOption
   }
 

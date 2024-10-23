@@ -23,6 +23,7 @@ export interface UsersTable {
   deployment_id?: number
   post_id?: number
   public_passkey?: string
+  stripe_id?: string
 
   created_at?: Date
 
@@ -67,6 +68,7 @@ export class UserModel {
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
+  public stripe_id: string | undefined
   public public_passkey: string | undefined
   public name: string | undefined
   public email: string | undefined

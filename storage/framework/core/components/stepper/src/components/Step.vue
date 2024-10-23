@@ -90,7 +90,7 @@ function handleChange() {
         <slot v-bind="scope" />
       </span>
       <span v-if="withDivider && !isLastStep" class="ml-2 w-full shadow-md">
-        <span class="bg-gray h-1 block" />
+        <span class="block h-1 bg-gray" />
       </span>
     </label>
   </div>

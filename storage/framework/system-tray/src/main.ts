@@ -6,7 +6,6 @@ import App from './App.vue'
 import '@unocss/reset/tailwind.css'
 import 'unocss'
 
-
 const pinia = createPinia()
 ViteSSG(
   App,

@@ -843,6 +843,7 @@ export async function generateModelString(
   let relationMethods = ``
   let relationImports = ``
   let twoFactorStatements = ''
+  const billableStatements = ''
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
@@ -1010,6 +1011,10 @@ export async function generateModelString(
 
   const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
+  const useBillable = model.traits?.billable || false
+
+  if (useBillable)
+    declareFields += `public stripe_id: string | undefined\n`
 
   if (useTwoFactor) {
     declareFields += `public two_factor_secret: string | undefined \n`
@@ -1108,8 +1113,12 @@ export async function generateModelString(
 
   if (useTwoFactor)
     fieldString += 'two_factor_secret?: string \n'
+
   if (usePasskey)
     fieldString += 'public_passkey?: string \n'
+
+  if (useBillable)
+    fieldString += 'stripe_id?: string \n'
 
   if (useTimestamps) {
     fieldString += `

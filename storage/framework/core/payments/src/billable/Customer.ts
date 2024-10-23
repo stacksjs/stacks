@@ -1,41 +1,34 @@
+import type Stripe from 'stripe'
 import type { UserModel } from '../../../../orm/src/models/User'
 import { stripe } from '..'
 
 export const paymentIntent: any = (() => {
-  function stripeId(user: any): string {
+  function stripeId(user: UserModel): string {
     return user.stripe_id
   }
 
-  function hasStripeId(user: any): boolean {
+  function hasStripeId(user: UserModel): boolean {
     return user.stripe_id !== null || user.stripe_id !== undefined
   }
 
-  function createStripeCustomer(user: any, options: any = {}): Promise<any> {
+  function createStripeCustomer(user: UserModel, options: any = {}): Promise<Stripe.Response<Stripe.Customer>> {
     if (hasStripeId(user)) {
       throw new Error('Customer already created')
     }
 
-    if (!options.name && user.stripeName) {
+    if (!options.name && stripeName(user)) {
       options.name = stripeName(user)
     }
 
-    if (!options.email && user.stripeEmail) {
+    if (!options.email && stripeEmail(user)) {
       options.email = stripeEmail(user)
     }
 
-    if (!options.phone && user.stripePhone) {
-      options.phone = stripePhone(user)
-    }
-
-    if (!options.address && user.stripeAddress) {
-      options.address = stripeAddress(user)
-    }
-
-    if (!options.preferred_locales && user.stripePreferredLocales) {
+    if (!options.preferred_locales && stripePreferredLocales) {
       options.preferred_locales = stripePreferredLocales(user)
     }
 
-    if (!options.metadata && user.stripeMetadata) {
+    if (!options.metadata && stripeMetadata(user)) {
       options.metadata = stripeMetadata(user)
     }
 
@@ -47,20 +40,12 @@ export const paymentIntent: any = (() => {
     })
   }
 
-  function stripeName(user: any): string {
+  function stripeName(user: UserModel): string {
     return user.name || ''
   }
 
-  function stripeEmail(user: any): string {
+  function stripeEmail(user: UserModel): string {
     return user.email || ''
-  }
-
-  function stripePhone(user: any): string {
-    return user.phone || ''
-  }
-
-  function stripeAddress(user: any): string {
-    return user.address || null
   }
 
   function stripePreferredLocales(user: any): string {

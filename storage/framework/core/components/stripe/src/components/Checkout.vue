@@ -1,25 +1,24 @@
 <script setup lang="ts">
 interface Products {
   name: string
-  price: number,
+  price: number
   images: string
 }
 
 interface Props {
   products: Products[]
-  redirectUrl: string,
+  redirectUrl: string
   mode: 'one-time' | 'subscription'
   applePay?: boolean
   googlePay?: boolean
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 const products = props.products
-
-</script> 
+</script>
 
 <template>
-  <OneTimePayment :products="products" :redirect-url="props.redirectUrl" v-if="mode === 'one-time'"/>
-  <Subscription :products="products" :redirect-url="props.redirectUrl" v-if="mode === 'subscription'"/>
+  <OneTimePayment v-if="mode === 'one-time'" :products="products" :redirect-url="props.redirectUrl" />
+  <Subscription v-if="mode === 'subscription'" :products="products" :redirect-url="props.redirectUrl" />
 </template>

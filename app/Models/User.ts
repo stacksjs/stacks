@@ -37,6 +37,8 @@ export default {
 
     observe: true,
 
+    billable: true,
+
     // useUuid: true, // defaults to false
   },
 

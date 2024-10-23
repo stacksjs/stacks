@@ -196,13 +196,15 @@ defineExpose({
 </script>
 
 <template>
-  <div style="
+  <div
+    style="
       box-sizing: border-box;
       width: 100%;
       display: flex;
       justify-content: space-between;
       user-select: none;
-    ">
+    "
+  >
     <Step
       v-for="(step, $index) in stepsArr"
       :key="$index"
