@@ -64,7 +64,7 @@ function handleChange() {
 </script>
 
 <template>
-  <div class="step box-border flex-1 opacity-55 transition-opacity duration-700" :class="[classes]">
+  <div class="step box-border flex-1 flex-row opacity-55 transition-opacity duration-700" :class="[classes]">
     <input
       v-show="debug"
       :id="id"
@@ -89,13 +89,16 @@ function handleChange() {
       <span v-if="defaultSlot" class="title text-white">
         <slot v-bind="scope" />
       </span>
-      <span v-if="withDivider && !isLastStep" class="ml-2 w-full border-b border-gray shadow-md" />
-      ss
+      <span v-if="withDivider && !isLastStep" class="ml-2 w-full shadow-md">
+        <span class="bg-gray h-1 block" />
+      </span>
     </label>
   </div>
 </template>
 
 <style scoped>
+/* @unocss-placeholder */
+
 .step:hover:not(.is-disabled) {
   opacity: 0.85;
 }
@@ -129,6 +132,4 @@ function handleChange() {
     margin-right: 0.5rem; /* Assuming mr-2 maps to 0.5rem */
   }
 }
-
-/* @unocss-placeholder */
 </style>

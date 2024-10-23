@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { Modal } from '@stacksjs/modal'
-import { Stepper } from '@stacksjs/stepper'
+import Stepper from './Stepper.vue'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -23,7 +23,7 @@ function handleClose() {
 <template>
   <div class="flex">
     <Modal close-button :visible="props.visible" @close="handleClose">
-      <div class="mt-4 w-full flex flex-col">
+      <div class="mt-4" style="width: 100%;">
         <Stepper ref="stepperRef" v-model="step" :steps="steps" />
 
         <div class="flex-center my-4">
@@ -56,19 +56,6 @@ function handleClose() {
           </button>
         </div>
       </div>
-
-      <!-- <div class="flex-center w-full">
-
-      </div>
-      <div class="flex-center" v-if="step === 1">
-        <h1>Step 1</h1>
-      </div>
-      <div class="flex-center" v-if="step === 2">
-        <h1>Step 2</h1>
-      </div>
-      <div class="flex-center" v-if="step === 3">
-        <h1>Step 3</h1>
-      </div> -->
     </Modal>
   </div>
 </template>

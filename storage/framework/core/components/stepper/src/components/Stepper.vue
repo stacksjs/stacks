@@ -5,7 +5,6 @@ import Step from './Step.vue'
 
 defineOptions({
   name: 'Stepper',
-  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<StepperProps>(), {
@@ -197,7 +196,13 @@ defineExpose({
 </script>
 
 <template>
-  <div class="box-border w-full flex select-none justify-between">
+  <div style="
+      box-sizing: border-box;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      user-select: none;
+    ">
     <Step
       v-for="(step, $index) in stepsArr"
       :key="$index"
