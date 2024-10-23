@@ -13,5 +13,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
+    Subscription: typeof import('./src/components/Subscription.vue')['default']
   }
 }

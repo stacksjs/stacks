@@ -97,6 +97,20 @@ export const charge: Charge = (() => {
   return { create, update, retrieve, capture }
 })()
 
+
+export interface Subscription {
+  create: (params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
+}
+
+
+export const subscription: Subscription = (() => {
+  async function create(params: Stripe.SubscriptionCreateParams) {
+    return await client.subscriptions.create(params)
+  }
+
+  return { create }
+})()
+
 export interface BalanceTransactions {
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.BalanceTransaction>>
   list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.BalanceTransaction>>>

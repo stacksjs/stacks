@@ -12,6 +12,6 @@ const products = ref([{
 
 <template>
   <div>
-    <Checkout mode="one-time" :products="products" redirect-url="https://google.com" />
+    <Checkout mode="subscription" :products="products" redirect-url="https://google.com" />
   </div>
 </template>
