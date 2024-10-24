@@ -2,8 +2,9 @@
 import { defineCustomElement, ref } from 'vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
-import Styling from './components/Styling.vue'
+import Options from './components/Options.vue'
 import Usage from './components/Usage.vue'
+import Transitions from './components/Transitions.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()
@@ -35,7 +36,8 @@ defineCustomElement({
       >
         <Installation />
         <Usage />
-        <Styling />
+        <Options />
+        <Transitions />
       </main>
 
       <Modal close-button :visible="visible" @close="handleClose">

@@ -288,6 +288,11 @@
       "types": "./components/stepper/dist/index.d.ts",
       "import": "./components/stepper/dist/index.js"
     },
+    "./modal": {
+      "bun": "./components/modal/src/index.ts",
+      "types": "./components/modal/dist/index.d.ts",
+      "import": "./components/modal/dist/index.js"
+    },
     "./storage": {
       "bun": "./storage/src/index.ts",
       "types": "./storage/dist/index.d.ts",

@@ -63,10 +63,10 @@ async function handleCopyCode() {
 <template>
   <div class="types">
     <h1 class="my-2 text-lg font-semibold">
-      Styling
+      Options
     </h1>
     <p class="my-3 text-base">
-      You can style your modal globally with the prop in the Modal component.
+      Here are the options you can use for the Modal component.
     </p>
     <div class="mb-4 flex gap-3 overflow-auto">
       <button

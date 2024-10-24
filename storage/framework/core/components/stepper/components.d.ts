@@ -9,18 +9,11 @@ declare module 'vue' {
   export interface GlobalComponents {
     'Carbon:cafe': typeof import('~icons/carbon/cafe')['default']
     'Carbon:logoTwitter': typeof import('~icons/carbon/logo-twitter')['default']
-    CheckIcon: typeof import('./src/components/icons/CheckIcon.vue')['default']
-    CloseIcon: typeof import('./src/components/icons/CloseIcon.vue')['default']
-    CopyIcon: typeof import('./src/components/icons/CopyIcon.vue')['default']
-    ErrorIcon: typeof import('./src/components/icons/ErrorIcon.vue')['default']
     Example: typeof import('./src/components/Example.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     Hero: typeof import('./src/components/Hero.vue')['default']
-    InfoIcon: typeof import('./src/components/icons/InfoIcon.vue')['default']
     Installation: typeof import('./src/components/Installation.vue')['default']
-    Loader: typeof import('./src/components/icons/Loader.vue')['default']
     'Mdi:heart': typeof import('~icons/mdi/heart')['default']
-    Modal: typeof import('./src/components/components/Modal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
@@ -28,8 +21,6 @@ declare module 'vue' {
     Step: typeof import('./src/components/Step.vue')['default']
     Stepper: typeof import('./src/components/Stepper.vue')['default']
     Styling: typeof import('./src/components/Styling.vue')['default']
-    SuccessIcon: typeof import('./src/components/icons/SuccessIcon.vue')['default']
     Usage: typeof import('./src/components/Usage.vue')['default']
-    WarningIcon: typeof import('./src/components/icons/WarningIcon.vue')['default']
   }
 }
