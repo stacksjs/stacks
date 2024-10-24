@@ -188,6 +188,7 @@ async function createTableMigration(modelPath: string) {
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
+  const useBillable = model.traits?.billable || false
 
   if (usePasskey)
     await createPasskeyMigration()
@@ -218,9 +219,11 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `)\n`
   }
 
-  if (twoFactorEnabled !== false && twoFactorEnabled) {
+  if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
-  }
+
+  if (useBillable)
+    migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {

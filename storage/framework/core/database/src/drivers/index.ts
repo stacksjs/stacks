@@ -49,7 +49,13 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
     return await db.selectFrom('migrations').select('name').execute()
   }
 
-  catch (error) {
+  catch (error: any) {
+    if (error.message && error.message.includes('no such table: migrations')) {
+      console.warn('Migrations table does not exist, returning empty list.')
+
+      return []
+    }
+
     handleError(error, { shouldExitProcess: false })
     return []
   }

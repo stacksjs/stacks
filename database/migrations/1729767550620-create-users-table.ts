@@ -9,6 +9,7 @@ export async function up(db: Database<any>) {
     .addColumn('password', 'varchar(255)', col => col.notNull())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('job_title', 'varchar(255)', col => col.notNull())
+    .addColumn('stripe_id', 'varchar(255)')
     .addColumn('public_passkey', 'text')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
