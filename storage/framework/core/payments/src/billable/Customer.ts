@@ -4,14 +4,14 @@ import { stripe } from '..'
 
 export const paymentIntent: any = (() => {
   function stripeId(user: UserModel): string {
-    return user.stripe_id
+    return user.stripe_id || ''
   }
 
   function hasStripeId(user: UserModel): boolean {
     return user.stripe_id !== null || user.stripe_id !== undefined
   }
 
-  function createStripeCustomer(user: UserModel, options: any = {}): Promise<Stripe.Response<Stripe.Customer>> {
+  async function createStripeCustomer(user: UserModel, options: any = {}): Promise<Stripe.Response<Stripe.Customer>> {
     if (hasStripeId(user)) {
       throw new Error('Customer already created')
     }
@@ -24,20 +24,59 @@ export const paymentIntent: any = (() => {
       options.email = stripeEmail(user)
     }
 
-    if (!options.preferred_locales && stripePreferredLocales) {
-      options.preferred_locales = stripePreferredLocales(user)
+    const customer = await stripe.customer.create(options)
+
+    user.update({ stripe_id: customer.id })
+
+    return customer
+  }
+
+  async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    const customer = await stripe.customer.update(user.stripe_id || '', options)
+
+    return customer
+  }
+
+  async function createOrGetStripeUser(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
+    if (!hasStripeId(user)) {
+      return await createStripeCustomer(user, options)
     }
 
-    if (!options.metadata && stripeMetadata(user)) {
-      options.metadata = stripeMetadata(user)
+    try {
+      const customer = await stripe.customer.retrieve(user.stripe_id || '')
+      if ((customer as Stripe.DeletedCustomer).deleted) {
+        throw new Error('Customer was deleted')
+      }
+
+      return customer as Stripe.Response<Stripe.Customer>
+
+    } catch (error) {
+      if ((error as any).statusCode === 404) {
+        return await createStripeCustomer(user, options)
+      }
+      throw error
+    }
+  }
+
+  async function createOrUpdateStripeUser(user: UserModel, options: Stripe.CustomerCreateParams | Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    if (!hasStripeId(user)) {
+      return await createStripeCustomer(user, options)
     }
 
-    // Here we will create the customer instance on Stripe and store the ID of the
-    // user from Stripe. This ID will correspond with the Stripe user instances
-    // and allow us to retrieve users from Stripe later when we need to work.
-    return stripe.customer.create(options).then((customer: any) => {
-      return user.update({ stripe_id: customer.id })
-    })
+    try {
+      const customer = await stripe.customer.retrieve(user.stripe_id || '')
+      if ((customer as Stripe.DeletedCustomer).deleted) {
+        return await createStripeCustomer(user, options)
+      }
+
+      return await updateStripeCustomer(user, options)
+    } catch (error) {
+      if ((error as any).statusCode === 404) {
+        return await createStripeCustomer(user, options)
+      }
+
+      throw error
+    }
   }
 
   function stripeName(user: UserModel): string {
@@ -48,13 +87,5 @@ export const paymentIntent: any = (() => {
     return user.email || ''
   }
 
-  function stripePreferredLocales(user: any): string {
-    return user.preferred_locales || []
-  }
-
-  function stripeMetadata(user: any): string {
-    return user.metadata || {}
-  }
-
-  return { stripeId, hasStripeId, createStripeCustomer }
+  return { stripeId, hasStripeId, createStripeCustomer, updateStripeCustomer, createOrGetStripeUser, createOrUpdateStripeUser }
 })()
