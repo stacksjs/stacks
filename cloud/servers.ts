@@ -1,4 +1,7 @@
 export const servers = {
+  type: 'aws',
+  useLoadBalancer: true,
+
   app: {
     name: 'app-server-1',
     domain: 'stacksjs.org',
@@ -80,6 +83,4 @@ export const servers = {
   //   subnet: 'subnet-123456789',
   //   serverOS: 'ubuntu-20-lts-x86_64',
   // },
-
-  useLoadBalancer: true,
 }
