@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useDark } from '@vueuse/core'
+import { ref, watch } from 'vue'
+
 const showDropdown = ref(false)
 const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
