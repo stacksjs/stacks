@@ -2,7 +2,7 @@
 preload = [ "./resources/preloader/main.ts" ]
 
 [test]
-preload = [ "./resources/preloader/test.ts" ]
+preload = [ "./tests/setup.ts" ]
 coverage = true
 
 [install]
