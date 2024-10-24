@@ -50,7 +50,7 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   }
 
   catch (error: any) {
-    if (error.message && error.message.includes('no such table: migrations')) {
+    if (error?.message.includes('no such table: migrations')) {
       console.warn('Migrations table does not exist, returning empty list.')
 
       return []

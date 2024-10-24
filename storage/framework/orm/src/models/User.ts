@@ -64,7 +64,7 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'public_key', 'two_factor_secret']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -84,6 +84,7 @@ export class UserModel {
 
   constructor(user: Partial<UserType> | null) {
     this.id = user?.id
+    this.stripe_id = user?.stripe_id
     this.public_passkey = user?.public_passkey
     this.name = user?.name
     this.email = user?.email
@@ -649,34 +650,34 @@ export class UserModel {
     return relationResults
   }
 
-  async createStripeUser(options: Stripe.CustomerCreateParams): Promise<any> {
-    const customer = manageCustomer.createStripeCustomer(this, options)
+  async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    const customer = await manageCustomer.createStripeCustomer(this, options)
 
     return customer
   }
 
-  async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<any> {
-    const customer = manageCustomer.updateStripeCustomer(this, options)
+  async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    const customer = await manageCustomer.updateStripeCustomer(this, options)
 
     return customer
   }
 
-  async deleteStripeUser(): Promise<any> {
+  async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
     const deletedCustomer = await manageCustomer.deleteStripeUser(this)
     return deletedCustomer
   }
 
-  async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<any> {
+  async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createOrGetStripeUser(this, options)
     return customer
   }
 
-  async retrieveStripeUser(): Promise<any> {
+  async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.retrieveStripeUser(this)
     return customer
   }
 
-  async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<any> {
+  async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
     return customer
   }

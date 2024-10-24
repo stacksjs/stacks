@@ -19,7 +19,7 @@ export const manageCustomer: ManageCustomer = (() => {
   }
 
   function hasStripeId(user: UserModel): boolean {
-    return user.stripe_id !== null || user.stripe_id !== undefined
+    return Boolean(user.stripe_id)
   }
 
   async function createStripeCustomer(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
@@ -37,7 +37,7 @@ export const manageCustomer: ManageCustomer = (() => {
 
     const customer = await stripe.customer.create(options)
 
-    user.update({ stripe_id: customer.id })
+    await user.update({ stripe_id: customer.id })
 
     return customer
   }

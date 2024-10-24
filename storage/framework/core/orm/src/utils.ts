@@ -205,16 +205,21 @@ export function getHiddenAttributes(attributes: Attributes | undefined): string[
 
 export function getFillableAttributes(attributes: Attributes | undefined): string[] {
   if (attributes === undefined)
-    return []
+    return ['stripe_id', 'two_factor_secret', 'public_key']
 
-  return Object.keys(attributes)
-    .filter((key) => {
-      if (attributes === undefined)
-        return false
+  return [
+    ...Object.keys(attributes)
+      .filter((key) => {
+        if (attributes === undefined)
+          return false
 
-      return attributes[key]?.fillable === true
-    })
-    .map(attribute => snakeCase(attribute))
+        return attributes[key]?.fillable === true
+      })
+      .map(attribute => snakeCase(attribute)),
+    'stripe_id',
+    'public_key',
+    'two_factor_secret',
+  ]
 }
 
 export async function writeModelNames(): Promise<void> {
@@ -1014,34 +1019,34 @@ export async function generateModelString(
   const useBillable = model.traits?.billable || false
 
   if (useBillable) {
-    billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<any> {
-    const customer = manageCustomer.createStripeCustomer(this, options)
+    billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    const customer = await manageCustomer.createStripeCustomer(this, options)
 
       return customer
     }
 
-    async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<any> {
-      const customer = manageCustomer.updateStripeCustomer(this, options)
+    async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+      const customer = await manageCustomer.updateStripeCustomer(this, options)
 
       return customer
     }
 
-    async deleteStripeUser(): Promise<any> {
+    async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
       const deletedCustomer = await manageCustomer.deleteStripeUser(this)
       return deletedCustomer
     }
 
-    async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<any> {
+    async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.createOrGetStripeUser(this, options)
       return customer
     }
 
-    async retrieveStripeUser(): Promise<any> {
+    async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.retrieveStripeUser(this)
       return customer
     }
 
-    async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<any> {
+    async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
       return customer
     }
@@ -1055,6 +1060,8 @@ export async function generateModelString(
     }`
 
     declareFields += `public stripe_id: string | undefined\n`
+
+    constructorFields += `this.stripe_id = ${formattedModelName}?.stripe_id\n   `
   }
 
   if (useTwoFactor) {

@@ -1,7 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { stripe } from '@stacksjs/payments'
-
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -13,14 +12,10 @@ export default new Action({
 
     const user = await User.find(1)
 
-    // TODO: Implement a fetch customer by find by email
-    // const customer = await stripe.customer.create({
-    //   email: 'gtorregosa@gmail.com',
-    //   name: 'John Doe',
-    // });
+    const customer = await user?.createOrGetStripeUser({ email: user.email, name: 'Glenn Michael Torregosa' })
 
     const paymentIntent = await stripe.paymentIntent.create({
-      customer: 'cus_R5DJaEyyeKKlAN',
+      customer: customer?.id,
       amount,
       currency: 'usd',
       description: 'Subscription to Stacks Pro',
