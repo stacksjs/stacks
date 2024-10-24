@@ -254,13 +254,15 @@ export type CountryCode =
 
 type Environment = 'development' | 'staging' | 'production'
 
-export interface CloudOptions {
+type SiteConfig = {
+  domain: string
+  path: string
+}
+
+type InfrastuctureOptions = Partial<{
   type: 'serverless' // | 'server' coming soon
-
   driver: 'aws'
-
   api: ApiConfig
-
   storage: object
 
   /**
@@ -325,6 +327,16 @@ export interface CloudOptions {
   cli: boolean
   docs: boolean
   fileSystem: boolean
+}>
+
+export interface CloudOptions {
+  sites: {
+    root: string
+    path: string
+    [site: string]: string | SiteConfig
+  }
+
+  infrastructure: InfrastuctureOptions
 }
 
 export type CloudConfig = Partial<CloudOptions>
