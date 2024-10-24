@@ -254,7 +254,7 @@ export type CountryCode =
 
 type Environment = 'development' | 'staging' | 'production'
 
-type SiteConfig = {
+interface SiteConfig {
   domain: string
   path: string
 }

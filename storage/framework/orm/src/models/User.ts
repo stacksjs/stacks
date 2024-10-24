@@ -3,6 +3,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+import { manageCustomer, type Stripe } from '@stacksjs/payments'
 
 import Post from './Post'
 
@@ -646,6 +647,46 @@ export class UserModel {
     const relationResults = await Team.whereIn('id', tableRelationIds).get()
 
     return relationResults
+  }
+
+  async createStripeUser(options: Stripe.CustomerCreateParams): Promise<any> {
+    const customer = manageCustomer.createStripeCustomer(this, options)
+
+    return customer
+  }
+
+  async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<any> {
+    const customer = manageCustomer.updateStripeCustomer(this, options)
+
+    return customer
+  }
+
+  async deleteStripeUser(): Promise<any> {
+    const deletedCustomer = await manageCustomer.deleteStripeUser(this)
+    return deletedCustomer
+  }
+
+  async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<any> {
+    const customer = await manageCustomer.createOrGetStripeUser(this, options)
+    return customer
+  }
+
+  async retrieveStripeUser(): Promise<any> {
+    const customer = await manageCustomer.retrieveStripeUser(this)
+    return customer
+  }
+
+  async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<any> {
+    const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
+    return customer
+  }
+
+  stripeId(): string {
+    return manageCustomer.stripeId(this)
+  }
+
+  hasStripeId(): boolean {
+    return manageCustomer.hasStripeId(this)
   }
 
   distinct(column: keyof UserType): UserModel {
