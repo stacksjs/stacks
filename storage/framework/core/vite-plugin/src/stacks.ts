@@ -16,7 +16,6 @@ interface StacksPluginOptions {
   withLocalhost?: boolean
 }
 
-// https://github.com/hannoeru/vite-plugin-pages
 export function stacks(options?: StacksPluginOptions): Plugin {
   if (!options)
     options = parseOptions() as StacksPluginOptions
