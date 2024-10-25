@@ -3,7 +3,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCustomer, type Stripe } from '@stacksjs/payments'
+import { manageCustomer, managePaymentMethod, type Stripe } from '@stacksjs/payments'
 
 import Post from './Post'
 
@@ -680,6 +680,29 @@ export class UserModel {
   async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
     return customer
+  }
+
+  async addPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    const paymentMethod = await managePaymentMethod.addPaymentMethod(this, paymentMethodId)
+
+    return paymentMethod
+  }
+
+  async updatePaymentMethod(paymentMethodId: string, params: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    const updatedPaymentMethod = await managePaymentMethod.updatePaymentMethod(this, paymentMethodId, params)
+
+    return updatedPaymentMethod
+  }
+
+  async deletePaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
+    return deletedPaymentMethod
+  }
+
+  async retrievePaymentMethod(paymentMethod: string): Promise<Stripe.Response<Stripe.PaymentMethod> | null> {
+    const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
+    
+    return defaultPaymentMethod
   }
 
   stripeId(): string {

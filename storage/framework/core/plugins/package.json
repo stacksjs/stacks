@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/slug",
+  "name": "@stacksjs/slugs",
   "type": "module",
   "version": "0.67.0",
   "description": "The core of what powers Stacks Plugins.",
