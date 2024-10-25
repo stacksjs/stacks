@@ -1082,18 +1082,40 @@ export async function generateModelString(
       return defaultPaymentMethod
     }
 
-    async checkout(items: Array<Stripe.Checkout.SessionCreateParams.LineItem>, sessionOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}, customerOptions: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Checkout.Session>> {
-      const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
-        mode: 'payment',
-        customer: await this.createOrGetStripeUser(customerOptions).then(customer => customer.id),
-        line_items: items,
-        success_url: sessionOptions.success_url,
-        cancel_url: sessionOptions.cancel_url,
-      };
+    async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+      if (!this.hasStripeId()) {
+        throw new Error('Customer does not exist in Stripe')
+      }
 
-      const mergedOptions = { ...defaultOptions, ...sessionOptions };
+      const defaultOptions: Stripe.PaymentIntentCreateParams = {
+        customer: this.stripeId(),
+        currency: 'usd',
+        amount: options.amount
+      }
 
-      return await stripe.checkout.create(mergedOptions);
+      const mergedOptions = { ...defaultOptions, ...options }
+
+      return await manageCharge.createPayment(this, mergedOptions.amount, mergedOptions)
+    }
+
+    async checkout(
+      priceIds: Record<string, number | undefined>,
+      options: Partial<Stripe.Checkout.SessionCreateParams> = {}
+    ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+    const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
+      mode: 'payment',
+      customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
+      line_items: Object.entries(priceIds).map(([priceId, quantity]) => ({
+        price: priceId,
+        quantity: quantity || 1
+      })),
+      success_url: 'http://localhost:3008/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost:3008/checkout/cancel',
+    };
+
+      const mergedOptions = { ...defaultOptions, ...options };
+
+      return await manageCheckout.create(this, mergedOptions);
     }
     `
 
@@ -1973,8 +1995,3 @@ async function ensureCodeStyle(): Promise<void> {
     log.debug('Code style fixed successfully.')
   }
 }
-
-// TODO: https://github.com/oven-sh/bun/issues/6060
-// export function userModels() {
-//   return import.meta.glob<{ default: Model }>(path.userModelsPath('*.ts'))
-// }

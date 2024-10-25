@@ -1,9 +1,10 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
+import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCustomer, managePaymentMethod, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, type Stripe } from '@stacksjs/payments'
 
 import Post from './Post'
 
@@ -705,18 +706,40 @@ export class UserModel {
     return defaultPaymentMethod
   }
 
-  async checkout(items: Array<Stripe.Checkout.SessionCreateParams.LineItem>, sessionOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}, customerOptions: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+  async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+    if (! this.hasStripeId()) {
+      throw new Error('Customer does not exist in Stripe')
+    }
+
+    const defaultOptions: Stripe.PaymentIntentCreateParams = {
+      customer: this.stripeId(),
+      currency: 'usd',
+      amount: options.amount
+    }
+
+    const mergedOptions = { ...defaultOptions, ...options }
+
+    return await manageCharge.createPayment(this, mergedOptions.amount, mergedOptions)
+  }
+
+  async checkout(
+    priceIds: Record<string, number | undefined>,
+    options: Partial<Stripe.Checkout.SessionCreateParams> = {}
+  ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
       mode: 'payment',
-      customer: await this.createOrGetStripeUser(customerOptions).then(customer => customer.id),
-      line_items: items,
-      success_url: sessionOptions.success_url || `${process.env.APP_URL}/checkout/success`,
-      cancel_url: sessionOptions.cancel_url || `${process.env.APP_URL}/checkout/cancel`,
+      customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
+      line_items: Object.entries(priceIds).map(([priceId, quantity]) => ({
+        price: priceId,
+        quantity: quantity || 1
+      })),
+      success_url: `http://localhost:3008/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:3008/checkout/cancel`,
     };
 
-    const mergedOptions = { ...defaultOptions, ...sessionOptions };
+    const mergedOptions = { ...defaultOptions, ...options };
 
-    return await stripe.checkout.create(mergedOptions);
+    return await manageCheckout.create(this, mergedOptions);
   }
 
   stripeId(): string {
