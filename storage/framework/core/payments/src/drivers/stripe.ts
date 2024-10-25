@@ -140,6 +140,44 @@ export const refund: Refund = (() => {
   return { create, retrieve, update, list }
 })()
 
+export interface PaymentMethod {
+  create: (params: Stripe.PaymentMethodCreateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  retrieve: (paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  update: (paymentMethodId: string, params: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  list: (params: Stripe.PaymentMethodListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>>
+  attach: (paymentMethodId: string, params: Stripe.PaymentMethodAttachParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  detach: (paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+}
+
+export const paymentMethod: PaymentMethod = (() => {
+  async function create(params: Stripe.PaymentMethodCreateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    return await client.paymentMethods.create(params)
+  }
+
+  async function retrieve(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    return await client.paymentMethods.retrieve(paymentMethodId)
+  }
+
+  async function update(paymentMethodId: string, params: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    return await client.paymentMethods.update(paymentMethodId, params)
+  }
+
+  async function list(params: Stripe.PaymentMethodListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
+    return await client.paymentMethods.list(params)
+  }
+
+  async function attach(paymentMethodId: string, params: Stripe.PaymentMethodAttachParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    return await client.paymentMethods.attach(paymentMethodId, params)
+  }
+
+  async function detach(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    return await client.paymentMethods.detach(paymentMethodId)
+  }
+
+  return { create, retrieve, update, list, attach, detach }
+})()
+
+
 export interface BalanceTransactions {
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.BalanceTransaction>>
   list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.BalanceTransaction>>>
