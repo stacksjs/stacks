@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 
-const apiKey = process.env.STRIPE_PUBLIC_KEY || 'sk_test_QKcCQL409PbuOgDTIyaxrt1f'
+const apiKey = process.env.STRIPE_PUBLIC_KEY || ''
 
 const client = new Stripe(apiKey, {
   apiVersion: '2024-09-30.acacia',
@@ -110,6 +110,34 @@ export const subscription: Subscription = (() => {
   }
 
   return { create }
+})()
+
+
+export interface Refund {
+  create: (params: Stripe.RefundCreateParams) => Promise<Stripe.Response<Stripe.Refund>>
+  retrieve: (refundId: string) => Promise<Stripe.Response<Stripe.Refund>>
+  update: (refundId: string, params: Stripe.RefundUpdateParams) => Promise<Stripe.Response<Stripe.Refund>>
+  list: (params: Stripe.RefundListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Refund>>>
+}
+
+export const refund: Refund = (() => {
+  async function create(params: Stripe.RefundCreateParams): Promise<Stripe.Response<Stripe.Refund>> {
+    return await client.refunds.create(params)
+  }
+
+  async function retrieve(refundId: string): Promise<Stripe.Response<Stripe.Refund>> {
+    return await client.refunds.retrieve(refundId)
+  }
+
+  async function update(refundId: string, params: Stripe.RefundUpdateParams): Promise<Stripe.Response<Stripe.Refund>> {
+    return await client.refunds.update(refundId, params)
+  }
+
+  async function list(params: Stripe.RefundListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Refund>>> {
+    return await client.refunds.list(params)
+  }
+
+  return { create, retrieve, update, list }
 })()
 
 export interface BalanceTransactions {
