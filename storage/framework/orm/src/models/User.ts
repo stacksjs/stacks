@@ -701,8 +701,22 @@ export class UserModel {
 
   async retrievePaymentMethod(paymentMethod: string): Promise<Stripe.Response<Stripe.PaymentMethod> | null> {
     const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
-    
+
     return defaultPaymentMethod
+  }
+
+  async checkout(items: Array<Stripe.Checkout.SessionCreateParams.LineItem>, sessionOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}, customerOptions: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+    const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
+      mode: 'payment',
+      customer: await this.createOrGetStripeUser(customerOptions).then(customer => customer.id),
+      line_items: items,
+      success_url: sessionOptions.success_url || `${process.env.APP_URL}/checkout/success`,
+      cancel_url: sessionOptions.cancel_url || `${process.env.APP_URL}/checkout/cancel`,
+    };
+
+    const mergedOptions = { ...defaultOptions, ...sessionOptions };
+
+    return await stripe.checkout.create(mergedOptions);
   }
 
   stripeId(): string {

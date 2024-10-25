@@ -1058,11 +1058,6 @@ export async function generateModelString(
     hasStripeId(): boolean {
       return manageCustomer.hasStripeId(this)
     }
-     
-    async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
-      const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
-      return customer
-    }
 
     async addPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
       const paymentMethod = await managePaymentMethod.addPaymentMethod(this, paymentMethodId)
@@ -1085,6 +1080,20 @@ export async function generateModelString(
       const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
       
       return defaultPaymentMethod
+    }
+
+    async checkout(items: Array<Stripe.Checkout.SessionCreateParams.LineItem>, sessionOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}, customerOptions: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+      const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
+        mode: 'payment',
+        customer: await this.createOrGetStripeUser(customerOptions).then(customer => customer.id),
+        line_items: items,
+        success_url: sessionOptions.success_url,
+        cancel_url: sessionOptions.cancel_url,
+      };
+
+      const mergedOptions = { ...defaultOptions, ...sessionOptions };
+
+      return await stripe.checkout.create(mergedOptions);
     }
     `
 

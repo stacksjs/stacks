@@ -195,6 +195,39 @@ export const balanceTransactions: BalanceTransactions = (() => {
   return { retrieve, list }
 })()
 
+export interface Checkout {
+  create: (params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Response<Stripe.Checkout.Session>>
+  retrieve: (sessionId: string) => Promise<Stripe.Response<Stripe.Checkout.Session>>
+  expire: (sessionId: string) => Promise<Stripe.Response<Stripe.Checkout.Session>>
+  list: (params: Stripe.Checkout.SessionListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Checkout.Session>>>
+  listLineItems: (sessionId: string, params?: Stripe.Checkout.SessionListLineItemsParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.LineItem>>>
+}
+
+export const checkout: Checkout = (() => {
+  async function create(params: Stripe.Checkout.SessionCreateParams): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+    return await client.checkout.sessions.create(params)
+  }
+
+  async function retrieve(sessionId: string): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+    return await client.checkout.sessions.retrieve(sessionId)
+  }
+
+  async function expire(sessionId: string): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+    return await client.checkout.sessions.expire(sessionId)
+  }
+
+  async function list(params: Stripe.Checkout.SessionListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Checkout.Session>>> {
+    return await client.checkout.sessions.list(params)
+  }
+
+  async function listLineItems(sessionId: string, params?: Stripe.Checkout.SessionListLineItemsParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.LineItem>>> {
+    return await client.checkout.sessions.listLineItems(sessionId, params)
+  }
+
+  return { create, retrieve, expire, list, listLineItems }
+})()
+
+
 export interface Dispute {
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Dispute>>
   update: (stripeId: string, params: Stripe.DisputeUpdateParams) => Promise<Stripe.Response<Stripe.Dispute>>
