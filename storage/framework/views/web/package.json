@@ -16,7 +16,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@unhead/vue": "^1.11.10",
-    "@unocss/reset": "0.61.0",
+    "@unocss/reset": "0.63.6",
     "@vueuse/core": "^11.1.0",
     "@vueuse/head": "^2.0.0",
     "nprogress": "^0.2.0",
@@ -26,7 +26,7 @@
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.2.3",
+    "@iconify-json/carbon": "^1.2.4",
     "@intlify/unplugin-vue-i18n": "^5.2.0",
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/nprogress": "^0.2.3",
@@ -37,20 +37,20 @@
     "markdown-it-shikiji": "^0.10.2",
     "rollup": "^4.24.0",
     "shikiji": "^0.10.2",
-    "unocss": "0.61.0",
+    "unocss": "0.63.6",
     "unplugin-auto-import": "^0.18.3",
     "unplugin-vue-components": "^0.27.4",
     "unplugin-vue-markdown": "^0.26.2",
     "unplugin-vue-router": "^0.10.8",
-    "vite": "^5.4.9",
+    "vite": "^5.4.10",
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-inspect": "^0.8.7",
     "vite-plugin-pwa": "^0.20.5",
-    "vite-plugin-vue-devtools": "^7.5.2",
+    "vite-plugin-vue-devtools": "^7.5.4",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-plugin-webfont-dl": "^3.9.5",
     "vite-ssg": "^0.23.8",
     "vite-ssg-sitemap": "^0.8.1",
-    "vue-tsc": "^2.1.6"
+    "vue-tsc": "^2.1.8"
   }
 }

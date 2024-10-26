@@ -40,6 +40,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "neverthrow": "^8.0.0"
+    "neverthrow": "^8.1.1"
   }
 }

@@ -52,7 +52,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/eslint-config": "^3.8.1-beta.2",
     "lint-staged": "^15.2.10",
-    "publint": "^0.2.11",
+    "publint": "^0.2.12",
     "simple-git-hooks": "^2.11.1"
   }
 }
