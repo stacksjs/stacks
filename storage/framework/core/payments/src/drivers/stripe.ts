@@ -252,6 +252,95 @@ export const dispute: Dispute = (() => {
   return { retrieve, update, close, list }
 })()
 
+export interface Tax {
+  retrieve: (taxId: string) => Promise<Stripe.Response<Stripe.Tax.Calculation>>
+  create: (params: Stripe.Tax.CalculationCreateParams) => Promise<Stripe.Response<Stripe.Tax.Calculation>>
+  listTaxCodes: (params?: Stripe.TaxCodeListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.TaxCode>>>
+  retrieveTaxCode: (taxCodeId: string) => Promise<Stripe.Response<Stripe.TaxCode>>
+}
+
+export const tax: Tax = (() => {
+  async function retrieve(taxId: string): Promise<Stripe.Response<Stripe.Tax.Calculation>> {
+    return await client.tax.calculations.retrieve(taxId)
+  }
+
+  async function create(params: Stripe.Tax.CalculationCreateParams): Promise<Stripe.Response<Stripe.Tax.Calculation>> {
+    return await client.tax.calculations.create(params)
+  }
+
+  async function listTaxCodes(params?: Stripe.TaxCodeListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.TaxCode>>> {
+    return await client.taxCodes.list(params)
+  }
+
+  async function retrieveTaxCode(taxCodeId: string): Promise<Stripe.Response<Stripe.TaxCode>> {
+    return await client.taxCodes.retrieve(taxCodeId)
+  }
+
+  return { retrieve, create, listTaxCodes, retrieveTaxCode }
+})()
+
+export interface Promotion {
+  createCoupon: (params: Stripe.CouponCreateParams) => Promise<Stripe.Response<Stripe.Coupon>>
+  retrieveCoupon: (couponId: string) => Promise<Stripe.Response<Stripe.Coupon>>
+  updateCoupon: (couponId: string, params: Stripe.CouponUpdateParams) => Promise<Stripe.Response<Stripe.Coupon>>
+  deleteCoupon: (couponId: string) => Promise<Stripe.Response<Stripe.DeletedCoupon>>
+  listCoupons: (params?: Stripe.CouponListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Coupon>>>
+  createPromoCode: (params: Stripe.PromotionCodeCreateParams) => Promise<Stripe.Response<Stripe.PromotionCode>>
+  retrievePromoCode: (promoCodeId: string) => Promise<Stripe.Response<Stripe.PromotionCode>>
+  updatePromoCode: (promoCodeId: string, params: Stripe.PromotionCodeUpdateParams) => Promise<Stripe.Response<Stripe.PromotionCode>>
+  listPromoCodes: (params?: Stripe.PromotionCodeListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>>
+}
+
+export const promotion: Promotion = (() => {
+  async function createCoupon(params: Stripe.CouponCreateParams): Promise<Stripe.Response<Stripe.Coupon>> {
+    return await client.coupons.create(params)
+  }
+
+  async function retrieveCoupon(couponId: string): Promise<Stripe.Response<Stripe.Coupon>> {
+    return await client.coupons.retrieve(couponId)
+  }
+
+  async function updateCoupon(couponId: string, params: Stripe.CouponUpdateParams): Promise<Stripe.Response<Stripe.Coupon>> {
+    return await client.coupons.update(couponId, params)
+  }
+
+  async function deleteCoupon(couponId: string): Promise<Stripe.Response<Stripe.DeletedCoupon>> {
+    return await client.coupons.del(couponId)
+  }
+
+  async function listCoupons(params?: Stripe.CouponListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Coupon>>> {
+    return await client.coupons.list(params)
+  }
+
+  async function createPromoCode(params: Stripe.PromotionCodeCreateParams): Promise<Stripe.Response<Stripe.PromotionCode>> {
+    return await client.promotionCodes.create(params)
+  }
+
+  async function retrievePromoCode(promoCodeId: string): Promise<Stripe.Response<Stripe.PromotionCode>> {
+    return await client.promotionCodes.retrieve(promoCodeId)
+  }
+
+  async function updatePromoCode(promoCodeId: string, params: Stripe.PromotionCodeUpdateParams): Promise<Stripe.Response<Stripe.PromotionCode>> {
+    return await client.promotionCodes.update(promoCodeId, params)
+  }
+
+  async function listPromoCodes(params?: Stripe.PromotionCodeListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>> {
+    return await client.promotionCodes.list(params)
+  }
+
+  return {
+    createCoupon,
+    retrieveCoupon,
+    updateCoupon,
+    deleteCoupon,
+    listCoupons,
+    createPromoCode,
+    retrievePromoCode,
+    updatePromoCode,
+    listPromoCodes,
+  }
+})()
+
 export interface PaymentEvents {
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Event>>
   list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Event>>>

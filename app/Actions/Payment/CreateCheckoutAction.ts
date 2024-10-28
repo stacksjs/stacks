@@ -9,7 +9,9 @@ export default new Action({
   async handle(request: RequestInstance) {
     const user = await User.find(1)
 
-    const checkout = await user?.checkout({ price_1QBEfsBv6MhUdo23avVV0kqx: 1 }, { automatic_tax: { enabled: true } })
+    const checkout = await user?.checkout({
+      price_1QBEfsBv6MhUdo23avVV0kqx: 1,
+    }, { automatic_tax: { enabled: true }, allow_promotion_codes: true })
 
     return checkout
   },
