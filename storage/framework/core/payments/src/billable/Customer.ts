@@ -1,3 +1,4 @@
+import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
 import type { UserModel } from '../../../../orm/src/models/User'
 import { stripe } from '..'
@@ -11,11 +12,36 @@ export interface ManageCustomer {
   retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer>>
   createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams | Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   deleteStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.DeletedCustomer>>
+  syncStripeCustomerDetails: (user: UserModel, options: StripeCustomerOptions) => Promise<Stripe.Response<Stripe.Customer>>
 }
 
 export const manageCustomer: ManageCustomer = (() => {
   function stripeId(user: UserModel): string {
     return user.stripe_id || ''
+  }
+
+  function stripeAddress(options: StripeCustomerOptions): {
+    line1?: string
+    city?: string
+    state?: string
+    postal_code?: string
+    country?: string
+  } {
+    return {
+      line1: options.address?.line1,
+      city: options.address?.city,
+      state: options.address?.state,
+      postal_code: options.address?.postal_code,
+      country: options.address?.country,
+    }
+  }
+
+  function stripePreferredLocales(): string[] {
+    return []
+  }
+
+  function stripeMetadata(metadata: Stripe.Emptyable<Stripe.MetadataParam>): Stripe.Emptyable<Stripe.MetadataParam> {
+    return metadata
   }
 
   function hasStripeId(user: UserModel): boolean {
@@ -134,6 +160,16 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
+  async function syncStripeCustomerDetails(user: UserModel, options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
+    return await updateStripeCustomer(user, {
+      name: stripeName(user),
+      email: stripeEmail(user),
+      address: stripeAddress(options),
+      preferred_locales: stripePreferredLocales(),
+      metadata: options.metadata ? stripeMetadata(options.metadata) : {},
+    })
+  }
+
   function stripeName(user: UserModel): string {
     return user.name || ''
   }
@@ -142,5 +178,5 @@ export const manageCustomer: ManageCustomer = (() => {
     return user.email || ''
   }
 
-  return { stripeId, hasStripeId, createStripeCustomer, updateStripeCustomer, createOrGetStripeUser, createOrUpdateStripeUser, deleteStripeUser, retrieveStripeUser }
+  return { stripeId, hasStripeId, createStripeCustomer, updateStripeCustomer, createOrGetStripeUser, createOrUpdateStripeUser, deleteStripeUser, retrieveStripeUser, syncStripeCustomerDetails }
 })()

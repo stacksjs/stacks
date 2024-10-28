@@ -1,8 +1,6 @@
 import type Stripe from 'stripe'
 import type { UserModel } from '../../../../orm/src/models/User'
-import { env } from '@stacksjs/env'
 import { stripe } from '..'
-
 
 export interface Checkout {
   create: (user: UserModel, params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Response<Stripe.Checkout.Session>>

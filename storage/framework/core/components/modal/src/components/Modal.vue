@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, defineCustomElement, onMounted, onUnmounted, Transition, useSlots } from 'vue'
+import { computed, defineCustomElement, onMounted, onUnmounted, useSlots } from 'vue'
 
 const props = defineProps<{
   visible: boolean
@@ -48,33 +48,33 @@ defineCustomElement({
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div class="min-h-full flex items-end justify-center p-4 text-center sm:items-center sm:p-0" @click.self="handleClose">
-              <div class="modal-content transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:max-w-lg sm:w-full sm:p-6" @click.stop>
-                <slot v-if="isCloseButtonVisible" name="close-button">
-                  <div class="absolute right-0 top-0 pr-4 pt-4 sm:block">
-                    <button type="button" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" @click="handleClose">
-                      <span class="sr-only">Close</span>
-                      <div class="i-ic:outline-close h-8 w-8" />
-                    </button>
+            <div class="modal-content transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:max-w-lg sm:w-full sm:p-6" @click.stop>
+              <slot v-if="isCloseButtonVisible" name="close-button">
+                <div class="absolute right-0 top-0 pr-4 pt-4 sm:block">
+                  <button type="button" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" @click="handleClose">
+                    <span class="sr-only">Close</span>
+                    <div class="i-ic:outline-close h-8 w-8" />
+                  </button>
+                </div>
+              </slot>
+
+              <div class="w-full flex">
+                <slot v-if="isHeaderVisible" name="header">
+                  <div class="flex items-center justify-between">
+                    <div class="text-gray-900 font-medium">
+                      <!-- Default header content -->
+                      <span>Modal Header</span>
+                    </div>
                   </div>
                 </slot>
-
-                <div class="w-full flex">
-                  <slot v-if="isHeaderVisible" name="header">
-                    <div class="flex items-center justify-between">
-                      <div class="text-gray-900 font-medium">
-                        <!-- Default header content -->
-                        <span>Modal Header</span>
-                      </div>
-                    </div>
-                  </slot>
-                </div>
-
-                <div class="w-full flex">
-                  <slot>
-                    <p>Default modal content goes here.</p>
-                  </slot>
-                </div>
               </div>
+
+              <div class="w-full flex">
+                <slot>
+                  <p>Default modal content goes here.</p>
+                </slot>
+              </div>
+            </div>
           </div>
         </div>
       </div>

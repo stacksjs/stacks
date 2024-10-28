@@ -95,7 +95,7 @@ async function handleCopyCode() {
       </button>
     </div>
 
-    <Modal close-button :visible="visible" @close="handleClose" :transition="currentTransition">
+    <Modal close-button :visible="visible" :transition="currentTransition" @close="handleClose">
       <div>
         <p class="text-sm text-gray-500">
           Here is the content of the modal

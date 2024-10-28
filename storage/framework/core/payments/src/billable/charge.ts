@@ -3,7 +3,6 @@ import type { UserModel } from '../../../../orm/src/models/User'
 import { log } from '@stacksjs/logging'
 import { stripe } from '..'
 
-
 export interface ManageCharge {
   createPayment: (user: UserModel, amount: number, options: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
   findPayment: (id: string) => Promise<Stripe.PaymentIntent | null>
@@ -14,7 +13,7 @@ export interface ManageCharge {
 export const manageCharge: ManageCharge = (() => {
   async function createPayment(user: UserModel, amount: number, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     const defaultOptions: Stripe.PaymentIntentCreateParams = {
-      //TODO: This should be fetched from the config.
+      // TODO: This should be fetched from the config.
       currency: 'usd',
       amount,
     }
@@ -23,35 +22,35 @@ export const manageCharge: ManageCharge = (() => {
       defaultOptions.customer = user.stripe_id
     }
 
-    const mergedOptions = { ...defaultOptions, ...options } 
+    const mergedOptions = { ...defaultOptions, ...options }
 
     return await stripe.paymentIntent.create(mergedOptions)
   }
 
   async function findPayment(id: string): Promise<Stripe.PaymentIntent | null> {
     try {
-      const stripePaymentIntent = await stripe.paymentIntent.retrieve(id);
-      return stripePaymentIntent;
+      const stripePaymentIntent = await stripe.paymentIntent.retrieve(id)
+      return stripePaymentIntent
+    }
+    catch (error) {
+      log.error(error)
 
-    } catch (error) {
-
-     log.error(error)
-
-      return null;
+      return null
     }
   }
 
   async function refund(paymentIntentId: string, options: Stripe.RefundCreateParams = {}): Promise<Stripe.Response<Stripe.Refund>> {
     const refundParams: Stripe.RefundCreateParams = {
       payment_intent: paymentIntentId,
-      ...options
-    };
+      ...options,
+    }
 
     try {
-      return await stripe.refund.create(refundParams);
-    } catch (error) {
-      log.error('Error creating refund:', error);
-      throw error;
+      return await stripe.refund.create(refundParams)
+    }
+    catch (error) {
+      log.error('Error creating refund:', error)
+      throw error
     }
   }
 

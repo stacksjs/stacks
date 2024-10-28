@@ -112,7 +112,6 @@ export const subscription: Subscription = (() => {
   return { create }
 })()
 
-
 export interface Refund {
   create: (params: Stripe.RefundCreateParams) => Promise<Stripe.Response<Stripe.Refund>>
   retrieve: (refundId: string) => Promise<Stripe.Response<Stripe.Refund>>
@@ -177,7 +176,6 @@ export const paymentMethod: PaymentMethod = (() => {
   return { create, retrieve, update, list, attach, detach }
 })()
 
-
 export interface BalanceTransactions {
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.BalanceTransaction>>
   list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.BalanceTransaction>>>
@@ -226,7 +224,6 @@ export const checkout: Checkout = (() => {
 
   return { create, retrieve, expire, list, listLineItems }
 })()
-
 
 export interface Dispute {
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.Dispute>>

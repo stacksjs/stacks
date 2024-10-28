@@ -1098,6 +1098,13 @@ export async function generateModelString(
       return await manageCharge.createPayment(this, mergedOptions.amount, mergedOptions)
     }
 
+    async syncStripeCustomerDetails(options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
+      const customer = await manageCustomer.syncStripeCustomerDetails(this, options)
+
+      return customer
+    }
+
+
     async checkout(
       priceIds: Record<string, number | undefined>,
       options: Partial<Stripe.Checkout.SessionCreateParams> = {}
@@ -1243,8 +1250,9 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model.attributes))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import {manageCustomer, type Stripe} from '@stacksjs/payments'
+    import { manageCustomer, manageCheckout, managePaymentMethod, manageCharge, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
+    import { StripeCustomerOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'
     import { dispatch } from '@stacksjs/events'
     import { generateTwoFactorSecret } from '@stacksjs/auth'

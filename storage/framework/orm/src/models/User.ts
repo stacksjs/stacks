@@ -1,7 +1,7 @@
+import type { StripeCustomerOptions } from '@stacksjs/types'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, type Stripe } from '@stacksjs/payments'
@@ -53,7 +53,7 @@ export type Users = UserType[]
 export type UserColumn = Users
 export type UserColumns = Array<keyof Users>
 
-    type SortDirection = 'asc' | 'desc'
+type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: UserType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -683,6 +683,14 @@ export class UserModel {
     return customer
   }
 
+  stripeId(): string {
+    return manageCustomer.stripeId(this)
+  }
+
+  hasStripeId(): boolean {
+    return manageCustomer.hasStripeId(this)
+  }
+
   async addPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     const paymentMethod = await managePaymentMethod.addPaymentMethod(this, paymentMethodId)
 
@@ -707,14 +715,14 @@ export class UserModel {
   }
 
   async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
-    if (! this.hasStripeId()) {
+    if (!this.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
     const defaultOptions: Stripe.PaymentIntentCreateParams = {
       customer: this.stripeId(),
       currency: 'usd',
-      amount: options.amount
+      amount: options.amount,
     }
 
     const mergedOptions = { ...defaultOptions, ...options }
@@ -722,32 +730,30 @@ export class UserModel {
     return await manageCharge.createPayment(this, mergedOptions.amount, mergedOptions)
   }
 
+  async syncStripeCustomerDetails(options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
+    const customer = await manageCustomer.syncStripeCustomerDetails(this, options)
+
+    return customer
+  }
+
   async checkout(
     priceIds: Record<string, number | undefined>,
-    options: Partial<Stripe.Checkout.SessionCreateParams> = {}
+      options: Partial<Stripe.Checkout.SessionCreateParams> = {},
   ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
       mode: 'payment',
       customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
       line_items: Object.entries(priceIds).map(([priceId, quantity]) => ({
         price: priceId,
-        quantity: quantity || 1
+        quantity: quantity || 1,
       })),
-      success_url: `http://localhost:3008/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:3008/checkout/cancel`,
-    };
+      success_url: 'http://localhost:3008/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost:3008/checkout/cancel',
+    }
 
-    const mergedOptions = { ...defaultOptions, ...options };
+    const mergedOptions = { ...defaultOptions, ...options }
 
-    return await manageCheckout.create(this, mergedOptions);
-  }
-
-  stripeId(): string {
-    return manageCustomer.stripeId(this)
-  }
-
-  hasStripeId(): boolean {
-    return manageCustomer.hasStripeId(this)
+    return await manageCheckout.create(this, mergedOptions)
   }
 
   distinct(column: keyof UserType): UserModel {

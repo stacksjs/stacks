@@ -3,8 +3,8 @@ import { defineCustomElement, ref } from 'vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
 import Options from './components/Options.vue'
-import Usage from './components/Usage.vue'
 import Transitions from './components/Transitions.vue'
+import Usage from './components/Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()

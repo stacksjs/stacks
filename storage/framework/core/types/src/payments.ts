@@ -1,3 +1,5 @@
+import type Stripe from 'stripe'
+
 export interface PaymentOptions {
   driver: 'stripe'
 }
@@ -15,6 +17,21 @@ export interface ChargeOptions {
     query?: string
     limit?: number
   }
+}
+
+export interface StripeCustomerOptions {
+  address?: {
+    line1?: string
+    city?: string
+    state?: string
+    postal_code?: string
+    country?: string
+  }
+  name?: string
+  phone?: string
+  metadata?: Stripe.Emptyable<Stripe.MetadataParam>
+  email?: string
+  preferred_locales?: string[]
 }
 
 export interface CustomerOptions {

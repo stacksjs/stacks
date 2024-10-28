@@ -13,7 +13,7 @@ export const registry: Registry = [
     github: 'stacksjs/stacks',
     // bitbucket: 'stacksjs/stacks',
     // gitlab: 'stacksjs/stacks'
-  }
+  },
 ]
 
 export default registry
