@@ -14,6 +14,7 @@ export default new Action({
         },
       ],
       payment_behavior: 'default_incomplete',
+      trial_period_days: 7,
       expand: ['latest_invoice.payment_intent'],
     })
 

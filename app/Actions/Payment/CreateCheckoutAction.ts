@@ -11,7 +11,10 @@ export default new Action({
 
     const checkout = await user?.checkout({
       price_1QBEfsBv6MhUdo23avVV0kqx: 1,
-    }, { automatic_tax: { enabled: true }, allow_promotion_codes: true })
+    }, {
+      automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
+    })
 
     return checkout
   },
