@@ -738,7 +738,7 @@ export class UserModel {
 
   async checkout(
     priceIds: Record<string, number | undefined>,
-      options: Partial<Stripe.Checkout.SessionCreateParams> = {},
+    options: Partial<Stripe.Checkout.SessionCreateParams> = {},
   ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
       mode: 'payment',

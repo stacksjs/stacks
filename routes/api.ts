@@ -27,6 +27,8 @@ route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
 route.post('/stripe/create-payment-intent', 'Actions/Payment/CreatePaymentIntentAction')
 route.post('/stripe/create-subscription', 'Actions/Payment/CreateSubscriptionAction')
+route.post('/stripe/update-customer', 'Actions/Payment/UpdateCustomerAction')
+route.post('/stripe/checkout', 'Actions/Payment/CreateCheckoutAction')
 
 // route.group('/some-path', async () => {...})
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`

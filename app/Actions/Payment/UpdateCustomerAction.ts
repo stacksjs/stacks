@@ -7,17 +7,16 @@ export default new Action({
   description: 'Update customer detauls',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const amount = Number(request.get('amount'))
-
     const user = await User.find(1)
 
-    const paymentIntent = await user?.paymentIntent({
-      amount,
-      currency: 'usd',
-      description: 'Subscription to Stacks Pro',
-      payment_method_types: ['card'],
-    })
+    const customer = await user?.syncStripeCustomerDetails({ address: {
+      line1: '123 Elm St',
+      city: 'Austin',
+      state: 'TX',
+      postal_code: '78701',
+      country: 'US',
+    }})
 
-    return paymentIntent
+    return customer
   },
 })
