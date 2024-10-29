@@ -80,3 +80,19 @@ export interface EventOptions {
     type?: string
   }
 }
+
+export interface CheckoutLineItem {
+  priceId: string
+  quantity: number
+}
+
+export interface CheckoutOptions extends Partial<Stripe.Checkout.SessionCreateParams> {
+  enableTax?: boolean
+  allowPromotions?: boolean
+}
+
+export interface SubscriptionOptions extends Partial<Stripe.SubscriptionCreateParams> {
+  enableTax?: boolean
+  allowPromotions?: boolean
+  trialDays?: number
+}

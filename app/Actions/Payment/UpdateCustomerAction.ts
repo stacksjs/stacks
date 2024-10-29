@@ -15,7 +15,7 @@ export default new Action({
       state: 'TX',
       postal_code: '78701',
       country: 'US',
-    }})
+    } })
 
     return customer
   },

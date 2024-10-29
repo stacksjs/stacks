@@ -1104,25 +1104,87 @@ export async function generateModelString(
       return customer
     }
 
-
-    async checkout(
-      priceIds: Record<string, number | undefined>,
-      options: Partial<Stripe.Checkout.SessionCreateParams> = {}
-    ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
-    const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
-      mode: 'payment',
-      customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
-      line_items: Object.entries(priceIds).map(([priceId, quantity]) => ({
+    async newSubscription(
+      priceId: string,
+      options: SubscriptionOptions = {},
+    ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+      // Map price IDs to Stripe subscription items
+      const subscriptionItems = [{
         price: priceId,
-        quantity: quantity || 1
-      })),
-      success_url: 'http://localhost:3008/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'http://localhost:3008/checkout/cancel',
-    };
+        quantity: 1,
+      }]
 
-      const mergedOptions = { ...defaultOptions, ...options };
+      // Ensure the customer is retrieved correctly
+      const customer = await this.createOrGetStripeUser({}).then((customer) => {
+        if (!customer || !customer.id) {
+          throw new Error('Customer does not exist in Stripe')
+        }
+        return customer.id // Ensure customer.id is always a string
+      })
 
-      return await manageCheckout.create(this, mergedOptions);
+      // Configure optional subscription parameters based on options
+      const newOptions: Partial<Stripe.SubscriptionCreateParams> = {
+        items: subscriptionItems,
+        automatic_tax: options.enableTax ? { enabled: true } : undefined,
+        payment_behavior: options.allowPromotions ? 'default_incomplete' : undefined,
+        trial_period_days: options.trialDays,
+      }
+
+      // Define core subscription parameters, including customer association and expansion options
+      const defaultOptions: Stripe.SubscriptionCreateParams = {
+        customer, // This is guaranteed to be a string
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+        // Apply trial_days only if specified
+        trial_period_days: options.trialDays || undefined,
+        items: subscriptionItems, // Add the subscription items here
+      }
+
+      // Merge new options with default options, giving priority to provided options
+      const mergedOptions: Stripe.SubscriptionCreateParams = {
+        ...defaultOptions,
+        ...newOptions,
+      }
+
+      // Create the subscription
+      const subscription = await manageSubscription.create(this, mergedOptions)
+
+      // Retrieve the latest invoice and payment intent for further use
+      const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
+      const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
+
+      return { subscription, paymentIntent }
+    }
+
+     async checkout(
+      priceIds: CheckoutLineItem[],
+      options: CheckoutOptions = {},
+    ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+      const newOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}
+
+      if (options.enableTax) {
+        newOptions.automatic_tax = { enabled: true }
+        delete options.enableTax
+      }
+
+      if (options.allowPromotions) {
+        newOptions.allow_promotion_codes = true
+        delete options.allowPromotions
+      }
+
+      const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
+        mode: 'payment',
+        customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
+        line_items: priceIds.map((item: CheckoutLineItem) => ({
+          price: item.priceId,
+          quantity: item.quantity || 1,
+        })),
+
+      }
+
+      const mergedOptions = { ...defaultOptions, ...newOptions, ...options }
+
+      return await manageCheckout.create(this, mergedOptions)
     }
     `
 
@@ -1250,9 +1312,9 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model.attributes))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { manageCustomer, manageCheckout, managePaymentMethod, manageCharge, type Stripe } from '@stacksjs/payments'
+    import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
-    import { StripeCustomerOptions } from '@stacksjs/types'
+    import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions, SubscriptionOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'
     import { dispatch } from '@stacksjs/events'
     import { generateTwoFactorSecret } from '@stacksjs/auth'
