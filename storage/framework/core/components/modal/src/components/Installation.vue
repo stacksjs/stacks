@@ -16,7 +16,7 @@ async function handleCopyCode() {
     <h1 class="my-3 text-lg font-semibold">
       Installation
     </h1>
-    <div class="code-block relative">
+    <div class="relative code-block">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -26,18 +26,19 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="btn-border absolute right-2 top-2 p-1"
+        class="absolute p-1 btn-border right-2 top-2"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
-        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
-        <!-- <div class="i-ic:baseline-content-copy text-gray-500" /> -->
-        <!-- <div class="i-ic:baseline-check text-gray-500" /> -->
+        <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
+        <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
       </button>
     </div>
   </div>
 </template>
 
 <style scoped>
+button {
+  border: 0px solid #000;
+}
 /* @unocss-placeholder */
 </style>

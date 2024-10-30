@@ -9,7 +9,6 @@ import { Modal } from '@stacksjs/modal'
 
 const visible = ref(false)
 
-
 const handleClose = () => {
   visible.value = false
 }
@@ -17,8 +16,13 @@ const handleClose = () => {
 
 <template>
   <!-- ... -->
-  <Modal close-button :visible="visible" @close="handleClose">
-    <div>Here is the content of the modal</div>
+  <Modal :visible="visible" @close="handleClose" transition="fade">
+    <template #closeButton />
+    <template #header>
+      <h1> Modal Title</h1>
+    </template>
+
+    <p>Here is the content of the modal</p>
   </Modal>
 
   <button @click="visible = true">
@@ -42,7 +46,7 @@ async function handleCopyCode() {
     <p class="my-3 text-base">
       Render the modal in the root of your app.
     </p>
-    <div class="group code-block relative">
+    <div class="relative group code-block">
       <Highlight
         class-name="hightlight-rounded-md text-xs"
         language="xml"
@@ -52,16 +56,20 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
+        class="absolute hidden p-1 btn-border right-2 top-2 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
-        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
+        <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
+        <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
       </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* @unocss-placeholder  */
+button {
+  border: 0px solid #000;
+}
+
+/* @unocss-placeholder */
 </style>

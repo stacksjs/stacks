@@ -25,14 +25,14 @@ defineCustomElement({
 </script>
 
 <template>
-  <div class="modal-wrapper bg-neutral-100/66 px-4 dark:bg-neutral-900">
-    <div class="relative mx-auto max-w-full container sm:max-w-2xl">
-      <header class="flex-center flex-col py-20">
+  <div class="px-4 modal-wrapper bg-neutral-100/66 dark:bg-neutral-900">
+    <div class="container relative max-w-full mx-auto sm:max-w-2xl">
+      <header class="flex-col py-20 flex-center">
         <Hero @open="handleOpen" />
       </header>
 
       <main
-        class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
+        class="grid grid-cols-1 gap-8 pb-20 text-xs text-primary 2xl:text-sm"
       >
         <Installation />
         <Usage />
@@ -40,30 +40,25 @@ defineCustomElement({
         <Transitions />
       </main>
 
-      <Modal close-button :visible="visible" @close="handleClose">
+      <Modal :visible="visible" @close="handleClose" transition="fade">
+        <template #closeButton />
         <template #header>
-          <h2>
-            Modal with title
-          </h2>
+          <h1> Hello Detail</h1>
         </template>
-        <div>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
-        </div>
+
+        <p>Modal Content</p>
       </Modal>
+
       <Footer />
     </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 .modal-wrapper {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
     Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-}
-
-button {
-  border: 0px solid #000;
 }
 
 /* @unocss-placeholder */

@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, Transition } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
-type Transition = 'fade' | 'slide-fade' | 'scale'
+type Transition = 'fade' | 'slide-down' | 'pop' | 'custom'
 
-const currentTransition = ref<Transition>('slide-fade')
+const currentTransition = ref<Transition>('slide-down')
 const showCheckIcon = ref(false)
 const visible = ref(false)
 
@@ -13,30 +13,31 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
-  return `<Modal close-button :visible="visible" @close="handleClose" :transition="${currentTransition.value}">
-    <div>
-      <p class="text-sm text-gray-500">
-        Here is the content of the modal
-      </p>
-    </div>
-</Modal>`
+  return `
+<!-- App.vue -->
+<script setup lang="ts">
+import { Transition } from 'vue'
+<\/script>
+
+<template>
+  <Modal :visible="visible" @close="handleClose" transition="${currentTransition.value}">
+    <template #closeButton />
+    <template #header>
+      <h1> Hello Detail</h1>
+    </template>
+
+    <p>Modal Content</p>
+  </Modal>
+</template>`
 })
 
 function handleClick(action: Transition) {
-  visible.value = true
   currentTransition.value = action
-  // notification('Event has been created', {
-  //   style: {
-  //     background: currenTransition.value === 'all' ? '#fda4af' : '#6ee7b7',
-  //   },
-  //   class: 'my-toast',
-  //   descriptionClass: 'my-toast-description',
-  // })
+  visible.value = true
 }
 
 async function handleCopyCode() {
   await useCopyCode({ code: renderedCode.value, checkIconRef: showCheckIcon })
-  // notification('Copied to your clipboard!!!')
 }
 </script>
 
@@ -46,9 +47,9 @@ async function handleCopyCode() {
       Transition
     </h1>
     <p class="my-3 text-base">
-      Here are the transition options you can use for the Modal component.
+      For a better modal transition, you can use the Transition component from vue. please refer to the <a href="https://vuejs.org/guide/built-ins/transition#the-transition-component" target="_blank">Vue Transition</a> for more information.
     </p>
-    <div class="mb-4 flex gap-3 overflow-auto">
+    <div class="flex gap-3 mb-4 overflow-auto">
       <button
         class="btn-default"
         :class="{
@@ -56,28 +57,28 @@ async function handleCopyCode() {
         }"
         @click="handleClick('fade')"
       >
-        Fade (default)
+        Default (Fade)
       </button>
       <button
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'slide-fade',
+          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'slide-down',
         }"
-        @click="handleClick('slide-fade')"
+        @click="handleClick('slide-down')"
       >
-        Slide Fade
+        Slide down
       </button>
       <button
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'scale',
+          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'pop',
         }"
-        @click="handleClick('scale')"
+        @click="handleClick('pop')"
       >
-        Scale
+        Pop
       </button>
     </div>
-    <div class="code-block group relative">
+    <div class="relative code-block group">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -87,12 +88,15 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
+        class="absolute hidden p-1 btn-border right-2 top-2 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
-        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
+        <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
+        <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
       </button>
+    </div>
+    <div class="my-3 text-sm text-gray-500">
+      For custom transition, you can use the custom class to apply the transition to the modal content.
     </div>
 
     <Modal close-button :visible="visible" :transition="currentTransition" @close="handleClose">
@@ -106,5 +110,8 @@ async function handleCopyCode() {
 </template>
 
 <style scoped>
+button {
+  border: 0px solid #000;
+}
 /* @unocss-placeholder */
 </style>
