@@ -82,7 +82,7 @@ async function handleCopyCode() {
       For custom transition, you can use the custom class to apply the transition to the modal content.
     </div>
 
-    <Modal :duration="3000" :visible="visible" :transition="currentTransition" @close="handleClose">
+    <Modal :visible="visible" :transition="currentTransition" @close="handleClose">
       <div>
         <p class="text-sm text-gray-500">
           Here is the content of the modal
