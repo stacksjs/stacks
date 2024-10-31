@@ -18,7 +18,7 @@ function handleOpen() {
     </h1>
 
     <p class="mb-3 mt-0 text-lg">
-      An opinionated modal components.
+      An simple, minimal, yet powerful, modal component.
     </p>
 
     <div class="flex gap-2">
