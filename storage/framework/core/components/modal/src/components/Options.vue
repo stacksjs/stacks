@@ -79,7 +79,7 @@ async function handleCopyCode() {
     <p class="my-3 text-base">
       Here are the options you can use for the modal.
     </p>
-    <div class="flex gap-3 mb-4 overflow-auto">
+    <div class="mb-4 flex gap-3 overflow-auto">
       <button
         class="btn-default"
         :class="{
@@ -109,7 +109,7 @@ async function handleCopyCode() {
         Modal with header
       </button>
     </div>
-    <div class="relative group code-block">
+    <div class="group code-block relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -119,17 +119,17 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute hidden p-1 btn-border right-2 top-2 group-hover:block"
+        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
-        <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
+        <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
+        <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
 
     <Modal :visible="visible" @close="handleClose">
-      <template #closeButton v-if="currentAction === 'close'" />
-      <template #header v-if="currentAction === 'header'">
+      <template v-if="currentAction === 'close'" #closeButton />
+      <template v-if="currentAction === 'header'" #header>
         <h1 class="text-lg font-semibold">
           Greetings
         </h1>

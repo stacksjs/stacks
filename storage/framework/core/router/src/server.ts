@@ -296,13 +296,14 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     if (foundCallback.status === 500) {
       const { status, ...rest } = await foundCallback
 
-      const { errors } = rest
+      const { errors, stack } = rest
 
       const file = Bun.file(path.corePath('error-handling/src/views/500.html'))
 
       return file.text().then((htmlContent) => {
         // Replace the placeholder with the actual error message
         const modifiedHtml = htmlContent.replace('{{ERROR_MESSAGE}}', errors)
+          .replace('{{STACK_TRACE}}', stack)
 
         return new Response(modifiedHtml, {
           headers: {

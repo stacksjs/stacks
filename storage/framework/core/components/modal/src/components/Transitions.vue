@@ -1,10 +1,10 @@
 <script lang="ts" setup>
+import type { Transition } from '../types'
 import { computed, ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
-import type { Transition } from '../types'
 
 const currentTransition = ref<Transition>('fade')
-const transitionList = ref<Transition[]>(['fade',  'pop', 'fadeInRightBig', 'lightSpeedInRight', 'jackInTheBox', 'slideInDown', 'slideInRight'])
+const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'lightSpeedInRight', 'jackInTheBox', 'slideInDown', 'slideInRight'])
 const showCheckIcon = ref(false)
 const visible = ref(false)
 
@@ -41,10 +41,10 @@ async function handleCopyCode() {
     <p class="my-3 text-base">
       Here are the default transitions that come with the modal.
     </p>
-    <div class="flex gap-3 mb-4 overflow-auto">
+    <div class="mb-4 flex gap-3 overflow-auto">
       <button
-        class="btn-default"
         v-for="trans in transitionList"
+        class="btn-default"
         :class="{
           'bg-neutral-200/50 border-neutral-400/50': currentTransition === trans,
         }"
@@ -53,7 +53,7 @@ async function handleCopyCode() {
         {{ trans }}
       </button>
     </div>
-    <div class="relative code-block group">
+    <div class="code-block group relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -63,11 +63,11 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute hidden p-1 btn-border right-2 top-2 group-hover:block"
+        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
-        <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
+        <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
+        <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
 

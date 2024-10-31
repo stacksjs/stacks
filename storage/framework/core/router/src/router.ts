@@ -321,13 +321,18 @@ export class Router implements RouterInterface {
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {
-      if (error.status === 422)
-        return { status: 422, errors: JSON.parse(error.message) }
+      // Capture and log the stack trace if available
+      const stackTrace = error.stack || 'No stack trace available'
 
-      if (!error.status)
-        return { status: 500, errors: error.message }
+      if (error.status === 422) {
+        return { status: 422, errors: JSON.parse(error.message), stack: stackTrace }
+      }
 
-      return { status: error.status, errors: error.message }
+      if (!error.status) {
+        return { status: 500, errors: error.message, stack: stackTrace }
+      }
+
+      return { status: error.status, errors: error.message, stack: stackTrace }
     }
   }
 

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { defineCustomElement, onMounted, onUnmounted, useSlots, computed } from 'vue'
 import type { Transition } from '../types'
+import { computed, defineCustomElement, onMounted, onUnmounted, useSlots } from 'vue'
 
 const props = defineProps<{
   visible: boolean
@@ -41,33 +41,31 @@ defineCustomElement({
 <template>
   <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <transition name="fade" appear>
-      <div v-if="props.visible" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" />
+      <div v-if="props.visible" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" />
     </transition>
 
     <transition :name="currentTransition" appear>
       <div v-if="props.visible" class="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div class="flex items-end justify-center min-h-full p-4 text-center sm:items-center sm:p-0" @click.self="handleClose">
-          <div class="px-4 pt-5 pb-4 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl modal-content sm:my-8 sm:max-w-lg sm:w-full sm:p-6" @click.stop>
-
-            <div  v-if="slots.closeButton" class="absolute top-0 right-0 pt-4 pr-4 sm:block">
+        <div class="min-h-full flex items-end justify-center p-4 text-center sm:items-center sm:p-0" @click.self="handleClose">
+          <div class="modal-content transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:max-w-lg sm:w-full sm:p-6" @click.stop>
+            <div v-if="slots.closeButton" class="absolute right-0 top-0 pr-4 pt-4 sm:block">
               <div v-if="slots.closeButton().length === 0">
-                <button type="button" class="text-gray-400 bg-transparent border-none rounded-md hover:text-gray-500 focus:outline-none" @click="handleClose">
+                <button type="button" class="rounded-md border-none bg-transparent text-gray-400 hover:text-gray-500 focus:outline-none" @click="handleClose">
                   <span class="sr-only">Close</span>
-                  <div class="w-8 h-8 i-heroicons-x-mark" />
+                  <div class="i-heroicons-x-mark h-8 w-8" />
                 </button>
               </div>
 
               <slot v-else name="closeButton" />
             </div>
 
-            <div v-if="slots.header" class="flex w-full">
+            <div v-if="slots.header" class="w-full flex">
               <div class="flex items-center justify-between">
-
                 <slot name="header" />
               </div>
             </div>
 
-            <div class="flex w-full">
+            <div class="w-full flex">
               <slot>
                 <p>Default modal content goes here.</p>
               </slot>
@@ -222,7 +220,6 @@ button {
   opacity: 0;
   transform: scale(0.1) rotate(-30deg);
 }
-
 
 /* @unocss-placeholder */
 </style>

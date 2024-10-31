@@ -25,14 +25,14 @@ defineCustomElement({
 </script>
 
 <template>
-  <div class="px-4 modal-wrapper bg-neutral-100/66 dark:bg-neutral-900">
-    <div class="container relative max-w-full mx-auto sm:max-w-2xl">
-      <header class="flex-col py-20 flex-center">
+  <div class="modal-wrapper bg-neutral-100/66 px-4 dark:bg-neutral-900">
+    <div class="relative mx-auto max-w-full container sm:max-w-2xl">
+      <header class="flex-center flex-col py-20">
         <Hero @open="handleOpen" />
       </header>
 
       <main
-        class="grid grid-cols-1 gap-8 pb-20 text-xs text-primary 2xl:text-sm"
+        class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
       >
         <Installation />
         <Usage />
@@ -40,7 +40,7 @@ defineCustomElement({
         <Transitions />
       </main>
 
-      <Modal :visible="visible" @close="handleClose" transition="fade">
+      <Modal :visible="visible" transition="fade" @close="handleClose">
         <template #closeButton />
         <template #header>
           <h1> Hello Detail</h1>

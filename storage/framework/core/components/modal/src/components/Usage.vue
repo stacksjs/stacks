@@ -46,7 +46,7 @@ async function handleCopyCode() {
     <p class="my-3 text-base">
       Render the modal in the root of your app.
     </p>
-    <div class="relative group code-block">
+    <div class="group code-block relative">
       <Highlight
         class-name="hightlight-rounded-md text-xs"
         language="xml"
@@ -56,11 +56,11 @@ async function handleCopyCode() {
       <button
         aria-label="Copy code"
         title="Copy code"
-        class="absolute hidden p-1 btn-border right-2 top-2 group-hover:block"
+        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
-        <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
+        <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
+        <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
   </div>
