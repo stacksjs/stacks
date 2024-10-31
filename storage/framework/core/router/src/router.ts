@@ -328,11 +328,13 @@ export class Router implements RouterInterface {
     }
   }
 
-  private async handleErrors(error: ErrorResponse) {
+  private async handleErrors(error: ErrorResponse): Promise<{ status: number, errors: string, stack: string }> {
     // Capture and log the stack trace if available
     const stackTrace = error.stack || 'No stack trace available'
 
     this.storeError(error)
+
+    this.logError(error)
 
     // Return structured error response
     if (error.status === 422) {
@@ -346,7 +348,7 @@ export class Router implements RouterInterface {
     return { status: error.status, errors: error.message, stack: stackTrace }
   }
 
-  private async storeError(error: ErrorResponse) {
+  private async storeError(error: ErrorResponse): Promise<void> {
     // Capture and log the stack trace if available
     const stackTrace = error.stack || 'No stack trace available'
 
@@ -359,6 +361,13 @@ export class Router implements RouterInterface {
         status: typeof error.status === 'number' ? error.status : 500, // Ensure status is a number, default to 500
       })
       .execute()
+  }
+
+  private async logError(error: ErrorResponse): Promise<void> {
+    // Capture and log the stack trace if available
+    const stackTrace = error.stack || 'No stack trace available'
+
+    log.debug(stackTrace)
   }
 
   private normalizePath(path: string): string {
