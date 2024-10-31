@@ -47,7 +47,7 @@ async function handleCopyCode() {
       Transition
     </h1>
     <p class="my-3 text-base">
-      For a better modal transition, you can use the Transition component from vue. please refer to the <a href="https://vuejs.org/guide/built-ins/transition#the-transition-component" target="_blank">Vue Transition</a> for more information.
+      Here are the default transitions that come with the modal.
     </p>
     <div class="flex gap-3 mb-4 overflow-auto">
       <button

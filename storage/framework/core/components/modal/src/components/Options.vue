@@ -77,7 +77,7 @@ async function handleCopyCode() {
       Options
     </h1>
     <p class="my-3 text-base">
-      Here are the options you can use for the Modal component.
+      Here are the options you can use for the modal.
     </p>
     <div class="flex gap-3 mb-4 overflow-auto">
       <button
