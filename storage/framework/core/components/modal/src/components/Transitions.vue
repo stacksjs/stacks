@@ -13,22 +13,14 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
-  return `
-<!-- App.vue -->
-<script setup lang="ts">
-import { Transition } from 'vue'
-<\/script>
+  return `<Modal :visible="visible" @close="handleClose" transition="${currentTransition.value}">
+  <template #closeButton />
+  <template #header>
+    <h1> Hello Detail</h1>
+  </template>
 
-<template>
-  <Modal :visible="visible" @close="handleClose" transition="${currentTransition.value}">
-    <template #closeButton />
-    <template #header>
-      <h1> Hello Detail</h1>
-    </template>
-
-    <p>Modal Content</p>
-  </Modal>
-</template>`
+  <p>Modal Content</p>
+</Modal>`
 })
 
 function handleClick(action: Transition) {
@@ -77,9 +69,6 @@ async function handleCopyCode() {
         <div v-if="showCheckIcon" class="text-gray-500 i-heroicons-check" />
         <div v-else class="text-gray-500 i-heroicons-document-duplicate" />
       </button>
-    </div>
-    <div class="my-3 text-sm text-gray-500">
-      For custom transition, you can use the custom class to apply the transition to the modal content.
     </div>
 
     <Modal :visible="visible" :transition="currentTransition" @close="handleClose">
