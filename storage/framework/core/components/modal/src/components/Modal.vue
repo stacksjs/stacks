@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { defineCustomElement, onMounted, onUnmounted, useSlots, computed } from 'vue'
-
-type Transition = 'slide-down' | 'fade' | 'pop' | 'custom'
+import type { Transition } from '../types'
 
 const props = defineProps<{
   visible: boolean
@@ -96,16 +95,54 @@ button {
 }
 
 /* Slide-down transition styles */
-.slide-down-enter-active, .slide-down-leave-active {
+.slideInDown-enter-active,
+.slideInDown-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
-.slide-down-enter-from, .slide-down-leave-to {
-  transform: translateY(-100%);
+
+.slideInDown-enter-from {
   opacity: 0;
+  transform: translateY(-100%);
 }
-.slide-down-enter-to, .slide-down-leave-from {
-  transform: translateY(0);
+
+.slideInDown-enter-to {
   opacity: 1;
+  transform: translateY(0);
+}
+
+.slideInDown-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slideInDown-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.slideInRight-enter-active,
+.slideInRight-leave-active {
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.slideInRight-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slideInRight-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slideInRight-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slideInRight-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
 }
 
 .pop-enter-active,
@@ -118,6 +155,74 @@ button {
   opacity: 0;
   transform: scale(0.3) translateY(-50%);
 }
+
+.fadeInRightBig-enter-active,
+.fadeInRightBig-leave-active {
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
+.fadeInRightBig-enter-from,
+.fadeInRightBig-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.fadeInRightBig-enter-to,
+.fadeInRightBig-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.lightSpeedInRight-enter-active,
+.lightSpeedInRight-leave-active {
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.lightSpeedInRight-enter-from {
+  opacity: 0;
+  transform: translateX(100%) skewX(-30deg);
+}
+
+.lightSpeedInRight-enter-to {
+  opacity: 1;
+  transform: translateX(0) skewX(0);
+}
+
+.lightSpeedInRight-leave-from {
+  opacity: 1;
+  transform: translateX(0) skewX(0);
+}
+
+.lightSpeedInRight-leave-to {
+  opacity: 0;
+  transform: translateX(100%) skewX(30deg);
+}
+
+.jackInTheBox-enter-active,
+.jackInTheBox-leave-active {
+  transition: transform 0.7s ease-out, opacity 0.7s ease-out;
+}
+
+.jackInTheBox-enter-from {
+  opacity: 0;
+  transform: scale(0.1) rotate(30deg);
+}
+
+.jackInTheBox-enter-to {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.jackInTheBox-leave-from {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.jackInTheBox-leave-to {
+  opacity: 0;
+  transform: scale(0.1) rotate(-30deg);
+}
+
 
 /* @unocss-placeholder */
 </style>

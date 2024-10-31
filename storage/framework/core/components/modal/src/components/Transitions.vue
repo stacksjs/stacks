@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { computed, ref, Transition } from 'vue'
+import { computed, ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
+import type { Transition } from '../types'
 
-type Transition = 'fade' | 'slide-down' | 'pop' | 'custom'
-
-const currentTransition = ref<Transition>('slide-down')
+const currentTransition = ref<Transition>('fade')
+const transitionList = ref<Transition[]>(['fade',  'pop', 'fadeInRightBig', 'lightSpeedInRight', 'jackInTheBox', 'slideInDown', 'slideInRight'])
 const showCheckIcon = ref(false)
 const visible = ref(false)
 
@@ -52,30 +52,13 @@ async function handleCopyCode() {
     <div class="flex gap-3 mb-4 overflow-auto">
       <button
         class="btn-default"
+        v-for="trans in transitionList"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'fade',
+          'bg-neutral-200/50 border-neutral-400/50': currentTransition === trans,
         }"
-        @click="handleClick('fade')"
+        @click="handleClick(trans)"
       >
-        Default (Fade)
-      </button>
-      <button
-        class="btn-default"
-        :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'slide-down',
-        }"
-        @click="handleClick('slide-down')"
-      >
-        Slide down
-      </button>
-      <button
-        class="btn-default"
-        :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentTransition === 'pop',
-        }"
-        @click="handleClick('pop')"
-      >
-        Pop
+        {{ trans }}
       </button>
     </div>
     <div class="relative code-block group">
@@ -99,7 +82,7 @@ async function handleCopyCode() {
       For custom transition, you can use the custom class to apply the transition to the modal content.
     </div>
 
-    <Modal close-button :visible="visible" :transition="currentTransition" @close="handleClose">
+    <Modal :duration="3000" :visible="visible" :transition="currentTransition" @close="handleClose">
       <div>
         <p class="text-sm text-gray-500">
           Here is the content of the modal
