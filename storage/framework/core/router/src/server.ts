@@ -1,5 +1,6 @@
 import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
 import process from 'node:process'
+
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'

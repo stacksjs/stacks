@@ -9,6 +9,14 @@
 
 export type CommandError = Error
 
+export interface ErrorResponse {
+  status: number // HTTP status code
+  errors: string | object // Error message(s), which can be a string or an object
+  stack?: string // Optional stack trace
+  name: string
+  message: string
+}
+
 export interface ErrorOptions {
   messages: {
     'string': string

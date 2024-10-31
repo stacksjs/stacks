@@ -65,6 +65,8 @@ export async function dropSqliteTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
+  await db.schema.dropTable('subscriptions').ifExists().execute()
+  await db.schema.dropTable('errors').ifExists().execute()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -190,10 +192,10 @@ async function createTableMigration(modelPath: string) {
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
 
-  if (usePasskey)
+  if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
-  if (usePasskey)
+  if (usePasskey && tableName === 'subscriptions')
     await createSubscriptionMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
@@ -330,7 +332,7 @@ async function createPasskeyMigration() {
 }
 
 async function createSubscriptionMigration() {
-  const hasBeenMigrated = await hasTableBeenMigrated('users')
+  const hasBeenMigrated = await hasTableBeenMigrated('subscriptions')
 
   if (hasBeenMigrated)
     return

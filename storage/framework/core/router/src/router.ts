@@ -1,5 +1,6 @@
 import type { Action } from '@stacksjs/actions'
-import type { Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import type { ErrorResponse, Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import { db } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
@@ -7,7 +8,7 @@ import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
-type ActionPath = string // TODO: narrow this by automating its generation
+type ActionPath = string
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
@@ -321,19 +322,37 @@ export class Router implements RouterInterface {
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {
-      // Capture and log the stack trace if available
-      const stackTrace = error.stack || 'No stack trace available'
-
-      if (error.status === 422) {
-        return { status: 422, errors: JSON.parse(error.message), stack: stackTrace }
-      }
-
-      if (!error.status) {
-        return { status: 500, errors: error.message, stack: stackTrace }
-      }
-
-      return { status: error.status, errors: error.message, stack: stackTrace }
+      const errorResponse = await this.handleErrors(error)
+      return errorResponse // or handle it as needed
     }
+  }
+
+  private async handleErrors(error: ErrorResponse) {
+    // Capture and log the stack trace if available
+    const stackTrace = error.stack || 'No stack trace available'
+
+    // Log the error into the database
+    await db
+      .insertInto('errors')
+      .values({
+        type: error.name || 'Unknown Error', // Use error name or default to 'Unknown Error'
+        message: error.message || 'No message available',
+        stack: stackTrace || 'Unkown Stack', // Use stackTrace or null if not available
+        status: typeof error.status === 'number' ? error.status : 500, // Ensure status is a number, default to 500
+        created_at: new Date(), // You can also use sql.raw('CURRENT_TIMESTAMP') if preferred
+      })
+      .execute()
+
+    // Return structured error response
+    if (error.status === 422) {
+      return { status: 422, errors: JSON.parse(error.message), stack: stackTrace }
+    }
+
+    if (!error.status) {
+      return { status: 500, errors: error.message, stack: stackTrace }
+    }
+
+    return { status: error.status, errors: error.message, stack: stackTrace }
   }
 
   private normalizePath(path: string): string {

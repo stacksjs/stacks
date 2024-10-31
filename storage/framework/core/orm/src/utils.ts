@@ -787,7 +787,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += 'name: string\n timestamp: string \n }'
 
   text += '\nexport interface PasskeysTable {\n'
-  text += '  id: string\n'
+  text += '  id?: string\n'
   text += '  cred_public_key: string\n'
   text += '  user_id: number;\n'
   text += '  webauthn_user_id: string\n'
@@ -799,6 +799,33 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  transports?: string\n'
   text += '  created_at?: Date\n'
   text += '  last_used_at: string \n'
+  text += '}\n\n'
+
+  text += '\nexport interface ErrorsTable {\n'
+  text += '  id?: string\n' // Assuming each error has a unique identifier
+  text += '  type: string\n' // Assuming each error has a unique identifier
+  text += '  status: number\n' // HTTP status code
+  text += '  message: string\n' // The error message
+  text += '  stack?: string\n' // Optional stack trace
+  text += '  created_at?: Date\n' // When the error was logged
+  text += '  updated_at?: Date\n' // When the error was logged
+  text += '  user_id?: number\n' // Optional user ID if applicable
+  text += '  additional_info?: string // Optional field for any extra information\n'
+  text += '}\n\n'
+
+  text += '\nexport interface SubscriptionsTable {\n'
+  text += '  id?: number\n' // Unique identifier for each subscription
+  text += '  user_id: number\n' // User ID associated with the subscription
+  text += '  type: string\n' // Type of subscription
+  text += '  stripe_id: string\n' // Unique Stripe identifier for the subscription
+  text += '  stripe_status: string\n' // Current status of the subscription in Stripe
+  text += '  stripe_price?: string\n' // Optional field for the Stripe price
+  text += '  quantity?: number\n' // Optional field for the quantity of subscriptions
+  text += '  trial_ends_at?: Date\n' // Optional field for the trial end date
+  text += '  ends_at?: Date\n' // Optional field for the subscription end date
+  text += '  last_used_at?: string\n' // Optional field for the last usage timestamp
+  text += '  updated_at?: Date\n' // Timestamp for when the subscription was last updated
+  text += '  created_at?: Date\n' // Timestamp for when the subscription was created
   text += '}\n\n'
 
   text += '\nexport interface Database {\n'
@@ -818,7 +845,9 @@ export async function generateKyselyTypes(): Promise<void> {
   }
 
   text += 'passkeys: PasskeysTable\n'
-  text += 'migrations: MigrationsTable'
+  text += 'migrations: MigrationsTable\n'
+  text += 'subscriptions: SubscriptionsTable\n'
+  text += 'errors: ErrorsTable\n'
 
   text += '}'
 

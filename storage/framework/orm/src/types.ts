@@ -32,7 +32,7 @@ export interface MigrationsTable {
   timestamp: string
 }
 export interface PasskeysTable {
-  id: string
+  id?: string
   cred_public_key: string
   user_id: number
   webauthn_user_id: string
@@ -44,6 +44,33 @@ export interface PasskeysTable {
   transports?: string
   created_at?: Date
   last_used_at: string
+}
+
+export interface ErrorsTable {
+  id?: string
+  type: string
+  status: number
+  message: string
+  stack?: string
+  created_at?: Date
+  updated_at?: Date
+  user_id?: number
+  additional_info?: string // Optional field for any extra information
+}
+
+export interface SubscriptionsTable {
+  id?: number
+  user_id: number
+  type: string
+  stripe_id: string
+  stripe_status: string
+  stripe_price?: string
+  quantity?: number
+  trial_ends_at?: Date
+  ends_at?: Date
+  last_used_at?: string
+  updated_at?: Date
+  created_at?: Date
 }
 
 export interface Database {
@@ -61,4 +88,6 @@ export interface Database {
   posts: PostsTable
   passkeys: PasskeysTable
   migrations: MigrationsTable
+  subscriptions: SubscriptionsTable
+  errors: ErrorsTable
 }
