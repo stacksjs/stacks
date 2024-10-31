@@ -115,10 +115,10 @@ async function createErrorsTable(): Promise<void> {
     migrationContent += `    .addColumn('message', 'text', col => col.notNull())\n` // The error message
     migrationContent += `    .addColumn('stack', 'text')\n` // Optional stack trace
     migrationContent += `    .addColumn('status', 'integer', col => col.notNull().defaultTo(0))\n` // Status code
-    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n` // When the error was logged
-    migrationContent += `    .addColumn('updated_at', 'timestamp')\n` // When the error was last updated
     migrationContent += `    .addColumn('user_id', 'integer')\n` // Optional user ID if applicable
     migrationContent += `    .addColumn('additional_info', 'text')\n` // Optional field for extra info
+    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n` // When the error was logged
+    migrationContent += `    .addColumn('updated_at', 'timestamp')\n` // When the error was last updated
     migrationContent += `    .execute()\n`
     migrationContent += `}\n`
 

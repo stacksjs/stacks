@@ -323,6 +323,7 @@ export class Router implements RouterInterface {
     }
     catch (error: any) {
       const errorResponse = await this.handleErrors(error)
+
       return errorResponse // or handle it as needed
     }
   }
@@ -331,17 +332,7 @@ export class Router implements RouterInterface {
     // Capture and log the stack trace if available
     const stackTrace = error.stack || 'No stack trace available'
 
-    // Log the error into the database
-    await db
-      .insertInto('errors')
-      .values({
-        type: error.name || 'Unknown Error', // Use error name or default to 'Unknown Error'
-        message: error.message || 'No message available',
-        stack: stackTrace || 'Unkown Stack', // Use stackTrace or null if not available
-        status: typeof error.status === 'number' ? error.status : 500, // Ensure status is a number, default to 500
-        created_at: new Date(), // You can also use sql.raw('CURRENT_TIMESTAMP') if preferred
-      })
-      .execute()
+    this.storeError(error)
 
     // Return structured error response
     if (error.status === 422) {
@@ -353,6 +344,21 @@ export class Router implements RouterInterface {
     }
 
     return { status: error.status, errors: error.message, stack: stackTrace }
+  }
+
+  private async storeError(error: ErrorResponse) {
+    // Capture and log the stack trace if available
+    const stackTrace = error.stack || 'No stack trace available'
+
+    await db
+      .insertInto('errors')
+      .values({
+        type: error.name || 'Unknown Error', // Use error name or default to 'Unknown Error'
+        message: error.message || 'No message available',
+        stack: stackTrace || 'Unkown Stack', // Use stackTrace or null if not available
+        status: typeof error.status === 'number' ? error.status : 500, // Ensure status is a number, default to 500
+      })
+      .execute()
   }
 
   private normalizePath(path: string): string {

@@ -9,9 +9,9 @@ export async function up(db: Database<any>) {
     .addColumn('message', 'text', col => col.notNull())
     .addColumn('stack', 'text')
     .addColumn('status', 'integer', col => col.notNull().defaultTo(0))
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
     .addColumn('user_id', 'integer')
     .addColumn('additional_info', 'text')
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
+    .addColumn('updated_at', 'timestamp')
     .execute()
 }
