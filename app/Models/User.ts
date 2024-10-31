@@ -110,7 +110,9 @@ export default {
   },
 
   get: {
-    fullName: (user: UserModel) => capitalize(user.name || ''),
+    fullName: (user: UserModel) => {
+      return user.name ? capitalize(user.name) : ''
+    },
   },
 
   set: {

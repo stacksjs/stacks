@@ -147,6 +147,10 @@ export interface ModelOptions extends Base {
     relationName?: string
   }[]
 
+  scopes?: {
+    [key: string]: (value: any) => any
+  }
+
   get?: {
     [key: string]: (value: any) => any
   }
