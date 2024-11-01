@@ -46,33 +46,6 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
-export interface ErrorsTable {
-  id?: string
-  type: string
-  status: number
-  message: string
-  stack?: string
-  created_at?: Date
-  updated_at?: Date
-  user_id?: number
-  additional_info?: string // Optional field for any extra information
-}
-
-export interface SubscriptionsTable {
-  id?: number
-  user_id: number
-  type: string
-  stripe_id: string
-  stripe_status: string
-  stripe_price?: string
-  quantity?: number
-  trial_ends_at?: Date
-  ends_at?: Date
-  last_used_at?: string
-  updated_at?: Date
-  created_at?: Date
-}
-
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -86,8 +59,8 @@ export interface Database {
   user_teams: UserTeamsTable
   users: UsersTable
   posts: PostsTable
-  passkeys: PasskeysTable
-  migrations: MigrationsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
+  passkeys: PasskeysTable
+  migrations: MigrationsTable
 }

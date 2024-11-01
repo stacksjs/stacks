@@ -750,6 +750,8 @@ export async function deleteExistingOrmRoute(): Promise<void> {
 
 export async function generateKyselyTypes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+
   let text = ``
 
   for (const modelFile of modelFiles) {
@@ -801,33 +803,6 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  last_used_at: string \n'
   text += '}\n\n'
 
-  text += '\nexport interface ErrorsTable {\n'
-  text += '  id?: string\n' // Assuming each error has a unique identifier
-  text += '  type: string\n' // Assuming each error has a unique identifier
-  text += '  status: number\n' // HTTP status code
-  text += '  message: string\n' // The error message
-  text += '  stack?: string\n' // Optional stack trace
-  text += '  created_at?: Date\n' // When the error was logged
-  text += '  updated_at?: Date\n' // When the error was logged
-  text += '  user_id?: number\n' // Optional user ID if applicable
-  text += '  additional_info?: string // Optional field for any extra information\n'
-  text += '}\n\n'
-
-  text += '\nexport interface SubscriptionsTable {\n'
-  text += '  id?: number\n' // Unique identifier for each subscription
-  text += '  user_id: number\n' // User ID associated with the subscription
-  text += '  type: string\n' // Type of subscription
-  text += '  stripe_id: string\n' // Unique Stripe identifier for the subscription
-  text += '  stripe_status: string\n' // Current status of the subscription in Stripe
-  text += '  stripe_price?: string\n' // Optional field for the Stripe price
-  text += '  quantity?: number\n' // Optional field for the quantity of subscriptions
-  text += '  trial_ends_at?: Date\n' // Optional field for the trial end date
-  text += '  ends_at?: Date\n' // Optional field for the subscription end date
-  text += '  last_used_at?: string\n' // Optional field for the last usage timestamp
-  text += '  updated_at?: Date\n' // Timestamp for when the subscription was last updated
-  text += '  created_at?: Date\n' // Timestamp for when the subscription was created
-  text += '}\n\n'
-
   text += '\nexport interface Database {\n'
 
   for (const modelFile of modelFiles) {
@@ -844,10 +819,18 @@ export async function generateKyselyTypes(): Promise<void> {
     text += `  ${tableName}: ${formattedTableName}\n`
   }
 
+  for (const coreModelFile of coreModelFiles) {
+    const model = (await import(coreModelFile)).default as Model
+    const tableName = getTableName(model, coreModelFile)
+
+    const words = tableName.split('_')
+    const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+
+    text += `  ${tableName}: ${formattedTableName}\n`
+  }
+
   text += 'passkeys: PasskeysTable\n'
   text += 'migrations: MigrationsTable\n'
-  text += 'subscriptions: SubscriptionsTable\n'
-  text += 'errors: ErrorsTable\n'
 
   text += '}'
 
@@ -1993,7 +1976,9 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
 
     log.info('Generating API Routes...')
     const modelFiles = globSync([path.userModelsPath('**/*.ts')], { absolute: true })
+    const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
     await generateApiRoutes(modelFiles)
+    await generateApiRoutes(coreModelFiles)
     log.success('Generated API Routes')
 
     for (const modelFile of modelFiles) {
@@ -2006,6 +1991,25 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       const modelName = getModelName(model, modelFile)
       const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
       const fields = await extractFields(model, modelFile)
+      const classString = await generateModelString(tableName, modelName, model, fields)
+
+      const writer = file.writer()
+      log.info(`Writing API Endpoints for: ${italic(modelName)}`)
+      writer.write(classString)
+      log.success(`Wrote API endpoints for: ${italic(modelName)}`)
+      await writer.end()
+    }
+
+    for (const coreModelFile of coreModelFiles) {
+      if (modelStringFile && modelStringFile !== coreModelFile)
+        continue
+      log.info(`Processing Model: ${italic(coreModelFile)}`)
+
+      const model = (await import(coreModelFile)).default as Model
+      const tableName = getTableName(model, coreModelFile)
+      const modelName = getModelName(model, coreModelFile)
+      const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
+      const fields = await extractFields(model, coreModelFile)
       const classString = await generateModelString(tableName, modelName, model, fields)
 
       const writer = file.writer()
