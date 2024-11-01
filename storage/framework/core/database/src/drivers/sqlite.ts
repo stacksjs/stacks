@@ -195,7 +195,7 @@ async function createTableMigration(modelPath: string) {
   if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
-  if (usePasskey && tableName === 'subscriptions')
+  if (useBillable && tableName === 'users')
     await createSubscriptionMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
