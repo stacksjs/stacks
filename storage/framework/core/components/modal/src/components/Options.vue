@@ -13,48 +13,59 @@ function handleClose() {
 
 const renderedCode = computed(() => {
   if (currentAction.value === 'default') {
-    return `<Modal :visible="visible" @close="handleClose">
-    <div>
-      <p class="text-sm text-gray-500">
-        Here is the content of the modal
-      </p>
-    </div>
+    return `
+<Modal
+  :visible="visible"
+  @close="handleClose"
+  class="bg-gray-500 bg-opacity-70 transition-opacity"
+>
+  <div>
+    <p class="text-sm text-gray-500">
+      Here is the content of the modal
+    </p>
+  </div>
 </Modal>`
   }
 
   if (currentAction.value === 'close') {
-    return `<Modal :visible="visible" @close="handleClose">
-    <!-- For default close button -->
-    <template #closeButton />
+    return `
+<Modal
+  :visible="visible"
+  @close="handleClose"
+  class="bg-gray-500 bg-opacity-70 transition-opacity"
+>
+  <!-- For default close button -->
+  <template #closeButton />
 
-    <!-- For custom close button in the same position-->
-    <template #closeButton>
-      <button>
-        Close
-      </button>
-    </template>
+  <!-- For custom close button in the same position-->
+  <template #closeButton>
+    <button>
+      Close
+    </button>
+  </template>
 
-    <div>
-      <p class="text-sm text-gray-500">
-        Here is the content of the modal
-      </p>
-    </div>
+  <div>
+    <p class="text-sm text-gray-500">
+      Here is the content of the modal
+    </p>
+  </div>
 </Modal>`
   }
 
   if (currentAction.value === 'header') {
-    return `<Modal :visible="visible" @close="handleClose">
-    <template #header>
-      <h1 class="text-lg font-semibold">
-        Greetings
-      </h1>
-    </template>
+    return `
+<Modal :visible="visible" @close="handleClose" class="bg-gray-500 bg-opacity-70 transition-opacity">
+  <template #header>
+    <h1 class="text-lg font-semibold">
+      Greetings
+    </h1>
+  </template>
 
-    <div>
-      <p class="text-sm text-gray-500">
-        Here is the content of the modal.
-      </p>
-    </div>
+  <div>
+    <p class="text-sm text-gray-500">
+      Here is the content of the modal.
+    </p>
+  </div>
 </Modal>`
   }
 
@@ -127,20 +138,22 @@ async function handleCopyCode() {
       </button>
     </div>
 
-    <Modal :visible="visible" @close="handleClose">
-      <template v-if="currentAction === 'close'" #closeButton />
-      <template v-if="currentAction === 'header'" #header>
-        <h1 class="text-lg font-semibold">
-          Greetings
-        </h1>
-      </template>
+    <Transition name="fade" appear>
+      <Modal :visible="visible" @close="handleClose" class="bg-gray-500 bg-opacity-70 transition-opacity">
+        <template v-if="currentAction === 'close'" #closeButton />
+        <template v-if="currentAction === 'header'" #header>
+          <h1 class="text-lg font-semibold">
+            Greetings
+          </h1>
+        </template>
 
-      <div>
-        <p class="text-sm text-gray-500">
-          Here is the content of the modal
-        </p>
-      </div>
-    </Modal>
+        <div>
+          <p class="text-sm text-gray-500">
+            Here is the content of the modal
+          </p>
+        </div>
+      </Modal>
+    </Transition>
   </div>
 </template>
 

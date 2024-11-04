@@ -40,14 +40,17 @@ defineCustomElement({
         <Transitions />
       </main>
 
-      <Modal :visible="visible" transition="fade" @close="handleClose">
-        <template #closeButton />
-        <template #header>
-          <h1> Hello Detail</h1>
-        </template>
 
-        <p>Modal Content</p>
-      </Modal>
+      <Transition name="fade" appear>
+        <Modal :visible="visible" @close="handleClose" class="bg-gray-500 bg-opacity-75 transition-opacity">
+          <template #closeButton />
+          <template #header>
+            <h1> Hello Detail</h1>
+          </template>
+
+          <p>Modal Content</p>
+        </Modal>
+      </Transition>
 
       <Footer />
     </div>

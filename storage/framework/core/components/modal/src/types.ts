@@ -1,1 +1,1 @@
-export type Transition = 'fade' | 'slideInDown' | 'pop' | 'fadeInRightBig' | 'lightSpeedInRight' | 'jackInTheBox' | 'slideInRight' | 'custom'
+export type Transition = 'fade' | 'slideInDown' | 'pop' | 'fadeInRightBig' | 'jackInTheBox' | 'slideInRight' | 'custom-transition'

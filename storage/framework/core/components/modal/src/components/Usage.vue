@@ -15,20 +15,37 @@ const handleClose = () => {
 <\/script>
 
 <template>
-  <!-- ... -->
-  <Modal :visible="visible" @close="handleClose" transition="fade">
-    <template #closeButton />
-    <template #header>
-      <h1> Modal Title</h1>
-    </template>
+  <Transition name="fade" appear>
+    <Modal
+      :visible="visible"
+      @close="handleClose"
+      class="bg-gray-500 bg-opacity-75 transition-opacity"
+    >
+      <template #closeButton />
+      <template #header>
+        <h1> Hello Detail</h1>
+      </template>
 
-    <p>Here is the content of the modal</p>
-  </Modal>
+      <p>Modal Content</p>
+    </Modal>
+  </Transition>
 
   <button @click="visible = true">
     Open Modal
   </button>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .4s linear;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
 `
 
 const showCheckIcon = ref(false)

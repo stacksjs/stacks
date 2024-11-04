@@ -4,42 +4,193 @@ import { computed, ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
 const currentTransition = ref<Transition>('fade')
-const transitionList = ref<Transition[]>(['fade', 'custom', 'pop', 'fadeInRightBig', 'lightSpeedInRight', 'jackInTheBox', 'slideInDown', 'slideInRight'])
+const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'jackInTheBox', 'slideInDown', 'slideInRight', 'custom-transition'])
 const showCheckIcon = ref(false)
 const visible = ref(false)
+
 
 function handleClose() {
   visible.value = false
 }
 
-const renderedCode = computed(() => {
-  if (currentTransition.value === 'custom') {
-    return `<Modal :visible="visible" @close="handleClose" transition="custom">
-  <template #closeButton />
-  <template #header>
-    <h1> Hello Detail</h1>
-  </template>
+const styleCode = computed(() => {
 
-  <p>Modal Content</p>
-</Modal>
-
-<style>
-:root {
-  --modal-transition-duration: 1s; /* Custom duration */
-  --modal-transform-enter: translateY(0);  /* Custom transform */
-  --modal-transform-leave: translateY(-50%); /* Custom transform */
+  let style = `
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .4s linear;
 }
-</style>`
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}`
+
+  if (currentTransition.value === 'custom-transition') {
+    style = `
+// Change 'custom-transition-*' into your transition name
+
+.custom-transition-enter-active,
+.custom-transition-leave-active {
+  transition: transform 1s ease, opacity 1s ease;
+}
+
+.custom-transition-enter-from {
+  opacity: 0;
+  transform: translateY(-50%);
+}`
   }
 
-  return `<Modal :visible="visible" @close="handleClose" transition="${currentTransition.value}">
-  <template #closeButton />
-  <template #header>
-    <h1> Hello Detail</h1>
-  </template>
+  if (currentTransition.value === 'slideInDown') {
+    style = `
+.slideInDown-enter-active,
+.slideInDown-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
 
-  <p>Modal Content</p>
-</Modal>`
+.slideInDown-enter-from {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.slideInDown-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slideInDown-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slideInDown-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}`
+  }
+
+  if (currentTransition.value === 'slideInRight') {
+    style = `
+.slideInRight-enter-active,
+.slideInRight-leave-active {
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.slideInRight-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slideInRight-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slideInRight-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slideInRight-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+`}
+
+  if (currentTransition.value === 'pop') {
+    style = `
+.pop-enter-active,
+.pop-leave-active {
+  transition: transform 0.4s cubic-bezier(0.5, 0, 0.5, 1), opacity 0.4s linear;
+}
+
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+  transform: scale(0.3) translateY(-50%);
+}
+`
+  }
+
+  if (currentTransition.value === 'fadeInRightBig') {
+    style = `
+.fadeInRightBig-enter-active,
+.fadeInRightBig-leave-active {
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
+.fadeInRightBig-enter-from,
+.fadeInRightBig-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.fadeInRightBig-enter-to,
+.fadeInRightBig-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+`
+  }
+
+  if (currentTransition.value === 'jackInTheBox') {
+    style = `
+.jackInTheBox-enter-active,
+.jackInTheBox-leave-active {
+  transition: transform 0.7s ease-out, opacity 0.7s ease-out;
+}
+
+.jackInTheBox-enter-from {
+  opacity: 0;
+  transform: scale(0.1) rotate(30deg);
+}
+
+.jackInTheBox-enter-to {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.jackInTheBox-leave-from {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.jackInTheBox-leave-to {
+  opacity: 0;
+  transform: scale(0.1) rotate(-30deg);
+}
+`
+  }
+
+  return style
+})
+
+
+const renderedCode = computed(() => {
+  return `
+<template>
+  // For a better modal overlay effect, we recommend on creating a separate modal-overlay.
+  <Transition name="fade" appear>
+    <div
+      v-if="visible"
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      aria-hidden="true"
+      @click.self="handleClose" />
+  </Transition>
+
+  <Transition name="${currentTransition.value}" appear>
+    <Modal :visible="visible" @close="handleClose">
+      <div>
+        <p class="text-sm text-gray-500">
+          Here is the content of the modal
+        </p>
+      </div>
+    </Modal>
+  </Transition>
+</template>
+
+<style scoped>${styleCode.value}
+</style>`
 })
 
 function handleClick(action: Transition) {
@@ -60,6 +211,7 @@ async function handleCopyCode() {
     <p class="my-3 text-base">
       Here are the default transitions that come with the modal.
     </p>
+
     <div class="mb-4 flex gap-3 overflow-auto">
       <button
         v-for="trans in transitionList"
@@ -90,26 +242,178 @@ async function handleCopyCode() {
       </button>
     </div>
 
-    <Modal :visible="visible" :transition="currentTransition" @close="handleClose">
-      <div>
-        <p class="text-sm text-gray-500">
-          Here is the content of the modal
-        </p>
-      </div>
-    </Modal>
+
+    <Transition name="modal-overlay" appear>
+      <div v-if="visible" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click.self="handleClose" />
+    </Transition>
+
+    <Transition :name="currentTransition" appear>
+      <Modal :visible="visible" @close="handleClose">
+        <div>
+          <p class="text-sm text-gray-500">
+            Here is the content of the modal
+          </p>
+        </div>
+      </Modal>
+    </Transition>
+
+    <p class="text-sm text-gray-500">
+      For a better modal overlay effect, we recommend on creating a separate modal-overlay for it like the example above.
+    </p>
   </div>
 </template>
 
-<style>
+<style scoped>
 button {
   border: 0px solid #000;
 }
 
-:root {
-  --modal-transition-duration: 1s; /* Custom duration */
-  --modal-transform-enter: translateY(0);
-  --modal-transform-leave: translateY(-50%);
+.modal-overlay-enter-active,
+.modal-overlay-leave-active {
+  transition: opacity 0.3s ease;
 }
 
+.modal-overlay-enter-from,
+.modal-overlay-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .4s linear;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slideInDown-enter-active,
+.slideInDown-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.slideInDown-enter-from {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.slideInDown-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slideInDown-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slideInDown-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.slideInRight-enter-active,
+.slideInRight-leave-active {
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.slideInRight-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slideInRight-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slideInRight-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slideInRight-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.pop-enter-active,
+.pop-leave-active {
+  transition: transform 0.4s cubic-bezier(0.5, 0, 0.5, 1), opacity 0.4s linear;
+}
+
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+  transform: scale(0.3) translateY(-50%);
+}
+
+.fadeInRightBig-enter-active,
+.fadeInRightBig-leave-active {
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
+.fadeInRightBig-enter-from,
+.fadeInRightBig-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.fadeInRightBig-enter-to,
+.fadeInRightBig-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.lightSpeedInRight-enter-active,
+.lightSpeedInRight-leave-active {
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.lightSpeedInRight-enter-from {
+  opacity: 0;
+  transform: translateX(100%) skewX(-30deg);
+}
+
+.lightSpeedInRight-enter-to {
+  opacity: 1;
+  transform: translateX(0) skewX(0);
+}
+
+.lightSpeedInRight-leave-from {
+  opacity: 1;
+  transform: translateX(0) skewX(0);
+}
+
+.lightSpeedInRight-leave-to {
+  opacity: 0;
+  transform: translateX(100%) skewX(30deg);
+}
+
+.jackInTheBox-enter-active,
+.jackInTheBox-leave-active {
+  transition: transform 0.7s ease-out, opacity 0.7s ease-out;
+}
+
+.jackInTheBox-enter-from {
+  opacity: 0;
+  transform: scale(0.1) rotate(30deg);
+}
+
+.jackInTheBox-enter-to {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.jackInTheBox-leave-from {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.jackInTheBox-leave-to {
+  opacity: 0;
+  transform: scale(0.1) rotate(-30deg);
+}
 /* @unocss-placeholder */
 </style>
