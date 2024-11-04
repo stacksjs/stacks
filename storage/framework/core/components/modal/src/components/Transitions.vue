@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
 const currentTransition = ref<Transition>('fade')
-const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'lightSpeedInRight', 'jackInTheBox', 'slideInDown', 'slideInRight'])
+const transitionList = ref<Transition[]>(['fade', 'custom', 'pop', 'fadeInRightBig', 'lightSpeedInRight', 'jackInTheBox', 'slideInDown', 'slideInRight'])
 const showCheckIcon = ref(false)
 const visible = ref(false)
 
@@ -13,6 +13,27 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
+
+
+  if (currentTransition.value === 'custom') {
+    return `<Modal :visible="visible" @close="handleClose" transition="custom">
+  <template #closeButton />
+  <template #header>
+    <h1> Hello Detail</h1>
+  </template>
+
+  <p>Modal Content</p>
+</Modal>
+
+<style>
+:root {
+  --modal-transition-duration: 1s; /* Custom duration */
+  --modal-transform-enter: translateY(0);  /* Custom transform */
+  --modal-transform-leave: translateY(-50%); /* Custom transform */
+}
+</style>`
+  }
+
   return `<Modal :visible="visible" @close="handleClose" transition="${currentTransition.value}">
   <template #closeButton />
   <template #header>
@@ -81,9 +102,16 @@ async function handleCopyCode() {
   </div>
 </template>
 
-<style scoped>
+<style>
 button {
   border: 0px solid #000;
 }
+
+:root {
+  --modal-transition-duration: 1s; /* Custom duration */
+  --modal-transform-enter: translateY(0);
+  --modal-transform-leave: translateY(-50%);
+}
+
 /* @unocss-placeholder */
 </style>

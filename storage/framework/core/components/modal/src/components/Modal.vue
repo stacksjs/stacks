@@ -82,6 +82,37 @@ button {
   cursor: pointer;
 }
 
+:host {
+  --modal-transition-duration: 0.4s;
+  --modal-transform-enter: translateY(0);
+  --modal-transform-leave: translateY(-100%);
+}
+
+.custom-enter-active,
+.custom-leave-active {
+  transition: transform var(--modal-transition-duration) ease, opacity var(--modal-transition-duration) ease;
+}
+
+.custom-enter-from {
+  opacity: 0;
+  transform: var(--modal-transform-leave);
+}
+
+.custom-enter-to {
+  opacity: 1;
+  transform: var(--modal-transform-enter);
+}
+
+.custom-leave-from {
+  opacity: 1;
+  transform: var(--modal-transform-enter);
+}
+
+.custom-leave-to {
+  opacity: 0;
+  transform: var(--modal-transform-leave);
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity .4s linear;
