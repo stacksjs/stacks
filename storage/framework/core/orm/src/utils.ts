@@ -1058,6 +1058,10 @@ export async function generateModelString(
       return customer
     }
 
+    async asStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
+      return await this.retrieveStripeUser()
+    }
+
     async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
       return customer
@@ -1114,6 +1118,13 @@ export async function generateModelString(
       const customer = await manageCustomer.syncStripeCustomerDetails(this, options)
 
       return customer
+    }
+
+     async newSubscriptionInvoice(
+      priceId: string,
+      options: SubscriptionOptions = {},
+    ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+      return await this.newSubscription(priceId, { ...options, days_until_due: 30, collection_method: 'send_invoice' })
     }
 
     async newSubscription(

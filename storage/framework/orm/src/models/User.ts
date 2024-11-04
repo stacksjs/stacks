@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, managePrice, manageSubscription, type Stripe } from '@stacksjs/payments'
 
 import Post from './Post'
 
@@ -678,6 +678,10 @@ export class UserModel {
     return customer
   }
 
+  async asStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
+    return await this.retrieveStripeUser()
+  }
+
   async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
     return customer
@@ -736,56 +740,66 @@ export class UserModel {
     return customer
   }
 
+  async newSubscriptionInvoice(
+    priceId: string,
+    options: SubscriptionOptions = {},
+  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+    return await this.newSubscription(priceId, { ...options, days_until_due: 30, collection_method: 'send_invoice' })
+  }
+
   async newSubscription(
     priceId: string,
-      options: SubscriptionOptions = {},
+    options: SubscriptionOptions = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+    const price = await managePrice.retrieveByLookupKey('stacks_pro_monthly')
+
+    return price
     // Map price IDs to Stripe subscription items
     const subscriptionItems = [{
       price: priceId,
       quantity: 1,
     }]
 
-    // Ensure the customer is retrieved correctly
-    const customer = await this.createOrGetStripeUser({}).then((customer) => {
-      if (!customer || !customer.id) {
-        throw new Error('Customer does not exist in Stripe')
-      }
-      return customer.id // Ensure customer.id is always a string
-    })
+    // // Ensure the customer is retrieved correctly
+    // const customer = await this.createOrGetStripeUser({}).then((customer) => {
+    //   if (!customer || !customer.id) {
+    //     throw new Error('Customer does not exist in Stripe')
+    //   }
+    //   return customer.id // Ensure customer.id is always a string
+    // })
 
-    // Configure optional subscription parameters based on options
-    const newOptions: Partial<Stripe.SubscriptionCreateParams> = {
-      items: subscriptionItems,
-      automatic_tax: options.enableTax ? { enabled: true } : undefined,
-      payment_behavior: options.allowPromotions ? 'default_incomplete' : undefined,
-      trial_period_days: options.trialDays,
-    }
+    // // Configure optional subscription parameters based on options
+    // const newOptions: Partial<Stripe.SubscriptionCreateParams> = {
+    //   items: subscriptionItems,
+    //   automatic_tax: options.enableTax ? { enabled: true } : undefined,
+    //   payment_behavior: options.allowPromotions ? 'default_incomplete' : undefined,
+    //   trial_period_days: options.trialDays,
+    // }
 
-    // Define core subscription parameters, including customer association and expansion options
-    const defaultOptions: Stripe.SubscriptionCreateParams = {
-      customer, // This is guaranteed to be a string
-      payment_behavior: 'default_incomplete',
-      expand: ['latest_invoice.payment_intent'],
-      // Apply trial_days only if specified
-      trial_period_days: options.trialDays || undefined,
-      items: subscriptionItems, // Add the subscription items here
-    }
+    // // Define core subscription parameters, including customer association and expansion options
+    // const defaultOptions: Stripe.SubscriptionCreateParams = {
+    //   customer, // This is guaranteed to be a string
+    //   payment_behavior: 'default_incomplete',
+    //   expand: ['latest_invoice.payment_intent'],
+    //   // Apply trial_days only if specified
+    //   trial_period_days: options.trialDays || undefined,
+    //   items: subscriptionItems, // Add the subscription items here
+    // }
 
-    // Merge new options with default options, giving priority to provided options
-    const mergedOptions: Stripe.SubscriptionCreateParams = {
-      ...defaultOptions,
-      ...newOptions,
-    }
+    // // Merge new options with default options, giving priority to provided options
+    // const mergedOptions: Stripe.SubscriptionCreateParams = {
+    //   ...defaultOptions,
+    //   ...newOptions,
+    // }
 
-    // Create the subscription
-    const subscription = await manageSubscription.create(this, mergedOptions)
+    // // Create the subscription
+    // const subscription = await manageSubscription.create(this, mergedOptions)
 
-    // Retrieve the latest invoice and payment intent for further use
-    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-    const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
+    // // Retrieve the latest invoice and payment intent for further use
+    // const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
+    // const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
-    return { subscription, paymentIntent }
+    // return { subscription, paymentIntent }
   }
 
   async checkout(
