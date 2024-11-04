@@ -751,55 +751,57 @@ export class UserModel {
     priceId: string,
     options: SubscriptionOptions = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const price = await managePrice.retrieveByLookupKey('stacks_pro_monthly')
+    const price = await managePrice.retrieveByLookupKey(priceId)
 
-    return price
+    if (!price)
+      throw new Error('Price does not exist in stripe')
+
     // Map price IDs to Stripe subscription items
     const subscriptionItems = [{
-      price: priceId,
+      price: price.id,
       quantity: 1,
     }]
 
-    // // Ensure the customer is retrieved correctly
-    // const customer = await this.createOrGetStripeUser({}).then((customer) => {
-    //   if (!customer || !customer.id) {
-    //     throw new Error('Customer does not exist in Stripe')
-    //   }
-    //   return customer.id // Ensure customer.id is always a string
-    // })
+    // Ensure the customer is retrieved correctly
+    const customer = await this.createOrGetStripeUser({}).then((customer) => {
+      if (!customer || !customer.id) {
+        throw new Error('Customer does not exist in Stripe')
+      }
+      return customer.id // Ensure customer.id is always a string
+    })
 
-    // // Configure optional subscription parameters based on options
-    // const newOptions: Partial<Stripe.SubscriptionCreateParams> = {
-    //   items: subscriptionItems,
-    //   automatic_tax: options.enableTax ? { enabled: true } : undefined,
-    //   payment_behavior: options.allowPromotions ? 'default_incomplete' : undefined,
-    //   trial_period_days: options.trialDays,
-    // }
+    // Configure optional subscription parameters based on options
+    const newOptions: Partial<Stripe.SubscriptionCreateParams> = {
+      items: subscriptionItems,
+      automatic_tax: options.enableTax ? { enabled: true } : undefined,
+      payment_behavior: options.allowPromotions ? 'default_incomplete' : undefined,
+      trial_period_days: options.trialDays,
+    }
 
-    // // Define core subscription parameters, including customer association and expansion options
-    // const defaultOptions: Stripe.SubscriptionCreateParams = {
-    //   customer, // This is guaranteed to be a string
-    //   payment_behavior: 'default_incomplete',
-    //   expand: ['latest_invoice.payment_intent'],
-    //   // Apply trial_days only if specified
-    //   trial_period_days: options.trialDays || undefined,
-    //   items: subscriptionItems, // Add the subscription items here
-    // }
+    // Define core subscription parameters, including customer association and expansion options
+    const defaultOptions: Stripe.SubscriptionCreateParams = {
+      customer, // This is guaranteed to be a string
+      payment_behavior: 'default_incomplete',
+      expand: ['latest_invoice.payment_intent'],
+      // Apply trial_days only if specified
+      trial_period_days: options.trialDays || undefined,
+      items: subscriptionItems, // Add the subscription items here
+    }
 
-    // // Merge new options with default options, giving priority to provided options
-    // const mergedOptions: Stripe.SubscriptionCreateParams = {
-    //   ...defaultOptions,
-    //   ...newOptions,
-    // }
+    // Merge new options with default options, giving priority to provided options
+    const mergedOptions: Stripe.SubscriptionCreateParams = {
+      ...defaultOptions,
+      ...newOptions,
+    }
 
-    // // Create the subscription
-    // const subscription = await manageSubscription.create(this, mergedOptions)
+    // Create the subscription
+    const subscription = await manageSubscription.create(this, mergedOptions)
 
-    // // Retrieve the latest invoice and payment intent for further use
-    // const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-    // const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
+    // Retrieve the latest invoice and payment intent for further use
+    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
+    const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
-    // return { subscription, paymentIntent }
+    return { subscription, paymentIntent }
   }
 
   async checkout(
