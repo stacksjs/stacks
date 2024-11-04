@@ -632,6 +632,18 @@ export class UserModel {
     return results
   }
 
+  async subscriptions() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await db.selectFrom('subscriptions')
+      .where('user_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    return results
+  }
+
   async userTeams() {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')

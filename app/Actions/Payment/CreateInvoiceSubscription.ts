@@ -9,7 +9,7 @@ export default new Action({
     const user = await User.find(1)
 
     const subscription = await user?.newSubscriptionInvoice('stacks_pro_yearly', {
-      allowPromotions: true, // Example option for allowing promotions
+      allowPromotions: true,
     })
 
     return subscription

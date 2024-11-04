@@ -66,13 +66,19 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
     if (hasRelations(model, relation)) {
       for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
         let relationModel = relationInstance.model
-
+        let modelRelation: Model
         if (isString(relationInstance)) {
           relationModel = relationInstance
         }
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-        const modelRelation = (await import(modelRelationPath)).default as Model
+        const coreModelRelationPath = path.storagePath(`framework/database/models/generated/${relationModel}.ts`)
+
+        if (fs.existsSync(modelRelationPath))
+          modelRelation = (await import(modelRelationPath)).default as Model
+        else
+          modelRelation = (await import(coreModelRelationPath)).default as Model
+
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const formattedModelName = modelName.toLowerCase()
 
@@ -165,8 +171,9 @@ export async function getPivotTables(
   return []
 }
 
-export async function fetchOtherModelRelations(model: Model, modelName?: string): Promise<RelationConfig[]> {
+export async function fetchOtherModelRelations(modelName?: string): Promise<RelationConfig[]> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+
   const modelRelations = []
 
   for (let i = 0; i < modelFiles.length; i++) {
@@ -224,6 +231,7 @@ export function getFillableAttributes(attributes: Attributes | undefined): strin
 
 export async function writeModelNames(): Promise<void> {
   const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
   let fileString = `export type ModelNames = `
 
   for (let i = 0; i < models.length; i++) {
@@ -236,15 +244,30 @@ export async function writeModelNames(): Promise<void> {
     if (i < models.length - 1) {
       fileString += ' | '
     }
-
-    // Ensure the directory exists
-    const typesDir = path.dirname(path.typesPath(`src/model-names.ts`))
-    await fs.promises.mkdir(typesDir, { recursive: true })
-
-    // Write to the file
-    const typeFilePath = path.typesPath(`src/model-names.ts`)
-    await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
   }
+
+  fileString += ' | '
+
+  for (let j = 0; j < coreModelFiles.length; j++) {
+    const modelPath = coreModelFiles[j] as string
+
+    const model = (await import(modelPath)).default as Model
+    const modelName = getModelName(model, modelPath)
+
+    fileString += `'${modelName}'`
+
+    if (j < coreModelFiles.length - 1) {
+      fileString += ' | '
+    }
+  }
+
+  // Ensure the directory exists
+  const typesDir = path.dirname(path.typesPath(`src/model-names.ts`))
+  await fs.promises.mkdir(typesDir, { recursive: true })
+
+  // Write to the file
+  const typeFilePath = path.typesPath(`src/model-names.ts`)
+  await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
 }
 
 export async function writeModelRequest(): Promise<void> {
@@ -316,7 +339,8 @@ export async function writeModelRequest(): Promise<void> {
       fieldStringType += ` get(key: ${concatenatedFields}): ${entity}\n`
     }
 
-    const otherModelRelations = await fetchOtherModelRelations(model, modelName)
+    const otherModelRelations = await fetchOtherModelRelations(modelName)
+
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
       fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
@@ -1316,7 +1340,7 @@ export async function generateModelString(
 
   jsonFields += '}'
 
-  const otherModelRelations = await fetchOtherModelRelations(model, modelName)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   for (const otherModelRelation of otherModelRelations) {
     fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
@@ -1324,13 +1348,13 @@ export async function generateModelString(
     constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
   }
 
-  if (useTwoFactor)
+  if (useTwoFactor && tableName === 'users')
     fieldString += 'two_factor_secret?: string \n'
 
-  if (usePasskey)
+  if (usePasskey && tableName === 'users')
     fieldString += 'public_passkey?: string \n'
 
-  if (useBillable)
+  if (useBillable && tableName === 'users')
     fieldString += 'stripe_id?: string \n'
 
   if (useTimestamps) {
@@ -1490,7 +1514,7 @@ export async function generateModelString(
       }
 
       // Method to get a User by criteria
-      static async get(): Promise<UserModel[]> {
+      static async get(): Promise<${modelName}Model[]> {
         const instance = new ${modelName}Model(null)
 
         if (instance.hasSelect) {

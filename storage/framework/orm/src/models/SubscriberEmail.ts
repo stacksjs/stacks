@@ -156,7 +156,7 @@ export class SubscriberEmailModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.hasSelect) {

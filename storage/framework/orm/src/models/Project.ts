@@ -161,7 +161,7 @@ export class ProjectModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<ProjectModel[]> {
     const instance = new ProjectModel(null)
 
     if (instance.hasSelect) {

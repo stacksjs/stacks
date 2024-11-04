@@ -166,7 +166,7 @@ export class AccessTokenModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(null)
 
     if (instance.hasSelect) {

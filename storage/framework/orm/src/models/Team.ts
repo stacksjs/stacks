@@ -183,7 +183,7 @@ export class TeamModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<TeamModel[]> {
     const instance = new TeamModel(null)
 
     if (instance.hasSelect) {

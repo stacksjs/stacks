@@ -17,6 +17,7 @@ export interface SubscriptionsTable {
   trial_ends_at?: string
   ends_at?: string
   last_used_at?: string
+  user_id?: number
 
   created_at?: Date
 
@@ -72,6 +73,7 @@ export class SubscriptionModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
+  public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
     this.id = subscription?.id
@@ -87,6 +89,8 @@ export class SubscriptionModel {
     this.created_at = subscription?.created_at
 
     this.updated_at = subscription?.updated_at
+
+    this.user_id = subscription?.user_id
 
     this.query = db.selectFrom('subscriptions')
     this.hasSelect = false
@@ -174,7 +178,7 @@ export class SubscriptionModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 
     if (instance.hasSelect) {

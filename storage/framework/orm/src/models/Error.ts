@@ -167,7 +167,7 @@ export class ErrorModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<ErrorModel[]> {
     const instance = new ErrorModel(null)
 
     if (instance.hasSelect) {

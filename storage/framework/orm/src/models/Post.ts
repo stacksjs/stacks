@@ -160,7 +160,7 @@ export class PostModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<PostModel[]> {
     const instance = new PostModel(null)
 
     if (instance.hasSelect) {

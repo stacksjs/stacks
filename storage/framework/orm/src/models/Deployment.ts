@@ -175,7 +175,7 @@ export class DeploymentModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 
     if (instance.hasSelect) {

@@ -1,7 +1,8 @@
 import type Stripe from 'stripe'
+import type { SubscriptionModel } from '../../../../orm/src/models/Subscription'
 import type { UserModel } from '../../../../orm/src/models/User'
-import { stripe } from '..'
 
+import { stripe } from '..'
 import Subscription from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
@@ -33,20 +34,21 @@ export const manageSubscription: SubscriptionManager = (() => {
     return subscription
   }
 
-  async function storeSubscription(options: Stripe.Subscription): Promise<any> {
+  async function storeSubscription(options: Stripe.Subscription): Promise<SubscriptionModel> {
     const data = {
       user_id: 1,
-      type: 'subscription',
+      type: 'premium',
       stripe_id: options.id,
       stripe_status: options.status,
       stripe_price: options.items.data[0].price.id,
       quantity: options.items.data[0].quantity,
-      trial_ends_at: options.trial_end,
-      ends_at: options.cancel_at,
-      last_used_at: options.current_period_end,
+      trial_ends_at: String(options.trial_end),
+      last_used_at: String(options.current_period_end),
     }
 
-    const subscriptionModel = Subscription.create(data)
+    const subscriptionModel = await Subscription.create(data)
+
+    return subscriptionModel
   }
 
   return { create }

@@ -43,7 +43,7 @@ export default {
   },
 
   hasOne: ['Post', 'Subscriber'],
-  hasMany: ['Deployment'],
+  hasMany: ['Deployment', 'Subscription'],
 
   belongsToMany: ['Team'],
 

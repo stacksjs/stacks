@@ -13,8 +13,6 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
-
-
   if (currentTransition.value === 'custom') {
     return `<Modal :visible="visible" @close="handleClose" transition="custom">
   <template #closeButton />

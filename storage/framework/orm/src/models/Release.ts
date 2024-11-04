@@ -152,7 +152,7 @@ export class ReleaseModel {
   }
 
   // Method to get a User by criteria
-  static async get(): Promise<UserModel[]> {
+  static async get(): Promise<ReleaseModel[]> {
     const instance = new ReleaseModel(null)
 
     if (instance.hasSelect) {
