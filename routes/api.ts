@@ -27,6 +27,7 @@ route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
 route.post('/stripe/create-payment-intent', 'Actions/Payment/CreatePaymentIntentAction')
 route.post('/stripe/create-subscription', 'Actions/Payment/CreateSubscriptionAction')
+route.post('/stripe/create-invoice-subscription', 'Actions/Payment/CreateInvoiceSubscription')
 route.post('/stripe/update-customer', 'Actions/Payment/UpdateCustomerAction')
 route.post('/stripe/checkout', 'Actions/Payment/CreateCheckoutAction')
 

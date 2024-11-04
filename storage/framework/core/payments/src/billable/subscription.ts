@@ -2,6 +2,8 @@ import type Stripe from 'stripe'
 import type { UserModel } from '../../../../orm/src/models/User'
 import { stripe } from '..'
 
+import Subscription from '../../../../orm/src/models/Subscription'
+
 export interface SubscriptionManager {
   create: (user: UserModel, params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
 }
@@ -24,7 +26,27 @@ export const manageSubscription: SubscriptionManager = (() => {
     const mergedParams = { ...defaultParams, ...params }
 
     // Create and return the subscription
-    return await stripe.subscription.create(mergedParams)
+    const subscription = await stripe.subscription.create(mergedParams)
+
+    await storeSubscription(subscription)
+
+    return subscription
+  }
+
+  async function storeSubscription(options: Stripe.Subscription): Promise<any> {
+    const data = {
+      user_id: 1,
+      type: 'subscription',
+      stripe_id: options.id,
+      stripe_status: options.status,
+      stripe_price: options.items.data[0].price.id,
+      quantity: options.items.data[0].quantity,
+      trial_ends_at: options.trial_end,
+      ends_at: options.cancel_at,
+      last_used_at: options.current_period_end,
+    }
+
+    const subscriptionModel = Subscription.create(data)
   }
 
   return { create }

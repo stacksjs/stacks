@@ -742,9 +742,16 @@ export class UserModel {
 
   async newSubscriptionInvoice(
     priceId: string,
-    options: SubscriptionOptions = {},
+      options: SubscriptionOptions = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    return await this.newSubscription(priceId, { ...options, days_until_due: 30, collection_method: 'send_invoice' })
+    const priceStripe = await managePrice.retrieveByLookupKey(priceId)
+
+    if (!priceStripe)
+      throw new Error('Price does not exist in stripe')
+
+    const price = priceStripe.id
+
+    return await this.newSubscription(price, { ...options, days_until_due: 30, collection_method: 'send_invoice' })
   }
 
   async newSubscription(

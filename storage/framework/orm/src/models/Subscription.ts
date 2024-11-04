@@ -2,21 +2,21 @@ import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import User from './User'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
 
 export interface SubscriptionsTable {
   id: Generated<number>
-  user_id?: undefined
-  type?: undefined
-  stripe_id?: undefined
-  stripe_status?: undefined
-  stripe_price?: undefined
-  quantity?: undefined
-  trial_ends_at?: undefined
-  ends_at?: undefined
-  last_used_at?: undefined
+  type?: string
+  stripe_id?: string
+  stripe_status?: string
+  stripe_price?: string
+  quantity?: number
+  trial_ends_at?: string
+  ends_at?: string
+  last_used_at?: string
 
   created_at?: Date
 
@@ -56,27 +56,25 @@ interface QueryOptions {
 
 export class SubscriptionModel {
   private hidden = []
-  private fillable = ['user_id', 'type', 'stripe_id', 'stripe_status', 'stripe_price', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['type', 'stripe_id', 'stripe_status', 'stripe_price', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'stripe_id', 'public_key', 'two_factor_secret']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
-  public user_id: undefined | undefined
-  public type: undefined | undefined
-  public stripe_id: undefined | undefined
-  public stripe_status: undefined | undefined
-  public stripe_price: undefined | undefined
-  public quantity: undefined | undefined
-  public trial_ends_at: undefined | undefined
-  public ends_at: undefined | undefined
-  public last_used_at: undefined | undefined
+  public type: string | undefined
+  public stripe_id: string | undefined
+  public stripe_status: string | undefined
+  public stripe_price: string | undefined
+  public quantity: number | undefined
+  public trial_ends_at: string | undefined
+  public ends_at: string | undefined
+  public last_used_at: string | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
     this.id = subscription?.id
-    this.user_id = subscription?.user_id
     this.type = subscription?.type
     this.stripe_id = subscription?.stripe_id
     this.stripe_status = subscription?.stripe_status
@@ -368,14 +366,6 @@ export class SubscriptionModel {
     return instance
   }
 
-  static whereUserId(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
-
-    instance.query = instance.query.where('user_id', '=', value)
-
-    return instance
-  }
-
   static whereType(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
@@ -601,6 +591,20 @@ export class SubscriptionModel {
     }
   }
 
+  async user() {
+    if (this.subscription_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', subscription_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   distinct(column: keyof SubscriptionType): SubscriptionModel {
     this.query = this.query.select(column).distinct()
 
@@ -641,7 +645,6 @@ export class SubscriptionModel {
     const output: Partial<SubscriptionType> = {
 
       id: this.id,
-      user_id: this.user_id,
       type: this.type,
       stripe_id: this.stripe_id,
       stripe_status: this.stripe_status,
@@ -706,63 +709,56 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereUserId(value: undefined): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('user_id', '=', value)
-  const results = await query.execute()
-
-  return results.map(modelItem => new SubscriptionModel(modelItem))
-}
-
-export async function whereType(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereType(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereStripeId(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereStripeId(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('stripe_id', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereStripeStatus(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereStripeStatus(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('stripe_status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereStripePrice(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereStripePrice(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('stripe_price', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereQuantity(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereQuantity(value: number): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('quantity', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereTrialEndsAt(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereTrialEndsAt(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('trial_ends_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereEndsAt(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereEndsAt(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('ends_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
-export async function whereLastUsedAt(value: undefined): Promise<SubscriptionModel[]> {
+export async function whereLastUsedAt(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('last_used_at', '=', value)
   const results = await query.execute()
 
