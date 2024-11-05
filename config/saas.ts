@@ -8,18 +8,18 @@
 export default {
   plans: [
     {
-      productName: 'Stacks Pro',
-      description: 'Access to all premium features of Stacks.',
+      productName: 'Stacks Hobby',
+      description: 'All the Stacks features.',
       pricing: [
         {
-          key: 'stacks_pro_monthly',
-          price: 2000,
+          key: 'stacks_hobby_monthly',
+          price: 3900,
           interval: 'monthly',
           currency: 'usd',
         },
         {
-          key: 'stacks_pro_yearly',
-          price: 20000,
+          key: 'stacks_hobby_yearly',
+          price: 37900,
           interval: 'yearly',
           currency: 'usd',
         },
@@ -29,7 +29,28 @@ export default {
         version: '1.0.0',
       },
     },
-    // Add other plans as needed
+    {
+      productName: 'Stacks Pro',
+      description: 'All the Stacks features, including being able to invite team members.',
+      pricing: [
+        {
+          key: 'stacks_pro_monthly',
+          price: 5900,
+          interval: 'monthly',
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_pro_yearly',
+          price: 57900,
+          interval: 'yearly',
+          currency: 'usd',
+        },
+      ],
+      metadata: {
+        createdBy: 'admin',
+        version: '1.0.0',
+      },
+    }
   ],
 
   webhook: {
@@ -50,7 +71,7 @@ export default {
   products: [
     {
       name: 'Stacks Pro',
-      description: 'Access to all premium features of Stacks.',
+      description: 'All the Stacks features.',
       images: ['url_to_image'],
     },
   ],
