@@ -179,12 +179,13 @@ async function createTableMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
+  const modelName = getModelName(model, modelPath)
 
   const twoFactorEnabled
     = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
-  const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -351,7 +352,7 @@ async function createSubscriptionMigration() {
   migrationContent += `    .addColumn('trial_ends_at', 'timestamp')\n`
   migrationContent += `    .addColumn('ends_at', 'timestamp')\n`
   migrationContent += `    .addColumn('last_used_at', 'text')\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp', col => col.notNull())\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n`
   migrationContent += `    }\n`

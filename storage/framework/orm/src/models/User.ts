@@ -756,14 +756,7 @@ export class UserModel {
     priceId: string,
       options: SubscriptionOptions = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const priceStripe = await managePrice.retrieveByLookupKey(priceId)
-
-    if (!priceStripe)
-      throw new Error('Price does not exist in stripe')
-
-    const price = priceStripe.id
-
-    return await this.newSubscription(price, { ...options, days_until_due: 30, collection_method: 'send_invoice' })
+    return await this.newSubscription(priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
   }
 
   async newSubscription(
@@ -789,28 +782,18 @@ export class UserModel {
       return customer.id // Ensure customer.id is always a string
     })
 
-    // Configure optional subscription parameters based on options
-    const newOptions: Partial<Stripe.SubscriptionCreateParams> = {
-      items: subscriptionItems,
-      automatic_tax: options.enableTax ? { enabled: true } : undefined,
-      payment_behavior: options.allowPromotions ? 'default_incomplete' : undefined,
-      trial_period_days: options.trialDays,
-    }
-
     // Define core subscription parameters, including customer association and expansion options
     const defaultOptions: Stripe.SubscriptionCreateParams = {
-      customer, // This is guaranteed to be a string
+      customer,
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
-      // Apply trial_days only if specified
-      trial_period_days: options.trialDays || undefined,
-      items: subscriptionItems, // Add the subscription items here
+      items: subscriptionItems,
     }
 
     // Merge new options with default options, giving priority to provided options
     const mergedOptions: Stripe.SubscriptionCreateParams = {
       ...defaultOptions,
-      ...newOptions,
+      ...options,
     }
 
     // Create the subscription

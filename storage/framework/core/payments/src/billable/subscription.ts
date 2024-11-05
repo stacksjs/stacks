@@ -29,14 +29,14 @@ export const manageSubscription: SubscriptionManager = (() => {
     // Create and return the subscription
     const subscription = await stripe.subscription.create(mergedParams)
 
-    await storeSubscription(subscription)
+    await storeSubscription(user, subscription)
 
     return subscription
   }
 
-  async function storeSubscription(options: Stripe.Subscription): Promise<SubscriptionModel> {
+  async function storeSubscription(user: UserModel, options: Stripe.Subscription): Promise<SubscriptionModel> {
     const data = {
-      user_id: 1,
+      user_id: user.id,
       type: 'premium',
       stripe_id: options.id,
       stripe_status: options.status,

@@ -1,5 +1,5 @@
 import type { Database } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
+ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
@@ -14,7 +14,7 @@ export async function up(db: Database<any>) {
     .addColumn('trial_ends_at', 'timestamp')
     .addColumn('ends_at', 'timestamp')
     .addColumn('last_used_at', 'text')
-    .addColumn('updated_at', 'timestamp', col => col.notNull())
+    .addColumn('updated_at', 'timestamp')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .execute()
-}
+    }

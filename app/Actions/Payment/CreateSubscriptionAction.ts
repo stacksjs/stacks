@@ -8,7 +8,7 @@ export default new Action({
   async handle() {
     const user = await User.find(1)
 
-    const subscription = await user?.newSubscription('stacks_pro_yearly', {
+    const subscription = await user?.newSubscription('stacks_pro_monthly', {
       allowPromotions: true, // Example option for allowing promotions
     })
 
