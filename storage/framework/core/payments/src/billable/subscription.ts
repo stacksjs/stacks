@@ -35,20 +35,27 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function storeSubscription(user: UserModel, options: Stripe.Subscription): Promise<SubscriptionModel> {
-    const data = {
+    const data = removeNullValues({
       user_id: user.id,
       type: 'premium',
       stripe_id: options.id,
       stripe_status: options.status,
       stripe_price: options.items.data[0].price.id,
       quantity: options.items.data[0].quantity,
-      trial_ends_at: String(options.trial_end),
-      last_used_at: String(options.current_period_end),
-    }
+      trial_ends_at: options.trial_end != null ? String(options.trial_end) : undefined,
+      ends_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
+      last_used_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
+    })
 
     const subscriptionModel = await Subscription.create(data)
 
     return subscriptionModel
+  }
+
+  function removeNullValues<T extends Record<string, any>>(obj: T): Partial<T> {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([_, value]) => value != null), // Filters out both `null` and `undefined`
+    ) as Partial<T>
   }
 
   return { create }

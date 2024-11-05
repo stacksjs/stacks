@@ -90,9 +90,3 @@ export interface CheckoutOptions extends Partial<Stripe.Checkout.SessionCreatePa
   enableTax?: boolean
   allowPromotions?: boolean
 }
-
-export interface SubscriptionOptions extends Partial<Stripe.SubscriptionCreateParams> {
-  enableTax?: boolean
-  allowPromotions?: boolean
-  trialDays?: number
-}

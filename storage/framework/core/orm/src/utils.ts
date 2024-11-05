@@ -1148,15 +1148,15 @@ export async function generateModelString(
     }
 
     async newSubscriptionInvoice(
-    priceId: string,
-      options: SubscriptionOptions = {},
-    ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-      return await this.newSubscription(priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
-    }
+      priceId: string,
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
+  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+    return await this.newSubscription(priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
+  }
 
   async newSubscription(
     priceId: string,
-    options: SubscriptionOptions = {},
+    options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const price = await managePrice.retrieveByLookupKey(priceId)
 
