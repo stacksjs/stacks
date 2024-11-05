@@ -8,7 +8,7 @@ export default new Action({
   async handle() {
     const user = await User.find(1)
 
-    const subscription = await user?.newSubscription('stacks_pro_monthly', { trial_period_days: 7 })
+    const subscription = await user?.newSubscription('pro', 'stacks_pro_monthly')
 
     return subscription
   },

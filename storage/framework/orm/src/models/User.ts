@@ -1,4 +1,4 @@
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions, SubscriptionOptions } from '@stacksjs/types'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -753,13 +753,15 @@ export class UserModel {
   }
 
   async newSubscriptionInvoice(
+    type: string,
     priceId: string,
       options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    return await this.newSubscription(priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
+    return await this.newSubscription(type, priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
   }
 
   async newSubscription(
+    type: string,
     priceId: string,
     options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
@@ -797,7 +799,7 @@ export class UserModel {
     }
 
     // Create the subscription
-    const subscription = await manageSubscription.create(this, mergedOptions)
+    const subscription = await manageSubscription.create(this, type, mergedOptions)
 
     // Retrieve the latest invoice and payment intent for further use
     const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null

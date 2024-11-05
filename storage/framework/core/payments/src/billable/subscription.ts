@@ -6,11 +6,11 @@ import { stripe } from '..'
 import Subscription from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
-  create: (user: UserModel, params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
+  create: (user: UserModel, type: string, params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
 }
 
 export const manageSubscription: SubscriptionManager = (() => {
-  async function create(user: UserModel, params: Stripe.SubscriptionCreateParams): Promise<Stripe.Response<Stripe.Subscription>> {
+  async function create(user: UserModel, type: string, params: Stripe.SubscriptionCreateParams): Promise<Stripe.Response<Stripe.Subscription>> {
     // Check if the user has a Stripe customer ID
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
@@ -29,15 +29,15 @@ export const manageSubscription: SubscriptionManager = (() => {
     // Create and return the subscription
     const subscription = await stripe.subscription.create(mergedParams)
 
-    await storeSubscription(user, subscription)
+    await storeSubscription(user, type, subscription)
 
     return subscription
   }
 
-  async function storeSubscription(user: UserModel, options: Stripe.Subscription): Promise<SubscriptionModel> {
+  async function storeSubscription(user: UserModel, type: string, options: Stripe.Subscription): Promise<SubscriptionModel> {
     const data = removeNullValues({
       user_id: user.id,
-      type: 'premium',
+      type,
       stripe_id: options.id,
       stripe_status: options.status,
       stripe_price: options.items.data[0].price.id,

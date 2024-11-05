@@ -1,4 +1,5 @@
 import type { Database } from '@stacksjs/database'
+
 export async function up(db: Database<any>) {
   await db.schema
     .createTable('team_personal_access_tokens')
@@ -6,4 +7,4 @@ export async function up(db: Database<any>) {
     .addColumn('team_id', 'integer')
     .addColumn('accesstoken_id', 'integer')
     .execute()
-    }
+}
