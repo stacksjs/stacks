@@ -51,7 +51,7 @@ interface QueryOptions {
 
 export class PostModel {
   private hidden = []
-  private fillable = ['stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['stripe_id', 'public_key', 'two_factor_secret', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

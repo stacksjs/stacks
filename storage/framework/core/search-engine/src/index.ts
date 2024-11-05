@@ -32,7 +32,7 @@ export const setTotalHits: ComputedRef = computed(() => table.setTotalHits)
 export const sort: ComputedRef = computed(() => table.sort)
 export const sorts: ComputedRef = computed(() => table.sorts)
 
-export function client(): string {
+function client(): string {
   // if (searchEngine.driver === 'meilisearch')
   //   return meilisearch
   return 'wip-search-me'

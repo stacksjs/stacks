@@ -210,9 +210,11 @@ export function getHiddenAttributes(attributes: Attributes | undefined): string[
   })
 }
 
-export function getFillableAttributes(attributes: Attributes | undefined): string[] {
+export function getFillableAttributes(attributes: Attributes | undefined, otherModelRelations: RelationConfig[]): string[] {
   if (attributes === undefined)
     return ['stripe_id', 'two_factor_secret', 'public_key']
+
+  const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey)
 
   return [
     ...Object.keys(attributes)
@@ -226,6 +228,7 @@ export function getFillableAttributes(attributes: Attributes | undefined): strin
     'stripe_id',
     'public_key',
     'two_factor_secret',
+    ...foreignKeys,
   ]
 }
 
@@ -1369,7 +1372,7 @@ export async function generateModelString(
   `
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
-  const fillable = JSON.stringify(getFillableAttributes(model.attributes))
+  const fillable = JSON.stringify(getFillableAttributes(model.attributes, otherModelRelations))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, managePrice, type Stripe } from '@stacksjs/payments'

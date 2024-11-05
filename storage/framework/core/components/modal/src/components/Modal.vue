@@ -34,6 +34,7 @@ defineCustomElement({
   shadow: true,
 })
 </script>
+
 <template>
   <div v-if="props.visible" class="fixed inset-0 z-10 w-screen overflow-y-auto">
     <div

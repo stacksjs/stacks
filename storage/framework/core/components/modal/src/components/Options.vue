@@ -139,7 +139,7 @@ async function handleCopyCode() {
     </div>
 
     <Transition name="fade" appear>
-      <Modal :visible="visible" @close="handleClose" class="bg-gray-500 bg-opacity-70 transition-opacity">
+      <Modal :visible="visible" class="bg-gray-500 bg-opacity-70 transition-opacity" @close="handleClose">
         <template v-if="currentAction === 'close'" #closeButton />
         <template v-if="currentAction === 'header'" #header>
           <h1 class="text-lg font-semibold">

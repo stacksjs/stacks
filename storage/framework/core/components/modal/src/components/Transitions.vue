@@ -8,13 +8,11 @@ const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'jack
 const showCheckIcon = ref(false)
 const visible = ref(false)
 
-
 function handleClose() {
   visible.value = false
 }
 
 const styleCode = computed(() => {
-
   let style = `
 .fade-enter-active,
 .fade-leave-active {
@@ -95,7 +93,8 @@ const styleCode = computed(() => {
   opacity: 0;
   transform: translateX(100%);
 }
-`}
+`
+  }
 
   if (currentTransition.value === 'pop') {
     style = `
@@ -164,7 +163,6 @@ const styleCode = computed(() => {
 
   return style
 })
-
 
 const renderedCode = computed(() => {
   return `
@@ -241,7 +239,6 @@ async function handleCopyCode() {
         <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
-
 
     <Transition name="modal-overlay" appear>
       <div v-if="visible" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click.self="handleClose" />
