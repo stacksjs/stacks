@@ -1147,10 +1147,14 @@ export async function generateModelString(
       return customer
     }
 
+    async isSubscribed(type: string): Promise<boolean> {
+      return await manageSubscription.isValid(this, type)
+    }
+
     async newSubscriptionInvoice(
-    type: string,
-    priceId: string,
-      options: Partial<Stripe.SubscriptionCreateParams> = {},
+      type: string,
+      priceId: string,
+    options: Partial<Stripe.SubscriptionCreateParams> = {},
     ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
       return await this.newSubscription(type, priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
     }
@@ -1165,21 +1169,18 @@ export async function generateModelString(
     if (!price)
       throw new Error('Price does not exist in stripe')
 
-    // Map price IDs to Stripe subscription items
     const subscriptionItems = [{
       price: price.id,
       quantity: 1,
     }]
 
-    // Ensure the customer is retrieved correctly
     const customer = await this.createOrGetStripeUser({}).then((customer) => {
       if (!customer || !customer.id) {
         throw new Error('Customer does not exist in Stripe')
       }
-      return customer.id // Ensure customer.id is always a string
+      return customer.id
     })
 
-    // Define core subscription parameters, including customer association and expansion options
     const defaultOptions: Stripe.SubscriptionCreateParams = {
       customer,
       payment_behavior: 'default_incomplete',
@@ -1187,16 +1188,13 @@ export async function generateModelString(
       items: subscriptionItems,
     }
 
-    // Merge new options with default options, giving priority to provided options
     const mergedOptions: Stripe.SubscriptionCreateParams = {
       ...defaultOptions,
       ...options,
     }
 
-    // Create the subscription
     const subscription = await manageSubscription.create(this, type, mergedOptions)
 
-    // Retrieve the latest invoice and payment intent for further use
     const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
     const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
