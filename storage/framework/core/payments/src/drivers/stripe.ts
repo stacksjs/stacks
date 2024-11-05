@@ -113,20 +113,30 @@ export const subscription: Subscription = (() => {
 })()
 
 export interface Price {
-  retrieve: (priceId: string, params: Stripe.PriceRetrieveParams) => Promise<Stripe.Response<Stripe.PriceRetrieveParams>>
-  list: (params: Stripe.PriceListParams) => Promise<Stripe.Response<Stripe.ApiListPromise<Stripe.Price>>>
+  retrieve: (priceId: string, params: Stripe.PriceRetrieveParams) => Promise<Stripe.Response<Stripe.Price>>
+  list: (params: Stripe.PriceListParams) => Promise<Stripe.ApiListPromise<Stripe.Price>>
+  create: (params: Stripe.PriceCreateParams) => Promise<Stripe.Response<Stripe.Price>>
+  update: (priceId: string, params: Stripe.PriceUpdateParams) => Promise<Stripe.Response<Stripe.Price>>
 }
 
 export const price: Price = (() => {
-  async function retrieve(priceId: string, params: Stripe.PriceRetrieveParams): Promise<Stripe.Response<Stripe.PriceRetrieveParams>> {
+  async function retrieve(priceId: string, params: Stripe.PriceRetrieveParams): Promise<Stripe.Response<Stripe.Price>> {
     return await client.prices.retrieve(priceId, params)
   }
 
-  async function list(params: Stripe.PriceListParams): Promise<Stripe.Response<Stripe.ApiListPromise<Stripe.Price>>> {
+  async function list(params: Stripe.PriceListParams): Promise<Stripe.ApiListPromise<Stripe.Price>> {
     return await client.prices.list(params)
   }
 
-  return { retrieve, list }
+  async function create(params: Stripe.PriceCreateParams): Promise<Stripe.Response<Stripe.Price>> {
+    return await client.prices.create(params)
+  }
+
+  async function update(priceId: string, params: Stripe.PriceUpdateParams): Promise<Stripe.Response<Stripe.Price>> {
+    return await client.prices.update(priceId, params)
+  }
+
+  return { retrieve, list, create, update }
 })()
 
 export interface Refund {

@@ -3,6 +3,7 @@ import { stripe } from '..'
 
 export interface PriceManager {
   retrieveByLookupKey: (lookupKey: string) => Promise<Stripe.Price>
+  createOrGet: (lookupKey: string, params: Stripe.PriceCreateParams) => Promise<Stripe.Price>
 }
 
 export const managePrice: PriceManager = (() => {
@@ -12,5 +13,22 @@ export const managePrice: PriceManager = (() => {
     return prices.data[0]
   }
 
-  return { retrieveByLookupKey }
+  async function createOrGet(
+    lookupKey: string,
+    params: Stripe.PriceCreateParams,
+  ): Promise<Stripe.Price> {
+    const existingPrice = await retrieveByLookupKey(lookupKey)
+
+    if (existingPrice)
+      return existingPrice
+
+    const newPrice = await stripe.price.create({
+      ...params,
+      lookup_key: lookupKey,
+    })
+
+    return newPrice
+  }
+
+  return { retrieveByLookupKey, createOrGet }
 })()

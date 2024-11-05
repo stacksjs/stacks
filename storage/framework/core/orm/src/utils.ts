@@ -1151,58 +1151,32 @@ export async function generateModelString(
       return await manageSubscription.isValid(this, type)
     }
 
+    async isIncomplete(type: string): Promise<boolean> {
+      return await manageSubscription.isIncomplete(this, type)
+    }
+
     async newSubscriptionInvoice(
       type: string,
       priceId: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
     ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
       return await this.newSubscription(type, priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
     }
 
-  async newSubscription(
-    type: string,
-    priceId: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
-  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const price = await managePrice.retrieveByLookupKey(priceId)
+    async newSubscription(
+      type: string,
+      priceId: string,
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
+    ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+      const subscription = await manageSubscription.create(this, type, priceId, options)
 
-    if (!price)
-      throw new Error('Price does not exist in stripe')
+      const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
+      const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
-    const subscriptionItems = [{
-      price: price.id,
-      quantity: 1,
-    }]
-
-    const customer = await this.createOrGetStripeUser({}).then((customer) => {
-      if (!customer || !customer.id) {
-        throw new Error('Customer does not exist in Stripe')
-      }
-      return customer.id
-    })
-
-    const defaultOptions: Stripe.SubscriptionCreateParams = {
-      customer,
-      payment_behavior: 'default_incomplete',
-      expand: ['latest_invoice.payment_intent'],
-      items: subscriptionItems,
+      return { subscription, paymentIntent }
     }
 
-    const mergedOptions: Stripe.SubscriptionCreateParams = {
-      ...defaultOptions,
-      ...options,
-    }
-
-    const subscription = await manageSubscription.create(this, type, mergedOptions)
-
-    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-    const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
-
-    return { subscription, paymentIntent }
-  }
-
-
-     async checkout(
+    async checkout(
       priceIds: CheckoutLineItem[],
       options: CheckoutOptions = {},
     ): Promise<Stripe.Response<Stripe.Checkout.Session>> {

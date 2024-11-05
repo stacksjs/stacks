@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, managePrice, manageSubscription, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, type Stripe } from '@stacksjs/payments'
 
 import Post from './Post'
 
@@ -756,10 +756,14 @@ export class UserModel {
     return await manageSubscription.isValid(this, type)
   }
 
+  async isIncomplete(type: string): Promise<boolean> {
+    return await manageSubscription.isIncomplete(this, type)
+  }
+
   async newSubscriptionInvoice(
     type: string,
     priceId: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     return await this.newSubscription(type, priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
   }
@@ -767,38 +771,9 @@ export class UserModel {
   async newSubscription(
     type: string,
     priceId: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const price = await managePrice.retrieveByLookupKey(priceId)
-
-    if (!price)
-      throw new Error('Price does not exist in stripe')
-
-    const subscriptionItems = [{
-      price: price.id,
-      quantity: 1,
-    }]
-
-    const customer = await this.createOrGetStripeUser({}).then((customer) => {
-      if (!customer || !customer.id) {
-        throw new Error('Customer does not exist in Stripe')
-      }
-      return customer.id
-    })
-
-    const defaultOptions: Stripe.SubscriptionCreateParams = {
-      customer,
-      payment_behavior: 'default_incomplete',
-      expand: ['latest_invoice.payment_intent'],
-      items: subscriptionItems,
-    }
-
-    const mergedOptions: Stripe.SubscriptionCreateParams = {
-      ...defaultOptions,
-      ...options,
-    }
-
-    const subscription = await manageSubscription.create(this, type, mergedOptions)
+    const subscription = await manageSubscription.create(this, type, priceId, options)
 
     const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
     const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined

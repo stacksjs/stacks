@@ -2,24 +2,40 @@ import type Stripe from 'stripe'
 import type { SubscriptionModel } from '../../../../orm/src/models/Subscription'
 import type { UserModel } from '../../../../orm/src/models/User'
 
-import { stripe } from '..'
+import { manageCustomer, managePrice, stripe } from '..'
 import Subscription from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
-  create: (user: UserModel, type: string, params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
+  create: (user: UserModel, type: string, priceId: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
+  isIncomplete: (user: UserModel, type: string) => Promise<boolean>
 }
 
 export const manageSubscription: SubscriptionManager = (() => {
-  async function create(user: UserModel, type: string, params: Stripe.SubscriptionCreateParams): Promise<Stripe.Response<Stripe.Subscription>> {
-    if (!user.hasStripeId()) {
-      throw new Error('Customer does not exist in Stripe')
-    }
+  async function create(user: UserModel, type: string, priceId: string, params: Partial<Stripe.SubscriptionCreateParams>): Promise<Stripe.Response<Stripe.Subscription>> {
+    const price = await managePrice.retrieveByLookupKey(priceId)
 
-    const defaultParams: Partial<Stripe.SubscriptionCreateParams> = {
-      customer: user.stripeId(),
+    if (!price)
+      throw new Error('Price does not exist in stripe')
+
+    const subscriptionItems = [{
+      price: price.id,
+      quantity: 1,
+    }]
+
+    const customerId = await manageCustomer.createOrGetStripeUser(user, {}).then((customer) => {
+      if (!customer || !customer.id) {
+        throw new Error('Customer does not exist in Stripe')
+      }
+
+      return customer.id
+    })
+
+    const defaultParams: Stripe.SubscriptionCreateParams = {
+      customer: customerId,
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
+      items: subscriptionItems,
     }
 
     const mergedParams = { ...defaultParams, ...params }
@@ -35,12 +51,19 @@ export const manageSubscription: SubscriptionManager = (() => {
     return subscription.stripe_status === 'active'
   }
 
-  async function isIncomplete(subscription: SubscriptionModel): Promise<boolean> {
-    return subscription.stripe_status === 'incomplete'
-  }
-
   async function isTrial(subscription: SubscriptionModel): Promise<boolean> {
     return subscription.stripe_status === 'trialing'
+  }
+
+  async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
+    const subscription = await Subscription.where('user_id', user.id)
+      .where('type', type)
+      .first()
+
+    if (!subscription)
+      return false
+
+    return subscription.stripe_status === 'incomplete'
   }
 
   async function isValid(user: UserModel, type: string): Promise<boolean> {
