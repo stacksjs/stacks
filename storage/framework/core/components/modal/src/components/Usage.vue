@@ -19,7 +19,6 @@ const handleClose = () => {
     <Modal
       :visible="visible"
       @close="handleClose"
-      class="bg-gray-500 bg-opacity-75 transition-opacity"
     >
       <template #closeButton />
       <template #header>

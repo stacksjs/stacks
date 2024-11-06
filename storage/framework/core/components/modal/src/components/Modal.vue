@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { defineCustomElement, onMounted, onUnmounted, useSlots } from 'vue'
+import { defineCustomElement, onMounted, onUnmounted, useSlots, computed } from 'vue'
 
 const props = defineProps<{
   visible: boolean
   className?: string
+  overlay?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -11,6 +12,7 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
+const showOverlay = computed(() => props.overlay ?? true)
 
 function handleClose() {
   emit('close', false)
@@ -37,6 +39,8 @@ defineCustomElement({
 
 <template>
   <div v-if="props.visible" class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div v-if="showOverlay" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="handleClose" />
+
     <div
       v-if="props.visible"
       class="min-h-full flex items-end justify-center p-4 text-center sm:items-center sm:p-0"

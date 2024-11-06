@@ -177,7 +177,7 @@ const renderedCode = computed(() => {
   </Transition>
 
   <Transition name="${currentTransition.value}" appear>
-    <Modal :visible="visible" @close="handleClose">
+    <Modal :visible="visible" :overlay="false" @close="handleClose">
       <div>
         <p class="text-sm text-gray-500">
           Here is the content of the modal
@@ -245,7 +245,7 @@ async function handleCopyCode() {
     </Transition>
 
     <Transition :name="currentTransition" appear>
-      <Modal :visible="visible" @close="handleClose">
+      <Modal :visible="visible" :overlay="false" @close="handleClose">
         <div>
           <p class="text-sm text-gray-500">
             Here is the content of the modal

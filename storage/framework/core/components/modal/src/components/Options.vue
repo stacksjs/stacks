@@ -12,28 +12,17 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
-  if (currentAction.value === 'default') {
-    return `
-<Modal
-  :visible="visible"
-  @close="handleClose"
-  class="bg-gray-500 bg-opacity-70 transition-opacity"
->
+
+  let modalContent = `
   <div>
     <p class="text-sm text-gray-500">
       Here is the content of the modal
     </p>
   </div>
-</Modal>`
-  }
+`
 
   if (currentAction.value === 'close') {
-    return `
-<Modal
-  :visible="visible"
-  @close="handleClose"
-  class="bg-gray-500 bg-opacity-70 transition-opacity"
->
+    modalContent = `
   <!-- For default close button -->
   <template #closeButton />
 
@@ -48,13 +37,12 @@ const renderedCode = computed(() => {
     <p class="text-sm text-gray-500">
       Here is the content of the modal
     </p>
-  </div>
-</Modal>`
+  </div
+`
   }
 
   if (currentAction.value === 'header') {
-    return `
-<Modal :visible="visible" @close="handleClose" class="bg-gray-500 bg-opacity-70 transition-opacity">
+    modalContent = `
   <template #header>
     <h1 class="text-lg font-semibold">
       Greetings
@@ -66,10 +54,10 @@ const renderedCode = computed(() => {
       Here is the content of the modal.
     </p>
   </div>
-</Modal>`
+`
   }
 
-  return ``
+  return `<Modal :visible="visible" @close="handleClose">${modalContent}</Modal>`
 })
 
 function handleClick(action: string) {
