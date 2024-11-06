@@ -1,11 +1,13 @@
 import type { Generated } from 'kysely'
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { DeploymentsTable } from '../src/models/Deployment'
+import type { ErrorsTable } from '../src/models/Error'
 import type { PostsTable } from '../src/models/Post'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
+import type { SubscriptionsTable } from '../src/models/Subscription'
 import type { TeamsTable } from '../src/models/Team'
 import type { UsersTable } from '../src/models/User'
 

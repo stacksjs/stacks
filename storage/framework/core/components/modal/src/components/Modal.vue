@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { defineCustomElement, onMounted, onUnmounted, useSlots, computed } from 'vue'
+import { computed, defineCustomElement, onMounted, onUnmounted, useSlots } from 'vue'
 
 const props = defineProps<{
   visible: boolean

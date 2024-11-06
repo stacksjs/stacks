@@ -12,7 +12,6 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
-
   let modalContent = `
   <div>
     <p class="text-sm text-gray-500">

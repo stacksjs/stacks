@@ -794,6 +794,16 @@ export async function generateKyselyTypes(): Promise<void> {
     text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
   }
 
+  for (const modelFile of coreModelFiles) {
+    const model = (await import(modelFile)).default as Model
+    const tableName = getTableName(model, modelFile)
+    const modelName = getModelName(model, modelFile)
+    const words = tableName.split('_')
+    const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
+
+    text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
+  }
+
   text += `import type { Generated } from 'kysely'\n\n`
 
   let pivotFormatted = ''

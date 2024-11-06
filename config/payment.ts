@@ -1,4 +1,5 @@
 import type { PaymentConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Payment Configuration**
