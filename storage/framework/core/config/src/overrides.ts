@@ -17,6 +17,7 @@ import notification from '~/config/notification'
 import payment from '~/config/payment'
 import ports from '~/config/ports'
 import queue from '~/config/queue'
+import saas from '~/config/saas'
 import searchEngine from '~/config/search-engine'
 import security from '~/config/security'
 import services from '~/config/services'
@@ -45,6 +46,7 @@ const config: StacksConfig = {
   queue,
   payment,
   ports,
+  saas,
   searchEngine,
   security,
   services,

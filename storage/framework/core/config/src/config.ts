@@ -28,6 +28,7 @@ export const payment: StacksOptions['payment'] = config.payment
 export const ports: StacksOptions['ports'] = config.ports
 export const queue: StacksOptions['queue'] = config.queue
 export const security: StacksOptions['security'] = config.security
+export const saas: StacksOptions['saas'] = config.saas
 export const searchEngine: StacksOptions['searchEngine'] = config.searchEngine
 export const services: StacksOptions['services'] = config.services
 export const storage: StacksOptions['storage'] = config.storage

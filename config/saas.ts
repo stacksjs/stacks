@@ -1,3 +1,5 @@
+import type { SaasConfig } from '@stacksjs/types'
+
 /**
  * **Payment Configuration**
  *
@@ -14,13 +16,13 @@ export default {
         {
           key: 'stacks_hobby_monthly',
           price: 3900,
-          interval: 'monthly',
+          interval: 'month',
           currency: 'usd',
         },
         {
           key: 'stacks_hobby_yearly',
           price: 37900,
-          interval: 'yearly',
+          interval: 'year',
           currency: 'usd',
         },
       ],
@@ -36,13 +38,13 @@ export default {
         {
           key: 'stacks_pro_monthly',
           price: 5900,
-          interval: 'monthly',
+          interval: 'month',
           currency: 'usd',
         },
         {
           key: 'stacks_pro_yearly',
           price: 57900,
-          interval: 'yearly',
+          interval: 'year',
           currency: 'usd',
         },
       ],
@@ -75,4 +77,4 @@ export default {
       images: ['url_to_image'],
     },
   ],
-} satisfies any
+} satisfies SaasConfig

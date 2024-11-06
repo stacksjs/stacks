@@ -86,6 +86,7 @@ export enum Action {
   Prepublish = 'prepublish',
   Release = 'release', // ✅
   RouteList = 'route/list', // ✅
+  StripeSetup = 'saas/setup',
   Test = 'test/index',
   TestUi = 'test/ui',
   TestUnit = 'test/unit',
