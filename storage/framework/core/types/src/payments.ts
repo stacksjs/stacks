@@ -4,8 +4,8 @@ export interface PaymentOptions {
   driver: 'stripe'
 
   stripe: {
-    publishable_key: string
-    secret_key: string
+    publishableKey: string
+    secretKey: string
   }
 }
 
