@@ -186,6 +186,7 @@ export interface RelationConfig {
   relationModel?: string
   relationTable?: string
   foreignKey: string
+  modelKey: string
   relationName?: string
   throughModel?: string
   throughForeignKey?: string

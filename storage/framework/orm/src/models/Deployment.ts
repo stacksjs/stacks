@@ -585,11 +585,11 @@ export class DeploymentModel {
   }
 
   async user() {
-    if (this.deployment_id === undefined)
+    if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
     const model = await User
-      .where('id', '=', deployment_id)
+      .where('id', '=', this.user_id)
       .first()
 
     if (!model)

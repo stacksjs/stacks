@@ -80,13 +80,16 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           modelRelation = (await import(coreModelRelationPath)).default as Model
 
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+        const modelRelationName = getModelName(modelRelation, modelRelationPath)
         const formattedModelName = modelName.toLowerCase()
+        const formattedModelRelationName = modelRelationName.toLowerCase()
 
         relationships.push({
           relationship: relation,
           model: relationModel,
           table: modelRelationTable,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
+          modelKey: `${formattedModelRelationName}_id`,
           relationName: relationInstance.relationName || '',
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
@@ -932,6 +935,7 @@ export async function generateModelString(
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
+    const modelKeyRelation = relation.modelKey
     const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
     const formattedModelRelation = modelRelation.toLowerCase()
@@ -1009,11 +1013,11 @@ export async function generateModelString(
 
       relationMethods += `
       async ${relationName}() {
-        if (this.${foreignKeyRelation} === undefined)
+        if (this.${modelKeyRelation} === undefined)
           throw new HttpError(500, 'Relation Error!')
 
         const model = await ${modelRelation}
-          .where('id', '=', ${foreignKeyRelation})
+          .where('id', '=', this.${modelKeyRelation})
           .first()
 
         if (! model)

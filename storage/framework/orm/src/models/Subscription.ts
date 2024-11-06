@@ -2,6 +2,7 @@ import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import User from './User'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -592,6 +593,20 @@ export class SubscriptionModel {
         .where('id', '=', this.id)
         .execute()
     }
+  }
+
+  async user() {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', this.user_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
   }
 
   distinct(column: keyof SubscriptionType): SubscriptionModel {
