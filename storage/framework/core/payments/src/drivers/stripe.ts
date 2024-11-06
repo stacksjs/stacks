@@ -139,6 +139,38 @@ export const price: Price = (() => {
   return { retrieve, list, create, update }
 })()
 
+export interface Product {
+  create: (params: Stripe.ProductCreateParams) => Promise<Stripe.Response<Stripe.Product>>
+  retrieve: (productId: string, params?: Stripe.ProductRetrieveParams) => Promise<Stripe.Response<Stripe.Product>>
+  update: (productId: string, params: Stripe.ProductUpdateParams) => Promise<Stripe.Response<Stripe.Product>>
+  delete: (productId: string) => Promise<Stripe.Response<Stripe.DeletedProduct>>
+  list: (params?: Stripe.ProductListParams) => Promise<Stripe.ApiListPromise<Stripe.Product>>
+}
+
+export const product: Product = (() => {
+  async function create(params: Stripe.ProductCreateParams): Promise<Stripe.Response<Stripe.Product>> {
+    return await client.products.create(params)
+  }
+
+  async function retrieve(productId: string, params?: Stripe.ProductRetrieveParams): Promise<Stripe.Response<Stripe.Product>> {
+    return await client.products.retrieve(productId, params)
+  }
+
+  async function update(productId: string, params: Stripe.ProductUpdateParams): Promise<Stripe.Response<Stripe.Product>> {
+    return await client.products.update(productId, params)
+  }
+
+  async function deleteProduct(productId: string): Promise<Stripe.Response<Stripe.DeletedProduct>> {
+    return await client.products.del(productId)
+  }
+
+  async function list(params?: Stripe.ProductListParams): Promise<Stripe.ApiListPromise<Stripe.Product>> {
+    return await client.products.list(params)
+  }
+
+  return { create, retrieve, update, delete: deleteProduct, list }
+})()
+
 export interface Refund {
   create: (params: Stripe.RefundCreateParams) => Promise<Stripe.Response<Stripe.Refund>>
   retrieve: (refundId: string) => Promise<Stripe.Response<Stripe.Refund>>

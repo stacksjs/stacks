@@ -7,6 +7,14 @@ export async function createStripeProduct(): Promise<any> {
   try {
     if (plans !== undefined && plans.length) {
       for (const plan of plans) {
+        // First, create the product in Stripe
+        const product = await stripe.product.create({
+          name: plan.productName,
+          description: plan.description,
+          metadata: plan.metadata,
+        })
+
+        // Use the created product's ID to add the pricing options
         for (const pricing of plan.pricing) {
           await stripe.price.create({
             unit_amount: pricing.price,
@@ -14,10 +22,7 @@ export async function createStripeProduct(): Promise<any> {
             recurring: {
               interval: pricing.interval,
             },
-            product_data: {
-              name: plan.productName,
-              metadata: plan.metadata,
-            },
+            product: product.id,
             nickname: pricing.key, // Optional: adds a nickname for easier reference
           })
         }

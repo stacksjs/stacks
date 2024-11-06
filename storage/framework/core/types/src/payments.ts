@@ -2,6 +2,11 @@ import type Stripe from 'stripe'
 
 export interface PaymentOptions {
   driver: 'stripe'
+
+  stripe: {
+    publishable_key: string
+    secret_key: string
+  }
 }
 
 export type PaymentConfig = Partial<PaymentOptions>
