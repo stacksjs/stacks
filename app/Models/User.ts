@@ -108,17 +108,6 @@ export default {
       factory: () => faker.internet.password(),
     },
   },
-
-  get: {
-    fullName: (user: UserModel) => {
-      return user.name ? capitalize(user.name) : ''
-    },
-  },
-
-  set: {
-    password: (password: string) => Bun.password.hash(password),
-  },
-
   dashboard: {
     highlight: true,
   },

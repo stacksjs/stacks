@@ -1,7 +1,6 @@
 import type Stripe from 'stripe'
 import { cache } from '@stacksjs/cache'
 import { stripe } from '..'
-import { price } from '../drivers/stripe'
 
 export interface PriceManager {
   retrieveByLookupKey: (lookupKey: string) => Promise<Stripe.Price | undefined>
