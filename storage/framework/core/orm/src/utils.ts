@@ -1135,7 +1135,7 @@ export async function generateModelString(
 
     async retrievePaymentMethod(paymentMethod: string): Promise<Stripe.Response<Stripe.PaymentMethod> | null> {
       const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
-      
+
       return defaultPaymentMethod
     }
 
@@ -1465,7 +1465,7 @@ export async function generateModelString(
 
         if (model === undefined)
           throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
-        
+
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
         return instance.parseResult(new ${modelName}Model(model))
@@ -2068,7 +2068,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
   let fields: Attributes | undefined
   traverse(ast, {
     ObjectExpression(path) {
-      // Look for the `fields` key in the object
+      // Look for the `attributes` key in the object
       const fieldsProperty = path.node.properties.find(
         property =>
           property.type === 'ObjectProperty'
