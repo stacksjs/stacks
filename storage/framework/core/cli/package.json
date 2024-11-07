@@ -60,11 +60,13 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
+    "ansi-escapes": "^7.0.0",
     "cac": "^6.7.14",
     "consola": "^3.2.3",
     "kolorist": "1.8.0",
     "ora": "^8.1.0",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "supports-hyperlinks": "^3.1.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
