@@ -12,7 +12,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-const showOverlay = computed(() => props.overlay ?? true)
+
+const showOverlay = computed(() => {
+  return props.overlay ?? true
+})
 
 function handleClose() {
   emit('close', false)

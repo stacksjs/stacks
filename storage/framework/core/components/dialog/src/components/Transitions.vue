@@ -167,7 +167,7 @@ const styleCode = computed(() => {
 const renderedCode = computed(() => {
   return `
 <template>
-  // For a better modal overlay effect, we recommend on creating a separate modal-overlay.
+  // For a better dialog overlay effect, we recommend on creating a separate dialog-overlay.
   <Transition name="fade" appear>
     <div
       v-if="visible"
@@ -177,13 +177,13 @@ const renderedCode = computed(() => {
   </Transition>
 
   <Transition name="${currentTransition.value}" appear>
-    <Modal :visible="visible" :overlay="false" @close="handleClose">
+    <Dialog :visible="visible" :overlay="false" @close="handleClose">
       <div>
         <p class="text-sm text-gray-500">
-          Here is the content of the modal
+          Here is the content of the dialog
         </p>
       </div>
-    </Modal>
+    </Dialog>
   </Transition>
 </template>
 
@@ -207,12 +207,13 @@ async function handleCopyCode() {
       Transition
     </h1>
     <p class="my-3 text-base">
-      Here are the default transitions that come with the modal.
+      Here are the default transitions that come with the dialog.
     </p>
 
     <div class="mb-4 flex gap-3 overflow-auto">
       <button
-        v-for="trans in transitionList"
+        v-for="(trans, index) in transitionList"
+        :key="index"
         class="btn-default"
         :class="{
           'bg-neutral-200/50 border-neutral-400/50': currentTransition === trans,
@@ -245,17 +246,17 @@ async function handleCopyCode() {
     </Transition>
 
     <Transition :name="currentTransition" appear>
-      <Modal :visible="visible" :overlay="false" @close="handleClose">
+      <Dialog :visible="visible" :overlay="false" @close="handleClose">
         <div>
           <p class="text-sm text-gray-500">
-            Here is the content of the modal
+            Here is the content of the dialog
           </p>
         </div>
-      </Modal>
+      </Dialog>
     </Transition>
 
     <p class="text-sm text-gray-500">
-      For a better modal overlay effect, we recommend on creating a separate modal-overlay for it like the example above.
+      For a better dialog overlay effect, we recommend on creating a separate dialog-overlay for it like the example above.
     </p>
   </div>
 </template>

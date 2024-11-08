@@ -8,7 +8,7 @@ const code = `<!-- App.vue -->
 import { Stepper } from '@stacksjs/stepper'
 
 const step = ref(1)
-const steps = ref(5)
+const steps = ref(3)
 const stepperRef = ref(null)
 
 <\/script>
@@ -18,9 +18,15 @@ const stepperRef = ref(null)
   <Stepper ref="stepperRef" v-model="step" :steps="steps" />
 
   <!-- Template for each step -->
-  <template v-if="step === 1"><!-- Step 1 Content --></template>
-  <template v-if="step === 2"><!-- Step 2 Content --></template>
-  <template v-if="step === 3"><!-- Step 3 Content --></template>
+  <div v-if="step === 1">
+    <!-- Step 1 Content -->
+  </div>
+  <div v-if="step === 2">
+    <!-- Step 2 Content -->
+  </div>
+  <div v-if="step === 3">
+    <!-- Step 3 Content -->
+  </div>
 
   <!-- Stepper Controls -->
   <button type="button" @click="stepperRef?.previous()">Previous</button>
@@ -58,8 +64,8 @@ async function handleCopyCode() {
         class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
-        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
+        <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
+        <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
   </div>

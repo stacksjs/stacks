@@ -5,7 +5,7 @@ import { useCopyCode } from '../composables/useCopyCode'
 
 const code = `<!-- App.vue -->
 <script lang="ts" setup>
-import { Modal } from '@stacksjs/modal'
+import { Dialog } from '@stacksjs/dialog'
 
 const visible = ref(false)
 
@@ -16,8 +16,9 @@ const handleClose = () => {
 
 <template>
   <Transition name="fade" appear>
-    <Modal
+    <Dialog
       :visible="visible"
+      overlay
       @close="handleClose"
     >
       <template #closeButton />
@@ -25,12 +26,12 @@ const handleClose = () => {
         <h1> Hello Detail</h1>
       </template>
 
-      <p>Modal Content</p>
-    </Modal>
+      <p>Dialog Content</p>
+    </Dialog>
   </Transition>
 
   <button @click="visible = true">
-    Open Modal
+    Open Dialog
   </button>
 </template>
 

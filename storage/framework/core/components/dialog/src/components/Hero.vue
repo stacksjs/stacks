@@ -8,17 +8,17 @@ function handleOpen() {
 
 <template>
   <div class="flex flex-col items-center gap-3">
-    <div class="modalWrapper">
-      <div class="modal" />
-      <div class="modal" />
-      <div class="modal" />
+    <div class="dialogWrapper">
+      <div class="dialog" />
+      <div class="dialog" />
+      <div class="dialog" />
     </div>
     <h1 class="text-neon mb-3 text-5xl font-bold -mt-5">
-      stacks/modal
+      stacks/dialog
     </h1>
 
     <p class="mb-3 mt-0 text-lg">
-      An simple, minimal, yet powerful, modal component.
+      An simple, minimal, yet powerful, dialog component.
     </p>
 
     <div class="flex gap-2">
@@ -26,11 +26,11 @@ function handleOpen() {
         class="button btn-primary"
         @click="handleOpen"
       >
-        Render a Modal
+        Render Dialog
       </button>
       <a
         class="button btn-secondary"
-        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/modal"
+        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dialog"
         target="_blank"
       >
         GitHub
@@ -40,7 +40,7 @@ function handleOpen() {
 </template>
 
 <style scoped>
-.modalWrapper {
+.dialogWrapper {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -52,7 +52,7 @@ function handleOpen() {
   opacity: 1;
 }
 
-.modal {
+.dialog {
   width: 356px;
   height: 40px;
   background: #ffffff;
@@ -65,11 +65,11 @@ function handleOpen() {
   transform: translateX(-50%);
 }
 
-.modal:nth-child(1) {
+.dialog:nth-child(1) {
   transform: translateY(-60%) translateX(-50%) scale(0.9);
 }
 
-.modal:nth-child(2) {
+.dialog:nth-child(2) {
   transform: translateY(-30%) translateX(-50%) scale(0.95);
 }
 

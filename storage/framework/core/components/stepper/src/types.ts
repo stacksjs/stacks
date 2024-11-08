@@ -10,7 +10,7 @@ export interface StepperProps {
   steps?: number
   linear?: boolean
   persist?: boolean
-  storekeeper?: string
+  storekeeper?: 'localStorage' | 'sessionStorage'
   withDivider?: boolean
   debug?: boolean
 }

@@ -8,7 +8,7 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<StepperProps>(), {
-  stepperId: undefined,
+  id: undefined,
   steps: 0,
   linear: true,
   persist: false,
@@ -19,19 +19,26 @@ const props = withDefaults(defineProps<StepperProps>(), {
 
 const emit = defineEmits(['reset'])
 
-const modelValue = defineModel()
+interface StepItem {
+  index: number
+  value: number
+  visited: boolean
+  disabled: boolean
+  active: boolean
+}
 
+const modelValue = defineModel<number | undefined>()
 const namespace = { kebab: 'stepper', capitalize: 'Stepper' }
-const stepsArr = ref(getStepsArr())
+const stepsArr = ref<StepItem[]>(getStepsArr())
 const currentIndex = ref(toIndex(modelValue.value))
 
 const slots = useSlots()
-const id = computed(() => `${namespace.kebab}-${Math.random().toString(36).substring(2, 9)}`)
+const id = computed(() => `${namespace.kebab}-${props.id ?? Math.random().toString(36).substring(2, 9)}`)
 
 watch(
   () => modelValue.value,
-  (step) => {
-    currentIndex.value = toIndex(step)
+  (step: number | undefined) => {
+    currentIndex.value = toIndex(step ?? 1)
     if (props.persist) {
       setStorage()
     }
@@ -61,7 +68,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (props.persist) {
-    window[props.storekeeper].removeItem(id.value)
+    window[props.storekeeper as 'localStorage' | 'sessionStorage'].removeItem(id.value)
   }
 })
 
@@ -92,15 +99,18 @@ function withSlot(name: string) {
 
 function withoutSlot(name: string): boolean {
   const noSlot = !slots[name] || (slots[name] && !slots[name].length)
-  const noScopedSlot = slots.noScopedSlot && !slots.noScopedSlot[name]
-  return noSlot && noScopedSlot
+
+  const noScopeSlot = slots.noScopedSlot as any
+  const hasNoScopeSlot = noScopeSlot && !noScopeSlot[name]
+
+  return noSlot && hasNoScopeSlot
 }
 
 function toValue(index: number) {
   return index + 1
 }
 
-function toIndex(value = 0) {
+function toIndex(value: number | undefined = 0) {
   return value - 1
 }
 
@@ -135,7 +145,7 @@ function handleChange(stepIndex: number) {
     emitValue(toValue(stepIndex))
   }
 }
-function getStepsArr() {
+function getStepsArr(): StepItem[] {
   return Array.from({ length: props.steps }, (_, index) => {
     const isFirst = index === 0
     const isNext = index - 1 === 0
@@ -147,7 +157,7 @@ function getStepsArr() {
     }
     const visited = false
     const value = toValue(index)
-    return { index, value, visited, disabled }
+    return { index, value, visited, disabled, active: false } as StepItem
   })
 }
 
@@ -172,8 +182,12 @@ function reset() {
   emit('reset')
 }
 
-function setStep(stepIndex: number, prop: string, value: any) {
-  stepsArr.value[stepIndex][prop] = value
+function setStep(stepIndex: number, prop: keyof StepItem, value: boolean) {
+  const step = stepsArr.value[stepIndex]
+
+  if (step) {
+    (step[prop] as boolean) = value
+  }
 }
 
 function setStorage() {
@@ -181,7 +195,12 @@ function setStorage() {
 }
 
 function getStorage() {
-  return JSON.parse(window[props.storekeeper].getItem(id.value) || 'null')
+  const storage = JSON.parse(window[props.storekeeper].getItem(id.value) || 'null') as { index: number, stepsArr: Step[] }
+
+  if (storage) {
+    return storage
+  }
+  return null
 }
 
 function emitValue(value: number) {
@@ -196,15 +215,7 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    style="
-      box-sizing: border-box;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      user-select: none;
-    "
-  >
+  <div class="w-full flex">
     <Step
       v-for="(step, $index) in stepsArr"
       :key="$index"
@@ -219,23 +230,23 @@ defineExpose({
       @change="handleChange"
     >
       <template
-        v-if="withSlot(getSlotName('index-root', $index + 1))"
+        v-if="withSlot(getSlotName('index-root', String($index + 1)))"
         #index-root="scope"
       >
-        <slot :name="getSlotName('index-root', scope.displayIndex)" v-bind="scope" />
+        <slot :name="getSlotName('index-root', String(scope.displayIndex))" v-bind="scope" />
       </template>
 
       <template
-        v-if="withoutSlot(getSlotName('index-root', $index + 1))"
+        v-if="withoutSlot(getSlotName('index-root', String($index + 1)))"
         #index="scope"
       >
-        <slot :name="getSlotName('index', scope.displayIndex)" v-bind="scope">
+        <slot :name="getSlotName('index', String(scope.displayIndex))" v-bind="scope">
           {{ scope.displayIndex }}
         </slot>
       </template>
 
       <template #defaultSlot="scope">
-        <slot :name="getSlotName('', scope.displayIndex)" v-bind="scope">
+        <slot :name="getSlotName('', String(scope.displayIndex))" v-bind="scope">
           2
         </slot>
       </template>

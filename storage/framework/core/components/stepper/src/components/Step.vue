@@ -64,7 +64,7 @@ function handleChange() {
 </script>
 
 <template>
-  <div class="step box-border flex-1 flex-row opacity-55 transition-opacity duration-700" :class="[classes]">
+  <div class="step box-border flex justify-between opacity-55 transition-opacity duration-700" :class="[classes, !props.isLastStep ? 'w-full' : '']">
     <input
       v-show="debug"
       :id="id"
@@ -74,10 +74,11 @@ function handleChange() {
       :name="computedName"
       @change="handleChange"
     >
-    <label class="label flex flex-row items-center" :for="id">
+    <label class="label w-full flex flex-row items-center" :for="id">
       <slot name="index-root" v-bind="scope">
         <span
-          class="mr-2 h-14 w-14 flex flex-shrink-0 items-center justify-center border border-gray-200 rounded-full text-xl text-white" :class="[
+          class="mr-2 h-14 w-14 flex flex-shrink-0 items-center justify-center border border-gray-200 rounded-full text-xl text-white"
+          :class="[
             props.active ? 'text-blue-500 bg-blue-500' : 'text-gray-500 bg-gray-300',
           ]"
         >
@@ -86,11 +87,19 @@ function handleChange() {
           </slot>
         </span>
       </slot>
-      <span v-if="defaultSlot" class="title text-white">
+      <span v-if="defaultSlot" class="title flex-grow text-white">
         <slot v-bind="scope" />
       </span>
-      <span v-if="withDivider && !isLastStep" class="ml-2 w-full shadow-md">
-        <span class="block h-1 bg-gray" />
+      <span
+        v-show="withDivider && !isLastStep"
+        class="ml-2 mr-2 w-full flex-grow shadow-md"
+      >
+        <span
+          class="block h-1 rounded-full transition-all duration-500"
+          :class="[
+            props.active ? 'bg-gradient-to-r from-blue-500 to-blue-300 h-1.5' : 'bg-gray-400 h-1',
+          ]"
+        />
       </span>
     </label>
   </div>
@@ -126,10 +135,13 @@ function handleChange() {
   background-color: #ffffff;
 }
 
-/* Media query for small screens */
+.step.is-last-step {
+  margin-right: 0;
+}
+
 @media (min-width: 640px) {
   .step:not(:last-child) {
-    margin-right: 0.5rem; /* Assuming mr-2 maps to 0.5rem */
+    margin-right: 0.5rem;
   }
 }
 </style>

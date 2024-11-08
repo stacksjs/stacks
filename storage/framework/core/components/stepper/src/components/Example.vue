@@ -1,63 +1,54 @@
 <script lang="ts" setup>
-import { Modal } from '@stacksjs/modal'
 import { ref } from 'vue'
 import Stepper from './Stepper.vue'
-
-const props = defineProps<{
-  visible: boolean
-}>()
-
-const emit = defineEmits<{
-  (event: 'close'): void
-}>()
 
 const step = ref(1)
 const steps = ref(4)
 const stepperRef = ref(null)
-
-function handleClose() {
-  emit('close')
-}
 </script>
 
 <template>
-  <div class="flex">
-    <Modal close-button :visible="props.visible" @close="handleClose">
-      <div class="mt-4" style="width: 100%;">
-        <Stepper ref="stepperRef" v-model="step" :steps="steps" />
-
-        <div class="flex-center my-4">
-          <div v-if="step === 1" class="w-full text-center">
-            <h1>STEP 1</h1>
-          </div>
-
-          <div v-if="step === 2" class="w-full text-center">
-            <h1>STEP 2</h1>
-          </div>
-
-          <div v-if="step === 3" class="w-full text-center">
-            <h1>STEP 3</h1>
-          </div>
-
-          <div v-if="step === 4" class="w-full text-center">
-            <h1>STEP 4</h1>
-          </div>
-        </div>
-
-        <div class="flex-center">
-          <button class="btn-border mx-2" @click="stepperRef?.previous()">
-            Previous
-          </button>
-          <button class="btn-border mx-2" @click="stepperRef?.reset()">
-            Reset
-          </button>
-          <button class="btn-border mx-2" @click="stepperRef?.next()">
-            Next
-          </button>
-        </div>
+  <section id="example">
+    <h1 class="my-2 text-lg font-semibold">
+      Example
+    </h1>
+    <p class="my-3 text-base">
+      Here is the example of the Stepper component in action.
+    </p>
+    <div class="flex-center mt-10 w-full">
+      <Stepper id="stepper-example" ref="stepperRef" v-model="step" :steps="steps" persist />
+    </div>
+    <div class="flex-center my-5 font-semibold text-lg">
+      <div v-if="step === 1">
+        <p>Welcome to Step 1: Initialization</p>
+        <p>Here you will set up the initial parameters for your process.</p>
       </div>
-    </Modal>
-  </div>
+      <div v-if="step === 2">
+        <p>Step 2: Processing</p>
+        <p>In this step, the main processing tasks are performed.</p>
+      </div>
+      <div v-if="step === 3">
+        <p>Step 3: Review</p>
+        <p>Review the results and make any necessary adjustments.</p>
+      </div>
+      <div v-if="step === 4">
+        <p>Step 4: Completion</p>
+        <p>Finalize the process and save your work.</p>
+      </div>
+    </div>
+
+    <div class="flex-center my-4">
+      <button class="btn-border mx-2" type="button" @click="stepperRef?.previous()">
+        Previous
+      </button>
+      <button class="btn-border mx-2" type="button" @click="stepperRef?.reset()">
+        Reset
+      </button>
+      <button class="btn-border mx-2" type="button" @click="stepperRef?.next()">
+        Next
+      </button>
+    </div>
+  </section>
 </template>
 
 <style scoped>

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `bun install @stacksjs/modal`
+const code = `bun install @stacksjs/dialog`
 
 const showCheckIcon = ref(false)
 

@@ -432,7 +432,7 @@ const sidebar = {
         { text: 'Command Palette', link: '/components/command-palette' },
         { text: 'Dropdown', link: '/components/dropdown' },
         { text: 'Form', link: '/components/form' },
-        { text: 'Modal', link: '/components/modal' },
+        { text: 'Dialog', link: '/components/dialog' },
         { text: 'Notification', link: '/components/notification' },
         { text: 'Stepper', link: '/components/stepper' },
         { text: 'Table', link: '/components/table' },

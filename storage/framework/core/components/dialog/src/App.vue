@@ -41,14 +41,14 @@ defineCustomElement({
       </main>
 
       <Transition name="fade" appear>
-        <Modal :visible="visible" @close="handleClose">
+        <Dialog :visible="visible" overlay @close="handleClose">
           <template #closeButton />
           <template #header>
             <h1> Hello Detail</h1>
           </template>
 
           <p>Modal Content</p>
-        </Modal>
+        </Dialog>
       </Transition>
 
       <Footer />

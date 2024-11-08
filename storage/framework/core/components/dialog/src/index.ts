@@ -1,12 +1,12 @@
 import type { Plugin } from 'vue'
-import { Modal } from './components'
+import { Dialog } from './components'
 
 const plugin: Plugin = {
   install(app) {
-    app.component('Modal', Modal)
+    app.component('Dialog', Dialog)
   },
 }
 
 export default plugin
 
-export { Modal }
+export { Dialog }

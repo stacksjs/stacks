@@ -1,22 +1,22 @@
 {
-  "name": "@stacksjs/modal",
+  "name": "@stacksjs/dialog",
   "type": "module",
   "version": "0.67.0",
-  "description": "A modern modal component.",
+  "description": "A modern dialog component.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/modal#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dialog#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/modal"
+    "directory": "./storage/framework/core/components/dialog"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["modals", "components", "library", "stacks"],
+  "keywords": ["dialog", "components", "library", "stacks"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

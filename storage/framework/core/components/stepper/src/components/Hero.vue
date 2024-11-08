@@ -1,13 +1,3 @@
-<script lang="ts" setup>
-const emit = defineEmits<{
-  (event: 'show'): void
-}>()
-
-function handleShow() {
-  emit('show')
-}
-</script>
-
 <template>
   <div class="flex flex-col items-center gap-3">
     <div class="title-wrapper">
@@ -22,12 +12,12 @@ function handleShow() {
       A versatile Stepper component, perfect for creating Onboarding, Welcome, Help screens, and much more...
     </p>
     <div class="flex gap-2">
-      <button
+      <a
         class="button btn-primary"
-        @click="handleShow"
+        href="#example"
       >
-        Render a Stepper
-      </button>
+        Show Example
+      </a>
       <a
         class="button btn-secondary"
         href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification"

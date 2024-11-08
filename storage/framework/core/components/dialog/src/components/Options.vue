@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-// import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 
 const currentAction = ref('default')
@@ -12,16 +11,16 @@ function handleClose() {
 }
 
 const renderedCode = computed(() => {
-  let modalContent = `
+  let dialogContent = `
   <div>
     <p class="text-sm text-gray-500">
-      Here is the content of the modal
+      Here is the content of the dialog
     </p>
   </div>
 `
 
   if (currentAction.value === 'close') {
-    modalContent = `
+    dialogContent = `
   <!-- For default close button -->
   <template #closeButton />
 
@@ -34,14 +33,14 @@ const renderedCode = computed(() => {
 
   <div>
     <p class="text-sm text-gray-500">
-      Here is the content of the modal
+      Here is the content of the dialog
     </p>
   </div
 `
   }
 
   if (currentAction.value === 'header') {
-    modalContent = `
+      dialogContent = `
   <template #header>
     <h1 class="text-lg font-semibold">
       Greetings
@@ -50,13 +49,13 @@ const renderedCode = computed(() => {
 
   <div>
     <p class="text-sm text-gray-500">
-      Here is the content of the modal.
+      Here is the content of the dialog.
     </p>
   </div>
 `
   }
 
-  return `<Modal :visible="visible" @close="handleClose">${modalContent}</Modal>`
+  return `<Dialog :visible="visible" overlay @close="handleClose">${dialogContent}</Dialog>`
 })
 
 function handleClick(action: string) {
@@ -126,7 +125,7 @@ async function handleCopyCode() {
     </div>
 
     <Transition name="fade" appear>
-      <Modal :visible="visible" class="bg-gray-500 bg-opacity-70 transition-opacity" @close="handleClose">
+      <Dialog :visible="visible" class="bg-gray-500 bg-opacity-70 transition-opacity" @close="handleClose">
         <template v-if="currentAction === 'close'" #closeButton />
         <template v-if="currentAction === 'header'" #header>
           <h1 class="text-lg font-semibold">
@@ -139,7 +138,7 @@ async function handleCopyCode() {
             Here is the content of the modal
           </p>
         </div>
-      </Modal>
+      </Dialog>
     </Transition>
   </div>
 </template>
