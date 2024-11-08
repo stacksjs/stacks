@@ -1,4 +1,4 @@
-import { dts } from 'bun-plugin-dts-auto'
+import { dts } from 'bun-plugin-dtsx'
 import { intro, outro } from './src'
 
 const { startTime } = await intro({
