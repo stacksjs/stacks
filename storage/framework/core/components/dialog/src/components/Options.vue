@@ -40,7 +40,7 @@ const renderedCode = computed(() => {
   }
 
   if (currentAction.value === 'header') {
-      dialogContent = `
+    dialogContent = `
   <template #header>
     <h1 class="text-lg font-semibold">
       Greetings

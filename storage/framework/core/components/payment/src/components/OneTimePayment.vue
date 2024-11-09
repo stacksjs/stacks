@@ -58,8 +58,8 @@ async function loadElements() {
     elements = stripe.elements({ clientSecret: clientSecret.value, appearance })
 
     // Create and mount the address element
-    const addressElement = elements.create('address', options)
-    addressElement.mount('#address-element')
+    // const addressElement = elements.create('address', options)
+    // addressElement.mount('#address-element')
 
     // Create and mount the payment element
     const paymentElement = elements.create('payment')
@@ -69,7 +69,8 @@ async function loadElements() {
 
 async function handleSubmit() {
   if (stripe && elements) {
-    const { error } = await stripe.confirmPayment({
+    // const { error } = await stripe.confirmPayment({
+    await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: props.redirectUrl, // Redirect URL after payment

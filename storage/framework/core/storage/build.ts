@@ -11,10 +11,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'bun',
   plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
+    dts(),
   ],
 })
 

@@ -18,7 +18,7 @@ const stepperRef = ref(null)
     <div class="flex-center mt-10 w-full">
       <Stepper id="stepper-example" ref="stepperRef" v-model="step" :steps="steps" persist />
     </div>
-    <div class="flex-center my-5 font-semibold text-lg">
+    <div class="flex-center my-5 text-lg font-semibold">
       <div v-if="step === 1">
         <p>Welcome to Step 1: Initialization</p>
         <p>Here you will set up the initial parameters for your process.</p>
