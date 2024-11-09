@@ -51,10 +51,10 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "stacks": "dist/cli.mjs",
-    "stx": "dist/cli.mjs",
-    "buddy": "dist/cli.mjs",
-    "bud": "dist/cli.mjs"
+    "stacks": "dist/cli.js",
+    "stx": "dist/cli.js",
+    "buddy": "dist/cli.js",
+    "bud": "dist/cli.js"
   },
   "files": ["README.md", "dist"],
   "scripts": {
