@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 

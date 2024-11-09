@@ -52,7 +52,7 @@ async function createPaymentIntent() {
 async function loadElements() {
   if (stripe) {
     const appearance = { /* appearance options */ }
-    const options = { mode: 'billing' }
+    // const options = { mode: 'billing' }
 
     // Create the elements instance once
     elements = stripe.elements({ clientSecret: clientSecret.value, appearance })
@@ -145,7 +145,7 @@ async function handleSubmit() {
               Items in your cart
             </h3>
             <ul role="list" class="divide-y divide-gray-200">
-              <li v-for="product in products" class="flex px-4 py-6 sm:px-6">
+              <li v-for="(product, index) in products" :key="index" class="flex px-4 py-6 sm:px-6">
                 <div class="flex-shrink-0">
                   <img :src="product?.images" alt="Front of men&#039;s Basic Tee in black." class="w-50 rounded-md">
                 </div>

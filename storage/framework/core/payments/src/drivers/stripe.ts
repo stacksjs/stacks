@@ -1,5 +1,5 @@
+import process from 'node:process'
 import Stripe from 'stripe'
-import process from 'process'
 
 const apiKey = process.env.STRIPE_SECRET_KEY || ''
 
