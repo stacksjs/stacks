@@ -12,9 +12,8 @@ Where stacks are defined.
 bun install -d @stacksjs/registry
 ```
 
-```js
-import type { Registry } from '@stacksjs/registry'
-import { registry } from '@stacksjs/registry'
+```typescript
+import { registry, type Registry } from '@stacksjs/registry'
 
 console.log(registry) // the Registry as an object
 ```
