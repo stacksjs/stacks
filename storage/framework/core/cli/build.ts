@@ -9,13 +9,8 @@ const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   target: 'bun',
-  // sourcemap: 'linked',
-
   plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
+    dts(),
   ],
 })
 

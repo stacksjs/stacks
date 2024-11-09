@@ -134,8 +134,6 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
     }
     catch {
       // File doesn't exist, create the directory
-      // eslint-disable-next-line no-console
-      console.log('Creating log file directory...', logFile)
       await mkdir(dirname(logFile), { recursive: true })
     }
 
