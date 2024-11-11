@@ -8,11 +8,11 @@ const loading = ref(true)
 
 // TODO: learn about subscriptions
 async function initialize() {
-  const stripe: Stripe = await loadStripe('')
+  const stripe: Stripe = await loadStripe('pk_test_ThoYIX9YgEOaSKyw2km95E4H')
 
   // const items = [{ id: 'stacks-monthly-sub' }]
 
-  fetch.post('createPaymentIntent')
+  // fetch.post('createPaymentIntent')
 
   // const response = await paymentIntent.create({
   //   amount: calculateOrderAmount(),
@@ -22,11 +22,11 @@ async function initialize() {
   //   },
   // })
 
-  const clientSecret: string | null = response.client_secret
+  // const clientSecret: string | null = response.client_secret
 
-  elements = stripe.elements({
-    clientSecret,
-  })
+  // elements = stripe.elements({
+  //   clientSecret,
+  // })
 
   // const linkAuthenticationElement = elements.create("linkAuthentication");
   // linkAuthenticationElement.mount("#link-authentication-element");
@@ -35,14 +35,14 @@ async function initialize() {
   //   emailAddress = event.value.email;
   // });
 
-  const paymentElementOptions = {
-    layout: 'tabs',
-  }
+  // const paymentElementOptions = {
+  //   layout: 'tabs',
+  // }
 
-  const paymentElement = elements.create('payment', paymentElementOptions)
-  paymentElement.mount('#payment-element')
+  // const paymentElement = elements.create('payment', paymentElementOptions)
+  // paymentElement.mount('#payment-element')
 
-  loading.value = false
+  // loading.value = false
 }
 
 async function payPlan() {
@@ -133,8 +133,9 @@ async function payPlan() {
                     $20.00
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    •••• •••• •••• 0000
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 flex items-center space-x-2">
+                    <img src="/images/logos/visa.png" alt="Visa Logo" class="w-8">
+                    <span>•••• •••• •••• 0000</span>
                   </td>
 
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -148,45 +149,81 @@ async function payPlan() {
       </div>
     </div>
 
-    <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-      <div class="flex items-center">
-        <img
-          src="/images/logos/logo.svg"
-          alt=""
-          class="h-12 w-12 rounded-md"
-        >
-        <h2 class="ml-4 text-lg text-gray-900 font-medium">
-          Stacks Dashboard
+    <div class="flex space-x-8">
+      <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        <h2 class="text-lg text-gray-900 font-medium">
+          Plan Details
         </h2>
+
+        <div class="pt-8">
+          <p class="text-gray-500">
+            Switch your subscription to a different type, such as a monthly plan, annual plan, or student plan.
+          </p>
+
+          <p class="pt-4 text-sm text-gray-700 font-semibold">
+            Next payment of $20 (yearly) occurs on August 30, 2025
+          </p>
+
+        </div>
+
+        <div class="mt-8 flex">
+          <button
+            type="button"
+            class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          >
+            Cancel Plan
+          </button>
+
+          <button
+            type="button"
+            class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+            @click="payPlan()"
+          >
+            Change Plan
+          </button>
+        </div>
       </div>
 
-      <div class="pt-8">
-        <p class="text-gray-500">
-          Switch your subscription to a different type, such as a monthly plan, annual plan, or student plan.
-        </p>
+      <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        <h2 class="text-lg text-gray-900 font-medium">
+          Payment Info
+        </h2>
 
-        <p class="pt-4 text-sm text-gray-700 font-semibold">
-          Next payment of $20 (yearly) occurs on August 30, 2023
-        </p>
-      </div>
+        <div class="pt-4 flex space-x-2 items-start">
+          <div class="h-12 w-12">
+            <img src="/images/logos/mastercard.svg" alt="Mastercard Logo">
+          </div>
 
-      <div class="mt-8 flex">
-        <button
-          type="button"
-          class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-        >
-          Cancel Plan
-        </button>
+          <h2 class="text-gray-600 text-xl">•••• •••• •••• 0000</h2>
+        </div>
 
-        <button
-          type="button"
-          class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-          @click="payPlan()"
-        >
-          Change Plan
-        </button>
+        <div class="pt-4">
+          <p class="text-gray-500">
+            Update payment method or redeem a voucher.
+          </p>
+
+        </div>
+
+        <div class="mt-8 flex">
+          <button
+            type="button"
+            class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          >
+            Update Payment Method
+          </button>
+          
+          <button
+            type="button"
+            class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+            @click="payPlan()"
+          >
+           Redeem Voucher Code
+          </button>
+        </div>
       </div>
     </div>
+
+    
   </div>
 </template>
 

@@ -42,6 +42,15 @@
           </RouterLink>
         </li>
         <li>
+          <RouterLink to="billing" class="sidebar-links group flex items-center justify-between">
+            <div class="flex items-center gap-x-2">
+              <div class="i-heroicons-credit-card h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+              Billing
+            </div>
+            <div class="i-heroicons-chevron-right h-5 w-5 self-end text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+          </RouterLink>
+        </li>
+        <li>
           <RouterLink to="cache" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
               <div class="i-heroicons-server h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
