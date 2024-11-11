@@ -25,6 +25,7 @@ route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
+route.get('/stripe/fetch-publishable-key', 'Actions/Payment/FetchPublishableKeyAction')
 route.post('/stripe/create-payment-intent', 'Actions/Payment/CreatePaymentIntentAction')
 route.post('/stripe/create-subscription', 'Actions/Payment/CreateSubscriptionAction')
 route.post('/stripe/create-invoice-subscription', 'Actions/Payment/CreateInvoiceSubscription')

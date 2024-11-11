@@ -6,8 +6,8 @@ import Plans from '../components/billing/plans.vue'
 const loading = ref(true)
 
 // TODO: learn about subscriptions
-// async function initialize() {
-// const stripe = await loadStripe('')
+async function initialize() {
+const { publishableKey } = await fetch('http://localhost:3008/stripe/fetch-publishable-key').then((res) => res.json()) as any
 
 // const { clientSecret } = await fetch('/stripe/create-payment-intent').then(res => res.json())
 
@@ -18,11 +18,11 @@ const loading = ref(true)
 // linkAuthenticationElement.mount("#link-authentication-element");
 
 // isLoading.value = false;
-// }
+}
 
-// async function payPlan() {
-//   await initialize()
-// }
+async function payPlan() {
+  await initialize()
+}
 
 // function calculateOrderAmount() {
 //   // Replace this constant with a calculation of the order's amount
@@ -52,9 +52,9 @@ const loading = ref(true)
       </div>
     </div>
 
-    <Plans />
+    <!-- <Plans /> -->
 
-    <div v-if="false" id="subscribed">
+    <div v-if="true" id="subscribed">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base text-gray-900 font-semibold leading-6">
