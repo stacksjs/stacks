@@ -1,36 +1,29 @@
 <script lang="ts" setup>
-import { notification } from '../'
+
 </script>
 
 <template>
   <div class="flex flex-col items-center gap-3">
-    <div class="notificationWrapper">
+    <div class="dropdownWrapper">
       <div class="toast" />
       <div class="toast" />
       <div class="toast" />
     </div>
     <h1 class="text-neon mb-3 text-5xl font-bold -mt-5">
-      stacks/notification
+      stacks/dropdown
     </h1>
     <p class="mb-3 mt-0 text-lg">
-      An opinionated notification component for Stacks.
+      An opinionated dropdown component for Stacks.
     </p>
     <div class="flex gap-2">
       <button
         class="button btn-primary"
-        @click="
-          () => {
-            notification('stacks/notification', {
-              description: 'An opinionated toast component for Stacks.',
-            })
-          }
-        "
       >
-        Render a Notification
+        Render a dropdown
       </button>
       <a
         class="button btn-secondary"
-        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification"
+        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown"
         target="_blank"
       >
         GitHub
@@ -40,7 +33,7 @@ import { notification } from '../'
 </template>
 
 <style scoped>
-.notificationWrapper {
+.dropdownWrapper {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -147,7 +140,7 @@ import { notification } from '../'
 }
 
 @media (max-width: 600px) {
-  .notificationWrapper {
+  .dropdownWrapper {
     width: 100%;
   }
 }

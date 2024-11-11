@@ -1,14 +1,15 @@
 import type { Plugin } from 'vue'
-import type { NotificationProps } from './types'
-import { Toaster as Notification } from './components'
-import { notification } from './state'
+import * as components from './components'
 
-export { Notification, notification, type NotificationProps }
 
 const plugin: Plugin = {
   install(app) {
-    app.component('Notification', Notification)
+    Object.entries(components).forEach(([name, component]) => {
+      app.component(name, component)
+    })
   },
 }
 
 export default plugin
+
+export * from './components'

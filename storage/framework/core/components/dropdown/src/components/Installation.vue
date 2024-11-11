@@ -1,15 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `bun install @stacksjs/notification`
+const code = `bun install @stacksjs/dropdown`
 
 const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!')
 }
 </script>
 
@@ -31,9 +29,15 @@ async function handleCopyCode() {
         class="btn-border absolute right-2 top-2 p-1"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="i-ic:baseline-check text-gray-500" />
-        <div v-else class="i-ic:baseline-content-copy text-gray-500" />
+        <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
+        <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
   </div>
 </template>
+
+<style scoped>
+button {
+  border: 0px solid #000;
+}
+</style>
