@@ -417,3 +417,35 @@ export const events: PaymentEvents = (() => {
 
   return { retrieve, list }
 })()
+
+export interface SetupIntents {
+  retrieve: (setupIntentId: string) => Promise<Stripe.Response<Stripe.SetupIntent>>
+  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.SetupIntent>>>
+  create: (params: Stripe.SetupIntentCreateParams) => Promise<Stripe.Response<Stripe.SetupIntent>>
+  update: (setupIntentId: string, params: Stripe.SetupIntentUpdateParams) => Promise<Stripe.Response<Stripe.SetupIntent>>
+  delete: (setupIntentId: string) => Promise<Stripe.Response<Stripe.SetupIntent>>
+}
+
+export const setupIntents: SetupIntents = (() => {
+  async function retrieve(setupIntentId: string): Promise<Stripe.Response<Stripe.SetupIntent>> {
+    return await client.setupIntents.retrieve(setupIntentId)
+  }
+
+  async function list(limit: number): Promise<Stripe.Response<Stripe.ApiList<Stripe.SetupIntent>>> {
+    return await client.setupIntents.list({ limit })
+  }
+
+  async function create(params: Stripe.SetupIntentCreateParams): Promise<Stripe.Response<Stripe.SetupIntent>> {
+    return await client.setupIntents.create(params)
+  }
+
+  async function update(setupIntentId: string, params: Stripe.SetupIntentUpdateParams): Promise<Stripe.Response<Stripe.SetupIntent>> {
+    return await client.setupIntents.update(setupIntentId, params)
+  }
+
+  async function deleteIntent(setupIntentId: string): Promise<Stripe.Response<Stripe.SetupIntent>> {
+    return await client.setupIntents.cancel(setupIntentId)
+  }
+
+  return { retrieve, list, create, update, delete: deleteIntent }
+})()

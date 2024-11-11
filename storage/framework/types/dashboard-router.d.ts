@@ -23,6 +23,7 @@ declare module 'vue-router/auto-routes' {
     '/buddy/': RouteRecordInfo<'/buddy/', '/buddy', Record<never, never>, Record<never, never>>,
     '/commands/': RouteRecordInfo<'/commands/', '/commands', Record<never, never>, Record<never, never>>,
     '/components/': RouteRecordInfo<'/components/', '/components', Record<never, never>, Record<never, never>>,
+    '/components/billing/plans': RouteRecordInfo<'/components/billing/plans', '/components/billing/plans', Record<never, never>, Record<never, never>>,
     '/dependencies/': RouteRecordInfo<'/dependencies/', '/dependencies', Record<never, never>, Record<never, never>>,
     '/deployments/': RouteRecordInfo<'/deployments/', '/deployments', Record<never, never>, Record<never, never>>,
     '/deployments/[id]': RouteRecordInfo<'/deployments/[id]', '/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
