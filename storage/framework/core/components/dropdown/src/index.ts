@@ -1,10 +1,9 @@
 import type { Plugin } from 'vue'
-import * as components from './components'
-
+import { Menu, MenuButton, MenuItem, MenuItems } from './components'
 
 const plugin: Plugin = {
   install(app) {
-    Object.entries(components).forEach(([name, component]) => {
+    Object.entries({ Menu, MenuButton, MenuItem, MenuItems }).forEach(([name, component]) => {
       app.component(name, component)
     })
   },
@@ -12,4 +11,3 @@ const plugin: Plugin = {
 
 export default plugin
 
-export * from './components'

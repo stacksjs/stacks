@@ -1,19 +1,32 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { notification } from '../'
 import { useCopyCode } from '../composables/useCopyCode'
 
 const code = `<!-- App.vue -->
 <script lang="ts" setup>
-import { Notification, notification } from '@stacksjs/notification'
+ import { Menu, MenuButton, MenuItems, MenuItem } from '@stacksjs/dropdown'
 <\/script>
 
 <template>
-  <!-- ... -->
-  <Notification />
-  <button @click="() => notification('My first notification')">
-    Give me a notification
-  </button>
+ <!-- ... -->
+  <Menu>
+    <MenuButton>More</MenuButton>
+    <MenuItems>
+      <MenuItem v-slot="{ active }">
+        <a :class='{ "bg-blue-500": active }' href="/account-settings">
+          Account settings
+        </a>
+      </MenuItem>
+      <MenuItem v-slot="{ active }">
+        <a :class='{ "bg-blue-500": active }' href="/account-settings">
+          Documentation
+        </a>
+      </MenuItem>
+      <MenuItem disabled>
+        <span class="opacity-75">Invite a friend (coming soon!)</span>
+      </MenuItem>
+    </MenuItems>
+  </Menu>
 </template>
 `
 
@@ -21,7 +34,6 @@ const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!')
 }
 </script>
 
@@ -31,7 +43,9 @@ async function handleCopyCode() {
       Usage
     </h1>
     <p class="my-3 text-base">
-      Render the toaster in the root of your app.
+      Menu Buttons are built using the Menu, MenuButton, MenuItems, and MenuItem components.
+
+      The MenuButton will automatically open/close the MenuItems when clicked, and when the menu is open, the list of items receives focus and is automatically navigable via the keyboard.
     </p>
     <div class="code-block group relative">
       <Highlight

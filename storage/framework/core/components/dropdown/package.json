@@ -2,9 +2,11 @@
   "name": "@stacksjs/dropdown",
   "type": "module",
   "version": "0.68.2",
-  "description": "A dropdown component for all.",
+  "description": "A modern dropdown component.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown#readme",
@@ -13,28 +15,41 @@
     "url": "git+https://github.com/stacksjs/stacks.git",
     "directory": "./storage/framework/core/components/dropdown"
   },
-  "sideEffects": ["**/*.css"],
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "dropdowns",
+    "components",
+    "library",
+    "stacks"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
-      "types": "./lib/stacks-dropdown.d.ts",
-      "import": "./lib/stacks-dropdown.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
-      "import": "./lib/*"
+      "import": "./dist/*"
     }
   },
-  "module": "dist/stacks-dropdown.js",
-  "types": "dist/stacks-dropdown.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "echo 'wip bunx --bun vite build'",
-    "build:lib": "vite build --mode lib && bun run build:types",
+    "build": "bunx --bun vite build --mode lib",
+    "build:demo": "bunx --bun vite build",
     "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
-    "preview": "bunx --bun vite preview"
+    "preview": "bunx --bun vite preview",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@headlessui/vue": "^1.7.23",
     "@stacksjs/ui": "workspace:*",
     "highlight.js": "^11.10.0",
     "vue": "^3.5.12"
@@ -46,8 +61,8 @@
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.5.1",
-    "unocss": "0.61.0",
     "clean-css": "^5.3.3",
+    "unocss": "0.61.0",
     "unplugin-icons": "^0.19.3"
   }
 }

@@ -34,7 +34,7 @@ useSEOHeader()
         class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
       >
         <Installation />
-        <!-- <Usage /> -->
+        <Usage />
         <!-- <Types /> -->
         <!-- <Styling /> -->
       </main>

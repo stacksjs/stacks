@@ -35,9 +35,3 @@ async function handleCopyCode() {
     </div>
   </div>
 </template>
-
-<style scoped>
-button {
-  border: 0px solid #000;
-}
-</style>
