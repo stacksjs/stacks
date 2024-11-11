@@ -11,6 +11,7 @@ import Post from './Post'
 import Subscriber from './Subscriber'
 
 import Team from './Team'
+import { manageSetupIntent } from 'payments/src/billable/intent'
 
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
@@ -663,6 +664,8 @@ export class UserModel {
     return relationResults
   }
 
+
+
   async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createStripeCustomer(this, options)
 
@@ -779,6 +782,18 @@ export class UserModel {
     const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
     return { subscription, paymentIntent }
+  }
+
+  async createSetupIntent(
+    options: Stripe.SetupIntentCreateParams = {}
+  ): Promise<Stripe.Response<Stripe.SetupIntent>> {
+    const defaultOptions: Partial<Stripe.SetupIntentCreateParams> = {
+      metadata: options.metadata,
+    }
+  
+    const mergedOptions = { ...defaultOptions, ...options }
+  
+    return await manageSetupIntent.create(this, mergedOptions)
   }
 
   async checkout(

@@ -5,7 +5,7 @@ export interface SaasOption {
     pricing: {
       key: string
       price: number
-      interval: 'day' | 'month' | 'week' | 'year'
+      interval?: 'day' | 'month' | 'week' | 'year' // Optional interval
       currency: string
     }[]
     metadata: {

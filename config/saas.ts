@@ -25,6 +25,18 @@ export default {
           interval: 'year',
           currency: 'usd',
         },
+        {
+          key: 'stacks_hobby_early_monthly',
+          price: 1900, // Early bird pricing for monthly
+          interval: 'month',
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_hobby_early_yearly',
+          price: 19000, // Early bird pricing for yearly
+          interval: 'year',
+          currency: 'usd',
+        },
       ],
       metadata: {
         createdBy: 'admin',
@@ -47,6 +59,33 @@ export default {
           interval: 'year',
           currency: 'usd',
         },
+        {
+          key: 'stacks_pro_early_monthly',
+          price: 3900, // Early bird pricing for monthly
+          interval: 'month',
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_pro_early_yearly',
+          price: 39000, // Early bird pricing for yearly
+          interval: 'year',
+          currency: 'usd',
+        },
+      ],
+      metadata: {
+        createdBy: 'admin',
+        version: '1.0.0',
+      },
+    },
+    {
+      productName: 'Stacks Lifetime',
+      description: 'One-time lifetime access to all Stacks features.',
+      pricing: [
+        {
+          key: 'stacks_lifetime',
+          price: 74900, // Lifetime pricing for $749
+          currency: 'usd',
+        },
       ],
       metadata: {
         createdBy: 'admin',
@@ -54,27 +93,27 @@ export default {
       },
     },
   ],
-
   webhook: {
-    endpoint: '/webhooks/stripe',
-    secret: '',
+    endpoint: 'your-webhook-endpoint',
+    secret: 'your-webhook-secret',
   },
-
   currencies: ['usd'],
-
-  coupons: [
-    {
-      code: 'SUMMER2024',
-      amountOff: 500,
-      duration: 'once',
-    },
-  ],
-
+  coupons: [],
   products: [
     {
-      name: 'Stacks Pro',
+      name: 'Stacks Hobby',
       description: 'All the Stacks features.',
-      images: ['url_to_image'],
+      images: ['image-url'],
+    },
+    {
+      name: 'Stacks Pro',
+      description: 'All the Stacks features, including team invites.',
+      images: ['image-url'],
+    },
+    {
+      name: 'Stacks Lifetime',
+      description: 'Lifetime access to Stacks features.',
+      images: ['image-url'],
     },
   ],
 } satisfies SaasConfig

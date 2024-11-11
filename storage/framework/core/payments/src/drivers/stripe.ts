@@ -146,6 +146,7 @@ export interface Product {
   update: (productId: string, params: Stripe.ProductUpdateParams) => Promise<Stripe.Response<Stripe.Product>>
   delete: (productId: string) => Promise<Stripe.Response<Stripe.DeletedProduct>>
   list: (params?: Stripe.ProductListParams) => Promise<Stripe.ApiListPromise<Stripe.Product>>
+  getOrCreate: (productName: string, createParams: Stripe.ProductCreateParams) => Promise<Stripe.Product>  // Added here
 }
 
 export const product: Product = (() => {
@@ -169,7 +170,19 @@ export const product: Product = (() => {
     return await client.products.list(params)
   }
 
-  return { create, retrieve, update, delete: deleteProduct, list }
+  async function getOrCreate(productName: string, createParams: Stripe.ProductCreateParams): Promise<Stripe.Product> {
+    const products = await client.products.search({
+      query: `active:'true' AND name:'${productName}'`,
+    });
+
+    if (products.data.length > 0) {
+      return products.data[0] as Stripe.Product
+    } else {
+      return await create(createParams);
+    }
+  }
+
+  return { create, retrieve, update, delete: deleteProduct, list, getOrCreate }
 })()
 
 export interface Refund {
@@ -416,6 +429,55 @@ export const events: PaymentEvents = (() => {
   }
 
   return { retrieve, list }
+})()
+
+export interface PaymentCoupons {
+  retrieve: (couponId: string) => Promise<Stripe.Response<Stripe.Coupon>>
+  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Coupon>>>
+  create: (params: Stripe.CouponCreateParams) => Promise<Stripe.Response<Stripe.Coupon>>
+  delete: (couponId: string) => Promise<Stripe.Response<Stripe.DeletedCoupon>>
+}
+
+export const coupons: PaymentCoupons = (() => {
+  async function retrieve(couponId: string): Promise<Stripe.Response<Stripe.Coupon>> {
+    return await client.coupons.retrieve(couponId)
+  }
+
+  async function list(limit: number): Promise<Stripe.Response<Stripe.ApiList<Stripe.Coupon>>> {
+    return await client.coupons.list({ limit })
+  }
+
+  async function create(params: Stripe.CouponCreateParams): Promise<Stripe.Response<Stripe.Coupon>> {
+    return await client.coupons.create(params)
+  }
+
+  async function deleteCoupon(couponId: string): Promise<Stripe.Response<Stripe.DeletedCoupon>> {
+    return await client.coupons.del(couponId)
+  }
+
+  return { retrieve, list, create, delete: deleteCoupon }
+})()
+
+export interface PaymentPromotionCodes {
+  retrieve: (promotionCodeId: string) => Promise<Stripe.Response<Stripe.PromotionCode>>
+  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>>
+  create: (params: Stripe.PromotionCodeCreateParams) => Promise<Stripe.Response<Stripe.PromotionCode>>
+}
+
+export const promotionCodes: PaymentPromotionCodes = (() => {
+  async function retrieve(promotionCodeId: string): Promise<Stripe.Response<Stripe.PromotionCode>> {
+    return await client.promotionCodes.retrieve(promotionCodeId)
+  }
+
+  async function list(limit: number): Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>> {
+    return await client.promotionCodes.list({ limit })
+  }
+
+  async function create(params: Stripe.PromotionCodeCreateParams): Promise<Stripe.Response<Stripe.PromotionCode>> {
+    return await client.promotionCodes.create(params)
+  }
+
+  return { retrieve, list, create }
 })()
 
 export interface SetupIntents {

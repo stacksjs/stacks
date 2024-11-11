@@ -1190,6 +1190,20 @@ export async function generateModelString(
       return { subscription, paymentIntent }
     }
 
+    async createSetupIntent(
+      options: Stripe.SetupIntentCreateParams = {}
+    ): Promise<Stripe.Response<Stripe.SetupIntent>> {
+      const defaultOptions: Partial<Stripe.SetupIntentCreateParams> = {
+        metadata: options.metadata,
+      }
+    
+      // Merge any additional provided options
+      const mergedOptions = { ...defaultOptions, ...options }
+    
+      // Call Stripe to create the SetupIntent
+      return await manageSetupIntent.create(this, mergedOptions)
+    }
+
     async checkout(
       priceIds: CheckoutLineItem[],
       options: CheckoutOptions = {},

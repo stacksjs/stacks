@@ -1,5 +1,28 @@
 <script setup lang="ts">
 const checkedPlanType = ref('monthly')
+const selectedPlan = ref('')
+
+const perText = computed(() => {
+  if (checkedPlanType.value === 'monthly')
+    return '/month'
+
+  return '/year'
+})
+
+const hobbyPrice = computed(() => {
+  if (checkedPlanType.value === 'monthly')
+    return 39
+
+  return 379
+})
+
+const proPrice = computed(() => {
+  if (checkedPlanType.value === 'monthly')
+    return 49
+
+  return 479
+})
+
 </script>
 
 <template>
@@ -47,7 +70,7 @@ const checkedPlanType = ref('monthly')
             <div class="space-y-4">
               <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
               <label aria-label="Hobby" aria-description="8GB, 4 CPUs, 160 GB SSD disk, $40 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-                <input type="radio" name="server-size" value="Hobby" class="sr-only">
+                <input v-model="selectedPlan" type="radio" name="server-size" value="Hobby" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Hobby</span>
@@ -55,36 +78,28 @@ const checkedPlanType = ref('monthly')
                   </span>
                 </span>
                 <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-                  <span class="text-gray-900 font-medium">$39</span>
-                  <span class="ml-1 text-gray-500 sm:ml-0">/mo</span>
+                  <span class="text-gray-900 font-medium">${{ hobbyPrice }}</span>
+                  <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
                 </span>
-                <!--
-                    Active: "border", Not Active: "border-2"
-                    Checked: "border-indigo-600", Not Checked: "border-transparent"
-                  -->
-                <span class="pointer-events-none absolute border-2 rounded-lg -inset-px" aria-hidden="true" />
+                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{'border-indigo-600 border-2': selectedPlan === 'Hobby', 'border ': selectedPlan !== 'Hobby' }" />
               </label>
               <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-              <label aria-label="Startup" aria-description="12GB, 6 CPUs, 256 GB SSD disk, $80 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-                <input type="radio" name="server-size" value="Startup" class="sr-only">
+              <label aria-label="Pro" aria-description="12GB, 6 CPUs, 256 GB SSD disk, $80 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+                <input v-model="selectedPlan" type="radio" name="server-size" value="Pro" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Pro</span>
                   </span>
                 </span>
                 <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-                  <span class="text-gray-900 font-medium">$49</span>
-                  <span class="ml-1 text-gray-500 sm:ml-0">/mo</span>
+                  <span class="text-gray-900 font-medium">${{ proPrice }}</span>
+                  <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
                 </span>
-                <!--
-                    Active: "border", Not Active: "border-2"
-                    Checked: "border-indigo-600", Not Checked: "border-transparent"
-                  -->
-                <span class="pointer-events-none absolute border-2 rounded-lg -inset-px" aria-hidden="true" />
+                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true"  :class="{'border-indigo-600 border-2': selectedPlan === 'Pro', 'border': selectedPlan !== 'Pro' }" />
               </label>
               <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-              <label aria-label="Business" aria-description="16GB, 8 CPUs, 512 GB SSD disk, $160 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-                <input type="radio" name="server-size" value="Business" class="sr-only">
+              <label aria-label="Lifetime" aria-description="16GB, 8 CPUs, 512 GB SSD disk, $160 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+                <input v-model="selectedPlan" type="radio" name="server-size" value="Lifetime" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Lifetime</span>
@@ -94,11 +109,7 @@ const checkedPlanType = ref('monthly')
                   <span class="text-gray-900 font-medium">$749</span>
                   <span class="ml-1 text-gray-500 sm:ml-0">/once</span>
                 </span>
-                <!--
-                Active: "border", Not Active: "border-2"
-                Checked: "border-indigo-600", Not Checked: "border-transparent"
-              -->
-                <span class="pointer-events-none absolute border-2 rounded-lg -inset-px" aria-hidden="true" />
+              <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true"  :class="{'border-indigo-600 border-2': selectedPlan === 'Lifetime', 'border ': selectedPlan !== 'Lifetime' }" />
               </label>
             </div>
           </fieldset>
