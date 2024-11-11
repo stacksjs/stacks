@@ -9,24 +9,24 @@ const code = `<!-- App.vue -->
 
 <template>
  <!-- ... -->
-  <Menu>
-    <MenuButton>More</MenuButton>
-    <MenuItems>
-      <MenuItem v-slot="{ active }">
+  <Dropdown>
+    <DropdownButton>Dropdown</DropdownButton>
+    <DropdownItems>
+      <DropdownItem v-slot="{ active }">
         <a :class='{ "bg-blue-500": active }' href="/account-settings">
           Account settings
         </a>
-      </MenuItem>
-      <MenuItem v-slot="{ active }">
+      </DropdownItem>
+      <DropdownItem v-slot="{ active }">
         <a :class='{ "bg-blue-500": active }' href="/account-settings">
           Documentation
         </a>
-      </MenuItem>
-      <MenuItem disabled>
+      </DropdownItem>
+      <DropdownItem disabled>
         <span class="opacity-75">Invite a friend (coming soon!)</span>
-      </MenuItem>
-    </MenuItems>
-  </Menu>
+      </DropdownItem>
+    </DropdownItems>
+  </Dropdown>
 </template>
 `
 
@@ -43,9 +43,9 @@ async function handleCopyCode() {
       Usage
     </h1>
     <p class="my-3 text-base">
-      Menu Buttons are built using the Menu, MenuButton, MenuItems, and MenuItem components.
+      Dropdowns are built using the <code><b>Dropdown</b></code>, <code><b>DropdownButton</b></code>, <code><b>DropdownItems</b></code>, and <code><b>DropdownItem</b></code> components.<br><br>
 
-      The MenuButton will automatically open/close the MenuItems when clicked, and when the menu is open, the list of items receives focus and is automatically navigable via the keyboard.
+      The <code><b>DropdownButton</b></code> will automatically open/close the <code><b>DropdownItems</b></code> when clicked, and when the menu is open, the list of items receives focus and is automatically navigable via the keyboard.
     </p>
     <div class="code-block group relative">
       <Highlight

@@ -2,8 +2,8 @@ import { useHead, useSeoMeta } from '@vueuse/head'
 
 function useSEOHeader() {
   useHead({
-    title: 'stacks/notification',
-    titleTemplate: title => `${title} | An opinionated toast component for Vue.`,
+    title: 'stacks/dropdown',
+    titleTemplate: title => `${title} | An opinionated dropdown component for Vue.`,
     meta: [
       {
         name: 'author',
@@ -11,23 +11,23 @@ function useSEOHeader() {
       },
       {
         name: 'description',
-        content: 'An opinionated toast component for Vue.',
+        content: 'An opinionated dropdown component for Vue.',
       },
     ],
   })
 
   useSeoMeta({
-    title: 'stacks/notification',
-    description: 'An opinionated toast component for Vue.',
-    ogDescription: 'An opinionated toast component for Vue.',
-    ogTitle: 'stacks/notification',
+    title: 'stacks/dropdown',
+    description: 'An opinionated dropdown component for Vue.',
+    ogDescription: 'An opinionated dropdown component for Vue.',
+    ogTitle: 'stacks/dropdown',
     ogImage: 'https://vue-sonner.vercel.app/og.png',
     ogImageHeight: '882',
     ogImageWidth: '1686',
     twitterCard: 'summary_large_image',
     twitterImage: 'https://vue-sonner.vercel.app/og.png',
-    twitterTitle: 'stacks/notification',
-    twitterDescription: 'An opinionated notification component for Stacks.',
+    twitterTitle: 'stacks/dropdown',
+    twitterDescription: 'An opinionated dropdown component for Stacks.',
   })
 }
 
