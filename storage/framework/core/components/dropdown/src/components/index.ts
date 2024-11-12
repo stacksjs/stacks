@@ -2,11 +2,11 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 
 export {
   Menu as Dropdown,
-  MenuButton as DropdownButton,
-  MenuItem as DropdownItem,
-  MenuItems as DropdownItems,
   Menu,
+  MenuButton as DropdownButton,
   MenuButton,
+  MenuItem as DropdownItem,
   MenuItem,
+  MenuItems as DropdownItems,
   MenuItems,
 }

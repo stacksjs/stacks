@@ -146,7 +146,7 @@ export interface Product {
   update: (productId: string, params: Stripe.ProductUpdateParams) => Promise<Stripe.Response<Stripe.Product>>
   delete: (productId: string) => Promise<Stripe.Response<Stripe.DeletedProduct>>
   list: (params?: Stripe.ProductListParams) => Promise<Stripe.ApiListPromise<Stripe.Product>>
-  getOrCreate: (productName: string, createParams: Stripe.ProductCreateParams) => Promise<Stripe.Product>  // Added here
+  getOrCreate: (productName: string, createParams: Stripe.ProductCreateParams) => Promise<Stripe.Product> // Added here
 }
 
 export const product: Product = (() => {
@@ -173,12 +173,13 @@ export const product: Product = (() => {
   async function getOrCreate(productName: string, createParams: Stripe.ProductCreateParams): Promise<Stripe.Product> {
     const products = await client.products.search({
       query: `active:'true' AND name:'${productName}'`,
-    });
+    })
 
     if (products.data.length > 0) {
       return products.data[0] as Stripe.Product
-    } else {
-      return await create(createParams);
+    }
+    else {
+      return await create(createParams)
     }
   }
 

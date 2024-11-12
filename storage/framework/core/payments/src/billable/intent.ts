@@ -14,7 +14,7 @@ export const manageSetupIntent: SetupIntent = (() => {
 
     const defaultParams: Partial<Stripe.SetupIntentCreateParams> = {
       customer: user.stripeId(),
-      payment_method_types: ['card']
+      payment_method_types: ['card'],
     }
 
     const mergedParams = { ...defaultParams, ...params }

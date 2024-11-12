@@ -14,6 +14,18 @@ export default {
       description: 'All the Stacks features.',
       pricing: [
         {
+          key: 'stacks_hobby_early_monthly',
+          price: 1900,
+          interval: 'month',
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_hobby_launch_monthly',
+          price: 2900,
+          interval: 'month',
+          currency: 'usd',
+        },
+        {
           key: 'stacks_hobby_monthly',
           price: 3900,
           interval: 'month',
@@ -22,18 +34,6 @@ export default {
         {
           key: 'stacks_hobby_yearly',
           price: 37900,
-          interval: 'year',
-          currency: 'usd',
-        },
-        {
-          key: 'stacks_hobby_early_monthly',
-          price: 1900, // Early bird pricing for monthly
-          interval: 'month',
-          currency: 'usd',
-        },
-        {
-          key: 'stacks_hobby_early_yearly',
-          price: 19000, // Early bird pricing for yearly
           interval: 'year',
           currency: 'usd',
         },
@@ -48,6 +48,12 @@ export default {
       description: 'All the Stacks features, including being able to invite team members.',
       pricing: [
         {
+          key: 'stacks_pro_early_monthly',
+          price: 3900,
+          interval: 'month',
+          currency: 'usd',
+        },
+        {
           key: 'stacks_pro_monthly',
           price: 5900,
           interval: 'month',
@@ -57,12 +63,6 @@ export default {
           key: 'stacks_pro_yearly',
           price: 57900,
           interval: 'year',
-          currency: 'usd',
-        },
-        {
-          key: 'stacks_pro_early_monthly',
-          price: 3900, // Early bird pricing for monthly
-          interval: 'month',
           currency: 'usd',
         },
         {
@@ -82,8 +82,33 @@ export default {
       description: 'One-time lifetime access to all Stacks features.',
       pricing: [
         {
-          key: 'stacks_lifetime',
-          price: 74900, // Lifetime pricing for $749
+          key: 'stacks_hobby_early_lifetime',
+          price: 17900,
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_hobby_launch_lifetime',
+          price: 27900,
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_hobby_lifetime',
+          price: 47900,
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_pro_early_lifetime',
+          price: 27900,
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_pro_launch_lifetime',
+          price: 37900,
+          currency: 'usd',
+        },
+        {
+          key: 'stacks_pro_lifetime',
+          price: 74900,
           currency: 'usd',
         },
       ],

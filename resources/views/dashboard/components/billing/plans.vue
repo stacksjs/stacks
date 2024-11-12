@@ -6,29 +6,41 @@ const perText = computed(() => {
   if (checkedPlanType.value === 'monthly')
     return '/month'
 
-  return '/year'
+  if (checkedPlanType.value === 'annually')
+    return '/year'
+
+  return '/lifetime'
 })
 
 const hobbyPrice = computed(() => {
   if (checkedPlanType.value === 'monthly')
     return 39
 
-  return 379
-})
-
-const proPrice = computed(() => {
-  if (checkedPlanType.value === 'monthly')
-    return 49
+  if (checkedPlanType.value === 'annually')
+    return 379
 
   return 479
 })
 
+const proPrice = computed(() => {
+  if (checkedPlanType.value === 'monthly')
+    return 59
+
+  if (checkedPlanType.value === 'annually')
+    return 579
+
+  return 749
+})
+
+function subscribePlan() {
+  console.log(proPrice)
+}
 </script>
 
 <template>
   <div class="mx-auto px-4 py-8 container lg:px-8">
-    <div id="unsubscribed" class="flex justify-center">
-      <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+    <div class="flex justify-center">
+      <div class="w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
         <div class="flex items-center space-x-2">
           <img
             src="/images/logos/logo.svg"
@@ -42,23 +54,28 @@ const proPrice = computed(() => {
 
         <div class="pt-8">
           <p class="text-gray-800 font-semibold">
-            Choose the plans that suite your needs.
+            Choose one of the recurring plans.
           </p>
         </div>
 
         <div class="pt-8">
-          <div class="mt-16 flex justify-center">
+          <div class="flex justify-center">
             <fieldset aria-label="Payment frequency">
-              <div class="grid grid-cols-2 gap-x-1 rounded-full p-1 text-center text-xs/5 font-semibold ring-1 ring-gray-200 ring-inset">
+              <div class="grid grid-cols-3 gap-x-1 rounded-full p-1 text-center text-xs/5 font-semibold ring-1 ring-gray-200 ring-inset">
                 <!-- Checked: "bg-indigo-600 text-white", Not Checked: "text-gray-500" -->
                 <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-indigo-600 text-white': checkedPlanType === 'monthly' }">
                   <input v-model="checkedPlanType" type="radio" name="frequency" value="monthly" class="sr-only">
                   <span>Monthly</span>
                 </label>
-                <!-- Checked: "bg-indigo-600 text-white", Not Checked: "text-gray-500" -->
+
                 <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-indigo-600 text-white': checkedPlanType === 'annually' }">
                   <input v-model="checkedPlanType" type="radio" name="frequency" value="annually" class="sr-only">
                   <span>Annually</span>
+                </label>
+
+                <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-indigo-600 text-white': checkedPlanType === 'lifetime' }">
+                  <input v-model="checkedPlanType" type="radio" name="frequency" value="lifetime" class="sr-only">
+                  <span>Lifetime</span>
                 </label>
               </div>
             </fieldset>
@@ -68,8 +85,7 @@ const proPrice = computed(() => {
         <div class="pt-8">
           <fieldset aria-label="Server size">
             <div class="space-y-4">
-              <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-              <label aria-label="Hobby" aria-description="8GB, 4 CPUs, 160 GB SSD disk, $40 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+              <label aria-label="Hobby" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
                 <input v-model="selectedPlan" type="radio" name="server-size" value="Hobby" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
@@ -78,13 +94,13 @@ const proPrice = computed(() => {
                   </span>
                 </span>
                 <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-                  <span class="text-gray-900 font-medium">${{ hobbyPrice }}</span>
+                  <span class="text-gray-900 font-medium">$ {{ hobbyPrice }} </span>
                   <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
                 </span>
-                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{'border-indigo-600 border-2': selectedPlan === 'Hobby', 'border ': selectedPlan !== 'Hobby' }" />
+                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'Hobby', 'border ': selectedPlan !== 'Hobby' }" />
               </label>
               <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-              <label aria-label="Pro" aria-description="12GB, 6 CPUs, 256 GB SSD disk, $80 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+              <label aria-label="Pro" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
                 <input v-model="selectedPlan" type="radio" name="server-size" value="Pro" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
@@ -95,24 +111,20 @@ const proPrice = computed(() => {
                   <span class="text-gray-900 font-medium">${{ proPrice }}</span>
                   <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
                 </span>
-                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true"  :class="{'border-indigo-600 border-2': selectedPlan === 'Pro', 'border': selectedPlan !== 'Pro' }" />
-              </label>
-              <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-              <label aria-label="Lifetime" aria-description="16GB, 8 CPUs, 512 GB SSD disk, $160 per month" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-                <input v-model="selectedPlan" type="radio" name="server-size" value="Lifetime" class="sr-only">
-                <span class="flex items-center">
-                  <span class="flex flex-col text-sm">
-                    <span class="text-gray-900 font-medium">Lifetime</span>
-                  </span>
-                </span>
-                <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-                  <span class="text-gray-900 font-medium">$749</span>
-                  <span class="ml-1 text-gray-500 sm:ml-0">/once</span>
-                </span>
-              <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true"  :class="{'border-indigo-600 border-2': selectedPlan === 'Lifetime', 'border ': selectedPlan !== 'Lifetime' }" />
+                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'Pro', 'border': selectedPlan !== 'Pro' }" />
               </label>
             </div>
           </fieldset>
+        </div>
+
+        <div class="pt-8 flex justify-end">
+          <button
+              type="button"
+              class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+              @click="subscribePlan()"
+            >
+              Subscribe
+            </button>
         </div>
       </div>
     </div>

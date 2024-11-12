@@ -25,13 +25,12 @@ const slotsRenderedCode = ref(`
       </MenuItem>
     </MenuItems>
   </Menu>
-</template>`);
+</template>`)
 
 async function handleCopyCode() {
   await useCopyCode({ code: slotsRenderedCode.value, checkIconRef: showCheckIcon })
 }
 </script>
-
 
 <template>
   <div class="styles">
@@ -41,12 +40,11 @@ async function handleCopyCode() {
     <div class="mt-5">
       <p class="my-3 text-base">
         Each component exposes information about its current state via slot props that you can use to conditionally apply different styles or render different content.
-For example, the MenuItem component exposes an active state, which tells you if the item is currently focused via the mouse or keyboard.
+        For example, the MenuItem component exposes an active state, which tells you if the item is currently focused via the mouse or keyboard.
       </p>
 
-
       <div class="code-block relative">
-      <Highlight :code="slotsRenderedCode" />
+        <Highlight :code="slotsRenderedCode" />
         <button
           aria-label="Copy code"
           title="Copy code"
@@ -58,12 +56,5 @@ For example, the MenuItem component exposes an active state, which tells you if 
         </button>
       </div>
     </div>
-
   </div>
-
 </template>
-
-
-
-
-

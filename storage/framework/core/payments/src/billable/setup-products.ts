@@ -8,7 +8,7 @@ interface PriceParams {
   product: string
   nickname: string
   recurring?: {
-    interval: "day" | "month" | "week" | "year"
+    interval: 'day' | 'month' | 'week' | 'year'
   }
 }
 export async function createStripeProduct(): Promise<void> {

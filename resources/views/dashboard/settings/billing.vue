@@ -1,22 +1,30 @@
 <script setup lang="ts">
 import Plans from '../components/billing/plans.vue'
+import { loadStripe } from "../../../functions/billing/payments";
+import { publishableKey } from '../../../functions/billing/payments'
 
-// let elements
+let elements
+let stripe
 
 const loading = ref(true)
 
 // TODO: learn about subscriptions
 async function initialize() {
+stripe = await loadStripe(publishableKey);
 
-// const { clientSecret } = await fetch('/stripe/create-payment-intent').then(res => res.json())
+const { clientSecret } = await fetch('http://localhost:3008/stripe/create-subscription').then(res => res.json()) as any
 
-// elements = stripe.elements({clientSecret});
-// const paymentElement = elements.create('payment');
-// paymentElement.mount("#payment-element");
-// const linkAuthenticationElement = elements.create("linkAuthentication");
-// linkAuthenticationElement.mount("#link-authentication-element");
+if (stripe) {
+  elements = stripe.elements({clientSecret});
+  const paymentElement = elements.create('payment');
 
-// isLoading.value = false;
+  paymentElement.mount("#payment-element");
+  const linkAuthenticationElement = elements.create("linkAuthentication");
+  linkAuthenticationElement.mount("#link-authentication-element");
+
+}
+
+// isLoading.value = false
 }
 
 async function payPlan() {
@@ -51,9 +59,9 @@ async function payPlan() {
       </div>
     </div>
 
-    <!-- <Plans /> -->
+    <Plans />
 
-    <div v-if="true" id="subscribed">
+    <div v-if="false" id="subscribed">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base text-gray-900 font-semibold leading-6">

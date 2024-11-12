@@ -11,12 +11,7 @@ export default new Action({
 
     const user = await User.find(1)
 
-    const paymentIntent = await user?.paymentIntent({
-      amount,
-      currency: 'usd',
-      description: 'Subscription to Stacks Pro',
-      payment_method_types: ['card'],
-    })
+    const paymentIntent = await user?.createSetupIntent()
 
     return paymentIntent
   },

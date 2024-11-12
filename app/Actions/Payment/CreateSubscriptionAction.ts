@@ -8,7 +8,7 @@ export default new Action({
   async handle() {
     const user = await User.find(1)
 
-    const subscription = await user?.newSubscription('pro', 'stacks_pro_monthly')
+    const subscription = await user?.newSubscription('hobby', 'stacks_hobby_monthly')
 
     return subscription
   },
