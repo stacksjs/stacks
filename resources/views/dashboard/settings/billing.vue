@@ -7,7 +7,6 @@ const loading = ref(true)
 
 // TODO: learn about subscriptions
 async function initialize() {
-const { publishableKey } = await fetch('http://localhost:3008/stripe/fetch-publishable-key').then((res) => res.json()) as any
 
 // const { clientSecret } = await fetch('/stripe/create-payment-intent').then(res => res.json())
 
