@@ -6,11 +6,11 @@ const showCheckIcon = ref(false)
 
 const slotsRenderedCode = ref(`
 <template>
-  <Menu>
-    <MenuButton>Options</MenuButton>
-    <MenuItems>
+  <Dropdown>
+    <DropdownButton>Options</DropdownButton>
+    <DropdownItems>
       <!-- Use the active state to conditionally style the active item. -->
-      <MenuItem
+      <DropdownItem
         v-for="link in links"
         :key="link.href"
         as="template"
@@ -22,9 +22,9 @@ const slotsRenderedCode = ref(`
         >
           {{ link.label }}
         </a>
-      </MenuItem>
-    </MenuItems>
-  </Menu>
+      </DropdownItem>
+    </DropdownItems>
+  </Dropdown>
 </template>`)
 
 async function handleCopyCode() {
@@ -39,8 +39,8 @@ async function handleCopyCode() {
     </h1>
     <div class="mt-5">
       <p class="my-3 text-base">
-        Each component exposes information about its current state via slot props that you can use to conditionally apply different styles or render different content.
-        For example, the MenuItem component exposes an active state, which tells you if the item is currently focused via the mouse or keyboard.
+        Each component exposes information about its current state via <code><b>slot props</b></code> that you can use to conditionally apply different styles or render different content. <br><br>
+        For example, the <code><b>DropdownItem</b></code> component exposes an active state, which tells you if the item is currently focused via the mouse or keyboard.
       </p>
 
       <div class="code-block relative">

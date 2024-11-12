@@ -64,5 +64,8 @@ async function handleCopyCode() {
         <div v-else class="i-ic:baseline-content-copy text-gray-500" />
       </button>
     </div>
+    <p class="my-3 text-base">
+      To learn more, read this part of the documentation, as much of <a class="text-blue-500" href="https://headlessui.com/v1/vue/menu" target="_blank">Headless UI</a> is proxied.
+    </p>
   </div>
 </template>

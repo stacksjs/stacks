@@ -1,25 +1,25 @@
 {
-  "name": "@stacksjs/dropdown",
+  "name": "@stacksjs/transition",
   "type": "module",
   "version": "0.68.2",
-  "description": "A modern dropdown component.",
+  "description": "A modern transition component.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/transition#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/dropdown"
+    "directory": "./storage/framework/core/components/transition"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "dropdowns",
+    "transitions",
     "components",
     "library",
     "stacks"
