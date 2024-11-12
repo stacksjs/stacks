@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
+const planTypeKey = ref('stacks_hobby_early_monthly')
 
 const perText = computed(() => {
   if (checkedPlanType.value === 'monthly')
@@ -32,8 +33,25 @@ const proPrice = computed(() => {
   return 749
 })
 
-function subscribePlan() {
-  console.log(proPrice)
+async function subscribePlan() {
+  const body = {
+    type: planTypeKey.value,
+    plan: selectedPlan.value
+  }
+
+  const url = 'http://localhost:3008/stripe/create-subscription'
+
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  console.log(await response.json())
 }
 </script>
 
@@ -85,33 +103,40 @@ function subscribePlan() {
         <div class="pt-8">
           <fieldset aria-label="Server size">
             <div class="space-y-4">
-              <label aria-label="Hobby" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-                <input v-model="selectedPlan" type="radio" name="server-size" value="Hobby" class="sr-only">
+              <label aria-label="hobby" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+                <input v-model="selectedPlan" type="radio" value="hobby" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Hobby</span>
 
+                    <p class="pt-2 text-gray-600 text-xs">
+                      All Stacks features are included.
+                    </p>
                   </span>
                 </span>
                 <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
                   <span class="text-gray-900 font-medium">$ {{ hobbyPrice }} </span>
                   <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
                 </span>
-                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'Hobby', 'border ': selectedPlan !== 'Hobby' }" />
+                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'hobby', 'border ': selectedPlan !== 'hobby' }" />
               </label>
               <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-              <label aria-label="Pro" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-                <input v-model="selectedPlan" type="radio" name="server-size" value="Pro" class="sr-only">
+              <label aria-label="pro" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+                <input v-model="selectedPlan" type="radio" value="pro" class="sr-only">
                 <span class="flex items-center">
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Pro</span>
+
+                    <p class="pt-2 text-gray-600 text-xs">
+                      All Stacks features are included & being able to add team members.
+                    </p>
                   </span>
                 </span>
                 <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
                   <span class="text-gray-900 font-medium">${{ proPrice }}</span>
                   <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
                 </span>
-                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'Pro', 'border': selectedPlan !== 'Pro' }" />
+                <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'pro', 'border': selectedPlan !== 'pro' }" />
               </label>
             </div>
           </fieldset>
