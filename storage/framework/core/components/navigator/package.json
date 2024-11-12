@@ -1,0 +1,48 @@
+{
+  "name": "@stacksjs/navigator",
+  "type": "module",
+  "version": "0.68.2",
+  "description": "An opinionated navigator component.",
+  "author": "Zoltan",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/navigator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/components/navigator"
+  },
+  "sideEffects": ["**/*.css"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["README.md", "dist"],
+  "scripts": {
+    "dev": "bunx --bun vite -c ./vite.config.ts",
+    "build": "bunx --bun vite build --mode lib",
+    "build:demo": "bunx --bun vite build",
+    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "preview": "bunx --bun vite preview"
+  },
+  "dependencies": {
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.10.0",
+    "vue": "^3.5.12"
+  },
+  "devDependencies": {
+    "@iconify-json/ic": "^1.2.1",
+    "@microsoft/api-extractor": "^7.47.11",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
+    "@vue/tsconfig": "^0.5.1",
+    "clean-css": "^5.3.3",
+    "unplugin-icons": "^0.19.3"
+  }
+}
