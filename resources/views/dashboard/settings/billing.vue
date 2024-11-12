@@ -1,33 +1,34 @@
 <script setup lang="ts">
-import { loadStripe, publishableKey } from '../../../functions/billing/payments'
+import PaymentMethod from '../components/billing/payment-method.vue'
+// import { loadStripe, publishableKey } from '../../../functions/billing/payments'
 import Plans from '../components/billing/plans.vue'
 
-let elements
-let stripe
+// let elements
+// let stripe
 
-const loading = ref(true)
+// const loading = ref(true)
 
-// TODO: learn about subscriptions
-async function initialize() {
-  stripe = await loadStripe(publishableKey)
+// // TODO: learn about subscriptions
+// async function initialize() {
+//   stripe = await loadStripe(publishableKey)
 
-  const { clientSecret } = await fetch('http://localhost:3008/stripe/create-setup-intent').then(res => res.json()) as any
+//   const { clientSecret } = await fetch('http://localhost:3008/stripe/create-setup-intent').then(res => res.json()) as any
 
-  if (stripe) {
-    elements = stripe.elements({ clientSecret })
-    const paymentElement = elements.create('payment')
+//   if (stripe) {
+//     elements = stripe.elements({ clientSecret })
+//     const paymentElement = elements.create('payment')
 
-    paymentElement.mount('#payment-element')
-    const linkAuthenticationElement = elements.create('linkAuthentication')
-    linkAuthenticationElement.mount('#link-authentication-element')
-  }
+//     paymentElement.mount('#payment-element')
+//     const linkAuthenticationElement = elements.create('linkAuthentication')
+//     linkAuthenticationElement.mount('#link-authentication-element')
+//   }
 
-loading.value = false
-}
+// loading.value = false
+// }
 
-async function payPlan() {
-  await initialize()
-}
+// async function payPlan() {
+//   await initialize()
+// }
 
 // function calculateOrderAmount() {
 //   // Replace this constant with a calculation of the order's amount
@@ -39,8 +40,6 @@ async function payPlan() {
 
 <template>
   <div class="mx-auto px-4 py-8 container lg:px-8">
-    <Plans v-if="false"/>
-
     <div id="subscribed">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -113,7 +112,7 @@ async function payPlan() {
       </div>
 
       <div class="flex space-x-8">
-        <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        <!-- <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <h2 class="text-lg text-gray-900 font-medium">
             Plan Details
           </h2>
@@ -144,46 +143,10 @@ async function payPlan() {
               Change Plan
             </button>
           </div>
-        </div>
+        </div> -->
 
-        <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <h2 class="text-lg text-gray-900 font-medium">
-            Payment Info
-          </h2>
-
-          <div class="flex items-start pt-4 space-x-2">
-            <div class="h-12 w-12">
-              <img src="/images/logos/mastercard.svg" alt="Mastercard Logo">
-            </div>
-
-            <h2 class="text-xl text-gray-600">
-              •••• •••• •••• 0000
-            </h2>
-          </div>
-
-          <div class="pt-4">
-            <p class="text-gray-500">
-              Update payment method or redeem a voucher.
-            </p>
-          </div>
-
-          <div class="mt-8 flex">
-            <button
-              type="button"
-              class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-            >
-              Update Payment Method
-            </button>
-
-            <button
-              type="button"
-              class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-              @click="payPlan()"
-            >
-              Redeem Voucher Code
-            </button>
-          </div>
-        </div>
+        <Plans />
+        <PaymentMethod />
       </div>
     </div>
   </div>
