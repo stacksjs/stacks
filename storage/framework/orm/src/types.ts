@@ -5,7 +5,6 @@ import type { ErrorsTable } from '../src/models/Error'
 import type { PostsTable } from '../src/models/Post'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
-import type { StripeProductsTable } from '../src/models/StripeProduct'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
@@ -62,7 +61,6 @@ export interface Database {
   user_teams: UserTeamsTable
   users: UsersTable
   posts: PostsTable
-  stripe_products: StripeProductsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
   passkeys: PasskeysTable

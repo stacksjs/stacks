@@ -11,7 +11,7 @@ const loading = ref(true)
 async function initialize() {
   stripe = await loadStripe(publishableKey)
 
-  const { clientSecret } = await fetch('http://localhost:3008/stripe/create-subscription').then(res => res.json()) as any
+  const { clientSecret } = await fetch('http://localhost:3008/stripe/create-setup-intent').then(res => res.json()) as any
 
   if (stripe) {
     elements = stripe.elements({ clientSecret })
@@ -22,7 +22,7 @@ async function initialize() {
     linkAuthenticationElement.mount('#link-authentication-element')
   }
 
-// isLoading.value = false
+loading.value = false
 }
 
 async function payPlan() {
@@ -39,9 +39,9 @@ async function payPlan() {
 
 <template>
   <div class="mx-auto px-4 py-8 container lg:px-8">
-    <Plans />
+    <Plans v-if="false"/>
 
-    <div v-if="false" id="subscribed">
+    <div id="subscribed">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base text-gray-900 font-semibold leading-6">

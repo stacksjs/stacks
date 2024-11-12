@@ -56,42 +56,27 @@ async function subscribePlan() {
     body: JSON.stringify(body),
   })
 
-  const client = await response.json()
+  const client: any = await response.json()
 
-  console.log(client)
+  const clientSecret = client.client_secret
 
   stripe = await loadStripe(publishableKey)
 
-  // if (stripe) {
-  //   elements = stripe.elements({clientSecret});
-  //   const paymentElement = elements.create('payment');
+  if (stripe) {
+    elements = stripe.elements({clientSecret});
+    const paymentElement = elements.create('payment');
 
-  //   paymentElement.mount("#payment-element");
-  //   const linkAuthenticationElement = elements.create("linkAuthentication");
-  //   linkAuthenticationElement.mount("#link-authentication-element");
+    paymentElement.mount("#payment-element");
+    const linkAuthenticationElement = elements.create("linkAuthentication");
+    linkAuthenticationElement.mount("#link-authentication-element");
+  }
 
-  // }
+  loading.value = false
 }
 </script>
 
 <template>
-  <div class="flex space-x-4">
-    <div v-show="!loading" class="w-2/3 rounded-md bg-white px-8 py-6 shadow-md">
-      <form id="payment-form">
-        <div id="link-authentication-element">
-          <!-- Stripe.js injects the Link Authentication Element -->
-        </div>
-        <div id="payment-element">
-          <!-- Stripe.js injects the Payment Element -->
-        </div>
-        <button id="submit" class="primary-button">
-          <div id="spinner" class="spinner hidden" />
-          <span id="button-text">Pay now</span>
-        </button>
-        <div id="payment-message" class="hidden" />
-      </form>
-    </div>
-  </div>
+   
 
   <div class="mx-auto px-4 py-8 container lg:px-8">
     <div class="flex justify-center">
@@ -113,6 +98,23 @@ async function subscribePlan() {
           </p>
         </div>
 
+        <div v-show="!loading" class="w-2/3 rounded-md bg-white px-8 py-6 shadow-md">
+      <form id="payment-form">
+        <div id="link-authentication-element">
+          <!-- Stripe.js injects the Link Authentication Element -->
+        </div>
+        <div id="payment-element">
+          <!-- Stripe.js injects the Payment Element -->
+        </div>
+        <button id="submit" class="primary-button">
+          <div id="spinner" class="spinner hidden" />
+          <span id="button-text">Pay now</span>
+        </button>
+        <div id="payment-message" class="hidden" />
+      </form>
+    </div>
+
+        <div v-if="loading">
         <div class="pt-8">
           <div class="flex justify-center">
             <fieldset aria-label="Payment frequency">
@@ -165,7 +167,7 @@ async function subscribePlan() {
                     <span class="text-gray-900 font-medium">Pro</span>
 
                     <p class="pt-2 text-xs text-gray-600">
-                      All Stacks features are included & being able to add team members.
+                      All Stacks features are included & being able to invite team members.
                     </p>
                   </span>
                 </span>
@@ -188,6 +190,8 @@ async function subscribePlan() {
             Subscribe
           </button>
         </div>
+
+      </div>
       </div>
     </div>
   </div>

@@ -14,6 +14,6 @@ export default new Action({
 
     const subscription = await user?.newSubscription(plan, type)
 
-    return subscription
+    return subscription?.paymentIntent
   },
 })
