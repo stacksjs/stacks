@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
 
 import Post from './Post'
 
@@ -762,18 +762,18 @@ export class UserModel {
 
   async newSubscriptionInvoice(
     type: string,
-    priceId: string,
+    lookupKey: string,
       options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    return await this.newSubscription(type, priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
+    return await this.newSubscription(type, lookupKey, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
   }
 
   async newSubscription(
     type: string,
-    priceId: string,
+    lookupKey: string,
       options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const subscription = await manageSubscription.create(this, type, priceId, options)
+    const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
     const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
     const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined

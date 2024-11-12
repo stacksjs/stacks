@@ -1,6 +1,7 @@
 export * from './charge'
 export * from './checkout'
 export * from './customer'
+export * from './intent'
 export * from './payment-method'
 export * from './price'
 export * from './setup-products'

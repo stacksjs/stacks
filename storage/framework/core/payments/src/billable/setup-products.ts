@@ -6,7 +6,7 @@ interface PriceParams {
   unit_amount: number
   currency: string
   product: string
-  nickname: string
+  lookup_key: string
   recurring?: {
     interval: 'day' | 'month' | 'week' | 'year'
   }
@@ -25,19 +25,20 @@ export async function createStripeProduct(): Promise<void> {
 
         // Use the created product's ID to add the pricing options
         for (const pricing of plan.pricing) {
-          const priceParams: PriceParams = {
-            unit_amount: pricing.price,
-            currency: pricing.currency,
-            product: product.id,
-            nickname: pricing.key, // Optional: adds a nickname for easier reference
-          }
+          if (product) {
+            const priceParams: PriceParams = {
+              unit_amount: pricing.price,
+              currency: pricing.currency,
+              product: product.id,
+              lookup_key: pricing.key,
+            }
 
-          // Check if 'interval' exists to handle recurring or one-time payment
-          if (pricing.interval) {
-            priceParams.recurring = { interval: pricing.interval }
-          }
+            if (pricing.interval) {
+              priceParams.recurring = { interval: pricing.interval }
+            }
 
-          await stripe.price.create(priceParams)
+            await stripe.price.create(priceParams)
+          }
         }
       }
     }

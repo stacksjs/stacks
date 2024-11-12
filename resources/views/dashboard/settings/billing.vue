@@ -1,7 +1,6 @@
 <script setup lang="ts">
+import { loadStripe, publishableKey } from '../../../functions/billing/payments'
 import Plans from '../components/billing/plans.vue'
-import { loadStripe } from "../../../functions/billing/payments";
-import { publishableKey } from '../../../functions/billing/payments'
 
 let elements
 let stripe
@@ -10,19 +9,18 @@ const loading = ref(true)
 
 // TODO: learn about subscriptions
 async function initialize() {
-stripe = await loadStripe(publishableKey);
+  stripe = await loadStripe(publishableKey)
 
-const { clientSecret } = await fetch('http://localhost:3008/stripe/create-subscription').then(res => res.json()) as any
+  const { clientSecret } = await fetch('http://localhost:3008/stripe/create-subscription').then(res => res.json()) as any
 
-if (stripe) {
-  elements = stripe.elements({clientSecret});
-  const paymentElement = elements.create('payment');
+  if (stripe) {
+    elements = stripe.elements({ clientSecret })
+    const paymentElement = elements.create('payment')
 
-  paymentElement.mount("#payment-element");
-  const linkAuthenticationElement = elements.create("linkAuthentication");
-  linkAuthenticationElement.mount("#link-authentication-element");
-
-}
+    paymentElement.mount('#payment-element')
+    const linkAuthenticationElement = elements.create('linkAuthentication')
+    linkAuthenticationElement.mount('#link-authentication-element')
+  }
 
 // isLoading.value = false
 }
@@ -41,24 +39,6 @@ async function payPlan() {
 
 <template>
   <div class="mx-auto px-4 py-8 container lg:px-8">
-    <div class="flex space-x-4">
-      <div v-show="!loading" class="w-2/3 rounded-md bg-white px-8 py-6 shadow-md">
-        <form id="payment-form">
-          <div id="link-authentication-element">
-            <!-- Stripe.js injects the Link Authentication Element -->
-          </div>
-          <div id="payment-element">
-          <!-- Stripe.js injects the Payment Element -->
-          </div>
-          <button id="submit" class="primary-button">
-            <div id="spinner" class="spinner hidden" />
-            <span id="button-text">Pay now</span>
-          </button>
-          <div id="payment-message" class="hidden" />
-        </form>
-      </div>
-    </div>
-
     <Plans />
 
     <div v-if="false" id="subscribed">

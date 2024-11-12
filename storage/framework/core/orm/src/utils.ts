@@ -1171,24 +1171,25 @@ export async function generateModelString(
 
     async newSubscriptionInvoice(
       type: string,
-      priceId: string,
+      lookupKey: string,
       options: Partial<Stripe.SubscriptionCreateParams> = {},
     ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-      return await this.newSubscription(type, priceId, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
+      return await this.newSubscription(type, lookupKey, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
     }
 
-    async newSubscription(
+     async newSubscription(
       type: string,
-      priceId: string,
+      lookupKey: string,
       options: Partial<Stripe.SubscriptionCreateParams> = {},
     ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-      const subscription = await manageSubscription.create(this, type, priceId, options)
+      const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
       const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
       const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
       return { subscription, paymentIntent }
     }
+
 
     async createSetupIntent(
       options: Stripe.SetupIntentCreateParams = {}
@@ -1360,7 +1361,7 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model.attributes, otherModelRelations))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, managePrice, type Stripe } from '@stacksjs/payments'
+    import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
     import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions, SubscriptionOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'

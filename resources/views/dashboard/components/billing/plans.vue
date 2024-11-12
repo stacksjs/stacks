@@ -1,7 +1,13 @@
 <script setup lang="ts">
+import { loadStripe, publishableKey } from '../../../../functions/billing/payments'
+
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
 const planTypeKey = ref('stacks_hobby_early_monthly')
+let elements
+let stripe
+
+const loading = ref(true)
 
 const perText = computed(() => {
   if (checkedPlanType.value === 'monthly')
@@ -36,11 +42,10 @@ const proPrice = computed(() => {
 async function subscribePlan() {
   const body = {
     type: planTypeKey.value,
-    plan: selectedPlan.value
+    plan: selectedPlan.value,
   }
 
   const url = 'http://localhost:3008/stripe/create-subscription'
-
 
   const response = await fetch(url, {
     method: 'POST',
@@ -51,11 +56,43 @@ async function subscribePlan() {
     body: JSON.stringify(body),
   })
 
-  console.log(await response.json())
+  const client = await response.json()
+
+  console.log(client)
+
+  stripe = await loadStripe(publishableKey)
+
+  // if (stripe) {
+  //   elements = stripe.elements({clientSecret});
+  //   const paymentElement = elements.create('payment');
+
+  //   paymentElement.mount("#payment-element");
+  //   const linkAuthenticationElement = elements.create("linkAuthentication");
+  //   linkAuthenticationElement.mount("#link-authentication-element");
+
+  // }
 }
 </script>
 
 <template>
+  <div class="flex space-x-4">
+    <div v-show="!loading" class="w-2/3 rounded-md bg-white px-8 py-6 shadow-md">
+      <form id="payment-form">
+        <div id="link-authentication-element">
+          <!-- Stripe.js injects the Link Authentication Element -->
+        </div>
+        <div id="payment-element">
+          <!-- Stripe.js injects the Payment Element -->
+        </div>
+        <button id="submit" class="primary-button">
+          <div id="spinner" class="spinner hidden" />
+          <span id="button-text">Pay now</span>
+        </button>
+        <div id="payment-message" class="hidden" />
+      </form>
+    </div>
+  </div>
+
   <div class="mx-auto px-4 py-8 container lg:px-8">
     <div class="flex justify-center">
       <div class="w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
@@ -109,7 +146,7 @@ async function subscribePlan() {
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Hobby</span>
 
-                    <p class="pt-2 text-gray-600 text-xs">
+                    <p class="pt-2 text-xs text-gray-600">
                       All Stacks features are included.
                     </p>
                   </span>
@@ -127,7 +164,7 @@ async function subscribePlan() {
                   <span class="flex flex-col text-sm">
                     <span class="text-gray-900 font-medium">Pro</span>
 
-                    <p class="pt-2 text-gray-600 text-xs">
+                    <p class="pt-2 text-xs text-gray-600">
                       All Stacks features are included & being able to add team members.
                     </p>
                   </span>
@@ -142,14 +179,14 @@ async function subscribePlan() {
           </fieldset>
         </div>
 
-        <div class="pt-8 flex justify-end">
+        <div class="flex justify-end pt-8">
           <button
-              type="button"
-              class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-              @click="subscribePlan()"
-            >
-              Subscribe
-            </button>
+            type="button"
+            class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+            @click="subscribePlan()"
+          >
+            Subscribe
+          </button>
         </div>
       </div>
     </div>

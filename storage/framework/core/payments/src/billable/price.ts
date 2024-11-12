@@ -9,20 +9,10 @@ export interface PriceManager {
 
 export const managePrice: PriceManager = (() => {
   async function retrieveByLookupKey(lookupKey: string): Promise<Stripe.Price | undefined> {
-    const cachedPrice = cache.get(`price_${lookupKey}`)
-
-    if (cachedPrice) {
-      try {
-        // If cached value is a string, parse it; otherwise, it's already a parsed object
-        return typeof cachedPrice === 'string' ? JSON.parse(cachedPrice) : cachedPrice
-      }
-      catch (error) {
-        console.error('Error parsing cached price:', error)
-      }
-    }
-
     try {
       const prices = await stripe.price.list({ lookup_keys: [lookupKey] })
+
+      console.log('test', prices)
 
       if (!prices.data.length)
         return undefined

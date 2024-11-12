@@ -6,14 +6,14 @@ import { manageCustomer, managePrice, stripe } from '..'
 import Subscription from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
-  create: (user: UserModel, type: string, priceId: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>
 }
 
 export const manageSubscription: SubscriptionManager = (() => {
-  async function create(user: UserModel, type: string, priceId: string, params: Partial<Stripe.SubscriptionCreateParams>): Promise<Stripe.Response<Stripe.Subscription>> {
-    const price = await managePrice.retrieveByLookupKey(priceId)
+  async function create(user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>): Promise<Stripe.Response<Stripe.Subscription>> {
+    const price = await managePrice.retrieveByLookupKey(lookupKey)
 
     if (!price)
       throw new Error('Price does not exist in stripe')

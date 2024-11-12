@@ -106,7 +106,7 @@ async function handleCopyCode() {
         Modal with header
       </button>
     </div>
-    <div class="group code-block relative">
+    <div class="code-block group relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
