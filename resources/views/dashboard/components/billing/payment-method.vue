@@ -4,18 +4,12 @@ import { useBillable } from '../../../../functions/billing/payments'
 const stripeLoading = ref(true)
 const showStripe = ref(false)
 
-const { fetchSetupIntent, loadStripeElement } = useBillable()
+const { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod } = useBillable()
 
-async function addPaymentMethod() {
+async function loadWebElement() {
  const clientSecret = await fetchSetupIntent()
 
-  const paymentElement = await loadStripeElement(clientSecret)
-
-  if (paymentElement) {
-    paymentElement.mount('#payment-element')
-
-    showStripe.value = true
-  }
+  showStripe.value = await loadStripeElement(clientSecret)
 
   stripeLoading.value = false
 }
@@ -55,7 +49,7 @@ function cancelPaymentForm() {
           <button
           type="button"
           class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-          @click="cancelPaymentForm()"
+          @click="handleAddPaymentMethod()"
           >
             Save Payment Method
           </button>
@@ -76,7 +70,7 @@ function cancelPaymentForm() {
       <button
         type="button"
         class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-        @click="addPaymentMethod()"
+        @click="loadWebElement()"
       >
         Add Payment Method
       </button>

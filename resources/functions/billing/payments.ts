@@ -1,6 +1,9 @@
 export const publishableKey = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY
 import { loadStripe } from '@stripe/stripe-js'
 
+const stripe = ref(null as any)
+const elements = ref(null as any)
+
 export function useBillable() {
     async function fetchSetupIntent(): Promise<string> {
       const url = 'http://localhost:3008/stripe/create-setup-intent'
@@ -19,20 +22,41 @@ export function useBillable() {
       return clientSecret
     }
 
-    async function loadStripeElement(clientSecret: string): Promise<any | undefined> {
-      const stripe = await loadStripe(publishableKey)
+    async function loadStripeElement(clientSecret: string): Promise<boolean> {
+      stripe.value = await loadStripe(publishableKey)
 
       if (stripe) {
-        const elements = stripe.elements({ clientSecret })
-        const paymentElement = elements.create('payment', {
+        elements.value = stripe.value.elements({ clientSecret })
+
+        const paymentElement = elements.value.create('payment', {
           fields: { billingDetails: 'auto' },
         })
 
-        return paymentElement
+        paymentElement.mount('#payment-element')
+
+        return true
       }
 
-      return undefined
+      return false
     }
 
-    return { fetchSetupIntent, loadStripeElement }
+    async function handleAddPaymentMethod() {
+      if (!stripe.value || !elements.value) return
+    
+      const { setupIntent, error } = await stripe.value.confirmSetup({
+        elements: elements.value,
+        confirmParams: {
+          return_url: 'http://localhost:5173/settings/billing'
+        },
+      })
+    
+      if (error) {
+        console.error(error.message) // Display or handle error for the user
+      } else {
+        console.log('Setup Intent successful:', setupIntent)
+        // You might save setupIntent.id to your database here
+      }
+    }
+
+    return { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod }
 }
