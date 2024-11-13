@@ -1,10 +1,9 @@
-import Stripe from 'stripe'
 const apiUrl = `http://localhost:3008`
 
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {
-      paymentMethods: [] as Stripe.PaymentMethod[]
+      paymentMethods: [] as any[]
     }
   },
 
@@ -23,7 +22,7 @@ export const usePaymentStore = defineStore('payment', {
   },
 
   getters: {
-    getPaymentMethods(state): Stripe.PaymentMethod[] {
+    getPaymentMethods(state): any[] {
       return state.paymentMethods
     },
   },
