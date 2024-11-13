@@ -1168,7 +1168,10 @@ export async function generateModelString(
     async isIncomplete(type: string): Promise<boolean> {
       return await manageSubscription.isIncomplete(this, type)
     }
-
+    
+    async paymentMethods(cardType?: string): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
+      return await managePaymentMethod.listPaymentMethods(this, cardType)
+    }
     async newSubscriptionInvoice(
       type: string,
       lookupKey: string,
@@ -1363,7 +1366,7 @@ export async function generateModelString(
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
-    import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions, SubscriptionOptions } from '@stacksjs/types'
+    import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'
     import { dispatch } from '@stacksjs/events'
     import { generateTwoFactorSecret } from '@stacksjs/auth'

@@ -48,9 +48,11 @@ export const dashboardConfig: ViteConfig = {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
   },
 
-  // server: server({
-  //   type: 'admin',
-  // }),
+  server: {
+    hmr: {
+      overlay: false,
+    },
+  },
 
   resolve: {
     alias,

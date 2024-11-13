@@ -1,6 +1,8 @@
 import type { Model } from '@stacksjs/types'
+import type { UserModel } from '../../storage/framework/orm/src/models/User'
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
+import { capitalize } from '@stacksjs/strings'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -105,6 +107,18 @@ export default {
 
       factory: () => faker.internet.password(),
     },
+  },
+  get: {
+    formalName: (user: UserModel) => {
+      const name = user?.name as string
+      const nameParts = name.split(' ')
+
+      return `${capitalize(nameParts.pop()!)}, ${capitalize(nameParts.join(' '))}`
+    },
+  },
+
+  set: {
+    password: (password: string) => Bun.password.hash(password),
   },
   dashboard: {
     highlight: true,

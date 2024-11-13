@@ -7,12 +7,10 @@ export default new Action({
   description: 'Create Setup Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const amount = Number(request.get('amount'))
-
     const user = await User.find(1)
 
-    const paymentIntent = await user?.createSetupIntent()
+    const setupIntent = await user?.createSetupIntent()
 
-    return paymentIntent
+    return setupIntent
   },
 })

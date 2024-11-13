@@ -1,6 +1,6 @@
-import { TransitionRoot, TransitionChild } from '@headlessui/vue'
+import { TransitionChild, TransitionRoot } from '@headlessui/vue'
 
 export {
   TransitionChild,
-  TransitionRoot
+  TransitionRoot,
 }

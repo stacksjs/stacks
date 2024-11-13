@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { TransitionRoot, TransitionChild } from './components'
+import { TransitionChild, TransitionRoot } from './components'
 
 const plugin: Plugin = {
   install(app) {

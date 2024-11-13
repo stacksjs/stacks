@@ -74,5 +74,8 @@
     "storage/framework/libs/components/*",
     "storage/framework/views/*",
     "storage/framework/server"
-  ]
+  ],
+  "devDependencies": {
+    "@stacksjs/eslint-plugin": "^0.1.3"
+  }
 }

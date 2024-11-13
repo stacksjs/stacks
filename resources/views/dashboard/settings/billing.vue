@@ -1,41 +1,6 @@
 <script setup lang="ts">
 import PaymentMethod from '../components/billing/payment-method.vue'
-// import { loadStripe, publishableKey } from '../../../functions/billing/payments'
 import Plans from '../components/billing/plans.vue'
-
-// let elements
-// let stripe
-
-// const loading = ref(true)
-
-// // TODO: learn about subscriptions
-// async function initialize() {
-//   stripe = await loadStripe(publishableKey)
-
-//   const { clientSecret } = await fetch('http://localhost:3008/stripe/create-setup-intent').then(res => res.json()) as any
-
-//   if (stripe) {
-//     elements = stripe.elements({ clientSecret })
-//     const paymentElement = elements.create('payment')
-
-//     paymentElement.mount('#payment-element')
-//     const linkAuthenticationElement = elements.create('linkAuthentication')
-//     linkAuthenticationElement.mount('#link-authentication-element')
-//   }
-
-// loading.value = false
-// }
-
-// async function payPlan() {
-//   await initialize()
-// }
-
-// function calculateOrderAmount() {
-//   // Replace this constant with a calculation of the order's amount
-//   // Calculate the order total on the server to prevent
-//   // people from directly manipulating the amount on the client
-//   return 2000
-// }
 </script>
 
 <template>
