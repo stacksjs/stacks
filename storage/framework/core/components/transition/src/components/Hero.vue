@@ -3,7 +3,7 @@
 
 <template>
   <div class="flex flex-col items-center gap-3">
-    <div class="dropdownWrapper">
+    <div class="transitionWrapper">
       <div class="toast" />
       <div class="toast" />
       <div class="toast" />
@@ -17,14 +17,13 @@
     <div class="flex gap-2">
       <a
         class="button btn-primary"
-        href=""
-        target="_blank"
+        href="#example"
       >
-        Show dialog transition
+        Show Example
       </a>
       <a
         class="button btn-secondary"
-        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown"
+        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/transition"
         target="_blank"
       >
         GitHub
@@ -34,7 +33,7 @@
 </template>
 
 <style scoped>
-.dropdownWrapper {
+.transitionWrapper {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -141,7 +140,7 @@
 }
 
 @media (max-width: 600px) {
-  .dropdownWrapper {
+  .transitionWrapper {
     width: 100%;
   }
 }

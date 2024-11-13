@@ -2,8 +2,8 @@ import { useHead, useSeoMeta } from '@vueuse/head'
 
 function useSEOHeader() {
   useHead({
-    title: 'stacks/dropdown',
-    titleTemplate: title => `${title} | An opinionated dropdown component for Vue.`,
+    title: 'stacks/transition',
+    titleTemplate: title => `${title} | An opinionated transition component for Vue.`,
     meta: [
       {
         name: 'author',
@@ -11,23 +11,23 @@ function useSEOHeader() {
       },
       {
         name: 'description',
-        content: 'An opinionated dropdown component for Vue.',
+        content: 'An opinionated transition component for Vue.',
       },
     ],
   })
 
   useSeoMeta({
-    title: 'stacks/dropdown',
-    description: 'An opinionated dropdown component for Vue.',
-    ogDescription: 'An opinionated dropdown component for Vue.',
-    ogTitle: 'stacks/dropdown',
+    title: 'stacks/transition',
+    description: 'An opinionated transition component for Vue.',
+    ogDescription: 'An opinionated transition component for Vue.',
+    ogTitle: 'stacks/transition',
     ogImage: 'https://vue-sonner.vercel.app/og.png',
     ogImageHeight: '882',
     ogImageWidth: '1686',
     twitterCard: 'summary_large_image',
     twitterImage: 'https://vue-sonner.vercel.app/og.png',
-    twitterTitle: 'stacks/dropdown',
-    twitterDescription: 'An opinionated dropdown component for Stacks.',
+    twitterTitle: 'stacks/transition',
+    twitterDescription: 'An opinionated transition component for Stacks.',
   })
 }
 

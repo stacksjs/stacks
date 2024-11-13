@@ -2,6 +2,7 @@
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
+import Example from './components/Example.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()
@@ -19,6 +20,7 @@ useSEOHeader()
       >
         <Installation />
         <Usage />
+        <Example />
       </main>
       <Footer />
     </div>
