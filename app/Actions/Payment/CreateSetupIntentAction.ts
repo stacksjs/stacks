@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
-  name: 'CreateSetupIntent',
+  name: 'CreateSetupIntentAction',
   description: 'Create Setup Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
