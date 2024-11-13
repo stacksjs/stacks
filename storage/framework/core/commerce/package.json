@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/ecommerce",
+  "name": "@stacksjs/commerce",
   "type": "module",
   "version": "0.68.2",
   "description": "Stacks ecommerce utilities.",

@@ -15,13 +15,13 @@ wip
 wip
 
 ```bash
-bun install -d @stacksjs/ecommerce
+bun install -d @stacksjs/commerce
 ```
 
 Now, you can use it in your project:
 
 ```js
-import * as ecommerce from '@stacksjs/ecommerce'
+import * as ecommerce from '@stacksjs/commerce'
 
 // wip
 ```
