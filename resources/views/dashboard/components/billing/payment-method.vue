@@ -1,92 +1,78 @@
 <script setup lang="ts">
-import { loadStripe, publishableKey } from '../../../../functions/billing/payments'
+import { useBillable } from '../../../../functions/billing/payments'
 
-let elements
-let stripe
+const stripeLoading = ref(true)
+const showStripe = ref(false)
 
-const loading = ref(true)
+const { fetchSetupIntent, loadStripeElement } = useBillable()
 
 async function addPaymentMethod() {
-  const url = 'http://localhost:3008/stripe/create-setup-intent'
+ const clientSecret = await fetchSetupIntent()
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  })
+  const paymentElement = await loadStripeElement(clientSecret)
 
-  const client: any = await response.json()
-  const clientSecret = client.client_secret // Use the setup intent client secret here
-
-  // Initialize Stripe with the publishable key
-  stripe = await loadStripe(publishableKey)
-
-  if (stripe) {
-    // Create Stripe elements using the setup intent client secret
-    elements = stripe.elements({ clientSecret })
-
-    // Create the Payment Element (it will function for saving a payment method only)
-    const paymentElement = elements.create('payment', {
-      // Set display options for adding a payment method
-      fields: { billingDetails: 'auto' }, // Display only necessary fields
-    })
-
-    // Mount the payment element to your form
+  if (paymentElement) {
     paymentElement.mount('#payment-element')
 
-    // Optional: Create a link authentication element if you need it
-    const linkAuthenticationElement = elements.create('linkAuthentication')
-    linkAuthenticationElement.mount('#link-authentication-element')
+    showStripe.value = true
   }
 
-  loading.value = false
+  stripeLoading.value = false
+}
+
+function cancelPaymentForm() {
+  showStripe.value = false
+  stripeLoading.value = true
 }
 </script>
 
 <template>
   
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-
-   
     <h2 class="text-lg text-gray-900 font-medium">
       Payment Info
     </h2>
 
-    <div class="flex items-start pt-4 space-x-2">
-      <!-- <div class="h-12 w-12">
-              <img src="/images/logos/mastercard.svg" alt="Mastercard Logo">
-            </div> -->
+    <div class="pt-4 space-x-2" v-if="stripeLoading || !showStripe">
+      <div class="h-12 w-12">
+        <img src="/images/logos/mastercard.svg" alt="Mastercard Logo">
+      </div>
 
-      <!-- <h2 class="text-xl text-gray-600">
-              •••• •••• •••• ••••
-            </h2> -->
+      <h2 class="text-xl text-gray-600">
+        •••• •••• •••• ••••
+      </h2>
 
       <h2 class="text-xl text-gray-600">
         No payment method added yet.
       </h2>
     </div>
 
-    <div v-show="!loading">
+    <div v-show="!stripeLoading || showStripe">
       <form id="payment-form">
-        <div id="link-authentication-element">
-          <!-- Stripe.js injects the Link Authentication Element -->
-        </div>
         <div id="payment-element">
-          <!-- Stripe.js injects the Payment Element -->
         </div>
-        <button id="submit" class="primary-button">
-          <div id="spinner" class="spinner hidden" />
-          <span id="button-text">Pay now</span>
-        </button>
-        <div id="payment-message" class="hidden" />
+        <div class="flex pt-4 space-x-2">
+          <button
+          type="button"
+          class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          @click="cancelPaymentForm()"
+          >
+            Save Payment Method
+          </button>
+          
+          <button
+          type="button"
+          class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-700 font-semibold shadow-sm hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          @click="cancelPaymentForm()"
+          >
+           Cancel
+          </button>
+          
+        </div>
       </form>
     </div>
 
-    
-
-    <div class="mt-8 flex">
+    <div class="mt-8 flex" v-if="stripeLoading || !showStripe">
       <button
         type="button"
         class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"

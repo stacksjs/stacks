@@ -627,6 +627,7 @@ declare global {
   const manageCustomer: typeof import('../core/payments/src/billable/customer')['manageCustomer']
   const managePaymentMethod: typeof import('../core/payments/src/billable/payment-method')['managePaymentMethod']
   const managePrice: typeof import('../core/payments/src/billable/price')['managePrice']
+  const manageSetupIntent: typeof import('../core/payments/src/billable/intent')['manageSetupIntent']
   const manageSubscription: typeof import('../core/payments/src/billable/subscription')['manageSubscription']
   const mapActions: typeof import('pinia')['mapActions']
   const mapFieldTypeToColumnType: typeof import('../core/database/src/drivers/index')['mapFieldTypeToColumnType']
@@ -1662,6 +1663,7 @@ declare module 'vue' {
     readonly manageCustomer: UnwrapRef<typeof import('../core/payments/src/billable/customer')['manageCustomer']>
     readonly managePaymentMethod: UnwrapRef<typeof import('../core/payments/src/billable/payment-method')['managePaymentMethod']>
     readonly managePrice: UnwrapRef<typeof import('../core/payments/src/billable/price')['managePrice']>
+    readonly manageSetupIntent: UnwrapRef<typeof import('../core/payments/src/billable/intent')['manageSetupIntent']>
     readonly manageSubscription: UnwrapRef<typeof import('../core/payments/src/billable/subscription')['manageSubscription']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapFieldTypeToColumnType: UnwrapRef<typeof import('../core/database/src/drivers/index')['mapFieldTypeToColumnType']>
