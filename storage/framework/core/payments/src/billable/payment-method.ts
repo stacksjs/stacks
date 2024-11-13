@@ -7,6 +7,7 @@ export interface ManagePaymentMethod {
   updatePaymentMethod: (user: UserModel, paymentMethodId: string, updateParams: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   deletePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrievePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  listPaymentMethods: (user: UserModel, cardType?: string) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>>
 }
 
 export const managePaymentMethod: ManagePaymentMethod = (() => {
@@ -62,18 +63,15 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
   }
 
   async function listPaymentMethods(user: UserModel, cardType?: string): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
-    // Check if the user has a Stripe customer ID
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe');
     }
   
-    // Retrieve all payment methods for the user
     const paymentMethods = await stripe.paymentMethod.list({
       customer: user.stripe_id,
-      type: 'card', // Only retrieve card payment methods
+      type: 'card', 
     });
   
-    // If a cardType is provided, filter the payment methods by card type (brand)
     if (cardType) {
       paymentMethods.data = paymentMethods.data.filter((method) => method.card?.brand === cardType);
     }

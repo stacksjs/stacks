@@ -760,6 +760,10 @@ export class UserModel {
     return await manageSubscription.isIncomplete(this, type)
   }
 
+  async paymentMethods(cardType?: string): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
+    return await managePaymentMethod.listPaymentMethods(this, cardType)
+  }
+
   async newSubscriptionInvoice(
     type: string,
     lookupKey: string,
