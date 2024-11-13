@@ -95,7 +95,7 @@ export const dashboardConfig: ViteConfig = {
       ],
 
       dts: p.frameworkPath('types/auto-imports.d.ts'),
-      dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.corePath()],
+      dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores')],
       vueTemplate: true,
     }),
 
