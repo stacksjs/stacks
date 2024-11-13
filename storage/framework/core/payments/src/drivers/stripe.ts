@@ -20,7 +20,7 @@ export const paymentIntent: PaymentIntent = (() => {
     return await client.paymentIntents.create(params)
   }
 
-  async function retrieve(stripeId: string) {
+  async function retrieve(stripeId: string): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     return await client.paymentIntents.retrieve(stripeId)
   }
 
@@ -28,7 +28,7 @@ export const paymentIntent: PaymentIntent = (() => {
     return await client.paymentIntents.update(stripeId, params)
   }
 
-  async function cancel(stripeId: string) {
+  async function cancel(stripeId: string): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     return await client.paymentIntents.cancel(stripeId)
   }
 

@@ -1,82 +1,81 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
-  import { useCopyCode } from '../composables/useCopyCode'
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue'
+import { computed, ref } from 'vue'
 
-  import {
-    TransitionRoot,
-    TransitionChild,
-    Dialog,
-    DialogPanel,
-    DialogTitle,
-  } from '@headlessui/vue'
+import { useCopyCode } from '../composables/useCopyCode'
 
-  type TransitionClass = {
-    enter: string
-    enterFrom: string
-    enterTo: string
-    leave: string
-    leaveFrom: string
-    leaveTo: string
+interface TransitionClass {
+  enter: string
+  enterFrom: string
+  enterTo: string
+  leave: string
+  leaveFrom: string
+  leaveTo: string
+}
+
+const transitionList = ref<string[]>([
+  'fade',
+  'slideInRight',
+  'slideInDown',
+  'pop',
+])
+
+const showCheckIcon = ref(false)
+const currentTransition = ref(transitionList.value[0])
+const isOpen = ref(false)
+
+const transitionClass = computed<TransitionClass>(() => {
+  if (currentTransition.value === 'slideInRight') {
+    return {
+      enter: 'transition-transform transition-opacity duration-500 ease-out',
+      enterFrom: 'opacity-0 translate-x-full',
+      enterTo: 'opacity-100 translate-x-0',
+      leave: 'transition-transform transition-opacity duration-500 ease-out',
+      leaveFrom: 'opacity-100 translate-x-0',
+      leaveTo: 'opacity-0 translate-x-full',
+    }
   }
 
-  const transitionList = ref<string[]>([
-    'fade',
-    'slideInRight',
-    'slideInDown',
-    'pop'
-  ])
-
-  const showCheckIcon = ref(false)
-  const currentTransition = ref(transitionList.value[0])
-  const isOpen = ref(false)
-
-  const transitionClass = computed<TransitionClass>(() => {
-
-    if (currentTransition.value === 'slideInRight') {
-      return {
-        enter: 'transition-transform transition-opacity duration-500 ease-out',
-        enterFrom: 'opacity-0 translate-x-full',
-        enterTo: 'opacity-100 translate-x-0',
-        leave: 'transition-transform transition-opacity duration-500 ease-out',
-        leaveFrom: 'opacity-100 translate-x-0',
-        leaveTo: 'opacity-0 translate-x-full',
-      }
-    }
-
-    if (currentTransition.value === 'slideInDown') {
-      return {
-        enter: 'transition-transform transition-opacity duration-500 ease-out',
-        enterFrom: 'opacity-0 -translate-y-full',
-        enterTo: 'opacity-100 translate-y-0',
-        leave: 'transition-transform transition-opacity duration-500 ease-out',
-        leaveFrom: 'opacity-100 translate-y-0',
-        leaveTo: 'opacity-0 -translate-y-full',
-      }
-    }
-
-    if (currentTransition.value === 'pop') {
-      return {
-        enter: 'transition-transform duration-300',
-        enterFrom: 'transform scale-0',
-        enterTo: 'transform scale-100',
-        leave: 'transition-transform duration-300',
-        leaveFrom: 'transform scale-100',
-        leaveTo: 'transform scale-0',
-      }
-    }
-
+  if (currentTransition.value === 'slideInDown') {
     return {
-      enter: 'transition-opacity duration-300',
-      enterFrom: 'opacity-0',
-      enterTo: 'opacity-100',
-      leave: 'transition-opacity duration-300',
-      leaveFrom: 'opacity-100',
-      leaveTo: 'opacity-0',
+      enter: 'transition-transform transition-opacity duration-500 ease-out',
+      enterFrom: 'opacity-0 -translate-y-full',
+      enterTo: 'opacity-100 translate-y-0',
+      leave: 'transition-transform transition-opacity duration-500 ease-out',
+      leaveFrom: 'opacity-100 translate-y-0',
+      leaveTo: 'opacity-0 -translate-y-full',
     }
-  })
+  }
 
-  const renderedCode = computed(() => {
-    return `
+  if (currentTransition.value === 'pop') {
+    return {
+      enter: 'transition-transform duration-300',
+      enterFrom: 'transform scale-0',
+      enterTo: 'transform scale-100',
+      leave: 'transition-transform duration-300',
+      leaveFrom: 'transform scale-100',
+      leaveTo: 'transform scale-0',
+    }
+  }
+
+  return {
+    enter: 'transition-opacity duration-300',
+    enterFrom: 'opacity-0',
+    enterTo: 'opacity-100',
+    leave: 'transition-opacity duration-300',
+    leaveFrom: 'opacity-100',
+    leaveTo: 'opacity-0',
+  }
+})
+
+const renderedCode = computed(() => {
+  return `
 <TransitionRoot appear :show="isOpen">
   <Dialog :open="isOpen" @close="setIsOpen" class="relative z-50">
     <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -104,20 +103,20 @@
   </Dialog>
 </TransitionRoot>
     `
-  })
+})
 
-  function setIsOpen(value: boolean) {
-    isOpen.value = value
-  }
+function setIsOpen(value: boolean) {
+  isOpen.value = value
+}
 
-  function handleClick(trans: string) {
-    setIsOpen(true)
-    currentTransition.value = trans
-  }
+function handleClick(trans: string) {
+  setIsOpen(true)
+  currentTransition.value = trans
+}
 
-  async function handleCopyCode() {
-    await useCopyCode({ code: renderedCode.value, checkIconRef: showCheckIcon })
-  }
+async function handleCopyCode() {
+  await useCopyCode({ code: renderedCode.value, checkIconRef: showCheckIcon })
+}
 </script>
 
 <template>
@@ -162,17 +161,14 @@
     </div>
 
     <div class="flex flex-col gap-4">
-
       <TransitionRoot
         appear
         :show="isOpen"
       >
-        <Dialog :open="isOpen" @close="setIsOpen" class="relative z-50">
+        <Dialog :open="isOpen" class="relative z-50" @close="setIsOpen">
           <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-
-        <div class="fixed inset-0 flex w-screen items-center justify-center p-4">
-
+          <div class="fixed inset-0 w-screen flex items-center justify-center p-4">
             <TransitionChild
               :enter="transitionClass.enter"
               :enter-from="transitionClass.enterFrom"
@@ -181,7 +177,7 @@
               :leave-from="transitionClass.leaveFrom"
               :leave-to="transitionClass.leaveTo"
             >
-              <DialogPanel class="w-full max-w-sm rounded bg-white p-5">
+              <DialogPanel class="max-w-sm w-full rounded bg-white p-5">
                 <DialogTitle>Complete your order</DialogTitle>
 
                 <div class="mt-4">

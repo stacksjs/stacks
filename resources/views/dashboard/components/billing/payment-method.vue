@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useBillable } from '../../../../functions/billing/payments'
+const paymentStore = usePaymentStore()
 
 const stripeLoading = ref(true)
 const showStripe = ref(false)
@@ -18,6 +19,10 @@ function cancelPaymentForm() {
   showStripe.value = false
   stripeLoading.value = true
 }
+
+onMounted(async () => {
+  await paymentStore.fetchUserPaymentMethods()
+})
 </script>
 
 <template>
@@ -27,15 +32,15 @@ function cancelPaymentForm() {
     </h2>
 
     <ul v-if="stripeLoading || !showStripe" role="list" class="grid grid-cols-1 mt-8 gap-6 lg:grid-cols-1 sm:grid-cols-1">
-      <li class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
+      <li v-for="(method, index) in paymentStore.getPaymentMethods" :key="index" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
         <div class="w-full p-4">
           <div class="flex space-x-4">
             <div class="h-24 w-24">
               <img src="/images/logos/mastercard.svg" alt="Mastercard Logo" class="border">
             </div>
             <h2 class="text-xl text-gray-600">
-              Mastercard •••• 4242 <br>
-              <span class="text-xs text-gray-500 italic">Expires 10/30</span>
+              {{ method.card.brand }} •••• {{ method.card.last4 }} <br>
+              <span class="text-xs text-gray-500 italic">Expires {{ method.card.exp_month }} /  {{ method.card.exp_year }} </span>
             </h2>
           </div>
 

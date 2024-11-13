@@ -28,6 +28,8 @@ declare module 'vue-router/auto-routes' {
     '/dashboard/buddy/': RouteRecordInfo<'/dashboard/buddy/', '/dashboard/buddy', Record<never, never>, Record<never, never>>,
     '/dashboard/commands/': RouteRecordInfo<'/dashboard/commands/', '/dashboard/commands', Record<never, never>, Record<never, never>>,
     '/dashboard/components/': RouteRecordInfo<'/dashboard/components/', '/dashboard/components', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/billing/payment-method': RouteRecordInfo<'/dashboard/components/billing/payment-method', '/dashboard/components/billing/payment-method', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/billing/plans': RouteRecordInfo<'/dashboard/components/billing/plans', '/dashboard/components/billing/plans', Record<never, never>, Record<never, never>>,
     '/dashboard/dependencies/': RouteRecordInfo<'/dashboard/dependencies/', '/dashboard/dependencies', Record<never, never>, Record<never, never>>,
     '/dashboard/deployments/': RouteRecordInfo<'/dashboard/deployments/', '/dashboard/deployments', Record<never, never>, Record<never, never>>,
     '/dashboard/deployments/[id]': RouteRecordInfo<'/dashboard/deployments/[id]', '/dashboard/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,

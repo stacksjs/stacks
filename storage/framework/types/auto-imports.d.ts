@@ -43,8 +43,8 @@ declare global {
   const Fetch: typeof import('../core/api/src/ofetch')['Fetch']
   const FileStorage: typeof import('../core/storage/src/flystorage')['FileStorage']
   const GlobalRegistrator: typeof import('../core/testing/src/feature')['GlobalRegistrator']
-  const Head: typeof import('../core/browser/src/utils/vendors')['Head']
-  const HeadVuePlugin: typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']
+  const Head: typeof import('../core/browser/dist/index.js')['Head']
+  const HeadVuePlugin: typeof import('../core/browser/dist/index.js')['HeadVuePlugin']
   const HostStyleAwsPublicUrlGenerator: typeof import('../core/storage/src/flystorage')['HostStyleAwsPublicUrlGenerator']
   const HttpError: typeof import('../core/error-handling/src/http')['HttpError']
   const InMemoryStorageAdapter: typeof import('../core/storage/src/flystorage')['InMemoryStorageAdapter']
@@ -125,8 +125,8 @@ declare global {
   const all: typeof import('../core/events/src/index')['all']
   const allocate: typeof import('../core/utils/src/currency')['allocate']
   const analyticsPath: typeof import('../core/path/src/index')['analyticsPath']
-  const and: typeof import('../core/browser/src/utils/math')['and']
-  const anyOf: typeof import('../core/browser/src/utils/regex')['anyOf']
+  const and: typeof import('../core/browser/dist/index.js')['and']
+  const anyOf: typeof import('../core/browser/dist/index.js')['anyOf']
   const appPath: typeof import('../core/path/src/index')['appPath']
   const archive: typeof import('../core/storage/src/zip')['archive']
   const argon2Encode: typeof import('../core/security/src/hash')['argon2Encode']
@@ -137,27 +137,27 @@ declare global {
   const ask: typeof import('../core/ai/src/text')['ask']
   const assert: typeof import('../core/testing/src/index')['assert']
   const assetsPath: typeof import('../core/path/src/index')['assetsPath']
-  const asyncComputed: typeof import('../core/browser/src/utils/vendors')['asyncComputed']
+  const asyncComputed: typeof import('../core/browser/dist/index.js')['asyncComputed']
   const attempt: typeof import('../core/auth/src/authentication')['attempt']
   const auth: typeof import('../core/auth/src/index')['auth']
   const authPath: typeof import('../core/path/src/index')['authPath']
   const authToken: typeof import('../core/auth/src/authentication')['authToken']
-  const autoResetRef: typeof import('../core/browser/src/utils/vendors')['autoResetRef']
+  const autoResetRef: typeof import('../core/browser/dist/index.js')['autoResetRef']
   const base64Encode: typeof import('../core/security/src/hash')['base64Encode']
   const base64Verify: typeof import('../core/security/src/hash')['base64Verify']
   const basename: typeof import('../core/path/src/index')['basename']
-  const batchInvoke: typeof import('../core/browser/src/utils/function')['batchInvoke']
+  const batchInvoke: typeof import('../core/browser/dist/index.js')['batchInvoke']
   const bcryptEncode: typeof import('../core/security/src/hash')['bcryptEncode']
   const bcryptVerify: typeof import('../core/security/src/hash')['bcryptVerify']
   const beforeAll: typeof import('../core/testing/src/index')['beforeAll']
   const beforeEach: typeof import('../core/testing/src/index')['beforeEach']
-  const breakpointsAntDesign: typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']
-  const breakpointsBootstrapV5: typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']
-  const breakpointsMasterCss: typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']
-  const breakpointsQuasar: typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']
-  const breakpointsSematic: typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']
-  const breakpointsTailwind: typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']
-  const breakpointsVuetify: typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']
+  const breakpointsAntDesign: typeof import('../core/browser/dist/index.js')['breakpointsAntDesign']
+  const breakpointsBootstrapV5: typeof import('../core/browser/dist/index.js')['breakpointsBootstrapV5']
+  const breakpointsMasterCss: typeof import('../core/browser/dist/index.js')['breakpointsMasterCss']
+  const breakpointsQuasar: typeof import('../core/browser/dist/index.js')['breakpointsQuasar']
+  const breakpointsSematic: typeof import('../core/browser/dist/index.js')['breakpointsSematic']
+  const breakpointsTailwind: typeof import('../core/browser/dist/index.js')['breakpointsTailwind']
+  const breakpointsVuetify: typeof import('../core/browser/dist/index.js')['breakpointsVuetify']
   const browserPath: typeof import('../core/path/src/index')['browserPath']
   const buddy: typeof import('../core/index')['buddy']
   const buddyPath: typeof import('../core/path/src/index')['buddyPath']
@@ -166,25 +166,25 @@ declare global {
   const builtUserActionsPath: typeof import('../core/path/src/index')['builtUserActionsPath']
   const cache: typeof import('../core/index')['cache']
   const cachePath: typeof import('../core/path/src/index')['cachePath']
-  const calculateDelay: typeof import('../core/browser/src/utils/retry')['calculateDelay']
+  const calculateDelay: typeof import('../core/browser/dist/index.js')['calculateDelay']
   const calculatePagination: typeof import('../core/search-engine/src/index')['calculatePagination']
-  const carriageReturn: typeof import('../core/browser/src/utils/regex')['carriageReturn']
-  const caseInsensitive: typeof import('../core/browser/src/utils/regex')['caseInsensitive']
+  const carriageReturn: typeof import('../core/browser/dist/index.js')['carriageReturn']
+  const caseInsensitive: typeof import('../core/browser/dist/index.js')['caseInsensitive']
   const changelog: typeof import('../core/git/src/index')['changelog']
-  const char: typeof import('../core/browser/src/utils/regex')['char']
-  const charIn: typeof import('../core/browser/src/utils/regex')['charIn']
-  const charNotIn: typeof import('../core/browser/src/utils/regex')['charNotIn']
+  const char: typeof import('../core/browser/dist/index.js')['char']
+  const charIn: typeof import('../core/browser/dist/index.js')['charIn']
+  const charNotIn: typeof import('../core/browser/dist/index.js')['charNotIn']
   const chat: typeof import('../core/index')['chat']
   const chatPath: typeof import('../core/path/src/index')['chatPath']
   const checkPivotMigration: typeof import('../core/database/src/drivers/index')['checkPivotMigration']
   const checksumFromStream: typeof import('../core/storage/src/flystorage')['checksumFromStream']
-  const clamp: typeof import('../core/browser/src/utils/math')['clamp']
+  const clamp: typeof import('../core/browser/dist/index.js')['clamp']
   const cleanProject: typeof import('../core/utils/src/clean')['cleanProject']
   const clearUndefined: typeof import('../core/objects/src/index')['clearUndefined']
   const cli: typeof import('../core/index')['cli']
   const cliPath: typeof import('../core/path/src/index')['cliPath']
   const client: typeof import('../core/ai/src/utils/client-bedrock-runtime')['client']
-  const cloneFnJSON: typeof import('../core/browser/src/utils/vendors')['cloneFnJSON']
+  const cloneFnJSON: typeof import('../core/browser/dist/index.js')['cloneFnJSON']
   const closeReadable: typeof import('../core/storage/src/flystorage')['closeReadable']
   const cloud: typeof import('../core/index')['cloud']
   const cloudPath: typeof import('../core/path/src/index')['cloudPath']
@@ -196,16 +196,16 @@ declare global {
   const componentsPath: typeof import('../core/path/src/index')['componentsPath']
   const compress: typeof import('../core/storage/src/zip')['compress']
   const computed: typeof import('vue')['computed']
-  const computedAsync: typeof import('../core/browser/src/utils/vendors')['computedAsync']
-  const computedEager: typeof import('../core/browser/src/utils/vendors')['computedEager']
-  const computedInject: typeof import('../core/browser/src/utils/vendors')['computedInject']
+  const computedAsync: typeof import('../core/browser/dist/index.js')['computedAsync']
+  const computedEager: typeof import('../core/browser/dist/index.js')['computedEager']
+  const computedInject: typeof import('../core/browser/dist/index.js')['computedInject']
   const computedSignal: typeof import('../core/signals/src/index')['computedSignal']
-  const computedWithControl: typeof import('../core/browser/src/utils/vendors')['computedWithControl']
+  const computedWithControl: typeof import('../core/browser/dist/index.js')['computedWithControl']
   const config: typeof import('../core/index')['config']
   const configPath: typeof import('../core/path/src/index')['configPath']
   const consola: typeof import('../core/logging/src/index')['consola']
-  const controlledComputed: typeof import('../core/browser/src/utils/vendors')['controlledComputed']
-  const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
+  const controlledComputed: typeof import('../core/browser/dist/index.js')['controlledComputed']
+  const controlledRef: typeof import('../core/browser/dist/index.js')['controlledRef']
   const convert: typeof import('../core/utils/src/currency')['convert']
   const copy: typeof import('../core/storage/src/copy')['copy']
   const copyFile: typeof import('../core/storage/src/copy')['copyFile']
@@ -221,18 +221,18 @@ declare global {
   const createApp: typeof import('vue')['createApp']
   const createComponent: typeof import('../core/actions/src/index')['createComponent']
   const createConsola: typeof import('../core/logging/src/index')['createConsola']
-  const createControlledPromise: typeof import('../core/browser/src/utils/promise')['createControlledPromise']
+  const createControlledPromise: typeof import('../core/browser/dist/index.js')['createControlledPromise']
   const createDatabase: typeof import('../core/actions/src/index')['createDatabase']
-  const createEventHook: typeof import('../core/browser/src/utils/vendors')['createEventHook']
+  const createEventHook: typeof import('../core/browser/dist/index.js')['createEventHook']
   const createFactory: typeof import('../core/actions/src/index')['createFactory']
-  const createFetch: typeof import('../core/browser/src/utils/vendors')['createFetch']
+  const createFetch: typeof import('../core/browser/dist/index.js')['createFetch']
   const createFolder: typeof import('../core/storage/src/folders')['createFolder']
   const createFunction: typeof import('../core/actions/src/index')['createFunction']
-  const createGenericProjection: typeof import('../core/browser/src/utils/math')['createGenericProjection']
-  const createGlobalState: typeof import('../core/browser/src/utils/vendors')['createGlobalState']
-  const createHead: typeof import('../core/browser/src/utils/vendors')['createHead']
+  const createGenericProjection: typeof import('../core/browser/dist/index.js')['createGenericProjection']
+  const createGlobalState: typeof import('../core/browser/dist/index.js')['createGlobalState']
+  const createHead: typeof import('../core/browser/dist/index.js')['createHead']
   const createHostedZone: typeof import('../core/dns/src/drivers/aws')['createHostedZone']
-  const createInjectionState: typeof import('../core/browser/src/utils/vendors')['createInjectionState']
+  const createInjectionState: typeof import('../core/browser/dist/index.js')['createInjectionState']
   const createLanguage: typeof import('../core/actions/src/index')['createLanguage']
   const createLocalTunnel: typeof import('../core/tunnel/src/index')['createLocalTunnel']
   const createMigration: typeof import('../core/actions/src/index')['createMigration']
@@ -242,23 +242,23 @@ declare global {
   const createNotification: typeof import('../core/actions/src/index')['createNotification']
   const createPage: typeof import('../core/actions/src/index')['createPage']
   const createPinia: typeof import('pinia')['createPinia']
-  const createProjection: typeof import('../core/browser/src/utils/math')['createProjection']
-  const createPromiseLock: typeof import('../core/browser/src/utils/promise')['createPromiseLock']
-  const createReactiveFn: typeof import('../core/browser/src/utils/vendors')['createReactiveFn']
-  const createRegExp: typeof import('../core/browser/src/utils/regex')['createRegExp']
-  const createReusableTemplate: typeof import('../core/browser/src/utils/vendors')['createReusableTemplate']
-  const createSharedComposable: typeof import('../core/browser/src/utils/vendors')['createSharedComposable']
-  const createSingletonPromise: typeof import('../core/browser/src/utils/promise')['createSingletonPromise']
+  const createProjection: typeof import('../core/browser/dist/index.js')['createProjection']
+  const createPromiseLock: typeof import('../core/browser/dist/index.js')['createPromiseLock']
+  const createReactiveFn: typeof import('../core/browser/dist/index.js')['createReactiveFn']
+  const createRegExp: typeof import('../core/browser/dist/index.js')['createRegExp']
+  const createReusableTemplate: typeof import('../core/browser/dist/index.js')['createReusableTemplate']
+  const createSharedComposable: typeof import('../core/browser/dist/index.js')['createSharedComposable']
+  const createSingletonPromise: typeof import('../core/browser/dist/index.js')['createSingletonPromise']
   const createStacksTable: typeof import('../core/testing/src/dynamodb')['createStacksTable']
   const createStripeProduct: typeof import('../core/payments/src/billable/setup-products')['createStripeProduct']
   const createTableMigration: typeof import('../core/database/src/migrations')['createTableMigration']
-  const createTemplatePromise: typeof import('../core/browser/src/utils/vendors')['createTemplatePromise']
-  const createUnrefFn: typeof import('../core/browser/src/utils/vendors')['createUnrefFn']
+  const createTemplatePromise: typeof import('../core/browser/dist/index.js')['createTemplatePromise']
+  const createUnrefFn: typeof import('../core/browser/dist/index.js')['createUnrefFn']
   const currency: typeof import('../core/utils/src/currency')['currency']
   const currentPage: typeof import('../core/search-engine/src/index')['currentPage']
   const customElementsDataPath: typeof import('../core/path/src/index')['customElementsDataPath']
   const customRef: typeof import('vue')['customRef']
-  const customStorageEventName: typeof import('../core/browser/src/utils/vendors')['customStorageEventName']
+  const customStorageEventName: typeof import('../core/browser/dist/index.js')['customStorageEventName']
   const customValidate: typeof import('../core/validation/src/validator')['customValidate']
   const dashboardPath: typeof import('../core/path/src/index')['dashboardPath']
   const databasePath: typeof import('../core/path/src/index')['databasePath']
@@ -267,16 +267,16 @@ declare global {
   const db: typeof import('../core/database/src/utils')['db']
   const dbDialect: typeof import('../core/database/src/index')['dbDialect']
   const dd: typeof import('../core/logging/src/index')['dd']
-  const debounce: typeof import('../core/browser/src/utils/debounce')['debounce']
-  const debouncedRef: typeof import('../core/browser/src/utils/vendors')['debouncedRef']
-  const debouncedWatch: typeof import('../core/browser/src/utils/vendors')['debouncedWatch']
+  const debounce: typeof import('../core/browser/dist/index.js')['debounce']
+  const debouncedRef: typeof import('../core/browser/dist/index.js')['debouncedRef']
+  const debouncedWatch: typeof import('../core/browser/dist/index.js')['debouncedWatch']
   const decompress: typeof import('../core/storage/src/zip')['decompress']
   const decrypt: typeof import('../core/security/src/crypt')['decrypt']
   const deepMerge: typeof import('../core/objects/src/index')['deepMerge']
-  const defaultDocument: typeof import('../core/browser/src/utils/vendors')['defaultDocument']
-  const defaultLocation: typeof import('../core/browser/src/utils/vendors')['defaultLocation']
-  const defaultNavigator: typeof import('../core/browser/src/utils/vendors')['defaultNavigator']
-  const defaultWindow: typeof import('../core/browser/src/utils/vendors')['defaultWindow']
+  const defaultDocument: typeof import('../core/browser/dist/index.js')['defaultDocument']
+  const defaultLocation: typeof import('../core/browser/dist/index.js')['defaultLocation']
+  const defaultNavigator: typeof import('../core/browser/dist/index.js')['defaultNavigator']
+  const defaultWindow: typeof import('../core/browser/dist/index.js')['defaultWindow']
   const defineApp: typeof import('../core/utils/src/config')['defineApp']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineCache: typeof import('../core/utils/src/config')['defineCache']
@@ -307,7 +307,7 @@ declare global {
   const defineUi: typeof import('../core/utils/src/config')['defineUi']
   const deflateSync: typeof import('../core/storage/src/zip')['deflateSync']
   const del: typeof import('../core/storage/src/delete')['del']
-  const delay: typeof import('../core/browser/src/utils/sleep')['delay']
+  const delay: typeof import('../core/browser/dist/index.js')['delay']
   const deleteEmptyFolder: typeof import('../core/storage/src/delete')['deleteEmptyFolder']
   const deleteEmptyFolders: typeof import('../core/storage/src/delete')['deleteEmptyFolders']
   const deleteExistingModelNameTypes: typeof import('../core/orm/src/utils')['deleteExistingModelNameTypes']
@@ -331,7 +331,7 @@ declare global {
   const determineDebugLevel: typeof import('../core/utils/src/helpers')['determineDebugLevel']
   const determineResetPreset: typeof import('../core/utils/src/helpers')['determineResetPreset']
   const developmentPath: typeof import('../core/path/src/index')['developmentPath']
-  const digit: typeof import('../core/browser/src/utils/regex')['digit']
+  const digit: typeof import('../core/browser/dist/index.js')['digit']
   const dirname: typeof import('../core/path/src/index')['dirname']
   const dispatch: typeof import('../core/events/src/index')['dispatch']
   const dnsPath: typeof import('../core/path/src/index')['dnsPath']
@@ -341,11 +341,11 @@ declare global {
   const doesExist: typeof import('../core/storage/src/files')['doesExist']
   const doesFolderExist: typeof import('../core/storage/src/folders')['doesFolderExist']
   const doesNotExist: typeof import('../core/storage/src/files')['doesNotExist']
-  const dotAll: typeof import('../core/browser/src/utils/regex')['dotAll']
+  const dotAll: typeof import('../core/browser/dist/index.js')['dotAll']
   const dropSqliteTables: typeof import('../core/database/src/drivers/sqlite')['dropSqliteTables']
   const dump: typeof import('../core/logging/src/index')['dump']
   const dumpYaml: typeof import('../core/utils/src/helpers')['dumpYaml']
-  const eagerComputed: typeof import('../core/browser/src/utils/vendors')['eagerComputed']
+  const eagerComputed: typeof import('../core/browser/dist/index.js')['eagerComputed']
   const echo: typeof import('../core/logging/src/index')['echo']
   const effect: typeof import('../core/signals/src/index')['effect']
   const effectScope: typeof import('vue')['effectScope']
@@ -367,14 +367,14 @@ declare global {
   const eslintPluginPath: typeof import('../core/path/src/index')['eslintPluginPath']
   const events: typeof import('../core/events/src/index')['events']
   const eventsPath: typeof import('../core/path/src/index')['eventsPath']
-  const exactly: typeof import('../core/browser/src/utils/regex')['exactly']
+  const exactly: typeof import('../core/browser/dist/index.js')['exactly']
   const examplesPath: typeof import('../core/path/src/index')['examplesPath']
-  const executeTransition: typeof import('../core/browser/src/utils/vendors')['executeTransition']
+  const executeTransition: typeof import('../core/browser/dist/index.js')['executeTransition']
   const exists: typeof import('../core/storage/src/fs')['exists']
   const existsSync: typeof import('../core/storage/src/fs')['existsSync']
   const expect: typeof import('../core/testing/src/index')['expect']
   const expo: typeof import('../core/push/src/drivers/index')['expo']
-  const extendRef: typeof import('../core/browser/src/utils/vendors')['extendRef']
+  const extendRef: typeof import('../core/browser/dist/index.js')['extendRef']
   const extname: typeof import('../core/path/src/index')['extname']
   const extractAttributesFromModel: typeof import('../core/orm/src/utils')['extractAttributesFromModel']
   const extractDefaultRequest: typeof import('../core/router/src/utils')['extractDefaultRequest']
@@ -408,7 +408,7 @@ declare global {
   const first: typeof import('../core/orm/src/generated/User')['first']
   const folders: typeof import('../core/storage/src/folders')['folders']
   const format: typeof import('../core/path/src/index')['format']
-  const formatTimeAgo: typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']
+  const formatTimeAgo: typeof import('../core/browser/dist/index.js')['formatTimeAgo']
   const frameworkCloudPath: typeof import('../core/path/src/index')['frameworkCloudPath']
   const frameworkPath: typeof import('../core/path/src/index')['frameworkPath']
   const frameworkVersion: typeof import('../core/utils/src/helpers')['frameworkVersion']
@@ -472,7 +472,7 @@ declare global {
   const getRelationCount: typeof import('../core/orm/src/utils')['getRelationCount']
   const getRelationType: typeof import('../core/orm/src/utils')['getRelationType']
   const getRelations: typeof import('../core/orm/src/utils')['getRelations']
-  const getSSRHandler: typeof import('../core/browser/src/utils/vendors')['getSSRHandler']
+  const getSSRHandler: typeof import('../core/browser/dist/index.js')['getSSRHandler']
   const getTableName: typeof import('../core/orm/src/utils')['getTableName']
   const getTypeName: typeof import('../core/types/src/helpers')['getTypeName']
   const getUserPasskey: typeof import('../core/auth/src/passkey')['getUserPasskey']
@@ -480,7 +480,7 @@ declare global {
   const gitPath: typeof import('../core/path/src/index')['gitPath']
   const glob: typeof import('../core/storage/src/glob')['glob']
   const globSync: typeof import('../core/storage/src/glob')['globSync']
-  const global: typeof import('../core/browser/src/utils/regex')['global']
+  const global: typeof import('../core/browser/dist/index.js')['global']
   const goToNextPage: typeof import('../core/search-engine/src/index')['goToNextPage']
   const goToPage: typeof import('../core/search-engine/src/index')['goToPage']
   const goToPrevPage: typeof import('../core/search-engine/src/index')['goToPrevPage']
@@ -513,14 +513,14 @@ declare global {
   const helpers: typeof import('../core/storage/src/helpers')['helpers']
   const hits: typeof import('../core/search-engine/src/index')['hits']
   const homeDir: typeof import('../core/path/src/index')['homeDir']
-  const ignorableWatch: typeof import('../core/browser/src/utils/vendors')['ignorableWatch']
+  const ignorableWatch: typeof import('../core/browser/dist/index.js')['ignorableWatch']
   const increment: typeof import('../../../resources/functions/counter')['increment']
   const index: typeof import('../core/search-engine/src/index')['index']
   const inflateSync: typeof import('../core/storage/src/zip')['inflateSync']
   const initProject: typeof import('../core/utils/src/helpers')['initProject']
   const inject: typeof import('vue')['inject']
   const injectHead: typeof import('@unhead/vue')['injectHead']
-  const injectLocal: typeof import('../core/browser/src/utils/vendors')['injectLocal']
+  const injectLocal: typeof import('../core/browser/dist/index.js')['injectLocal']
   const installIfVersionMismatch: typeof import('../core/utils/src/helpers')['installIfVersionMismatch']
   const intro: typeof import('../core/build/src/index')['intro']
   const invoke: typeof import('../core/actions/src/generate/index')['invoke']
@@ -536,7 +536,7 @@ declare global {
   const isDate: typeof import('../core/validation/src/is')['isDate']
   const isDeepEqual: typeof import('../core/utils/src/equal')['isDeepEqual']
   const isDef: typeof import('../core/validation/src/is')['isDef']
-  const isDefined: typeof import('../core/browser/src/utils/vendors')['isDefined']
+  const isDefined: typeof import('../core/browser/dist/index.js')['isDefined']
   const isDir: typeof import('../core/storage/src/folders')['isDir']
   const isDirectory: typeof import('../core/storage/src/flystorage')['isDirectory']
   const isDirectoryEmpty: typeof import('../core/storage/src/delete')['isDirectoryEmpty']
@@ -574,7 +574,7 @@ declare global {
   const isSet: typeof import('../core/validation/src/is')['isSet']
   const isString: typeof import('../core/validation/src/is')['isString']
   const isSymbol: typeof import('../core/validation/src/is')['isSymbol']
-  const isTruthy: typeof import('../core/browser/src/utils/guards')['isTruthy']
+  const isTruthy: typeof import('../core/browser/dist/index.js')['isTruthy']
   const isUndefined: typeof import('../core/validation/src/is')['isUndefined']
   const isWindow: typeof import('../core/validation/src/is')['isWindow']
   const isZero: typeof import('../core/utils/src/currency')['isZero']
@@ -591,11 +591,11 @@ declare global {
   const layoutsPath: typeof import('../core/path/src/index')['layoutsPath']
   const lessThan: typeof import('../core/utils/src/currency')['lessThan']
   const lessThanOrEqual: typeof import('../core/utils/src/currency')['lessThanOrEqual']
-  const letter: typeof import('../core/browser/src/utils/regex')['letter']
+  const letter: typeof import('../core/browser/dist/index.js')['letter']
   const libraryEntryPath: typeof import('../core/path/src/index')['libraryEntryPath']
   const libsEntriesPath: typeof import('../core/path/src/index')['libsEntriesPath']
   const libsPath: typeof import('../core/path/src/index')['libsPath']
-  const linefeed: typeof import('../core/browser/src/utils/regex')['linefeed']
+  const linefeed: typeof import('../core/browser/dist/index.js')['linefeed']
   const lintPath: typeof import('../core/path/src/index')['lintPath']
   const listFoundationModels: typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']
   const listRoutes: typeof import('../core/router/src/utils')['listRoutes']
@@ -608,14 +608,14 @@ declare global {
   const logLevel: typeof import('../core/logging/src/index')['logLevel']
   const logger: typeof import('../core/logging/src/index')['logger']
   const loggingPath: typeof import('../core/path/src/index')['loggingPath']
-  const logicNot: typeof import('../core/browser/src/utils/math')['logicNot']
-  const logicOr: typeof import('../core/browser/src/utils/math')['logicOr']
+  const logicNot: typeof import('../core/browser/dist/index.js')['logicNot']
+  const logicOr: typeof import('../core/browser/dist/index.js')['logicOr']
   const logsPath: typeof import('../core/path/src/index')['logsPath']
-  const loop: typeof import('../core/browser/src/utils/base')['loop']
+  const loop: typeof import('../core/browser/dist/index.js')['loop']
   const makeAction: typeof import('../core/actions/src/index')['makeAction']
   const makeComponent: typeof import('../core/actions/src/index')['makeComponent']
   const makeDatabase: typeof import('../core/actions/src/index')['makeDatabase']
-  const makeDestructurable: typeof import('../core/browser/src/utils/vendors')['makeDestructurable']
+  const makeDestructurable: typeof import('../core/browser/dist/index.js')['makeDestructurable']
   const makeFunction: typeof import('../core/actions/src/index')['makeFunction']
   const makeHash: typeof import('../core/security/src/hash')['makeHash']
   const makeLanguage: typeof import('../core/actions/src/index')['makeLanguage']
@@ -631,14 +631,14 @@ declare global {
   const manageSubscription: typeof import('../core/payments/src/billable/subscription')['manageSubscription']
   const mapActions: typeof import('pinia')['mapActions']
   const mapFieldTypeToColumnType: typeof import('../core/database/src/drivers/index')['mapFieldTypeToColumnType']
-  const mapGamepadToXbox360Controller: typeof import('../core/browser/src/utils/vendors')['mapGamepadToXbox360Controller']
+  const mapGamepadToXbox360Controller: typeof import('../core/browser/dist/index.js')['mapGamepadToXbox360Controller']
   const mapGetters: typeof import('pinia')['mapGetters']
   const mapState: typeof import('pinia')['mapState']
   const mapStores: typeof import('pinia')['mapStores']
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
   const maximum: typeof import('../core/utils/src/currency')['maximum']
-  const maybe: typeof import('../core/browser/src/utils/regex')['maybe']
+  const maybe: typeof import('../core/browser/dist/index.js')['maybe']
   const md5Encode: typeof import('../core/security/src/hash')['md5Encode']
   const middlewares: typeof import('../core/router/src/middleware')['middlewares']
   const migrator: typeof import('../core/database/src/migrations')['migrator']
@@ -650,19 +650,19 @@ declare global {
   const modelsPath: typeof import('../core/path/src/index')['modelsPath']
   const modulesPath: typeof import('../core/path/src/index')['modulesPath']
   const money: typeof import('../core/utils/src/currency')['money']
-  const multiline: typeof import('../core/browser/src/utils/regex')['multiline']
+  const multiline: typeof import('../core/browser/dist/index.js')['multiline']
   const multiply: typeof import('../core/utils/src/currency')['multiply']
   const nexmo: typeof import('../core/sms/src/drivers/index')['nexmo']
   const nextTick: typeof import('vue')['nextTick']
-  const noNull: typeof import('../core/browser/src/utils/guards')['noNull']
+  const noNull: typeof import('../core/browser/dist/index.js')['noNull']
   const normalize: typeof import('../core/path/src/index')['normalize']
   const normalizeExpiryToDate: typeof import('../core/storage/src/flystorage')['normalizeExpiryToDate']
   const normalizeExpiryToMilliseconds: typeof import('../core/storage/src/flystorage')['normalizeExpiryToMilliseconds']
   const normalizeScale: typeof import('../core/utils/src/currency')['normalizeScale']
   const normalizeString: typeof import('../core/path/src/index')['normalizeString']
-  const not: typeof import('../core/browser/src/utils/regex')['not']
-  const notNullish: typeof import('../core/browser/src/utils/guards')['notNullish']
-  const notUndefined: typeof import('../core/browser/src/utils/guards')['notUndefined']
+  const not: typeof import('../core/browser/dist/index.js')['not']
+  const notNullish: typeof import('../core/browser/dist/index.js')['notNullish']
+  const notUndefined: typeof import('../core/browser/dist/index.js')['notUndefined']
   const notification: typeof import('../core/notifications/src/index')['notification']
   const notificationsPath: typeof import('../core/path/src/index')['notificationsPath']
   const now: typeof import('../core/database/src/utils')['now']
@@ -681,28 +681,28 @@ declare global {
   const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
   const onBeforeUpdate: typeof import('vue')['onBeforeUpdate']
-  const onClickOutside: typeof import('../core/browser/src/utils/vendors')['onClickOutside']
+  const onClickOutside: typeof import('../core/browser/dist/index.js')['onClickOutside']
   const onDeactivated: typeof import('vue')['onDeactivated']
   const onErrorCaptured: typeof import('vue')['onErrorCaptured']
-  const onKeyDown: typeof import('../core/browser/src/utils/vendors')['onKeyDown']
-  const onKeyPressed: typeof import('../core/browser/src/utils/vendors')['onKeyPressed']
-  const onKeyStroke: typeof import('../core/browser/src/utils/vendors')['onKeyStroke']
-  const onKeyUp: typeof import('../core/browser/src/utils/vendors')['onKeyUp']
-  const onLongPress: typeof import('../core/browser/src/utils/vendors')['onLongPress']
+  const onKeyDown: typeof import('../core/browser/dist/index.js')['onKeyDown']
+  const onKeyPressed: typeof import('../core/browser/dist/index.js')['onKeyPressed']
+  const onKeyStroke: typeof import('../core/browser/dist/index.js')['onKeyStroke']
+  const onKeyUp: typeof import('../core/browser/dist/index.js')['onKeyUp']
+  const onLongPress: typeof import('../core/browser/dist/index.js')['onLongPress']
   const onMounted: typeof import('vue')['onMounted']
   const onRenderTracked: typeof import('vue')['onRenderTracked']
   const onRenderTriggered: typeof import('vue')['onRenderTriggered']
   const onScopeDispose: typeof import('vue')['onScopeDispose']
   const onServerPrefetch: typeof import('vue')['onServerPrefetch']
-  const onStartTyping: typeof import('../core/browser/src/utils/vendors')['onStartTyping']
+  const onStartTyping: typeof import('../core/browser/dist/index.js')['onStartTyping']
   const onUnmounted: typeof import('vue')['onUnmounted']
   const onUpdated: typeof import('vue')['onUpdated']
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
   const onboardingPath: typeof import('../core/path/src/index')['onboardingPath']
-  const oneOrMore: typeof import('../core/browser/src/utils/regex')['oneOrMore']
+  const oneOrMore: typeof import('../core/browser/dist/index.js')['oneOrMore']
   const openShell: typeof import('../core/desktop/src/index')['openShell']
   const openaiWip: typeof import('../core/ai/src/drivers/openai')['openaiWip']
-  const or: typeof import('../core/browser/src/utils/math')['or']
+  const or: typeof import('../core/browser/dist/index.js')['or']
   const originRequestFunctionHash: typeof import('../core/utils/src/hash')['originRequestFunctionHash']
   const ormPath: typeof import('../core/path/src/index')['ormPath']
   const outro: typeof import('../core/build/src/index')['outro']
@@ -714,7 +714,7 @@ declare global {
   const parser: typeof import('../core/build/src/utils')['parser']
   const path: typeof import('../core/path/src/index')['path']
   const pathPath: typeof import('../core/path/src/index')['pathPath']
-  const pausableWatch: typeof import('../core/browser/src/utils/vendors')['pausableWatch']
+  const pausableWatch: typeof import('../core/browser/dist/index.js')['pausableWatch']
   const paymentsPath: typeof import('../core/path/src/index')['paymentsPath']
   const perPage: typeof import('../core/search-engine/src/index')['perPage']
   const playwrightConfig: typeof import('../core/playwright.config')['default']
@@ -728,7 +728,7 @@ declare global {
   const projectPath: typeof import('../core/path/src/index')['projectPath']
   const projectStoragePath: typeof import('../core/path/src/paths')['projectStoragePath']
   const provide: typeof import('vue')['provide']
-  const provideLocal: typeof import('../core/browser/src/utils/vendors')['provideLocal']
+  const provideLocal: typeof import('../core/browser/dist/index.js')['provideLocal']
   const publicPath: typeof import('../core/path/src/index')['publicPath']
   const pushPath: typeof import('../core/path/src/index')['pushPath']
   const put: typeof import('../core/storage/src/files')['put']
@@ -736,34 +736,34 @@ declare global {
   const queryBuilderPath: typeof import('../core/path/src/index')['queryBuilderPath']
   const queue: typeof import('../core/index')['queue']
   const queuePath: typeof import('../core/path/src/index')['queuePath']
-  const rand: typeof import('../core/browser/src/utils/math')['rand']
-  const reactify: typeof import('../core/browser/src/utils/vendors')['reactify']
-  const reactifyObject: typeof import('../core/browser/src/utils/vendors')['reactifyObject']
+  const rand: typeof import('../core/browser/dist/index.js')['rand']
+  const reactify: typeof import('../core/browser/dist/index.js')['reactify']
+  const reactifyObject: typeof import('../core/browser/dist/index.js')['reactifyObject']
   const reactive: typeof import('vue')['reactive']
-  const reactiveComputed: typeof import('../core/browser/src/utils/vendors')['reactiveComputed']
-  const reactiveOmit: typeof import('../core/browser/src/utils/vendors')['reactiveOmit']
-  const reactivePick: typeof import('../core/browser/src/utils/vendors')['reactivePick']
+  const reactiveComputed: typeof import('../core/browser/dist/index.js')['reactiveComputed']
+  const reactiveOmit: typeof import('../core/browser/dist/index.js')['reactiveOmit']
+  const reactivePick: typeof import('../core/browser/dist/index.js')['reactivePick']
   const readFileSync: typeof import('../core/storage/src/fs')['readFileSync']
   const readJsonFile: typeof import('../core/storage/src/files')['readJsonFile']
   const readPackageJson: typeof import('../core/storage/src/files')['readPackageJson']
   const readTextFile: typeof import('../core/storage/src/files')['readTextFile']
-  const readableSize: typeof import('../core/browser/src/utils/vendors')['readableSize']
+  const readableSize: typeof import('../core/browser/dist/index.js')['readableSize']
   const readableToString: typeof import('../core/storage/src/flystorage')['readableToString']
   const readableToUint8Array: typeof import('../core/storage/src/flystorage')['readableToUint8Array']
   const readonly: typeof import('vue')['readonly']
   const realtimePath: typeof import('../core/path/src/index')['realtimePath']
   const realtimeWip: typeof import('../core/realtime/src/drivers/index')['realtimeWip']
   const ref: typeof import('vue')['ref']
-  const refAutoReset: typeof import('../core/browser/src/utils/vendors')['refAutoReset']
-  const refDebounced: typeof import('../core/browser/src/utils/vendors')['refDebounced']
-  const refDefault: typeof import('../core/browser/src/utils/vendors')['refDefault']
-  const refThrottled: typeof import('../core/browser/src/utils/vendors')['refThrottled']
-  const refWithControl: typeof import('../core/browser/src/utils/vendors')['refWithControl']
+  const refAutoReset: typeof import('../core/browser/dist/index.js')['refAutoReset']
+  const refDebounced: typeof import('../core/browser/dist/index.js')['refDebounced']
+  const refDefault: typeof import('../core/browser/dist/index.js')['refDefault']
+  const refThrottled: typeof import('../core/browser/dist/index.js')['refThrottled']
+  const refWithControl: typeof import('../core/browser/dist/index.js')['refWithControl']
   const refreshDatabase: typeof import('../core/testing/src/database')['refreshDatabase']
   const relative: typeof import('../core/path/src/index')['relative']
   const relativeActionsPath: typeof import('../core/path/src/index')['relativeActionsPath']
   const remove: typeof import('../core/orm/src/generated/User')['remove']
-  const renderHeadToString: typeof import('../core/browser/src/utils/vendors')['renderHeadToString']
+  const renderHeadToString: typeof import('../core/browser/dist/index.js')['renderHeadToString']
   const replPath: typeof import('../core/path/src/index')['replPath']
   const reportError: typeof import('../core/validation/src/reporter')['reportError']
   const request: typeof import('../core/router/src/request')['request']
@@ -776,11 +776,11 @@ declare global {
   const resolve: typeof import('../core/path/src/index')['resolve']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveMimeType: typeof import('../core/storage/src/flystorage')['resolveMimeType']
-  const resolveRef: typeof import('../core/browser/src/utils/vendors')['resolveRef']
-  const resolveUnref: typeof import('../core/browser/src/utils/vendors')['resolveUnref']
+  const resolveRef: typeof import('../core/browser/dist/index.js')['resolveRef']
+  const resolveUnref: typeof import('../core/browser/dist/index.js')['resolveUnref']
   const resourcesPath: typeof import('../core/path/src/index')['resourcesPath']
   const results: typeof import('../core/search-engine/src/index')['results']
-  const retry: typeof import('../core/browser/src/utils/retry')['retry']
+  const retry: typeof import('../core/browser/dist/index.js')['retry']
   const rimraf: typeof import('../core/utils/src/delete')['rimraf']
   const root: typeof import('../core/signals/src/index')['root']
   const route: typeof import('../core/router/src/router')['route']
@@ -829,7 +829,7 @@ declare global {
   const setCurrentRegistrationOptions: typeof import('../core/auth/src/passkey')['setCurrentRegistrationOptions']
   const setEnvValue: typeof import('../core/utils/src/helpers')['setEnvValue']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
-  const setSSRHandler: typeof import('../core/browser/src/utils/vendors')['setSSRHandler']
+  const setSSRHandler: typeof import('../core/browser/dist/index.js')['setSSRHandler']
   const setSystemTime: typeof import('../core/testing/src/index')['setSystemTime']
   const setTotalHits: typeof import('../core/search-engine/src/index')['setTotalHits']
   const settingsPath: typeof import('../core/path/src/index')['settingsPath']
@@ -840,7 +840,7 @@ declare global {
   const shallowRef: typeof import('vue')['shallowRef']
   const shellPath: typeof import('../core/path/src/index')['shellPath']
   const signal: typeof import('../core/signals/src/index')['signal']
-  const sleep: typeof import('../core/browser/src/utils/sleep')['sleep']
+  const sleep: typeof import('../core/browser/dist/index.js')['sleep']
   const slugPath: typeof import('../core/path/src/index')['slugPath']
   const sms77: typeof import('../core/sms/src/drivers/index')['sms77']
   const smsPath: typeof import('../core/path/src/index')['smsPath']
@@ -852,7 +852,7 @@ declare global {
   const src: typeof import('../core/events/src/index')['default']
   const stacks: typeof import('../core/build/src/index')['stacks']
   const stacksPath: typeof import('../core/path/src/index')['stacksPath']
-  const sticky: typeof import('../core/browser/src/utils/regex')['sticky']
+  const sticky: typeof import('../core/browser/dist/index.js')['sticky']
   const storage: typeof import('../core/storage/src/index')['storage']
   const storagePath: typeof import('../core/path/src/index')['storagePath']
   const storeToRefs: typeof import('pinia')['storeToRefs']
@@ -863,21 +863,21 @@ declare global {
   const stripeEsmNode: typeof import('../../../node_modules/stripe/esm/stripe.esm.node.js')['default']
   const subtract: typeof import('../core/utils/src/currency')['subtract']
   const summarize: typeof import('../core/ai/src/text')['summarize']
-  const syncRef: typeof import('../core/browser/src/utils/vendors')['syncRef']
-  const syncRefs: typeof import('../core/browser/src/utils/vendors')['syncRefs']
-  const tab: typeof import('../core/browser/src/utils/regex')['tab']
-  const tap: typeof import('../core/browser/src/utils/function')['tap']
+  const syncRef: typeof import('../core/browser/dist/index.js')['syncRef']
+  const syncRefs: typeof import('../core/browser/dist/index.js')['syncRefs']
+  const tab: typeof import('../core/browser/dist/index.js')['tab']
+  const tap: typeof import('../core/browser/dist/index.js')['tap']
   const team: typeof import('../core/auth/src/authentication')['team']
   const telnyx: typeof import('../core/sms/src/drivers/index')['telnyx']
-  const templateRef: typeof import('../core/browser/src/utils/vendors')['templateRef']
+  const templateRef: typeof import('../core/browser/dist/index.js')['templateRef']
   const termii: typeof import('../core/sms/src/drivers/index')['termii']
   const test: typeof import('../core/testing/src/index')['test']
   const testingPath: typeof import('../core/path/src/index')['testingPath']
   const testingThis: typeof import('../core/desktop/src/system-tray')['testingThis']
   const testsPath: typeof import('../core/path/src/index')['testsPath']
-  const throttle: typeof import('../core/browser/src/utils/throttle')['throttle']
-  const throttledRef: typeof import('../core/browser/src/utils/vendors')['throttledRef']
-  const throttledWatch: typeof import('../core/browser/src/utils/vendors')['throttledWatch']
+  const throttle: typeof import('../core/browser/dist/index.js')['throttle']
+  const throttledRef: typeof import('../core/browser/dist/index.js')['throttledRef']
+  const throttledWatch: typeof import('../core/browser/dist/index.js')['throttledWatch']
   const tick: typeof import('../core/signals/src/index')['tick']
   const timeout: typeof import('../core/scheduler/src/schedule')['timeout']
   const tinker: typeof import('../core/repl/src/index')['tinker']
@@ -885,12 +885,12 @@ declare global {
   const toDecimal: typeof import('../core/utils/src/currency')['toDecimal']
   const toNamespacedPath: typeof import('../core/path/src/index')['toNamespacedPath']
   const toRaw: typeof import('vue')['toRaw']
-  const toReactive: typeof import('../core/browser/src/utils/vendors')['toReactive']
+  const toReactive: typeof import('../core/browser/dist/index.js')['toReactive']
   const toReadable: typeof import('../core/storage/src/flystorage')['toReadable']
   const toRef: typeof import('vue')['toRef']
   const toRefs: typeof import('vue')['toRefs']
   const toSnapshot: typeof import('../core/utils/src/currency')['toSnapshot']
-  const toString: typeof import('../core/browser/src/utils/base')['toString']
+  const toString: typeof import('../core/browser/dist/index.js')['toString']
   const toUnits: typeof import('../core/utils/src/currency')['toUnits']
   const toValue: typeof import('vue')['toValue']
   const toggleDark: typeof import('../../../resources/functions/dark')['toggleDark']
@@ -901,102 +901,102 @@ declare global {
   const trimScale: typeof import('../core/utils/src/currency')['trimScale']
   const truncateMysql: typeof import('../core/testing/src/database')['truncateMysql']
   const truncateSqlite: typeof import('../core/testing/src/database')['truncateSqlite']
-  const tryOnBeforeMount: typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']
-  const tryOnBeforeUnmount: typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']
-  const tryOnMounted: typeof import('../core/browser/src/utils/vendors')['tryOnMounted']
-  const tryOnScopeDispose: typeof import('../core/browser/src/utils/vendors')['tryOnScopeDispose']
-  const tryOnUnmounted: typeof import('../core/browser/src/utils/vendors')['tryOnUnmounted']
+  const tryOnBeforeMount: typeof import('../core/browser/dist/index.js')['tryOnBeforeMount']
+  const tryOnBeforeUnmount: typeof import('../core/browser/dist/index.js')['tryOnBeforeUnmount']
+  const tryOnMounted: typeof import('../core/browser/dist/index.js')['tryOnMounted']
+  const tryOnScopeDispose: typeof import('../core/browser/dist/index.js')['tryOnScopeDispose']
+  const tryOnUnmounted: typeof import('../core/browser/dist/index.js')['tryOnUnmounted']
   const twilio: typeof import('../core/sms/src/drivers/index')['twilio']
   const typesPath: typeof import('../core/path/src/index')['typesPath']
   const ui: typeof import('../core/ui/src/index')['ui']
   const uiPath: typeof import('../core/path/src/index')['uiPath']
   const unarchive: typeof import('../core/storage/src/zip')['unarchive']
-  const unicode: typeof import('../core/browser/src/utils/regex')['unicode']
+  const unicode: typeof import('../core/browser/dist/index.js')['unicode']
   const unit: typeof import('../core/testing/src/index')['unit']
   const unref: typeof import('vue')['unref']
-  const unrefElement: typeof import('../core/browser/src/utils/vendors')['unrefElement']
-  const until: typeof import('../core/browser/src/utils/vendors')['until']
+  const unrefElement: typeof import('../core/browser/dist/index.js')['unrefElement']
+  const until: typeof import('../core/browser/dist/index.js')['until']
   const unzip: typeof import('../core/storage/src/zip')['unzip']
   const update: typeof import('../core/orm/src/generated/User')['update']
   const updateConfigFile: typeof import('../core/storage/src/helpers')['updateConfigFile']
   const updateNameservers: typeof import('../core/dns/src/drivers/aws')['updateNameservers']
-  const useAbs: typeof import('../core/browser/src/utils/math')['useAbs']
-  const useActiveElement: typeof import('../core/browser/src/utils/vendors')['useActiveElement']
-  const useAnimate: typeof import('../core/browser/src/utils/vendors')['useAnimate']
-  const useArrayDifference: typeof import('../core/browser/src/utils/vendors')['useArrayDifference']
-  const useArrayEvery: typeof import('../core/browser/src/utils/vendors')['useArrayEvery']
-  const useArrayFilter: typeof import('../core/browser/src/utils/vendors')['useArrayFilter']
-  const useArrayFind: typeof import('../core/browser/src/utils/vendors')['useArrayFind']
-  const useArrayFindIndex: typeof import('../core/browser/src/utils/vendors')['useArrayFindIndex']
+  const useAbs: typeof import('../core/browser/dist/index.js')['useAbs']
+  const useActiveElement: typeof import('../core/browser/dist/index.js')['useActiveElement']
+  const useAnimate: typeof import('../core/browser/dist/index.js')['useAnimate']
+  const useArrayDifference: typeof import('../core/browser/dist/index.js')['useArrayDifference']
+  const useArrayEvery: typeof import('../core/browser/dist/index.js')['useArrayEvery']
+  const useArrayFilter: typeof import('../core/browser/dist/index.js')['useArrayFilter']
+  const useArrayFind: typeof import('../core/browser/dist/index.js')['useArrayFind']
+  const useArrayFindIndex: typeof import('../core/browser/dist/index.js')['useArrayFindIndex']
   const useArrayFindLast: typeof import('@vueuse/core')['useArrayFindLast']
-  const useArrayIncludes: typeof import('../core/browser/src/utils/vendors')['useArrayIncludes']
+  const useArrayIncludes: typeof import('../core/browser/dist/index.js')['useArrayIncludes']
   const useArrayJoin: typeof import('@vueuse/core')['useArrayJoin']
-  const useArrayMap: typeof import('../core/browser/src/utils/vendors')['useArrayMap']
-  const useArrayReduce: typeof import('../core/browser/src/utils/vendors')['useArrayReduce']
-  const useArraySome: typeof import('../core/browser/src/utils/vendors')['useArraySome']
-  const useArrayUnique: typeof import('../core/browser/src/utils/vendors')['useArrayUnique']
-  const useAsyncQueue: typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']
-  const useAsyncState: typeof import('../core/browser/src/utils/vendors')['useAsyncState']
+  const useArrayMap: typeof import('../core/browser/dist/index.js')['useArrayMap']
+  const useArrayReduce: typeof import('../core/browser/dist/index.js')['useArrayReduce']
+  const useArraySome: typeof import('../core/browser/dist/index.js')['useArraySome']
+  const useArrayUnique: typeof import('../core/browser/dist/index.js')['useArrayUnique']
+  const useAsyncQueue: typeof import('../core/browser/dist/index.js')['useAsyncQueue']
+  const useAsyncState: typeof import('../core/browser/dist/index.js')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
-  const useAverage: typeof import('../core/browser/src/utils/math')['useAverage']
-  const useBase64: typeof import('../core/browser/src/utils/vendors')['useBase64']
-  const useBattery: typeof import('../core/browser/src/utils/vendors')['useBattery']
-  const useBluetooth: typeof import('../core/browser/src/utils/vendors')['useBluetooth']
-  const useBreakpoints: typeof import('../core/browser/src/utils/vendors')['useBreakpoints']
-  const useBroadcastChannel: typeof import('../core/browser/src/utils/vendors')['useBroadcastChannel']
-  const useBrowserLocation: typeof import('../core/browser/src/utils/vendors')['useBrowserLocation']
-  const useCached: typeof import('../core/browser/src/utils/vendors')['useCached']
-  const useCeil: typeof import('../core/browser/src/utils/math')['useCeil']
+  const useAverage: typeof import('../core/browser/dist/index.js')['useAverage']
+  const useBase64: typeof import('../core/browser/dist/index.js')['useBase64']
+  const useBattery: typeof import('../core/browser/dist/index.js')['useBattery']
+  const useBluetooth: typeof import('../core/browser/dist/index.js')['useBluetooth']
+  const useBreakpoints: typeof import('../core/browser/dist/index.js')['useBreakpoints']
+  const useBroadcastChannel: typeof import('../core/browser/dist/index.js')['useBroadcastChannel']
+  const useBrowserLocation: typeof import('../core/browser/dist/index.js')['useBrowserLocation']
+  const useCached: typeof import('../core/browser/dist/index.js')['useCached']
+  const useCeil: typeof import('../core/browser/dist/index.js')['useCeil']
   const useChat: typeof import('../core/notifications/src/index')['useChat']
-  const useClamp: typeof import('../core/browser/src/utils/math')['useClamp']
-  const useClipboard: typeof import('../core/browser/src/utils/vendors')['useClipboard']
-  const useClipboardItems: typeof import('../core/browser/src/utils/vendors')['useClipboardItems']
-  const useCloned: typeof import('../core/browser/src/utils/vendors')['useCloned']
-  const useColorMode: typeof import('../core/browser/src/utils/vendors')['useColorMode']
-  const useConfirmDialog: typeof import('../core/browser/src/utils/vendors')['useConfirmDialog']
-  const useCounter: typeof import('../core/browser/src/utils/vendors')['useCounter']
+  const useClamp: typeof import('../core/browser/dist/index.js')['useClamp']
+  const useClipboard: typeof import('../core/browser/dist/index.js')['useClipboard']
+  const useClipboardItems: typeof import('../core/browser/dist/index.js')['useClipboardItems']
+  const useCloned: typeof import('../core/browser/dist/index.js')['useCloned']
+  const useColorMode: typeof import('../core/browser/dist/index.js')['useColorMode']
+  const useConfirmDialog: typeof import('../core/browser/dist/index.js')['useConfirmDialog']
+  const useCounter: typeof import('../core/browser/dist/index.js')['useCounter']
   const useCssModule: typeof import('vue')['useCssModule']
-  const useCssVar: typeof import('../core/browser/src/utils/vendors')['useCssVar']
+  const useCssVar: typeof import('../core/browser/dist/index.js')['useCssVar']
   const useCssVars: typeof import('vue')['useCssVars']
-  const useCurrentElement: typeof import('../core/browser/src/utils/vendors')['useCurrentElement']
-  const useCycleList: typeof import('../core/browser/src/utils/vendors')['useCycleList']
-  const useDark: typeof import('../core/browser/src/utils/vendors')['useDark']
-  const useDateFormat: typeof import('../core/browser/src/utils/vendors')['useDateFormat']
-  const useDebounce: typeof import('../core/browser/src/utils/vendors')['useDebounce']
-  const useDebounceFn: typeof import('../core/browser/src/utils/vendors')['useDebounceFn']
-  const useDebouncedRefHistory: typeof import('../core/browser/src/utils/vendors')['useDebouncedRefHistory']
-  const useDeviceMotion: typeof import('../core/browser/src/utils/vendors')['useDeviceMotion']
-  const useDeviceOrientation: typeof import('../core/browser/src/utils/vendors')['useDeviceOrientation']
-  const useDevicePixelRatio: typeof import('../core/browser/src/utils/vendors')['useDevicePixelRatio']
-  const useDevicesList: typeof import('../core/browser/src/utils/vendors')['useDevicesList']
-  const useDisplayMedia: typeof import('../core/browser/src/utils/vendors')['useDisplayMedia']
-  const useDocumentVisibility: typeof import('../core/browser/src/utils/vendors')['useDocumentVisibility']
-  const useDraggable: typeof import('../core/browser/src/utils/vendors')['useDraggable']
-  const useDropZone: typeof import('../core/browser/src/utils/vendors')['useDropZone']
-  const useElementBounding: typeof import('../core/browser/src/utils/vendors')['useElementBounding']
-  const useElementByPoint: typeof import('../core/browser/src/utils/vendors')['useElementByPoint']
-  const useElementHover: typeof import('../core/browser/src/utils/vendors')['useElementHover']
-  const useElementSize: typeof import('../core/browser/src/utils/vendors')['useElementSize']
-  const useElementVisibility: typeof import('../core/browser/src/utils/vendors')['useElementVisibility']
+  const useCurrentElement: typeof import('../core/browser/dist/index.js')['useCurrentElement']
+  const useCycleList: typeof import('../core/browser/dist/index.js')['useCycleList']
+  const useDark: typeof import('../core/browser/dist/index.js')['useDark']
+  const useDateFormat: typeof import('../core/browser/dist/index.js')['useDateFormat']
+  const useDebounce: typeof import('../core/browser/dist/index.js')['useDebounce']
+  const useDebounceFn: typeof import('../core/browser/dist/index.js')['useDebounceFn']
+  const useDebouncedRefHistory: typeof import('../core/browser/dist/index.js')['useDebouncedRefHistory']
+  const useDeviceMotion: typeof import('../core/browser/dist/index.js')['useDeviceMotion']
+  const useDeviceOrientation: typeof import('../core/browser/dist/index.js')['useDeviceOrientation']
+  const useDevicePixelRatio: typeof import('../core/browser/dist/index.js')['useDevicePixelRatio']
+  const useDevicesList: typeof import('../core/browser/dist/index.js')['useDevicesList']
+  const useDisplayMedia: typeof import('../core/browser/dist/index.js')['useDisplayMedia']
+  const useDocumentVisibility: typeof import('../core/browser/dist/index.js')['useDocumentVisibility']
+  const useDraggable: typeof import('../core/browser/dist/index.js')['useDraggable']
+  const useDropZone: typeof import('../core/browser/dist/index.js')['useDropZone']
+  const useElementBounding: typeof import('../core/browser/dist/index.js')['useElementBounding']
+  const useElementByPoint: typeof import('../core/browser/dist/index.js')['useElementByPoint']
+  const useElementHover: typeof import('../core/browser/dist/index.js')['useElementHover']
+  const useElementSize: typeof import('../core/browser/dist/index.js')['useElementSize']
+  const useElementVisibility: typeof import('../core/browser/dist/index.js')['useElementVisibility']
   const useEmail: typeof import('../core/notifications/src/index')['useEmail']
   const useEnvReader: typeof import('../../../resources/functions/env-reader')['useEnvReader']
   const useEvent: typeof import('../core/events/src/index')['useEvent']
-  const useEventBus: typeof import('../core/browser/src/utils/vendors')['useEventBus']
-  const useEventListener: typeof import('../core/browser/src/utils/vendors')['useEventListener']
-  const useEventSource: typeof import('../core/browser/src/utils/vendors')['useEventSource']
+  const useEventBus: typeof import('../core/browser/dist/index.js')['useEventBus']
+  const useEventListener: typeof import('../core/browser/dist/index.js')['useEventListener']
+  const useEventSource: typeof import('../core/browser/dist/index.js')['useEventSource']
   const useEvents: typeof import('../core/events/src/index')['useEvents']
-  const useEyeDropper: typeof import('../core/browser/src/utils/vendors')['useEyeDropper']
-  const useFavicon: typeof import('../core/browser/src/utils/vendors')['useFavicon']
-  const useFetch: typeof import('../core/browser/src/utils/vendors')['useFetch']
-  const useFileDialog: typeof import('../core/browser/src/utils/vendors')['useFileDialog']
-  const useFileSystemAccess: typeof import('../core/browser/src/utils/vendors')['useFileSystemAccess']
-  const useFloor: typeof import('../core/browser/src/utils/math')['useFloor']
-  const useFocus: typeof import('../core/browser/src/utils/vendors')['useFocus']
-  const useFocusWithin: typeof import('../core/browser/src/utils/vendors')['useFocusWithin']
-  const useFps: typeof import('../core/browser/src/utils/vendors')['useFps']
-  const useFullscreen: typeof import('../core/browser/src/utils/vendors')['useFullscreen']
-  const useGamepad: typeof import('../core/browser/src/utils/vendors')['useGamepad']
-  const useGeolocation: typeof import('../core/browser/src/utils/vendors')['useGeolocation']
+  const useEyeDropper: typeof import('../core/browser/dist/index.js')['useEyeDropper']
+  const useFavicon: typeof import('../core/browser/dist/index.js')['useFavicon']
+  const useFetch: typeof import('../core/browser/dist/index.js')['useFetch']
+  const useFileDialog: typeof import('../core/browser/dist/index.js')['useFileDialog']
+  const useFileSystemAccess: typeof import('../core/browser/dist/index.js')['useFileSystemAccess']
+  const useFloor: typeof import('../core/browser/dist/index.js')['useFloor']
+  const useFocus: typeof import('../core/browser/dist/index.js')['useFocus']
+  const useFocusWithin: typeof import('../core/browser/dist/index.js')['useFocusWithin']
+  const useFps: typeof import('../core/browser/dist/index.js')['useFps']
+  const useFullscreen: typeof import('../core/browser/dist/index.js')['useFullscreen']
+  const useGamepad: typeof import('../core/browser/dist/index.js')['useGamepad']
+  const useGeolocation: typeof import('../core/browser/dist/index.js')['useGeolocation']
   const useGitHub: typeof import('../core/git/src/index')['useGitHub']
   const useGitStore: typeof import('../../../resources/stores/git')['useGitStore']
   const useHead: typeof import('@unhead/vue')['useHead']
@@ -1004,119 +1004,120 @@ declare global {
   const useHttpFetch: typeof import('../core/api/src/index')['useHttpFetch']
   const useI18n: typeof import('vue-i18n')['useI18n']
   const useId: typeof import('vue')['useId']
-  const useIdle: typeof import('../core/browser/src/utils/vendors')['useIdle']
-  const useImage: typeof import('../core/browser/src/utils/vendors')['useImage']
-  const useInfiniteScroll: typeof import('../core/browser/src/utils/vendors')['useInfiniteScroll']
-  const useIntersectionObserver: typeof import('../core/browser/src/utils/vendors')['useIntersectionObserver']
-  const useInterval: typeof import('../core/browser/src/utils/vendors')['useInterval']
-  const useIntervalFn: typeof import('../core/browser/src/utils/vendors')['useIntervalFn']
-  const useKeyModifier: typeof import('../core/browser/src/utils/vendors')['useKeyModifier']
-  const useLastChanged: typeof import('../core/browser/src/utils/vendors')['useLastChanged']
+  const useIdle: typeof import('../core/browser/dist/index.js')['useIdle']
+  const useImage: typeof import('../core/browser/dist/index.js')['useImage']
+  const useInfiniteScroll: typeof import('../core/browser/dist/index.js')['useInfiniteScroll']
+  const useIntersectionObserver: typeof import('../core/browser/dist/index.js')['useIntersectionObserver']
+  const useInterval: typeof import('../core/browser/dist/index.js')['useInterval']
+  const useIntervalFn: typeof import('../core/browser/dist/index.js')['useIntervalFn']
+  const useKeyModifier: typeof import('../core/browser/dist/index.js')['useKeyModifier']
+  const useLastChanged: typeof import('../core/browser/dist/index.js')['useLastChanged']
   const useLink: typeof import('vue-router/auto')['useLink']
-  const useLocalStorage: typeof import('../core/browser/src/utils/vendors')['useLocalStorage']
-  const useMagicKeys: typeof import('../core/browser/src/utils/vendors')['useMagicKeys']
-  const useManualRefHistory: typeof import('../core/browser/src/utils/vendors')['useManualRefHistory']
-  const useMath: typeof import('../core/browser/src/utils/math')['useMath']
-  const useMax: typeof import('../core/browser/src/utils/math')['useMax']
-  const useMediaControls: typeof import('../core/browser/src/utils/vendors')['useMediaControls']
-  const useMediaQuery: typeof import('../core/browser/src/utils/vendors')['useMediaQuery']
-  const useMemoize: typeof import('../core/browser/src/utils/vendors')['useMemoize']
-  const useMemory: typeof import('../core/browser/src/utils/vendors')['useMemory']
-  const useMin: typeof import('../core/browser/src/utils/math')['useMin']
+  const useLocalStorage: typeof import('../core/browser/dist/index.js')['useLocalStorage']
+  const useMagicKeys: typeof import('../core/browser/dist/index.js')['useMagicKeys']
+  const useManualRefHistory: typeof import('../core/browser/dist/index.js')['useManualRefHistory']
+  const useMath: typeof import('../core/browser/dist/index.js')['useMath']
+  const useMax: typeof import('../core/browser/dist/index.js')['useMax']
+  const useMediaControls: typeof import('../core/browser/dist/index.js')['useMediaControls']
+  const useMediaQuery: typeof import('../core/browser/dist/index.js')['useMediaQuery']
+  const useMemoize: typeof import('../core/browser/dist/index.js')['useMemoize']
+  const useMemory: typeof import('../core/browser/dist/index.js')['useMemory']
+  const useMin: typeof import('../core/browser/dist/index.js')['useMin']
   const useModel: typeof import('vue')['useModel']
-  const useMounted: typeof import('../core/browser/src/utils/vendors')['useMounted']
-  const useMouse: typeof import('../core/browser/src/utils/vendors')['useMouse']
-  const useMouseInElement: typeof import('../core/browser/src/utils/vendors')['useMouseInElement']
-  const useMousePressed: typeof import('../core/browser/src/utils/vendors')['useMousePressed']
-  const useMutationObserver: typeof import('../core/browser/src/utils/vendors')['useMutationObserver']
-  const useNavigatorLanguage: typeof import('../core/browser/src/utils/vendors')['useNavigatorLanguage']
-  const useNetwork: typeof import('../core/browser/src/utils/vendors')['useNetwork']
+  const useMounted: typeof import('../core/browser/dist/index.js')['useMounted']
+  const useMouse: typeof import('../core/browser/dist/index.js')['useMouse']
+  const useMouseInElement: typeof import('../core/browser/dist/index.js')['useMouseInElement']
+  const useMousePressed: typeof import('../core/browser/dist/index.js')['useMousePressed']
+  const useMutationObserver: typeof import('../core/browser/dist/index.js')['useMutationObserver']
+  const useNavigatorLanguage: typeof import('../core/browser/dist/index.js')['useNavigatorLanguage']
+  const useNetwork: typeof import('../core/browser/dist/index.js')['useNetwork']
   const useNotification: typeof import('../core/notifications/src/index')['useNotification']
-  const useNow: typeof import('../core/browser/src/utils/vendors')['useNow']
-  const useObjectUrl: typeof import('../core/browser/src/utils/vendors')['useObjectUrl']
-  const useOffsetPagination: typeof import('../core/browser/src/utils/vendors')['useOffsetPagination']
-  const useOnline: typeof import('../core/browser/src/utils/vendors')['useOnline']
-  const usePageLeave: typeof import('../core/browser/src/utils/vendors')['usePageLeave']
-  const useParallax: typeof import('../core/browser/src/utils/vendors')['useParallax']
-  const useParentElement: typeof import('../core/browser/src/utils/vendors')['useParentElement']
-  const usePerformanceObserver: typeof import('../core/browser/src/utils/vendors')['usePerformanceObserver']
-  const usePermission: typeof import('../core/browser/src/utils/vendors')['usePermission']
-  const usePointer: typeof import('../core/browser/src/utils/vendors')['usePointer']
-  const usePointerLock: typeof import('../core/browser/src/utils/vendors')['usePointerLock']
-  const usePointerSwipe: typeof import('../core/browser/src/utils/vendors')['usePointerSwipe']
-  const usePrecision: typeof import('../core/browser/src/utils/math')['usePrecision']
-  const usePreferredColorScheme: typeof import('../core/browser/src/utils/vendors')['usePreferredColorScheme']
-  const usePreferredContrast: typeof import('../core/browser/src/utils/vendors')['usePreferredContrast']
-  const usePreferredDark: typeof import('../core/browser/src/utils/vendors')['usePreferredDark']
-  const usePreferredLanguages: typeof import('../core/browser/src/utils/vendors')['usePreferredLanguages']
-  const usePreferredReducedMotion: typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']
-  const usePrevious: typeof import('../core/browser/src/utils/vendors')['usePrevious']
-  const useProjection: typeof import('../core/browser/src/utils/math')['useProjection']
-  const useRafFn: typeof import('../core/browser/src/utils/vendors')['useRafFn']
-  const useRefHistory: typeof import('../core/browser/src/utils/vendors')['useRefHistory']
-  const useResizeObserver: typeof import('../core/browser/src/utils/vendors')['useResizeObserver']
-  const useRound: typeof import('../core/browser/src/utils/math')['useRound']
+  const useNow: typeof import('../core/browser/dist/index.js')['useNow']
+  const useObjectUrl: typeof import('../core/browser/dist/index.js')['useObjectUrl']
+  const useOffsetPagination: typeof import('../core/browser/dist/index.js')['useOffsetPagination']
+  const useOnline: typeof import('../core/browser/dist/index.js')['useOnline']
+  const usePageLeave: typeof import('../core/browser/dist/index.js')['usePageLeave']
+  const useParallax: typeof import('../core/browser/dist/index.js')['useParallax']
+  const useParentElement: typeof import('../core/browser/dist/index.js')['useParentElement']
+  const usePaymentStore: typeof import('../../../resources/stores/payment')['usePaymentStore']
+  const usePerformanceObserver: typeof import('../core/browser/dist/index.js')['usePerformanceObserver']
+  const usePermission: typeof import('../core/browser/dist/index.js')['usePermission']
+  const usePointer: typeof import('../core/browser/dist/index.js')['usePointer']
+  const usePointerLock: typeof import('../core/browser/dist/index.js')['usePointerLock']
+  const usePointerSwipe: typeof import('../core/browser/dist/index.js')['usePointerSwipe']
+  const usePrecision: typeof import('../core/browser/dist/index.js')['usePrecision']
+  const usePreferredColorScheme: typeof import('../core/browser/dist/index.js')['usePreferredColorScheme']
+  const usePreferredContrast: typeof import('../core/browser/dist/index.js')['usePreferredContrast']
+  const usePreferredDark: typeof import('../core/browser/dist/index.js')['usePreferredDark']
+  const usePreferredLanguages: typeof import('../core/browser/dist/index.js')['usePreferredLanguages']
+  const usePreferredReducedMotion: typeof import('../core/browser/dist/index.js')['usePreferredReducedMotion']
+  const usePrevious: typeof import('../core/browser/dist/index.js')['usePrevious']
+  const useProjection: typeof import('../core/browser/dist/index.js')['useProjection']
+  const useRafFn: typeof import('../core/browser/dist/index.js')['useRafFn']
+  const useRefHistory: typeof import('../core/browser/dist/index.js')['useRefHistory']
+  const useResizeObserver: typeof import('../core/browser/dist/index.js')['useResizeObserver']
+  const useRound: typeof import('../core/browser/dist/index.js')['useRound']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
   const useSMS: typeof import('../core/notifications/src/index')['useSMS']
   const useScheduler: typeof import('../core/scheduler/src/index')['useScheduler']
-  const useScreenOrientation: typeof import('../core/browser/src/utils/vendors')['useScreenOrientation']
-  const useScreenSafeArea: typeof import('../core/browser/src/utils/vendors')['useScreenSafeArea']
-  const useScriptTag: typeof import('../core/browser/src/utils/vendors')['useScriptTag']
-  const useScroll: typeof import('../core/browser/src/utils/vendors')['useScroll']
-  const useScrollLock: typeof import('../core/browser/src/utils/vendors')['useScrollLock']
+  const useScreenOrientation: typeof import('../core/browser/dist/index.js')['useScreenOrientation']
+  const useScreenSafeArea: typeof import('../core/browser/dist/index.js')['useScreenSafeArea']
+  const useScriptTag: typeof import('../core/browser/dist/index.js')['useScriptTag']
+  const useScroll: typeof import('../core/browser/dist/index.js')['useScroll']
+  const useScrollLock: typeof import('../core/browser/dist/index.js')['useScrollLock']
   const useSearchEngine: typeof import('../core/search-engine/src/index')['useSearchEngine']
   const useSeoMeta: typeof import('@unhead/vue')['useSeoMeta']
   const useServerHead: typeof import('@unhead/vue')['useServerHead']
   const useServerHeadSafe: typeof import('@unhead/vue')['useServerHeadSafe']
   const useServerSeoMeta: typeof import('@unhead/vue')['useServerSeoMeta']
-  const useSessionStorage: typeof import('../core/browser/src/utils/vendors')['useSessionStorage']
-  const useShare: typeof import('../core/browser/src/utils/vendors')['useShare']
+  const useSessionStorage: typeof import('../core/browser/dist/index.js')['useSessionStorage']
+  const useShare: typeof import('../core/browser/dist/index.js')['useShare']
   const useSlots: typeof import('vue')['useSlots']
-  const useSorted: typeof import('../core/browser/src/utils/vendors')['useSorted']
-  const useSpeechRecognition: typeof import('../core/browser/src/utils/vendors')['useSpeechRecognition']
-  const useSpeechSynthesis: typeof import('../core/browser/src/utils/vendors')['useSpeechSynthesis']
-  const useStepper: typeof import('../core/browser/src/utils/vendors')['useStepper']
-  const useStorage: typeof import('../core/browser/src/utils/vendors')['useStorage']
-  const useStorageAsync: typeof import('../core/browser/src/utils/vendors')['useStorageAsync']
-  const useStyleTag: typeof import('../core/browser/src/utils/vendors')['useStyleTag']
-  const useSum: typeof import('../core/browser/src/utils/math')['useSum']
-  const useSupported: typeof import('../core/browser/src/utils/vendors')['useSupported']
-  const useSwipe: typeof import('../core/browser/src/utils/vendors')['useSwipe']
+  const useSorted: typeof import('../core/browser/dist/index.js')['useSorted']
+  const useSpeechRecognition: typeof import('../core/browser/dist/index.js')['useSpeechRecognition']
+  const useSpeechSynthesis: typeof import('../core/browser/dist/index.js')['useSpeechSynthesis']
+  const useStepper: typeof import('../core/browser/dist/index.js')['useStepper']
+  const useStorage: typeof import('../core/browser/dist/index.js')['useStorage']
+  const useStorageAsync: typeof import('../core/browser/dist/index.js')['useStorageAsync']
+  const useStyleTag: typeof import('../core/browser/dist/index.js')['useStyleTag']
+  const useSum: typeof import('../core/browser/dist/index.js')['useSum']
+  const useSupported: typeof import('../core/browser/dist/index.js')['useSupported']
+  const useSwipe: typeof import('../core/browser/dist/index.js')['useSwipe']
   const useTemplateRef: typeof import('vue')['useTemplateRef']
-  const useTemplateRefsList: typeof import('../core/browser/src/utils/vendors')['useTemplateRefsList']
-  const useTextDirection: typeof import('../core/browser/src/utils/vendors')['useTextDirection']
-  const useTextSelection: typeof import('../core/browser/src/utils/vendors')['useTextSelection']
-  const useTextareaAutosize: typeof import('../core/browser/src/utils/vendors')['useTextareaAutosize']
-  const useThrottle: typeof import('../core/browser/src/utils/vendors')['useThrottle']
-  const useThrottleFn: typeof import('../core/browser/src/utils/vendors')['useThrottleFn']
-  const useThrottledRefHistory: typeof import('../core/browser/src/utils/vendors')['useThrottledRefHistory']
-  const useTimeAgo: typeof import('../core/browser/src/utils/vendors')['useTimeAgo']
-  const useTimeout: typeof import('../core/browser/src/utils/vendors')['useTimeout']
-  const useTimeoutFn: typeof import('../core/browser/src/utils/vendors')['useTimeoutFn']
-  const useTimeoutPoll: typeof import('../core/browser/src/utils/vendors')['useTimeoutPoll']
-  const useTimestamp: typeof import('../core/browser/src/utils/vendors')['useTimestamp']
-  const useTitle: typeof import('../core/browser/src/utils/vendors')['useTitle']
-  const useToNumber: typeof import('../core/browser/src/utils/vendors')['useToNumber']
-  const useToString: typeof import('../core/browser/src/utils/vendors')['useToString']
-  const useToggle: typeof import('../core/browser/src/utils/vendors')['useToggle']
-  const useTransition: typeof import('../core/browser/src/utils/vendors')['useTransition']
-  const useTrunc: typeof import('../core/browser/src/utils/math')['useTrunc']
-  const useUrlSearchParams: typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']
-  const useUserMedia: typeof import('../core/browser/src/utils/vendors')['useUserMedia']
+  const useTemplateRefsList: typeof import('../core/browser/dist/index.js')['useTemplateRefsList']
+  const useTextDirection: typeof import('../core/browser/dist/index.js')['useTextDirection']
+  const useTextSelection: typeof import('../core/browser/dist/index.js')['useTextSelection']
+  const useTextareaAutosize: typeof import('../core/browser/dist/index.js')['useTextareaAutosize']
+  const useThrottle: typeof import('../core/browser/dist/index.js')['useThrottle']
+  const useThrottleFn: typeof import('../core/browser/dist/index.js')['useThrottleFn']
+  const useThrottledRefHistory: typeof import('../core/browser/dist/index.js')['useThrottledRefHistory']
+  const useTimeAgo: typeof import('../core/browser/dist/index.js')['useTimeAgo']
+  const useTimeout: typeof import('../core/browser/dist/index.js')['useTimeout']
+  const useTimeoutFn: typeof import('../core/browser/dist/index.js')['useTimeoutFn']
+  const useTimeoutPoll: typeof import('../core/browser/dist/index.js')['useTimeoutPoll']
+  const useTimestamp: typeof import('../core/browser/dist/index.js')['useTimestamp']
+  const useTitle: typeof import('../core/browser/dist/index.js')['useTitle']
+  const useToNumber: typeof import('../core/browser/dist/index.js')['useToNumber']
+  const useToString: typeof import('../core/browser/dist/index.js')['useToString']
+  const useToggle: typeof import('../core/browser/dist/index.js')['useToggle']
+  const useTransition: typeof import('../core/browser/dist/index.js')['useTransition']
+  const useTrunc: typeof import('../core/browser/dist/index.js')['useTrunc']
+  const useUrlSearchParams: typeof import('../core/browser/dist/index.js')['useUrlSearchParams']
+  const useUserMedia: typeof import('../core/browser/dist/index.js')['useUserMedia']
   const useUserStore: typeof import('../../../resources/stores/user')['useUserStore']
-  const useVModel: typeof import('../core/browser/src/utils/vendors')['useVModel']
-  const useVModels: typeof import('../core/browser/src/utils/vendors')['useVModels']
-  const useVibrate: typeof import('../core/browser/src/utils/vendors')['useVibrate']
-  const useVirtualList: typeof import('../core/browser/src/utils/vendors')['useVirtualList']
-  const useWakeLock: typeof import('../core/browser/src/utils/vendors')['useWakeLock']
-  const useWebNotification: typeof import('../core/browser/src/utils/vendors')['useWebNotification']
-  const useWebSocket: typeof import('../core/browser/src/utils/vendors')['useWebSocket']
-  const useWebWorker: typeof import('../core/browser/src/utils/vendors')['useWebWorker']
-  const useWebWorkerFn: typeof import('../core/browser/src/utils/vendors')['useWebWorkerFn']
-  const useWindowFocus: typeof import('../core/browser/src/utils/vendors')['useWindowFocus']
-  const useWindowScroll: typeof import('../core/browser/src/utils/vendors')['useWindowScroll']
-  const useWindowSize: typeof import('../core/browser/src/utils/vendors')['useWindowSize']
+  const useVModel: typeof import('../core/browser/dist/index.js')['useVModel']
+  const useVModels: typeof import('../core/browser/dist/index.js')['useVModels']
+  const useVibrate: typeof import('../core/browser/dist/index.js')['useVibrate']
+  const useVirtualList: typeof import('../core/browser/dist/index.js')['useVirtualList']
+  const useWakeLock: typeof import('../core/browser/dist/index.js')['useWakeLock']
+  const useWebNotification: typeof import('../core/browser/dist/index.js')['useWebNotification']
+  const useWebSocket: typeof import('../core/browser/dist/index.js')['useWebSocket']
+  const useWebWorker: typeof import('../core/browser/dist/index.js')['useWebWorker']
+  const useWebWorkerFn: typeof import('../core/browser/dist/index.js')['useWebWorkerFn']
+  const useWindowFocus: typeof import('../core/browser/dist/index.js')['useWindowFocus']
+  const useWindowScroll: typeof import('../core/browser/dist/index.js')['useWindowScroll']
+  const useWindowSize: typeof import('../core/browser/dist/index.js')['useWindowSize']
   const userActionsPath: typeof import('../core/path/src/index')['userActionsPath']
   const userComponentsPath: typeof import('../core/path/src/index')['userComponentsPath']
   const userDatabasePath: typeof import('../core/path/src/index')['userDatabasePath']
@@ -1149,38 +1150,38 @@ declare global {
   const vitePluginPath: typeof import('../core/path/src/index')['vitePluginPath']
   const vueComponentExample: typeof import('../core/build/src/index')['vueComponentExample']
   const vueComponents: typeof import('../core/build/src/index')['vueComponents']
-  const wait: typeof import('../core/browser/src/utils/sleep')['wait']
-  const waitUntil: typeof import('../core/browser/src/utils/sleep')['waitUntil']
-  const waitWhile: typeof import('../core/browser/src/utils/sleep')['waitWhile']
+  const wait: typeof import('../core/browser/dist/index.js')['wait']
+  const waitUntil: typeof import('../core/browser/dist/index.js')['waitUntil']
+  const waitWhile: typeof import('../core/browser/dist/index.js')['waitWhile']
   const watch: typeof import('vue')['watch']
-  const watchArray: typeof import('../core/browser/src/utils/vendors')['watchArray']
-  const watchAtMost: typeof import('../core/browser/src/utils/vendors')['watchAtMost']
-  const watchDebounced: typeof import('../core/browser/src/utils/vendors')['watchDebounced']
-  const watchDeep: typeof import('../core/browser/src/utils/vendors')['watchDeep']
+  const watchArray: typeof import('../core/browser/dist/index.js')['watchArray']
+  const watchAtMost: typeof import('../core/browser/dist/index.js')['watchAtMost']
+  const watchDebounced: typeof import('../core/browser/dist/index.js')['watchDebounced']
+  const watchDeep: typeof import('../core/browser/dist/index.js')['watchDeep']
   const watchEffect: typeof import('vue')['watchEffect']
   const watchFile: typeof import('../core/storage/src/fs')['watchFile']
-  const watchIgnorable: typeof import('../core/browser/src/utils/vendors')['watchIgnorable']
-  const watchImmediate: typeof import('../core/browser/src/utils/vendors')['watchImmediate']
-  const watchOnce: typeof import('../core/browser/src/utils/vendors')['watchOnce']
-  const watchPausable: typeof import('../core/browser/src/utils/vendors')['watchPausable']
+  const watchIgnorable: typeof import('../core/browser/dist/index.js')['watchIgnorable']
+  const watchImmediate: typeof import('../core/browser/dist/index.js')['watchImmediate']
+  const watchOnce: typeof import('../core/browser/dist/index.js')['watchOnce']
+  const watchPausable: typeof import('../core/browser/dist/index.js')['watchPausable']
   const watchPostEffect: typeof import('vue')['watchPostEffect']
   const watchSyncEffect: typeof import('vue')['watchSyncEffect']
-  const watchThrottled: typeof import('../core/browser/src/utils/vendors')['watchThrottled']
-  const watchTriggerable: typeof import('../core/browser/src/utils/vendors')['watchTriggerable']
-  const watchWithFilter: typeof import('../core/browser/src/utils/vendors')['watchWithFilter']
+  const watchThrottled: typeof import('../core/browser/dist/index.js')['watchThrottled']
+  const watchTriggerable: typeof import('../core/browser/dist/index.js')['watchTriggerable']
+  const watchWithFilter: typeof import('../core/browser/dist/index.js')['watchWithFilter']
   const webComponentExample: typeof import('../core/build/src/index')['webComponentExample']
   const webComponents: typeof import('../core/build/src/index')['webComponents']
   const websiteSourceHash: typeof import('../core/utils/src/hash')['websiteSourceHash']
-  const whenever: typeof import('../core/browser/src/utils/vendors')['whenever']
+  const whenever: typeof import('../core/browser/dist/index.js')['whenever']
   const where: typeof import('../core/orm/src/generated/User')['where']
   const whereIn: typeof import('../core/orm/src/generated/User')['whereIn']
-  const whitespace: typeof import('../core/browser/src/utils/regex')['whitespace']
+  const whitespace: typeof import('../core/browser/dist/index.js')['whitespace']
   const wipOrm: typeof import('../core/orm/src/index')['wipOrm']
   const wipSlug: typeof import('../core/slug/src/index')['wipSlug']
-  const withIndices: typeof import('../core/browser/src/utils/regex')['withIndices']
-  const word: typeof import('../core/browser/src/utils/regex')['word']
-  const wordBoundary: typeof import('../core/browser/src/utils/regex')['wordBoundary']
-  const wordChar: typeof import('../core/browser/src/utils/regex')['wordChar']
+  const withIndices: typeof import('../core/browser/dist/index.js')['withIndices']
+  const word: typeof import('../core/browser/dist/index.js')['word']
+  const wordBoundary: typeof import('../core/browser/dist/index.js')['wordBoundary']
+  const wordChar: typeof import('../core/browser/dist/index.js')['wordChar']
   const writeEnv: typeof import('../core/env/src/index')['writeEnv']
   const writeFile: typeof import('../core/storage/src/files')['writeFile']
   const writeFileSync: typeof import('../core/storage/src/fs')['writeFileSync']
@@ -1232,6 +1233,8 @@ declare module 'vue' {
     readonly Fetch: UnwrapRef<typeof import('../core/api/src/ofetch')['Fetch']>
     readonly FileStorage: UnwrapRef<typeof import('../core/storage/src/flystorage')['FileStorage']>
     readonly GlobalRegistrator: UnwrapRef<typeof import('../core/testing/src/feature')['GlobalRegistrator']>
+    readonly Head: UnwrapRef<typeof import('../core/browser/dist/index.js')['Head']>
+    readonly HeadVuePlugin: UnwrapRef<typeof import('../core/browser/dist/index.js')['HeadVuePlugin']>
     readonly HostStyleAwsPublicUrlGenerator: UnwrapRef<typeof import('../core/storage/src/flystorage')['HostStyleAwsPublicUrlGenerator']>
     readonly HttpError: UnwrapRef<typeof import('../core/error-handling/src/http')['HttpError']>
     readonly InMemoryStorageAdapter: UnwrapRef<typeof import('../core/storage/src/flystorage')['InMemoryStorageAdapter']>
@@ -1275,6 +1278,8 @@ declare module 'vue' {
     readonly aliasPath: UnwrapRef<typeof import('../core/path/src/index')['aliasPath']>
     readonly all: UnwrapRef<typeof import('../core/events/src/index')['all']>
     readonly analyticsPath: UnwrapRef<typeof import('../core/path/src/index')['analyticsPath']>
+    readonly and: UnwrapRef<typeof import('../core/browser/dist/index.js')['and']>
+    readonly anyOf: UnwrapRef<typeof import('../core/browser/dist/index.js')['anyOf']>
     readonly appPath: UnwrapRef<typeof import('../core/path/src/index')['appPath']>
     readonly archive: UnwrapRef<typeof import('../core/storage/src/zip')['archive']>
     readonly argon2Encode: UnwrapRef<typeof import('../core/security/src/hash')['argon2Encode']>
@@ -1284,14 +1289,24 @@ declare module 'vue' {
     readonly arraysPath: UnwrapRef<typeof import('../core/path/src/index')['arraysPath']>
     readonly ask: UnwrapRef<typeof import('../core/ai/src/text')['ask']>
     readonly assetsPath: UnwrapRef<typeof import('../core/path/src/index')['assetsPath']>
+    readonly asyncComputed: UnwrapRef<typeof import('../core/browser/dist/index.js')['asyncComputed']>
     readonly attempt: UnwrapRef<typeof import('../core/auth/src/authentication')['attempt']>
     readonly authPath: UnwrapRef<typeof import('../core/path/src/index')['authPath']>
     readonly authToken: UnwrapRef<typeof import('../core/auth/src/authentication')['authToken']>
+    readonly autoResetRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['autoResetRef']>
     readonly base64Encode: UnwrapRef<typeof import('../core/security/src/hash')['base64Encode']>
     readonly base64Verify: UnwrapRef<typeof import('../core/security/src/hash')['base64Verify']>
     readonly basename: UnwrapRef<typeof import('../core/path/src/index')['basename']>
+    readonly batchInvoke: UnwrapRef<typeof import('../core/browser/dist/index.js')['batchInvoke']>
     readonly bcryptEncode: UnwrapRef<typeof import('../core/security/src/hash')['bcryptEncode']>
     readonly bcryptVerify: UnwrapRef<typeof import('../core/security/src/hash')['bcryptVerify']>
+    readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsAntDesign']>
+    readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsBootstrapV5']>
+    readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsMasterCss']>
+    readonly breakpointsQuasar: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsQuasar']>
+    readonly breakpointsSematic: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsSematic']>
+    readonly breakpointsTailwind: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsTailwind']>
+    readonly breakpointsVuetify: UnwrapRef<typeof import('../core/browser/dist/index.js')['breakpointsVuetify']>
     readonly browserPath: UnwrapRef<typeof import('../core/path/src/index')['browserPath']>
     readonly buddy: UnwrapRef<typeof import('../core/index')['buddy']>
     readonly buddyPath: UnwrapRef<typeof import('../core/path/src/index')['buddyPath']>
@@ -1300,17 +1315,25 @@ declare module 'vue' {
     readonly builtUserActionsPath: UnwrapRef<typeof import('../core/path/src/index')['builtUserActionsPath']>
     readonly cache: UnwrapRef<typeof import('../core/index')['cache']>
     readonly cachePath: UnwrapRef<typeof import('../core/path/src/index')['cachePath']>
+    readonly calculateDelay: UnwrapRef<typeof import('../core/browser/dist/index.js')['calculateDelay']>
     readonly calculatePagination: UnwrapRef<typeof import('../core/search-engine/src/index')['calculatePagination']>
+    readonly carriageReturn: UnwrapRef<typeof import('../core/browser/dist/index.js')['carriageReturn']>
+    readonly caseInsensitive: UnwrapRef<typeof import('../core/browser/dist/index.js')['caseInsensitive']>
     readonly changelog: UnwrapRef<typeof import('../core/git/src/index')['changelog']>
+    readonly char: UnwrapRef<typeof import('../core/browser/dist/index.js')['char']>
+    readonly charIn: UnwrapRef<typeof import('../core/browser/dist/index.js')['charIn']>
+    readonly charNotIn: UnwrapRef<typeof import('../core/browser/dist/index.js')['charNotIn']>
     readonly chat: UnwrapRef<typeof import('../core/index')['chat']>
     readonly chatPath: UnwrapRef<typeof import('../core/path/src/index')['chatPath']>
     readonly checkPivotMigration: UnwrapRef<typeof import('../core/database/src/drivers/index')['checkPivotMigration']>
     readonly checksumFromStream: UnwrapRef<typeof import('../core/storage/src/flystorage')['checksumFromStream']>
+    readonly clamp: UnwrapRef<typeof import('../core/browser/dist/index.js')['clamp']>
     readonly cleanProject: UnwrapRef<typeof import('../core/utils/src/clean')['cleanProject']>
     readonly clearUndefined: UnwrapRef<typeof import('../core/objects/src/index')['clearUndefined']>
     readonly cli: UnwrapRef<typeof import('../core/index')['cli']>
     readonly cliPath: UnwrapRef<typeof import('../core/path/src/index')['cliPath']>
     readonly client: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock-runtime')['client']>
+    readonly cloneFnJSON: UnwrapRef<typeof import('../core/browser/dist/index.js')['cloneFnJSON']>
     readonly closeReadable: UnwrapRef<typeof import('../core/storage/src/flystorage')['closeReadable']>
     readonly cloud: UnwrapRef<typeof import('../core/index')['cloud']>
     readonly cloudPath: UnwrapRef<typeof import('../core/path/src/index')['cloudPath']>
@@ -1321,9 +1344,15 @@ declare module 'vue' {
     readonly componentsPath: UnwrapRef<typeof import('../core/path/src/index')['componentsPath']>
     readonly compress: UnwrapRef<typeof import('../core/storage/src/zip')['compress']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
+    readonly computedAsync: UnwrapRef<typeof import('../core/browser/dist/index.js')['computedAsync']>
+    readonly computedEager: UnwrapRef<typeof import('../core/browser/dist/index.js')['computedEager']>
+    readonly computedInject: UnwrapRef<typeof import('../core/browser/dist/index.js')['computedInject']>
+    readonly computedWithControl: UnwrapRef<typeof import('../core/browser/dist/index.js')['computedWithControl']>
     readonly config: UnwrapRef<typeof import('../core/index')['config']>
     readonly configPath: UnwrapRef<typeof import('../core/path/src/index')['configPath']>
     readonly consola: UnwrapRef<typeof import('../core/logging/src/index')['consola']>
+    readonly controlledComputed: UnwrapRef<typeof import('../core/browser/dist/index.js')['controlledComputed']>
+    readonly controlledRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['controlledRef']>
     readonly copy: UnwrapRef<typeof import('../core/storage/src/copy')['copy']>
     readonly copyFile: UnwrapRef<typeof import('../core/storage/src/copy')['copyFile']>
     readonly copyFolder: UnwrapRef<typeof import('../core/storage/src/copy')['copyFolder']>
@@ -1337,11 +1366,18 @@ declare module 'vue' {
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createComponent: UnwrapRef<typeof import('../core/actions/src/index')['createComponent']>
     readonly createConsola: UnwrapRef<typeof import('../core/logging/src/index')['createConsola']>
+    readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/dist/index.js')['createControlledPromise']>
     readonly createDatabase: UnwrapRef<typeof import('../core/actions/src/index')['createDatabase']>
+    readonly createEventHook: UnwrapRef<typeof import('../core/browser/dist/index.js')['createEventHook']>
     readonly createFactory: UnwrapRef<typeof import('../core/actions/src/index')['createFactory']>
+    readonly createFetch: UnwrapRef<typeof import('../core/browser/dist/index.js')['createFetch']>
     readonly createFolder: UnwrapRef<typeof import('../core/storage/src/folders')['createFolder']>
     readonly createFunction: UnwrapRef<typeof import('../core/actions/src/index')['createFunction']>
+    readonly createGenericProjection: UnwrapRef<typeof import('../core/browser/dist/index.js')['createGenericProjection']>
+    readonly createGlobalState: UnwrapRef<typeof import('../core/browser/dist/index.js')['createGlobalState']>
+    readonly createHead: UnwrapRef<typeof import('../core/browser/dist/index.js')['createHead']>
     readonly createHostedZone: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['createHostedZone']>
+    readonly createInjectionState: UnwrapRef<typeof import('../core/browser/dist/index.js')['createInjectionState']>
     readonly createLanguage: UnwrapRef<typeof import('../core/actions/src/index')['createLanguage']>
     readonly createLocalTunnel: UnwrapRef<typeof import('../core/tunnel/src/index')['createLocalTunnel']>
     readonly createMigration: UnwrapRef<typeof import('../core/actions/src/index')['createMigration']>
@@ -1351,19 +1387,36 @@ declare module 'vue' {
     readonly createNotification: UnwrapRef<typeof import('../core/actions/src/index')['createNotification']>
     readonly createPage: UnwrapRef<typeof import('../core/actions/src/index')['createPage']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
+    readonly createProjection: UnwrapRef<typeof import('../core/browser/dist/index.js')['createProjection']>
+    readonly createPromiseLock: UnwrapRef<typeof import('../core/browser/dist/index.js')['createPromiseLock']>
+    readonly createReactiveFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['createReactiveFn']>
+    readonly createRegExp: UnwrapRef<typeof import('../core/browser/dist/index.js')['createRegExp']>
+    readonly createReusableTemplate: UnwrapRef<typeof import('../core/browser/dist/index.js')['createReusableTemplate']>
+    readonly createSharedComposable: UnwrapRef<typeof import('../core/browser/dist/index.js')['createSharedComposable']>
+    readonly createSingletonPromise: UnwrapRef<typeof import('../core/browser/dist/index.js')['createSingletonPromise']>
     readonly createStacksTable: UnwrapRef<typeof import('../core/testing/src/dynamodb')['createStacksTable']>
     readonly createStripeProduct: UnwrapRef<typeof import('../core/payments/src/billable/setup-products')['createStripeProduct']>
+    readonly createTemplatePromise: UnwrapRef<typeof import('../core/browser/dist/index.js')['createTemplatePromise']>
+    readonly createUnrefFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['createUnrefFn']>
     readonly currentPage: UnwrapRef<typeof import('../core/search-engine/src/index')['currentPage']>
     readonly customElementsDataPath: UnwrapRef<typeof import('../core/path/src/index')['customElementsDataPath']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
+    readonly customStorageEventName: UnwrapRef<typeof import('../core/browser/dist/index.js')['customStorageEventName']>
     readonly customValidate: UnwrapRef<typeof import('../core/validation/src/validator')['customValidate']>
     readonly databasePath: UnwrapRef<typeof import('../core/path/src/index')['databasePath']>
     readonly datetimePath: UnwrapRef<typeof import('../core/path/src/index')['datetimePath']>
     readonly db: UnwrapRef<typeof import('../core/database/src/utils')['db']>
     readonly dd: UnwrapRef<typeof import('../core/logging/src/index')['dd']>
+    readonly debounce: UnwrapRef<typeof import('../core/browser/dist/index.js')['debounce']>
+    readonly debouncedRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['debouncedRef']>
+    readonly debouncedWatch: UnwrapRef<typeof import('../core/browser/dist/index.js')['debouncedWatch']>
     readonly decompress: UnwrapRef<typeof import('../core/storage/src/zip')['decompress']>
     readonly decrypt: UnwrapRef<typeof import('../core/security/src/crypt')['decrypt']>
     readonly deepMerge: UnwrapRef<typeof import('../core/objects/src/index')['deepMerge']>
+    readonly defaultDocument: UnwrapRef<typeof import('../core/browser/dist/index.js')['defaultDocument']>
+    readonly defaultLocation: UnwrapRef<typeof import('../core/browser/dist/index.js')['defaultLocation']>
+    readonly defaultNavigator: UnwrapRef<typeof import('../core/browser/dist/index.js')['defaultNavigator']>
+    readonly defaultWindow: UnwrapRef<typeof import('../core/browser/dist/index.js')['defaultWindow']>
     readonly defineApp: UnwrapRef<typeof import('../core/utils/src/config')['defineApp']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineCache: UnwrapRef<typeof import('../core/utils/src/config')['defineCache']>
@@ -1392,6 +1445,7 @@ declare module 'vue' {
     readonly defineUi: UnwrapRef<typeof import('../core/utils/src/config')['defineUi']>
     readonly deflateSync: UnwrapRef<typeof import('../core/storage/src/zip')['deflateSync']>
     readonly del: UnwrapRef<typeof import('../core/storage/src/delete')['del']>
+    readonly delay: UnwrapRef<typeof import('../core/browser/dist/index.js')['delay']>
     readonly deleteEmptyFolder: UnwrapRef<typeof import('../core/storage/src/delete')['deleteEmptyFolder']>
     readonly deleteEmptyFolders: UnwrapRef<typeof import('../core/storage/src/delete')['deleteEmptyFolders']>
     readonly deleteExistingModelNameTypes: UnwrapRef<typeof import('../core/orm/src/utils')['deleteExistingModelNameTypes']>
@@ -1414,6 +1468,7 @@ declare module 'vue' {
     readonly determineDebugLevel: UnwrapRef<typeof import('../core/utils/src/helpers')['determineDebugLevel']>
     readonly determineResetPreset: UnwrapRef<typeof import('../core/utils/src/helpers')['determineResetPreset']>
     readonly developmentPath: UnwrapRef<typeof import('../core/path/src/index')['developmentPath']>
+    readonly digit: UnwrapRef<typeof import('../core/browser/dist/index.js')['digit']>
     readonly dirname: UnwrapRef<typeof import('../core/path/src/index')['dirname']>
     readonly dispatch: UnwrapRef<typeof import('../core/events/src/index')['dispatch']>
     readonly dnsPath: UnwrapRef<typeof import('../core/path/src/index')['dnsPath']>
@@ -1423,9 +1478,11 @@ declare module 'vue' {
     readonly doesExist: UnwrapRef<typeof import('../core/storage/src/files')['doesExist']>
     readonly doesFolderExist: UnwrapRef<typeof import('../core/storage/src/folders')['doesFolderExist']>
     readonly doesNotExist: UnwrapRef<typeof import('../core/storage/src/files')['doesNotExist']>
+    readonly dotAll: UnwrapRef<typeof import('../core/browser/dist/index.js')['dotAll']>
     readonly dropSqliteTables: UnwrapRef<typeof import('../core/database/src/drivers/sqlite')['dropSqliteTables']>
     readonly dump: UnwrapRef<typeof import('../core/logging/src/index')['dump']>
     readonly dumpYaml: UnwrapRef<typeof import('../core/utils/src/helpers')['dumpYaml']>
+    readonly eagerComputed: UnwrapRef<typeof import('../core/browser/dist/index.js')['eagerComputed']>
     readonly echo: UnwrapRef<typeof import('../core/logging/src/index')['echo']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly email: UnwrapRef<typeof import('../core/index')['email']>
@@ -1444,10 +1501,13 @@ declare module 'vue' {
     readonly eslintPluginPath: UnwrapRef<typeof import('../core/path/src/index')['eslintPluginPath']>
     readonly events: UnwrapRef<typeof import('../core/events/src/index')['events']>
     readonly eventsPath: UnwrapRef<typeof import('../core/path/src/index')['eventsPath']>
+    readonly exactly: UnwrapRef<typeof import('../core/browser/dist/index.js')['exactly']>
     readonly examplesPath: UnwrapRef<typeof import('../core/path/src/index')['examplesPath']>
+    readonly executeTransition: UnwrapRef<typeof import('../core/browser/dist/index.js')['executeTransition']>
     readonly exists: UnwrapRef<typeof import('../core/storage/src/fs')['exists']>
     readonly existsSync: UnwrapRef<typeof import('../core/storage/src/fs')['existsSync']>
     readonly expo: UnwrapRef<typeof import('../core/push/src/drivers/index')['expo']>
+    readonly extendRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['extendRef']>
     readonly extname: UnwrapRef<typeof import('../core/path/src/index')['extname']>
     readonly extractAttributesFromModel: UnwrapRef<typeof import('../core/orm/src/utils')['extractAttributesFromModel']>
     readonly extractDefaultRequest: UnwrapRef<typeof import('../core/router/src/utils')['extractDefaultRequest']>
@@ -1474,6 +1534,7 @@ declare module 'vue' {
     readonly findRequestInstance: UnwrapRef<typeof import('../core/router/src/utils')['findRequestInstance']>
     readonly findStacksProjects: UnwrapRef<typeof import('../core/utils/src/find')['findStacksProjects']>
     readonly folders: UnwrapRef<typeof import('../core/storage/src/folders')['folders']>
+    readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/dist/index.js')['formatTimeAgo']>
     readonly frameworkCloudPath: UnwrapRef<typeof import('../core/path/src/index')['frameworkCloudPath']>
     readonly frameworkPath: UnwrapRef<typeof import('../core/path/src/index')['frameworkPath']>
     readonly frameworkVersion: UnwrapRef<typeof import('../core/utils/src/helpers')['frameworkVersion']>
@@ -1533,6 +1594,7 @@ declare module 'vue' {
     readonly getRelationCount: UnwrapRef<typeof import('../core/orm/src/utils')['getRelationCount']>
     readonly getRelationType: UnwrapRef<typeof import('../core/orm/src/utils')['getRelationType']>
     readonly getRelations: UnwrapRef<typeof import('../core/orm/src/utils')['getRelations']>
+    readonly getSSRHandler: UnwrapRef<typeof import('../core/browser/dist/index.js')['getSSRHandler']>
     readonly getTableName: UnwrapRef<typeof import('../core/orm/src/utils')['getTableName']>
     readonly getTypeName: UnwrapRef<typeof import('../core/types/src/helpers')['getTypeName']>
     readonly getUserPasskey: UnwrapRef<typeof import('../core/auth/src/passkey')['getUserPasskey']>
@@ -1540,6 +1602,7 @@ declare module 'vue' {
     readonly gitPath: UnwrapRef<typeof import('../core/path/src/index')['gitPath']>
     readonly glob: UnwrapRef<typeof import('../core/storage/src/glob')['glob']>
     readonly globSync: UnwrapRef<typeof import('../core/storage/src/glob')['globSync']>
+    readonly global: UnwrapRef<typeof import('../core/browser/dist/index.js')['global']>
     readonly goToNextPage: UnwrapRef<typeof import('../core/search-engine/src/index')['goToNextPage']>
     readonly goToPage: UnwrapRef<typeof import('../core/search-engine/src/index')['goToPage']>
     readonly goToPrevPage: UnwrapRef<typeof import('../core/search-engine/src/index')['goToPrevPage']>
@@ -1567,12 +1630,14 @@ declare module 'vue' {
     readonly helpers: UnwrapRef<typeof import('../core/storage/src/helpers')['helpers']>
     readonly hits: UnwrapRef<typeof import('../core/search-engine/src/index')['hits']>
     readonly homeDir: UnwrapRef<typeof import('../core/path/src/index')['homeDir']>
+    readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/dist/index.js')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly index: UnwrapRef<typeof import('../core/search-engine/src/index')['index']>
     readonly inflateSync: UnwrapRef<typeof import('../core/storage/src/zip')['inflateSync']>
     readonly initProject: UnwrapRef<typeof import('../core/utils/src/helpers')['initProject']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
+    readonly injectLocal: UnwrapRef<typeof import('../core/browser/dist/index.js')['injectLocal']>
     readonly installIfVersionMismatch: UnwrapRef<typeof import('../core/utils/src/helpers')['installIfVersionMismatch']>
     readonly intro: UnwrapRef<typeof import('../core/build/src/index')['intro']>
     readonly invoke: UnwrapRef<typeof import('../core/actions/src/generate/index')['invoke']>
@@ -1588,6 +1653,7 @@ declare module 'vue' {
     readonly isDate: UnwrapRef<typeof import('../core/validation/src/is')['isDate']>
     readonly isDeepEqual: UnwrapRef<typeof import('../core/utils/src/equal')['isDeepEqual']>
     readonly isDef: UnwrapRef<typeof import('../core/validation/src/is')['isDef']>
+    readonly isDefined: UnwrapRef<typeof import('../core/browser/dist/index.js')['isDefined']>
     readonly isDir: UnwrapRef<typeof import('../core/storage/src/folders')['isDir']>
     readonly isDirectory: UnwrapRef<typeof import('../core/storage/src/flystorage')['isDirectory']>
     readonly isDirectoryEmpty: UnwrapRef<typeof import('../core/storage/src/delete')['isDirectoryEmpty']>
@@ -1624,6 +1690,7 @@ declare module 'vue' {
     readonly isSet: UnwrapRef<typeof import('../core/validation/src/is')['isSet']>
     readonly isString: UnwrapRef<typeof import('../core/validation/src/is')['isString']>
     readonly isSymbol: UnwrapRef<typeof import('../core/validation/src/is')['isSymbol']>
+    readonly isTruthy: UnwrapRef<typeof import('../core/browser/dist/index.js')['isTruthy']>
     readonly isUndefined: UnwrapRef<typeof import('../core/validation/src/is')['isUndefined']>
     readonly isWindow: UnwrapRef<typeof import('../core/validation/src/is')['isWindow']>
     readonly jobsPath: UnwrapRef<typeof import('../core/path/src/index')['jobsPath']>
@@ -1634,9 +1701,11 @@ declare module 'vue' {
     readonly lastPageNumber: UnwrapRef<typeof import('../core/search-engine/src/index')['lastPageNumber']>
     readonly launchServer: UnwrapRef<typeof import('../core/testing/src/dynamodb')['launchServer']>
     readonly layoutsPath: UnwrapRef<typeof import('../core/path/src/index')['layoutsPath']>
+    readonly letter: UnwrapRef<typeof import('../core/browser/dist/index.js')['letter']>
     readonly libraryEntryPath: UnwrapRef<typeof import('../core/path/src/index')['libraryEntryPath']>
     readonly libsEntriesPath: UnwrapRef<typeof import('../core/path/src/index')['libsEntriesPath']>
     readonly libsPath: UnwrapRef<typeof import('../core/path/src/index')['libsPath']>
+    readonly linefeed: UnwrapRef<typeof import('../core/browser/dist/index.js')['linefeed']>
     readonly lintPath: UnwrapRef<typeof import('../core/path/src/index')['lintPath']>
     readonly listFoundationModels: UnwrapRef<typeof import('../core/ai/src/utils/client-bedrock')['listFoundationModels']>
     readonly listRoutes: UnwrapRef<typeof import('../core/router/src/utils')['listRoutes']>
@@ -1648,10 +1717,14 @@ declare module 'vue' {
     readonly logLevel: UnwrapRef<typeof import('../core/logging/src/index')['logLevel']>
     readonly logger: UnwrapRef<typeof import('../core/logging/src/index')['logger']>
     readonly loggingPath: UnwrapRef<typeof import('../core/path/src/index')['loggingPath']>
+    readonly logicNot: UnwrapRef<typeof import('../core/browser/dist/index.js')['logicNot']>
+    readonly logicOr: UnwrapRef<typeof import('../core/browser/dist/index.js')['logicOr']>
     readonly logsPath: UnwrapRef<typeof import('../core/path/src/index')['logsPath']>
+    readonly loop: UnwrapRef<typeof import('../core/browser/dist/index.js')['loop']>
     readonly makeAction: UnwrapRef<typeof import('../core/actions/src/index')['makeAction']>
     readonly makeComponent: UnwrapRef<typeof import('../core/actions/src/index')['makeComponent']>
     readonly makeDatabase: UnwrapRef<typeof import('../core/actions/src/index')['makeDatabase']>
+    readonly makeDestructurable: UnwrapRef<typeof import('../core/browser/dist/index.js')['makeDestructurable']>
     readonly makeFunction: UnwrapRef<typeof import('../core/actions/src/index')['makeFunction']>
     readonly makeHash: UnwrapRef<typeof import('../core/security/src/hash')['makeHash']>
     readonly makeLanguage: UnwrapRef<typeof import('../core/actions/src/index')['makeLanguage']>
@@ -1667,11 +1740,13 @@ declare module 'vue' {
     readonly manageSubscription: UnwrapRef<typeof import('../core/payments/src/billable/subscription')['manageSubscription']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapFieldTypeToColumnType: UnwrapRef<typeof import('../core/database/src/drivers/index')['mapFieldTypeToColumnType']>
+    readonly mapGamepadToXbox360Controller: UnwrapRef<typeof import('../core/browser/dist/index.js')['mapGamepadToXbox360Controller']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
     readonly mapState: UnwrapRef<typeof import('pinia')['mapState']>
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly maybe: UnwrapRef<typeof import('../core/browser/dist/index.js')['maybe']>
     readonly md5Encode: UnwrapRef<typeof import('../core/security/src/hash')['md5Encode']>
     readonly middlewares: UnwrapRef<typeof import('../core/router/src/middleware')['middlewares']>
     readonly migrator: UnwrapRef<typeof import('../core/database/src/migrations')['migrator']>
@@ -1680,11 +1755,16 @@ declare module 'vue' {
     readonly modelTableName: UnwrapRef<typeof import('../core/orm/src/utils')['modelTableName']>
     readonly modelsPath: UnwrapRef<typeof import('../core/path/src/index')['modelsPath']>
     readonly modulesPath: UnwrapRef<typeof import('../core/path/src/index')['modulesPath']>
+    readonly multiline: UnwrapRef<typeof import('../core/browser/dist/index.js')['multiline']>
     readonly nexmo: UnwrapRef<typeof import('../core/sms/src/drivers/index')['nexmo']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly noNull: UnwrapRef<typeof import('../core/browser/dist/index.js')['noNull']>
     readonly normalize: UnwrapRef<typeof import('../core/path/src/index')['normalize']>
     readonly normalizeExpiryToDate: UnwrapRef<typeof import('../core/storage/src/flystorage')['normalizeExpiryToDate']>
     readonly normalizeExpiryToMilliseconds: UnwrapRef<typeof import('../core/storage/src/flystorage')['normalizeExpiryToMilliseconds']>
+    readonly not: UnwrapRef<typeof import('../core/browser/dist/index.js')['not']>
+    readonly notNullish: UnwrapRef<typeof import('../core/browser/dist/index.js')['notNullish']>
+    readonly notUndefined: UnwrapRef<typeof import('../core/browser/dist/index.js')['notUndefined']>
     readonly notification: UnwrapRef<typeof import('../core/notifications/src/index')['notification']>
     readonly notificationsPath: UnwrapRef<typeof import('../core/path/src/index')['notificationsPath']>
     readonly now: UnwrapRef<typeof import('../core/database/src/utils')['now']>
@@ -1703,18 +1783,27 @@ declare module 'vue' {
     readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
+    readonly onClickOutside: UnwrapRef<typeof import('../core/browser/dist/index.js')['onClickOutside']>
     readonly onDeactivated: UnwrapRef<typeof import('vue')['onDeactivated']>
     readonly onErrorCaptured: UnwrapRef<typeof import('vue')['onErrorCaptured']>
+    readonly onKeyDown: UnwrapRef<typeof import('../core/browser/dist/index.js')['onKeyDown']>
+    readonly onKeyPressed: UnwrapRef<typeof import('../core/browser/dist/index.js')['onKeyPressed']>
+    readonly onKeyStroke: UnwrapRef<typeof import('../core/browser/dist/index.js')['onKeyStroke']>
+    readonly onKeyUp: UnwrapRef<typeof import('../core/browser/dist/index.js')['onKeyUp']>
+    readonly onLongPress: UnwrapRef<typeof import('../core/browser/dist/index.js')['onLongPress']>
     readonly onMounted: UnwrapRef<typeof import('vue')['onMounted']>
     readonly onRenderTracked: UnwrapRef<typeof import('vue')['onRenderTracked']>
     readonly onRenderTriggered: UnwrapRef<typeof import('vue')['onRenderTriggered']>
     readonly onScopeDispose: UnwrapRef<typeof import('vue')['onScopeDispose']>
     readonly onServerPrefetch: UnwrapRef<typeof import('vue')['onServerPrefetch']>
+    readonly onStartTyping: UnwrapRef<typeof import('../core/browser/dist/index.js')['onStartTyping']>
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly onboardingPath: UnwrapRef<typeof import('../core/path/src/index')['onboardingPath']>
+    readonly oneOrMore: UnwrapRef<typeof import('../core/browser/dist/index.js')['oneOrMore']>
     readonly openShell: UnwrapRef<typeof import('../core/desktop/src/index')['openShell']>
+    readonly or: UnwrapRef<typeof import('../core/browser/dist/index.js')['or']>
     readonly originRequestFunctionHash: UnwrapRef<typeof import('../core/utils/src/hash')['originRequestFunctionHash']>
     readonly ormPath: UnwrapRef<typeof import('../core/path/src/index')['ormPath']>
     readonly outro: UnwrapRef<typeof import('../core/build/src/index')['outro']>
@@ -1724,6 +1813,7 @@ declare module 'vue' {
     readonly parser: UnwrapRef<typeof import('../core/build/src/utils')['parser']>
     readonly path: UnwrapRef<typeof import('../core/path/src/index')['path']>
     readonly pathPath: UnwrapRef<typeof import('../core/path/src/index')['pathPath']>
+    readonly pausableWatch: UnwrapRef<typeof import('../core/browser/dist/index.js')['pausableWatch']>
     readonly paymentsPath: UnwrapRef<typeof import('../core/path/src/index')['paymentsPath']>
     readonly perPage: UnwrapRef<typeof import('../core/search-engine/src/index')['perPage']>
     readonly playwrightConfig: UnwrapRef<typeof import('../core/playwright.config')['default']>
@@ -1736,6 +1826,7 @@ declare module 'vue' {
     readonly projectConfigPath: UnwrapRef<typeof import('../core/path/src/index')['projectConfigPath']>
     readonly projectPath: UnwrapRef<typeof import('../core/path/src/index')['projectPath']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly provideLocal: UnwrapRef<typeof import('../core/browser/dist/index.js')['provideLocal']>
     readonly publicPath: UnwrapRef<typeof import('../core/path/src/index')['publicPath']>
     readonly pushPath: UnwrapRef<typeof import('../core/path/src/index')['pushPath']>
     readonly put: UnwrapRef<typeof import('../core/storage/src/files')['put']>
@@ -1743,20 +1834,33 @@ declare module 'vue' {
     readonly queryBuilderPath: UnwrapRef<typeof import('../core/path/src/index')['queryBuilderPath']>
     readonly queue: UnwrapRef<typeof import('../core/index')['queue']>
     readonly queuePath: UnwrapRef<typeof import('../core/path/src/index')['queuePath']>
+    readonly rand: UnwrapRef<typeof import('../core/browser/dist/index.js')['rand']>
+    readonly reactify: UnwrapRef<typeof import('../core/browser/dist/index.js')['reactify']>
+    readonly reactifyObject: UnwrapRef<typeof import('../core/browser/dist/index.js')['reactifyObject']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
+    readonly reactiveComputed: UnwrapRef<typeof import('../core/browser/dist/index.js')['reactiveComputed']>
+    readonly reactiveOmit: UnwrapRef<typeof import('../core/browser/dist/index.js')['reactiveOmit']>
+    readonly reactivePick: UnwrapRef<typeof import('../core/browser/dist/index.js')['reactivePick']>
     readonly readFileSync: UnwrapRef<typeof import('../core/storage/src/fs')['readFileSync']>
     readonly readJsonFile: UnwrapRef<typeof import('../core/storage/src/files')['readJsonFile']>
     readonly readPackageJson: UnwrapRef<typeof import('../core/storage/src/files')['readPackageJson']>
     readonly readTextFile: UnwrapRef<typeof import('../core/storage/src/files')['readTextFile']>
+    readonly readableSize: UnwrapRef<typeof import('../core/browser/dist/index.js')['readableSize']>
     readonly readableToString: UnwrapRef<typeof import('../core/storage/src/flystorage')['readableToString']>
     readonly readableToUint8Array: UnwrapRef<typeof import('../core/storage/src/flystorage')['readableToUint8Array']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly realtimePath: UnwrapRef<typeof import('../core/path/src/index')['realtimePath']>
     readonly realtimeWip: UnwrapRef<typeof import('../core/realtime/src/drivers/index')['realtimeWip']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
+    readonly refAutoReset: UnwrapRef<typeof import('../core/browser/dist/index.js')['refAutoReset']>
+    readonly refDebounced: UnwrapRef<typeof import('../core/browser/dist/index.js')['refDebounced']>
+    readonly refDefault: UnwrapRef<typeof import('../core/browser/dist/index.js')['refDefault']>
+    readonly refThrottled: UnwrapRef<typeof import('../core/browser/dist/index.js')['refThrottled']>
+    readonly refWithControl: UnwrapRef<typeof import('../core/browser/dist/index.js')['refWithControl']>
     readonly refreshDatabase: UnwrapRef<typeof import('../core/testing/src/database')['refreshDatabase']>
     readonly relative: UnwrapRef<typeof import('../core/path/src/index')['relative']>
     readonly relativeActionsPath: UnwrapRef<typeof import('../core/path/src/index')['relativeActionsPath']>
+    readonly renderHeadToString: UnwrapRef<typeof import('../core/browser/dist/index.js')['renderHeadToString']>
     readonly replPath: UnwrapRef<typeof import('../core/path/src/index')['replPath']>
     readonly reportError: UnwrapRef<typeof import('../core/validation/src/reporter')['reportError']>
     readonly request: UnwrapRef<typeof import('../core/router/src/request')['request']>
@@ -1769,8 +1873,11 @@ declare module 'vue' {
     readonly resolve: UnwrapRef<typeof import('../core/path/src/index')['resolve']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveMimeType: UnwrapRef<typeof import('../core/storage/src/flystorage')['resolveMimeType']>
+    readonly resolveRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['resolveRef']>
+    readonly resolveUnref: UnwrapRef<typeof import('../core/browser/dist/index.js')['resolveUnref']>
     readonly resourcesPath: UnwrapRef<typeof import('../core/path/src/index')['resourcesPath']>
     readonly results: UnwrapRef<typeof import('../core/search-engine/src/index')['results']>
+    readonly retry: UnwrapRef<typeof import('../core/browser/dist/index.js')['retry']>
     readonly route: UnwrapRef<typeof import('../core/router/src/router')['route']>
     readonly routerPath: UnwrapRef<typeof import('../core/path/src/index')['routerPath']>
     readonly routesPath: UnwrapRef<typeof import('../core/path/src/index')['routesPath']>
@@ -1813,6 +1920,7 @@ declare module 'vue' {
     readonly setCurrentRegistrationOptions: UnwrapRef<typeof import('../core/auth/src/passkey')['setCurrentRegistrationOptions']>
     readonly setEnvValue: UnwrapRef<typeof import('../core/utils/src/helpers')['setEnvValue']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
+    readonly setSSRHandler: UnwrapRef<typeof import('../core/browser/dist/index.js')['setSSRHandler']>
     readonly setTotalHits: UnwrapRef<typeof import('../core/search-engine/src/index')['setTotalHits']>
     readonly settingsPath: UnwrapRef<typeof import('../core/path/src/index')['settingsPath']>
     readonly setupDatabase: UnwrapRef<typeof import('../core/testing/src/database')['setupDatabase']>
@@ -1821,6 +1929,7 @@ declare module 'vue' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly shellPath: UnwrapRef<typeof import('../core/path/src/index')['shellPath']>
+    readonly sleep: UnwrapRef<typeof import('../core/browser/dist/index.js')['sleep']>
     readonly slugPath: UnwrapRef<typeof import('../core/path/src/index')['slugPath']>
     readonly sms77: UnwrapRef<typeof import('../core/sms/src/drivers/index')['sms77']>
     readonly smsPath: UnwrapRef<typeof import('../core/path/src/index')['smsPath']>
@@ -1830,6 +1939,7 @@ declare module 'vue' {
     readonly sql: UnwrapRef<typeof import('../core/database/src/types')['sql']>
     readonly src: UnwrapRef<typeof import('../core/events/src/index')['default']>
     readonly stacksPath: UnwrapRef<typeof import('../core/path/src/index')['stacksPath']>
+    readonly sticky: UnwrapRef<typeof import('../core/browser/dist/index.js')['sticky']>
     readonly storage: UnwrapRef<typeof import('../core/storage/src/index')['storage']>
     readonly storagePath: UnwrapRef<typeof import('../core/path/src/index')['storagePath']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
@@ -1839,20 +1949,30 @@ declare module 'vue' {
     readonly stripe: UnwrapRef<typeof import('../core/payments/src/index')['stripe']>
     readonly stripeEsmNode: UnwrapRef<typeof import('../../../node_modules/stripe/esm/stripe.esm.node.js')['default']>
     readonly summarize: UnwrapRef<typeof import('../core/ai/src/text')['summarize']>
+    readonly syncRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['syncRef']>
+    readonly syncRefs: UnwrapRef<typeof import('../core/browser/dist/index.js')['syncRefs']>
+    readonly tab: UnwrapRef<typeof import('../core/browser/dist/index.js')['tab']>
+    readonly tap: UnwrapRef<typeof import('../core/browser/dist/index.js')['tap']>
     readonly team: UnwrapRef<typeof import('../core/auth/src/authentication')['team']>
     readonly telnyx: UnwrapRef<typeof import('../core/sms/src/drivers/index')['telnyx']>
+    readonly templateRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['templateRef']>
     readonly termii: UnwrapRef<typeof import('../core/sms/src/drivers/index')['termii']>
     readonly testingPath: UnwrapRef<typeof import('../core/path/src/index')['testingPath']>
     readonly testingThis: UnwrapRef<typeof import('../core/desktop/src/system-tray')['testingThis']>
     readonly testsPath: UnwrapRef<typeof import('../core/path/src/index')['testsPath']>
+    readonly throttle: UnwrapRef<typeof import('../core/browser/dist/index.js')['throttle']>
+    readonly throttledRef: UnwrapRef<typeof import('../core/browser/dist/index.js')['throttledRef']>
+    readonly throttledWatch: UnwrapRef<typeof import('../core/browser/dist/index.js')['throttledWatch']>
     readonly timeout: UnwrapRef<typeof import('../core/scheduler/src/schedule')['timeout']>
     readonly tinker: UnwrapRef<typeof import('../core/repl/src/index')['tinker']>
     readonly tinkerPath: UnwrapRef<typeof import('../core/path/src/index')['tinkerPath']>
     readonly toNamespacedPath: UnwrapRef<typeof import('../core/path/src/index')['toNamespacedPath']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
+    readonly toReactive: UnwrapRef<typeof import('../core/browser/dist/index.js')['toReactive']>
     readonly toReadable: UnwrapRef<typeof import('../core/storage/src/flystorage')['toReadable']>
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
+    readonly toString: UnwrapRef<typeof import('../core/browser/dist/index.js')['toString']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly totalPages: UnwrapRef<typeof import('../core/search-engine/src/index')['totalPages']>
@@ -1860,42 +1980,216 @@ declare module 'vue' {
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly truncateMysql: UnwrapRef<typeof import('../core/testing/src/database')['truncateMysql']>
     readonly truncateSqlite: UnwrapRef<typeof import('../core/testing/src/database')['truncateSqlite']>
+    readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/dist/index.js')['tryOnBeforeMount']>
+    readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/dist/index.js')['tryOnBeforeUnmount']>
+    readonly tryOnMounted: UnwrapRef<typeof import('../core/browser/dist/index.js')['tryOnMounted']>
+    readonly tryOnScopeDispose: UnwrapRef<typeof import('../core/browser/dist/index.js')['tryOnScopeDispose']>
+    readonly tryOnUnmounted: UnwrapRef<typeof import('../core/browser/dist/index.js')['tryOnUnmounted']>
     readonly twilio: UnwrapRef<typeof import('../core/sms/src/drivers/index')['twilio']>
     readonly typesPath: UnwrapRef<typeof import('../core/path/src/index')['typesPath']>
     readonly ui: UnwrapRef<typeof import('../core/ui/src/index')['ui']>
     readonly uiPath: UnwrapRef<typeof import('../core/path/src/index')['uiPath']>
     readonly unarchive: UnwrapRef<typeof import('../core/storage/src/zip')['unarchive']>
+    readonly unicode: UnwrapRef<typeof import('../core/browser/dist/index.js')['unicode']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
+    readonly unrefElement: UnwrapRef<typeof import('../core/browser/dist/index.js')['unrefElement']>
+    readonly until: UnwrapRef<typeof import('../core/browser/dist/index.js')['until']>
     readonly unzip: UnwrapRef<typeof import('../core/storage/src/zip')['unzip']>
     readonly updateConfigFile: UnwrapRef<typeof import('../core/storage/src/helpers')['updateConfigFile']>
     readonly updateNameservers: UnwrapRef<typeof import('../core/dns/src/drivers/aws')['updateNameservers']>
+    readonly useAbs: UnwrapRef<typeof import('../core/browser/dist/index.js')['useAbs']>
+    readonly useActiveElement: UnwrapRef<typeof import('../core/browser/dist/index.js')['useActiveElement']>
+    readonly useAnimate: UnwrapRef<typeof import('../core/browser/dist/index.js')['useAnimate']>
+    readonly useArrayDifference: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayDifference']>
+    readonly useArrayEvery: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayEvery']>
+    readonly useArrayFilter: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayFilter']>
+    readonly useArrayFind: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayFind']>
+    readonly useArrayFindIndex: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayFindIndex']>
+    readonly useArrayIncludes: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayIncludes']>
+    readonly useArrayMap: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayMap']>
+    readonly useArrayReduce: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayReduce']>
+    readonly useArraySome: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArraySome']>
+    readonly useArrayUnique: UnwrapRef<typeof import('../core/browser/dist/index.js')['useArrayUnique']>
+    readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/dist/index.js')['useAsyncQueue']>
+    readonly useAsyncState: UnwrapRef<typeof import('../core/browser/dist/index.js')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useAverage: UnwrapRef<typeof import('../core/browser/dist/index.js')['useAverage']>
+    readonly useBase64: UnwrapRef<typeof import('../core/browser/dist/index.js')['useBase64']>
+    readonly useBattery: UnwrapRef<typeof import('../core/browser/dist/index.js')['useBattery']>
+    readonly useBluetooth: UnwrapRef<typeof import('../core/browser/dist/index.js')['useBluetooth']>
+    readonly useBreakpoints: UnwrapRef<typeof import('../core/browser/dist/index.js')['useBreakpoints']>
+    readonly useBroadcastChannel: UnwrapRef<typeof import('../core/browser/dist/index.js')['useBroadcastChannel']>
+    readonly useBrowserLocation: UnwrapRef<typeof import('../core/browser/dist/index.js')['useBrowserLocation']>
+    readonly useCached: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCached']>
+    readonly useCeil: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCeil']>
     readonly useChat: UnwrapRef<typeof import('../core/notifications/src/index')['useChat']>
+    readonly useClamp: UnwrapRef<typeof import('../core/browser/dist/index.js')['useClamp']>
+    readonly useClipboard: UnwrapRef<typeof import('../core/browser/dist/index.js')['useClipboard']>
+    readonly useClipboardItems: UnwrapRef<typeof import('../core/browser/dist/index.js')['useClipboardItems']>
+    readonly useCloned: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCloned']>
+    readonly useColorMode: UnwrapRef<typeof import('../core/browser/dist/index.js')['useColorMode']>
+    readonly useConfirmDialog: UnwrapRef<typeof import('../core/browser/dist/index.js')['useConfirmDialog']>
+    readonly useCounter: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCounter']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
+    readonly useCssVar: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCssVar']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
+    readonly useCurrentElement: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCurrentElement']>
+    readonly useCycleList: UnwrapRef<typeof import('../core/browser/dist/index.js')['useCycleList']>
+    readonly useDark: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDark']>
+    readonly useDateFormat: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDateFormat']>
+    readonly useDebounce: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDebounce']>
+    readonly useDebounceFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDebounceFn']>
+    readonly useDebouncedRefHistory: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDebouncedRefHistory']>
+    readonly useDeviceMotion: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDeviceMotion']>
+    readonly useDeviceOrientation: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDeviceOrientation']>
+    readonly useDevicePixelRatio: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDevicePixelRatio']>
+    readonly useDevicesList: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDevicesList']>
+    readonly useDisplayMedia: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDisplayMedia']>
+    readonly useDocumentVisibility: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDocumentVisibility']>
+    readonly useDraggable: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDraggable']>
+    readonly useDropZone: UnwrapRef<typeof import('../core/browser/dist/index.js')['useDropZone']>
+    readonly useElementBounding: UnwrapRef<typeof import('../core/browser/dist/index.js')['useElementBounding']>
+    readonly useElementByPoint: UnwrapRef<typeof import('../core/browser/dist/index.js')['useElementByPoint']>
+    readonly useElementHover: UnwrapRef<typeof import('../core/browser/dist/index.js')['useElementHover']>
+    readonly useElementSize: UnwrapRef<typeof import('../core/browser/dist/index.js')['useElementSize']>
+    readonly useElementVisibility: UnwrapRef<typeof import('../core/browser/dist/index.js')['useElementVisibility']>
     readonly useEmail: UnwrapRef<typeof import('../core/notifications/src/index')['useEmail']>
     readonly useEvent: UnwrapRef<typeof import('../core/events/src/index')['useEvent']>
+    readonly useEventBus: UnwrapRef<typeof import('../core/browser/dist/index.js')['useEventBus']>
+    readonly useEventListener: UnwrapRef<typeof import('../core/browser/dist/index.js')['useEventListener']>
+    readonly useEventSource: UnwrapRef<typeof import('../core/browser/dist/index.js')['useEventSource']>
     readonly useEvents: UnwrapRef<typeof import('../core/events/src/index')['useEvents']>
+    readonly useEyeDropper: UnwrapRef<typeof import('../core/browser/dist/index.js')['useEyeDropper']>
+    readonly useFavicon: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFavicon']>
+    readonly useFetch: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFetch']>
+    readonly useFileDialog: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFileDialog']>
+    readonly useFileSystemAccess: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFileSystemAccess']>
+    readonly useFloor: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFloor']>
+    readonly useFocus: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFocus']>
+    readonly useFocusWithin: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFocusWithin']>
+    readonly useFps: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFps']>
+    readonly useFullscreen: UnwrapRef<typeof import('../core/browser/dist/index.js')['useFullscreen']>
+    readonly useGamepad: UnwrapRef<typeof import('../core/browser/dist/index.js')['useGamepad']>
+    readonly useGeolocation: UnwrapRef<typeof import('../core/browser/dist/index.js')['useGeolocation']>
     readonly useGitHub: UnwrapRef<typeof import('../core/git/src/index')['useGitHub']>
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
+    readonly useIdle: UnwrapRef<typeof import('../core/browser/dist/index.js')['useIdle']>
+    readonly useImage: UnwrapRef<typeof import('../core/browser/dist/index.js')['useImage']>
+    readonly useInfiniteScroll: UnwrapRef<typeof import('../core/browser/dist/index.js')['useInfiniteScroll']>
+    readonly useIntersectionObserver: UnwrapRef<typeof import('../core/browser/dist/index.js')['useIntersectionObserver']>
+    readonly useInterval: UnwrapRef<typeof import('../core/browser/dist/index.js')['useInterval']>
+    readonly useIntervalFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['useIntervalFn']>
+    readonly useKeyModifier: UnwrapRef<typeof import('../core/browser/dist/index.js')['useKeyModifier']>
+    readonly useLastChanged: UnwrapRef<typeof import('../core/browser/dist/index.js')['useLastChanged']>
     readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
+    readonly useLocalStorage: UnwrapRef<typeof import('../core/browser/dist/index.js')['useLocalStorage']>
+    readonly useMagicKeys: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMagicKeys']>
+    readonly useManualRefHistory: UnwrapRef<typeof import('../core/browser/dist/index.js')['useManualRefHistory']>
+    readonly useMath: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMath']>
+    readonly useMax: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMax']>
+    readonly useMediaControls: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMediaControls']>
+    readonly useMediaQuery: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMediaQuery']>
+    readonly useMemoize: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMemoize']>
+    readonly useMemory: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMemory']>
+    readonly useMin: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMin']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly useMounted: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMounted']>
+    readonly useMouse: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMouse']>
+    readonly useMouseInElement: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMouseInElement']>
+    readonly useMousePressed: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMousePressed']>
+    readonly useMutationObserver: UnwrapRef<typeof import('../core/browser/dist/index.js')['useMutationObserver']>
+    readonly useNavigatorLanguage: UnwrapRef<typeof import('../core/browser/dist/index.js')['useNavigatorLanguage']>
+    readonly useNetwork: UnwrapRef<typeof import('../core/browser/dist/index.js')['useNetwork']>
     readonly useNotification: UnwrapRef<typeof import('../core/notifications/src/index')['useNotification']>
+    readonly useNow: UnwrapRef<typeof import('../core/browser/dist/index.js')['useNow']>
+    readonly useObjectUrl: UnwrapRef<typeof import('../core/browser/dist/index.js')['useObjectUrl']>
+    readonly useOffsetPagination: UnwrapRef<typeof import('../core/browser/dist/index.js')['useOffsetPagination']>
+    readonly useOnline: UnwrapRef<typeof import('../core/browser/dist/index.js')['useOnline']>
+    readonly usePageLeave: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePageLeave']>
+    readonly useParallax: UnwrapRef<typeof import('../core/browser/dist/index.js')['useParallax']>
+    readonly useParentElement: UnwrapRef<typeof import('../core/browser/dist/index.js')['useParentElement']>
+    readonly usePaymentStore: UnwrapRef<typeof import('../../../resources/stores/payment')['usePaymentStore']>
+    readonly usePerformanceObserver: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePerformanceObserver']>
+    readonly usePermission: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePermission']>
+    readonly usePointer: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePointer']>
+    readonly usePointerLock: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePointerLock']>
+    readonly usePointerSwipe: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePointerSwipe']>
+    readonly usePrecision: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePrecision']>
+    readonly usePreferredColorScheme: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePreferredColorScheme']>
+    readonly usePreferredContrast: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePreferredContrast']>
+    readonly usePreferredDark: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePreferredDark']>
+    readonly usePreferredLanguages: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePreferredLanguages']>
+    readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePreferredReducedMotion']>
+    readonly usePrevious: UnwrapRef<typeof import('../core/browser/dist/index.js')['usePrevious']>
+    readonly useProjection: UnwrapRef<typeof import('../core/browser/dist/index.js')['useProjection']>
+    readonly useRafFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['useRafFn']>
+    readonly useRefHistory: UnwrapRef<typeof import('../core/browser/dist/index.js')['useRefHistory']>
+    readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/dist/index.js')['useResizeObserver']>
+    readonly useRound: UnwrapRef<typeof import('../core/browser/dist/index.js')['useRound']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSMS: UnwrapRef<typeof import('../core/notifications/src/index')['useSMS']>
+    readonly useScreenOrientation: UnwrapRef<typeof import('../core/browser/dist/index.js')['useScreenOrientation']>
+    readonly useScreenSafeArea: UnwrapRef<typeof import('../core/browser/dist/index.js')['useScreenSafeArea']>
+    readonly useScriptTag: UnwrapRef<typeof import('../core/browser/dist/index.js')['useScriptTag']>
+    readonly useScroll: UnwrapRef<typeof import('../core/browser/dist/index.js')['useScroll']>
+    readonly useScrollLock: UnwrapRef<typeof import('../core/browser/dist/index.js')['useScrollLock']>
     readonly useSearchEngine: UnwrapRef<typeof import('../core/search-engine/src/index')['useSearchEngine']>
     readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>
     readonly useServerHead: UnwrapRef<typeof import('@unhead/vue')['useServerHead']>
     readonly useServerHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useServerHeadSafe']>
     readonly useServerSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useServerSeoMeta']>
+    readonly useSessionStorage: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSessionStorage']>
+    readonly useShare: UnwrapRef<typeof import('../core/browser/dist/index.js')['useShare']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
+    readonly useSorted: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSorted']>
+    readonly useSpeechRecognition: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSpeechRecognition']>
+    readonly useSpeechSynthesis: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSpeechSynthesis']>
+    readonly useStepper: UnwrapRef<typeof import('../core/browser/dist/index.js')['useStepper']>
+    readonly useStorage: UnwrapRef<typeof import('../core/browser/dist/index.js')['useStorage']>
+    readonly useStorageAsync: UnwrapRef<typeof import('../core/browser/dist/index.js')['useStorageAsync']>
+    readonly useStyleTag: UnwrapRef<typeof import('../core/browser/dist/index.js')['useStyleTag']>
+    readonly useSum: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSum']>
+    readonly useSupported: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSupported']>
+    readonly useSwipe: UnwrapRef<typeof import('../core/browser/dist/index.js')['useSwipe']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
+    readonly useTemplateRefsList: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTemplateRefsList']>
+    readonly useTextDirection: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTextDirection']>
+    readonly useTextSelection: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTextSelection']>
+    readonly useTextareaAutosize: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTextareaAutosize']>
+    readonly useThrottle: UnwrapRef<typeof import('../core/browser/dist/index.js')['useThrottle']>
+    readonly useThrottleFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['useThrottleFn']>
+    readonly useThrottledRefHistory: UnwrapRef<typeof import('../core/browser/dist/index.js')['useThrottledRefHistory']>
+    readonly useTimeAgo: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTimeAgo']>
+    readonly useTimeout: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTimeout']>
+    readonly useTimeoutFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTimeoutFn']>
+    readonly useTimeoutPoll: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTimeoutPoll']>
+    readonly useTimestamp: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTimestamp']>
+    readonly useTitle: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTitle']>
+    readonly useToNumber: UnwrapRef<typeof import('../core/browser/dist/index.js')['useToNumber']>
+    readonly useToString: UnwrapRef<typeof import('../core/browser/dist/index.js')['useToString']>
+    readonly useToggle: UnwrapRef<typeof import('../core/browser/dist/index.js')['useToggle']>
+    readonly useTransition: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTransition']>
+    readonly useTrunc: UnwrapRef<typeof import('../core/browser/dist/index.js')['useTrunc']>
+    readonly useUrlSearchParams: UnwrapRef<typeof import('../core/browser/dist/index.js')['useUrlSearchParams']>
+    readonly useUserMedia: UnwrapRef<typeof import('../core/browser/dist/index.js')['useUserMedia']>
     readonly useUserStore: UnwrapRef<typeof import('../../../resources/stores/user')['useUserStore']>
+    readonly useVModel: UnwrapRef<typeof import('../core/browser/dist/index.js')['useVModel']>
+    readonly useVModels: UnwrapRef<typeof import('../core/browser/dist/index.js')['useVModels']>
+    readonly useVibrate: UnwrapRef<typeof import('../core/browser/dist/index.js')['useVibrate']>
+    readonly useVirtualList: UnwrapRef<typeof import('../core/browser/dist/index.js')['useVirtualList']>
+    readonly useWakeLock: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWakeLock']>
+    readonly useWebNotification: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWebNotification']>
+    readonly useWebSocket: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWebSocket']>
+    readonly useWebWorker: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWebWorker']>
+    readonly useWebWorkerFn: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWebWorkerFn']>
+    readonly useWindowFocus: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWindowFocus']>
+    readonly useWindowScroll: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWindowScroll']>
+    readonly useWindowSize: UnwrapRef<typeof import('../core/browser/dist/index.js')['useWindowSize']>
     readonly userActionsPath: UnwrapRef<typeof import('../core/path/src/index')['userActionsPath']>
     readonly userComponentsPath: UnwrapRef<typeof import('../core/path/src/index')['userComponentsPath']>
     readonly userDatabasePath: UnwrapRef<typeof import('../core/path/src/index')['userDatabasePath']>
@@ -1922,13 +2216,33 @@ declare module 'vue' {
     readonly viewsPath: UnwrapRef<typeof import('../core/path/src/index')['viewsPath']>
     readonly viteConfigPath: UnwrapRef<typeof import('../core/path/src/index')['viteConfigPath']>
     readonly vitePluginPath: UnwrapRef<typeof import('../core/path/src/index')['vitePluginPath']>
+    readonly wait: UnwrapRef<typeof import('../core/browser/dist/index.js')['wait']>
+    readonly waitUntil: UnwrapRef<typeof import('../core/browser/dist/index.js')['waitUntil']>
+    readonly waitWhile: UnwrapRef<typeof import('../core/browser/dist/index.js')['waitWhile']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
+    readonly watchArray: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchArray']>
+    readonly watchAtMost: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchAtMost']>
+    readonly watchDebounced: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchDebounced']>
+    readonly watchDeep: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchDeep']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
     readonly watchFile: UnwrapRef<typeof import('../core/storage/src/fs')['watchFile']>
+    readonly watchIgnorable: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchIgnorable']>
+    readonly watchImmediate: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchImmediate']>
+    readonly watchOnce: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchOnce']>
+    readonly watchPausable: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchPausable']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>
     readonly watchSyncEffect: UnwrapRef<typeof import('vue')['watchSyncEffect']>
+    readonly watchThrottled: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchThrottled']>
+    readonly watchTriggerable: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchTriggerable']>
+    readonly watchWithFilter: UnwrapRef<typeof import('../core/browser/dist/index.js')['watchWithFilter']>
     readonly websiteSourceHash: UnwrapRef<typeof import('../core/utils/src/hash')['websiteSourceHash']>
+    readonly whenever: UnwrapRef<typeof import('../core/browser/dist/index.js')['whenever']>
+    readonly whitespace: UnwrapRef<typeof import('../core/browser/dist/index.js')['whitespace']>
     readonly wipSlug: UnwrapRef<typeof import('../core/slug/src/index')['wipSlug']>
+    readonly withIndices: UnwrapRef<typeof import('../core/browser/dist/index.js')['withIndices']>
+    readonly word: UnwrapRef<typeof import('../core/browser/dist/index.js')['word']>
+    readonly wordBoundary: UnwrapRef<typeof import('../core/browser/dist/index.js')['wordBoundary']>
+    readonly wordChar: UnwrapRef<typeof import('../core/browser/dist/index.js')['wordChar']>
     readonly writeEnv: UnwrapRef<typeof import('../core/env/src/index')['writeEnv']>
     readonly writeFile: UnwrapRef<typeof import('../core/storage/src/files')['writeFile']>
     readonly writeFileSync: UnwrapRef<typeof import('../core/storage/src/fs')['writeFileSync']>
