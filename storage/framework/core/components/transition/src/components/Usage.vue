@@ -5,7 +5,7 @@ import { useCopyCode } from '../composables/useCopyCode'
 const code = `<!-- App.vue -->
 <script setup>
   import { ref } from 'vue'
-  import { TransitionRoot } from '@headlessui/vue'
+  import { TransitionRoot } from '@stacksjs/transition'
 
   const isShowing = ref(true)
 <\/script>
