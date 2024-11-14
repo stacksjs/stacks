@@ -23,6 +23,23 @@ export function useBillable() {
     return clientSecret
   }
 
+  async function subscribeToPlan(body: { type: string, plan: string }): Promise<string> {
+    const url = 'http://localhost:3008/stripe/create-subscription'
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+  
+    const client: any = await response.json()
+  
+    return client
+  }
+
   async function loadStripeElement(clientSecret: string): Promise<boolean> {
     stripe.value = await loadStripe(publishableKey)
 
@@ -61,5 +78,5 @@ export function useBillable() {
     }
   }
 
-  return { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod }
+  return { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod, subscribeToPlan }
 }

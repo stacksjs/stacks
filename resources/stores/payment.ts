@@ -83,10 +83,15 @@ export const usePaymentStore = defineStore('payment', {
   },
 
   getters: {
-    getPaymentMethods(state): any[] {
+    getPaymentMethods(state): StripePaymentMethod[] {
       return state.paymentMethods
     },
-    getDefaultPaymentMethod(state): any[] {
+    hasPaymentMethods(state): boolean {
+      return state.paymentMethods.length || !(!state.defaultPaymentMethod // Checks for null or undefined
+        || (typeof state.defaultPaymentMethod === 'object'
+          && Object.keys(state.defaultPaymentMethod).length === 0))
+    },
+    getDefaultPaymentMethod(state): StripePaymentMethod[] {
       return state.defaultPaymentMethod
     },
   },

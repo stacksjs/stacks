@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useBillable } from '../../../../functions/billing/payments'
+
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
+const paymentStore = usePaymentStore()
 const planTypeKey = ref('stacks_hobby_early_monthly')
-let elements
-let stripe
+
+const { subscribeToPlan } = useBillable()
 
 const loading = ref(true)
 
@@ -37,40 +40,16 @@ const proPrice = computed(() => {
   return 749
 })
 
-// async function subscribePlan() {
-//   const body = {
-//     type: planTypeKey.value,
-//     plan: selectedPlan.value,
-//   }
 
-//   const url = 'http://localhost:3008/stripe/create-subscription'
+async function subscribePlan() {
+  const subscriptionIntent = await subscribeToPlan({
+    type: planTypeKey.value,
+    plan: selectedPlan.value,
+  })
 
-//   const response = await fetch(url, {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Accept': 'application/json',
-//     },
-//     body: JSON.stringify(body),
-//   })
-
-//   const client: any = await response.json()
-
-//   const clientSecret = client.client_secret
-
-//   stripe = await loadStripe(publishableKey)
-
-//   if (stripe) {
-//     elements = stripe.elements({clientSecret});
-//     const paymentElement = elements.create('payment');
-
-//     paymentElement.mount("#payment-element");
-//     const linkAuthenticationElement = elements.create("linkAuthentication");
-//     linkAuthenticationElement.mount("#link-authentication-element");
-//   }
-
-//   loading.value = false
-// }
+  // TODO: fire a toast or something
+  if (subscriptionIntent) alert('success!')
+}
 </script>
 
 <template>
@@ -162,7 +141,8 @@ const proPrice = computed(() => {
       <div class="flex justify-end pt-8">
         <button
           type="button"
-          class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          :disabled="!paymentStore.hasPaymentMethods"
+          class="rounded-md disabled:bg-gray-600 bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
           @click="subscribePlan()"
         >
           Subscribe
