@@ -1,5 +1,6 @@
 import { loadStripe } from '@stripe/stripe-js'
 
+
 export const publishableKey = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY
 
 const stripe = ref(null as any)

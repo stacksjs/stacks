@@ -1,3 +1,5 @@
+import { test } from '@stacksjs/browser'
+
 const apiUrl = `http://localhost:3008`
 
 interface StripePaymentMethod {
