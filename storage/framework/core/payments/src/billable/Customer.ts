@@ -7,10 +7,10 @@ export interface ManageCustomer {
   stripeId: (user: UserModel) => string
   hasStripeId: (user: UserModel) => boolean
   createStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  updateStripeCustomer: (user: UserModel, options: Stripe.CustomerUpdateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  updateStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   createOrGetStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer>>
-  createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   deleteStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.DeletedCustomer>>
   syncStripeCustomerDetails: (user: UserModel, options: StripeCustomerOptions) => Promise<Stripe.Response<Stripe.Customer>>
 }

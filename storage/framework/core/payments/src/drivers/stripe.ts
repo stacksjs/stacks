@@ -1,7 +1,7 @@
 import process from 'node:process'
 import Stripe from 'stripe'
 
-const apiKey = process.env.STRIPE_SECRET_KEY || 'sk_test_QKcCQL409PbuOgDTIyaxrt1f'
+const apiKey = process.env.STRIPE_SECRET_KEY || ''
 
 const client = new Stripe(apiKey, {
   apiVersion: '2024-09-30.acacia',

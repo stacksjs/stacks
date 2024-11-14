@@ -1078,7 +1078,7 @@ export async function generateModelString(
       return customer
     }
 
-    async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    async updateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.updateStripeCustomer(this, options)
 
       return customer
@@ -1116,7 +1116,7 @@ export async function generateModelString(
       return await this.retrieveStripeUser()
     }
 
-    async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+    async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
       return customer
     }
