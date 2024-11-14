@@ -47,7 +47,7 @@ async function handleCopyCode() {
 
       The <code><b>DropdownButton</b></code> will automatically open/close the <code><b>DropdownItems</b></code> when clicked, and when the menu is open, the list of items receives focus and is automatically navigable via the keyboard.
     </p>
-    <div class="code-block group relative">
+    <div class="group code-block relative">
       <Highlight
         class-name="rounded-md text-xs"
         language="xml"

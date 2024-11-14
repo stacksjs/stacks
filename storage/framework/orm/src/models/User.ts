@@ -669,7 +669,7 @@ export class UserModel {
     return customer
   }
 
-  async updateStripeUser(options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+  async updateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.updateStripeCustomer(this, options)
 
     return customer
@@ -693,13 +693,13 @@ export class UserModel {
   async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | null> {
     const customer = await this.retrieveStripeUser()
     const defaultPaymentMethodId = customer.invoice_settings?.default_payment_method as string
-  
+
     if (!defaultPaymentMethodId) {
       return null
     }
-  
+
     const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, defaultPaymentMethodId)
-  
+
     return defaultPaymentMethod
   }
 
@@ -707,7 +707,7 @@ export class UserModel {
     return await this.retrieveStripeUser()
   }
 
-  async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+  async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
     return customer
   }

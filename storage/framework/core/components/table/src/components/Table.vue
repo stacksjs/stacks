@@ -41,11 +41,11 @@ const {
   filterable = true,
   filters = '',
   actionable = false,
-  // eslint-disable-next-line vue/require-valid-default-prop
+
   actions = ['Edit', 'Delete'],
   perPage = 20,
   selectable = true,
-  // eslint-disable-next-line vue/require-valid-default-prop
+
   selectedRows = [],
   selectedAll = false,
 } = defineProps<Props>()
