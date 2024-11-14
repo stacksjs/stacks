@@ -10,7 +10,7 @@ export interface ManageCustomer {
   updateStripeCustomer: (user: UserModel, options: Stripe.CustomerUpdateParams) => Promise<Stripe.Response<Stripe.Customer>>
   createOrGetStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer>>
-  createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams | Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams | Stripe.CustomerUpdateParams) => Promise<Stripe.Response<Stripe.Customer>>
   deleteStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.DeletedCustomer>>
   syncStripeCustomerDetails: (user: UserModel, options: StripeCustomerOptions) => Promise<Stripe.Response<Stripe.Customer>>
 }
@@ -68,7 +68,7 @@ export const manageCustomer: ManageCustomer = (() => {
     return customer
   }
 
-  async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerUpdateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
+  async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await stripe.customer.update(user.stripe_id || '', options)
 
     return customer
@@ -138,7 +138,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
-  async function createOrUpdateStripeUser(user: UserModel, options: Stripe.CustomerCreateParams | Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+  async function createOrUpdateStripeUser(user: UserModel, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     if (!hasStripeId(user)) {
       return await createStripeCustomer(user, options)
     }

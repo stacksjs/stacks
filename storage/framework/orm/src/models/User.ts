@@ -690,6 +690,19 @@ export class UserModel {
     return customer
   }
 
+  async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | null> {
+    const customer = await this.retrieveStripeUser()
+    const defaultPaymentMethodId = customer.invoice_settings?.default_payment_method as string
+  
+    if (!defaultPaymentMethodId) {
+      return null
+    }
+  
+    const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, defaultPaymentMethodId)
+  
+    return defaultPaymentMethod
+  }
+
   async asStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
     return await this.retrieveStripeUser()
   }
