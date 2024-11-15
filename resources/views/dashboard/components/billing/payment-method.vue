@@ -29,10 +29,6 @@ function isEmpty(defaultPaymentMethod: any) {
     || (typeof defaultPaymentMethod === 'object'
       && Object.keys(defaultPaymentMethod).length === 0)
 }
-
-onMounted(async () => {
-  await paymentStore.fetchDefaultPaymentMethod()
-})
 </script>
 
 <template>

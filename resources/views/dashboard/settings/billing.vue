@@ -1,6 +1,21 @@
 <script setup lang="ts">
+import { useBillable } from '../../../functions/billing/payments'
+
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
+
+const { isEmpty } = useBillable()
+
+const paymentStore = usePaymentStore()
+
+onMounted(() => {
+  paymentStore.fetchStripeCustomer().then(async () => {
+    if (!isEmpty(paymentStore.getStripeCustomer)) {
+      await paymentStore.fetchDefaultPaymentMethod()
+      await paymentStore.fetchUserPaymentMethods()
+    }
+  })
+})
 </script>
 
 <template>

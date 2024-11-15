@@ -1094,7 +1094,7 @@ export async function generateModelString(
       return customer
     }
 
-    async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
+    async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
       const customer = await manageCustomer.retrieveStripeUser(this)
       return customer
     }

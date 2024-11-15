@@ -1,66 +1,19 @@
-import { plans } from '@stacksjs/browser'
+import type { StripePaymentMethod } from '../types/billing'
 
 const apiUrl = `http://localhost:3008`
 
-interface StripePaymentMethod {
-  id: string
-  object: string
-  allow_redisplay: string
-  billing_details: {
-    address: {
-      city: string | null
-      country: string | null
-      line1: string | null
-      line2: string | null
-      postal_code: string | null
-      state: string | null
-    }
-    email: string | null
-    name: string | null
-    phone: string | null
-  }
-  card: {
-    brand: string
-    checks: {
-      address_line1_check: string | null
-      address_postal_code_check: string | null
-      cvc_check: string
-    }
-    country: string
-    display_brand: string
-    exp_month: number
-    exp_year: number
-    fingerprint: string
-    funding: string
-    generated_from: string | null
-    last4: string
-    networks: {
-      available: string[]
-      preferred: string | null
-    }
-    three_d_secure_usage: {
-      supported: boolean
-    }
-    wallet: string | null
-  }
-  created: number
-  customer: string
-  livemode: boolean
-  metadata: Record<string, string>
-  type: string
-}
 
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {
       paymentMethods: [] as StripePaymentMethod[],
       defaultPaymentMethod: {} as StripePaymentMethod,
+      stripeCustomer: {} as any,
     }
   },
 
   actions: {
     async fetchUserPaymentMethods(): Promise<void> {
-      console.log(plans)
       const response: any = await fetch(`${apiUrl}/stripe/user-payment-methods`, {
         method: 'GET',
         headers: {
@@ -70,6 +23,18 @@ export const usePaymentStore = defineStore('payment', {
       }).then(res => res.json())
 
       this.paymentMethods = response.data
+    },
+
+    async fetchStripeCustomer(): Promise<void> {
+      const response: any = await fetch(`${apiUrl}/stripe/fetch-customer`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      }).then(res => res.json())
+
+      this.stripeCustomer = response
     },
 
     async fetchDefaultPaymentMethod(): Promise<void> {
@@ -96,6 +61,9 @@ export const usePaymentStore = defineStore('payment', {
     },
     getDefaultPaymentMethod(state): StripePaymentMethod[] {
       return state.defaultPaymentMethod
+    },
+    getStripeCustomer(state): any {
+      return state.stripeCustomer
     },
   },
 })

@@ -25,6 +25,7 @@ route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
+route.get('/stripe/fetch-customer', 'Actions/Payment/FetchStripeCustomerAction')
 route.get('/stripe/default-payment-method', 'Actions/Payment/FetchDefaultPaymentMethodAction')
 route.get('/stripe/user-payment-methods', 'Actions/Payment/FetchPaymentMethodsAction')
 route.get('/stripe/create-setup-intent', 'Actions/Payment/CreateSetupIntentAction')

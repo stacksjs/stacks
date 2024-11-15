@@ -2,17 +2,10 @@
 import CardBrands from './card-brands.vue'
 
 const paymentStore = usePaymentStore()
-
-const stripeLoading = ref(true)
-const showStripe = ref(false)
-
-onMounted(async () => {
-  await paymentStore.fetchUserPaymentMethods()
-})
 </script>
 
 <template>
-  <ul v-if="stripeLoading || !showStripe" role="list" class="grid grid-cols-1 mt-4 gap-6 lg:grid-cols-1 sm:grid-cols-1">
+  <ul role="list" class="grid grid-cols-1 mt-4 gap-6 lg:grid-cols-1 sm:grid-cols-1">
     <li v-for="(method, index) in paymentStore.getPaymentMethods" :key="index" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
         <div class="flex items-center justify-between">

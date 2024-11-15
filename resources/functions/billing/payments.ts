@@ -78,5 +78,11 @@ export function useBillable() {
     }
   }
 
-  return { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod, subscribeToPlan }
+  function isEmpty(object: any) {
+    return !object // Checks for null or undefined
+      || (typeof object === 'object'
+        && Object.keys(object).length === 0)
+  }
+
+  return { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod, subscribeToPlan, isEmpty }
 }

@@ -116,9 +116,9 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
-  async function retrieveStripeUser(user: UserModel): Promise<Stripe.Response<Stripe.Customer>> {
+  async function retrieveStripeUser(user: UserModel): Promise<Stripe.Response<Stripe.Customer> | undefined> {
     if (!hasStripeId(user)) {
-      throw new Error('User does not have a Stripe ID')
+     return undefined
     }
 
     try {

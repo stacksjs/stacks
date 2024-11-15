@@ -703,7 +703,7 @@ export class UserModel {
     return defaultPaymentMethod
   }
 
-  async asStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
+  async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
     return await this.retrieveStripeUser()
   }
 
