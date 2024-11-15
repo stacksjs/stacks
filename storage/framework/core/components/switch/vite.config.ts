@@ -40,8 +40,8 @@ export default defineConfig(({ mode }) => {
     userConfig.build = {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'StacksCombobox',
-        fileName: 'stacks-combobox',
+        name: 'StacksSwitch',
+        fileName: 'stacks-switch',
       },
       outDir: 'dist',
       emptyOutDir: true,
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
         output: [
           {
             format: 'es',
-            entryFileNames: `stacks-combobox.js`,
+            entryFileNames: `stacks-switch.js`,
             preserveModules: false,
           },
         ],
@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => {
 
           return {
             code: `\
-            function __insertCSSStacksCombobox(code) {
+            function __insertCSSStacksSwitch(code) {
               if (!code || typeof document == 'undefined') return
               let head = document.head || document.getElementsByTagName('head')[0]
               let style = document.createElement('style')
@@ -88,7 +88,7 @@ export default defineConfig(({ mode }) => {
               head.appendChild(style)
               ;style.styleSheet ? (style.styleSheet.cssText = code) : style.appendChild(document.createTextNode(code))
             }\n
-            __insertCSSStacksCombobox(${JSON.stringify(cssCodeStr)})
+            __insertCSSStacksSwitch(${JSON.stringify(cssCodeStr)})
             \n ${code}`,
             map: { mappings: '' },
           }
