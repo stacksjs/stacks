@@ -1,4 +1,4 @@
-import { test } from '@stacksjs/browser'
+import { plans } from '@stacksjs/browser'
 
 const apiUrl = `http://localhost:3008`
 
@@ -60,6 +60,7 @@ export const usePaymentStore = defineStore('payment', {
 
   actions: {
     async fetchUserPaymentMethods(): Promise<void> {
+      console.log(plans)
       const response: any = await fetch(`${apiUrl}/stripe/user-payment-methods`, {
         method: 'GET',
         headers: {

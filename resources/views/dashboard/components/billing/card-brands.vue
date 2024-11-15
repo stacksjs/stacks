@@ -22,7 +22,7 @@ const logoSrc = computed(() => {
 </script>
 
 <template>
-  <div class="w-24 h-24">
+  <div class="w-16">
     <img :src="logoSrc" :alt="`${brand} Logo`" />
   </div>
 </template>

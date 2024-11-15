@@ -41,27 +41,33 @@ onMounted(async () => {
       Payment Info
     </h2>
 
-    <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
-      <div class="w-full p-4">
-        <div class="flex space-x-4">
-          <CardBrands :brand="paymentStore.getDefaultPaymentMethod.card.brand" />
-          <h2 class="text-xl text-gray-600">
-            {{ paymentStore.getDefaultPaymentMethod.card.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.card.last4 }}
-            <br>
-            <span class="text-xs text-gray-500 italic">Expires {{ paymentStore.getDefaultPaymentMethod.card.exp_month }} /  {{ paymentStore.getDefaultPaymentMethod.card.exp_year }} </span>
-          </h2>
+    <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200 mt-8">
+      <div class="w-full p-3">
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-4 items-center">
+              <CardBrands :brand="paymentStore.getDefaultPaymentMethod.card.brand" alt="Brand Logo"/>
+              <h2 class="text-sm text-gray-600">
+                {{ paymentStore.getDefaultPaymentMethod.card.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.card.last4 }}
+                <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">Default</span>
+                <br>
+                <span class="text-xs text-gray-500 italic">Expires {{ paymentStore.getDefaultPaymentMethod.card.exp_month }} /  {{ paymentStore.getDefaultPaymentMethod.card.exp_year }} </span>
+              </h2>
+          </div>
 
-          <div>
-            <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-sm text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>
+          <div class="flex justify-end space-x-4">
+            <button
+              type="button"
+              class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+            >
+              <svg class="h-4 w-4 text-gray-700" data-slot="icon" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
     </div>
-
-
     <PaymentMethodList />
-
-
 
     <div v-show="!stripeLoading || showStripe">
       <form id="payment-form">
@@ -86,10 +92,10 @@ onMounted(async () => {
       </form>
     </div>
 
-    <div v-if="stripeLoading || !showStripe" class="mt-8 flex">
+    <div v-if="stripeLoading || !showStripe" class="mt-8 flex justify-end">
       <button
         type="button"
-        class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
         @click="loadWebElement()"
       >
         Add Payment Method

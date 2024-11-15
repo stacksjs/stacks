@@ -54,16 +54,38 @@ async function subscribePlan() {
 
 <template>
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-    <div class="flex items-center space-x-2">
-      <img
-        src="/images/logos/logo.svg"
-        alt=""
-        class="h-12 w-12 rounded-md"
-      >
+    <div class="flex justify-between items-center">
+      <div class="flex items-center space-x-2">
       <h2 class="text-lg text-gray-900 font-medium">
-        Stacks Dashboard Plans
+        Dashboard Plans
       </h2>
+      </div>
+
+      <div>
+        <div class="flex justify-center">
+          <fieldset aria-label="Payment frequency">
+            <div class="grid grid-cols-3 gap-x-1 rounded-full p-1 text-center text-xs/5 font-semibold ring-1 ring-gray-200 ring-inset">
+              <!-- Checked: "bg-blue-600 text-white", Not Checked: "text-gray-500" -->
+              <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-blue-600 text-white': checkedPlanType === 'monthly' }">
+                <input v-model="checkedPlanType" type="radio" name="frequency" value="monthly" class="sr-only">
+                <span>Monthly</span>
+              </label>
+
+              <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-blue-600 text-white': checkedPlanType === 'annually' }">
+                <input v-model="checkedPlanType" type="radio" name="frequency" value="annually" class="sr-only">
+                <span>Annually</span>
+              </label>
+
+              <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-blue-600 text-white': checkedPlanType === 'lifetime' }">
+                <input v-model="checkedPlanType" type="radio" name="frequency" value="lifetime" class="sr-only">
+                <span>Lifetime</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
     </div>
+    
 
     <div class="pt-8">
       <p class="text-gray-800 font-semibold">
@@ -72,30 +94,6 @@ async function subscribePlan() {
     </div>
 
     <div v-if="loading">
-      <div class="pt-8">
-        <div class="flex justify-center">
-          <fieldset aria-label="Payment frequency">
-            <div class="grid grid-cols-3 gap-x-1 rounded-full p-1 text-center text-xs/5 font-semibold ring-1 ring-gray-200 ring-inset">
-              <!-- Checked: "bg-indigo-600 text-white", Not Checked: "text-gray-500" -->
-              <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-indigo-600 text-white': checkedPlanType === 'monthly' }">
-                <input v-model="checkedPlanType" type="radio" name="frequency" value="monthly" class="sr-only">
-                <span>Monthly</span>
-              </label>
-
-              <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-indigo-600 text-white': checkedPlanType === 'annually' }">
-                <input v-model="checkedPlanType" type="radio" name="frequency" value="annually" class="sr-only">
-                <span>Annually</span>
-              </label>
-
-              <label class="cursor-pointer rounded-full px-2.5 py-1" :class="{ 'bg-indigo-600 text-white': checkedPlanType === 'lifetime' }">
-                <input v-model="checkedPlanType" type="radio" name="frequency" value="lifetime" class="sr-only">
-                <span>Lifetime</span>
-              </label>
-            </div>
-          </fieldset>
-        </div>
-      </div>
-
       <div class="pt-8">
         <fieldset aria-label="Server size">
           <div class="space-y-4">
