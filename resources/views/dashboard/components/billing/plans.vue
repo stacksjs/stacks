@@ -40,7 +40,6 @@ const proPrice = computed(() => {
   return 749
 })
 
-
 async function subscribePlan() {
   const subscriptionIntent = await subscribeToPlan({
     type: planTypeKey.value,
@@ -48,17 +47,18 @@ async function subscribePlan() {
   })
 
   // TODO: fire a toast or something
-  if (subscriptionIntent) alert('success!')
+  if (subscriptionIntent)
+    alert('success!')
 }
 </script>
 
 <template>
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-    <div class="flex justify-between items-center">
+    <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2">
-      <h2 class="text-lg text-gray-900 font-medium">
-        Dashboard Plans
-      </h2>
+        <h2 class="text-lg text-gray-900 font-medium">
+          Dashboard Plans
+        </h2>
       </div>
 
       <div>
@@ -85,7 +85,6 @@ async function subscribePlan() {
         </div>
       </div>
     </div>
-    
 
     <div class="pt-8">
       <p class="text-gray-800 font-semibold">
@@ -140,7 +139,7 @@ async function subscribePlan() {
         <button
           type="button"
           :disabled="!paymentStore.hasPaymentMethods"
-          class="rounded-md disabled:bg-gray-600 bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
           @click="subscribePlan()"
         >
           Subscribe

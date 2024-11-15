@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption } from './components'
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from './components'
 
 const plugin: Plugin = {
   install(app) {

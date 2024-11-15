@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption, ComboboxButton } from '../components'
 import { TransitionRoot } from '@headlessui/vue'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '../components'
 
-type Person = {
+interface Person {
   id: number
   name: string
 }
@@ -19,15 +19,15 @@ const people = ref<Person[]>([
 
 const selected = ref<Person | null>(null)
 const query = ref<string>('')
-let filteredPeople = computed(() =>
+const filteredPeople = computed(() =>
   query.value === ''
     ? people
     : people.value.filter((person: Person) =>
-        person.name
-          .toLowerCase()
-          .replace(/\s+/g, '')
-          .includes(query.value.toLowerCase().replace(/\s+/g, ''))
-      )
+      person.name
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .includes(query.value.toLowerCase().replace(/\s+/g, '')),
+    ),
 ) as Ref<Person[]>
 </script>
 
@@ -45,17 +45,17 @@ let filteredPeople = computed(() =>
       An opinionated combobox component for Stacks.
     </p>
     <div class="flex gap-2">
-      <div class="flex mr-auto relative z-20 inline-block text-left">
+      <div class="relative z-20 mr-auto inline-block flex text-left">
         <Combobox v-model="selected">
           <div class="relative mt-1">
             <div
-              class="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
+              class="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/75 focus-visible:ring-offset-teal-300"
             >
               <ComboboxInput
-                class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0 focus:outline-none"
-                :displayValue="(person: any) => person?.name"
-                @change="query = $event.target.value"
+                class="w-full border-none py-2 pl-3 pr-10 text-sm text-gray-900 leading-5 focus:outline-none focus:ring-0"
+                :display-value="(person: any) => person?.name"
                 placeholder="Search..."
+                @change="query = $event.target.value"
               />
               <ComboboxButton
                 class="absolute inset-y-0 right-0 flex items-center pr-2"
@@ -65,12 +65,12 @@ let filteredPeople = computed(() =>
             </div>
             <TransitionRoot
               leave="transition ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+              leave-from="opacity-100"
+              leave-to="opacity-0"
               @after-leave="query = ''"
             >
               <ComboboxOptions
-                class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
+                class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm focus:outline-none"
               >
                 <div
                   v-if="filteredPeople.length === 0 && query !== ''"
@@ -81,10 +81,10 @@ let filteredPeople = computed(() =>
 
                 <ComboboxOption
                   v-for="person in filteredPeople"
-                  as="template"
                   :key="person.id"
-                  :value="person"
                   v-slot="{ selected, active }"
+                  as="template"
+                  :value="person"
                 >
                   <li
                     class="relative cursor-default select-none py-2 pl-10 pr-4"

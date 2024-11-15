@@ -16,42 +16,42 @@ export const manageSubscription: SubscriptionManager = (() => {
     user: UserModel,
     type: string,
     lookupKey: string,
-    params: Partial<Stripe.SubscriptionCreateParams>
+    params: Partial<Stripe.SubscriptionCreateParams>,
   ): Promise<Stripe.Response<Stripe.Subscription>> {
-    const price = await managePrice.retrieveByLookupKey(lookupKey);
-  
+    const price = await managePrice.retrieveByLookupKey(lookupKey)
+
     if (!price) {
-      throw new Error('Price does not exist in Stripe');
+      throw new Error('Price does not exist in Stripe')
     }
-  
+
     const subscriptionItems = [
       {
         price: price.id,
         quantity: 1,
       },
-    ];
-  
+    ]
+
     const customerId = await manageCustomer.createOrGetStripeUser(user, {}).then((customer) => {
       if (!customer || !customer.id) {
-        throw new Error('Customer does not exist in Stripe');
+        throw new Error('Customer does not exist in Stripe')
       }
-      return customer.id;
-    });
-  
+      return customer.id
+    })
+
     const defaultParams: Stripe.SubscriptionCreateParams = {
       customer: customerId,
       payment_behavior: 'allow_incomplete', // or omit this line entirely
       expand: ['latest_invoice.payment_intent'],
       items: subscriptionItems,
-    };
-  
-    const mergedParams = { ...defaultParams, ...params };
-  
-    const subscription = await stripe.subscription.create(mergedParams);
-  
-    await storeSubscription(user, type, subscription);
-  
-    return subscription;
+    }
+
+    const mergedParams = { ...defaultParams, ...params }
+
+    const subscription = await stripe.subscription.create(mergedParams)
+
+    await storeSubscription(user, type, subscription)
+
+    return subscription
   }
 
   async function isActive(subscription: SubscriptionModel): Promise<boolean> {

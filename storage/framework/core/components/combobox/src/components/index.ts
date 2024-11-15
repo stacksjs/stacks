@@ -1,9 +1,9 @@
 import {
   Combobox,
-  ComboboxInput,
   ComboboxButton,
-  ComboboxOptions,
+  ComboboxInput,
   ComboboxOption,
+  ComboboxOptions,
 } from '@headlessui/vue'
 
-export { Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption }
+export { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions }

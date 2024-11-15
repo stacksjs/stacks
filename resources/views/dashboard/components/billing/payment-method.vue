@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import CardBrands from './card-brands.vue'
-import PaymentMethodList from './payment-method-list.vue'
-
 import { useBillable } from '../../../../functions/billing/payments'
+import CardBrands from './card-brands.vue'
+
+import PaymentMethodList from './payment-method-list.vue'
 
 const paymentStore = usePaymentStore()
 
@@ -41,17 +41,17 @@ onMounted(async () => {
       Payment Info
     </h2>
 
-    <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200 mt-8">
+    <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-4 items-center">
-              <CardBrands :brand="paymentStore.getDefaultPaymentMethod.card.brand" alt="Brand Logo"/>
-              <h2 class="text-sm text-gray-600">
-                {{ paymentStore.getDefaultPaymentMethod.card.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.card.last4 }}
-                <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">Default</span>
-                <br>
-                <span class="text-xs text-gray-500 italic">Expires {{ paymentStore.getDefaultPaymentMethod.card.exp_month }} /  {{ paymentStore.getDefaultPaymentMethod.card.exp_year }} </span>
-              </h2>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <CardBrands :brand="paymentStore.getDefaultPaymentMethod.card.brand" alt="Brand Logo" />
+            <h2 class="text-sm text-gray-600">
+              {{ paymentStore.getDefaultPaymentMethod.card.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.card.last4 }}
+              <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>
+              <br>
+              <span class="text-xs text-gray-500 italic">Expires {{ paymentStore.getDefaultPaymentMethod.card.exp_month }} /  {{ paymentStore.getDefaultPaymentMethod.card.exp_year }} </span>
+            </h2>
           </div>
 
           <div class="flex justify-end space-x-4">

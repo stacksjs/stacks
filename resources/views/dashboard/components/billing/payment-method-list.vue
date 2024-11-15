@@ -15,13 +15,13 @@ onMounted(async () => {
   <ul v-if="stripeLoading || !showStripe" role="list" class="grid grid-cols-1 mt-4 gap-6 lg:grid-cols-1 sm:grid-cols-1">
     <li v-for="(method, index) in paymentStore.getPaymentMethods" :key="index" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
-        <div class="flex justify-between items-center">
-          <div class="flex space-x-4 items-center">
-              <CardBrands :brand="method.card.brand" alt="Brand Logo"/>
-              <h2 class="text-sm text-gray-600">
-                {{ method.card.brand }} •••• {{ method.card.last4 }} <br>
-                <span class="text-xs text-gray-500 italic">Expires {{ method.card.exp_month }} /  {{ method.card.exp_year }} </span>
-              </h2>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <CardBrands :brand="method.card.brand" alt="Brand Logo" />
+            <h2 class="text-sm text-gray-600">
+              {{ method.card.brand }} •••• {{ method.card.last4 }} <br>
+              <span class="text-xs text-gray-500 italic">Expires {{ method.card.exp_month }} /  {{ method.card.exp_year }} </span>
+            </h2>
           </div>
 
           <div class="flex justify-end space-x-4">

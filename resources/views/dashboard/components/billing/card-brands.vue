@@ -23,6 +23,6 @@ const logoSrc = computed(() => {
 
 <template>
   <div class="w-16">
-    <img :src="logoSrc" :alt="`${brand} Logo`" />
+    <img :src="logoSrc" :alt="`${brand} Logo`">
   </div>
 </template>
