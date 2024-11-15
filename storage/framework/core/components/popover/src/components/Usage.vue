@@ -70,5 +70,4 @@ async function handleCopyCode() {
 code {
   font-weight: 600;
 }
-
 </style>

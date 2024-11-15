@@ -1113,7 +1113,13 @@ export async function generateModelString(
       return defaultPaymentMethod
     }
 
-    async asStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
+     async setDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
+      const updatedCustomer = await managePaymentMethod.setDefaultPaymentMethod(this, paymentMethodId)
+    
+      return updatedCustomer
+    }
+
+     async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
       return await this.retrieveStripeUser()
     }
 

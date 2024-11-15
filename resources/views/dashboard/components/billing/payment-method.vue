@@ -5,17 +5,20 @@ import CardBrands from './card-brands.vue'
 import PaymentMethodList from './payment-method-list.vue'
 
 const paymentStore = usePaymentStore()
+const clientSecret = ref('')
 
 const stripeLoading = ref(true)
 const showStripe = ref(false)
+const elements = ref('')
 
 const { fetchSetupIntent, loadStripeElement, isEmpty, handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
-  const clientSecret = await fetchSetupIntent()
+  clientSecret.value = await fetchSetupIntent()
 
-  showStripe.value = await loadStripeElement(clientSecret)
+  elements.value = await loadStripeElement(clientSecret.value)
 
+  showStripe.value = true
   stripeLoading.value = false
 }
 
@@ -75,7 +78,7 @@ function cancelPaymentForm() {
           <button
             type="button"
             class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-            @click="handleAddPaymentMethod()"
+            @click="handleAddPaymentMethod(clientSecret, elements)"
           >
             Save Payment Method
           </button>

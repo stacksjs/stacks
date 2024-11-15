@@ -3,7 +3,6 @@ import { loadStripe } from '@stripe/stripe-js'
 export const publishableKey = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY
 
 const stripe = ref(null as any)
-const elements = ref(null as any)
 
 export function useBillable() {
   async function fetchSetupIntent(): Promise<string> {
@@ -40,40 +39,78 @@ export function useBillable() {
     return client
   }
 
-  async function loadStripeElement(clientSecret: string): Promise<boolean> {
+  async function loadStripeElement(clientSecret: string): Promise<any> {
     stripe.value = await loadStripe(publishableKey)
 
-    if (stripe) {
-      elements.value = stripe.value.elements({ clientSecret })
+    const elements = stripe.value.elements()
+    const cardElement = elements.create('card')
 
-      const paymentElement = elements.value.create('payment', {
-        fields: { billingDetails: 'auto' },
-      })
+    cardElement.mount('#payment-element')
 
-      paymentElement.mount('#payment-element')
+    return cardElement
 
-      return true
-    }
+    // if (stripe) {
+    //   elements.value = stripe.value.elements({ clientSecret })
 
-    return false
+    //   const paymentElement = elements.value.create('payment', {
+    //     fields: { billingDetails: 'auto' },
+    //   })
+
+    //   paymentElement.mount('#payment-element')
+
+    //   return true
+    // }
+
+    // return false
   }
 
-  async function handleAddPaymentMethod() {
-    if (!stripe.value || !elements.value)
+  async function setDefaultPaymentMethod(setupIntent: string): Promise<string> {
+    const url = 'http://localhost:3008/stripe/set-default-payment-method'
+
+    const body = { setupIntent }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+
+    const res: any = await response.json()
+
+    return res
+  }
+
+  async function handleAddPaymentMethod(clientSecret: string, elements: any) {
+    console.log(stripe.value)
+    console.log(elements)
+    if (!stripe.value || !elements)
       return
 
-    const { setupIntent, error } = await stripe.value.confirmSetup({
-      elements: elements.value,
-      confirmParams: {
-        return_url: 'http://localhost:5173/settings/billing',
+    const { setupIntent, error } = await stripe.value.confirmCardSetup(
+      clientSecret,
+      {
+        payment_method: {
+          card: elements,
+          billing_details: { name: 'Chris Breuer' },
+        },
       },
-    })
+    )
+
+    // const { setupIntent, error } = await stripe.value.confirmSetup({
+    //   elements: elements.value,
+    //   confirmParams: {
+    //     return_url: 'http://localhost:5173/settings/billing',
+    //   },
+    // })
 
     if (error) {
       console.error(error.message) // Display or handle error for the user
     }
     else {
-      console.log('Setup Intent successful:', setupIntent)
+      setDefaultPaymentMethod(setupIntent.payment_method)
       // You might save setupIntent.id to your database here
     }
   }
