@@ -2,7 +2,6 @@ import type { StripePaymentMethod } from '../types/billing'
 
 const apiUrl = `http://localhost:3008`
 
-
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {

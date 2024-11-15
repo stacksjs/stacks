@@ -9,7 +9,7 @@ const paymentStore = usePaymentStore()
 const stripeLoading = ref(true)
 const showStripe = ref(false)
 
-const { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod } = useBillable()
+const { fetchSetupIntent, loadStripeElement, isEmpty, handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
   const clientSecret = await fetchSetupIntent()
@@ -23,12 +23,6 @@ function cancelPaymentForm() {
   showStripe.value = false
   stripeLoading.value = true
 }
-
-function isEmpty(defaultPaymentMethod: any) {
-  return !defaultPaymentMethod // Checks for null or undefined
-    || (typeof defaultPaymentMethod === 'object'
-      && Object.keys(defaultPaymentMethod).length === 0)
-}
 </script>
 
 <template>
@@ -37,6 +31,15 @@ function isEmpty(defaultPaymentMethod: any) {
       Payment Info
     </h2>
 
+    <div v-if="!paymentStore.hasPaymentMethods">
+      <div class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
+        <div class="w-full px-4 py-5">
+          <h2 class="text-center text-sm text-gray-600">
+            You haven't added any payment methods yet.
+          </h2>
+        </div>
+      </div>
+    </div>
     <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
         <div class="flex items-center justify-between">

@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
 import type { UserModel } from '../../../../orm/src/models/User'
-import { stripe } from '..'
+import { manageCustomer, stripe } from '..'
 
 export interface SetupIntent {
   create: (user: UserModel, params: Stripe.SetupIntentCreateParams) => Promise<Stripe.Response<Stripe.SetupIntent>>
@@ -8,12 +8,15 @@ export interface SetupIntent {
 
 export const manageSetupIntent: SetupIntent = (() => {
   async function create(user: UserModel, params: Stripe.SetupIntentCreateParams): Promise<Stripe.Response<Stripe.SetupIntent>> {
-    if (!user.hasStripeId()) {
-      throw new Error('Customer does not exist in Stripe')
-    }
+    const customerId = await manageCustomer.createOrGetStripeUser(user, {}).then((customer) => {
+      if (!customer || !customer.id) {
+        throw new Error('Customer does not exist in Stripe')
+      }
+      return customer.id
+    })
 
     const defaultParams: Partial<Stripe.SetupIntentCreateParams> = {
-      customer: user.stripeId(),
+      customer: customerId,
       payment_method_types: ['card'],
     }
 

@@ -685,17 +685,18 @@ export class UserModel {
     return customer
   }
 
-  async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
+  async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
     const customer = await manageCustomer.retrieveStripeUser(this)
     return customer
   }
 
-  async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | null> {
+  async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | {}> {
     const customer = await this.retrieveStripeUser()
-    const defaultPaymentMethodId = customer.invoice_settings?.default_payment_method as string
+
+    const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method as string
 
     if (!defaultPaymentMethodId) {
-      return null
+      return {}
     }
 
     const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, defaultPaymentMethodId)
@@ -703,7 +704,7 @@ export class UserModel {
     return defaultPaymentMethod
   }
 
-  async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
+  async asStripeUser(): Promise<Stripe.Response<Stripe.Customer>> {
     return await this.retrieveStripeUser()
   }
 

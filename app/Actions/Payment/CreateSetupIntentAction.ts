@@ -7,7 +7,7 @@ export default new Action({
   description: 'Create Setup Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const user = await User.find(1)
+    const user = await User.find(2)
 
     const setupIntent = await user?.createSetupIntent()
 

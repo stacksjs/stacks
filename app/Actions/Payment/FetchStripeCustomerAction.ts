@@ -6,7 +6,7 @@ export default new Action({
   description: 'Fetch the stripe customer',
   method: 'GET',
   async handle() {
-    const user = await User.find(1)
+    const user = await User.find(2)
 
     const customer = await user?.asStripeUser()
 

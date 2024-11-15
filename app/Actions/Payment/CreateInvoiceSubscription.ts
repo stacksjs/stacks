@@ -6,7 +6,7 @@ export default new Action({
   description: 'Create Invoice Subscription for Stripe',
   method: 'POST',
   async handle() {
-    const user = await User.find(1)
+    const user = await User.find(2)
 
     const subscription = await user?.newSubscriptionInvoice('pro', 'stacks_pro_monthly')
 

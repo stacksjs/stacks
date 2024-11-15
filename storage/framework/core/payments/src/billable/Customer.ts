@@ -9,7 +9,7 @@ export interface ManageCustomer {
   createStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   updateStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   createOrGetStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer>>
+  retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer> | undefined>
   createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   deleteStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.DeletedCustomer>>
   syncStripeCustomerDetails: (user: UserModel, options: StripeCustomerOptions) => Promise<Stripe.Response<Stripe.Customer>>
@@ -118,7 +118,7 @@ export const manageCustomer: ManageCustomer = (() => {
 
   async function retrieveStripeUser(user: UserModel): Promise<Stripe.Response<Stripe.Customer> | undefined> {
     if (!hasStripeId(user)) {
-     return undefined
+      return undefined
     }
 
     try {

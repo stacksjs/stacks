@@ -6,7 +6,7 @@ export default new Action({
   description: 'Create Checkout link for stripe',
   method: 'POST',
   async handle() {
-    const user = await User.find(1)
+    const user = await User.find(2)
 
     const checkout = await user?.checkout([
       {
