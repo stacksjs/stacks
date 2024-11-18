@@ -79,13 +79,12 @@ export function useBillable() {
     })
 
     const res: any = await response.json()
+    
 
     return res
   }
 
   async function handleAddPaymentMethod(clientSecret: string, elements: any) {
-    console.log(stripe.value)
-    console.log(elements)
     if (!stripe.value || !elements)
       return
 
@@ -106,13 +105,14 @@ export function useBillable() {
     //   },
     // })
 
-    if (error) {
+    if (error)
       console.error(error.message) // Display or handle error for the user
-    }
     else {
-      setDefaultPaymentMethod(setupIntent.payment_method)
-      // You might save setupIntent.id to your database here
+      await setDefaultPaymentMethod(setupIntent.payment_method)
+
+      alert('Successfully saved payment method!')
     }
+    
   }
 
   function isEmpty(object: any) {

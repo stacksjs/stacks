@@ -22,6 +22,16 @@ async function loadWebElement() {
   stripeLoading.value = false
 }
 
+async function submitPaymentMethod(clientSecret: string, elements: any) {
+  await handleAddPaymentMethod(clientSecret, elements)
+
+  await paymentStore.fetchDefaultPaymentMethod()
+
+  showStripe.value = false
+  stripeLoading.value = true
+  
+}
+
 function cancelPaymentForm() {
   showStripe.value = false
   stripeLoading.value = true
@@ -78,7 +88,7 @@ function cancelPaymentForm() {
           <button
             type="button"
             class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-            @click="handleAddPaymentMethod(clientSecret, elements)"
+            @click="submitPaymentMethod(clientSecret, elements)"
           >
             Save Payment Method
           </button>

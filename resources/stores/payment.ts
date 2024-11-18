@@ -1,13 +1,16 @@
 import type { StripePaymentMethod } from '../types/billing'
+import Stripe from 'stripe'
 
 const apiUrl = `http://localhost:3008`
+
 
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {
       paymentMethods: [] as StripePaymentMethod[],
       defaultPaymentMethod: {} as StripePaymentMethod,
-      stripeCustomer: {} as any,
+      stripeCustomer: {} as Stripe.Customer,
+      paymentPlans: [] as any[]
     }
   },
 
@@ -23,7 +26,6 @@ export const usePaymentStore = defineStore('payment', {
 
       this.paymentMethods = response.data
     },
-
     async fetchStripeCustomer(): Promise<void> {
       const response: any = await fetch(`${apiUrl}/stripe/fetch-customer`, {
         method: 'GET',
@@ -63,7 +65,7 @@ export const usePaymentStore = defineStore('payment', {
     },
     getStripeCustomer(state): any {
       return state.stripeCustomer
-    },
+    }
   },
 })
 

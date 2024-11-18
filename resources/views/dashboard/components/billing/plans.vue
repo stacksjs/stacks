@@ -1,14 +1,27 @@
 <script setup lang="ts">
 import { useBillable } from '../../../../functions/billing/payments'
+import { saas } from '@stacksjs/browser'
+
 
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
 const paymentStore = usePaymentStore()
-const planTypeKey = ref('stacks_hobby_early_monthly')
 
 const { subscribeToPlan } = useBillable()
 
 const loading = ref(true)
+
+const monthlyPricing = computed(() =>
+  saas.plans.flatMap(product => product.pricing).filter(price => price.interval === 'month')
+)
+
+const yearlyPricing = computed(() =>
+  saas.plans.flatMap(product => product.pricing).filter(price => price.interval === 'year')
+)
+
+const noIntervalPricing = computed(() =>
+  saas.plans.flatMap(product => product.pricing).filter(price => !price.interval)
+)
 
 const perText = computed(() => {
   if (checkedPlanType.value === 'monthly')
@@ -21,29 +34,63 @@ const perText = computed(() => {
 })
 
 const hobbyPrice = computed(() => {
-  if (checkedPlanType.value === 'monthly')
-    return 39
+  if (checkedPlanType.value === 'monthly') {
+    const plan = monthlyPricing.value.find(monthly => monthly.key === 'stacks_hobby_monthly')
 
-  if (checkedPlanType.value === 'annually')
-    return 379
+    return ((plan?.price || 3900) / 100)
+  }
+  
 
-  return 479
+  if (checkedPlanType.value === 'annually') {
+    const plan = yearlyPricing.value.find(monthly => monthly.key === 'stacks_hobby_yearly')
+
+    return ((plan?.price || 37900) / 100)
+  }
+
+  const plan = noIntervalPricing.value.find(monthly => monthly.key === 'stacks_hobby_lifetime')
+
+  return ((plan?.price || 47900) / 100)
 })
 
 const proPrice = computed(() => {
-  if (checkedPlanType.value === 'monthly')
-    return 59
+  if (checkedPlanType.value === 'monthly') {
+    const plan = monthlyPricing.value.find(monthly => monthly.key === 'stacks_pro_monthly')
 
-  if (checkedPlanType.value === 'annually')
-    return 579
+    return ((plan?.price || 5900) / 100)
+  }
+  
 
-  return 749
+  if (checkedPlanType.value === 'annually') {
+    const plan = yearlyPricing.value.find(monthly => monthly.key === 'stacks_pro_yearly')
+
+    return ((plan?.price || 57900) / 100)
+  }
+
+  const plan = noIntervalPricing.value.find(monthly => monthly.key === 'stacks_pro_lifetime')
+
+return ((plan?.price || 74900) / 100)
+})
+
+const getPlanTypeKey = computed(() => {
+  if (checkedPlanType.value === 'monthly' && selectedPlan.value === 'hobby')
+    return 'stacks_hobby_monthly'
+
+  if (checkedPlanType.value === 'annually' && selectedPlan.value === 'hobby')
+    return 'stacks_yearly_monthly'
+
+  if (checkedPlanType.value === 'monthly' && selectedPlan.value === 'pro')
+    return 'stacks_pro_monthly'
+
+  if (checkedPlanType.value === 'annually' && selectedPlan.value === 'pro')
+    return 'stacks_pro_yearly'
+
+  return 'stacks_hobby_monthly'
 })
 
 async function subscribePlan() {
   const subscriptionIntent = await subscribeToPlan({
-    type: planTypeKey.value,
-    plan: selectedPlan.value,
+    type: getPlanTypeKey.value,
+    plan: selectedPlan.value
   })
 
   // TODO: fire a toast or something
@@ -94,9 +141,10 @@ async function subscribePlan() {
 
     <div v-if="loading">
       <div class="pt-8">
-        <fieldset aria-label="Server size">
+        <fieldset>
           <div class="space-y-4">
-            <label aria-label="hobby" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+            <label 
+              class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
               <input v-model="selectedPlan" type="radio" value="hobby" class="sr-only">
               <span class="flex items-center">
                 <span class="flex flex-col text-sm">
@@ -108,11 +156,12 @@ async function subscribePlan() {
                 </span>
               </span>
               <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-                <span class="text-gray-900 font-medium">$ {{ hobbyPrice }} </span>
+                <span class="text-gray-900 font-medium">$ {{ hobbyPrice }}</span>
                 <span class="ml-1 text-gray-500 sm:ml-0">{{ perText }}</span>
               </span>
               <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'hobby', 'border ': selectedPlan !== 'hobby' }" />
             </label>
+
             <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
             <label aria-label="pro" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
               <input v-model="selectedPlan" type="radio" value="pro" class="sr-only">

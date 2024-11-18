@@ -717,6 +717,7 @@ declare global {
   const pausableWatch: typeof import('../core/browser/dist/index.js')['pausableWatch']
   const paymentsPath: typeof import('../core/path/src/index')['paymentsPath']
   const perPage: typeof import('../core/search-engine/src/index')['perPage']
+  const plans: typeof import('../../../resources/stores/payment')['plans']
   const playwrightConfig: typeof import('../core/playwright.config')['default']
   const plivo: typeof import('../core/sms/src/drivers/index')['plivo']
   const pluckChanges: typeof import('../core/database/src/drivers/index')['pluckChanges']
