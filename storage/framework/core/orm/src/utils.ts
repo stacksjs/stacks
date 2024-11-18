@@ -1099,14 +1099,14 @@ export async function generateModelString(
       return customer
     }
 
-    async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | {}> {
+    async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | object> {
       const customer = await this.retrieveStripeUser()
 
       const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method as string
 
       if (!defaultPaymentMethodId) {
         return {}
-      }
+    }
 
       const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, defaultPaymentMethodId)
 
