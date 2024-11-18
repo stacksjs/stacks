@@ -26,6 +26,27 @@ export const usePaymentStore = defineStore('payment', {
 
       this.paymentMethods = response.data
     },
+
+    async deletePaymentMethod(paymentMethod: string): Promise<string> {
+      const url = 'http://localhost:3008/stripe/delete-payment-method'
+  
+      const body = { paymentMethod }
+  
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+  
+      const res: any = await response.json()
+      
+  
+      return res
+    },
+
     async fetchStripeCustomer(): Promise<void> {
       const response: any = await fetch(`${apiUrl}/stripe/fetch-customer`, {
         method: 'GET',
