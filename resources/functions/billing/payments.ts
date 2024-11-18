@@ -1,6 +1,7 @@
 import { loadStripe } from '@stripe/stripe-js'
 
 export const publishableKey = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY
+const paymentStore = usePaymentStore()
 
 const stripe = ref(null as any)
 
@@ -98,17 +99,11 @@ export function useBillable() {
       },
     )
 
-    // const { setupIntent, error } = await stripe.value.confirmSetup({
-    //   elements: elements.value,
-    //   confirmParams: {
-    //     return_url: 'http://localhost:5173/settings/billing',
-    //   },
-    // })
-
     if (error)
       console.error(error.message) // Display or handle error for the user
     else {
-      await setDefaultPaymentMethod(setupIntent.payment_method)
+      if (! paymentStore.hasPaymentMethods)
+        await setDefaultPaymentMethod(setupIntent.payment_method)
 
       alert('Successfully saved payment method!')
     }
