@@ -1,0 +1,69 @@
+{
+  "name": "@stacksjs/radio-group",
+  "type": "module",
+  "version": "0.68.2",
+  "description": "A modern radio group component.",
+  "author": "Chris Breuer",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/radio-group#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/components/radio-group"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "radiogroup",
+    "components",
+    "library",
+    "stacks"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build --mode lib",
+    "build:demo": "bunx --bun vite build",
+    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "preview": "bunx --bun vite preview",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@headlessui/vue": "^1.7.23",
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.10.0",
+    "vue": "^3.5.12"
+  },
+  "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.1",
+    "@microsoft/api-extractor": "^7.47.11",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
+    "@vue/tsconfig": "^0.5.1",
+    "clean-css": "^5.3.3",
+    "unocss": "0.61.0",
+    "unplugin-icons": "^0.19.3"
+  }
+}
