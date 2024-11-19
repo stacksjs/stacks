@@ -11,10 +11,10 @@ const stripeLoading = ref(true)
 const showStripe = ref(false)
 const elements = ref('')
 
-const { fetchSetupIntent, loadStripeElement, isEmpty, handleAddPaymentMethod } = useBillable()
+const { loadStripeElement, isEmpty, handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
-  clientSecret.value = await fetchSetupIntent()
+  clientSecret.value = await paymentStore.fetchSetupIntent()
 
   elements.value = await loadStripeElement(clientSecret.value)
 

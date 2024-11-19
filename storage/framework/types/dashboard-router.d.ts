@@ -23,6 +23,7 @@ declare module 'vue-router/auto-routes' {
     '/buddy/': RouteRecordInfo<'/buddy/', '/buddy', Record<never, never>, Record<never, never>>,
     '/commands/': RouteRecordInfo<'/commands/', '/commands', Record<never, never>, Record<never, never>>,
     '/components/': RouteRecordInfo<'/components/', '/components', Record<never, never>, Record<never, never>>,
+    '/components/billing/active-plan': RouteRecordInfo<'/components/billing/active-plan', '/components/billing/active-plan', Record<never, never>, Record<never, never>>,
     '/components/billing/card-brands': RouteRecordInfo<'/components/billing/card-brands', '/components/billing/card-brands', Record<never, never>, Record<never, never>>,
     '/components/billing/payment-method': RouteRecordInfo<'/components/billing/payment-method', '/components/billing/payment-method', Record<never, never>, Record<never, never>>,
     '/components/billing/payment-method-list': RouteRecordInfo<'/components/billing/payment-method-list', '/components/billing/payment-method-list', Record<never, never>, Record<never, never>>,

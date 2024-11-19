@@ -9,10 +9,11 @@ export default new Action({
   async handle(request: RequestInstance) {
     const type = request.get('type') as string
     const plan = request.get('plan') as string
+    const description = request.get('description') as string
 
     const user = await User.find(1)
 
-    const subscription = await user?.newSubscription(plan, type)
+    const subscription = await user?.newSubscription(plan, type, { description })
 
     return subscription?.paymentIntent
   },

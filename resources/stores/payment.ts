@@ -8,12 +8,47 @@ export const usePaymentStore = defineStore('payment', {
     return {
       paymentMethods: [] as StripePaymentMethod[],
       defaultPaymentMethod: {} as StripePaymentMethod,
+      activeSubscription: {} as Stripe.Subscription,
       stripeCustomer: {} as Stripe.Customer,
       paymentPlans: [] as any[],
     }
   },
 
   actions: {
+    async fetchSetupIntent(): Promise<string> {
+      const url = 'http://localhost:3008/stripe/create-setup-intent'
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      const client: any = await response.json()
+      const clientSecret = client.client_secret
+
+      return clientSecret
+    },
+
+    async subscribeToPlan(body: { type: string, plan: string }): Promise<string> {
+      const url = 'http://localhost:3008/stripe/create-subscription'
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const client: any = await response.json()
+
+      return client
+    },
+
     async fetchUserPaymentMethods(): Promise<void> {
       const response: any = await fetch(`${apiUrl}/stripe/user-payment-methods`, {
         method: 'GET',
@@ -21,9 +56,13 @@ export const usePaymentStore = defineStore('payment', {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      }).then(res => res.json())
+      })
 
-      this.paymentMethods = response.data
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.paymentMethods = res.data
+      }
     },
 
     async deletePaymentMethod(paymentMethod: string): Promise<void> {
@@ -73,9 +112,12 @@ export const usePaymentStore = defineStore('payment', {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      }).then(res => res.json())
+      })
 
-      this.stripeCustomer = response
+      if (response.status !== 204) {
+        const res = await response.json()
+        this.stripeCustomer = res
+      }
     },
 
     async fetchDefaultPaymentMethod(): Promise<void> {
@@ -85,15 +127,38 @@ export const usePaymentStore = defineStore('payment', {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      }).then(res => res.json())
+      })
 
-      this.defaultPaymentMethod = response
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.defaultPaymentMethod = res
+      }
+    },
+
+    async fetchUserActivePlan(): Promise<void> {
+      const response: any = await fetch(`${apiUrl}/stripe/fetch-active-subscription`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.activeSubscription = res
+      }
     },
   },
 
   getters: {
     getPaymentMethods(state): StripePaymentMethod[] {
       return state.paymentMethods
+    },
+    getCurrentPlan(state): Stripe.Subscription {
+      return state.activeSubscription
     },
     hasPaymentMethods(state): boolean {
       return state.paymentMethods.length || !(!state.defaultPaymentMethod // Checks for null or undefined

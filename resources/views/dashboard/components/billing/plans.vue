@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { saas } from '@stacksjs/browser'
-import { useBillable } from '../../../../functions/billing/payments'
 
+console.log(saas)
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
 const paymentStore = usePaymentStore()
-
-const { subscribeToPlan } = useBillable()
 
 const loading = ref(true)
 
@@ -30,6 +28,13 @@ const perText = computed(() => {
     return '/year'
 
   return '/lifetime'
+})
+
+const planDescription = computed(() => {
+  if (selectedPlan.value === 'pro')
+    return 'All Stacks features are included & being able to invite team members.'
+
+  return 'All Stacks features are included'
 })
 
 const hobbyPrice = computed(() => {
@@ -85,9 +90,10 @@ const getPlanTypeKey = computed(() => {
 })
 
 async function subscribePlan() {
-  await subscribeToPlan({
+  await paymentStore.subscribeToPlan({
     type: getPlanTypeKey.value,
     plan: selectedPlan.value,
+    description: planDescription.value,
   })
 }
 </script>

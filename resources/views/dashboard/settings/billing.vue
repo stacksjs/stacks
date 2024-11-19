@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useBillable } from '../../../functions/billing/payments'
 
+import ActivePlan from '../components/billing/active-plan.vue'
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
 
@@ -13,6 +14,7 @@ onMounted(() => {
     if (!isEmpty(paymentStore.getStripeCustomer)) {
       await paymentStore.fetchDefaultPaymentMethod()
       await paymentStore.fetchUserPaymentMethods()
+      await paymentStore.fetchUserActivePlan()
     }
   })
 })
@@ -92,40 +94,9 @@ onMounted(() => {
       </div>
 
       <div class="flex space-x-8">
-        <!-- <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <h2 class="text-lg text-gray-900 font-medium">
-            Plan Details
-          </h2>
+        <ActivePlan />
 
-          <div class="pt-8">
-            <p class="text-gray-500">
-              Switch your subscription to a different type, such as a monthly plan, annual plan, or student plan.
-            </p>
-
-            <p class="pt-4 text-sm text-gray-700 font-semibold">
-              Next payment of $20 (yearly) occurs on August 30, 2025
-            </p>
-          </div>
-
-          <div class="mt-8 flex">
-            <button
-              type="button"
-              class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-            >
-              Cancel Plan
-            </button>
-
-            <button
-              type="button"
-              class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-              @click="payPlan()"
-            >
-              Change Plan
-            </button>
-          </div>
-        </div> -->
-
-        <Plans />
+        <Plans v-if="isEmpty(paymentStore.getCurrentPlan)" />
         <PaymentMethod />
       </div>
     </div>

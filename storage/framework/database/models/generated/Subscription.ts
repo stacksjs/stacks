@@ -49,7 +49,21 @@ export default {
       },
     },
 
-    provider_type: {
+    description: {
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+    },
+
+    unitPrice: {
+      fillable: true,
+      validation: {
+        rule: schema.number(),
+      },
+    },
+
+    providerType: {
       required: true,
       fillable: true,
       validation: {
@@ -61,7 +75,7 @@ export default {
       },
     },
 
-    provider_price_id: {
+    providerPriceId: {
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -83,7 +97,7 @@ export default {
       factory: () => faker.number.int,
     },
 
-    trial_ends_at: {
+    trialEndsAt: {
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -94,7 +108,7 @@ export default {
       factory: () => faker.date.future(),
     },
 
-    ends_at: {
+    endsAt: {
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -105,7 +119,7 @@ export default {
       factory: () => faker.date.future(),
     },
 
-    last_used_at: {
+    lastUsedAt: {
       validation: {
         rule: schema.string(),
         message: {

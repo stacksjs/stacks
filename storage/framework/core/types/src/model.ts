@@ -170,7 +170,7 @@ export interface Attribute {
   factory?: () => any
   validation?: {
     rule: VineType
-    message: ValidatorMessage
+    message?: ValidatorMessage
   }
   // validation?: String | Number | Boolean | Date
 }

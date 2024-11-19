@@ -6,38 +6,33 @@ const paymentStore = usePaymentStore()
 const stripe = ref(null as any)
 
 export function useBillable() {
-  async function fetchSetupIntent(): Promise<string> {
-    const url = 'http://localhost:3008/stripe/create-setup-intent'
+  function convertUnixTimestampToDate(timestamp: number): string {
+    // Create a Date object from the Unix timestamp
+    const date = new Date(timestamp * 1000) // Multiply by 1000 to convert to milliseconds
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    })
+    // Define arrays for month names
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ]
 
-    const client: any = await response.json()
-    const clientSecret = client.client_secret
+    // Extract day, month, and year
+    const day = date.getDate()
+    const month = monthNames[date.getMonth()]
+    const year = date.getFullYear()
 
-    return clientSecret
-  }
-
-  async function subscribeToPlan(body: { type: string, plan: string }): Promise<string> {
-    const url = 'http://localhost:3008/stripe/create-subscription'
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-
-    const client: any = await response.json()
-
-    return client
+    // Return the formatted string in "Month Day, Year" format
+    return `${month} ${day}, ${year}`
   }
 
   async function loadStripeElement(clientSecret: string): Promise<any> {
@@ -113,5 +108,5 @@ export function useBillable() {
         && Object.keys(object).length === 0)
   }
 
-  return { fetchSetupIntent, loadStripeElement, handleAddPaymentMethod, subscribeToPlan, isEmpty }
+  return { loadStripeElement, handleAddPaymentMethod, isEmpty }
 }

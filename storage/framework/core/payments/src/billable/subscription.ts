@@ -55,11 +55,11 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function isActive(subscription: SubscriptionModel): Promise<boolean> {
-    return subscription.stripe_status === 'active'
+    return subscription.provider_status === 'active'
   }
 
   async function isTrial(subscription: SubscriptionModel): Promise<boolean> {
-    return subscription.stripe_status === 'trialing'
+    return subscription.provider_status === 'trialing'
   }
 
   async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
@@ -70,7 +70,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     if (!subscription)
       return false
 
-    return subscription.stripe_status === 'incomplete'
+    return subscription.provider_status === 'incomplete'
   }
 
   async function isValid(user: UserModel, type: string): Promise<boolean> {
@@ -91,6 +91,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     const data = removeNullValues({
       user_id: user.id,
       type,
+      description: options.description,
       provider_id: options.id,
       provider_status: options.status,
       provider_price_id: options.items.data[0].price.id,

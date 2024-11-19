@@ -8,6 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('type', 'varchar(512)', col => col.notNull())
     .addColumn('provider_id', 'varchar(512)', col => col.unique().notNull())
     .addColumn('provider_status', 'varchar(255)', col => col.notNull())
+    .addColumn('description', 'varchar(255)')
     .addColumn('provider_type', 'varchar(255)', col => col.notNull())
     .addColumn('provider_price_id', 'varchar(255)')
     .addColumn('quantity', 'integer')
