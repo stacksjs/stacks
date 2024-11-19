@@ -91,12 +91,13 @@ export const manageSubscription: SubscriptionManager = (() => {
     const data = removeNullValues({
       user_id: user.id,
       type,
-      stripe_id: options.id,
-      stripe_status: options.status,
-      stripe_price: options.items.data[0].price.id,
+      provider_id: options.id,
+      provider_status: options.status,
+      provider_price_id: options.items.data[0].price.id,
       quantity: options.items.data[0].quantity,
       trial_ends_at: options.trial_end != null ? String(options.trial_end) : undefined,
       ends_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
+      provider_type: 'stripe',
       last_used_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
     })
 

@@ -85,14 +85,10 @@ const getPlanTypeKey = computed(() => {
 })
 
 async function subscribePlan() {
-  const subscriptionIntent = await subscribeToPlan({
+  await subscribeToPlan({
     type: getPlanTypeKey.value,
     plan: selectedPlan.value,
   })
-
-  // TODO: fire a toast or something
-  if (subscriptionIntent)
-    alert('success!')
 }
 </script>
 

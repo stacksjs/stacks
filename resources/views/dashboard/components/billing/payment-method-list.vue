@@ -12,7 +12,8 @@ async function deletePayment(paymentMethodId: string) {
 async function makeDefault(paymentMethodId: string) {
   await paymentStore.updateDefaultPaymentMethod(paymentMethodId)
 
-  paymentStore.fetchUserPaymentMethods()
+  await paymentStore.fetchUserPaymentMethods()
+  await paymentStore.fetchDefaultPaymentMethod()
 }
 </script>
 

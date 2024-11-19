@@ -9,7 +9,7 @@ export default new Action({
   async handle(request: RequestInstance) {
     const amount = Number(request.get('amount'))
 
-    const user = await User.find(2)
+    const user = await User.find(1)
 
     const paymentIntent = await user?.paymentIntent({
       amount,

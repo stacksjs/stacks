@@ -7,7 +7,7 @@ export default new Action({
   description: 'Delete the customers default payment method',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const user = await User.find(2)
+    const user = await User.find(1)
     const paymentMethod = request.get('paymentMethod') as string
 
     await user?.deletePaymentMethod(paymentMethod)

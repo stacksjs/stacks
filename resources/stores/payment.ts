@@ -40,7 +40,8 @@ export const usePaymentStore = defineStore('payment', {
           },
           body: JSON.stringify(body),
         })
-      } catch (err: any) {
+      }
+      catch (err: any) {
         console.log(err)
       }
     },
@@ -59,7 +60,8 @@ export const usePaymentStore = defineStore('payment', {
           },
           body: JSON.stringify(body),
         })
-      } catch (err: any) {
+      }
+      catch (err: any) {
         console.log(err)
       }
     },

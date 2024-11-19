@@ -12,8 +12,6 @@ export const managePrice: PriceManager = (() => {
     try {
       const prices = await stripe.price.list({ lookup_keys: [lookupKey] })
 
-      console.log('test', prices)
-
       if (!prices.data.length)
         return undefined
 

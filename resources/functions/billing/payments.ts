@@ -104,8 +104,6 @@ export function useBillable() {
     else {
       if (!paymentStore.hasPaymentMethods)
         await setDefaultPaymentMethod(setupIntent.payment_method)
-
-      alert('Successfully saved payment method!')
     }
   }
 

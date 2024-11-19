@@ -6,7 +6,7 @@ export default new Action({
   description: 'Fetch the user payment methods',
   method: 'GET',
   async handle() {
-    const user = await User.find(2)
+    const user = await User.find(1)
 
     const paymentMethods = await user?.paymentMethods()
 

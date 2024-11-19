@@ -197,7 +197,7 @@ async function createTableMigration(modelPath: string) {
     await createPasskeyMigration()
 
   if (useBillable && tableName === 'users')
-    await createSubscriptionMigration()
+    await createTableMigration(path.storagePath('framework/database/models/generated/Subscription.ts'))
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -330,41 +330,6 @@ async function createPasskeyMigration() {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success('Created passkey table')
-}
-
-async function createSubscriptionMigration() {
-  const hasBeenMigrated = await hasTableBeenMigrated('subscriptions')
-
-  if (hasBeenMigrated)
-    return
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('subscriptions')\n`
-  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
-  migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('type', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('stripe_id', 'varchar(255)', col => col.notNull().unique())\n`
-  migrationContent += `    .addColumn('stripe_status', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('stripe_price', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('quantity', 'integer')\n`
-  migrationContent += `    .addColumn('trial_ends_at', 'timestamp')\n`
-  migrationContent += `    .addColumn('ends_at', 'timestamp')\n`
-  migrationContent += `    .addColumn('last_used_at', 'text')\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .execute()\n`
-  migrationContent += `    }\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-stripe-subscriptions-table.ts`
-
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
-
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success('Created subscriptions table')
 }
 
 async function createAlterTableMigration(modelPath: string) {

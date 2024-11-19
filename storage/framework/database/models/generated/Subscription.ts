@@ -22,39 +22,51 @@ export default {
       },
     },
 
-    stripe_id: {
+    provider_id: {
       required: true,
       unique: true,
       fillable: true,
       validation: {
         rule: schema.string().maxLength(512),
         message: {
-          string: 'stripe_id must be a string',
-          required: 'stripe_id is required',
-          maxLength: 'stripe_id must have a maximum of 512 characters',
+          string: 'provider_id must be a string',
+          required: 'provider_id is required',
+          maxLength: 'provider_id must have a maximum of 512 characters',
         },
       },
       factory: () => faker.string.alphanumeric,
     },
 
-    stripe_status: {
+    provider_status: {
       required: true,
       fillable: true,
       validation: {
         rule: schema.string(),
         message: {
-          string: 'stripe_status must be a string',
-          required: 'stripe_status is required',
+          string: 'provider_status must be a string',
+          required: 'provider_status is required',
         },
       },
     },
 
-    stripe_price: {
+    provider_type: {
+      required: true,
       fillable: true,
       validation: {
         rule: schema.string(),
         message: {
-          string: 'stripe_price must be a string',
+          string: 'provider_type must be a string',
+          required: 'provider_type is required',
+        },
+      },
+    },
+
+    provider_price_id: {
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'provider_price_id must be a string',
         },
       },
       factory: () => faker.commerce.price(),
@@ -65,7 +77,7 @@ export default {
       validation: {
         rule: schema.number(),
         message: {
-          number: 'stripe_price must be a number',
+          number: 'quantity must be a number',
         },
       },
       factory: () => faker.number.int,

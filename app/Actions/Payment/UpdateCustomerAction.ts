@@ -7,7 +7,7 @@ export default new Action({
   method: 'POST',
   async handle() {
     // async handle(request: RequestInstance) {
-    const user = await User.find(2)
+    const user = await User.find(1)
 
     const customer = await user?.syncStripeCustomerDetails({ address: {
       line1: '123 Elm St',
