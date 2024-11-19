@@ -38,8 +38,7 @@
   },
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
-    "highlight.js": "^11.10.0",
-    "vue": "^3.5.12"
+    "highlight.js": "^11.10.0"
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.1",

@@ -1,25 +1,25 @@
 {
-  "name": "@stacksjs/dropdown",
+  "name": "@stacksjs/popover",
   "type": "module",
   "version": "0.68.2",
-  "description": "A modern dropdown component.",
+  "description": "A modern popover component.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/popover#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/dropdown"
+    "directory": "./storage/framework/core/components/popover"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "dropdowns",
+    "popover",
     "components",
     "library",
     "stacks"
@@ -50,10 +50,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@headlessui/vue": "^1.7.23",
     "@stacksjs/ui": "workspace:*",
-    "highlight.js": "^11.10.0",
-    "vue": "^3.5.12"
+    "highlight.js": "^11.10.0"
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.1",
