@@ -801,7 +801,7 @@ export class UserModel {
   async newSubscription(
     type: string,
     lookupKey: string,
-      options: Partial<Stripe.SubscriptionCreateParams> = {},
+    options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
@@ -809,6 +809,15 @@ export class UserModel {
     const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
 
     return { subscription, paymentIntent }
+  }
+
+  async cancelSubscription(
+    subscriptionId: string,
+    options: Partial<Stripe.SubscriptionCreateParams> = {},
+  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+    const subscription = await manageSubscription.cancel(subscriptionId, options)
+
+    return { subscription }
   }
 
   async createSetupIntent(

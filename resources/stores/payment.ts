@@ -32,9 +32,28 @@ export const usePaymentStore = defineStore('payment', {
       return clientSecret
     },
 
-    async subscribeToPlan(body: { type: string, plan: string }): Promise<string> {
+    async subscribeToPlan(body: { type: string, plan: string, description: string }): Promise<string> {
       const url = 'http://localhost:3008/stripe/create-subscription'
 
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const client: any = await response.json()
+
+      return client
+    },
+
+    async cancelPlan(): Promise<string> {
+      const url = 'http://localhost:3008/stripe/cancel-subscription'
+
+      const subscriptionId = this.getCurrentPlan.provider_id
+      const body = { subscriptionId }
       const response = await fetch(url, {
         method: 'POST',
         headers: {

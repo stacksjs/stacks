@@ -7,6 +7,7 @@ import Subscription from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>
 }
@@ -52,6 +53,23 @@ export const manageSubscription: SubscriptionManager = (() => {
     await storeSubscription(user, type, subscription)
 
     return subscription
+  }
+
+  async function cancel(
+    subscriptionId: string,
+    params?: Partial<Stripe.SubscriptionCancelParams>
+  ): Promise<Stripe.Response<Stripe.Subscription>> {
+    const subscription = await stripe.subscription.retrieve(subscriptionId)
+  
+    if (!subscription) {
+      throw new Error('Subscription does not exist or does not belong to the user')
+    }
+  
+    const updatedSubscription = await stripe.subscription.cancel(subscriptionId, params)
+  
+    // await removeStoredSubscription(user, subscriptionId)
+  
+    return updatedSubscription
   }
 
   async function isActive(subscription: SubscriptionModel): Promise<boolean> {
@@ -113,5 +131,5 @@ export const manageSubscription: SubscriptionManager = (() => {
     ) as Partial<T>
   }
 
-  return { create, isValid, isIncomplete }
+  return { create, isValid, isIncomplete, cancel }
 })()

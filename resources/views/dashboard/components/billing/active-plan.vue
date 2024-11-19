@@ -5,8 +5,10 @@ const paymentStore = usePaymentStore()
 
 const { isEmpty } = useBillable()
 
-onMounted(() => {
-})
+
+async function cancelPlan() {
+  paymentStore.cancelPlan()
+}
 </script>
 
 <template>
@@ -32,6 +34,7 @@ onMounted(() => {
     <div class="mt-8 flex">
       <button
         type="button"
+        @click="cancelPlan"
         class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
       >
         Cancel Plan

@@ -1220,6 +1220,15 @@ export async function generateModelString(
       return { subscription, paymentIntent }
     }
 
+     async cancelSubscription(
+      subscriptionId: string,
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
+    ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+      const subscription = await manageSubscription.cancel(this, subscriptionId, options)
+
+      return { subscription }
+    }
+
 
     async createSetupIntent(
       options: Stripe.SetupIntentCreateParams = {}
