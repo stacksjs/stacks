@@ -30,7 +30,6 @@ async function submitPaymentMethod(clientSecret: string, elements: any) {
 
   showStripe.value = false
   stripeLoading.value = true
-  
 }
 
 function cancelPaymentForm() {

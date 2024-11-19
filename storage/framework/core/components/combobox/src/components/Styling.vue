@@ -48,7 +48,7 @@ async function handleCopyCode() {
     <div class="mt-5">
       <p class="my-3 text-base">
         Each component exposes information about its current state via <a class="text-blue-500" href="https://vuejs.org/guide/essentials/slots.html#slot-props" target="_blank">slot props</a> that you can use to conditionally apply different styles or render different content.
-        <br /><br />
+        <br><br>
         For example, the <code><b>ComboboxOption</b></code> component exposes an <code><b>active</b></code> state, which tells you if the item is currently focused via the mouse or keyboard.
       </p>
 

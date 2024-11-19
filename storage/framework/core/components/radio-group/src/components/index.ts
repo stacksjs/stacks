@@ -1,8 +1,8 @@
 import {
   RadioGroup,
-  RadioGroupLabel,
   RadioGroupDescription,
+  RadioGroupLabel,
   RadioGroupOption,
 } from '@headlessui/vue'
 
-export { RadioGroup, RadioGroupLabel, RadioGroupDescription, RadioGroupOption }
+export { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption }

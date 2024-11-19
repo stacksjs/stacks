@@ -741,7 +741,6 @@ export class UserModel {
 
   async deletePaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
-    
     return deletedPaymentMethod
   }
 

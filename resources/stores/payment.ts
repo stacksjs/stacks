@@ -1,8 +1,7 @@
+import type Stripe from 'stripe'
 import type { StripePaymentMethod } from '../types/billing'
-import Stripe from 'stripe'
 
 const apiUrl = `http://localhost:3008`
-
 
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
@@ -10,7 +9,7 @@ export const usePaymentStore = defineStore('payment', {
       paymentMethods: [] as StripePaymentMethod[],
       defaultPaymentMethod: {} as StripePaymentMethod,
       stripeCustomer: {} as Stripe.Customer,
-      paymentPlans: [] as any[]
+      paymentPlans: [] as any[],
     }
   },
 
@@ -29,9 +28,9 @@ export const usePaymentStore = defineStore('payment', {
 
     async deletePaymentMethod(paymentMethod: string): Promise<string> {
       const url = 'http://localhost:3008/stripe/delete-payment-method'
-  
+
       const body = { paymentMethod }
-  
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -40,10 +39,9 @@ export const usePaymentStore = defineStore('payment', {
         },
         body: JSON.stringify(body),
       })
-  
+
       const res: any = await response.json()
-      
-  
+
       return res
     },
 
@@ -86,7 +84,7 @@ export const usePaymentStore = defineStore('payment', {
     },
     getStripeCustomer(state): any {
       return state.stripeCustomer
-    }
+    },
   },
 })
 

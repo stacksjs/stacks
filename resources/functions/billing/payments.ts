@@ -80,7 +80,6 @@ export function useBillable() {
     })
 
     const res: any = await response.json()
-    
 
     return res
   }
@@ -99,15 +98,15 @@ export function useBillable() {
       },
     )
 
-    if (error)
-      console.error(error.message) // Display or handle error for the user
+    if (error) {
+      console.error(error.message)
+    } // Display or handle error for the user
     else {
-      if (! paymentStore.hasPaymentMethods)
+      if (!paymentStore.hasPaymentMethods)
         await setDefaultPaymentMethod(setupIntent.payment_method)
 
       alert('Successfully saved payment method!')
     }
-    
   }
 
   function isEmpty(object: any) {

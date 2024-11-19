@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { RadioGroup, RadioGroupOption, RadioGroupLabel } from '../components'
+import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '../components'
 
 const plans = [
   {
@@ -26,20 +26,21 @@ const plans = [
 const selected = ref(plans[0])
 </script>
 
-
 <template>
   <section id="example">
     <div class="w-full px-4 pt-5">
-      <div class="mx-auto w-full max-w-md">
+      <div class="mx-auto max-w-md w-full">
         <RadioGroup v-model="selected">
-          <RadioGroupLabel class="sr-only">Server size</RadioGroupLabel>
+          <RadioGroupLabel class="sr-only">
+            Server size
+          </RadioGroupLabel>
           <div class="space-y-2">
             <RadioGroupOption
-              as="template"
               v-for="plan in plans"
               :key="plan.name"
-              :value="plan"
               v-slot="{ active, checked }"
+              as="template"
+              :value="plan"
             >
               <div
                 :class="[
@@ -50,7 +51,7 @@ const selected = ref(plans[0])
                 ]"
                 class="relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none"
               >
-                <div class="flex w-full items-center justify-between">
+                <div class="w-full flex items-center justify-between">
                   <div class="flex items-center">
                     <div class="text-sm">
                       <RadioGroupLabel

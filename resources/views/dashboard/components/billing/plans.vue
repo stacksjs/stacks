@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { useBillable } from '../../../../functions/billing/payments'
 import { saas } from '@stacksjs/browser'
-
+import { useBillable } from '../../../../functions/billing/payments'
 
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
@@ -12,15 +11,15 @@ const { subscribeToPlan } = useBillable()
 const loading = ref(true)
 
 const monthlyPricing = computed(() =>
-  saas.plans.flatMap(product => product.pricing).filter(price => price.interval === 'month')
+  saas.plans.flatMap(product => product.pricing).filter(price => price.interval === 'month'),
 )
 
 const yearlyPricing = computed(() =>
-  saas.plans.flatMap(product => product.pricing).filter(price => price.interval === 'year')
+  saas.plans.flatMap(product => product.pricing).filter(price => price.interval === 'year'),
 )
 
 const noIntervalPricing = computed(() =>
-  saas.plans.flatMap(product => product.pricing).filter(price => !price.interval)
+  saas.plans.flatMap(product => product.pricing).filter(price => !price.interval),
 )
 
 const perText = computed(() => {
@@ -39,7 +38,6 @@ const hobbyPrice = computed(() => {
 
     return ((plan?.price || 3900) / 100)
   }
-  
 
   if (checkedPlanType.value === 'annually') {
     const plan = yearlyPricing.value.find(monthly => monthly.key === 'stacks_hobby_yearly')
@@ -58,7 +56,6 @@ const proPrice = computed(() => {
 
     return ((plan?.price || 5900) / 100)
   }
-  
 
   if (checkedPlanType.value === 'annually') {
     const plan = yearlyPricing.value.find(monthly => monthly.key === 'stacks_pro_yearly')
@@ -68,7 +65,7 @@ const proPrice = computed(() => {
 
   const plan = noIntervalPricing.value.find(monthly => monthly.key === 'stacks_pro_lifetime')
 
-return ((plan?.price || 74900) / 100)
+  return ((plan?.price || 74900) / 100)
 })
 
 const getPlanTypeKey = computed(() => {
@@ -90,7 +87,7 @@ const getPlanTypeKey = computed(() => {
 async function subscribePlan() {
   const subscriptionIntent = await subscribeToPlan({
     type: getPlanTypeKey.value,
-    plan: selectedPlan.value
+    plan: selectedPlan.value,
   })
 
   // TODO: fire a toast or something
@@ -143,8 +140,9 @@ async function subscribePlan() {
       <div class="pt-8">
         <fieldset>
           <div class="space-y-4">
-            <label 
-              class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+            <label
+              class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none"
+            >
               <input v-model="selectedPlan" type="radio" value="hobby" class="sr-only">
               <span class="flex items-center">
                 <span class="flex flex-col text-sm">

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
+import Example from './components/Example.vue'
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
 import Styling from './components/Styling.vue'
-import Example from './components/Example.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()

@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { RadioGroup, RadioGroupLabel, RadioGroupDescription, RadioGroupOption } from './components'
+import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from './components'
 
 const plugin: Plugin = {
   install(app) {
