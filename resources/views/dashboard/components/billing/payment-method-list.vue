@@ -8,6 +8,12 @@ async function deletePayment(paymentMethodId: string) {
 
   paymentStore.fetchUserPaymentMethods()
 }
+
+async function makeDefault(paymentMethodId: string) {
+  await paymentStore.updateDefaultPaymentMethod(paymentMethodId)
+
+  paymentStore.fetchUserPaymentMethods()
+}
 </script>
 
 <template>
@@ -24,6 +30,16 @@ async function deletePayment(paymentMethodId: string) {
           </div>
 
           <div class="flex justify-end space-x-4">
+            <button
+              type="button"
+              class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+              @click="makeDefault(method.id)"
+            >
+              <svg class="h-4 w-4 text-gray-700" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+              </svg>
+            </button>
+
             <button
               type="button"
               class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"

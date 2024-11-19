@@ -1119,7 +1119,13 @@ export async function generateModelString(
       return updatedCustomer
     }
 
-     async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
+    async updateDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
+      const updatedCustomer = this.setDefaultPaymentMethod(paymentMethodId)
+
+      return updatedCustomer
+    }
+
+    async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
       return await this.retrieveStripeUser()
     }
 
@@ -1142,11 +1148,12 @@ export async function generateModelString(
       return paymentMethod
     }
 
-    async updatePaymentMethod(paymentMethodId: string, params: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    async updatePaymentMethod(paymentMethodId: string, params?: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
       const updatedPaymentMethod = await managePaymentMethod.updatePaymentMethod(this, paymentMethodId, params)
 
       return updatedPaymentMethod
     }
+
 
     async deletePaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
       const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
