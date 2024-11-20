@@ -1,21 +1,9 @@
 <script lang="ts" setup>
-import { computed, defineCustomElement, onMounted, onUnmounted, useSlots } from 'vue'
-
-const props = defineProps<{
-  visible: boolean
-  className?: string
-  overlay?: boolean
-}>()
+import { defineCustomElement, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits<{
   (event: 'close', visible: boolean): void
 }>()
-
-const slots = useSlots()
-
-const showOverlay = computed(() => {
-  return props.overlay ?? true
-})
 
 function handleClose() {
   emit('close', false)
@@ -41,44 +29,12 @@ defineCustomElement({
 </script>
 
 <template>
-  <div v-if="props.visible" class="fixed inset-0 z-10 w-screen overflow-y-auto">
-    <div v-if="showOverlay" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="handleClose" />
-
+  <div class="fixed inset-0 z-50 overflow-y-auto">
     <div
-      v-if="props.visible"
-      class="min-h-full flex items-end justify-center p-4 text-center sm:items-center sm:p-0"
-      @click.self="handleClose"
+      class="z-20 min-h-full flex items-end justify-center p-4 text-center sm:items-center sm:p-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      @click.self="emit('close', false)"
     >
-      <div
-        class="transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl sm:my-8 sm:max-w-lg sm:w-full sm:p-6"
-        @click.stop
-      >
-        <div v-if="slots.closeButton" class="absolute right-0 top-0 pr-4 pt-4 sm:block">
-          <div v-if="slots.closeButton().length === 0">
-            <button
-              type="button"
-              class="rounded-md border-none bg-transparent text-gray-400 hover:text-gray-500 focus:outline-none"
-              @click="handleClose"
-            >
-              <span class="sr-only">Close</span>
-              <div class="i-heroicons-x-mark h-8 w-8" />
-            </button>
-          </div>
-          <slot v-else name="closeButton" />
-        </div>
-
-        <div v-if="slots.header" class="w-full flex">
-          <div class="flex items-center justify-between">
-            <slot name="header" />
-          </div>
-        </div>
-
-        <div class="w-full flex">
-          <slot>
-            <p>Default modal content goes here.</p>
-          </slot>
-        </div>
-      </div>
+      <slot />
     </div>
   </div>
 </template>

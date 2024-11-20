@@ -5,7 +5,7 @@ import { useCopyCode } from '../composables/useCopyCode'
 
 const code = `<!-- App.vue -->
 <script lang="ts" setup>
-import { Dialog } from '@stacksjs/dialog'
+import { Dialog, DialogPanel } from '@stacksjs/dialog'
 
 const visible = ref(false)
 
@@ -16,17 +16,10 @@ const handleClose = () => {
 
 <template>
   <Transition name="fade" appear>
-    <Dialog
-      :visible="visible"
-      overlay
-      @close="handleClose"
-    >
-      <template #closeButton />
-      <template #header>
-        <h1> Hello Detail</h1>
-      </template>
-
-      <p>Dialog Content</p>
+    <Dialog v-if="visible" @close="handleClose">
+      <DialogPanel as="div">
+        <h2>Greetings! This is a dialog.</h2>
+      </DialogPanel>
     </Dialog>
   </Transition>
 

@@ -7,6 +7,8 @@ import Transitions from './components/Transitions.vue'
 import Usage from './components/Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
+import { Dialog, DialogOverlay, DialogPanel } from './components'
+
 useSEOHeader()
 
 const visible = ref(false)
@@ -36,21 +38,16 @@ defineCustomElement({
       >
         <Installation />
         <Usage />
-        <Options />
         <Transitions />
       </main>
 
       <Transition name="fade" appear>
-        <Dialog :visible="visible" overlay @close="handleClose">
-          <template #closeButton />
-          <template #header>
-            <h1> Hello Detail</h1>
-          </template>
-
-          <p>Modal Content</p>
+        <Dialog v-if="visible" @close="handleClose">
+          <DialogPanel>
+            <h2>Greetings! This is a dialog.</h2>
+          </DialogPanel>
         </Dialog>
       </Transition>
-
       <Footer />
     </div>
   </div>

@@ -2,6 +2,7 @@
 import type { Transition } from '../types'
 import { computed, ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
+import { Dialog, DialogPanel } from '../components'
 
 const currentTransition = ref<Transition>('fade')
 const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'jackInTheBox', 'slideInDown', 'slideInRight', 'custom-transition'])
@@ -166,25 +167,29 @@ const styleCode = computed(() => {
 
 const renderedCode = computed(() => {
   return `
-<template>
-  // For a better dialog overlay effect, we recommend on creating a separate dialog-overlay.
-  <Transition name="fade" appear>
-    <div
-      v-if="visible"
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-      aria-hidden="true"
-      @click.self="handleClose" />
-  </Transition>
+<script lang="ts" setup>
+import { Dialog, DialogOverlay, DialogPanel } from '@stacksjs/dialog'
 
-  <Transition name="${currentTransition.value}" appear>
-    <Dialog :visible="visible" :overlay="false" @close="handleClose">
-      <div>
-        <p class="text-sm text-gray-500">
-          Here is the content of the dialog
-        </p>
-      </div>
-    </Dialog>
-  </Transition>
+const visible = ref(false)
+
+const handleClose = () => {
+  visible.value = false
+}
+
+<\/script>
+
+<template>
+  <transition name="fade" appear>
+      <Dialog v-if="visible" @close="handleClose">
+        <transition :name="${currentTransition.value}" appear>
+          <DialogPanel>
+            <p class="text-sm text-gray-500">
+              Here is the content of the dialog
+            </p>
+          </DialogPanel>
+        </transition>
+      </Dialog>
+    </transition>
 </template>
 
 <style scoped>${styleCode.value}
@@ -240,20 +245,18 @@ async function handleCopyCode() {
         <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
-
-    <Transition name="modal-overlay" appear>
-      <div v-if="visible" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click.self="handleClose" />
-    </Transition>
-
-    <Transition :name="currentTransition" appear>
-      <Dialog :visible="visible" :overlay="false" @close="handleClose">
-        <div>
-          <p class="text-sm text-gray-500">
-            Here is the content of the dialog
-          </p>
-        </div>
+    {{ currentTransition }}
+    <transition name="fade" appear>
+      <Dialog v-if="visible" @close="handleClose">
+        <transition :name="currentTransition" appear>
+          <DialogPanel>
+            <p class="text-sm text-gray-500">
+              Here is the content of the dialog
+            </p>
+          </DialogPanel>
+        </transition>
       </Dialog>
-    </Transition>
+    </transition>
 
     <p class="text-sm text-gray-500">
       For a better dialog overlay effect, we recommend on creating a separate dialog-overlay for it like the example above.
