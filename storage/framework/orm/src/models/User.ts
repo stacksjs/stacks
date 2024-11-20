@@ -803,6 +803,20 @@ export class UserModel {
     return undefined
   }
 
+  async activeSubscription() {
+    const subscriptions = await this.subscriptions()
+
+    if (subscriptions.length) {
+      const subscription = subscriptions[0]
+
+      const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
+
+      return { subscription, providerSubscription }
+    }
+
+    return undefined
+  }
+
   async isIncomplete(type: string): Promise<boolean> {
     return await manageSubscription.isIncomplete(this, type)
   }

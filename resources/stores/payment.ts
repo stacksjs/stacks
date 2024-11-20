@@ -12,6 +12,7 @@ export const usePaymentStore = defineStore('payment', {
       paymentMethods: [] as StripePaymentMethod[],
       defaultPaymentMethod: {} as StripePaymentMethod,
       activeSubscription: {} as Stripe.Subscription,
+      subscriptions: [] as Stripe.Subscription[],
       stripeCustomer: {} as Stripe.Customer,
       paymentPlans: [] as any[],
     }
@@ -54,6 +55,27 @@ export const usePaymentStore = defineStore('payment', {
       return client
     },
 
+    async fetchSubscriptions(): Promise<void> {
+      const url = 'http://localhost:3008/stripe/fetch-user-subscriptions'
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.subscriptions = res
+      }
+      await response.json()
+
+      emitter.emit('subscription:created')
+    },
+
     async cancelPlan(): Promise<void> {
       const url = 'http://localhost:3008/stripe/cancel-subscription'
 
@@ -69,9 +91,8 @@ export const usePaymentStore = defineStore('payment', {
         body: JSON.stringify(body),
       })
 
-      if (response.status !== 204) {
+      if (response.status !== 204)
         await response.json()
-      }
 
       emitter.emit('subscription:canceled')
     },
