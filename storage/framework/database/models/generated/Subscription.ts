@@ -50,9 +50,11 @@ export default {
     },
 
     description: {
+      required: true,
       fillable: true,
       validation: {
         rule: schema.string(),
+
       },
     },
 
@@ -60,6 +62,10 @@ export default {
       fillable: true,
       validation: {
         rule: schema.number(),
+        message: {
+          string: 'unit_price must be a number',
+          required: 'unit_price is required',
+        },
       },
     },
 

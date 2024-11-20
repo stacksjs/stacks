@@ -801,7 +801,7 @@ export class UserModel {
   async newSubscription(
     type: string,
     lookupKey: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
@@ -813,9 +813,9 @@ export class UserModel {
 
   async cancelSubscription(
     subscriptionId: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const subscription = await manageSubscription.cancel(subscriptionId, options)
+    const subscription = await manageSubscription.cancel(this, subscriptionId, options)
 
     return { subscription }
   }

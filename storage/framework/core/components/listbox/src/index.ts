@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from './components'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from './components'
 
 const plugin: Plugin = {
   install(app) {

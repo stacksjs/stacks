@@ -1,8 +1,8 @@
 import {
   Listbox,
   ListboxButton,
-  ListboxOptions,
   ListboxOption,
+  ListboxOptions,
 } from '@headlessui/vue'
 
-export { Listbox, ListboxButton, ListboxOptions, ListboxOption }
+export { Listbox, ListboxButton, ListboxOption, ListboxOptions }

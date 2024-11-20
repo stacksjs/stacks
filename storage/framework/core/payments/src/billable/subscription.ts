@@ -57,18 +57,18 @@ export const manageSubscription: SubscriptionManager = (() => {
 
   async function cancel(
     subscriptionId: string,
-    params?: Partial<Stripe.SubscriptionCancelParams>
+    params?: Partial<Stripe.SubscriptionCancelParams>,
   ): Promise<Stripe.Response<Stripe.Subscription>> {
     const subscription = await stripe.subscription.retrieve(subscriptionId)
-  
+
     if (!subscription) {
       throw new Error('Subscription does not exist or does not belong to the user')
     }
-  
+
     const updatedSubscription = await stripe.subscription.cancel(subscriptionId, params)
-  
-    // await removeStoredSubscription(user, subscriptionId)
-  
+
+    await removeStoredSubscription(user, subscriptionId)
+
     return updatedSubscription
   }
 
@@ -109,7 +109,8 @@ export const manageSubscription: SubscriptionManager = (() => {
     const data = removeNullValues({
       user_id: user.id,
       type,
-      description: options.description,
+      description: String(options.description),
+      unit_price: Number(options.items.data[0].price.unit_amount),
       provider_id: options.id,
       provider_status: options.status,
       provider_price_id: options.items.data[0].price.id,

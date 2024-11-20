@@ -3,8 +3,8 @@ import { Action } from '@stacksjs/actions'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
-  name: 'CreateSubscriptionAction',
-  description: 'Create Subscription for stripe',
+  name: 'CancelSubscriptionAction',
+  description: 'Cancel Subscription for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
     const subscriptionId = request.get('subscriptionId') as string

@@ -5,7 +5,6 @@ const paymentStore = usePaymentStore()
 
 const { isEmpty } = useBillable()
 
-
 async function cancelPlan() {
   paymentStore.cancelPlan()
 }
@@ -34,8 +33,8 @@ async function cancelPlan() {
     <div class="mt-8 flex">
       <button
         type="button"
-        @click="cancelPlan"
         class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+        @click="cancelPlan"
       >
         Cancel Plan
       </button>
