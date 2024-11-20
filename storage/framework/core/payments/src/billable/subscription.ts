@@ -1,9 +1,9 @@
 import type Stripe from 'stripe'
 import type { SubscriptionModel } from '../../../../orm/src/models/Subscription'
 import type { UserModel } from '../../../../orm/src/models/User'
-import { Subscription } from '../../../../orm/src/models/Subscription'
-
 import { manageCustomer, managePrice, stripe } from '..'
+
+import { Subscription } from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>

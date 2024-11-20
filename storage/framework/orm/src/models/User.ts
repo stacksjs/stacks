@@ -5,10 +5,13 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
+import Deployment from './Deployment'
 
 import Post from './Post'
 
 import Subscriber from './Subscriber'
+
+import Subscription from './Subscription'
 
 import Team from './Team'
 
@@ -629,7 +632,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    return results
+    return results.map(modelItem => new Deployment(modelItem))
   }
 
   async subscriptions() {
@@ -641,7 +644,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    return results
+    return results.map(modelItem => new Subscription(modelItem))
   }
 
   async userTeams() {
@@ -827,7 +830,7 @@ export class UserModel {
 
   async cancelSubscription(
     providerId: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+        options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.cancel(providerId, options)
 

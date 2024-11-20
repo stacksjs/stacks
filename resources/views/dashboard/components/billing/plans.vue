@@ -94,7 +94,7 @@ async function subscribePlan() {
     plan: selectedPlan.value,
     description: planDescription.value,
   })
- 
+
   await paymentStore.fetchUserActivePlan()
 }
 </script>

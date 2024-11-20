@@ -32,7 +32,6 @@ export const usePaymentStore = defineStore('payment', {
       const client: any = await response.json()
       const clientSecret = client.client_secret
 
-      
       return clientSecret
     },
 
@@ -187,7 +186,8 @@ export const usePaymentStore = defineStore('payment', {
         const res = await response.json()
 
         this.activeSubscription = res
-      } else {
+      }
+      else {
         this.activeSubscription = {}
       }
 

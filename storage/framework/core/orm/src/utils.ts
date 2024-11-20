@@ -909,6 +909,10 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
+  if (modelName === 'User') {
+    console.log(relations)
+  }
+
   for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
   }
@@ -997,7 +1001,7 @@ export async function generateModelString(
           .selectAll()
           .execute()
 
-          return results
+          return results.map((modelItem) => new ${modelRelation}(modelItem))
       }\n\n`
     }
 
