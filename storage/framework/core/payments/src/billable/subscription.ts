@@ -68,7 +68,7 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const updatedSubscription = await stripe.subscription.cancel(subscriptionId, params)
 
-    await removeStoredSubscription(subscriptionId)
+    await updateStoredSubscription(subscriptionId)
 
     return updatedSubscription
   }
@@ -83,10 +83,10 @@ export const manageSubscription: SubscriptionManager = (() => {
     return subscription
   }
 
-  async function removeStoredSubscription(subscriptionId: string): Promise<void> {
+  async function updateStoredSubscription(subscriptionId: string): Promise<void> {
     const subscription = await Subscription.where('provider_id', subscriptionId).first()
 
-    subscription?.delete()
+    subscription?.update({ provider_status: 'canceled' })
   }
 
   async function isActive(subscription: SubscriptionModel): Promise<boolean> {

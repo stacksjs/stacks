@@ -786,7 +786,11 @@ export class UserModel {
   }
 
   async activeSubscription() {
-    const subscriptions = await this.subscriptions()
+    const subscriptions = await db.selectFrom('subscriptions')
+      .where('user_id', '=', this.id)
+      .where('provider_status', '=', 'active')
+      .selectAll()
+      .execute()
 
     if (subscriptions.length) {
       const subscription = subscriptions[0]
