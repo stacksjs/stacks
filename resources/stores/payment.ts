@@ -1,5 +1,8 @@
 import type Stripe from 'stripe'
 import type { StripePaymentMethod } from '../types/billing'
+import mitt from 'mitt'
+
+const emitter = mitt()
 
 const apiUrl = `http://localhost:3008`
 
@@ -29,6 +32,7 @@ export const usePaymentStore = defineStore('payment', {
       const client: any = await response.json()
       const clientSecret = client.client_secret
 
+      
       return clientSecret
     },
 
@@ -45,6 +49,8 @@ export const usePaymentStore = defineStore('payment', {
       })
 
       const client: any = await response.json()
+
+      emitter.emit('subscription:created')
 
       return client
     },
@@ -67,6 +73,8 @@ export const usePaymentStore = defineStore('payment', {
       if (response.status !== 204) {
         await response.json()
       }
+
+      emitter.emit('subscription:canceled')
     },
 
     async fetchUserPaymentMethods(): Promise<void> {
@@ -83,6 +91,8 @@ export const usePaymentStore = defineStore('payment', {
 
         this.paymentMethods = res.data
       }
+
+      emitter.emit('paymentMethods:fetched')
     },
 
     async deletePaymentMethod(paymentMethod: string): Promise<void> {
@@ -103,6 +113,8 @@ export const usePaymentStore = defineStore('payment', {
       catch (err: any) {
         console.log(err)
       }
+
+      emitter.emit('paymentMethod:deleted')
     },
 
     async updateDefaultPaymentMethod(paymentMethod: string): Promise<void> {
@@ -123,6 +135,8 @@ export const usePaymentStore = defineStore('payment', {
       catch (err: any) {
         console.log(err)
       }
+
+      emitter.emit('paymentMethod:updated')
     },
 
     async fetchStripeCustomer(): Promise<void> {
@@ -138,6 +152,8 @@ export const usePaymentStore = defineStore('payment', {
         const res = await response.json()
         this.stripeCustomer = res
       }
+
+      emitter.emit('customer:fetched')
     },
 
     async fetchDefaultPaymentMethod(): Promise<void> {
@@ -154,6 +170,8 @@ export const usePaymentStore = defineStore('payment', {
 
         this.defaultPaymentMethod = res
       }
+
+      emitter.emit('paymentMethod:fetched')
     },
 
     async fetchUserActivePlan(): Promise<void> {
@@ -172,6 +190,8 @@ export const usePaymentStore = defineStore('payment', {
       } else {
         this.activeSubscription = {}
       }
+
+      emitter.emit('subscription:fetched')
     },
   },
 
