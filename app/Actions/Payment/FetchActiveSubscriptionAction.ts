@@ -8,9 +8,8 @@ export default new Action({
   async handle() {
     const user = await User.find(1)
 
-    const subscriptions = await user?.subscriptions()
+    const subscription = await user?.activeSubscription()
 
-    if (subscriptions?.length)
-      return subscriptions[0]
+    return subscription
   },
 })

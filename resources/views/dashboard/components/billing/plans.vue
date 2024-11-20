@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { saas } from '@stacksjs/browser'
 
-console.log(saas)
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
 const paymentStore = usePaymentStore()
@@ -95,6 +94,8 @@ async function subscribePlan() {
     plan: selectedPlan.value,
     description: planDescription.value,
   })
+ 
+  await paymentStore.fetchUserActivePlan()
 }
 </script>
 

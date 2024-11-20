@@ -49,15 +49,6 @@ export default {
       },
     },
 
-    description: {
-      required: true,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-
-      },
-    },
-
     unitPrice: {
       fillable: true,
       validation: {

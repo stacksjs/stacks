@@ -52,8 +52,9 @@ export const usePaymentStore = defineStore('payment', {
     async cancelPlan(): Promise<string> {
       const url = 'http://localhost:3008/stripe/cancel-subscription'
 
-      const subscriptionId = this.getCurrentPlan.provider_id
-      const body = { subscriptionId }
+      const providerId = this.getCurrentPlan.subscription.provider_id
+      const subscriptionId = this.getCurrentPlan.subscription.id
+      const body = { providerId, subscriptionId }
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -63,9 +64,9 @@ export const usePaymentStore = defineStore('payment', {
         body: JSON.stringify(body),
       })
 
-      const client: any = await response.json()
-
-      return client
+      if (response.status !== 204) {
+        await response.json()
+      }
     },
 
     async fetchUserPaymentMethods(): Promise<void> {

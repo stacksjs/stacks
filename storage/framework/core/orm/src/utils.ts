@@ -1192,6 +1192,20 @@ export async function generateModelString(
       return await manageSubscription.isValid(this, type)
     }
 
+    async activeSubscription() {
+      const subscriptions = await this.subscriptions()
+
+      if (subscriptions.length) {
+        const subscription = subscriptions[0]
+
+        const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
+
+        return { subscription, providerSubscription}
+      }
+
+      return undefined
+    }
+
     async isIncomplete(type: string): Promise<boolean> {
       return await manageSubscription.isIncomplete(this, type)
     }
@@ -1220,15 +1234,14 @@ export async function generateModelString(
       return { subscription, paymentIntent }
     }
 
-     async cancelSubscription(
-      subscriptionId: string,
-      options: Partial<Stripe.SubscriptionCreateParams> = {},
-    ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-      const subscription = await manageSubscription.cancel(this, subscriptionId, options)
+      async cancelSubscription(
+        providerId: string,
+        options: Partial<Stripe.SubscriptionCreateParams> = {},
+      ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+        const subscription = await manageSubscription.cancel(providerId, options)
 
-      return { subscription }
-    }
-
+        return { subscription }
+      }
 
     async createSetupIntent(
       options: Stripe.SetupIntentCreateParams = {}

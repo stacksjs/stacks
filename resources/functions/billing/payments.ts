@@ -108,5 +108,5 @@ export function useBillable() {
         && Object.keys(object).length === 0)
   }
 
-  return { loadStripeElement, handleAddPaymentMethod, isEmpty }
+  return { loadStripeElement, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate }
 }

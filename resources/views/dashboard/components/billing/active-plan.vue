@@ -3,10 +3,12 @@ import { useBillable } from '../../../../functions/billing/payments'
 
 const paymentStore = usePaymentStore()
 
-const { isEmpty } = useBillable()
+const { isEmpty, convertUnixTimestampToDate } = useBillable()
 
 async function cancelPlan() {
-  paymentStore.cancelPlan()
+  await paymentStore.cancelPlan()
+
+  await paymentStore.fetchUserActivePlan()
 }
 </script>
 
@@ -18,15 +20,15 @@ async function cancelPlan() {
 
     <div class="pt-2">
       <p class="text-gray-700 font-bold">
-        {{ paymentStore.getCurrentPlan.type }} Plan
+        {{ paymentStore.getCurrentPlan.subscription.type }} Plan
       </p>
 
       <p class="pt-2 text-sm text-gray-500 font-normal italic">
-        {{ paymentStore.getCurrentPlan.description }}
+        {{ paymentStore.getCurrentPlan.subscription.description }}
       </p>
 
       <p class="pt-4 text-sm text-gray-700 font-semibold">
-        Next payment of $20 (yearly) occurs on August 30, 2025
+        Next payment of ${{ paymentStore.getCurrentPlan.subscription.unit_price / 100 }} occurs on {{ convertUnixTimestampToDate(paymentStore.getCurrentPlan.providerSubscription.current_period_end) }}
       </p>
     </div>
 

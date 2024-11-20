@@ -1,13 +1,14 @@
 import type Stripe from 'stripe'
 import type { SubscriptionModel } from '../../../../orm/src/models/Subscription'
 import type { UserModel } from '../../../../orm/src/models/User'
+import { Subscription } from '../../../../orm/src/models/Subscription'
 
 import { manageCustomer, managePrice, stripe } from '..'
-import Subscription from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  retrieve: (user: UserModel, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>
 }
@@ -67,9 +68,25 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const updatedSubscription = await stripe.subscription.cancel(subscriptionId, params)
 
-    await removeStoredSubscription(user, subscriptionId)
+    await removeStoredSubscription(subscriptionId)
 
     return updatedSubscription
+  }
+
+  async function retrieve(user: UserModel, subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
+    if (!user.hasStripeId()) {
+      throw new Error('Customer does not exist in Stripe')
+    }
+
+    const subscription = await stripe.subscription.retrieve(subscriptionId)
+
+    return subscription
+  }
+
+  async function removeStoredSubscription(subscriptionId: string): Promise<void> {
+    const subscription = await Subscription.where('provider_id', subscriptionId).first()
+
+    subscription?.delete()
   }
 
   async function isActive(subscription: SubscriptionModel): Promise<boolean> {
@@ -109,7 +126,6 @@ export const manageSubscription: SubscriptionManager = (() => {
     const data = removeNullValues({
       user_id: user.id,
       type,
-      description: String(options.description),
       unit_price: Number(options.items.data[0].price.unit_amount),
       provider_id: options.id,
       provider_status: options.status,
@@ -132,5 +148,5 @@ export const manageSubscription: SubscriptionManager = (() => {
     ) as Partial<T>
   }
 
-  return { create, isValid, isIncomplete, cancel }
+  return { create, isValid, isIncomplete, cancel, retrieve }
 })()
