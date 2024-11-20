@@ -10,6 +10,20 @@ async function cancelPlan() {
 
   await paymentStore.fetchUserActivePlan()
 }
+
+const subscriptionType = computed(() => {
+  const type = paymentStore.getCurrentPlan.subscription.type
+
+  return type.charAt(0).toUpperCase() + type.slice(1)
+})
+
+const nextPayment = computed(() => {
+  return convertUnixTimestampToDate(paymentStore.getCurrentPlan.providerSubscription.current_period_end)
+})
+
+const unitPrice = computed(() => {
+  return paymentStore.getCurrentPlan.subscription.unit_price / 100
+})
 </script>
 
 <template>
@@ -20,7 +34,7 @@ async function cancelPlan() {
 
     <div class="pt-2">
       <p class="text-gray-700 font-bold">
-        {{ paymentStore.getCurrentPlan.subscription.type }} Plan
+        {{ subscriptionType }} Plan
       </p>
 
       <p class="pt-2 text-sm text-gray-500 font-normal italic">
@@ -28,7 +42,7 @@ async function cancelPlan() {
       </p>
 
       <p class="pt-4 text-sm text-gray-700 font-semibold">
-        Next payment of ${{ paymentStore.getCurrentPlan.subscription.unit_price / 100 }} occurs on {{ convertUnixTimestampToDate(paymentStore.getCurrentPlan.providerSubscription.current_period_end) }}
+        Next payment of ${{ unitPrice }} occurs on {{ nextPayment }}
       </p>
     </div>
 

@@ -49,7 +49,7 @@ export const usePaymentStore = defineStore('payment', {
       return client
     },
 
-    async cancelPlan(): Promise<string> {
+    async cancelPlan(): Promise<void> {
       const url = 'http://localhost:3008/stripe/cancel-subscription'
 
       const providerId = this.getCurrentPlan.subscription.provider_id
@@ -169,6 +169,8 @@ export const usePaymentStore = defineStore('payment', {
         const res = await response.json()
 
         this.activeSubscription = res
+      } else {
+        this.activeSubscription = {}
       }
     },
   },
