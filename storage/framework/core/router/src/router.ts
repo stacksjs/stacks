@@ -289,8 +289,8 @@ export class Router implements RouterInterface {
 
     if (modulePath.includes('storage/framework/orm'))
       actionModule = await import(modulePath)
-    else if (modulePath.includes('app/Actions'))
-      actionModule = await import(modulePath)
+    else if (modulePath.includes('Actions'))
+      actionModule = await import(p.projectPath(`app/${modulePath}.ts`))
     else if (modulePath.includes('OrmAction'))
       actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
     else actionModule = await import(importPathFunction(modulePath))
