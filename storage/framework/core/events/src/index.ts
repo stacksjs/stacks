@@ -158,6 +158,7 @@ interface StacksEvents {
   'customer:fetched': any
   'paymentMethod:fetched': any
   'subscription:fetched': any
+  'paymentMethod:deleted': any
 }
 
 const events: Emitter<StacksEvents> = mitt<StacksEvents>()

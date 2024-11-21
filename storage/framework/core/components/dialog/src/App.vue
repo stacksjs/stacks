@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import { defineCustomElement, ref } from 'vue'
+import { Dialog, DialogPanel } from './components'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
-import Options from './components/Options.vue'
 import Transitions from './components/Transitions.vue'
 import Usage from './components/Usage.vue'
-import { useSEOHeader } from './composables/useSEOHeader'
 
-import { Dialog, DialogOverlay, DialogPanel } from './components'
+import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()
 

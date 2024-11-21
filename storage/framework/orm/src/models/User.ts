@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
 import Deployment from './Deployment'
 
 import Post from './Post'
@@ -781,8 +781,12 @@ export class UserModel {
     return customer
   }
 
-  async isSubscribed(type: string): Promise<boolean> {
-    return await manageSubscription.isValid(this, type)
+  async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
+    return manageInvoice.list(this)
+  }
+
+  async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
+    return manageInvoice.list(this)
   }
 
   async activeSubscription() {
@@ -791,20 +795,6 @@ export class UserModel {
       .where('provider_status', '=', 'active')
       .selectAll()
       .execute()
-
-    if (subscriptions.length) {
-      const subscription = subscriptions[0]
-
-      const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
-
-      return { subscription, providerSubscription }
-    }
-
-    return undefined
-  }
-
-  async activeSubscription() {
-    const subscriptions = await this.subscriptions()
 
     if (subscriptions.length) {
       const subscription = subscriptions[0]

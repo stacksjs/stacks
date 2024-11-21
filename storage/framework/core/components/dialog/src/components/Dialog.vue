@@ -31,7 +31,7 @@ defineCustomElement({
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
     <div
-      class="z-20 min-h-full flex items-end justify-center p-4 text-center sm:items-center sm:p-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      class="z-20 min-h-full flex items-end justify-center bg-gray-500 bg-opacity-75 p-4 text-center transition-opacity sm:items-center sm:p-0"
       @click.self="emit('close', false)"
     >
       <slot />

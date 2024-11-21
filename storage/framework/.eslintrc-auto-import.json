@@ -415,6 +415,7 @@
     "word": true,
     "wordBoundary": true,
     "wordChar": true,
-    "usePaymentStore": true
+    "usePaymentStore": true,
+    "saas": true
   }
 }

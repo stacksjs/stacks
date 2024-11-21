@@ -4,10 +4,9 @@ import Stripe from 'stripe'
 const apiKey = process.env.STRIPE_SECRET_KEY || ''
 
 const client = new Stripe(apiKey, {
-  apiVersion: '2024-09-30.acacia',
+  apiVersion: '2024-10-28.acacia',
 })
 
-// TODO: learn about subscriptions
 export interface PaymentIntent {
   create: (params: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
   retrieve: (stripeId: string) => Promise<Stripe.Response<Stripe.PaymentIntent>>
@@ -103,6 +102,8 @@ export const charge: Charge = (() => {
 
 export interface Subscription {
   create: (params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
+  retrieve: (id: string, params?: Stripe.SubscriptionRetrieveParams) => Promise<Stripe.Response<Stripe.Subscription>>
+  cancel: (id: string, params?: Stripe.SubscriptionCancelParams) => Promise<Stripe.Response<Stripe.Subscription>>
 }
 
 export const subscription: Subscription = (() => {
@@ -110,7 +111,15 @@ export const subscription: Subscription = (() => {
     return await client.subscriptions.create(params)
   }
 
-  return { create }
+  async function retrieve(id: string, params?: Stripe.SubscriptionRetrieveParams): Promise<Stripe.Response<Stripe.Subscription>> {
+    return await client.subscriptions.retrieve(id, params)
+  }
+
+  async function cancel(id: string, params?: Stripe.SubscriptionCancelParams): Promise<Stripe.Response<Stripe.Subscription>> {
+    return await client.subscriptions.cancel(id, params)
+  }
+
+  return { create, retrieve, cancel }
 })()
 
 export interface Price {
@@ -216,7 +225,7 @@ export const refund: Refund = (() => {
 export interface PaymentMethod {
   create: (params: Stripe.PaymentMethodCreateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrieve: (paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
-  update: (paymentMethodId: string, params: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  update: (paymentMethodId: string, params?: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   list: (params: Stripe.PaymentMethodListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>>
   attach: (paymentMethodId: string, params: Stripe.PaymentMethodAttachParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   detach: (paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
@@ -231,7 +240,7 @@ export const paymentMethod: PaymentMethod = (() => {
     return await client.paymentMethods.retrieve(paymentMethodId)
   }
 
-  async function update(paymentMethodId: string, params: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+  async function update(paymentMethodId: string, params?: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     return await client.paymentMethods.update(paymentMethodId, params)
   }
 
@@ -511,4 +520,36 @@ export const setupIntents: SetupIntents = (() => {
   }
 
   return { retrieve, list, create, update, delete: deleteIntent }
+})()
+
+export interface PaymentInvoices {
+  retrieve: (invoiceId: string) => Promise<Stripe.Response<Stripe.Invoice>>
+  list: (params: Stripe.InvoiceListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>>
+  create: (params: Stripe.InvoiceCreateParams) => Promise<Stripe.Response<Stripe.Invoice>>
+  delete: (invoiceId: string) => Promise<Stripe.Response<Stripe.DeletedInvoice>>
+  pay: (invoiceId: string, params?: Stripe.InvoicePayParams) => Promise<Stripe.Response<Stripe.Invoice>>
+}
+
+export const invoices: PaymentInvoices = (() => {
+  async function retrieve(invoiceId: string): Promise<Stripe.Response<Stripe.Invoice>> {
+    return await client.invoices.retrieve(invoiceId)
+  }
+
+  async function list(params: Stripe.InvoiceListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
+    return await client.invoices.list(params)
+  }
+
+  async function create(params: Stripe.InvoiceCreateParams): Promise<Stripe.Response<Stripe.Invoice>> {
+    return await client.invoices.create(params)
+  }
+
+  async function deleteInvoice(invoiceId: string): Promise<Stripe.Response<Stripe.DeletedInvoice>> {
+    return await client.invoices.del(invoiceId)
+  }
+
+  async function pay(invoiceId: string, params?: Stripe.InvoicePayParams): Promise<Stripe.Response<Stripe.Invoice>> {
+    return await client.invoices.pay(invoiceId, params)
+  }
+
+  return { retrieve, list, create, delete: deleteInvoice, pay }
 })()

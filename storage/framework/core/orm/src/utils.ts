@@ -909,10 +909,6 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
-  if (modelName === 'User') {
-    console.log(relations)
-  }
-
   for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
   }
@@ -1192,8 +1188,12 @@ export async function generateModelString(
       return customer
     }
 
-    async isSubscribed(type: string): Promise<boolean> {
-      return await manageSubscription.isValid(this, type)
+    async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
+      return manageInvoice.list(this)
+    }
+
+    async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
+      return manageInvoice.list(this)
     }
 
     async activeSubscription() {
@@ -1209,20 +1209,6 @@ export async function generateModelString(
         const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
 
         return { subscription, providerSubscription }
-      }
-
-      return undefined
-    }
-
-    async activeSubscription() {
-      const subscriptions = await this.subscriptions()
-
-      if (subscriptions.length) {
-        const subscription = subscriptions[0]
-
-        const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
-
-        return { subscription, providerSubscription}
       }
 
       return undefined
@@ -1435,7 +1421,7 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model.attributes, otherModelRelations))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { manageCharge, manageCheckout, manageCustomer, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
+    import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
     import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'
