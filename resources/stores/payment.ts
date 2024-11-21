@@ -8,6 +8,7 @@ export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {
       paymentMethods: [] as StripePaymentMethod[],
+      transactionHistory: [] as Stripe.Invoice[],
       defaultPaymentMethod: {} as StripePaymentMethod,
       activeSubscription: {} as Stripe.Subscription,
       subscriptions: [] as Stripe.Subscription[],
@@ -108,6 +109,24 @@ export const usePaymentStore = defineStore('payment', {
         const res = await response.json()
 
         this.paymentMethods = res.data
+      }
+
+      dispatch('paymentMethods:fetched')
+    },
+
+    async fetchTransactionHistory(): Promise<void> {
+      const response: any = await fetch(`${apiUrl}/stripe/fetch-transaction-history`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.transactionHistory = res.data
       }
 
       dispatch('paymentMethods:fetched')

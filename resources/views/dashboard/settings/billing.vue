@@ -15,6 +15,7 @@ onMounted(() => {
       await paymentStore.fetchDefaultPaymentMethod()
       await paymentStore.fetchUserPaymentMethods()
       await paymentStore.fetchUserActivePlan()
+      await paymentStore.fetchTransactionHistory()
     }
   })
 })

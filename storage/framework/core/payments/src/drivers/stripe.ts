@@ -102,6 +102,7 @@ export const charge: Charge = (() => {
 
 export interface Subscription {
   create: (params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
+  list: (params: Stripe.SubscriptionListParams) => Promise<Stripe.ApiListPromise<Stripe.Subscription>>
   retrieve: (id: string, params?: Stripe.SubscriptionRetrieveParams) => Promise<Stripe.Response<Stripe.Subscription>>
   cancel: (id: string, params?: Stripe.SubscriptionCancelParams) => Promise<Stripe.Response<Stripe.Subscription>>
 }
@@ -114,12 +115,16 @@ export const subscription: Subscription = (() => {
   async function retrieve(id: string, params?: Stripe.SubscriptionRetrieveParams): Promise<Stripe.Response<Stripe.Subscription>> {
     return await client.subscriptions.retrieve(id, params)
   }
+  
+  async function list(params: Stripe.SubscriptionListParams): Promise<Stripe.ApiListPromise<Stripe.Subscription>> {
+    return await client.subscriptions.list(params)
+  }
 
   async function cancel(id: string, params?: Stripe.SubscriptionCancelParams): Promise<Stripe.Response<Stripe.Subscription>> {
     return await client.subscriptions.cancel(id, params)
   }
 
-  return { create, retrieve, cancel }
+  return { create, retrieve, cancel, list }
 })()
 
 export interface Price {
@@ -470,7 +475,7 @@ export const coupons: PaymentCoupons = (() => {
 
 export interface PaymentPromotionCodes {
   retrieve: (promotionCodeId: string) => Promise<Stripe.Response<Stripe.PromotionCode>>
-  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>>
+  list: (params: Stripe.PromotionCodeListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>>
   create: (params: Stripe.PromotionCodeCreateParams) => Promise<Stripe.Response<Stripe.PromotionCode>>
 }
 
@@ -479,8 +484,8 @@ export const promotionCodes: PaymentPromotionCodes = (() => {
     return await client.promotionCodes.retrieve(promotionCodeId)
   }
 
-  async function list(limit: number): Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>> {
-    return await client.promotionCodes.list({ limit })
+  async function list(params: Stripe.PromotionCodeListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>>> {
+    return await client.promotionCodes.list(params)
   }
 
   async function create(params: Stripe.PromotionCodeCreateParams): Promise<Stripe.Response<Stripe.PromotionCode>> {
@@ -492,7 +497,7 @@ export const promotionCodes: PaymentPromotionCodes = (() => {
 
 export interface SetupIntents {
   retrieve: (setupIntentId: string) => Promise<Stripe.Response<Stripe.SetupIntent>>
-  list: (limit: number) => Promise<Stripe.Response<Stripe.ApiList<Stripe.SetupIntent>>>
+  list: (params: Stripe.SetupIntentListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.SetupIntent>>>
   create: (params: Stripe.SetupIntentCreateParams) => Promise<Stripe.Response<Stripe.SetupIntent>>
   update: (setupIntentId: string, params: Stripe.SetupIntentUpdateParams) => Promise<Stripe.Response<Stripe.SetupIntent>>
   delete: (setupIntentId: string) => Promise<Stripe.Response<Stripe.SetupIntent>>
@@ -503,8 +508,8 @@ export const setupIntents: SetupIntents = (() => {
     return await client.setupIntents.retrieve(setupIntentId)
   }
 
-  async function list(limit: number): Promise<Stripe.Response<Stripe.ApiList<Stripe.SetupIntent>>> {
-    return await client.setupIntents.list({ limit })
+  async function list(params: Stripe.SetupIntentListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.SetupIntent>>> {
+    return await client.setupIntents.list(params)
   }
 
   async function create(params: Stripe.SetupIntentCreateParams): Promise<Stripe.Response<Stripe.SetupIntent>> {

@@ -8,8 +8,8 @@ export default new Action({
   async handle() {
     const user = await User.find(1)
 
-    const subscription = await user?.subscriptionHistory()
+    const transactions = await user?.subscriptionHistory()
 
-    return subscription
+    return transactions
   },
 })

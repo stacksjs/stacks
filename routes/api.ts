@@ -26,7 +26,7 @@ route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
 route.get('/stripe/fetch-customer', 'Actions/Payment/FetchStripeCustomerAction')
-route.get('/stripe/fetch-transaction-history', 'Actions/Payment/FetchStripeCustomerAction')
+route.get('/stripe/fetch-transaction-history', 'Actions/Payment/FetchTransactionHistoryAction')
 route.get('/stripe/fetch-user-subscriptions', 'Actions/Payment/FetchUserSubscriptionsAction')
 route.get('/stripe/fetch-active-subscription', 'Actions/Payment/FetchActiveSubscriptionAction')
 route.get('/stripe/default-payment-method', 'Actions/Payment/FetchDefaultPaymentMethodAction')
