@@ -152,10 +152,16 @@ interface StacksEvents {
   'user:deleted': Partial<UserModel>
   'user:password-reset': object
   'user:password-changed': object
+  'subscription:created': any
+  'subscription:canceled': any
+  'paymentMethods:fetched': any
+  'customer:fetched': any
+  'paymentMethod:fetched': any
+  'subscription:fetched': any
 }
 
 const events: Emitter<StacksEvents> = mitt<StacksEvents>()
-const emitter = events
+const emitter: Emitter<StacksEvents> = events
 const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
 const useEvents = events
 const dispatch: typeof emitter.emit = emitter.emit.bind(emitter)
