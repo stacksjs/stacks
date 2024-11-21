@@ -240,6 +240,9 @@ export const usePaymentStore = defineStore('payment', {
     getCurrentPlan(state): Stripe.Subscription {
       return state.activeSubscription
     },
+    getTransactionHistory(state): Stripe.Invoice[] {
+      return state.transactionHistory
+    },
     hasPaymentMethods(state): boolean {
       return state.paymentMethods.length || !(!state.defaultPaymentMethod // Checks for null or undefined
         || (typeof state.defaultPaymentMethod === 'object'
