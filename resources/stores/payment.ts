@@ -19,7 +19,7 @@ export const usePaymentStore = defineStore('payment', {
 
   actions: {
     async fetchSetupIntent(): Promise<string> {
-      const url = 'http://localhost:3008/stripe/create-setup-intent'
+      const url = 'http://localhost:3008/payments/create-setup-intent'
 
       const response = await fetch(url, {
         method: 'GET',
@@ -36,7 +36,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async subscribeToPlan(body: { type: string, plan: string, description: string }): Promise<string> {
-      const url = 'http://localhost:3008/stripe/create-subscription'
+      const url = 'http://localhost:3008/payments/create-subscription'
 
       const response = await fetch(url, {
         method: 'POST',
@@ -55,7 +55,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchSubscriptions(): Promise<void> {
-      const url = 'http://localhost:3008/stripe/fetch-user-subscriptions'
+      const url = 'http://localhost:3008/payments/fetch-user-subscriptions'
 
       const response = await fetch(url, {
         method: 'GET',
@@ -76,7 +76,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async cancelPlan(): Promise<void> {
-      const url = 'http://localhost:3008/stripe/cancel-subscription'
+      const url = 'http://localhost:3008/payments/cancel-subscription'
 
       const providerId = this.getCurrentPlan.subscription.provider_id
       const subscriptionId = this.getCurrentPlan.subscription.id
@@ -97,7 +97,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchUserPaymentMethods(): Promise<void> {
-      const response: any = await fetch(`${apiUrl}/stripe/user-payment-methods`, {
+      const response: any = await fetch(`${apiUrl}/payments/user-payment-methods`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchTransactionHistory(): Promise<void> {
-      const response: any = await fetch(`${apiUrl}/stripe/fetch-transaction-history`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async deletePaymentMethod(paymentMethod: string): Promise<void> {
-      const url = 'http://localhost:3008/stripe/delete-payment-method'
+      const url = 'http://localhost:3008/payments/delete-payment-method'
 
       const body = { paymentMethod }
 
@@ -155,7 +155,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async updateDefaultPaymentMethod(paymentMethod: string): Promise<void> {
-      const url = 'http://localhost:3008/stripe/update-default-payment-method'
+      const url = 'http://localhost:3008/payments/update-default-payment-method'
 
       const body = { paymentMethod }
 
@@ -177,7 +177,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchStripeCustomer(): Promise<void> {
-      const response: any = await fetch(`${apiUrl}/stripe/fetch-customer`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-customer`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchDefaultPaymentMethod(): Promise<void> {
-      const response: any = await fetch(`${apiUrl}/stripe/default-payment-method`, {
+      const response: any = await fetch(`${apiUrl}/payments/default-payment-method`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -212,7 +212,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchUserActivePlan(): Promise<void> {
-      const response: any = await fetch(`${apiUrl}/stripe/fetch-active-subscription`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
