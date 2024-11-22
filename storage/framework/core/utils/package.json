@@ -54,11 +54,11 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^11.1.0",
+    "@vueuse/core": "^11.3.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^11.1.0",
-    "@vueuse/shared": "^11.1.0",
-    "ace-builds": "^1.36.3",
+    "@vueuse/math": "^11.3.0",
+    "@vueuse/shared": "^11.3.0",
+    "ace-builds": "^1.36.5",
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
@@ -73,7 +73,7 @@
     "pretty-bytes": "^6.1.1",
     "resize-observer-polyfill": "^1.5.1",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.6.0"
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
