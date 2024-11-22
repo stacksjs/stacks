@@ -2,6 +2,7 @@
  * This file is used to define the types/interfaces used in the project.
  */
 
+import { cache } from '@stacksjs/cache'
 import type { SearchEngineStore } from './types'
 
 // import { isString } from '@stacksjs/validation'
@@ -11,7 +12,7 @@ export function isString(val: unknown): val is string {
 }
 
 export function determineState(): SearchEngineStore {
-  const ls = localStorage.getItem('search-engine')
+  const ls = cache.get('search-engine')
 
   if (isString(ls))
     return JSON.parse(ls) as SearchEngineStore

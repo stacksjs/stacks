@@ -421,7 +421,7 @@ async function addHeaders(headers: Headers): Promise<void> {
 async function executeMiddleware(route: Route): Promise<any> {
   const { middleware = null } = route
 
-  if (middleware && middlewares && isObjectNotEmpty(middlewares)) {
+  if (middleware && await middlewares() && isObjectNotEmpty(await middlewares())) {
     // let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
       const middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)

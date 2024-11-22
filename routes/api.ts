@@ -25,7 +25,7 @@ route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
-route.get('/payments/fetch-customer', 'Actions/Payment/FetchPaymentCustomerAction')
+route.get('/payments/fetch-customer', 'Actions/Payment/FetchPaymentCustomerAction').middleware(['BearerToken'])
 route.get('/payments/fetch-transaction-history', 'Actions/Payment/FetchTransactionHistoryAction')
 route.get('/payments/fetch-user-subscriptions', 'Actions/Payment/FetchUserSubscriptionsAction')
 route.get('/payments/fetch-active-subscription', 'Actions/Payment/FetchActiveSubscriptionAction')

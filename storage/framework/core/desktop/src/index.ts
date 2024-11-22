@@ -18,22 +18,22 @@ import * as updater from '@tauri-apps/api/updater'
 import * as window from '@tauri-apps/api/window'
 
 export const desktop = {
-  app,
-  event,
-  clipboard,
-  dialog,
-  fs,
-  globalShortcut,
-  http,
-  mocks,
-  notification,
-  os,
-  path,
-  process,
-  shell,
-  tauri,
-  updater,
-  window,
+  // app,
+  // event,
+  // clipboard,
+  // dialog,
+  // fs,
+  // globalShortcut,
+  // http,
+  // mocks,
+  // notification,
+  // os,
+  // path,
+  // process,
+  // shell,
+  // tauri,
+  // updater,
+  // window,
 }
 
 export async function openShell(link: string) {
