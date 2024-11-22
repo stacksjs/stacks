@@ -144,10 +144,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     && typeof middlewarePayload === 'object'
     && Object.keys(middlewarePayload).length > 0
   ) {
-
     const { status, message } = middlewarePayload
-    
-    return new Response(JSON.stringify(`<html><body><h1>${message}</h1<pre></pre></body></html>`), {
+
+    return new Response(`<html><body><h1>${message}</h1<pre></pre></body></html>`, {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',

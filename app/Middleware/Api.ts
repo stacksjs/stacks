@@ -1,5 +1,5 @@
+import { HttpError } from '@stacksjs/error-handling'
 import { Middleware, request } from '@stacksjs/router'
-import { HttpError } from 'index'
 import { AccessToken, Team } from '../../storage/framework/orm/src'
 
 export default new Middleware({

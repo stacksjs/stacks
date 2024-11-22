@@ -14,7 +14,7 @@ export const manageInvoice: ManageInvoice = (() => {
 
     const invoices = await stripe.invoices.list({
       customer: user?.stripeId(),
-      expand: ['data.payment_intent.payment_method']
+      expand: ['data.payment_intent.payment_method'],
     })
 
     return invoices

@@ -1,6 +1,5 @@
+import { HttpError } from '@stacksjs/error-handling'
 import { Middleware, request } from '@stacksjs/router'
-import { HttpError } from 'index'
-import { AccessToken, Team } from '../../storage/framework/orm/src'
 
 export default new Middleware({
   name: 'Bearer Token Test',
@@ -9,7 +8,7 @@ export default new Middleware({
     const bearerToken = request.bearerToken() || ''
     const validToken = 'Test@1234'
 
-  if (!bearerToken || bearerToken !== validToken)
+    if (!bearerToken || bearerToken !== validToken)
       throw new HttpError(401, 'Unauthorized.')
   },
 })
