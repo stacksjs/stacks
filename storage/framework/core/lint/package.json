@@ -48,7 +48,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.5.0",
+    "@commitlint/cli": "^19.6.0",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/eslint-config": "^3.8.1-beta.2",
     "lint-staged": "^15.2.10",

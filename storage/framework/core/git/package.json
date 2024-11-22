@@ -34,10 +34,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bumpp": "^9.7.1",
+    "bumpp": "^9.8.1",
     "changelogen": "^0.5.7",
     "commitizen": "^4.3.1",
-    "cz-git": "^1.10.1",
+    "cz-git": "^1.11.0",
     "giget": "^1.2.3",
     "simple-git-hooks": "^2.11.1"
   },

@@ -37,8 +37,8 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "kysely": "^0.27.4",
-    "kysely-bun-worker": "^0.6.3",
-    "mysql2": "^3.11.3",
+    "kysely-bun-worker": "^0.7.0",
+    "mysql2": "^3.11.4",
     "pg": "^8.13.1"
   },
   "devDependencies": {
