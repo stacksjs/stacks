@@ -54,23 +54,22 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   // This automatically allows for route definitions, like
   // '/about' and '/about/' to be treated as the same
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
-  const url = new URL(trimmedUrl)
+  const url: URL = new URL(trimmedUrl) as URL
   const routesList: Route[] = await route.getRoutes()
 
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
   log.info(`URL: ${JSON.stringify(url)}`)
 
   if (req.method === 'OPTIONS') {
-    return handleOptions(req)
+    return handleOptions()
   }
 
   const foundRoute: Route | undefined = routesList
-    .filter((route: Route) => {
+    .find((route: Route) => {
       const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
 
       return pattern.test(url.pathname)
     })
-    .find((route: Route) => route.method === req.method)
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
 
@@ -96,7 +95,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   }
 
   await addRouteParam(routeParams)
-  await addHeaders(req.headers)
+  await addHeaders(req.headers as Headers)
 
   return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
 }
@@ -170,7 +169,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (foundRoute?.method !== req.method) {
-    return new Response('Method not allowed', {
+    return new Response('<html><body><h1>Method not allowed!</h1<pre></pre></body></html>', {
       status: 405,
       headers: {
         'Access-Control-Allow-Origin': '*',
