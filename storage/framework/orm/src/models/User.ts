@@ -790,15 +790,13 @@ export class UserModel {
   }
 
   async activeSubscription() {
-    const subscriptions = await db.selectFrom('subscriptions')
+    const subscription = await db.selectFrom('subscriptions')
       .where('user_id', '=', this.id)
       .where('provider_status', '=', 'active')
       .selectAll()
-      .execute()
+      .executeTakeFirst()
 
-    if (subscriptions.length) {
-      const subscription = subscriptions[0]
-
+    if (subscription) {
       const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
 
       return { subscription, providerSubscription }
@@ -836,9 +834,22 @@ export class UserModel {
     return { subscription, paymentIntent }
   }
 
+  async updateSubscription(
+    type: string,
+    lookupKey: string,
+    options: Partial<Stripe.SubscriptionUpdateParams> = {},
+  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
+    const subscription = await manageSubscription.update(this, type, lookupKey, options)
+
+    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
+    const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
+
+    return { subscription, paymentIntent }
+  }
+
   async cancelSubscription(
     providerId: string,
-        options: Partial<Stripe.SubscriptionCreateParams> = {},
+      options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.cancel(providerId, options)
 

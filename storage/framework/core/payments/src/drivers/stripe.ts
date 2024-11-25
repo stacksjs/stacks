@@ -102,6 +102,7 @@ export const charge: Charge = (() => {
 
 export interface Subscription {
   create: (params: Stripe.SubscriptionCreateParams) => Promise<Stripe.Response<Stripe.Subscription>>
+  update: (id: string, params: Stripe.SubscriptionUpdateParams) => Promise<Stripe.Response<Stripe.Subscription>>
   list: (params: Stripe.SubscriptionListParams) => Promise<Stripe.ApiListPromise<Stripe.Subscription>>
   retrieve: (id: string, params?: Stripe.SubscriptionRetrieveParams) => Promise<Stripe.Response<Stripe.Subscription>>
   cancel: (id: string, params?: Stripe.SubscriptionCancelParams) => Promise<Stripe.Response<Stripe.Subscription>>
@@ -112,10 +113,14 @@ export const subscription: Subscription = (() => {
     return await client.subscriptions.create(params)
   }
 
+  async function update(id: string, params: Stripe.SubscriptionUpdateParams): Promise<Stripe.Response<Stripe.Subscription>> {
+    return await client.subscriptions.update(id, params)
+  }
+
   async function retrieve(id: string, params?: Stripe.SubscriptionRetrieveParams): Promise<Stripe.Response<Stripe.Subscription>> {
     return await client.subscriptions.retrieve(id, params)
   }
-  
+
   async function list(params: Stripe.SubscriptionListParams): Promise<Stripe.ApiListPromise<Stripe.Subscription>> {
     return await client.subscriptions.list(params)
   }
@@ -124,7 +129,34 @@ export const subscription: Subscription = (() => {
     return await client.subscriptions.cancel(id, params)
   }
 
-  return { create, retrieve, cancel, list }
+  return { create, update, retrieve, cancel, list }
+})()
+
+export interface SubscriptionItems {
+  create: (params: Stripe.SubscriptionItemCreateParams) => Promise<Stripe.Response<Stripe.SubscriptionItem>>
+  update: (id: string, params: Stripe.SubscriptionItemUpdateParams) => Promise<Stripe.Response<Stripe.SubscriptionItem>>
+  retrieve: (id: string) => Promise<Stripe.Response<Stripe.SubscriptionItem>>
+  delete: (id: string) => Promise<Stripe.Response<Stripe.DeletedSubscriptionItem>>
+}
+
+export const subscriptionItems: SubscriptionItems = (() => {
+  async function create(params: Stripe.SubscriptionItemCreateParams): Promise<Stripe.Response<Stripe.SubscriptionItem>> {
+    return await client.subscriptionItems.create(params)
+  }
+
+  async function update(id: string, params: Stripe.SubscriptionItemUpdateParams): Promise<Stripe.Response<Stripe.SubscriptionItem>> {
+    return await client.subscriptionItems.update(id, params)
+  }
+
+  async function retrieve(id: string): Promise<Stripe.Response<Stripe.SubscriptionItem>> {
+    return await client.subscriptionItems.retrieve(id)
+  }
+
+  async function deleteItem(id: string): Promise<Stripe.Response<Stripe.DeletedSubscriptionItem>> {
+    return await client.subscriptionItems.del(id)
+  }
+
+  return { create, update, retrieve, delete: deleteItem }
 })()
 
 export interface Price {

@@ -5,7 +5,7 @@ import ActivePlan from '../components/billing/active-plan.vue'
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
 
-const { isEmpty, updatingPlanState, showCurrentPlan } = useBillable()
+const { isEmpty, showCurrentPlan } = useBillable()
 
 const paymentStore = usePaymentStore()
 

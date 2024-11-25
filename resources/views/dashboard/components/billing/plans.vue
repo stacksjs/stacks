@@ -46,8 +46,8 @@ const planDescription = computed(() => {
   return 'All Stacks features are included'
 })
 
-function currentPlanSelected(type: string, key: string) {
-  return currentPlanType.value === type && currentPlanKey.value === key
+function currentPlanSelected(type: string): boolean {
+  return currentPlanType.value === type && checkedPlanType.value === currentPlanKey.value
 }
 
 const hobbyPrice = computed(() => {
@@ -116,12 +116,14 @@ const noPlanSelected = computed(() => {
   return !getPlanTypeKey.value && !selectedPlan.value
 })
 
-function updatePlan() {
-  console.log({
+async function updatePlan() {
+  await paymentStore.updatePlan({
     type: getPlanTypeKey.value,
     plan: selectedPlan.value,
     description: planDescription.value,
   })
+
+  await paymentStore.fetchUserActivePlan()
 }
 </script>
 
@@ -170,7 +172,7 @@ function updatePlan() {
         <fieldset>
           <div class="space-y-4">
             <label
-            :class="{ 'cursor-not-allowed': currentPlanSelected('hobby', 'stacks_hobby_monthly'), 'cursor-pointer': !currentPlanSelected('hobby', 'stacks_hobby_monthly') }" 
+              :class="{ 'cursor-not-allowed': currentPlanSelected('hobby'), 'cursor-pointer': !currentPlanSelected('hobby') }"
               class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none"
             >
               <input v-model="selectedPlan" type="radio" value="hobby" class="sr-only">
@@ -178,7 +180,7 @@ function updatePlan() {
                 <span class="flex flex-col text-sm">
                   <div class="flex">
                     <span class="text-gray-900 font-medium">Hobby</span>
-                    <span v-if="currentPlanType === 'hobby' && currentPlanKey === 'stacks_hobby_monthly'" class="ml-4 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs text-blue-700 font-medium ring-1 ring-blue-700/10 ring-inset">Current Plan</span>
+                    <span v-if="currentPlanSelected('hobby')" class="ml-4 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs text-blue-700 font-medium ring-1 ring-blue-700/10 ring-inset">Current Plan</span>
                   </div>
                   <p class="pt-2 text-xs text-gray-600">
                     All Stacks features are included.
@@ -192,15 +194,17 @@ function updatePlan() {
               <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'hobby', 'border ': selectedPlan !== 'hobby' }" />
             </label>
 
-            <label aria-label="pro" 
-              :class="{ 'cursor-not-allowed': currentPlanSelected('pro', 'stacks_pro_monthly'), 'cursor-pointer': !currentPlanSelected('pro', 'stacks_pro_monthly') }" 
-              class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-              <input v-model="selectedPlan" type="radio" value="pro" class="sr-only" :disabled="currentPlanType === 'pro' && currentPlanKey === 'stacks_pro_monthly'">
+            <label
+              aria-label="pro"
+              :class="{ 'cursor-not-allowed': currentPlanSelected('pro'), 'cursor-pointer': !currentPlanSelected('pro') }"
+              class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none"
+            >
+              <input v-model="selectedPlan" type="radio" value="pro" class="sr-only" :disabled="currentPlanSelected('pro')">
               <span class="flex items-center">
                 <span class="flex flex-col text-sm">
                   <div class="flex">
                     <span class="text-gray-900 font-medium">Pro</span>
-                    <span v-if="currentPlanType === 'pro' && currentPlanKey === 'stacks_pro_monthly'" class="ml-4 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs text-blue-700 font-medium ring-1 ring-blue-700/10 ring-inset">Current Plan</span>
+                    <span v-if="currentPlanSelected('pro')" class="ml-4 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs text-blue-700 font-medium ring-1 ring-blue-700/10 ring-inset">Current Plan</span>
                   </div>
                   <p class="pt-2 text-xs text-gray-600">
                     All Stacks features are included & being able to invite team members.
@@ -240,7 +244,7 @@ function updatePlan() {
         <button
           type="button"
           :disabled="!paymentStore.hasPaymentMethods || noPlanSelected"
-          class="rounded-md bg-blue-600 px-2.5 ml-4 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
           @click="updatePlan()"
         >
           Update Plan

@@ -7,6 +7,7 @@ import { Subscription } from '../../../../orm/src/models/Subscription'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  update: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionUpdateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   retrieve: (user: UserModel, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
@@ -54,6 +55,48 @@ export const manageSubscription: SubscriptionManager = (() => {
     await storeSubscription(user, type, lookupKey, subscription)
 
     return subscription
+  }
+
+  async function update(
+    user: UserModel,
+    type: string,
+    lookupKey: string,
+    params: Partial<Stripe.SubscriptionUpdateParams>,
+  ): Promise<Stripe.Response<Stripe.Subscription>> {
+    const newPrice = await managePrice.retrieveByLookupKey(lookupKey)
+
+    const activeSubscription = await user?.activeSubscription()
+
+    if (!newPrice)
+      throw new Error('New price does not exist in Stripe')
+
+    if (! activeSubscription)
+      throw new Error('No active subscription for user!')
+
+    const subscriptionId = activeSubscription.subscription?.provider_id || ''
+  
+    const subscription = await stripe.subscription.retrieve(subscriptionId)
+  
+    if (!subscription) {
+      throw new Error('Subscription does not exist in Stripe')
+    }
+
+    const subscriptionItemId = subscription.items.data[0]?.id
+
+    if (!subscriptionItemId) {
+      throw new Error('No subscription items found in the subscription')
+    }
+
+    await stripe.subscriptionItems.update(subscriptionItemId, {
+      price: newPrice.id,
+      quantity: 1,
+    })
+
+    const updatedSubscription = await stripe.subscription.retrieve(subscriptionId)
+
+    await storeSubscription(user, type, lookupKey, updatedSubscription)
+
+    return updatedSubscription
   }
 
   async function cancel(
@@ -149,5 +192,5 @@ export const manageSubscription: SubscriptionManager = (() => {
     ) as Partial<T>
   }
 
-  return { create, isValid, isIncomplete, cancel, retrieve }
+  return { create, update, isValid, isIncomplete, cancel, retrieve }
 })()

@@ -55,6 +55,25 @@ export const usePaymentStore = defineStore('payment', {
       return client
     },
 
+    async updatePlan(body: { type: string, plan: string, description: string }): Promise<string> {
+      const url = 'http://localhost:3008/payments/update-subscription'
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const client: any = await response.json()
+
+      dispatch('subscription:updated')
+
+      return client
+    },
+
     openPlans() {
       this.planState = true
     },

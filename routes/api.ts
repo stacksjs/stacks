@@ -37,6 +37,7 @@ route.put('/payments/update-default-payment-method', 'Actions/Payment/UpdateDefa
 route.post('/payments/set-default-payment-method', 'Actions/Payment/SetDefaultPaymentAction')
 route.post('/payments/create-payment-intent', 'Actions/Payment/CreatePaymentIntentAction')
 route.post('/payments/create-subscription', 'Actions/Payment/CreateSubscriptionAction')
+route.post('/payments/update-subscription', 'Actions/Payment/UpdateSubscriptionAction')
 route.post('/payments/cancel-subscription', 'Actions/Payment/CancelSubscriptionAction')
 route.post('/payments/create-invoice-subscription', 'Actions/Payment/CreateInvoiceSubscription')
 route.patch('/payments/update-customer', 'Actions/Payment/UpdateCustomerAction')
