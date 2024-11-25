@@ -6,7 +6,7 @@ export default new Middleware({
   priority: 1,
   async handle() {
     const bearerToken = request.bearerToken() || ''
-    const validToken = 'Test@1234'
+    const validToken = ''
 
     if (!bearerToken || bearerToken !== validToken)
       throw new HttpError(401, 'Unauthorized.')

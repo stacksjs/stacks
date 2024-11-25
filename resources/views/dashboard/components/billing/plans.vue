@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { saas } from '@stacksjs/browser'
+import { useBillable } from '../../../../functions/billing/payments'
 
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
 const paymentStore = usePaymentStore()
+const { updatingPlanState, showPlans, cancelEditPlan } = useBillable()
 
 const loading = ref(true)
 
@@ -29,12 +31,24 @@ const perText = computed(() => {
   return '/lifetime'
 })
 
+const currentPlanType = computed(() => {
+  return paymentStore.getCurrentPlan.subscription?.type
+})
+
+const currentPlanKey = computed(() => {
+  return paymentStore.getCurrentPlan.subscription?.provider_price_key
+})
+
 const planDescription = computed(() => {
   if (selectedPlan.value === 'pro')
     return 'All Stacks features are included & being able to invite team members.'
 
   return 'All Stacks features are included'
 })
+
+function currentPlanSelected(type: string, key: string) {
+  return currentPlanType.value === type && currentPlanKey.value === key
+}
 
 const hobbyPrice = computed(() => {
   if (checkedPlanType.value === 'monthly') {
@@ -85,7 +99,7 @@ const getPlanTypeKey = computed(() => {
   if (checkedPlanType.value === 'annually' && selectedPlan.value === 'pro')
     return 'stacks_pro_yearly'
 
-  return 'stacks_hobby_monthly'
+  return ''
 })
 
 async function subscribePlan() {
@@ -96,6 +110,18 @@ async function subscribePlan() {
   })
 
   await paymentStore.fetchUserActivePlan()
+}
+
+const noPlanSelected = computed(() => {
+  return !getPlanTypeKey.value && !selectedPlan.value
+})
+
+function updatePlan() {
+  console.log({
+    type: getPlanTypeKey.value,
+    plan: selectedPlan.value,
+    description: planDescription.value,
+  })
 }
 </script>
 
@@ -144,13 +170,16 @@ async function subscribePlan() {
         <fieldset>
           <div class="space-y-4">
             <label
-              class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none"
+            :class="{ 'cursor-not-allowed': currentPlanSelected('hobby', 'stacks_hobby_monthly'), 'cursor-pointer': !currentPlanSelected('hobby', 'stacks_hobby_monthly') }" 
+              class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none"
             >
               <input v-model="selectedPlan" type="radio" value="hobby" class="sr-only">
               <span class="flex items-center">
                 <span class="flex flex-col text-sm">
-                  <span class="text-gray-900 font-medium">Hobby</span>
-
+                  <div class="flex">
+                    <span class="text-gray-900 font-medium">Hobby</span>
+                    <span v-if="currentPlanType === 'hobby' && currentPlanKey === 'stacks_hobby_monthly'" class="ml-4 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs text-blue-700 font-medium ring-1 ring-blue-700/10 ring-inset">Current Plan</span>
+                  </div>
                   <p class="pt-2 text-xs text-gray-600">
                     All Stacks features are included.
                   </p>
@@ -163,13 +192,16 @@ async function subscribePlan() {
               <span class="pointer-events-none absolute rounded-lg -inset-px" aria-hidden="true" :class="{ 'border-indigo-600 border-2': selectedPlan === 'hobby', 'border ': selectedPlan !== 'hobby' }" />
             </label>
 
-            <!-- Active: "border-indigo-600 ring-2 ring-indigo-600", Not Active: "border-gray-300" -->
-            <label aria-label="pro" class="relative block cursor-pointer border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
-              <input v-model="selectedPlan" type="radio" value="pro" class="sr-only">
+            <label aria-label="pro" 
+              :class="{ 'cursor-not-allowed': currentPlanSelected('pro', 'stacks_pro_monthly'), 'cursor-pointer': !currentPlanSelected('pro', 'stacks_pro_monthly') }" 
+              class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none">
+              <input v-model="selectedPlan" type="radio" value="pro" class="sr-only" :disabled="currentPlanType === 'pro' && currentPlanKey === 'stacks_pro_monthly'">
               <span class="flex items-center">
                 <span class="flex flex-col text-sm">
-                  <span class="text-gray-900 font-medium">Pro</span>
-
+                  <div class="flex">
+                    <span class="text-gray-900 font-medium">Pro</span>
+                    <span v-if="currentPlanType === 'pro' && currentPlanKey === 'stacks_pro_monthly'" class="ml-4 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs text-blue-700 font-medium ring-1 ring-blue-700/10 ring-inset">Current Plan</span>
+                  </div>
                   <p class="pt-2 text-xs text-gray-600">
                     All Stacks features are included & being able to invite team members.
                   </p>
@@ -185,7 +217,7 @@ async function subscribePlan() {
         </fieldset>
       </div>
 
-      <div class="flex justify-end pt-8">
+      <div v-if="showPlans" class="flex justify-end pt-8">
         <button
           type="button"
           :disabled="!paymentStore.hasPaymentMethods"
@@ -193,6 +225,25 @@ async function subscribePlan() {
           @click="subscribePlan()"
         >
           Subscribe
+        </button>
+      </div>
+
+      <div v-if="updatingPlanState" class="flex justify-end pt-8">
+        <button
+          type="button"
+          class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          @click="cancelEditPlan()"
+        >
+          Cancel Plan
+        </button>
+
+        <button
+          type="button"
+          :disabled="!paymentStore.hasPaymentMethods || noPlanSelected"
+          class="rounded-md bg-blue-600 px-2.5 ml-4 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          @click="updatePlan()"
+        >
+          Update Plan
         </button>
       </div>
     </div>

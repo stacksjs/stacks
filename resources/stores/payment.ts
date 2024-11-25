@@ -14,6 +14,7 @@ export const usePaymentStore = defineStore('payment', {
       subscriptions: [] as Stripe.Subscription[],
       stripeCustomer: {} as Stripe.Customer,
       paymentPlans: [] as any[],
+      planState: false as boolean,
     }
   },
 
@@ -52,6 +53,14 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('subscription:created')
 
       return client
+    },
+
+    openPlans() {
+      this.planState = true
+    },
+
+    closePlans() {
+      this.planState = false
     },
 
     async fetchSubscriptions(): Promise<void> {
@@ -253,6 +262,9 @@ export const usePaymentStore = defineStore('payment', {
     },
     getStripeCustomer(state): any {
       return state.stripeCustomer
+    },
+    getPlanState(state): boolean {
+      return state.planState
     },
   },
 })

@@ -22,7 +22,7 @@ export default {
       },
     },
 
-    provider_id: {
+    providerId: {
       required: true,
       unique: true,
       fillable: true,
@@ -37,7 +37,7 @@ export default {
       factory: () => faker.string.alphanumeric,
     },
 
-    provider_status: {
+    providerStatus: {
       required: true,
       fillable: true,
       validation: {
@@ -45,6 +45,18 @@ export default {
         message: {
           string: 'provider_status must be a string',
           required: 'provider_status is required',
+        },
+      },
+    },
+
+    providerPriceKey: {
+      required: true,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'provider_price_key must be a string',
+          required: 'provider_price_key is required',
         },
       },
     },

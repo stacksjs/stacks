@@ -12,6 +12,7 @@ export interface SubscriptionsTable {
   type?: string
   provider_id?: string
   provider_status?: string
+  provider_price_key?: string
   unit_price?: number
   provider_type?: string
   provider_price_id?: string
@@ -59,7 +60,7 @@ interface QueryOptions {
 
 export class SubscriptionModel {
   private hidden = []
-  private fillable = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'stripe_id', 'public_key', 'two_factor_secret', 'user_id']
+  private fillable = ['type', 'provider_id', 'provider_status', 'provider_price_key', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'stripe_id', 'public_key', 'two_factor_secret', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -67,6 +68,7 @@ export class SubscriptionModel {
   public type: string | undefined
   public provider_id: string | undefined
   public provider_status: string | undefined
+  public provider_price_key: string | undefined
   public unit_price: number | undefined
   public provider_type: string | undefined
   public provider_price_id: string | undefined
@@ -84,6 +86,7 @@ export class SubscriptionModel {
     this.type = subscription?.type
     this.provider_id = subscription?.provider_id
     this.provider_status = subscription?.provider_status
+    this.provider_price_key = subscription?.provider_price_key
     this.unit_price = subscription?.unit_price
     this.provider_type = subscription?.provider_type
     this.provider_price_id = subscription?.provider_price_id
@@ -387,7 +390,7 @@ export class SubscriptionModel {
   static whereProviderId(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('provider_id', '=', value)
+    instance.query = instance.query.where('providerId', '=', value)
 
     return instance
   }
@@ -395,7 +398,15 @@ export class SubscriptionModel {
   static whereProviderStatus(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('provider_status', '=', value)
+    instance.query = instance.query.where('providerStatus', '=', value)
+
+    return instance
+  }
+
+  static whereProviderPriceKey(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.query = instance.query.where('providerPriceKey', '=', value)
 
     return instance
   }
@@ -674,6 +685,7 @@ export class SubscriptionModel {
       type: this.type,
       provider_id: this.provider_id,
       provider_status: this.provider_status,
+      provider_price_key: this.provider_price_key,
       unit_price: this.unit_price,
       provider_type: this.provider_type,
       provider_price_id: this.provider_price_id,
@@ -753,6 +765,13 @@ export async function whereProviderId(value: string): Promise<SubscriptionModel[
 
 export async function whereProviderStatus(value: string): Promise<SubscriptionModel[]> {
   const query = db.selectFrom('subscriptions').where('provider_status', '=', value)
+  const results = await query.execute()
+
+  return results.map(modelItem => new SubscriptionModel(modelItem))
+}
+
+export async function whereProviderPriceKey(value: string): Promise<SubscriptionModel[]> {
+  const query = db.selectFrom('subscriptions').where('provider_price_key', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))

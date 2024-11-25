@@ -5,7 +5,7 @@ import ActivePlan from '../components/billing/active-plan.vue'
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
 
-const { isEmpty } = useBillable()
+const { isEmpty, updatingPlanState, showCurrentPlan } = useBillable()
 
 const paymentStore = usePaymentStore()
 
@@ -95,9 +95,9 @@ onMounted(() => {
       </div>
 
       <div class="flex space-x-8">
-        <ActivePlan />
+        <ActivePlan v-if="showCurrentPlan" />
+        <Plans v-else />
 
-        <Plans v-if="isEmpty(paymentStore.getCurrentPlan)" />
         <PaymentMethod />
       </div>
     </div>

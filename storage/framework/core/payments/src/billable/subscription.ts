@@ -51,7 +51,7 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const subscription = await stripe.subscription.create(mergedParams)
 
-    await storeSubscription(user, type, subscription)
+    await storeSubscription(user, type, lookupKey, subscription)
 
     return subscription
   }
@@ -122,10 +122,11 @@ export const manageSubscription: SubscriptionManager = (() => {
     return active || trial
   }
 
-  async function storeSubscription(user: UserModel, type: string, options: Stripe.Subscription): Promise<SubscriptionModel> {
+  async function storeSubscription(user: UserModel, type: string, lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionModel> {
     const data = removeNullValues({
       user_id: user.id,
       type,
+      provider_price_key: lookupKey,
       unit_price: Number(options.items.data[0].price.unit_amount),
       provider_id: options.id,
       provider_status: options.status,

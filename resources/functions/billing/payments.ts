@@ -108,5 +108,25 @@ export function useBillable() {
         && Object.keys(object).length === 0)
   }
 
-  return { loadStripeElement, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate }
+  const updatingPlanState = computed(() => {
+    return !isEmpty(paymentStore.getCurrentPlan) && paymentStore.getPlanState
+  })
+
+  const showCurrentPlan = computed(() => {
+    return !isEmpty(paymentStore.getCurrentPlan) && !paymentStore.getPlanState
+  })
+
+  const showPlans = computed(() => {
+    return isEmpty(paymentStore.getCurrentPlan)
+  })
+
+  function editPlan() {
+    paymentStore.openPlans()
+  }
+
+  function cancelEditPlan() {
+    paymentStore.closePlans()
+  }
+
+  return { loadStripeElement, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
 }
