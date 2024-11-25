@@ -10,3 +10,5 @@ const plugin: Plugin = {
 }
 
 export default plugin
+
+export { Popover, PopoverButton, PopoverPanel }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useBillable } from '../../../../functions/billing/payments'
 import CardBrands from './card-brands.vue'
+import { Notification, notification } from '@stacksjs/notification'
 
 import PaymentMethodList from './payment-method-list.vue'
 
@@ -8,18 +9,21 @@ const paymentStore = usePaymentStore()
 const clientSecret = ref('')
 
 const stripeLoading = ref(true)
+const isLoadingWebElement = ref(false)
 const showStripe = ref(false)
 const elements = ref('')
 
 const { loadStripeElement, isEmpty, handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
+  isLoadingWebElement.value = true
   clientSecret.value = await paymentStore.fetchSetupIntent()
 
   elements.value = await loadStripeElement(clientSecret.value)
 
   showStripe.value = true
   stripeLoading.value = false
+  isLoadingWebElement.value = false
 }
 
 async function submitPaymentMethod(clientSecret: string, elements: any) {
@@ -39,6 +43,7 @@ function cancelPaymentForm() {
 </script>
 
 <template>
+  <Notification position="top-right" richColors/>
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
     <h2 class="text-lg text-gray-900 font-medium">
       Payment Info
@@ -99,7 +104,13 @@ function cancelPaymentForm() {
         class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
         @click="loadWebElement()"
       >
-        Add Payment Method
+        <span class="inline-flex items-center" v-if="isLoadingWebElement">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 animate-spin">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+          <span class="ml-2">Loading...</span>
+        </span>
+        <span v-else>Add Payment Method</span>
       </button>
     </div>
   </div>
