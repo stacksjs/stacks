@@ -61,7 +61,6 @@ export const manageSubscription: SubscriptionManager = (() => {
     user: UserModel,
     type: string,
     lookupKey: string,
-    params: Partial<Stripe.SubscriptionUpdateParams>,
   ): Promise<Stripe.Response<Stripe.Subscription>> {
     const newPrice = await managePrice.retrieveByLookupKey(lookupKey)
 
@@ -70,13 +69,13 @@ export const manageSubscription: SubscriptionManager = (() => {
     if (!newPrice)
       throw new Error('New price does not exist in Stripe')
 
-    if (! activeSubscription)
+    if (!activeSubscription)
       throw new Error('No active subscription for user!')
 
     const subscriptionId = activeSubscription.subscription?.provider_id || ''
-  
+
     const subscription = await stripe.subscription.retrieve(subscriptionId)
-  
+
     if (!subscription) {
       throw new Error('Subscription does not exist in Stripe')
     }
@@ -94,7 +93,7 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const updatedSubscription = await stripe.subscription.retrieve(subscriptionId)
 
-    await storeSubscription(user, type, lookupKey, updatedSubscription)
+    await updateSubscription(activeSubscription.subscription?.id, type, updatedSubscription)
 
     return updatedSubscription
   }
@@ -169,7 +168,6 @@ export const manageSubscription: SubscriptionManager = (() => {
     const data = removeNullValues({
       user_id: user.id,
       type,
-      provider_price_key: lookupKey,
       unit_price: Number(options.items.data[0].price.unit_amount),
       provider_id: options.id,
       provider_status: options.status,
@@ -184,6 +182,18 @@ export const manageSubscription: SubscriptionManager = (() => {
     const subscriptionModel = await Subscription.create(data)
 
     return subscriptionModel
+  }
+
+  async function updateSubscription(activeSubId: number, type: string, options: Stripe.Subscription): Promise<SubscriptionModel> {
+    const subscription = await Subscription.find(activeSubId) as SubscriptionModel
+
+    subscription?.update({
+      type,
+      provider_price_id: options.items.data[0].price.id,
+      unit_price: Number(options.items.data[0].price.unit_amount),
+    })
+
+    return subscription
   }
 
   function removeNullValues<T extends Record<string, any>>(obj: T): Partial<T> {

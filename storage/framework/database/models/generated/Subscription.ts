@@ -48,19 +48,6 @@ export default {
         },
       },
     },
-
-    providerPriceKey: {
-      required: true,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-        message: {
-          string: 'provider_price_key must be a string',
-          required: 'provider_price_key is required',
-        },
-      },
-    },
-
     unitPrice: {
       fillable: true,
       validation: {

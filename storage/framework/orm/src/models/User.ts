@@ -837,7 +837,7 @@ export class UserModel {
   async updateSubscription(
     type: string,
     lookupKey: string,
-    options: Partial<Stripe.SubscriptionUpdateParams> = {},
+      options: Partial<Stripe.SubscriptionUpdateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.update(this, type, lookupKey, options)
 
