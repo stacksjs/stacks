@@ -2,7 +2,7 @@
 import { useBillable } from '../../../functions/billing/payments'
 
 import ActivePlan from '../components/billing/active-plan.vue'
-import LoadingCard from '../components/skeleton/loading-card.vue'
+import LoadingDetails from '../components/skeleton/loading-details.vue'
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
 
@@ -98,7 +98,7 @@ onMounted(() => {
       <div class="flex space-x-8">
         
         <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <LoadingCard :height="24" v-if="paymentStore.isStateLoading('fetchActivePlan')"/>
+          <LoadingDetails :height="24" v-if="paymentStore.isStateLoading('fetchActivePlan')"/>
           
           <div v-else class="w-full">
             <ActivePlan v-if="showCurrentPlan" />

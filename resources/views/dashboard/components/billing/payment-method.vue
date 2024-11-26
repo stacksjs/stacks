@@ -57,7 +57,7 @@ function cancelPaymentForm() {
       </div>
     </div>
 
-    <LoadingCard v-if="paymentStore.isStateLoading('fetchDefaultPaymentMethod')"/>
+    <LoadingCard class="mt-8" v-if="paymentStore.isStateLoading('fetchDefaultPaymentMethod')"/>
 
     <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
