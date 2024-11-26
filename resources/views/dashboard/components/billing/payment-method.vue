@@ -47,7 +47,7 @@ function cancelPaymentForm() {
       Payment Info
     </h2>
 
-    <div v-if="!paymentStore.hasPaymentMethods">
+    <div v-if="!paymentStore.hasPaymentMethods && ! paymentStore.isStateLoading('fetchDefaultPaymentMethod')">
       <div class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
         <div class="w-full px-4 py-5">
           <h2 class="text-center text-sm text-gray-600">
@@ -57,7 +57,7 @@ function cancelPaymentForm() {
       </div>
     </div>
 
-    <LoadingCard />
+    <LoadingCard v-if="paymentStore.isStateLoading('fetchDefaultPaymentMethod')"/>
 
     <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
@@ -74,9 +74,10 @@ function cancelPaymentForm() {
         </div>
       </div>
     </div>
+    
     <PaymentMethodList />
 
-    <div v-show="!stripeLoading || showStripe">
+    <div v-show="showStripe">
       <form id="payment-form">
         <div id="payment-element" />
         <div class="flex pt-4 space-x-2">
@@ -99,7 +100,7 @@ function cancelPaymentForm() {
       </form>
     </div>
 
-    <div v-if="stripeLoading || !showStripe" class="mt-8 flex justify-end">
+    <div v-if="!showStripe" class="mt-8 flex justify-end">
       <button
         type="button"
         class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"

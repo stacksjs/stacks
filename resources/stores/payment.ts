@@ -7,7 +7,7 @@ const apiUrl = `http://localhost:3008`
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {
-      loadingStates: new Set<string>(),
+      loadingStates: {} as Record<string, boolean>,
       paymentMethods: [] as StripePaymentMethod[],
       transactionHistory: [] as Stripe.Invoice[],
       defaultPaymentMethod: {} as StripePaymentMethod,
@@ -84,6 +84,8 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchSubscriptions(): Promise<void> {
+      this.setLoadingState('fetchSubscriptions')
+
       const url = 'http://localhost:3008/payments/fetch-user-subscriptions'
 
       const response = await fetch(url, {
@@ -100,6 +102,8 @@ export const usePaymentStore = defineStore('payment', {
         this.subscriptions = res
       }
       await response.json()
+
+      this.removeLoadingState('fetchSubscriptions')
 
       dispatch('subscription:created')
     },
@@ -126,6 +130,8 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchUserPaymentMethods(): Promise<void> {
+      this.setLoadingState('fetchUserPaymentMethods')
+
       const response: any = await fetch(`${apiUrl}/payments/user-payment-methods`, {
         method: 'GET',
         headers: {
@@ -139,6 +145,8 @@ export const usePaymentStore = defineStore('payment', {
 
         this.paymentMethods = res.data
       }
+
+      this.removeLoadingState('fetchUserPaymentMethods')
 
       dispatch('paymentMethods:fetched')
     },
@@ -191,7 +199,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async updateDefaultPaymentMethod(paymentMethod: string): Promise<void> {
-      this.setLoadingState('updatePaymentMethod')
+      this.setLoadingState('updateDefaultPaymentMethod')
 
       const url = 'http://localhost:3008/payments/update-default-payment-method'
 
@@ -211,7 +219,7 @@ export const usePaymentStore = defineStore('payment', {
         console.log(err)
       }
 
-      this.removeLoadingState('updatePaymentMethod')
+      this.removeLoadingState('updateDefaultPaymentMethod')
 
       dispatch('paymentMethod:updated')
     },
@@ -238,7 +246,7 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchDefaultPaymentMethod(): Promise<void> {
-      this.setLoadingState('fetchPaymentMethod')
+      this.setLoadingState('fetchDefaultPaymentMethod')
 
       const response: any = await fetch(`${apiUrl}/payments/default-payment-method`, {
         method: 'GET',
@@ -254,7 +262,7 @@ export const usePaymentStore = defineStore('payment', {
         this.defaultPaymentMethod = res
       }
 
-      this.removeLoadingState('fetchPaymentMethod')
+      this.removeLoadingState('fetchDefaultPaymentMethod')
 
       dispatch('paymentMethod:fetched')
     },
@@ -284,40 +292,29 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     setLoadingState(statusKey: string): void {
-      this.loadingStates.add(statusKey)
+      this.loadingStates[statusKey] = true
     },
     removeLoadingState(statusKey: string): void {
-      this.loadingStates.delete(statusKey)
+      this.loadingStates[statusKey] = false
     },
     isStateLoading(statusKey: string): boolean {
-      return this.loadingStates.has(statusKey)
+      return this.loadingStates[statusKey] === undefined ? true : this.loadingStates[statusKey]
     },
   },
 
   getters: {
-    getPaymentMethods(state): StripePaymentMethod[] {
-      return state.paymentMethods
-    },
-    getCurrentPlan(state): Stripe.Subscription {
-      return state.activeSubscription
-    },
-    getTransactionHistory(state): Stripe.Invoice[] {
-      return state.transactionHistory
-    },
-    hasPaymentMethods(state): boolean {
-      return state.paymentMethods.length || !(!state.defaultPaymentMethod // Checks for null or undefined
-        || (typeof state.defaultPaymentMethod === 'object'
-          && Object.keys(state.defaultPaymentMethod).length === 0))
-    },
-    getDefaultPaymentMethod(state): StripePaymentMethod[] {
-      return state.defaultPaymentMethod
-    },
-    getStripeCustomer(state): any {
-      return state.stripeCustomer
-    },
-    getPlanState(state): boolean {
-      return state.planState
-    },
+    isLoading: (state) => state.loadingStates.size > 0,
+    getPaymentMethods: (state): StripePaymentMethod[] => state.paymentMethods,
+    getCurrentPlan: (state): Stripe.Subscription => state.activeSubscription,
+    getTransactionHistory: (state): Stripe.Invoice[] => state.transactionHistory,
+    hasPaymentMethods: (state): boolean =>
+      state.paymentMethods.length > 0 ||
+      !(state.defaultPaymentMethod == null || 
+        (typeof state.defaultPaymentMethod === 'object' && Object.keys(state.defaultPaymentMethod).length === 0)),
+
+    getDefaultPaymentMethod: (state): StripePaymentMethod[] => state.defaultPaymentMethod,
+    getStripeCustomer: (state): any => state.stripeCustomer,
+    getPlanState: (state): boolean => state.planState,
   },
 })
 

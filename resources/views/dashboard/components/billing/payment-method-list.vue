@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CardBrands from './card-brands.vue'
+import LoadingCard from '../skeleton/loading-card.vue'
 // import { notification } from '@stacksjs/notification'
 // import { Popover, PopoverPanel, PopoverButton } from '@stacksjs/popover'
 
@@ -27,7 +28,10 @@ async function makeDefault(paymentMethodId: string) {
 </script>
 
 <template>
-  <ul role="list" class="grid grid-cols-1 mt-4 gap-6 lg:grid-cols-1 sm:grid-cols-1">
+  <div class="mt-4">
+  <LoadingCard v-if="paymentStore.isStateLoading('fetchUserPaymentMethods')"/>
+
+  <ul v-else role="list" class="grid grid-cols-1 gap-6 lg:grid-cols-1 sm:grid-cols-1">
     <li v-for="(method, index) in paymentStore.getPaymentMethods" :key="index" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
         <div class="flex items-center justify-between">
@@ -98,4 +102,5 @@ async function makeDefault(paymentMethodId: string) {
       </div>
     </li>
   </ul>
+</div>
 </template>
