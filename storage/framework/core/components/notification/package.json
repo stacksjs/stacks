@@ -18,9 +18,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./*": {
-      "import": "./src/*"
     }
   },
   "module": "dist/index.js",
@@ -30,7 +27,7 @@
     "dev": "bunx --bun vite -c ./vite.config.ts",
     "build": "bunx --bun vite build --mode lib",
     "build:demo": "bunx --bun vite build",
-    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "build:types": "bunx vue-tsc -p tsconfig.build.json && bunx api-extractor run",
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {

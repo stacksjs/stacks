@@ -134,6 +134,7 @@ class Observer {
             ? await (data.error as (msg: string) => Promise<string>)(`HTTP error! status: ${response.status}`)
             : data.error
           const description = typeof data.description === 'function'
+            // @ts-expect-error - unsure atm
             ? await data.description(`HTTP error! status: ${response.status}`)
             : data.description
           this.create({ id, type: 'error', message, description })
