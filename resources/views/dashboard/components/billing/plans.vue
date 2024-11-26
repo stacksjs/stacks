@@ -2,6 +2,7 @@
 import { saas } from '@stacksjs/browser'
 import { useBillable } from '../../../../functions/billing/payments'
 
+
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')
 const paymentStore = usePaymentStore()
@@ -128,7 +129,7 @@ async function updatePlan() {
 </script>
 
 <template>
-  <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+  <div class="w-full">
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <h2 class="text-lg text-gray-900 font-medium">
