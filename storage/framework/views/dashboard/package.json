@@ -44,7 +44,7 @@
   "devDependencies": {
     "@stacksjs/desktop": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/popover": "workspace:*",
-    "@stacksjs/notification": "workspace:*"
+    "@stacksjs/notification": "workspace:*",
+    "@stacksjs/popover": "workspace:*"
   }
 }

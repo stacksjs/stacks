@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
-
 const props = defineProps<{
   brand: string
+  width?: number
 }>()
+
+const defaultProps = {
+  width: 4,
+}
+
+const { brand, width = defaultProps.width } = props
 
 const logoSrc = computed(() => {
   switch (props.brand.toLowerCase()) {
@@ -22,7 +27,7 @@ const logoSrc = computed(() => {
 </script>
 
 <template>
-  <div class="w-16">
+  <div :style="`width: ${width}rem`">
     <img :src="logoSrc" :alt="`${brand} Logo`">
   </div>
 </template>

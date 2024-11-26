@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
@@ -15,13 +14,13 @@ defineProps({
 </script>
 
 <template>
-  <div class="shadow rounded-md w-full mx-auto">
-    <div class="animate-pulse flex space-x-4">
+  <div class="mx-auto w-full rounded-md shadow">
+    <div class="flex animate-pulse space-x-4">
       <div class="flex-1 space-y-6">
-        <div 
-          class="bg-slate-300 rounded-md" 
+        <div
+          class="rounded-md bg-slate-300"
           :style="`height: ${height}rem`"
-        ></div>
+        />
       </div>
     </div>
   </div>

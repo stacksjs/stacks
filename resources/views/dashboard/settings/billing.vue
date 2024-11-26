@@ -2,9 +2,10 @@
 import { useBillable } from '../../../functions/billing/payments'
 
 import ActivePlan from '../components/billing/active-plan.vue'
-import LoadingDetails from '../components/skeleton/loading-details.vue'
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
+import LoadingDetails from '../components/skeleton/loading-details.vue'
+import TransactionHistory from '../components/transaction/index.vue'
 
 const { isEmpty, showCurrentPlan } = useBillable()
 
@@ -25,87 +26,17 @@ onMounted(() => {
 <template>
   <div class="mx-auto px-4 py-8 container lg:px-8">
     <div id="subscribed">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h1 class="text-base text-gray-900 font-semibold leading-6">
-            Transaction History
-          </h1>
-          <p class="mt-2 text-sm text-gray-700">
-            A list with all your Stacks-relating transactions.
-          </p>
-        </div>
-      </div>
-
-      <div class="mt-8 flow-root">
-        <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-          <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <table class="min-w-full divide-y divide-gray-300">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
-                      Transaction
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Date
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Amount
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Payment Method
-                    </th>
-
-                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span class="sr-only">Edit</span>
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                      Dashboard Subscription <em class="italic">(monthly)</em>
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      30/07/2023
-                    </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      $20.00
-                    </td>
-
-                    <td class="flex items-center whitespace-nowrap px-3 py-4 text-sm text-gray-500 space-x-2">
-                      <img src="/images/logos/visa.png" alt="Visa Logo" class="w-8">
-                      <span>•••• •••• •••• 0000</span>
-                    </td>
-
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Transaction</span></a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <TransactionHistory />
       <div class="flex space-x-8">
-        
         <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <LoadingDetails :height="24" v-if="paymentStore.isStateLoading('fetchActivePlan')"/>
-          
+          <LoadingDetails v-if="paymentStore.isStateLoading('fetchActivePlan')" :height="24" />
+
           <div v-else class="w-full">
             <ActivePlan v-if="showCurrentPlan" />
             <Plans v-else />
           </div>
         </div>
-        
+
         <PaymentMethod />
       </div>
     </div>

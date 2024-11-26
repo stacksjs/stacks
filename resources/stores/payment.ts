@@ -153,7 +153,7 @@ export const usePaymentStore = defineStore('payment', {
 
     async fetchTransactionHistory(): Promise<void> {
       this.setLoadingState('fetchTransactionHistory')
-      
+
       const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history`, {
         method: 'GET',
         headers: {
@@ -303,14 +303,14 @@ export const usePaymentStore = defineStore('payment', {
   },
 
   getters: {
-    isLoading: (state) => state.loadingStates.size > 0,
+    isLoading: state => state.loadingStates.size > 0,
     getPaymentMethods: (state): StripePaymentMethod[] => state.paymentMethods,
     getCurrentPlan: (state): Stripe.Subscription => state.activeSubscription,
     getTransactionHistory: (state): Stripe.Invoice[] => state.transactionHistory,
     hasPaymentMethods: (state): boolean =>
-      state.paymentMethods.length > 0 ||
-      !(state.defaultPaymentMethod == null || 
-        (typeof state.defaultPaymentMethod === 'object' && Object.keys(state.defaultPaymentMethod).length === 0)),
+      state.paymentMethods.length > 0
+      || !(state.defaultPaymentMethod == null
+        || (typeof state.defaultPaymentMethod === 'object' && Object.keys(state.defaultPaymentMethod).length === 0)),
 
     getDefaultPaymentMethod: (state): StripePaymentMethod[] => state.defaultPaymentMethod,
     getStripeCustomer: (state): any => state.stripeCustomer,
