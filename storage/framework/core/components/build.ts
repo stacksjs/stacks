@@ -9,12 +9,6 @@ const startTime = Date.now()
 
 console.log('dirs', dirs)
 for (const dir of dirs) {
-  // bun-create has only nested dirs, no need to build
-  // if (dir.includes('bun-create') || dir.includes('components') || dir.includes('dist'))
-  //   continue
-
-  // rm the dist folder before building
-  // await $`rm -rf ${p.resolve(dir, 'dist')}`
   const distPath = p.resolve(dir, 'dist')
 
   // Check if the dist folder exists
