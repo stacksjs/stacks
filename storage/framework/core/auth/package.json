@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@simplewebauthn/browser": "^12.0.0",
-    "@simplewebauthn/server": "^11.0.0"
+    "@simplewebauthn/server": "^12.0.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
