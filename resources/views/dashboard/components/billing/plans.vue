@@ -29,15 +29,18 @@ const perText = computed(() => {
   if (checkedPlanType.value === 'annually')
     return '/year'
 
-  return '/lifetime'
+  if (checkedPlanType.value === 'lifetime')
+    return '/forever'
+
+  return '/month'
 })
 
 const currentPlanType = computed(() => {
   return paymentStore.getCurrentPlan.subscription?.type
 })
 
-const currentPlanKey = computed(() => {
-  return paymentStore.getCurrentPlan.subscription?.provider_price_key
+const interval = computed(() => {
+  return paymentStore.getCurrentPlan.providerSubscription?.plan?.interval || ''
 })
 
 const planDescription = computed(() => {
@@ -48,7 +51,7 @@ const planDescription = computed(() => {
 })
 
 function currentPlanSelected(type: string): boolean {
-  return currentPlanType.value === type && checkedPlanType.value === currentPlanKey.value
+  return currentPlanType.value === type && perText.value === `/${interval.value}`
 }
 
 const hobbyPrice = computed(() => {
