@@ -2,7 +2,7 @@
   "name": "@stacksjs/auths",
   "type": "module",
   "version": "0.68.2",
-  "description": "An opinionated notification component for Stacks.",
+  "description": "Opinionated auth components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
@@ -11,32 +11,28 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/notification"
+    "directory": "./storage/framework/core/components/auth"
   },
   "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
-      "types": "./lib/stacks-notification.d.ts",
-      "import": "./lib/stacks-notification.js"
-    },
-    "./*": {
-      "import": "./lib/*"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
-  "module": "dist/stacks-notification.js",
-  "types": "dist/stacks-notification.d.ts",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": ["README.md", "dist"],
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "echo 'bunx --bun vite build'",
+    "build": "vite build --mode lib && bun run build:types",
     "build:lib": "vite build --mode lib && bun run build:types",
-    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "build:types": "bunx vue-tsc -p tsconfig.build.json && bunx api-extractor run",
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
-    "highlight.js": "^11.10.0",
-    "vue": "^3.5.13"
+    "highlight.js": "^11.10.0"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.47.12",

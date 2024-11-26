@@ -1,17 +1,17 @@
 {
-  "name": "@stacksjs/calendar",
+  "name": "@stacksjs/image",
   "type": "module",
   "version": "0.68.2",
-  "description": "Calendar components for all.",
+  "description": "Opinionated image components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/calendar#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/image#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/calendar"
+    "directory": "./storage/framework/core/components/image"
   },
   "sideEffects": ["**/*.css"],
   "exports": {

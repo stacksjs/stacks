@@ -38,14 +38,13 @@
   },
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build --mode lib",
     "build:demo": "bunx --bun vite build",
-    "build:types": "bunx --bun vue-tsc -p tsconfig.build.json && api-extractor run",
+    "build:types": "bunx vue-tsc -p tsconfig.build.json && bunx api-extractor run",
     "preview": "bunx --bun vite preview",
     "prepublishOnly": "bun run build"
   },
