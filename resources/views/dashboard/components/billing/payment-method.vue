@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useBillable } from '../../../../functions/billing/payments'
 import CardBrands from './card-brands.vue'
-import { Notification, notification } from '@stacksjs/notification'
+import LoadingCard from '../skeleton/loading-card.vue'
+// import { Notification } from '@stacksjs/notification'
 
 import PaymentMethodList from './payment-method-list.vue'
 
 const paymentStore = usePaymentStore()
 const clientSecret = ref('')
 
-const stripeLoading = ref(true)
 const isLoadingWebElement = ref(false)
 const showStripe = ref(false)
 const elements = ref('')
@@ -22,7 +22,6 @@ async function loadWebElement() {
   elements.value = await loadStripeElement(clientSecret.value)
 
   showStripe.value = true
-  stripeLoading.value = false
   isLoadingWebElement.value = false
 }
 
@@ -33,17 +32,16 @@ async function submitPaymentMethod(clientSecret: string, elements: any) {
   await paymentStore.fetchUserPaymentMethods()
 
   showStripe.value = false
-  stripeLoading.value = true
 }
 
 function cancelPaymentForm() {
   showStripe.value = false
-  stripeLoading.value = true
 }
 </script>
 
 <template>
-  <Notification position="top-right" richColors/>
+  <!-- <Notification position="top-right" richColors/> -->
+
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
     <h2 class="text-lg text-gray-900 font-medium">
       Payment Info
@@ -58,6 +56,9 @@ function cancelPaymentForm() {
         </div>
       </div>
     </div>
+
+    <LoadingCard />
+
     <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
       <div class="w-full p-3">
         <div class="flex items-center justify-between">

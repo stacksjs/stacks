@@ -7,6 +7,7 @@ const apiUrl = `http://localhost:3008`
 export const usePaymentStore = defineStore('payment', {
   state: (): any => {
     return {
+      loadingStates: new Set<string>(),
       paymentMethods: [] as StripePaymentMethod[],
       transactionHistory: [] as Stripe.Invoice[],
       defaultPaymentMethod: {} as StripePaymentMethod,
@@ -143,6 +144,8 @@ export const usePaymentStore = defineStore('payment', {
     },
 
     async fetchTransactionHistory(): Promise<void> {
+      this.setLoadingState('fetchTransactionHistory')
+      
       const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history`, {
         method: 'GET',
         headers: {
@@ -157,10 +160,13 @@ export const usePaymentStore = defineStore('payment', {
         this.transactionHistory = res.data
       }
 
+      this.removeLoadingState('fetchTransactionHistory')
+
       dispatch('paymentMethods:fetched')
     },
 
     async deletePaymentMethod(paymentMethod: string): Promise<void> {
+      this.setLoadingState('deletePaymentMethod')
       const url = 'http://localhost:3008/payments/delete-payment-method'
 
       const body = { paymentMethod }
@@ -179,10 +185,14 @@ export const usePaymentStore = defineStore('payment', {
         console.log(err)
       }
 
+      this.removeLoadingState('deletePaymentMethod')
+
       dispatch('paymentMethod:deleted')
     },
 
     async updateDefaultPaymentMethod(paymentMethod: string): Promise<void> {
+      this.setLoadingState('updatePaymentMethod')
+
       const url = 'http://localhost:3008/payments/update-default-payment-method'
 
       const body = { paymentMethod }
@@ -201,10 +211,14 @@ export const usePaymentStore = defineStore('payment', {
         console.log(err)
       }
 
+      this.removeLoadingState('updatePaymentMethod')
+
       dispatch('paymentMethod:updated')
     },
 
     async fetchStripeCustomer(): Promise<void> {
+      this.setLoadingState('fetchStripeCustomer')
+
       const response: any = await fetch(`${apiUrl}/payments/fetch-customer`, {
         method: 'GET',
         headers: {
@@ -218,10 +232,14 @@ export const usePaymentStore = defineStore('payment', {
         this.stripeCustomer = res
       }
 
+      this.removeLoadingState('fetchStripeCustomer')
+
       dispatch('customer:fetched')
     },
 
     async fetchDefaultPaymentMethod(): Promise<void> {
+      this.setLoadingState('fetchPaymentMethod')
+
       const response: any = await fetch(`${apiUrl}/payments/default-payment-method`, {
         method: 'GET',
         headers: {
@@ -236,10 +254,13 @@ export const usePaymentStore = defineStore('payment', {
         this.defaultPaymentMethod = res
       }
 
+      this.removeLoadingState('fetchPaymentMethod')
+
       dispatch('paymentMethod:fetched')
     },
 
     async fetchUserActivePlan(): Promise<void> {
+      this.setLoadingState('fetchActivePlan')
       const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription`, {
         method: 'GET',
         headers: {
@@ -257,7 +278,19 @@ export const usePaymentStore = defineStore('payment', {
         this.activeSubscription = {}
       }
 
+      this.removeLoadingState('fetchActivePlan')
+
       dispatch('subscription:fetched')
+    },
+
+    setLoadingState(statusKey: string): void {
+      this.loadingStates.add(statusKey)
+    },
+    removeLoadingState(statusKey: string): void {
+      this.loadingStates.delete(statusKey)
+    },
+    isStateLoading(statusKey: string): boolean {
+      return this.loadingStates.has(statusKey)
     },
   },
 

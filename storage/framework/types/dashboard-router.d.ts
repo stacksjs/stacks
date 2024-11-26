@@ -28,6 +28,7 @@ declare module 'vue-router/auto-routes' {
     '/components/billing/payment-method': RouteRecordInfo<'/components/billing/payment-method', '/components/billing/payment-method', Record<never, never>, Record<never, never>>,
     '/components/billing/payment-method-list': RouteRecordInfo<'/components/billing/payment-method-list', '/components/billing/payment-method-list', Record<never, never>, Record<never, never>>,
     '/components/billing/plans': RouteRecordInfo<'/components/billing/plans', '/components/billing/plans', Record<never, never>, Record<never, never>>,
+    '/components/skeleton/loading-card': RouteRecordInfo<'/components/skeleton/loading-card', '/components/skeleton/loading-card', Record<never, never>, Record<never, never>>,
     '/dependencies/': RouteRecordInfo<'/dependencies/', '/dependencies', Record<never, never>, Record<never, never>>,
     '/deployments/': RouteRecordInfo<'/deployments/', '/deployments', Record<never, never>, Record<never, never>>,
     '/deployments/[id]': RouteRecordInfo<'/deployments/[id]', '/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,

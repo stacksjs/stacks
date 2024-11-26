@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CardBrands from './card-brands.vue'
-import { notification } from '@stacksjs/notification'
-import { Popover, PopoverPanel, PopoverButton } from '@stacksjs/popover'
+// import { notification } from '@stacksjs/notification'
+// import { Popover, PopoverPanel, PopoverButton } from '@stacksjs/popover'
 
 const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 
@@ -21,7 +21,7 @@ async function makeDefault(paymentMethodId: string) {
   await paymentStore.fetchUserPaymentMethods()
   await paymentStore.fetchDefaultPaymentMethod()
 
-  notification.success('Default payment method updated')
+  // notification.success('Default payment method updated')
   isDefaultLoading.value[paymentMethodId] = false
 }
 </script>
@@ -67,7 +67,7 @@ async function makeDefault(paymentMethodId: string) {
               </svg>
             </button> -->
 
-            <Popover v-slot="{ open }" class="relative">
+            <!-- <Popover v-slot="{ open }" class="relative">
               <PopoverButton
                 :class="open ? 'text-white' : 'text-white/90'"
                 class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
@@ -92,7 +92,7 @@ async function makeDefault(paymentMethodId: string) {
                   </div>
                 </div>
               </PopoverPanel>
-            </Popover>
+            </Popover> -->
           </div>
         </div>
       </div>

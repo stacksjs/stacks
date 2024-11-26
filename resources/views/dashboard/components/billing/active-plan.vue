@@ -32,7 +32,7 @@ const unitPrice = computed(() => {
       Plan Details
     </h2>
 
-    <div class="pt-2">
+    <div class="pt-8">
       <p class="text-gray-700 font-bold">
         {{ subscriptionType }} Plan
       </p>
