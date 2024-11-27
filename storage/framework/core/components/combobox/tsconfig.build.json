@@ -1,15 +1,21 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
-    "baseUrl": "./",
-    "moduleResolution": "Node",
     "declaration": true,
-    "declarationDir": "./temp",
-    "emitDeclarationOnly": true,
     "noEmit": false,
-    "outDir": "lib"
+    "emitDeclarationOnly": true,
+    "outDir": "lib",
+    "declarationDir": "./temp",
+    "moduleResolution": "Node",
+    "baseUrl": "./"
   },
   "vueCompilerOptions": {
     "skipTemplateCodegen": true
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ]
 }
