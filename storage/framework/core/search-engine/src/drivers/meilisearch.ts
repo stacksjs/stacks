@@ -97,8 +97,7 @@ async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
 
 //   return filters
 // }
-
-export default {
+const meilisearch: SearchEngineDriver = {
   client,
 //   search,
   createIndex,
@@ -113,4 +112,7 @@ export default {
   deleteDocument,
   deleteDocuments,
   getDocument,
-} satisfies SearchEngineDriver
+}
+
+
+export default meilisearch

@@ -2,8 +2,10 @@ import type { UiEngine } from '@stacksjs/ui'
 import { useStorage } from '@stacksjs/utils'
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 
-// import { client as meilisearch } from './drivers/meilisearch'
+import meilisearch from './drivers/meilisearch'
+
 import { determineState } from './helpers'
+import type { SearchEngineDriver } from '@stacksjs/types'
 
 // import type { Ref } from '@stacksjs/types'
 
@@ -32,13 +34,11 @@ export const setTotalHits: ComputedRef = computed(() => table.setTotalHits)
 export const sort: ComputedRef = computed(() => table.sort)
 export const sorts: ComputedRef = computed(() => table.sorts)
 
-function client(): string {
-  // if (searchEngine.driver === 'meilisearch')
-  //   return meilisearch
-  return 'wip-search-me'
+function client(): any {
+  return meilisearch
 }
 
-export function useSearchEngine(): string {
+export function useSearchEngine(): SearchEngineDriver {
   return client()
 }
 

@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { createStripeProduct } from '@stacksjs/payments'
+import { importModelDocuments } from '@stacksjs/search-engine'
 
-const result = await createStripeProduct()
+const result = await importModelDocuments()
 
 if (result?.isErr()) {
   console.error(result.error)
