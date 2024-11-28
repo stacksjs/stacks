@@ -1,10 +1,4 @@
-import process from 'node:process'
-import { searchEngine } from '@stacksjs/config'
-import { log } from '@stacksjs/logging'
-import type { MeilisearchOptions, SearchEngineDriver } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
-import type { DocumentOptions, EnqueuedTask, Index, IndexOptions, IndexesResults, SearchResponse } from 'meilisearch'
-import { Meilisearch } from 'meilisearch'
+import type { SearchEngineDriver } from '@stacksjs/types'
 
 // function client(options?: MeilisearchOptions) {
 //   let host = searchEngine.meilisearch?.host

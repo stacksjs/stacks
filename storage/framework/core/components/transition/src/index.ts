@@ -11,4 +11,4 @@ const plugin: Plugin = {
 
 export default plugin
 
-export { TransitionRoot, TransitionChild }
+export { TransitionChild, TransitionRoot }

@@ -11,4 +11,4 @@ const plugin: Plugin = {
 
 export default plugin
 
-export { RadioGroup, RadioGroupLabel, RadioGroupDescription, RadioGroupOption }
+export { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption }

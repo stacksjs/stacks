@@ -18,7 +18,7 @@ export default {
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
       // defaults to true, `searchable` used as an alias
-      searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)
+      searchable: ['job_title', 'name', 'email'], // the fields to become searchable (defaults to all fields)
       sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)
       filterable: ['job_title'], // the fields to become filterable (defaults to all fields)
       // options: {}, // you may pass options to the search engine

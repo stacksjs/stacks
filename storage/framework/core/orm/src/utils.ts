@@ -1072,27 +1072,19 @@ export async function generateModelString(
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
   const useBillable = model.traits?.billable || false
   const useSearchable = model.traits?.useSearch || false
-  const searchableAttributes = model.traits?.useSearch
+  const searchableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.searchable
 
-  if (typeof searchableAttributes === 'object') {
-    `toSearchableObject(): Partial<UsersTable> {
-        return {
-          name: this.name,
-          email: this.email,
-        }
-      }
-    `
-  }
+  if (typeof useSearchable === 'object' && useSearchable) {
+    const searchAttrs = Array.isArray(searchableAttributes) ? searchableAttributes : []
 
-  if (searchableAttributes)
-  if (useSearchable) {
     searchableStatements += `
-      toSearchableObject(): Partial<${modelName}Table> {
-          return {
-            name: this.name,
-            email: this.email,
-          }
-      }
+        toSearchableObject(): Partial<${formattedTableName}Table> {
+            return {
+                ${searchAttrs
+                  .map(attr => `${attr}: this.${attr}`)
+                  .join(',\n')}
+            }
+        }
     `
   }
 
@@ -1970,6 +1962,9 @@ export async function generateModelString(
       }
 
       ${relationMethods}
+
+      ${searchableStatements}
+
       ${billableStatements}
 
       distinct(column: keyof ${modelName}Type): ${modelName}Model {

@@ -666,6 +666,14 @@ export class UserModel {
     return relationResults
   }
 
+  toSearchableObject(): Partial<UsersTable> {
+    return {
+      job_title: this.job_title,
+      name: this.name,
+      email: this.email,
+    }
+  }
+
   async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createStripeCustomer(this, options)
 
@@ -907,13 +915,6 @@ export class UserModel {
     this.hasSelect = true
 
     return this
-  }
-
-  toSearchableObject(): Partial<UsersTable> {
-    return {
-      name: this.name,
-      email: this.email,
-    }
   }
 
   static distinct(column: keyof UserType): UserModel {

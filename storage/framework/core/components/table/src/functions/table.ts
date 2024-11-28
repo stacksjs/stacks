@@ -1,11 +1,11 @@
-import { calculatePagination, currentPage, filterName, totalPages } from '@stacksjs/search-engine'
+import type { Ref, TableStore } from '@stacksjs/types'
 
+import { calculatePagination, currentPage, filterName, totalPages } from '@stacksjs/search-engine'
 import { useStorage } from '@stacksjs/utils'
 import { isObject, isString } from '@stacksjs/validation'
-import type { Ref, TableStore } from '@stacksjs/types'
 import { computed } from 'vue'
 
-const table = (useStorage('table', determineState()).value as TableStore)
+const table = useStorage('table', determineState()).value as TableStore
 
 // table related
 export const filters = computed(() => table.filters)
@@ -110,7 +110,7 @@ function determineState(): TableStore {
   return table
 }
 
-function isColumnSortable(col: string): Boolean {
+function isColumnSortable(col: string): boolean {
   if (!hasTableLoaded(table))
     return false
 
@@ -126,7 +126,7 @@ function isColumnSortable(col: string): Boolean {
   return false
 }
 
-function hasTableLoaded(state?: any): Boolean {
+function hasTableLoaded(state?: any): boolean {
   if (state?.index !== '')
     return true
 
