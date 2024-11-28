@@ -10,7 +10,7 @@
 
 dependencies:
   aws.amazon.com/cli: ^2.17.13
-  bun.sh: ^1.1.31
+  bun.sh: ^1.1.37
   dns.lookup.dog: ^0.1.0
   httpie.io: ^3.2.2
   info-zip.org/zip: ^3.0

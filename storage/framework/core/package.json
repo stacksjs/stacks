@@ -343,7 +343,7 @@
   "files": ["README.md", "dist"],
   "scripts": {
     "buddy": "bun run ./buddy/src/cli.ts",
-    "build": "cd config && bun run build && cd ../env && bun run build && cd ../storage && bun run build && cd .. && bun ./build.ts",
+    "build": "cd path && bun run build && cd .. && bun ./build.ts",
     "up": "bun update",
     "up:latest": "bun update --latest"
   },
