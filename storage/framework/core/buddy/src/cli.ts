@@ -68,6 +68,7 @@ async function main() {
   cmd.release(buddy)
   cmd.route(buddy)
   cmd.saas(buddy)
+  cmd.search(buddy)
   cmd.seed(buddy)
   cmd.setup(buddy)
   cmd.test(buddy)

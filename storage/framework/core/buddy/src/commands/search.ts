@@ -1,24 +1,26 @@
-import type { CLI, SaasOptions } from '@stacksjs/types'
+import type { CLI, SearchOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 
-export function saas(buddy: CLI): void {
+export function search(buddy: CLI): void {
   const descriptions = {
-    stripe: 'Sets up stripe products in the dashboard',
+    search: 'Indexes database data to search engine',
+    model: 'Target a specific model',
     verbose: 'Enable verbose output',
   }
 
   buddy
-    .command('stripe:setup', descriptions.stripe)
+    .command('search-engine:update', descriptions.search)
+    .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SaasOptions) => {
-      log.debug('Running `buddy stripe:setup` ...', options)
+    .action(async (options: SearchOptions) => {
+      log.debug('Running `search-engine:update` ...', options)
 
-      const perf = await intro('buddy stripe:setup')
-      const result = await runAction(Action.StripeSetup, options)
+      const perf = await intro('search-engine:update')
+      const result = await runAction(Action.SearchEngineUpdate, options)
 
       if (result.isErr()) {
         await outro(

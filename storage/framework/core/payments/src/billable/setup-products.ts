@@ -1,4 +1,5 @@
 import { saas } from '@stacksjs/config'
+import { Err, Ok, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { stripe } from '@stacksjs/payments'
 
@@ -11,7 +12,7 @@ interface PriceParams {
     interval: 'day' | 'month' | 'week' | 'year'
   }
 }
-export async function createStripeProduct(): Promise<void> {
+export async function createStripeProduct(): Promise<Ok<string, never> | Err<string, any>> {
   const plans = saas.plans
   try {
     if (plans !== undefined && plans.length) {
@@ -42,8 +43,12 @@ export async function createStripeProduct(): Promise<void> {
         }
       }
     }
+
+    return ok('Migrations generated')
   }
   catch (err: any) {
     log.error(err)
+
+    return err(err)
   }
 }

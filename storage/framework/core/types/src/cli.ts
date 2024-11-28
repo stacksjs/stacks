@@ -364,6 +364,8 @@ export type DomainsOptions = CliOptions & {
 export interface CleanOptions extends CliOptions {}
 
 export interface SaasOptions extends CliOptions {}
+
+export interface SearchOptions extends CliOptions {}
 export interface CloudCliOptions extends CliOptions {
   ssh?: boolean
   connect?: boolean

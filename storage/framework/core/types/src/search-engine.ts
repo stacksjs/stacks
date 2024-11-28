@@ -1,4 +1,5 @@
 import type {
+  DocumentOptions,
   EnqueuedTask,
   Hits,
   Index,
@@ -46,6 +47,14 @@ export interface SearchEngineOptions {
     protocol: number
     port: number
     auth: string
+  },
+
+  meilisearch?: {
+    host: string
+    protocol: number
+    port: number
+    auth: string
+    apiKey: string
   }
 
   filters?: {
@@ -63,11 +72,17 @@ export interface SearchEngineOptions {
 export type SearchEngineConfig = Partial<SearchEngineOptions>
 
 export interface SearchEngineDriver {
-  client: MeiliSearch
+  client(): MeiliSearch
 
   // Indexes
   createIndex: (name: string, options?: IndexOptions) => MaybePromise<EnqueuedTask>
   getIndex: (name: string) => MaybePromise<Index>
+  addDocument: (indexName: string, params: any) => Promise<EnqueuedTask>
+  updateDocuments: (indexName: string, params: DocumentOptions[]) => Promise<EnqueuedTask>
+  addDocuments: (indexName: string, params: any[]) => Promise<EnqueuedTask>
+  getDocument: (indexName: string, id: number, fields: any) => Promise<EnqueuedTask>
+  deleteDocument: (indexName: string, id: number) => Promise<EnqueuedTask>
+  deleteDocuments: (indexName: string, filters: string | string[]) => Promise<EnqueuedTask>
   updateIndex: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
   deleteIndex: (name: string) => MaybePromise<EnqueuedTask>
   updateIndexSettings: (name: string, settings: SearchEngineOptions) => MaybePromise<EnqueuedTask>
