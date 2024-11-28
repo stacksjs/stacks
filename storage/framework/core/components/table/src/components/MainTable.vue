@@ -136,8 +136,10 @@ table.results = results as SearchResponse
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 md:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
-              <TableHead />
-              <TableBody>
+              <!-- <TableHead /> -->
+
+              dsdsds
+              <!-- <TableBody>
                 <template #action_column="rowData">
                   <slot
                     name="action_column"
@@ -154,7 +156,7 @@ table.results = results as SearchResponse
                     :value="tableBodyData.tableRowData"
                   />
                 </template>
-              </TableBody>
+              </TableBody> -->
             </table>
           </div>
         </div>

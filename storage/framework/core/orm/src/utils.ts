@@ -901,6 +901,7 @@ export async function generateModelString(
   let relationImports = ``
   let twoFactorStatements = ''
   let billableStatements = ''
+  let searchableStatements = ''
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
@@ -1070,6 +1071,30 @@ export async function generateModelString(
   const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
   const useBillable = model.traits?.billable || false
+  const useSearchable = model.traits?.useSearch || false
+  const searchableAttributes = model.traits?.useSearch
+
+  if (typeof searchableAttributes === 'object') {
+    `toSearchableObject(): Partial<UsersTable> {
+        return {
+          name: this.name,
+          email: this.email,
+        }
+      }
+    `
+  }
+
+  if (searchableAttributes)
+  if (useSearchable) {
+    searchableStatements += `
+      toSearchableObject(): Partial<${modelName}Table> {
+          return {
+            name: this.name,
+            email: this.email,
+          }
+      }
+    `
+  }
 
   if (useBillable) {
     billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {

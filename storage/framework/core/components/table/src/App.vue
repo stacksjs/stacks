@@ -1,10 +1,10 @@
 <script setup>
-import Table from './components/Table.vue'
+import AppTable from './components/MainTable.vue'
 </script>
 
 <template>
   <div>
-    <Table />
+    <AppTable />
   </div>
 </template>
 

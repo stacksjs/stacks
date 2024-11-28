@@ -909,6 +909,13 @@ export class UserModel {
     return this
   }
 
+  toSearchableObject(): Partial<UsersTable> {
+    return {
+      name: this.name,
+      email: this.email,
+    }
+  }
+
   static distinct(column: keyof UserType): UserModel {
     const instance = new UserModel(null)
 
