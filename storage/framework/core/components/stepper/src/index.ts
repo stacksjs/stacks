@@ -1,13 +1,11 @@
 import type { Plugin } from 'vue'
-import { Stepper, Steps } from './components'
+import { Stepper } from './components'
 
 const plugin: Plugin = {
   install(app) {
     app.component('Stepper', Stepper)
-    app.component('Steps', Steps)
   },
 }
 
+export { Stepper }
 export default plugin
-
-export { Stepper, Steps }

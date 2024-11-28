@@ -40,8 +40,8 @@ export default defineConfig(({ mode }) => {
     userConfig.build = {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'StacksDropdown',
-        fileName: 'stacks-dropdown',
+        name: 'StacksTransition',
+        fileName: 'stacks-transition',
       },
       outDir: 'dist',
       emptyOutDir: true,
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
         output: [
           {
             format: 'es',
-            entryFileNames: `stacks-dropdown.js`,
+            entryFileNames: `index.js`,
             preserveModules: false,
           },
         ],

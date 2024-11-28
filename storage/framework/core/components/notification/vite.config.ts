@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
         name: 'StacksNotification',
-        fileName: 'stacks-notification',
+        fileName: 'index',
       },
       outDir: 'dist',
       emptyOutDir: true,

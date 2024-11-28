@@ -9,6 +9,6 @@ const plugin: Plugin = {
   },
 }
 
+export { Combobox, ComboboxButton, ComboboxInput, ComboboxOptions, ComboboxOption }
 export default plugin
 
-export { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions }

@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
         output: [
           {
             format: 'es',
-            entryFileNames: `stacks-dropdown.js`,
+            entryFileNames: `index.js`,
             preserveModules: false,
           },
         ],

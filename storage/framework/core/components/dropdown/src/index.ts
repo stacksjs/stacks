@@ -9,6 +9,5 @@ const plugin: Plugin = {
   },
 }
 
-export default plugin
-
 export { Menu, MenuButton, MenuItem, MenuItems }
+export default plugin

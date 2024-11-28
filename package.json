@@ -74,5 +74,8 @@
     "storage/framework/libs/components/*",
     "storage/framework/views/*",
     "storage/framework/server"
-  ]
+  ],
+  "devDependencies": {
+    "typescript": "5.4.2"
+  }
 }

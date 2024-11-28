@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
         output: [
           {
             format: 'es',
-            entryFileNames: `stacks-listbox.js`,
+            entryFileNames: `index.js`,
             preserveModules: false,
           },
         ],

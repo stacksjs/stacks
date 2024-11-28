@@ -1,6 +1,8 @@
 import type { UserConfig } from 'vite'
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
+
+import { path as p } from '@stacksjs/path'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
 import UnoCSS from 'unocss/vite'
@@ -9,19 +11,26 @@ import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 
-const cleanCssInstance = new CleanCSS({})
 function minify(code: string) {
+  const cleanCssInstance = new CleanCSS({})
   return cleanCssInstance.minify(code).styles
 }
 
 export default defineConfig(({ mode }) => {
-  const userConfig: UserConfig = {}
+  let cssCodeStr = ''
+  const userConfig: UserConfig = {
+    optimizeDeps: {
+      exclude: ['@stacksjs/notification'],
+    },
+  }
 
   const commonPlugins = [
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
+
     UnoCSS(),
+
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
@@ -31,6 +40,7 @@ export default defineConfig(({ mode }) => {
         }),
       ],
     }),
+
     Icons(),
   ]
 
@@ -38,8 +48,8 @@ export default defineConfig(({ mode }) => {
     userConfig.build = {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'StacksModal',
-        fileName: 'stacks-modal',
+        name: 'StacksPayment',
+        fileName: 'index',
       },
       outDir: 'dist',
       emptyOutDir: true,
@@ -48,10 +58,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         external: ['vue'],
         output: [
-          // {
-          //   format: 'cjs',
-          //   entryFileNames: `stacks-modal.cjs`,
-          // },
           {
             format: 'es',
             entryFileNames: `index.js`,
@@ -60,6 +66,7 @@ export default defineConfig(({ mode }) => {
         ],
       },
     }
+
     userConfig.plugins = [
       ...commonPlugins,
       {
@@ -76,14 +83,35 @@ export default defineConfig(({ mode }) => {
             map: { mappings: '' },
           }
         },
+        renderChunk(code, { isEntry }) {
+          if (!isEntry)
+            return
 
+          return {
+            code: `\
+            function __insertCSSStacksPayment(code) {
+              if (!code || typeof document == 'undefined') return
+              let head = document.head || document.getElementsByTagName('head')[0]
+              let style = document.createElement('style')
+              style.type = 'text/css'
+              head.appendChild(style)
+              ;style.styleSheet ? (style.styleSheet.cssText = code) : style.appendChild(document.createTextNode(code))
+            }\n
+            __insertCSSStacksPayment(${JSON.stringify(cssCodeStr)})
+            \n ${code}`,
+            map: { mappings: '' },
+          }
+        },
       },
     ]
   }
 
   return {
     resolve: {
-      alias,
+      '~/config/env': p.projectConfigPath('env.ts'),
+      '~/config/errors': p.projectConfigPath('errors.ts'),
+
+      ...alias,
     },
     plugins: [...commonPlugins],
     ...userConfig,

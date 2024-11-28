@@ -2,25 +2,22 @@
   "name": "@stacksjs/payment",
   "type": "module",
   "version": "0.68.2",
-  "description": "An opinionated notification component for Stacks.",
+  "description": "An opinionated payment component for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/notification#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/payment#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/notification"
+    "directory": "./storage/framework/core/components/payment"
   },
   "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./*": {
-      "import": "./src/*"
     }
   },
   "module": "dist/index.js",
@@ -28,20 +25,18 @@
   "files": ["README.md", "dist"],
   "scripts": {
     "dev": "bunx --bun vite -c ./vite.config.ts",
-    "build": "echo 'bun run build:lib'",
-    "build:lib": "bunx vite build --mode lib && bun run build:types",
+    "build": "bunx --bun vite build --mode lib",
     "build:demo": "bunx --bun vite build",
     "build:types": "bunx vue-tsc -p tsconfig.build.json && bunx api-extractor run",
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {
-    "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/ui": "workspace:*",
-    "@unocss/reset": "0.61.0",
-    "unocss": "0.61.0",
+    "highlight.js": "^11.10.0",
     "vue": "^3.5.13"
   },
   "devDependencies": {
+    "@iconify-json/ic": "^1.2.1",
     "@microsoft/api-extractor": "^7.47.12",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",

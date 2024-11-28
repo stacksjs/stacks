@@ -9,6 +9,5 @@ const plugin: Plugin = {
   },
 }
 
-export default plugin
-
 export { Listbox, ListboxButton, ListboxOption, ListboxOptions }
+export default plugin
