@@ -1,10 +1,11 @@
-import type { type DocumentOptions, EnqueuedTask, Index, type IndexesResults, type IndexOptions, MeiliSearch } from 'meilisearch'
+
 import { searchEngine } from '@stacksjs/config'
 
 import { log } from '@stacksjs/logging'
 import { ExitCode, type SearchEngineDriver } from '@stacksjs/types'
+import { EnqueuedTask, Index, Meilisearch, type DocumentOptions, type IndexesResults, type IndexOptions, type SearchResponse } from 'meilisearch'
 
-function client(): MeiliSearch {
+function client(): Meilisearch {
   const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
   const apiKey = searchEngine.meilisearch?.apiKey || ''
 
@@ -13,18 +14,18 @@ function client(): MeiliSearch {
     process.exit(ExitCode.FatalError)
   }
 
-  return new MeiliSearch({ host, apiKey })
+  return new Meilisearch({ host, apiKey })
 }
 
-// async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
-//   const offsetVal = ((params.page * params.perPage) - 20) || 0
-//   const filter = convertToFilter(params.filter)
-//   const sort = convertToMeilisearchSorting(params.sort)
+async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
+  const offsetVal = ((params.page * params.perPage) - 20) || 0
+  const filter = convertToFilter(params.filter)
+  const sort = convertToMeilisearchSorting(params.sort)
 
-//   return await client()
-//     .index(index)
-//     .search(params.query, { limit: params.perPage, filter, sort, offset: offsetVal })
-// }
+  return await client()
+    .index(index)
+    .search(params.query, { limit: params.perPage, filter, sort, offset: offsetVal })
+}
 
 async function addDocument(indexName: string, params: any): Promise<EnqueuedTask> {
   return await client().index(indexName).addDocuments([params])
@@ -32,6 +33,10 @@ async function addDocument(indexName: string, params: any): Promise<EnqueuedTask
 
 async function addDocuments(indexName: string, params: any[]): Promise<EnqueuedTask> {
   return await client().index(indexName).addDocuments(params)
+}
+
+async function getIndex(name: string): Promise<Index<Record<string, any>>> {
+  return await client().getIndex(name)
 }
 
 async function createIndex(name: string, options?: IndexOptions): Promise<EnqueuedTask> {
@@ -70,43 +75,45 @@ async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
   return await client().getIndexes()
 }
 
-// function convertToFilter(jsonData: any): string[] {
-//   const filters: string[] = []
+function convertToFilter(jsonData: any): string[] {
+  const filters: string[] = []
 
-//   for (const key in jsonData) {
-//     if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
-//       const value = jsonData[key]
-//       const filter = `${key}='${value}'`
-//       filters.push(filter)
-//     }
-//   }
+  for (const key in jsonData) {
+    if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
+      const value = jsonData[key]
+      const filter = `${key}='${value}'`
+      filters.push(filter)
+    }
+  }
 
-//   return filters
-// }
+  return filters
+}
 
-// function convertToMeilisearchSorting(jsonData: any): string[] {
-//   const filters: string[] = []
+function convertToMeilisearchSorting(jsonData: any): string[] {
+  const filters: string[] = []
 
-//   for (const key in jsonData) {
-//     if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
-//       const value = jsonData[key]
-//       const filter = `${key}='${value}'`
-//       filters.push(filter)
-//     }
-//   }
+  for (const key in jsonData) {
+    if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
+      const value = jsonData[key]
+      const filter = `${key}='${value}'`
+      filters.push(filter)
+    }
+  }
 
-//   return filters
-// }
+  return filters
+}
+
 const meilisearch: SearchEngineDriver = {
   client,
-  //   search,
+  search,
+  getIndex,
   createIndex,
   deleteIndex,
   updateIndex,
   listAllIndexes,
   addDocument,
   addDocuments,
-  //   updateDocument,
+  updateDocument,
   listAllIndices: listAllIndexes,
   updateDocuments,
   deleteDocument,

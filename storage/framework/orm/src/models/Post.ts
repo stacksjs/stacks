@@ -8,7 +8,7 @@ import User from './User'
 // import { Pool } from 'pg'
 
 export interface PostsTable {
-  id: Generated<number>
+  id?: Generated<number>
   title?: string
   body?: string
   user_id?: number

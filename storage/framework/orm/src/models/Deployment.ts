@@ -8,7 +8,7 @@ import User from './User'
 // import { Pool } from 'pg'
 
 export interface DeploymentsTable {
-  id: Generated<number>
+  id?: Generated<number>
   commit_sha?: string
   commit_message?: string
   branch?: string

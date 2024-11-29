@@ -10,7 +10,7 @@ import User from './User'
 // import { Pool } from 'pg'
 
 export interface TeamsTable {
-  id: Generated<number>
+  id?: Generated<number>
   name?: string
   company_name?: string
   email?: string

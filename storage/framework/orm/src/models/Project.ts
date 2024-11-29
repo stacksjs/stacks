@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 // import { Pool } from 'pg'
 
 export interface ProjectsTable {
-  id: Generated<number>
+  id?: Generated<number>
   name?: string
   description?: string
   url?: string

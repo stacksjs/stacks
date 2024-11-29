@@ -7,5 +7,6 @@ const result = await importModelDocuments()
 if (result?.isErr()) {
   console.error(result.error)
   log.error('generateMigrations failed', result.error)
-  process.exit(1)
 }
+
+process.exit(0)

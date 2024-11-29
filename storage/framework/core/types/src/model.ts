@@ -1,6 +1,7 @@
 import type { ModelNames } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
-import type { DeepPartial, Nullable, SearchOptions } from '.'
+import type { DeepPartial, Nullable } from '.'
+import type { SearchOptions } from './search-engine'
 
 export type Model = Partial<ModelOptions>
 

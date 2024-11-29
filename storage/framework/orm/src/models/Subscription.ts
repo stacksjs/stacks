@@ -8,7 +8,7 @@ import User from './User'
 // import { Pool } from 'pg'
 
 export interface SubscriptionsTable {
-  id: Generated<number>
+  id?: Generated<number>
   type?: string
   provider_id?: string
   provider_status?: string

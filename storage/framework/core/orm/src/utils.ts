@@ -1080,6 +1080,7 @@ export async function generateModelString(
     searchableStatements += `
         toSearchableObject(): Partial<${formattedTableName}Table> {
             return {
+                id: this.id,
                 ${searchAttrs
                   .map(attr => `${attr}: this.${attr}`)
                   .join(',\n')}
@@ -1462,7 +1463,7 @@ export async function generateModelString(
     // import { Pool } from 'pg'
 
     export interface ${formattedTableName}Table {
-      id: Generated<number>
+      id?: Generated<number>
      ${fieldString}
     }
 

@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 // import { Pool } from 'pg'
 
 export interface ErrorsTable {
-  id: Generated<number>
+  id?: Generated<number>
   type?: undefined
   message?: undefined
   stack?: undefined

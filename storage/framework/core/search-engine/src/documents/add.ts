@@ -31,7 +31,7 @@ export async function importModelDocuments(): Promise<Ok<string, never> | Err<st
       }
     }
 
-    return ok('Migrations generated')
+    return ok('Successfully imported models to search engine!')
   }
   catch (err: any) {
     log.error(err)

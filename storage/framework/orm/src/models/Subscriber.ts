@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 // import { Pool } from 'pg'
 
 export interface SubscribersTable {
-  id: Generated<number>
+  id?: Generated<number>
   subscribed?: boolean
   user_id?: number
 

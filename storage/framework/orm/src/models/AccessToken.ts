@@ -8,7 +8,7 @@ import Team from './Team'
 // import { Pool } from 'pg'
 
 export interface PersonalAccessTokensTable {
-  id: Generated<number>
+  id?: Generated<number>
   name?: string
   token?: string
   plain_text_token?: string

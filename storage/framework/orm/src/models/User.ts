@@ -19,7 +19,7 @@ import Team from './Team'
 // import { Pool } from 'pg'
 
 export interface UsersTable {
-  id: Generated<number>
+  id?: Generated<number>
   name?: string
   email?: string
   job_title?: string
@@ -668,6 +668,7 @@ export class UserModel {
 
   toSearchableObject(): Partial<UsersTable> {
     return {
+      id: this.id,
       job_title: this.job_title,
       name: this.name,
       email: this.email,

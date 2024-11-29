@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 // import { Pool } from 'pg'
 
 export interface ReleasesTable {
-  id: Generated<number>
+  id?: Generated<number>
   version?: string
 
   created_at?: Date
