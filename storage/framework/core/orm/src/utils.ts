@@ -901,7 +901,7 @@ export async function generateModelString(
   let relationImports = ``
   let twoFactorStatements = ''
   let billableStatements = ''
-  let searchableStatements = ''
+  let displayableStatements = ''
   let mittCreateStatement = ``
   let mittUpdateStatement = ``
   let mittDeleteStatement = ``
@@ -1072,15 +1072,14 @@ export async function generateModelString(
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
   const useBillable = model.traits?.billable || false
   const useSearchable = model.traits?.useSearch || false
-  const searchableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.searchable
+  const displayableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.displayable
 
   if (typeof useSearchable === 'object' && useSearchable) {
-    const searchAttrs = Array.isArray(searchableAttributes) ? searchableAttributes : []
+    const searchAttrs = Array.isArray(displayableAttributes) ? displayableAttributes : []
 
-    searchableStatements += `
+    displayableStatements += `
         toSearchableObject(): Partial<${formattedTableName}Table> {
             return {
-                id: this.id,
                 ${searchAttrs
                   .map(attr => `${attr}: this.${attr}`)
                   .join(',\n')}
@@ -1964,7 +1963,7 @@ export async function generateModelString(
 
       ${relationMethods}
 
-      ${searchableStatements}
+      ${displayableStatements}
 
       ${billableStatements}
 

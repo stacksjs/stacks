@@ -1,9 +1,8 @@
+import type { type Dictionary, type DocumentOptions, EnqueuedTask, type Faceting, Index, type IndexesResults, type IndexOptions, Meilisearch, type PaginationSettings, type SearchResponse, type Settings, type Synonyms, type TypoTolerance } from 'meilisearch'
 
 import { searchEngine } from '@stacksjs/config'
-
 import { log } from '@stacksjs/logging'
 import { ExitCode, type SearchEngineDriver } from '@stacksjs/types'
-import { EnqueuedTask, Index, Meilisearch, type Dictionary, type DocumentOptions, type Faceting, type IndexesResults, type IndexOptions, type PaginationSettings, type SearchResponse, type Settings, type Synonyms, type TypoTolerance } from 'meilisearch'
 
 function client(): Meilisearch {
   const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
@@ -312,7 +311,7 @@ const meilisearch: SearchEngineDriver = {
 
   getDictionary,
   updateDictionary,
-  resetDictionary
+  resetDictionary,
 }
 
 export default meilisearch

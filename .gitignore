@@ -12,6 +12,7 @@ updates
 tests/unit/coverage
 dist*
 data*
+data.ms
 !.gitkeep
 database/stacks_testing.sqlite
 database/stacks.sqlite
