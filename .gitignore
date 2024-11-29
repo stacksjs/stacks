@@ -11,6 +11,7 @@ temp
 updates
 tests/unit/coverage
 dist*
+data*
 !.gitkeep
 database/stacks_testing.sqlite
 database/stacks.sqlite
