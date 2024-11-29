@@ -3,7 +3,7 @@ import { searchEngine } from '@stacksjs/config'
 
 import { log } from '@stacksjs/logging'
 import { ExitCode, type SearchEngineDriver } from '@stacksjs/types'
-import { EnqueuedTask, Index, Meilisearch, type DocumentOptions, type IndexesResults, type IndexOptions, type SearchResponse } from 'meilisearch'
+import { EnqueuedTask, Index, Meilisearch, type Dictionary, type DocumentOptions, type Faceting, type IndexesResults, type IndexOptions, type PaginationSettings, type SearchResponse, type Settings, type Synonyms, type TypoTolerance } from 'meilisearch'
 
 function client(): Meilisearch {
   const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
@@ -75,6 +75,150 @@ async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
   return await client().getIndexes()
 }
 
+async function getFilterableAttributes(index: string): Promise<string[]> {
+  return client().index(index).getFilterableAttributes()
+}
+
+async function updateFilterableAttributes(index: string, filterableAttributes: string[] | null): Promise<EnqueuedTask> {
+  return client().index(index).updateFilterableAttributes(filterableAttributes)
+}
+
+async function resetFilterableAttributes(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetFilterableAttributes()
+}
+
+async function updateSearchableAttributes(index: string, searchableAttributes: string[] | null): Promise<EnqueuedTask> {
+  return client().index(index).updateSearchableAttributes(searchableAttributes)
+}
+
+async function resetSearchableAttributes(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetSearchableAttributes()
+}
+
+async function getSearchableAttributes(index: string): Promise<string[]> {
+  return client().index(index).getSearchableAttributes()
+}
+
+async function updateSortableAttributes(index: string, sortableAttributes: string[] | null): Promise<EnqueuedTask> {
+  return client().index(index).updateSortableAttributes(sortableAttributes)
+}
+
+async function resetSortableAttributes(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetSortableAttributes()
+}
+
+async function getSortableAttributes(index: string): Promise<string[]> {
+  return client().index(index).getSortableAttributes()
+}
+
+async function updateDisplayedAttributes(index: string, displayedAttributes: string[] | null): Promise<EnqueuedTask> {
+  return client().index(index).updateDisplayedAttributes(displayedAttributes)
+}
+
+async function getDisplayedAttributes(index: string): Promise<string[]> {
+  return client().index(index).getDisplayedAttributes()
+}
+
+async function resetDisplayedAttributes(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetDisplayedAttributes()
+}
+
+async function getSettings(index: string): Promise<Settings> {
+  return client().index(index).getSettings()
+}
+
+async function updateSettings(index: string, settings: Settings): Promise<EnqueuedTask> {
+  return client().index(index).updateSettings(settings)
+}
+
+async function resetSettings(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetSettings()
+}
+
+async function getPagination(index: string): Promise<PaginationSettings> {
+  return client().index(index).getPagination()
+}
+
+async function updatePagination(index: string, pagination: PaginationSettings): Promise<EnqueuedTask> {
+  return client().index(index).updatePagination(pagination)
+}
+
+async function resetPagination(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetPagination()
+}
+
+async function getSynonyms(index: string): Promise<{}> {
+  return client().index(index).getSynonyms()
+}
+
+async function updateSynonyms(index: string, synonyms: Synonyms): Promise<EnqueuedTask> {
+  return client().index(index).updateSynonyms(synonyms)
+}
+
+async function resetSynonyms(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetSynonyms()
+}
+
+async function getRankingRules(index: string): Promise<string[]> {
+  return client().index(index).getRankingRules()
+}
+
+async function updateRankingRules(index: string, rankingRules: string[] | null): Promise<EnqueuedTask> {
+  return client().index(index).updateRankingRules(rankingRules)
+}
+
+async function resetRankingRules(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetRankingRules()
+}
+
+async function getDistinctAttribute(index: string): Promise<string | null> {
+  return client().index(index).getDistinctAttribute()
+}
+
+async function updateDistinctAttribute(index: string, distinctAttribute: string | null): Promise<EnqueuedTask> {
+  return client().index(index).updateDistinctAttribute(distinctAttribute)
+}
+
+async function resetDistinctAttribute(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetDistinctAttribute()
+}
+
+async function getFaceting(index: string): Promise<Faceting> {
+  return client().index(index).getFaceting()
+}
+
+async function updateFaceting(index: string, faceting: Faceting): Promise<EnqueuedTask> {
+  return client().index(index).updateFaceting(faceting)
+}
+
+async function resetFaceting(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetFaceting()
+}
+
+async function getTypoTolerance(index: string): Promise<TypoTolerance> {
+  return client().index(index).getTypoTolerance()
+}
+
+async function updateTypoTolerance(index: string, typoTolerance: TypoTolerance | null): Promise<EnqueuedTask> {
+  return client().index(index).updateTypoTolerance(typoTolerance)
+}
+
+async function resetTypoTolerance(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetTypoTolerance()
+}
+
+async function getDictionary(index: string): Promise<Dictionary> {
+  return client().index(index).getDictionary()
+}
+
+async function updateDictionary(index: string, dictionary: Dictionary | null): Promise<EnqueuedTask> {
+  return client().index(index).updateDictionary(dictionary)
+}
+
+async function resetDictionary(index: string): Promise<EnqueuedTask> {
+  return client().index(index).resetDictionary()
+}
+
 function convertToFilter(jsonData: any): string[] {
   const filters: string[] = []
 
@@ -106,19 +250,69 @@ function convertToMeilisearchSorting(jsonData: any): string[] {
 const meilisearch: SearchEngineDriver = {
   client,
   search,
+
   getIndex,
   createIndex,
   deleteIndex,
   updateIndex,
   listAllIndexes,
+  listAllIndices: listAllIndexes,
+
   addDocument,
   addDocuments,
   updateDocument,
-  listAllIndices: listAllIndexes,
   updateDocuments,
   deleteDocument,
   deleteDocuments,
   getDocument,
+
+  getFilterableAttributes,
+  updateFilterableAttributes,
+  resetFilterableAttributes,
+
+  updateDisplayedAttributes,
+  resetDisplayedAttributes,
+  getDisplayedAttributes,
+
+  updateSearchableAttributes,
+  resetSearchableAttributes,
+  getSearchableAttributes,
+
+  updateSortableAttributes,
+  resetSortableAttributes,
+  getSortableAttributes,
+
+  getSettings,
+  updateSettings,
+  resetSettings,
+
+  getPagination,
+  updatePagination,
+  resetPagination,
+
+  getSynonyms,
+  updateSynonyms,
+  resetSynonyms,
+
+  getRankingRules,
+  updateRankingRules,
+  resetRankingRules,
+
+  getDistinctAttribute,
+  updateDistinctAttribute,
+  resetDistinctAttribute,
+
+  getFaceting,
+  updateFaceting,
+  resetFaceting,
+
+  getTypoTolerance,
+  updateTypoTolerance,
+  resetTypoTolerance,
+
+  getDictionary,
+  updateDictionary,
+  resetDictionary
 }
 
 export default meilisearch

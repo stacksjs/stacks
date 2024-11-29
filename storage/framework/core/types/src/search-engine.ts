@@ -1,15 +1,21 @@
 import type {
+  Dictionary,
   DocumentOptions,
   EnqueuedTask,
+  Faceting,
   Hits,
   Index,
   IndexesResults,
   IndexOptions,
   MeiliSearch,
   Settings as MeilisearchOptions,
+  PaginationSettings,
   DocumentOptions as RecordOptions,
   SearchParams,
   SearchResponse,
+  Settings,
+  Synonyms,
+  TypoTolerance,
 } from 'meilisearch'
 import type { MaybePromise } from '.'
 
@@ -74,6 +80,8 @@ export type SearchEngineConfig = Partial<SearchEngineOptions>
 export interface SearchEngineDriver {
   client: () => MeiliSearch
 
+  search: (index: string, params: any) => Promise<SearchResponse<Record<string, any>>>
+
   // Indexes
   createIndex: (name: string, options?: IndexOptions) => MaybePromise<EnqueuedTask>
   getIndex: (name: string) => Promise<Index<Record<string, any>>>
@@ -89,20 +97,55 @@ export interface SearchEngineDriver {
   listAllIndexes: () => MaybePromise<IndexesResults<Index[]>>
   listAllIndices: () => MaybePromise<IndexesResults<Index[]>> // alternatives plural spelling
 
-  // Records (MeiliSearch uses the term "documents")
-  // getRecord: (key: string) => MaybePromise<any>
-  // getRecords: (key: string) => MaybePromise<RecordOptions>
-  // createRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  // createRecords: (records: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  // createOrReplaceRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  // createOrUpdateRecord: (record: any, indexName: string, options: RecordOptions) => MaybePromise<EnqueuedTask>
-  // deleteRecord: (recordId: string | number, indexName: string) => MaybePromise<EnqueuedTask>
-  // deleteAllRecords: (indexName: string) => MaybePromise<EnqueuedTask>
-  // batchDeleteRecords: (recordIds: string[] | number[], indexName: string) => MaybePromise<EnqueuedTask>
+  getFilterableAttributes: (index: string) => Promise<string[]>
+  updateFilterableAttributes: (index: string, filterableAttributes: string[] | null) => Promise<EnqueuedTask>
+  resetFilterableAttributes: (index: string) => Promise<EnqueuedTask>
+
+  updateSearchableAttributes: (index: string, searchableAttributes: string[] | null) => Promise<EnqueuedTask>
+  resetSearchableAttributes: (index: string) => Promise<EnqueuedTask>
+  getSearchableAttributes: (index: string) => Promise<string[]>
+
+  updateSortableAttributes: (index: string, sortableAttributes: string[] | null) => Promise<EnqueuedTask>
+  resetSortableAttributes: (index: string) => Promise<EnqueuedTask>
+  getSortableAttributes: (index: string) => Promise<string[]>
+
+  updateDisplayedAttributes: (index: string, displayedAttributes: string[] | null) => Promise<EnqueuedTask>
+  getDisplayedAttributes: (index: string) => Promise<string[]>
+  resetDisplayedAttributes: (index: string) => Promise<EnqueuedTask>
+
+  getSettings: (index: string) => Promise<Settings>
+  updateSettings: (index: string, settings: Settings) => Promise<EnqueuedTask>
+  resetSettings: (index: string) => Promise<EnqueuedTask>
+  
+  getPagination: (index: string) => Promise<PaginationSettings>
+  updatePagination: (index: string, pagination: PaginationSettings) => Promise<EnqueuedTask>
+  resetPagination: (index: string) => Promise<EnqueuedTask>
+
+  getSynonyms: (index: string) => Promise<{}>
+  updateSynonyms: (index: string, synonyms: Synonyms) => Promise<EnqueuedTask>
+  resetSynonyms: (index: string) => Promise<EnqueuedTask>
+
+  getRankingRules: (index: string) => Promise<string[]>
+  updateRankingRules: (index: string, rankingRules: string[] | null) => Promise<EnqueuedTask>
+  resetRankingRules: (index: string) => Promise<EnqueuedTask>
+
+  getDistinctAttribute: (index: string) => Promise<string | null>
+  updateDistinctAttribute: (index: string, distinctAttribute: string | null) => Promise<EnqueuedTask>
+  resetDistinctAttribute: (index: string) => Promise<EnqueuedTask>
+
+  getFaceting: (index: string) => Promise<Faceting>
+  updateFaceting: (index: string, faceting: Faceting) => Promise<EnqueuedTask>
+  resetFaceting: (index: string) => Promise<EnqueuedTask>
+
+  getTypoTolerance: (index: string) => Promise<TypoTolerance>
+  updateTypoTolerance: (index: string, typoTolerance: TypoTolerance | null) => Promise<EnqueuedTask>
+  resetTypoTolerance: (index: string) => Promise<EnqueuedTask>
+
+  getDictionary: (index: string) => Promise<Dictionary>
+  updateDictionary: (index: string, dictionary: Dictionary | null) => Promise<EnqueuedTask>
+  resetDictionary: (index: string) => Promise<EnqueuedTask>
 
   // Search
-  search: (query: string, indexName: string, options: SearchParams) => MaybePromise<Search>
-
   // calculatePagination: Pages
   // currentPage: Page
   // filterName: string
