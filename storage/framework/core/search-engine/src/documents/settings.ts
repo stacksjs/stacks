@@ -9,21 +9,24 @@ import { globSync } from '@stacksjs/storage'
 export async function updateIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
   try {
     const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-    const { addDocument } = useSearchEngine()
+    const { updateSettings } = useSearchEngine()
 
     for (const model of userModelFiles) {
       const modelInstance = (await import(model)).default as Model
       const searchable = modelInstance.traits?.useSearch
 
       const tableName = getTableName(modelInstance, model)
-      const modelName = getModelName(modelInstance, model)
 
-      if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object')) {
-        
+      if (searchable && typeof searchable === 'object') {
+        const filterableAttributes = typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.filterable || []
+        const sortableAttributes = typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.sortable || []
+        const searchableAttributes = typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.searchable || []
+
+        await updateSettings(tableName, { filterableAttributes, sortableAttributes, searchableAttributes })
       }
     }
 
-    return ok('Successfully imported models to search engine!')
+    return ok('Successfully update index settings!')
   }
   catch (err: any) {
     log.error(err)

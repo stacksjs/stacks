@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { importModelDocuments } from '@stacksjs/search-engine'
+import { updateIndexSettings } from '@stacksjs/search-engine'
 
-const result = await importModelDocuments()
+const result = await updateIndexSettings()
 
 if (result?.isErr()) {
   console.error(result.error)

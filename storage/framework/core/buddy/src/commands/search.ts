@@ -8,6 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 export function search(buddy: CLI): void {
   const descriptions = {
     search: 'Indexes database data to search engine',
+    settings: 'Update index settings',
     model: 'Target a specific model',
     verbose: 'Enable verbose output',
   }
@@ -31,7 +32,7 @@ export function search(buddy: CLI): void {
         process.exit()
       }
 
-      await outro(`Stripe products created successfully`, {
+      await outro(`Successfully imported model data to search engine.`, {
         startTime: perf,
         useSeconds: true,
       })
@@ -40,14 +41,14 @@ export function search(buddy: CLI): void {
     })
 
     buddy
-    .command('search-engine:sync-settings', descriptions.search)
+    .command('search-engine:sync-settings', descriptions.settings)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchOptions) => {
       log.debug('Running `search-engine:sync-settings` ...', options)
 
       const perf = await intro('search-engine:sync-settings')
-      const result = await runAction(Action.SearchEngineImport, options)
+      const result = await runAction(Action.SearchEngineSyncSettings, options)
 
       if (result.isErr()) {
         await outro(
@@ -58,7 +59,7 @@ export function search(buddy: CLI): void {
         process.exit()
       }
 
-      await outro(`Stripe products created successfully`, {
+      await outro(`Successfully updated search engine index settings.`, {
         startTime: perf,
         useSeconds: true,
       })
