@@ -4,12 +4,12 @@
   "version": "0.68.2",
   "private": true,
   "scripts": {
-    "build": "bunx --bun vite-ssg build -c ../../core/vite-config/src/views.ts",
-    "dev": "bunx --bun vite serve -c ../../core/vite-config/src/views.ts",
-    "preview": "bunx --bun vite preview",
-    "typecheck": "bunx --bun vue-tsc --noEmit",
-    "up": "bunx --bun taze major -I",
-    "sizecheck": "bunx --bun vite-bundle-visualizer"
+    "build": "bun --bun vite-ssg build -c ../../core/vite-config/src/views.ts",
+    "dev": "bun --bun vite serve -c ../../core/vite-config/src/views.ts",
+    "preview": "bun --bun vite preview",
+    "typecheck": "bun --bun vue-tsc --noEmit",
+    "up": "bun --bun taze major -I",
+    "sizecheck": "bun --bun vite-bundle-visualizer"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
