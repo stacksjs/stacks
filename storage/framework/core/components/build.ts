@@ -7,7 +7,6 @@ dirs.sort((a, b) => a.localeCompare(b))
 
 const startTime = Date.now()
 
-console.log('dirs', dirs)
 for (const dir of dirs) {
   const distPath = p.resolve(dir, 'dist')
 
@@ -27,9 +26,9 @@ for (const dir of dirs) {
 
   const tempPath = p.resolve(dir, 'temp')
 
-  // Check if the dist folder exists
+  // Check if the temp folder exists
   if (await exists(tempPath)) {
-    await runCommand('rm -rf dist', {
+    await runCommand('rm -rf temp', {
       cwd: dir, // Change this to 'dir' to correctly set the working directory
     })
   }
