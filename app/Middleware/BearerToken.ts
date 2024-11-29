@@ -1,4 +1,3 @@
-import { HttpError } from '@stacksjs/error-handling'
 import { Middleware, request } from '@stacksjs/router'
 
 export default new Middleware({

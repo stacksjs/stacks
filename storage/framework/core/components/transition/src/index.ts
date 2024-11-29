@@ -9,5 +9,5 @@ const plugin: Plugin = {
   },
 }
 
-export { TransitionRoot, TransitionChild }
+export { TransitionChild, TransitionRoot }
 export default plugin

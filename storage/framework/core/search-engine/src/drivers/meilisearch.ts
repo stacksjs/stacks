@@ -1,12 +1,12 @@
-import { ExitCode, type MeilisearchOptions, type SearchEngineDriver } from '@stacksjs/types'
+import type { type DocumentOptions, EnqueuedTask, Index, type IndexesResults, type IndexOptions, MeiliSearch } from 'meilisearch'
 import { searchEngine } from '@stacksjs/config'
 
-import { EnqueuedTask, Index, MeiliSearch, type DocumentOptions, type IndexesResults, type IndexOptions } from 'meilisearch'
 import { log } from '@stacksjs/logging'
+import { ExitCode, type SearchEngineDriver } from '@stacksjs/types'
 
 function client(): MeiliSearch {
   const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
-  let apiKey = searchEngine.meilisearch?.apiKey || ''
+  const apiKey = searchEngine.meilisearch?.apiKey || ''
 
   if (!host) {
     log.error('Please specify a search engine host.')
@@ -99,20 +99,19 @@ async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
 // }
 const meilisearch: SearchEngineDriver = {
   client,
-//   search,
+  //   search,
   createIndex,
   deleteIndex,
   updateIndex,
   listAllIndexes,
   addDocument,
   addDocuments,
-//   updateDocument,
+  //   updateDocument,
   listAllIndices: listAllIndexes,
   updateDocuments,
   deleteDocument,
   deleteDocuments,
   getDocument,
 }
-
 
 export default meilisearch

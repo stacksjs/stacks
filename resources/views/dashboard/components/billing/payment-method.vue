@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { Notification } from '@stacksjs/notification'
 import { useBillable } from '../../../../functions/billing/payments'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
-import { Notification } from '@stacksjs/notification'
 
 import PaymentMethodList from './payment-method-list.vue'
 
@@ -40,7 +40,7 @@ function cancelPaymentForm() {
 </script>
 
 <template>
-  <Notification position="top-right" richColors/>
+  <Notification position="top-right" rich-colors />
 
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
     <h2 class="text-lg text-gray-900 font-medium">
@@ -106,7 +106,7 @@ function cancelPaymentForm() {
         class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
         @click="loadWebElement()"
       >
-        <span class="inline-flex items-center" v-if="isLoadingWebElement">
+        <span v-if="isLoadingWebElement" class="inline-flex items-center">
           <div class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin" />
           <span class="ml-2">Loading...</span>
         </span>

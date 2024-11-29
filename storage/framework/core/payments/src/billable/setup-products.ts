@@ -1,5 +1,6 @@
+import type { Err, Ok } from '@stacksjs/error-handling'
 import { saas } from '@stacksjs/config'
-import { Err, Ok, ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { stripe } from '@stacksjs/payments'
 

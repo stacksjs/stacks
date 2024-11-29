@@ -47,7 +47,7 @@ export interface SearchEngineOptions {
     protocol: number
     port: number
     auth: string
-  },
+  }
 
   meilisearch?: {
     host: string
@@ -72,7 +72,7 @@ export interface SearchEngineOptions {
 export type SearchEngineConfig = Partial<SearchEngineOptions>
 
 export interface SearchEngineDriver {
-  client(): MeiliSearch
+  client: () => MeiliSearch
 
   // Indexes
   createIndex: (name: string, options?: IndexOptions) => MaybePromise<EnqueuedTask>

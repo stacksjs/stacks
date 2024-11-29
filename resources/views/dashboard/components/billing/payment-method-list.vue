@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { notification } from '@stacksjs/notification'
+import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/popover'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
-import { notification } from '@stacksjs/notification'
-import { Popover, PopoverPanel, PopoverButton } from '@stacksjs/popover'
 
 const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 
@@ -44,16 +44,16 @@ async function makeDefault(paymentMethodId: string) {
               </h2>
             </div>
 
-          <div class="flex justify-end space-x-4">
-            <button
-              type="button"
-              class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-              @click="makeDefault(method.id)"
-              :disabled="isDefaultLoading[method.id]"
-            >
-              <span v-if="!isDefaultLoading[method.id]" class="i-heroicons-star text-gray-700 " />
-              <span v-if="isDefaultLoading[method.id]" class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin text-gray-500" />
-            </button>
+            <div class="flex justify-end space-x-4">
+              <button
+                type="button"
+                class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                :disabled="isDefaultLoading[method.id]"
+                @click="makeDefault(method.id)"
+              >
+                <span v-if="!isDefaultLoading[method.id]" class="i-heroicons-star text-gray-700" />
+                <span v-if="isDefaultLoading[method.id]" class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin text-gray-500" />
+              </button>
 
               <Popover v-slot="{ open }">
                 <PopoverButton>
@@ -66,10 +66,10 @@ async function makeDefault(paymentMethodId: string) {
                 </PopoverButton>
 
                 <PopoverPanel
-                  class="absolute z-10 mt-2 w-56 bg-white text-xs shadow-lg rounded-lg p-4 border border-gray-200"
+                  class="absolute z-10 mt-2 w-56 border border-gray-200 rounded-lg bg-white p-4 text-xs shadow-lg"
                 >
                   <span> Delete Payment Method? </span>
-                  <div class="flex justify-end space-x-4 mt-2">
+                  <div class="mt-2 flex justify-end space-x-4">
                     <button
                       class="border rounded-md bg-white px-2 py-1 text-sm text-red-500 font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-red-600 focus-visible:outline-offset-2 focus-visible:outline"
                       @click="deletePayment(method.id)"
