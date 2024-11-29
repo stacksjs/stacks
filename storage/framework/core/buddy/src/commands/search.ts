@@ -20,7 +20,34 @@ export function search(buddy: CLI): void {
       log.debug('Running `search-engine:update` ...', options)
 
       const perf = await intro('search-engine:update')
-      const result = await runAction(Action.SearchEngineUpdate, options)
+      const result = await runAction(Action.SearchEngineImport, options)
+
+      if (result.isErr()) {
+        await outro(
+          'While running the stripe:setup command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit()
+      }
+
+      await outro(`Stripe products created successfully`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+
+      process.exit(ExitCode.Success)
+    })
+
+    buddy
+    .command('search-engine:sync-settings', descriptions.search)
+    .option('-m, --model [model]', descriptions.model, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: SearchOptions) => {
+      log.debug('Running `search-engine:sync-settings` ...', options)
+
+      const perf = await intro('search-engine:sync-settings')
+      const result = await runAction(Action.SearchEngineImport, options)
 
       if (result.isErr()) {
         await outro(
