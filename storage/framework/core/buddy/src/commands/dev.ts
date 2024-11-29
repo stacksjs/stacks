@@ -44,9 +44,7 @@ export function dev(buddy: CLI): void {
     .option('-d, --docs', descriptions.docs)
     .option('-t, --system-tray', descriptions.systemTray)
     .option('-i, --interactive', descriptions.interactive, { default: false })
-    .option('-l, --with-localhost', descriptions.withLocalhost, {
-      default: false,
-    })
+    .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {

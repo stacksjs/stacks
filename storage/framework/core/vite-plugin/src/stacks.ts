@@ -49,20 +49,22 @@ export function stacks(options?: StacksPluginOptions): Plugin {
     configureServer(server: DevServer) {
       server.printUrls = async () => {
         const urls = {
-          frontend: await localUrl({ type: 'frontend', https: true }),
-          backend: await localUrl({ type: 'backend', https: true }),
-          admin: await localUrl({ type: 'admin', https: true }),
-          library: await localUrl({ type: 'library', https: true }),
-          email: await localUrl({ type: 'email', https: true }),
-          docs: await localUrl({ type: 'docs', https: true }),
-          desktop: await localUrl({ type: 'desktop', https: true }),
-          inspect: await localUrl({ type: 'inspect', https: true }),
+          frontend: await localUrl({ type: 'frontend' }),
+          // backend: await localUrl({ type: 'backend' }),
+          admin: await localUrl({ type: 'admin' }),
+          library: await localUrl({ type: 'library' }),
+          // email: await localUrl({ type: 'email' }),
+          docs: await localUrl({ type: 'docs' }),
+          // desktop: await localUrl({ type: 'desktop' }),
+          // inspect: await localUrl({ type: 'inspect' }),
         }
+
+        console.log('urls', urls)
 
         const stacksVersion = `alpha-v${version}`
         const withLocalhost = options?.withLocalhost
 
-        console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(stacksVersion)}`)
+        console.log(`  ${c.blue(c.bold('STACKSsss'))} ${c.blue(stacksVersion)}`)
         console.log('')
 
         for (const [option, url] of Object.entries(urls)) {

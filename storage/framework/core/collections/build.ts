@@ -1,4 +1,5 @@
 import { intro, outro } from '../build/src'
+import { dts } from 'bun-plugin-dtsx'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -12,10 +13,10 @@ const result = await Bun.build({
   minify: true,
 
   plugins: [
-    // dts({
-    //   root: './src',
-    //   outdir: './dist',
-    // }),
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
   ],
 })
 

@@ -43,7 +43,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "collect.js": "^4.36.1"
+    "ts-collect": "^0.4.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
