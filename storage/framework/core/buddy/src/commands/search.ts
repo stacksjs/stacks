@@ -7,14 +7,15 @@ import { ExitCode } from '@stacksjs/types'
 
 export function search(buddy: CLI): void {
   const descriptions = {
-    search: 'Indexes database data to search engine',
+    import: 'Indexes database data to search engine',
+    flush: 'Flushes all data from search engine',
     settings: 'Update index settings',
     model: 'Target a specific model',
     verbose: 'Enable verbose output',
   }
 
   buddy
-    .command('search-engine:update', descriptions.search)
+    .command('search-engine:import', descriptions.import)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchOptions) => {
@@ -22,6 +23,33 @@ export function search(buddy: CLI): void {
 
       const perf = await intro('search-engine:update')
       const result = await runAction(Action.SearchEngineImport, options)
+
+      if (result.isErr()) {
+        await outro(
+          'While running the stripe:setup command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit()
+      }
+
+      await outro(`Successfully imported model data to search engine.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+
+      process.exit(ExitCode.Success)
+    })
+
+    buddy
+    .command('search-engine:flush', descriptions.flush)
+    .option('-m, --model [model]', descriptions.model, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: SearchOptions) => {
+      log.debug('Running `search-engine:flush` ...', options)
+
+      const perf = await intro('search-engine:flush')
+      const result = await runAction(Action.SearchEngineFlush, options)
 
       if (result.isErr()) {
         await outro(

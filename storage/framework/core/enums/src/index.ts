@@ -88,6 +88,7 @@ export enum Action {
   RouteList = 'route/list', // ✅
   StripeSetup = 'saas/setup',
   SearchEngineImport = 'search/import',
+  SearchEngineFlush = 'search/flush',
   SearchEngineSyncSettings = 'search/settings',
   Test = 'test/index',
   TestUi = 'test/ui',

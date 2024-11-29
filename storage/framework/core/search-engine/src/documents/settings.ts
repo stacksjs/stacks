@@ -1,7 +1,7 @@
 import type { Model } from '@stacksjs/types'
 import { type Err, ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { getModelName, getTableName } from '@stacksjs/orm'
+import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'

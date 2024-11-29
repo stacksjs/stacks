@@ -17,8 +17,8 @@ export default {
     },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
-      // defaults to true, `searchable` used as an alias
-      displayable: ['id', 'job_title', 'name', 'email'], // the fields to become searchable (defaults to all fields)
+      
+      displayable: ['id', 'job_title', 'name', 'email'], // the fields to become d (defaults to all fields)
       searchable: ['job_title', 'name', 'email'], // the fields to become searchable (defaults to all fields)
       sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)
       filterable: ['job_title'], // the fields to become filterable (defaults to all fields)
@@ -110,8 +110,8 @@ export default {
     },
   },
   get: {
-    formalName: (user: UserModel) => {
-      const name = user?.name as string
+    formalName: (attributes) => {
+      const name = attributes.user?.name as string
       const nameParts = name.split(' ')
 
       return `${capitalize(nameParts.pop()!)}, ${capitalize(nameParts.join(' '))}`
