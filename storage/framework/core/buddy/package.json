@@ -59,17 +59,16 @@
   "files": ["README.md", "dist"],
   "scripts": {
     "buddy": "bunx --bun ./src/cli.ts",
-    "build": "bun build.ts && bun run compile",
-    "compile": "bun build ./bin/cli.ts --compile --minify --sourcemap --outfile dist/stacks",
-    "compile:linux:x64-modern": "bun build ./bin/cli.ts --compile --target=bun-linux-x64-modern --minify --sourcemap --outfile dist/stacks",
-    "compile:linux:x64-baseline": "bun build ./bin/cli.ts --compile --target=bun-linux-x64-baseline --minify --sourcemap --outfile dist/stacks",
-    "compile:linux:arm64": "bun build ./bin/cli.ts --compile --target=bun-linux-arm64 --minify --sourcemap --outfile dist/stacks",
-    "compile:windows:x64-modern": "bun build ./bin/cli.ts --compile --target=bun-windows-x64-modern --minify --sourcemap --outfile dist/stacks",
-    "compile:windows:x64-baseline": "bun build ./bin/cli.ts --compile --target=bun-windows-x64-baseline --minify --sourcemap --outfile dist/stacks",
-    "compile:mac:arm64": "bun build ./bin/cli.ts --compile --target=bun-darwin-arm64 --minify --sourcemap --outfile dist/stacks",
-    "compile:mac:x64": "bun build ./bin/cli.ts --compile --target=bun-darwin-x64 --minify --sourcemap --outfile dist/stacks",
+    "build": "bun build.ts",
+    "compile": "bun build ./bin/cli.ts --compile --minify --sourcemap --outfile dist/buddy",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/buddy-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/buddy-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/buddy-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/buddy-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/buddy-darwin-arm64",
     "typecheck": "bun tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build && bun run compile:all"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",
