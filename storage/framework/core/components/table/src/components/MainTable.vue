@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Hits, SearchResponse } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import { useTable } from '../functions/table'
+import test from '../functions/table'
 
 interface Props {
   type: string // the Meilisearch index you would like to use for this table
@@ -50,87 +50,68 @@ const {
   selectedAll = false,
 } = defineProps<Props>()
 
-const parsedColumns = computed((): string[] => {
-  if (isString(columns))
-    return (columns as string).split(',').map(col => col.trim())
+// const parsedColumns = computed((): string[] => {
+//   if (isString(columns))
+//     return (columns as string).split(',').map(col => col.trim())
 
-  return columns as string[]
-})
+//   return columns as string[]
+// })
 
-const parsedSorts = computed((): string[] => {
-  if (isString(sorts))
-    return (sorts as string).split(',').map(col => col.trim())
+// const parsedSorts = computed((): string[] => {
+//   if (isString(sorts))
+//     return (sorts as string).split(',').map(col => col.trim())
 
-  return sorts as string[]
-})
+//   return sorts as string[]
+// })
 
-const parsedFilters = computed((): string[] => {
-  if (isString(filters))
-    return (filters as string).split(',').map(col => col.trim())
+// const parsedFilters = computed((): string[] => {
+//   if (isString(filters))
+//     return (filters as string).split(',').map(col => col.trim())
 
-  return filters as string[]
-})
+//   return filters as string[]
+// })
 
-const itemsPerPage = computed((): number => {
-  if (isString(perPage))
-    return Number.parseInt(perPage as string)
+// const itemsPerPage = computed((): number => {
+//   if (isString(perPage))
+//     return Number.parseInt(perPage as string)
 
-  return perPage as number
-})
+//   return perPage as number
+// })
 
 // let's use (init) the table by passing the default state
-const { table, search, columnName } = await useTable({
-  source,
-  password,
-  type,
-  columns: parsedColumns.value,
-  searchable,
-  query,
-  sortable,
-  sort,
-  sorts: parsedSorts.value,
-  filterable,
-  filters: parsedFilters.value,
-  actionable,
-  actions,
-  perPage: itemsPerPage.value,
-  currentPage: 1,
-  selectable: true,
-  selectedRows: [],
-  selectedAll: false,
-})
+// const { test } = await useTable()
 
 // let's run the initial search upon page view/load
 
 // console.log('running initial search')
-const results = await search()
+// const results = await search()
 // eslint-disable-next-line no-console
-console.log('initial search complete', results)
+// console.log('initial search complete', results)
 
 // now that we have the search results, let's update/set the state of the table
-table.source = source
-table.password = password
-table.hits = results?.hits
-table.type = type
-table.columns = parsedColumns.value
-table.searchable = searchable
-table.query = query
-table.filterable = filterable
-table.filters = parsedFilters.value
-table.sortable = sortable
-table.sort = sort
-table.sorts = parsedSorts.value
-table.perPage = itemsPerPage.value
-table.actionable = actionable
-table.actions = actions
-table.selectable = selectable
-table.selectedRows = selectedRows
-table.selectedAll = selectedAll
-table.results = results as SearchResponse
+// table.source = source
+// table.password = password
+// table.hits = results?.hits
+// table.type = type
+// table.columns = parsedColumns.value
+// table.searchable = searchable
+// table.query = query
+// table.filterable = filterable
+// table.filters = parsedFilters.value
+// table.sortable = sortable
+// table.sort = sort
+// table.sorts = parsedSorts.value
+// table.perPage = itemsPerPage.value
+// table.actionable = actionable
+// table.actions = actions
+// table.selectable = selectable
+// table.selectedRows = selectedRows
+// table.selectedAll = selectedAll
+// table.results = results as SearchResponse
 </script>
 
 <template>
-  <div class="px-4 lg:px-8 sm:px-6">
+<div class="px-4 lg:px-8 sm:px-6">
     <div class="mt-8 flex flex-col">
       <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 md:px-6">

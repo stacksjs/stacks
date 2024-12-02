@@ -33,6 +33,9 @@ declare module 'vue-router/auto-routes' {
     '/dashboard/components/billing/payment-method': RouteRecordInfo<'/dashboard/components/billing/payment-method', '/dashboard/components/billing/payment-method', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/payment-method-list': RouteRecordInfo<'/dashboard/components/billing/payment-method-list', '/dashboard/components/billing/payment-method-list', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/plans': RouteRecordInfo<'/dashboard/components/billing/plans', '/dashboard/components/billing/plans', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/skeleton/loading-card': RouteRecordInfo<'/dashboard/components/skeleton/loading-card', '/dashboard/components/skeleton/loading-card', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/skeleton/loading-details': RouteRecordInfo<'/dashboard/components/skeleton/loading-details', '/dashboard/components/skeleton/loading-details', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/transaction/': RouteRecordInfo<'/dashboard/components/transaction/', '/dashboard/components/transaction', Record<never, never>, Record<never, never>>,
     '/dashboard/dependencies/': RouteRecordInfo<'/dashboard/dependencies/', '/dashboard/dependencies', Record<never, never>, Record<never, never>>,
     '/dashboard/deployments/': RouteRecordInfo<'/dashboard/deployments/', '/dashboard/deployments', Record<never, never>, Record<never, never>>,
     '/dashboard/deployments/[id]': RouteRecordInfo<'/dashboard/deployments/[id]', '/dashboard/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
@@ -67,5 +70,6 @@ declare module 'vue-router/auto-routes' {
     '/errors/504': RouteRecordInfo<'/errors/504', '/errors/504', Record<never, never>, Record<never, never>>,
     '/hello-world/[name]': RouteRecordInfo<'/hello-world/[name]', '/hello-world/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
     '/system-tray/': RouteRecordInfo<'/system-tray/', '/system-tray', Record<never, never>, Record<never, never>>,
+    '/table/': RouteRecordInfo<'/table/', '/table', Record<never, never>, Record<never, never>>,
   }
 }
