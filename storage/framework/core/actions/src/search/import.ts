@@ -11,7 +11,7 @@ const result = await importModelDocuments(modelOption)
 
 if (result?.isErr()) {
   console.error(result.error)
-  log.error('generateMigrations failed', result.error)
+  log.error('Import to to search engine failed', result.error)
 }
 
 process.exit(0)

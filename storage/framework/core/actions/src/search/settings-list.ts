@@ -1,12 +1,17 @@
 import process from 'node:process'
+import { parseOptions } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { updateIndexSettings } from '@stacksjs/search-engine'
+import { listIndexSettings } from '@stacksjs/search-engine'
 
-const result = await updateIndexSettings()
+const options = parseOptions()
+
+const modelOption = options.model as string
+
+const result = await listIndexSettings(modelOption)
 
 if (result?.isErr()) {
   console.error(result.error)
-  log.error('generateMigrations failed', result.error)
+  log.error('Listing index settings failed', result.error)
 }
 
 process.exit(0)

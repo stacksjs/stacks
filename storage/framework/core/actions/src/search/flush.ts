@@ -11,7 +11,7 @@ const result = await flushModelDocuments(modelOption)
 
 if (result?.isErr()) {
   console.error(result.error)
-  log.error('generateMigrations failed', result.error)
+  log.error('Flushing search engine failed', result.error)
 }
 
 process.exit(0)

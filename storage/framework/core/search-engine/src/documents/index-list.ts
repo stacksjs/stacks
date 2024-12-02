@@ -6,24 +6,24 @@ import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
 
-export async function listIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
+export async function listIndexSettings(modelName: string): Promise<Ok<string, never> | Err<string, any>> {
   try {
-    const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-    const { updateSettings } = useSearchEngine()
+    const modelFile = path.userModelsPath(`${modelName}.ts`)
+    const modelInstance = (await import(modelFile)).default as Model
+    const { getFilterableAttributes, getSortableAttributes, getSearchableAttributes, getDisplayedAttributes } = useSearchEngine()
+    
+    const searchable = modelInstance.traits?.useSearch
 
-    for (const model of userModelFiles) {
-      const modelInstance = (await import(model)).default as Model
-      const searchable = modelInstance.traits?.useSearch
+    const tableName = getTableName(modelInstance, modelFile)
 
-      const tableName = getTableName(modelInstance, model)
+    if (searchable && typeof searchable === 'object') {
+      const displayedAttributes = await getDisplayedAttributes(tableName)
+      const filterableAttributes = await getFilterableAttributes(tableName)
+      const sortableAttributes = await getSortableAttributes(tableName)
+      const searchableAttributes = await getSearchableAttributes(tableName)
 
-      if (searchable && typeof searchable === 'object') {
-        const filterableAttributes = (typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.filterable) || []
-        const sortableAttributes = (typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.sortable) || []
-        const searchableAttributes = (typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.searchable) || []
-
-        await updateSettings(tableName, { filterableAttributes, sortableAttributes, searchableAttributes })
-      }
+      // eslint-disable-next-line no-console
+      console.table({displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes})
     }
 
     return ok('Successfully update index settings!')

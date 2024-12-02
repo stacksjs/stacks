@@ -97,13 +97,16 @@ export function search(buddy: CLI): void {
     })
 
     buddy
-    .command('search-engine:index-setting-list', descriptions.list)
+    .command('search-engine:index-settings-list', descriptions.list)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchOptions) => {
-      log.debug('Running `search-engine:sync-list` ...', options)
+      if (!options.model)
+        log.error('Missing required option --model')
 
-      const perf = await intro('search-engine:index-setting-list')
+      log.debug('Running `search-engine:index-settings-list` ...', options)
+
+      const perf = await intro('search-engine:index-settings-list')
       const result = await runAction(Action.SearchEngineListSettings, options)
 
       if (result.isErr()) {
@@ -115,7 +118,7 @@ export function search(buddy: CLI): void {
         process.exit()
       }
 
-      await outro(`Successfully updated search engine index settings.`, {
+      await outro(`Successfully listed search engine index settings.`, {
         startTime: perf,
         useSeconds: true,
       })
