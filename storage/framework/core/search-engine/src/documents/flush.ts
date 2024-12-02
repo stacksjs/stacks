@@ -18,7 +18,7 @@ export async function flushModelDocuments(modelOption?: string): Promise<Ok<stri
       const tableName = getTableName(modelInstance, model)
       const modelName = getModelName(modelInstance, model)
 
-      if (modelName !== '' && modelName !== modelOption)
+      if (modelOption && modelName !== modelOption)
         continue
 
       if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object'))

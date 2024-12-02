@@ -367,6 +367,8 @@ export interface SaasOptions extends CliOptions {}
 
 export interface SearchOptions extends CliOptions {
   model: string
+  settings: boolean
+  flush: boolean
 }
 export interface CloudCliOptions extends CliOptions {
   ssh?: boolean

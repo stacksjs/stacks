@@ -18,9 +18,8 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
       const tableName = getTableName(modelInstance, model)
       const modelName = getModelName(modelInstance, model)
 
-      if (modelName !== '' && modelName !== modelOption)
-        continue
-
+      // if (modelOption && modelName !== modelOption)
+      //   continue
       if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object')) {
         const ormModelPath = path.storagePath(`framework/orm/src/models/${modelName}.ts`)
 
