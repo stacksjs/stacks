@@ -6,7 +6,7 @@ import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
 
-export async function flushModelDocuments(): Promise<Ok<string, never> | Err<string, any>> {
+export async function flushModelDocuments(modelOption?: string): Promise<Ok<string, never> | Err<string, any>> {
   try {
     const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
     const { deleteIndex } = useSearchEngine()
@@ -16,6 +16,10 @@ export async function flushModelDocuments(): Promise<Ok<string, never> | Err<str
       const searchable = modelInstance.traits?.useSearch
 
       const tableName = getTableName(modelInstance, model)
+      const modelName = getModelName(modelInstance, model)
+
+      if (modelName !== '' && modelName !== modelOption)
+        continue
 
       if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object'))
         await deleteIndex(tableName)

@@ -6,7 +6,7 @@ import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
 
-export async function importModelDocuments(): Promise<Ok<string, never> | Err<string, any>> {
+export async function importModelDocuments(modelOption?: string): Promise<Ok<string, never> | Err<string, any>> {
   try {
     const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
     const { addDocument } = useSearchEngine()
@@ -17,6 +17,9 @@ export async function importModelDocuments(): Promise<Ok<string, never> | Err<st
 
       const tableName = getTableName(modelInstance, model)
       const modelName = getModelName(modelInstance, model)
+
+      if (modelName !== '' && modelName !== modelOption)
+        continue
 
       if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object')) {
         const ormModelPath = path.storagePath(`framework/orm/src/models/${modelName}.ts`)

@@ -1,10 +1,10 @@
 import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, PaginationSettings, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
 
-import { Meilisearch } from 'meilisearch'
-
 import { searchEngine } from '@stacksjs/config'
+
 import { log } from '@stacksjs/logging'
 import { ExitCode, type SearchEngineDriver } from '@stacksjs/types'
+import { Meilisearch } from 'meilisearch'
 
 function client(): Meilisearch {
   const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'

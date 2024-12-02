@@ -1,5 +1,4 @@
 import type { Model } from '@stacksjs/types'
-import type { UserModel } from '../../storage/framework/orm/src/models/User'
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
 import { capitalize } from '@stacksjs/strings'
@@ -17,7 +16,7 @@ export default {
     },
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
-      
+
       displayable: ['id', 'job_title', 'name', 'email'], // the fields to become d (defaults to all fields)
       searchable: ['job_title', 'name', 'email'], // the fields to become searchable (defaults to all fields)
       sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)

@@ -19,9 +19,9 @@ export function search(buddy: CLI): void {
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchOptions) => {
-      log.debug('Running `search-engine:update` ...', options)
+      log.debug('Running `search-engine:import` ...', options)
 
-      const perf = await intro('search-engine:update')
+      const perf = await intro('search-engine:import')
       const result = await runAction(Action.SearchEngineImport, options)
 
       if (result.isErr()) {
@@ -41,7 +41,7 @@ export function search(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-    buddy
+  buddy
     .command('search-engine:flush', descriptions.flush)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -68,8 +68,8 @@ export function search(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-    buddy
-    .command('search-engine:sync-settings', descriptions.settings)
+  buddy
+    .command('search-engine:index-settings-push', descriptions.settings)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchOptions) => {
