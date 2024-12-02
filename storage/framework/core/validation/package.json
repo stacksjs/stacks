@@ -39,7 +39,7 @@
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^2.1.0"
+    "@vinejs/vine": "^3.0.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
