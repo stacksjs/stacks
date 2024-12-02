@@ -6,7 +6,7 @@ import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
 
-export async function updateIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
+export async function listIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
   try {
     const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
     const { updateSettings } = useSearchEngine()

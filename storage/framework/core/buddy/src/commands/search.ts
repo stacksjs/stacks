@@ -10,6 +10,7 @@ export function search(buddy: CLI): void {
     import: 'Indexes database data to search engine',
     flush: 'Flushes all data from search engine',
     settings: 'Update index settings',
+    list: 'List index settings',
     model: 'Target a specific model',
     verbose: 'Enable verbose output',
   }
@@ -73,10 +74,37 @@ export function search(buddy: CLI): void {
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchOptions) => {
-      log.debug('Running `search-engine:sync-settings` ...', options)
+      log.debug('Running `ssearch-engine:index-settings-push` ...', options)
 
-      const perf = await intro('search-engine:sync-settings')
-      const result = await runAction(Action.SearchEngineSyncSettings, options)
+      const perf = await intro('ssearch-engine:index-settings-push')
+      const result = await runAction(Action.SearchEnginePushSettings, options)
+
+      if (result.isErr()) {
+        await outro(
+          'While running the stripe:setup command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit()
+      }
+
+      await outro(`Successfully updated search engine index settings.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+
+      process.exit(ExitCode.Success)
+    })
+
+    buddy
+    .command('search-engine:index-setting-list', descriptions.list)
+    .option('-m, --model [model]', descriptions.model, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: SearchOptions) => {
+      log.debug('Running `search-engine:sync-list` ...', options)
+
+      const perf = await intro('search-engine:index-setting-list')
+      const result = await runAction(Action.SearchEngineListSettings, options)
 
       if (result.isErr()) {
         await outro(
