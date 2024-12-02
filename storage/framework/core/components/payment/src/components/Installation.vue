@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `bun install @stacksjs/dialog`
+const code = `bun install @stacksjs/payment`
 
 const showCheckIcon = ref(false)
 
@@ -35,11 +35,3 @@ async function handleCopyCode() {
     </div>
   </div>
 </template>
-
-<style scoped>
-button {
-  border: 0px solid #000;
-}
-
-/* @unocss-placeholder */
-</style>

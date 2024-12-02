@@ -1,15 +1,49 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import Footer from './components/Footer.vue'
+import Hero from './components/Hero.vue'
+import Installation from './components/Installation.vue'
+import Environment from './components/Environment.vue'
 
-const products = ref([{
-  name: 'iPhone Pro Max',
-  price: 99900, // Price in cents ($999.00)
-  images: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-2-202409?wid=5120&hei=2880&fmt=webp&qlt=70&.v=aWs5czA5aDFXU0FlMGFGRlpYRXk2UWFRQXQ2R0JQTk5udUZxTkR3ZVlpTDUwMGlYMEhQSTVNdkRDMFExUU1KbTBoUVhuTWlrY2hIK090ZGZZbk9HeE1xUVVnSHY5eU9CcGxDMkFhalkvT0FmZ0ROUGFSR25aOE5EM2xONlRwa09mbW94YnYxc1YvNXZ4emJGL0IxNFp3&traceId=1',
-}])
+import CheckoutUsage from './components/CheckoutUsage.vue'
+import SubscriptionUsage from './components/SubscriptionUsage.vue'
+
+// import Styling from './components/Styling.vue'
+import { useSEOHeader } from './composables/useSEOHeader'
+
+useSEOHeader()
 </script>
 
 <template>
-  <div>
-    <Checkout mode="subscription" :products="products" redirect-url="https://google.com" />
+  <div class="payment-wrapper bg-neutral-100/66 px-4 dark:bg-neutral-900">
+    <div class="relative mx-auto max-w-full container sm:max-w-2xl">
+      <header class="flex-center flex-col py-20">
+        <Hero />
+      </header>
+
+      <main
+        class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
+      >
+        <Installation />
+
+        <Environment />
+        <!-- <Usage /> -->
+        <SubscriptionUsage />
+        <CheckoutUsage />
+        <!-- <Styling /> -->
+      </main>
+      <Footer />
+    </div>
   </div>
 </template>
+
+<style scoped>
+.payment-wrapper {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+
+button {
+  border: 0px solid #000;
+}
+</style>

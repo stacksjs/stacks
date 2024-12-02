@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `bun install @stacksjs/dialog`
+const code = `STRIPE_SECRET_KEY=
+FRONTEND_STRIPE_PUBLIC_KEY=
+`
 
 const showCheckIcon = ref(false)
 
@@ -14,9 +16,9 @@ async function handleCopyCode() {
 <template>
   <div class="installation">
     <h1 class="my-3 text-lg font-semibold">
-      Installation
+      Checkout
     </h1>
-    <div class="code-block relative">
+    <!-- <div class="code-block relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
@@ -32,14 +34,6 @@ async function handleCopyCode() {
         <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
         <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
-    </div>
+    </div> -->
   </div>
 </template>
-
-<style scoped>
-button {
-  border: 0px solid #000;
-}
-
-/* @unocss-placeholder */
-</style>

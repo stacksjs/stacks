@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `bun install @stacksjs/dialog`
+const code = `STRIPE_SECRET_KEY=
+FRONTEND_STRIPE_PUBLIC_KEY=
+`
 
 const showCheckIcon = ref(false)
 
@@ -14,7 +16,7 @@ async function handleCopyCode() {
 <template>
   <div class="installation">
     <h1 class="my-3 text-lg font-semibold">
-      Installation
+      Environment Variables
     </h1>
     <div class="code-block relative">
       <Highlight
@@ -35,11 +37,3 @@ async function handleCopyCode() {
     </div>
   </div>
 </template>
-
-<style scoped>
-button {
-  border: 0px solid #000;
-}
-
-/* @unocss-placeholder */
-</style>
