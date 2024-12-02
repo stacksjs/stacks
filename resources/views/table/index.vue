@@ -3,5 +3,8 @@
 </script>
 
 <template>
-  <TableV2 columns="id, name, email, job_title" type="users" />
+  <Suspense>
+    <TableV2 columns="id, name, email, job_title" type="users" />
+  </Suspense>
+ 
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Hits, SearchResponse } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
-import test from '../functions/table'
+import { useTable } from '../functions/table'
 
 interface Props {
   type: string // the Meilisearch index you would like to use for this table
@@ -79,7 +79,7 @@ const {
 // })
 
 // let's use (init) the table by passing the default state
-// const { test } = await useTable()
+const { table } = await useTable()
 
 // let's run the initial search upon page view/load
 
@@ -112,6 +112,7 @@ const {
 
 <template>
 <div class="px-4 lg:px-8 sm:px-6">
+  <Suspense>
     <div class="mt-8 flex flex-col">
       <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 md:px-6">
@@ -143,6 +144,7 @@ const {
         </div>
       </div>
     </div>
+  </Suspense>
   </div>
 </template>
 
