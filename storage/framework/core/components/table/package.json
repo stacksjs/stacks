@@ -31,7 +31,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@vueform/multiselect": "^2.6.10"
+    "@vueform/multiselect": "^2.6.11"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
