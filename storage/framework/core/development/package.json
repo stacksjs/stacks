@@ -49,7 +49,7 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -60,11 +60,11 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@total-typescript/ts-reset": "^0.6.1",
-    "bun-plugin-dtsx": "^0.21.8"
+    "bun-plugin-dtsx": "^0.21.9"
   }
 }

@@ -76,6 +76,6 @@
     "storage/framework/server"
   ],
   "devDependencies": {
-    "typescript": "5.4.2"
+    "typescript": "5.7.2"
   }
 }
