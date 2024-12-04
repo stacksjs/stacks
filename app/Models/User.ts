@@ -27,7 +27,7 @@ export default {
 
     useSeeder: {
       // defaults to a count of 10, `seedable` used as an alias
-      count: 100,
+      count: 10,
     },
 
     useApi: {

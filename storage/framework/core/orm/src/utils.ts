@@ -899,6 +899,7 @@ export async function generateModelString(
   let constructorFields = ''
   let jsonFields = '{\n'
   let declareFields = ''
+  let uuidQuery = ''
   let whereStatements = ''
   let whereFunctionStatements = ''
   let relationMethods = ``
@@ -921,6 +922,10 @@ export async function generateModelString(
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
   const observer = model?.traits?.observe
+  const useUuid = model?.traits?.useUuid || false
+
+  if (useUuid)
+    uuidQuery += `filteredValues['uuid'] = randomUUIDv7()`
 
   if (typeof observer === 'boolean') {
     if (observer) {
@@ -1077,7 +1082,6 @@ export async function generateModelString(
   const useBillable = model.traits?.billable || false
   const useSearchable = model.traits?.useSearch || false
   const displayableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.displayable
-  const useUuid = model.traits?.useUuid || false
 
   if (typeof useSearchable === 'object' && useSearchable) {
     const searchAttrs = Array.isArray(displayableAttributes) ? displayableAttributes : []
@@ -1470,6 +1474,7 @@ export async function generateModelString(
     import { generateTwoFactorSecret } from '@stacksjs/auth'
     import { verifyTwoFactorCode } from '@stacksjs/auth'
     import { cache } from '@stacksjs/cache'
+    import { randomUUIDv7 } from 'bun'
     ${relationImports}
     // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
     // import { Pool } from 'pg'
@@ -1713,9 +1718,11 @@ export async function generateModelString(
       static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const instance = new ${modelName}Model(null)
 
-         const filteredValues = Object.fromEntries(
+         let filteredValues = Object.fromEntries(
           Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
         ) as New${modelName}
+
+        ${uuidQuery}
 
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)

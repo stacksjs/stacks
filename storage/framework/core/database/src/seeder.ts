@@ -1,7 +1,7 @@
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { fetchOtherModelRelations, modelTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getModelName, modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 
 import { makeHash } from '@stacksjs/security'
@@ -18,13 +18,21 @@ async function seedModel(name: string, model?: Model) {
     model = (await import(path.userModelsPath(name))) as Model
 
   const tableName = await modelTableName(model)
+
+  const ormModel = (await import(path.storagePath(`framework/orm/src/models/${name}`))).default
+
   const seedCount
     = typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
 
   log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
 
   const records = []
-  const otherRelations = await fetchOtherModelRelations(model)
+
+  const modelName = getModelName(model, path.userModelsPath(name))
+
+  const otherRelations = await fetchOtherModelRelations(modelName)
+
+  console.log(otherRelations)
 
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
@@ -43,19 +51,19 @@ async function seedModel(name: string, model?: Model) {
       for (let j = 0; j < otherRelations.length; j++) {
         const relationElement = otherRelations[j] as RelationConfig
 
+       
         if (relationElement.relationship === 'belongsToMany') {
           await seedPivotRelation(relationElement)
         }
 
-        record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
+        // record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
       }
     }
 
+    await ormModel.create(record)
+
     records.push(record)
   }
-
-  // @ts-expect-error todo: we can improve this in the future
-  await db.insertInto(tableName).values(records).execute()
 }
 
 async function seedPivotRelation(relation: RelationConfig): Promise<any> {
@@ -63,8 +71,8 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const record2: any = {}
   const pivotRecord: any = {}
 
-  const modelInstance = (await import(path.userModelsPath(relation?.model))).default
-  const relationModelInstance = (await import(path.userModelsPath(relation?.relationModel))).default
+  const modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default
+  const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
   if (!relationModelInstance)
     return 1
@@ -129,7 +137,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   return data.insertId || 1
 }
 
-export async function seed() {
+export async function seed(): Promise<void> {
   // TODO: need to check other databases too
   // const dbPath = path.userDatabasePath('stacks.sqlite')
 

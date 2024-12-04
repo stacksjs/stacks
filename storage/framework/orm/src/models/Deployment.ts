@@ -1,4 +1,5 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -287,6 +288,8 @@ export class DeploymentModel {
     const filteredValues = Object.fromEntries(
       Object.entries(newDeployment).filter(([key]) => instance.fillable.includes(key)),
     ) as NewDeployment
+
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await db.insertInto('deployments')
       .values(filteredValues)

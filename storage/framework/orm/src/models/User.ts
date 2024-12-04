@@ -1,5 +1,6 @@
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -301,6 +302,8 @@ export class UserModel {
     const filteredValues = Object.fromEntries(
       Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
     ) as NewUser
+
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await db.insertInto('users')
       .values(filteredValues)
