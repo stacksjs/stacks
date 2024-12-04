@@ -21,6 +21,7 @@ export default {
 
   attributes: {
     name: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -33,6 +34,7 @@ export default {
     },
 
     companyName: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -45,6 +47,7 @@ export default {
     },
 
     email: {
+      fillable: true,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -57,6 +60,7 @@ export default {
     },
 
     billingEmail: {
+      fillable: true,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -69,6 +73,7 @@ export default {
     },
 
     status: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -77,10 +82,11 @@ export default {
         },
       },
 
-      factory: () => collect(['deployed', 'inactive']).random(),
+      factory: () => collect(['deployed', 'inactive']).random().toString(),
     },
 
     description: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -93,6 +99,7 @@ export default {
     },
 
     path: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -105,6 +112,7 @@ export default {
     },
 
     isPersonal: {
+      fillable: true,
       validation: {
         rule: schema.boolean(),
         message: {

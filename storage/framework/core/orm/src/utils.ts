@@ -91,6 +91,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           modelKey: `${formattedModelRelationName}_id`,
           relationName: relationInstance.relationName || '',
+          relationModel: modelName,
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
           pivotTable:

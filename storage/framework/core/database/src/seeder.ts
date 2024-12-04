@@ -32,8 +32,6 @@ async function seedModel(name: string, model?: Model) {
 
   const otherRelations = await fetchOtherModelRelations(modelName)
 
-  console.log(otherRelations)
-
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
 
@@ -51,12 +49,11 @@ async function seedModel(name: string, model?: Model) {
       for (let j = 0; j < otherRelations.length; j++) {
         const relationElement = otherRelations[j] as RelationConfig
 
-       
+      
         if (relationElement.relationship === 'belongsToMany') {
           await seedPivotRelation(relationElement)
         }
-
-        // record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
+        record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
       }
     }
 

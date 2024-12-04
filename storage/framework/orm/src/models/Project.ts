@@ -51,7 +51,7 @@ interface QueryOptions {
 
 export class ProjectModel {
   private hidden = []
-  private fillable = ['stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['name', 'description', 'url', 'status', 'stripe_id', 'public_key', 'two_factor_secret']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

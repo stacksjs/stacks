@@ -21,6 +21,7 @@ export default {
 
   attributes: {
     name: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -33,6 +34,7 @@ export default {
     },
 
     token: {
+      fillable: true,
       unique: true,
       validation: {
         rule: schema.string().maxLength(512),
@@ -47,6 +49,7 @@ export default {
     },
 
     plainTextToken: {
+      fillable: true,
       validation: {
         rule: schema.string().maxLength(512),
         message: {
@@ -60,6 +63,7 @@ export default {
     },
 
     abilities: {
+      fillable: true,
       validation: {
         rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
         message: {
@@ -71,7 +75,7 @@ export default {
       },
 
       factory: () =>
-        collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random(),
+        collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().toString(),
     },
   },
 } satisfies Model

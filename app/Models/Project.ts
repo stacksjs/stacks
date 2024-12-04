@@ -1,7 +1,7 @@
 import type { Model } from '@stacksjs/types'
-import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
+import { collect } from '@stacksjs/collections'
 
 export default {
   name: 'Project', // defaults to the sanitized file name
@@ -19,6 +19,7 @@ export default {
 
   attributes: {
     name: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -31,6 +32,7 @@ export default {
     },
 
     description: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -43,6 +45,7 @@ export default {
     },
 
     url: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -55,6 +58,7 @@ export default {
     },
 
     status: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -63,7 +67,7 @@ export default {
         },
       },
 
-      factory: () => collect(['active', 'inactive']).random(),
+      factory: () => collect(['active', 'inactive']).random().toString(),
     },
   },
 } satisfies Model

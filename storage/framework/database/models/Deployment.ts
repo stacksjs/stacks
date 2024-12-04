@@ -22,7 +22,7 @@ export default {
   attributes: {
     commitSha: {
       unique: true,
-
+      fillable: true,
       validation: {
         rule: schema.string().maxLength(512),
         message: {
@@ -36,6 +36,7 @@ export default {
     },
 
     commitMessage: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -48,6 +49,7 @@ export default {
     },
 
     branch: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -60,6 +62,7 @@ export default {
     },
 
     status: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -68,10 +71,11 @@ export default {
         },
       },
 
-      factory: () => collect(['pending', 'success', 'failure']).random(),
+      factory: () => collect(['pending', 'success', 'failure']).random().toString(),
     },
 
     executionTime: {
+      fillable: true,
       // in nanoseconds
       validation: {
         rule: schema.number(),
@@ -85,6 +89,7 @@ export default {
     },
 
     deployScript: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -97,6 +102,7 @@ export default {
     },
 
     terminalOutput: {
+      fillable: true,
       validation: {
         rule: schema.string(),
         message: {

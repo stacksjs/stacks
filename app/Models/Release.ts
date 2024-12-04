@@ -33,6 +33,7 @@ export default {
     // },
 
     version: {
+      fillable: true,
       unique: true,
       validation: {
         rule: schema.string().maxLength(255),

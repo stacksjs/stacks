@@ -53,7 +53,7 @@ interface QueryOptions {
 
 export class AccessTokenModel {
   private hidden = []
-  private fillable = ['stripe_id', 'public_key', 'two_factor_secret', 'team_id']
+  private fillable = ['name', 'token', 'plain_text_token', 'abilities', 'stripe_id', 'public_key', 'two_factor_secret', 'team_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
