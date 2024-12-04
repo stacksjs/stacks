@@ -14,6 +14,7 @@ export default {
     useAuth: {
       usePasskey: true,
     },
+    useUuid: true,
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
 
@@ -38,8 +39,6 @@ export default {
     observe: true,
 
     billable: true,
-
-    // useUuid: true, // defaults to false
   },
 
   hasOne: ['Post', 'Subscriber'],

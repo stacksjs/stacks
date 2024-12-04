@@ -144,6 +144,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
+  const useUuid = model.traits?.useUuid || false
 
   if (usePasskey)
     await createPasskeyMigration()
@@ -157,6 +158,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+
+   if (useUuid) migrationContent += `    .addColumn('uuid', 'text')\n`
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute

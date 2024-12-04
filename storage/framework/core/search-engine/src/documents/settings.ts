@@ -34,4 +34,3 @@ export async function updateIndexSettings(): Promise<Ok<string, never> | Err<str
     return err(err)
   }
 }
-

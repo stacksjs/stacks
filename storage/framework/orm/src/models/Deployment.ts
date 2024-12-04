@@ -17,6 +17,7 @@ export interface DeploymentsTable {
   deploy_script?: string
   terminal_output?: string
   user_id?: number
+  uuid?: string
 
   created_at?: Date
 
@@ -61,6 +62,7 @@ export class DeploymentModel {
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
+  public uuid: string | undefined
   public commit_sha: string | undefined
   public commit_message: string | undefined
   public branch: string | undefined
@@ -75,6 +77,7 @@ export class DeploymentModel {
 
   constructor(deployment: Partial<DeploymentType> | null) {
     this.id = deployment?.id
+    this.uuid = deployment?.uuid
     this.commit_sha = deployment?.commit_sha
     this.commit_message = deployment?.commit_message
     this.branch = deployment?.branch

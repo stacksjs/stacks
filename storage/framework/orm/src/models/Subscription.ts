@@ -20,6 +20,7 @@ export interface SubscriptionsTable {
   ends_at?: string
   last_used_at?: string
   user_id?: number
+  uuid?: string
 
   created_at?: Date
 
@@ -64,6 +65,7 @@ export class SubscriptionModel {
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
+  public uuid: string | undefined
   public type: string | undefined
   public provider_id: string | undefined
   public provider_status: string | undefined
@@ -81,6 +83,7 @@ export class SubscriptionModel {
 
   constructor(subscription: Partial<SubscriptionType> | null) {
     this.id = subscription?.id
+    this.uuid = subscription?.uuid
     this.type = subscription?.type
     this.provider_id = subscription?.provider_id
     this.provider_status = subscription?.provider_status

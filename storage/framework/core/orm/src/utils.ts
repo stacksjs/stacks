@@ -303,6 +303,7 @@ export async function writeModelRequest(): Promise<void> {
     const model = (await import(modeFileElement)).default as Model
     const modelName = getModelName(model, modeFileElement)
     const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+    const useUuid = model?.traits?.useUuid || false
     const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
     const attributes = await extractFields(model, modeFileElement)
 
@@ -358,6 +359,9 @@ export async function writeModelRequest(): Promise<void> {
         public updated_at = new Date
       `
     }
+
+    if (useUuid)
+      fieldStringInt += `public uuid = ''`
 
     if (useSoftDeletes) {
       fieldStringInt += `
@@ -1073,6 +1077,7 @@ export async function generateModelString(
   const useBillable = model.traits?.billable || false
   const useSearchable = model.traits?.useSearch || false
   const displayableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.displayable
+  const useUuid = model.traits?.useUuid || false
 
   if (typeof useSearchable === 'object' && useSearchable) {
     const searchAttrs = Array.isArray(displayableAttributes) ? displayableAttributes : []
@@ -1354,6 +1359,11 @@ export async function generateModelString(
     `
   }
 
+  if (useUuid) {
+    declareFields += 'public uuid: string | undefined \n'
+    constructorFields += `this.uuid = ${formattedModelName}?.uuid\n   `
+  }
+
   if (usePasskey) {
     declareFields += 'public public_passkey: string | undefined \n'
     constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
@@ -1433,6 +1443,9 @@ export async function generateModelString(
 
   if (useBillable && tableName === 'users')
     fieldString += 'stripe_id?: string \n'
+
+  if (useUuid)
+    fieldString += 'uuid?: string \n'
 
   if (useTimestamps) {
     fieldString += `

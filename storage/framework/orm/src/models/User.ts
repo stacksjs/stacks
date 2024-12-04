@@ -29,6 +29,7 @@ export interface UsersTable {
   post_id?: number
   public_passkey?: string
   stripe_id?: string
+  uuid?: string
 
   created_at?: Date
 
@@ -74,6 +75,7 @@ export class UserModel {
   protected hasSelect: boolean
   public id: number | undefined
   public stripe_id: string | undefined
+  public uuid: string | undefined
   public public_passkey: string | undefined
   public name: string | undefined
   public email: string | undefined
@@ -89,6 +91,7 @@ export class UserModel {
   constructor(user: Partial<UserType> | null) {
     this.id = user?.id
     this.stripe_id = user?.stripe_id
+    this.uuid = user?.uuid
     this.public_passkey = user?.public_passkey
     this.name = user?.name
     this.email = user?.email

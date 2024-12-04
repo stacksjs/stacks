@@ -36,7 +36,7 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   public user_id = 0
   public created_at = new Date()
   public updated_at = new Date()
-
+  public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('Deployment', this.all())

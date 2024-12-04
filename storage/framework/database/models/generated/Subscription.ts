@@ -8,6 +8,9 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
+  traits: {
+    useUuid: true,
+  },
   attributes: {
     type: {
       required: true,

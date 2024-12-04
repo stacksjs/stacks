@@ -64,7 +64,7 @@ export function search(buddy: CLI): void {
       // process.exit(ExitCode.Success)
     })
 
-    buddy
+  buddy
     .command('search-engine:settings', descriptions.list)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })

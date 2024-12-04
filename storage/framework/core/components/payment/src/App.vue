@@ -1,10 +1,10 @@
 <script lang="ts" setup>
+import CheckoutUsage from './components/CheckoutUsage.vue'
+import Environment from './components/Environment.vue'
 import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
-import Installation from './components/Installation.vue'
-import Environment from './components/Environment.vue'
 
-import CheckoutUsage from './components/CheckoutUsage.vue'
+import Installation from './components/Installation.vue'
 import SubscriptionUsage from './components/SubscriptionUsage.vue'
 
 // import Styling from './components/Styling.vue'

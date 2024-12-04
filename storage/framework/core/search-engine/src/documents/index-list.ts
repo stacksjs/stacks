@@ -4,14 +4,13 @@ import { log } from '@stacksjs/logging'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
-import { globSync } from '@stacksjs/storage'
 
 export async function listIndexSettings(modelName: string): Promise<Ok<string, never> | Err<string, any>> {
   try {
     const modelFile = path.userModelsPath(`${modelName}.ts`)
     const modelInstance = (await import(modelFile)).default as Model
     const { getFilterableAttributes, getSortableAttributes, getSearchableAttributes, getDisplayedAttributes } = useSearchEngine()
-    
+
     const searchable = modelInstance.traits?.useSearch
 
     const tableName = getTableName(modelInstance, modelFile)
@@ -23,7 +22,7 @@ export async function listIndexSettings(modelName: string): Promise<Ok<string, n
       const searchableAttributes = await getSearchableAttributes(tableName)
 
       // eslint-disable-next-line no-console
-      console.table({displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes})
+      console.table({ displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes })
     }
 
     return ok('Successfully update index settings!')
@@ -34,4 +33,3 @@ export async function listIndexSettings(modelName: string): Promise<Ok<string, n
     return err(err)
   }
 }
-

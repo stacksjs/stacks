@@ -2,7 +2,8 @@ import type { Ref, SearchResponse, TableStore } from '@stacksjs/types'
 
 // import { client } from '@stacksjs/search-engine'
 // import { useStorage } from '@stacksjs/utils'
-import { computed, ComputedRef } from 'vue'
+import type { ComputedRef } from 'vue'
+import { computed } from 'vue'
 
 const table = useStorage('table', determineState()).value as TableStore
 
@@ -13,7 +14,6 @@ function isString(val: unknown): val is string {
 const pages: Ref<number[]> = ref([])
 export const totalPages: Ref = ref(0)
 export const currentPage: ComputedRef = computed(() => table.currentPage)
-
 
 const totalHits = table.results?.estimatedTotalHits ?? 1
 
@@ -136,7 +136,7 @@ function determineState(): TableStore {
     results: {} as SearchResponse<Record<string, any>>,
     searchFilters: {},
     searchParams: {},
-    setTotalHits: 0
+    setTotalHits: 0,
   }
 
   return table

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Hits, SearchResponse } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
 import { useTable } from '../functions/table'
 
 interface Props {
@@ -85,7 +84,7 @@ const { table } = await useTable()
 
 // console.log('running initial search')
 // const results = await search()
-// eslint-disable-next-line no-console
+
 // console.log('initial search complete', results)
 
 // now that we have the search results, let's update/set the state of the table
@@ -111,16 +110,16 @@ const { table } = await useTable()
 </script>
 
 <template>
-<div class="px-4 lg:px-8 sm:px-6">
-  <Suspense>
-    <div class="mt-8 flex flex-col">
-      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-        <div class="inline-block min-w-full py-2 align-middle lg:px-8 md:px-6">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <!-- <TableHead /> -->
+  <div class="px-4 lg:px-8 sm:px-6">
+    <Suspense>
+      <div class="mt-8 flex flex-col">
+        <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
+          <div class="inline-block min-w-full py-2 align-middle lg:px-8 md:px-6">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+              <table class="min-w-full divide-y divide-gray-300">
+                <!-- <TableHead /> -->
 
-              dsdsds
+                dsdsds
               <!-- <TableBody>
                 <template #action_column="rowData">
                   <slot
@@ -139,12 +138,12 @@ const { table } = await useTable()
                   />
                 </template>
               </TableBody> -->
-            </table>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </Suspense>
+    </Suspense>
   </div>
 </template>
 
