@@ -3,7 +3,7 @@ import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'PaymenMethod', // defaults to the sanitized file name
+  name: 'PaymentMethod', // defaults to the sanitized file name
   table: 'payment_methods', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
@@ -23,6 +23,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
+      factory: () => faker.lorem.lines(1),
     },
 
     lastFour: {
@@ -35,7 +36,7 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: () => faker.string.numeric,
+      factory: () => faker.string.numeric(4),
     },
 
     expires: {
@@ -48,6 +49,7 @@ export default {
           required: 'expires is required',
         },
       },
+      factory: () => faker.date.anytime().toDateString(),
     },
 
     providerId: {
@@ -59,6 +61,7 @@ export default {
           required: 'unit_price is required',
         },
       },
+      factory: () => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model

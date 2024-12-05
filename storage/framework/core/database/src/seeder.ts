@@ -56,6 +56,7 @@ async function seedModel(name: string, model?: Model) {
       }
     }
 
+    // console.log(ormModel)
     await ormModel.create(record)
 
     records.push(record)
@@ -160,11 +161,19 @@ export async function seed(): Promise<void> {
 
   // otherwise, seed all models
   const modelsDir = path.userModelsPath()
+  const coreModelsDir = path.storagePath('framework/database/models/generated')
   const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
+  const coreModelFiles = fs.readdirSync(coreModelsDir).filter(file => file.endsWith('.ts'))
 
   for (const file of modelFiles) {
     const modelPath = path.join(modelsDir, file)
     const model = await import(modelPath)
     await seedModel(file, model.default)
+  }
+
+  for (const coreModel of coreModelFiles) {
+    const modelPath = path.join(coreModelsDir, coreModel)
+    const model = await import(modelPath)
+    await seedModel(coreModel, model.default)
   }
 }

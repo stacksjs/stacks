@@ -13,8 +13,9 @@ export interface ProductsTable {
   name?: string
   description?: number
   key?: number
-  unit_price?: string
+  unit_price?: number
   status?: string
+  image?: string
   provider_id?: string
   uuid?: string
 
@@ -56,8 +57,8 @@ interface QueryOptions {
 
 export class ProductModel {
   private hidden = []
-  private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'provider_id', 'stripe_id', 'public_key', 'two_factor_secret']
-  private softDeletes = true
+  private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'stripe_id', 'public_key', 'two_factor_secret']
+  private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
@@ -65,14 +66,13 @@ export class ProductModel {
   public name: string | undefined
   public description: number | undefined
   public key: number | undefined
-  public unit_price: string | undefined
+  public unit_price: number | undefined
   public status: string | undefined
+  public image: string | undefined
   public provider_id: string | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-
-  public deleted_at: string | undefined
 
   constructor(product: Partial<ProductType> | null) {
     this.id = product?.id
@@ -82,13 +82,12 @@ export class ProductModel {
     this.key = product?.key
     this.unit_price = product?.unit_price
     this.status = product?.status
+    this.image = product?.image
     this.provider_id = product?.provider_id
 
     this.created_at = product?.created_at
 
     this.updated_at = product?.updated_at
-
-    this.deleted_at = product?.deleted_at
 
     this.query = db.selectFrom('products')
     this.hasSelect = false
@@ -410,6 +409,14 @@ export class ProductModel {
     return instance
   }
 
+  static whereImage(value: string): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.query = instance.query.where('image', '=', value)
+
+    return instance
+  }
+
   static whereProviderId(value: string): ProductModel {
     const instance = new ProductModel(null)
 
@@ -638,13 +645,12 @@ export class ProductModel {
       key: this.key,
       unit_price: this.unit_price,
       status: this.status,
+      image: this.image,
       provider_id: this.provider_id,
 
       created_at: this.created_at,
 
       updated_at: this.updated_at,
-
-      deleted_at: this.deleted_at,
 
     }
 
@@ -718,7 +724,7 @@ export async function whereKey(value: number): Promise<ProductModel[]> {
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
-export async function whereUnitPrice(value: string): Promise<ProductModel[]> {
+export async function whereUnitPrice(value: number): Promise<ProductModel[]> {
   const query = db.selectFrom('products').where('unit_price', '=', value)
   const results = await query.execute()
 
@@ -727,6 +733,13 @@ export async function whereUnitPrice(value: string): Promise<ProductModel[]> {
 
 export async function whereStatus(value: string): Promise<ProductModel[]> {
   const query = db.selectFrom('products').where('status', '=', value)
+  const results = await query.execute()
+
+  return results.map(modelItem => new ProductModel(modelItem))
+}
+
+export async function whereImage(value: string): Promise<ProductModel[]> {
+  const query = db.selectFrom('products').where('image', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))

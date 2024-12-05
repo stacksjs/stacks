@@ -9,8 +9,10 @@ export default {
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
   traits: {
+    useSeeder: {
+      count: 10,
+    },
     useUuid: true,
-    useSoftDeletes: true,
   },
   attributes: {
     name: {
@@ -24,6 +26,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
+      factory: () => faker.lorem.lines(1),
     },
 
     description: {
@@ -35,7 +38,7 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: () => faker.string.numeric,
+      factory: () => faker.lorem.lines(3),
     },
     key: {
       required: true,
@@ -47,38 +50,46 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: () => faker.string.numeric,
+      factory: () => faker.string.alphanumeric(5),
     },
 
     unitPrice: {
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.number(),
         message: {
           string: 'expires must be a string',
           required: 'expires is required',
         },
       },
+      factory: () => faker.number.int({ min: 1000, max: 10000 }),
     },
     status: {
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string(),
+      },
+      factory: () => faker.lorem.lines(1),
+    },
+    image: {
+      fillable: true,
+      validation: {
+        rule: schema.string(),
         message: {
-          string: 'unit_price must be a number',
-          required: 'unit_price is required',
+          string: 'image must be a string',
         },
       },
+      factory: () => faker.image.url(),
     },
     providerId: {
       fillable: true,
       validation: {
         rule: schema.string().maxLength(255),
         message: {
-          string: 'unit_price must be a number',
-          required: 'unit_price is required',
+          string: 'provider_id must be a string',
         },
       },
+      factory: () => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model

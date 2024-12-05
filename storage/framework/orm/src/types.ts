@@ -2,7 +2,7 @@ import type { Generated } from 'kysely'
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
-import type { PaymentMethodsTable } from '../src/models/PaymenMethod'
+import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProjectsTable } from '../src/models/Project'
@@ -17,12 +17,6 @@ export interface PersonalAccessTokenTeamsTable {
   id?: Generated<number>
   team_id: number
   personal_access_token_id: number
-}
-
-export interface TeamUsersTable {
-  id?: Generated<number>
-  team_id: number
-  user_id: number
 }
 
 export interface TeamUsersTable {
@@ -55,7 +49,6 @@ export interface Database {
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
   personal_access_token_teams: TeamUsersTable
-  team_users: TeamUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
