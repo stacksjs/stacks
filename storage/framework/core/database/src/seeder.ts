@@ -49,7 +49,6 @@ async function seedModel(name: string, model?: Model) {
       for (let j = 0; j < otherRelations.length; j++) {
         const relationElement = otherRelations[j] as RelationConfig
 
-      
         if (relationElement.relationship === 'belongsToMany') {
           await seedPivotRelation(relationElement)
         }

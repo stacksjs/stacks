@@ -66,6 +66,7 @@ export async function dropSqliteTables(): Promise<void> {
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
   await db.schema.dropTable('subscriptions').ifExists().execute()
+  await db.schema.dropTable('payment_methods').ifExists().execute()
   await db.schema.dropTable('errors').ifExists().execute()
 
   for (const userModel of userModelFiles) {
@@ -197,8 +198,10 @@ async function createTableMigration(modelPath: string) {
   if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
-  if (useBillable && tableName === 'users')
+  if (useBillable && tableName === 'users') {
     await createTableMigration(path.storagePath('framework/database/models/generated/Subscription.ts'))
+    await createTableMigration(path.storagePath('framework/database/models/generated/PaymentMethod.ts'))
+  }
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -207,7 +210,8 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
-  if (useUuid) migrationContent += `    .addColumn('uuid', 'text')\n`
+  if (useUuid)
+    migrationContent += `    .addColumn('uuid', 'text')\n`
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute

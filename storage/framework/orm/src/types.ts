@@ -2,6 +2,7 @@ import type { Generated } from 'kysely'
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
+import type { PaymentMethodsTable } from '../src/models/PaymenMethod'
 import type { PostsTable } from '../src/models/Post'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
@@ -58,8 +59,10 @@ export interface Database {
   subscribers: SubscribersTable
   deployments: DeploymentsTable
   releases: ReleasesTable
+  team_users: TeamUsersTable
   users: UsersTable
   posts: PostsTable
+  payment_methods: PaymentMethodsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
   passkeys: PasskeysTable
