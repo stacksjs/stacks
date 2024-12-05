@@ -11,10 +11,10 @@ import type { SubscriptionsTable } from '../src/models/Subscription'
 import type { TeamsTable } from '../src/models/Team'
 import type { UsersTable } from '../src/models/User'
 
-export interface TeamPersonalAccessTokensTable {
+export interface PersonalAccessTokenTeamsTable {
   id?: Generated<number>
   team_id: number
-  accesstoken_id: number
+  personal_access_token_id: number
 }
 
 export interface TeamUsersTable {
@@ -23,7 +23,7 @@ export interface TeamUsersTable {
   user_id: number
 }
 
-export interface UserTeamsTable {
+export interface TeamUsersTable {
   id?: Generated<number>
   user_id: number
   team_id: number
@@ -52,13 +52,12 @@ export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  team_personal_access_tokens: UserTeamsTable
-  team_users: UserTeamsTable
+  personal_access_token_teams: TeamUsersTable
+  team_users: TeamUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
   releases: ReleasesTable
-  user_teams: UserTeamsTable
   users: UsersTable
   posts: PostsTable
   subscriptions: SubscriptionsTable

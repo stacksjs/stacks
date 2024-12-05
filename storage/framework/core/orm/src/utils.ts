@@ -146,24 +146,26 @@ export async function getPivotTables(
     for (const belongsToManyRelation of belongsToManyArr) {
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
       const modelRelation = (await import(modelRelationPath)).default as Model
+      const modelRelationTableName = getTableName(modelRelation, modelRelationPath)
       const modelName = getModelName(model, modelPath)
+      const tableName = getTableName(model, modelPath)
       const formattedModelName = modelName.toLowerCase()
 
       const firstForeignKey
         = typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
           ? belongsToManyRelation.firstForeignKey
-          : `${modelName.toLowerCase()}_${model.primaryKey}`
+          : `${singular(tableName)}_${model.primaryKey}`
 
       const secondForeignKey
         = typeof belongsToManyRelation === 'object' && 'secondForeignKey' in belongsToManyRelation
           ? belongsToManyRelation.secondForeignKey
-          : `${modelRelation.name?.toLowerCase()}_${model.primaryKey}`
+          : `${singular(modelRelationTableName)}_${model.primaryKey}`
 
       pivotTable.push({
         table:
           (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
             ? belongsToManyRelation.pivotTable
-            : undefined) ?? `${formattedModelName}_${modelRelation.table}`,
+            : undefined) ?? getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
         firstForeignKey,
         secondForeignKey,
       })
