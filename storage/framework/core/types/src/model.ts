@@ -1,4 +1,4 @@
-import type { ModelNames } from '@stacksjs/types'
+import type { ModelNames, TableNames } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable } from '.'
 import type { SearchOptions } from './search-engine'
@@ -183,7 +183,7 @@ export interface Attributes {
 export interface RelationConfig {
   relationship: string
   model: string
-  table: string
+  table: TableNames
   relationModel?: string
   relationTable?: string
   foreignKey: string
@@ -191,5 +191,5 @@ export interface RelationConfig {
   relationName?: string
   throughModel?: string
   throughForeignKey?: string
-  pivotTable: string
+  pivotTable: TableNames
 }

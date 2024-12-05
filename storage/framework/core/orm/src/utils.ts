@@ -279,6 +279,55 @@ export async function writeModelNames(): Promise<void> {
   await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
 }
 
+export async function writeTableNames(): Promise<void> {
+  const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+
+  let fileString = `export type TableNames = `
+
+  for (let i = 0; i < models.length; i++) {
+    const modelPath = models[i] as string
+    const model = (await import(modelPath)).default as Model
+    const tableName = getTableName(model, modelPath)
+
+    const pivotTables = await getPivotTables(model, modelPath)
+
+    for (const pivot of pivotTables) {
+      fileString += `'${pivot.table}'`
+      fileString += ' | '
+    }
+
+    fileString += `'${tableName}'`
+
+    if (i < models.length - 1) {
+      fileString += ' | '
+    }
+  }
+
+  fileString += ' | '
+
+  for (let j = 0; j < coreModelFiles.length; j++) {
+    const modelPath = coreModelFiles[j] as string
+
+    const model = (await import(modelPath)).default as Model
+    const tableName = getTableName(model, modelPath)
+
+    fileString += `'${tableName}'`
+
+    if (j < coreModelFiles.length - 1) {
+      fileString += ' | '
+    }
+  }
+
+  // Ensure the directory exists
+  const typesDir = path.dirname(path.typesPath(`src/table-names.ts`))
+  await fs.promises.mkdir(typesDir, { recursive: true })
+
+  // Write to the file
+  const typeFilePath = path.typesPath(`src/table-names.ts`)
+  await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
+}
+
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
@@ -2114,6 +2163,15 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     }
     catch (error) {
       handleError('Error while writing Model Names', error)
+    }
+
+    try {
+      log.info('Writing Table Names...')
+      await writeTableNames()
+      log.success('Wrote Table Names')
+    }
+    catch (error) {
+      handleError('Error while writing Table Names', error)
     }
 
     try {

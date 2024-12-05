@@ -1,4 +1,4 @@
-import type { CLI, SearchOptions } from '@stacksjs/types'
+import type { CLI, SearchCommandOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
@@ -23,7 +23,7 @@ export function search(buddy: CLI): void {
     .option('-s, --settings [settings]', descriptions.settings, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
-    .action(async (options: SearchOptions) => {
+    .action(async (options: SearchCommandOptions) => {
       log.debug('Running `search-engine:update` ...', options)
 
       let actionString = Action.SearchEngineImport
@@ -68,7 +68,7 @@ export function search(buddy: CLI): void {
     .command('search-engine:settings', descriptions.list)
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SearchOptions) => {
+    .action(async (options: SearchCommandOptions) => {
       if (!options.model)
         log.error('Missing required option --model')
 

@@ -365,7 +365,7 @@ export interface CleanOptions extends CliOptions {}
 
 export interface SaasOptions extends CliOptions {}
 
-export interface SearchOptions extends CliOptions {
+export interface SearchCommandOptions extends CliOptions {
   model: string
   settings: boolean
   flush: boolean
