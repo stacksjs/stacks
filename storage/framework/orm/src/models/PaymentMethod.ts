@@ -12,6 +12,7 @@ export interface PaymentMethodsTable {
   id?: Generated<number>
   type?: string
   last_four?: number
+  brand?: string
   expires?: string
   provider_id?: string
   uuid?: string
@@ -54,7 +55,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'expires', 'provider_id', 'stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['type', 'last_four', 'brand', 'expires', 'provider_id', 'stripe_id', 'public_key', 'two_factor_secret']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -62,6 +63,7 @@ export class PaymentMethodModel {
   public uuid: string | undefined
   public type: string | undefined
   public last_four: number | undefined
+  public brand: string | undefined
   public expires: string | undefined
   public provider_id: string | undefined
 
@@ -73,6 +75,7 @@ export class PaymentMethodModel {
     this.uuid = paymentmethod?.uuid
     this.type = paymentmethod?.type
     this.last_four = paymentmethod?.last_four
+    this.brand = paymentmethod?.brand
     this.expires = paymentmethod?.expires
     this.provider_id = paymentmethod?.provider_id
 
@@ -376,6 +379,14 @@ export class PaymentMethodModel {
     return instance
   }
 
+  static whereBrand(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.query = instance.query.where('brand', '=', value)
+
+    return instance
+  }
+
   static whereExpires(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
@@ -609,6 +620,7 @@ export class PaymentMethodModel {
       id: this.id,
       type: this.type,
       last_four: this.last_four,
+      brand: this.brand,
       expires: this.expires,
       provider_id: this.provider_id,
 
@@ -676,6 +688,13 @@ export async function whereType(value: string): Promise<PaymentMethodModel[]> {
 
 export async function whereLastFour(value: number): Promise<PaymentMethodModel[]> {
   const query = db.selectFrom('payment_methods').where('last_four', '=', value)
+  const results = await query.execute()
+
+  return results.map(modelItem => new PaymentMethodModel(modelItem))
+}
+
+export async function whereBrand(value: string): Promise<PaymentMethodModel[]> {
+  const query = db.selectFrom('payment_methods').where('brand', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))

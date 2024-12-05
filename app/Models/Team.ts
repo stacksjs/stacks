@@ -82,7 +82,7 @@ export default {
         },
       },
 
-      factory: () => collect(['deployed', 'inactive']).random().toString(),
+      factory: () => collect(['deployed', 'inactive']).random().first(),
     },
 
     description: {

@@ -1,5 +1,7 @@
 import type { Model } from '@stacksjs/types'
+import { collect } from '@stacksjs/collections'
 import { faker } from '@stacksjs/faker'
+
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -23,7 +25,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.lorem.lines(1),
+      factory: () => 'card',
     },
 
     lastFour: {
@@ -37,6 +39,19 @@ export default {
         },
       },
       factory: () => faker.string.numeric(4),
+    },
+
+    brand: {
+      required: true,
+      fillable: true,
+      validation: {
+        rule: schema.string().maxLength(50),
+        message: {
+          number: 'brand must be a number',
+          required: 'brand is required',
+        },
+      },
+      factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
     expires: {

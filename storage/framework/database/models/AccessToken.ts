@@ -75,7 +75,7 @@ export default {
       },
 
       factory: () =>
-        collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().toString(),
+        collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().first(),
     },
   },
 } satisfies Model

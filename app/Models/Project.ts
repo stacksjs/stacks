@@ -67,7 +67,7 @@ export default {
         },
       },
 
-      factory: () => collect(['active', 'inactive']).random().toString(),
+      factory: () => collect(['active', 'inactive']).random().first(),
     },
   },
 } satisfies Model

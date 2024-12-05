@@ -71,7 +71,7 @@ export default {
         },
       },
 
-      factory: () => collect(['pending', 'success', 'failure']).random().toString(),
+      factory: () => collect(['pending', 'success', 'failure']).random().first(),
     },
 
     executionTime: {

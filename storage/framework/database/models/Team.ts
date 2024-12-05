@@ -9,7 +9,7 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
-  belongsToMany: ['AccessToken', 'User'],
+  belongsToMany: ['AccessToken'],
 
   traits: {
     useTimestamps: true, // defaults to true
@@ -82,7 +82,7 @@ export default {
         },
       },
 
-      factory: () => collect(['deployed', 'inactive']).random().toString(),
+      factory: () => collect(['deployed', 'inactive']).random().first(),
     },
 
     description: {
