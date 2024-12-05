@@ -4,6 +4,7 @@ import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
 import type { PaymentMethodsTable } from '../src/models/PaymenMethod'
 import type { PostsTable } from '../src/models/Post'
+import type { ProductsTable } from '../src/models/Product'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { SubscribersTable } from '../src/models/Subscriber'
@@ -62,6 +63,7 @@ export interface Database {
   team_users: TeamUsersTable
   users: UsersTable
   posts: PostsTable
+  products: ProductsTable
   payment_methods: PaymentMethodsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
