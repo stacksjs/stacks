@@ -1,7 +1,7 @@
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { fetchOtherModelRelations, getModelName, modelTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getModelName, getRelationType, modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 
 import { makeHash } from '@stacksjs/security'
@@ -47,16 +47,21 @@ async function seedModel(name: string, model?: Model) {
 
     if (otherRelations?.length) {
       for (let j = 0; j < otherRelations.length; j++) {
+        
         const relationElement = otherRelations[j] as RelationConfig
+
+        const relationType = getRelationType(relationElement.relationship)
 
         if (relationElement.relationship === 'belongsToMany') {
           await seedPivotRelation(relationElement)
         }
-        record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
+
+        if (relationType === 'hasType')
+          record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
+        
       }
     }
 
-    // console.log(ormModel)
     await ormModel.create(record)
 
     records.push(record)
