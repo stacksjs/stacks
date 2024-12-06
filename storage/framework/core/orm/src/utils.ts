@@ -1818,6 +1818,24 @@ export async function generateModelString(
         return model
       }
 
+      static async createMany(new${formattedTableName}: NewUser[]): Promise<void> {
+        const instance = new ${modelName}Model(null)
+
+        const filteredValues = new${formattedTableName}.map(newUser =>
+            Object.fromEntries(
+                Object.entries(newUser).filter(([key]) => instance.fillable.includes(key))
+            ) as New${modelName}
+        )
+
+        filteredValues.forEach(model => {
+          model.uuid = randomUUIDv7()
+        })
+
+        await db.insertInto('${tableName}')
+          .values(filteredValues)
+          .executeTakeFirst()
+      }
+
       static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const result = await db.insertInto('${tableName}')
           .values(new${modelName})

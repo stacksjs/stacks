@@ -317,6 +317,24 @@ export class UserModel {
     return model
   }
 
+  static async createMany(newUsers: NewUser[]): Promise<void> {
+    const instance = new UserModel(null)
+
+    const filteredValues = newUsers.map(newUser =>
+        Object.fromEntries(
+            Object.entries(newUser).filter(([key]) => instance.fillable.includes(key))
+        ) as NewUser
+    )
+
+    filteredValues.forEach(user => {
+        user.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('users')
+      .values(filteredValues)
+      .executeTakeFirst()
+  }
+
   static async forceCreate(newUser: NewUser): Promise<UserModel> {
     const result = await db.insertInto('users')
       .values(newUser)

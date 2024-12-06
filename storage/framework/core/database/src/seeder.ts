@@ -1,9 +1,9 @@
 import type { Model, RelationConfig } from '@stacksjs/types'
+import { randomUUIDv7 } from 'bun'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { fetchOtherModelRelations, getModelName, getRelationType, modelTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { singular, snakeCase } from '@stacksjs/strings'
@@ -19,14 +19,14 @@ async function seedModel(name: string, model?: Model) {
 
   const tableName = await modelTableName(model)
 
+  if (tableName !== 'users') return
+
   const ormModel = (await import(path.storagePath(`framework/orm/src/models/${name}`))).default
 
   const seedCount
     = typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
 
   log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
-
-  const records = []
 
   const modelName = getModelName(model, path.userModelsPath(name))
 
@@ -63,8 +63,6 @@ async function seedModel(name: string, model?: Model) {
     }
 
     await ormModel.create(record)
-
-    records.push(record)
   }
 }
 
@@ -104,6 +102,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   }
 
   const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
+
   const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
   const relationData = data.insertId || 1
   const modelData = data2.insertId || 1
@@ -124,6 +123,8 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   const record: any = {}
   const table = modelInstance.table
 
+  const useUuid = modelInstance.traits?.useUuid || false
+
   for (const fieldName in modelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = modelInstance.attributes[fieldName]
@@ -133,6 +134,9 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
       record[formattedFieldName] = field?.factory ? await makeHash(field.factory(), { algorithm: 'bcrypt' }) : undefined
     else record[formattedFieldName] = field?.factory ? field.factory() : undefined
   }
+
+  if (useUuid)
+    record.uuid = randomUUIDv7()
 
   const data = await db.insertInto(table).values(record).executeTakeFirstOrThrow()
 
