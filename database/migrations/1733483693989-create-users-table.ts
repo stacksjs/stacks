@@ -12,10 +12,10 @@ export async function up(db: Database<any>) {
     .addColumn('job_title', 'varchar(255)', col => col.notNull())
     .addColumn('stripe_id', 'varchar(255)')
     .addColumn('deployment_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
+        col.references('deployments.id').onDelete('cascade')
       ) 
     .addColumn('post_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
+        col.references('posts.id').onDelete('cascade')
       ) 
     .addColumn('public_passkey', 'text')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))

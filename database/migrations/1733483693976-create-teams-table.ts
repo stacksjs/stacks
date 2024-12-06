@@ -3,14 +3,21 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('personal_access_tokens')
+    .createTable('teams')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar(255)')
-    .addColumn('token', 'varchar(512)', col => col.unique())
-    .addColumn('plain_text_token', 'varchar(512)')
-    .addColumn('abilities', 'text')
-    .addColumn('team_id', 'integer', (col) =>
+    .addColumn('company_name', 'varchar(255)')
+    .addColumn('email', 'varchar(255)')
+    .addColumn('billing_email', 'varchar(255)')
+    .addColumn('status', 'varchar(255)')
+    .addColumn('description', 'varchar(255)')
+    .addColumn('path', 'varchar(255)')
+    .addColumn('is_personal', 'boolean')
+    .addColumn('accesstoken_id', 'integer', (col) =>
         col.references('personal_access_tokens.id').onDelete('cascade')
+      ) 
+    .addColumn('user_id', 'integer', (col) =>
+        col.references('users.id').onDelete('cascade')
       ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')

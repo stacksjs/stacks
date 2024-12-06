@@ -14,7 +14,7 @@ export async function up(db: Database<any>) {
     .addColumn('deploy_script', 'varchar(255)')
     .addColumn('terminal_output', 'varchar(255)')
     .addColumn('user_id', 'integer', (col) =>
-        col.references('deployments.id').onDelete('cascade')
+        col.references('users.id').onDelete('cascade')
       ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')

@@ -63,16 +63,22 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
+  // console.log(model.table !== '')
+  // if (model.table !== 'users') return
+
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
+        // console.log(relationInstance)
         let relationModel = relationInstance.model
         let modelRelation: Model
         if (isString(relationInstance)) {
+         
           relationModel = relationInstance
         }
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+        const modelPath = path.userModelsPath(`${modelName}.ts`)
         const coreModelRelationPath = path.storagePath(`framework/database/models/generated/${relationModel}.ts`)
 
         if (fs.existsSync(modelRelationPath))
@@ -81,6 +87,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           modelRelation = (await import(coreModelRelationPath)).default as Model
 
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+        const table = getTableName(model, modelPath)
         const modelRelationName = getModelName(modelRelation, modelRelationPath)
         const formattedModelName = modelName.toLowerCase()
         const formattedModelRelationName = modelRelationName.toLowerCase()
@@ -89,6 +96,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           relationship: relation,
           model: relationModel,
           table: modelRelationTable as TableNames,
+          relationTable: table as TableNames,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           modelKey: `${formattedModelRelationName}_id`,
           relationName: relationInstance.relationName || '',
