@@ -197,6 +197,7 @@ interface RequestDataUser {
   email: string
   job_title: string
   password: string
+  team_id: number
   deployment_id: number
   post_id: number
   created_at?: Date
@@ -205,7 +206,7 @@ interface RequestDataUser {
 }
 export interface UserRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string) & ((key: 'deployment_id') => string) & ((key: 'post_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string) & ((key: 'team_id') => string) & ((key: 'deployment_id') => string) & ((key: 'post_id') => string)
 
   all: () => RequestDataUser
   id: number
@@ -213,6 +214,7 @@ export interface UserRequestType extends Request {
   email: string
   job_title: string
   password: string
+  team_id: number
   deployment_id: number
   post_id: number
   created_at?: Date

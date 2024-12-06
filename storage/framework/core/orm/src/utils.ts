@@ -73,7 +73,6 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
         let relationModel = relationInstance.model
         let modelRelation: Model
         if (isString(relationInstance)) {
-         
           relationModel = relationInstance
         }
 
@@ -925,13 +924,21 @@ export async function generateKyselyTypes(): Promise<void> {
 
   text += '\nexport interface Database {\n'
 
+  const pushedTables: string[] = []
+
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
     const tableName = getTableName(model, modelFile)
     const pivotTables = await getPivotTables(model, modelName)
 
-    for (const pivotTable of pivotTables) text += `  ${pivotTable.table}: ${pivotFormatted}\n`
+    for (const pivotTable of pivotTables) {
+      if (pushedTables.includes(pivotTable.table))
+        continue
+
+      text += `  ${pivotTable.table}: ${pivotFormatted}\n`
+      pushedTables.push(pivotTable.table)
+    }
 
     const words = tableName.split('_')
     const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`

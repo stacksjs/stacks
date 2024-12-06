@@ -4,6 +4,8 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import AccessToken from './AccessToken'
 
+import User from './User'
+
 // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
 // import { Pool } from 'pg'
 
@@ -613,6 +615,25 @@ export class TeamModel {
       throw new HttpError(500, 'Relation Error!')
 
     const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
+
+    return relationResults
+  }
+
+  async teamUsers() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await db.selectFrom('team_users')
+      .where('team_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    const tableRelationIds = results.map(result => result.user_id)
+
+    if (!tableRelationIds.length)
+      throw new HttpError(500, 'Relation Error!')
+
+    const relationResults = await User.whereIn('id', tableRelationIds).get()
 
     return relationResults
   }

@@ -25,6 +25,7 @@ export interface UsersTable {
   email?: string
   job_title?: string
   password?: string
+  team_id?: number
   deployment_id?: number
   post_id?: number
   public_passkey?: string
@@ -69,7 +70,7 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'deployment_id', 'post_id']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -84,6 +85,7 @@ export class UserModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
+  public team_id: number | undefined
   public deployment_id: number | undefined
   public post_id: number | undefined
 
@@ -101,6 +103,7 @@ export class UserModel {
 
     this.updated_at = user?.updated_at
 
+    this.team_id = user?.team_id
     this.deployment_id = user?.deployment_id
     this.post_id = user?.post_id
 

@@ -9,7 +9,7 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
-  belongsToMany: ['AccessToken'],
+  belongsToMany: ['AccessToken', 'User'],
 
   traits: {
     useTimestamps: true, // defaults to true
