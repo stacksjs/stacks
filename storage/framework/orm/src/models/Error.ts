@@ -53,7 +53,7 @@ interface QueryOptions {
 
 export class ErrorModel {
   private hidden = []
-  private fillable = ['type', 'message', 'stack', 'status', 'user_id', 'additional_info', 'stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['type', 'message', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

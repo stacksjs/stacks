@@ -4,6 +4,7 @@ import type {
   Model,
   ModelElement,
   RelationConfig,
+  TableNames,
 } from '@stacksjs/types'
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
@@ -87,7 +88,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
         relationships.push({
           relationship: relation,
           model: relationModel,
-          table: modelRelationTable,
+          table: modelRelationTable as TableNames,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
           modelKey: `${formattedModelRelationName}_id`,
           relationName: relationInstance.relationName || '',
@@ -216,9 +217,26 @@ export function getHiddenAttributes(attributes: Attributes | undefined): string[
   })
 }
 
-export function getFillableAttributes(attributes: Attributes | undefined, otherModelRelations: RelationConfig[]): string[] {
+export function getFillableAttributes(model: Model, otherModelRelations: RelationConfig[]): string[] {
+  const attributes = model.attributes
+
+  const additionalCols = []
+
   if (attributes === undefined)
-    return ['stripe_id', 'two_factor_secret', 'public_key']
+    return []
+
+  const useBillable = typeof model.traits?.billable === 'object' || typeof model.traits?.billable === 'boolean'
+  const usePasskey = typeof model.traits?.useAuth === 'object' ? model.traits?.useAuth.usePasskey : false
+  const useUuid = typeof model.traits?.useUuid || false
+
+  if (useBillable)
+    additionalCols.push('stripe_id')
+
+  if (useUuid)
+    additionalCols.push('uuid')
+
+  if (usePasskey)
+    additionalCols.push(...['two_factor_secret', 'public_key'])
 
   const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey)
 
@@ -231,9 +249,7 @@ export function getFillableAttributes(attributes: Attributes | undefined, otherM
         return attributes[key]?.fillable === true
       })
       .map(attribute => snakeCase(attribute)),
-    'stripe_id',
-    'public_key',
-    'two_factor_secret',
+    ...additionalCols,
     ...foreignKeys,
   ]
 }
@@ -1515,7 +1531,7 @@ export async function generateModelString(
   `
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
-  const fillable = JSON.stringify(getFillableAttributes(model.attributes, otherModelRelations))
+  const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
     import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'

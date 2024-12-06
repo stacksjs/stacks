@@ -58,7 +58,7 @@ interface QueryOptions {
 
 export class TeamModel {
   private hidden = []
-  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'stripe_id', 'public_key', 'two_factor_secret', 'accesstoken_id', 'user_id']
+  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'accesstoken_id', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

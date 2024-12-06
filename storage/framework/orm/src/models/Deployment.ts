@@ -58,7 +58,7 @@ interface QueryOptions {
 
 export class DeploymentModel {
   private hidden = []
-  private fillable = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'stripe_id', 'public_key', 'two_factor_secret', 'user_id']
+  private fillable = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

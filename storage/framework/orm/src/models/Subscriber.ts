@@ -49,7 +49,7 @@ interface QueryOptions {
 
 export class SubscriberModel {
   private hidden = []
-  private fillable = ['subscribed', 'stripe_id', 'public_key', 'two_factor_secret', 'user_id']
+  private fillable = ['subscribed', 'uuid', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

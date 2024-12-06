@@ -10,7 +10,7 @@ export async function up(db: Database<any>) {
     .addColumn('plain_text_token', 'varchar(512)')
     .addColumn('abilities', 'text')
     .addColumn('team_id', 'integer', (col) =>
-        col.references('undefined.id').onDelete('cascade')
+        col.references('personal_access_tokens.id').onDelete('cascade')
       ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')

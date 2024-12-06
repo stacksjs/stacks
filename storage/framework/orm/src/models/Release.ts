@@ -48,7 +48,7 @@ interface QueryOptions {
 
 export class ReleaseModel {
   private hidden = []
-  private fillable = ['version', 'stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['version', 'uuid']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

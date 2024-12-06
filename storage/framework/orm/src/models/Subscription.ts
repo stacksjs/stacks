@@ -61,7 +61,7 @@ interface QueryOptions {
 
 export class SubscriptionModel {
   private hidden = []
-  private fillable = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'stripe_id', 'public_key', 'two_factor_secret', 'user_id']
+  private fillable = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean

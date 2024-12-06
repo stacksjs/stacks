@@ -57,7 +57,7 @@ interface QueryOptions {
 
 export class ProductModel {
   private hidden = []
-  private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'stripe_id', 'public_key', 'two_factor_secret']
+  private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
