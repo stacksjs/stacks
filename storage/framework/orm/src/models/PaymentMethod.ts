@@ -5,9 +5,6 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
-
 export interface PaymentMethodsTable {
   id?: Generated<number>
   type?: string
@@ -35,9 +32,10 @@ interface PaymentMethodResponse {
   next_cursor: number | null
 }
 
-export type PaymentMethodType = Selectable<PaymentMethodsTable>
-export type NewPaymentMethod = Insertable<PaymentMethodsTable>
-export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
+export type PaymentMethod = PaymentMethodsTable
+export type PaymentMethodType = Selectable<PaymentMethod>
+export type NewPaymentMethod = Insertable<PaymentMethod>
+export type PaymentMethodUpdate = Updateable<PaymentMethod>
 export type PaymentMethods = PaymentMethodType[]
 
 export type PaymentMethodColumn = PaymentMethods
@@ -288,6 +286,24 @@ export class PaymentMethodModel {
     const model = await find(Number(result.insertId)) as PaymentMethodModel
 
     return model
+  }
+
+  static async createMany(newPaymentMethods: NewUser[]): Promise<void> {
+    const instance = new PaymentMethodModel(null)
+
+    const filteredValues = newPaymentMethods.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewPaymentMethod,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('payment_methods')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {

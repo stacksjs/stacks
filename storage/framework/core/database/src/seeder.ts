@@ -19,8 +19,6 @@ async function seedModel(name: string, model?: Model) {
 
   const tableName = await modelTableName(model)
 
-  if (tableName !== 'users') return
-
   const ormModel = (await import(path.storagePath(`framework/orm/src/models/${name}`))).default
 
   const seedCount
@@ -47,7 +45,6 @@ async function seedModel(name: string, model?: Model) {
 
     if (otherRelations?.length) {
       for (let j = 0; j < otherRelations.length; j++) {
-        
         const relationElement = otherRelations[j] as RelationConfig
 
         const relationType = getRelationType(relationElement.relationship)
@@ -58,7 +55,6 @@ async function seedModel(name: string, model?: Model) {
 
         if (relationType === 'hasType')
           record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
-        
       }
     }
 
@@ -71,8 +67,10 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const record2: any = {}
   const pivotRecord: any = {}
 
-  const modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default
+  const modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
+
+  const useUuid = modelInstance?.traits?.useUuid || false
 
   if (!relationModelInstance)
     return 1
@@ -102,6 +100,9 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   }
 
   const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
+
+  if (useUuid)
+    record2.uuid = randomUUIDv7()
 
   const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
   const relationData = data.insertId || 1

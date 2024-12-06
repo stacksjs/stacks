@@ -16,9 +16,6 @@ import Subscription from './Subscription'
 
 import Team from './Team'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
-
 export interface UsersTable {
   id?: Generated<number>
   name?: string
@@ -50,9 +47,10 @@ interface UserResponse {
   next_cursor: number | null
 }
 
-export type UserType = Selectable<UsersTable>
-export type NewUser = Insertable<UsersTable>
-export type UserUpdate = Updateable<UsersTable>
+export type User = UsersTable
+export type UserType = Selectable<User>
+export type NewUser = Insertable<User>
+export type UserUpdate = Updateable<User>
 export type Users = UserType[]
 
 export type UserColumn = Users
@@ -321,13 +319,13 @@ export class UserModel {
     const instance = new UserModel(null)
 
     const filteredValues = newUsers.map(newUser =>
-        Object.fromEntries(
-            Object.entries(newUser).filter(([key]) => instance.fillable.includes(key))
-        ) as NewUser
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewUser,
     )
 
-    filteredValues.forEach(user => {
-        user.uuid = randomUUIDv7()
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
     })
 
     await db.insertInto('users')

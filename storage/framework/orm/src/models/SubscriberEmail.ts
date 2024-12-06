@@ -1,10 +1,8 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface SubscriberEmailsTable {
   id?: Generated<number>
@@ -28,9 +26,10 @@ interface SubscriberEmailResponse {
   next_cursor: number | null
 }
 
-export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
-export type NewSubscriberEmail = Insertable<SubscriberEmailsTable>
-export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
+export type SubscriberEmail = SubscriberEmailsTable
+export type SubscriberEmailType = Selectable<SubscriberEmail>
+export type NewSubscriberEmail = Insertable<SubscriberEmail>
+export type SubscriberEmailUpdate = Updateable<SubscriberEmail>
 export type SubscriberEmails = SubscriberEmailType[]
 
 export type SubscriberEmailColumn = SubscriberEmails
@@ -273,6 +272,24 @@ export class SubscriberEmailModel {
     const model = await find(Number(result.insertId)) as SubscriberEmailModel
 
     return model
+  }
+
+  static async createMany(newSubscriberEmails: NewUser[]): Promise<void> {
+    const instance = new SubscriberEmailModel(null)
+
+    const filteredValues = newSubscriberEmails.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewSubscriberEmail,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('subscriber_emails')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {

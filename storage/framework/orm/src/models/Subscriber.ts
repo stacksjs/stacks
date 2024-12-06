@@ -1,10 +1,8 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface SubscribersTable {
   id?: Generated<number>
@@ -29,9 +27,10 @@ interface SubscriberResponse {
   next_cursor: number | null
 }
 
-export type SubscriberType = Selectable<SubscribersTable>
-export type NewSubscriber = Insertable<SubscribersTable>
-export type SubscriberUpdate = Updateable<SubscribersTable>
+export type Subscriber = SubscribersTable
+export type SubscriberType = Selectable<Subscriber>
+export type NewSubscriber = Insertable<Subscriber>
+export type SubscriberUpdate = Updateable<Subscriber>
 export type Subscribers = SubscriberType[]
 
 export type SubscriberColumn = Subscribers
@@ -273,6 +272,24 @@ export class SubscriberModel {
     const model = await find(Number(result.insertId)) as SubscriberModel
 
     return model
+  }
+
+  static async createMany(newSubscribers: NewUser[]): Promise<void> {
+    const instance = new SubscriberModel(null)
+
+    const filteredValues = newSubscribers.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewSubscriber,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('subscribers')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel> {

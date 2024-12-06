@@ -1,10 +1,8 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface ErrorsTable {
   id?: Generated<number>
@@ -33,9 +31,10 @@ interface ErrorResponse {
   next_cursor: number | null
 }
 
-export type ErrorType = Selectable<ErrorsTable>
-export type NewError = Insertable<ErrorsTable>
-export type ErrorUpdate = Updateable<ErrorsTable>
+export type Error = ErrorsTable
+export type ErrorType = Selectable<Error>
+export type NewError = Insertable<Error>
+export type ErrorUpdate = Updateable<Error>
 export type Errors = ErrorType[]
 
 export type ErrorColumn = Errors
@@ -284,6 +283,24 @@ export class ErrorModel {
     const model = await find(Number(result.insertId)) as ErrorModel
 
     return model
+  }
+
+  static async createMany(newErrors: NewUser[]): Promise<void> {
+    const instance = new ErrorModel(null)
+
+    const filteredValues = newErrors.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewError,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('errors')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newError: NewError): Promise<ErrorModel> {

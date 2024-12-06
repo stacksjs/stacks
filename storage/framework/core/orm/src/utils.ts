@@ -1559,8 +1559,6 @@ export async function generateModelString(
     import { cache } from '@stacksjs/cache'
     import { randomUUIDv7 } from 'bun'
     ${relationImports}
-    // import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-    // import { Pool } from 'pg'
 
     export interface ${formattedTableName}Table {
       id?: Generated<number>
@@ -1577,9 +1575,10 @@ export async function generateModelString(
       next_cursor: number | null
     }
 
-    export type ${modelName}Type = Selectable<${formattedTableName}Table>
-    export type New${modelName} = Insertable<${formattedTableName}Table>
-    export type ${modelName}Update = Updateable<${formattedTableName}Table>
+    export type ${modelName} = ${formattedTableName}Table
+    export type ${modelName}Type = Selectable<${modelName}>
+    export type New${modelName} = Insertable<${modelName}>
+    export type ${modelName}Update = Updateable<${modelName}>
     export type ${formattedTableName} = ${modelName}Type[]
 
     export type ${modelName}Column = ${formattedTableName}

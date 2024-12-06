@@ -1,11 +1,9 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface PostsTable {
   id?: Generated<number>
@@ -31,9 +29,10 @@ interface PostResponse {
   next_cursor: number | null
 }
 
-export type PostType = Selectable<PostsTable>
-export type NewPost = Insertable<PostsTable>
-export type PostUpdate = Updateable<PostsTable>
+export type Post = PostsTable
+export type PostType = Selectable<Post>
+export type NewPost = Insertable<Post>
+export type PostUpdate = Updateable<Post>
 export type Posts = PostType[]
 
 export type PostColumn = Posts
@@ -277,6 +276,24 @@ export class PostModel {
     const model = await find(Number(result.insertId)) as PostModel
 
     return model
+  }
+
+  static async createMany(newPosts: NewUser[]): Promise<void> {
+    const instance = new PostModel(null)
+
+    const filteredValues = newPosts.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewPost,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('posts')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newPost: NewPost): Promise<PostModel> {

@@ -1,11 +1,9 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import Team from './Team'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface PersonalAccessTokensTable {
   id?: Generated<number>
@@ -33,9 +31,10 @@ interface AccessTokenResponse {
   next_cursor: number | null
 }
 
-export type AccessTokenType = Selectable<PersonalAccessTokensTable>
-export type NewAccessToken = Insertable<PersonalAccessTokensTable>
-export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
+export type AccessToken = PersonalAccessTokensTable
+export type AccessTokenType = Selectable<AccessToken>
+export type NewAccessToken = Insertable<AccessToken>
+export type AccessTokenUpdate = Updateable<AccessToken>
 export type PersonalAccessTokens = AccessTokenType[]
 
 export type AccessTokenColumn = PersonalAccessTokens
@@ -283,6 +282,24 @@ export class AccessTokenModel {
     const model = await find(Number(result.insertId)) as AccessTokenModel
 
     return model
+  }
+
+  static async createMany(newPersonalAccessTokens: NewUser[]): Promise<void> {
+    const instance = new AccessTokenModel(null)
+
+    const filteredValues = newPersonalAccessTokens.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewAccessToken,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('personal_access_tokens')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {

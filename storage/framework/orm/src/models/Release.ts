@@ -1,10 +1,8 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface ReleasesTable {
   id?: Generated<number>
@@ -28,9 +26,10 @@ interface ReleaseResponse {
   next_cursor: number | null
 }
 
-export type ReleaseType = Selectable<ReleasesTable>
-export type NewRelease = Insertable<ReleasesTable>
-export type ReleaseUpdate = Updateable<ReleasesTable>
+export type Release = ReleasesTable
+export type ReleaseType = Selectable<Release>
+export type NewRelease = Insertable<Release>
+export type ReleaseUpdate = Updateable<Release>
 export type Releases = ReleaseType[]
 
 export type ReleaseColumn = Releases
@@ -269,6 +268,24 @@ export class ReleaseModel {
     const model = await find(Number(result.insertId)) as ReleaseModel
 
     return model
+  }
+
+  static async createMany(newReleases: NewUser[]): Promise<void> {
+    const instance = new ReleaseModel(null)
+
+    const filteredValues = newReleases.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewRelease,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('releases')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel> {

@@ -1,10 +1,8 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface ProjectsTable {
   id?: Generated<number>
@@ -31,9 +29,10 @@ interface ProjectResponse {
   next_cursor: number | null
 }
 
-export type ProjectType = Selectable<ProjectsTable>
-export type NewProject = Insertable<ProjectsTable>
-export type ProjectUpdate = Updateable<ProjectsTable>
+export type Project = ProjectsTable
+export type ProjectType = Selectable<Project>
+export type NewProject = Insertable<Project>
+export type ProjectUpdate = Updateable<Project>
 export type Projects = ProjectType[]
 
 export type ProjectColumn = Projects
@@ -278,6 +277,24 @@ export class ProjectModel {
     const model = await find(Number(result.insertId)) as ProjectModel
 
     return model
+  }
+
+  static async createMany(newProjects: NewUser[]): Promise<void> {
+    const instance = new ProjectModel(null)
+
+    const filteredValues = newProjects.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewProject,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('projects')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newProject: NewProject): Promise<ProjectModel> {

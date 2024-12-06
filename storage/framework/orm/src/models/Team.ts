@@ -1,13 +1,11 @@
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import AccessToken from './AccessToken'
 
 import User from './User'
-
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
 
 export interface TeamsTable {
   id?: Generated<number>
@@ -40,9 +38,10 @@ interface TeamResponse {
   next_cursor: number | null
 }
 
-export type TeamType = Selectable<TeamsTable>
-export type NewTeam = Insertable<TeamsTable>
-export type TeamUpdate = Updateable<TeamsTable>
+export type Team = TeamsTable
+export type TeamType = Selectable<Team>
+export type NewTeam = Insertable<Team>
+export type TeamUpdate = Updateable<Team>
 export type Teams = TeamType[]
 
 export type TeamColumn = Teams
@@ -300,6 +299,24 @@ export class TeamModel {
     const model = await find(Number(result.insertId)) as TeamModel
 
     return model
+  }
+
+  static async createMany(newTeams: NewUser[]): Promise<void> {
+    const instance = new TeamModel(null)
+
+    const filteredValues = newTeams.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewTeam,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('teams')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newTeam: NewTeam): Promise<TeamModel> {

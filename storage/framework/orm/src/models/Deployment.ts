@@ -5,9 +5,6 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
-
 export interface DeploymentsTable {
   id?: Generated<number>
   commit_sha?: string
@@ -38,9 +35,10 @@ interface DeploymentResponse {
   next_cursor: number | null
 }
 
-export type DeploymentType = Selectable<DeploymentsTable>
-export type NewDeployment = Insertable<DeploymentsTable>
-export type DeploymentUpdate = Updateable<DeploymentsTable>
+export type Deployment = DeploymentsTable
+export type DeploymentType = Selectable<Deployment>
+export type NewDeployment = Insertable<Deployment>
+export type DeploymentUpdate = Updateable<Deployment>
 export type Deployments = DeploymentType[]
 
 export type DeploymentColumn = Deployments
@@ -298,6 +296,24 @@ export class DeploymentModel {
     const model = await find(Number(result.insertId)) as DeploymentModel
 
     return model
+  }
+
+  static async createMany(newDeployments: NewUser[]): Promise<void> {
+    const instance = new DeploymentModel(null)
+
+    const filteredValues = newDeployments.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewDeployment,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('deployments')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {

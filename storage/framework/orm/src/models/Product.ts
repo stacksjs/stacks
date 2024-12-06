@@ -5,9 +5,6 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
-
 export interface ProductsTable {
   id?: Generated<number>
   name?: string
@@ -37,9 +34,10 @@ interface ProductResponse {
   next_cursor: number | null
 }
 
-export type ProductType = Selectable<ProductsTable>
-export type NewProduct = Insertable<ProductsTable>
-export type ProductUpdate = Updateable<ProductsTable>
+export type Product = ProductsTable
+export type ProductType = Selectable<Product>
+export type NewProduct = Insertable<Product>
+export type ProductUpdate = Updateable<Product>
 export type Products = ProductType[]
 
 export type ProductColumn = Products
@@ -294,6 +292,24 @@ export class ProductModel {
     const model = await find(Number(result.insertId)) as ProductModel
 
     return model
+  }
+
+  static async createMany(newProducts: NewUser[]): Promise<void> {
+    const instance = new ProductModel(null)
+
+    const filteredValues = newProducts.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewProduct,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('products')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newProduct: NewProduct): Promise<ProductModel> {

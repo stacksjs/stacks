@@ -5,9 +5,6 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
-// import { Kysely, MysqlDialect, PostgresDialect } from 'kysely'
-// import { Pool } from 'pg'
-
 export interface SubscriptionsTable {
   id?: Generated<number>
   type?: string
@@ -41,9 +38,10 @@ interface SubscriptionResponse {
   next_cursor: number | null
 }
 
-export type SubscriptionType = Selectable<SubscriptionsTable>
-export type NewSubscription = Insertable<SubscriptionsTable>
-export type SubscriptionUpdate = Updateable<SubscriptionsTable>
+export type Subscription = SubscriptionsTable
+export type SubscriptionType = Selectable<Subscription>
+export type NewSubscription = Insertable<Subscription>
+export type SubscriptionUpdate = Updateable<Subscription>
 export type Subscriptions = SubscriptionType[]
 
 export type SubscriptionColumn = Subscriptions
@@ -307,6 +305,24 @@ export class SubscriptionModel {
     const model = await find(Number(result.insertId)) as SubscriptionModel
 
     return model
+  }
+
+  static async createMany(newSubscriptions: NewUser[]): Promise<void> {
+    const instance = new SubscriptionModel(null)
+
+    const filteredValues = newSubscriptions.map(newUser =>
+      Object.fromEntries(
+        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      ) as NewSubscription,
+    )
+
+    filteredValues.forEach((model) => {
+      model.uuid = randomUUIDv7()
+    })
+
+    await db.insertInto('subscriptions')
+      .values(filteredValues)
+      .executeTakeFirst()
   }
 
   static async forceCreate(newSubscription: NewSubscription): Promise<SubscriptionModel> {
