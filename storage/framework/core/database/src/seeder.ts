@@ -76,6 +76,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
     return 1
 
   const relationModelTable = relationModelInstance.table
+  const relationalModelUuid = relationModelInstance.traits?.useUuid || false
   const relationTable = relation.table
   const pivotTable = relation.pivotTable
   const modelKey = `${singular(relationTable)}_id`
@@ -98,6 +99,9 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
       record2[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
     else record2[formattedFieldName] = field?.factory ? field.factory() : undefined
   }
+
+  if (relationalModelUuid)
+    record.uuid = randomUUIDv7()
 
   const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
 
