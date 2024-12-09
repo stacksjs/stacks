@@ -1,5 +1,13 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import './style.css'
 
-createApp(App).mount('#app')
+import 'uno.css'
+import '@unocss/reset/tailwind-compat.css'
+import './assets/css/global.css'
+
+import highlight from './plugins/highlight'
+
+const app = createApp(App)
+
+app.use(highlight)
+app.mount('#app')

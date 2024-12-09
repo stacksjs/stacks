@@ -7,14 +7,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    'Carbon:cafe': typeof import('~icons/carbon/cafe')['default']
-    'Carbon:logoTwitter': typeof import('~icons/carbon/logo-twitter')['default']
     Dialog: typeof import('./src/components/Dialog.vue')['default']
     DialogPanel: typeof import('./src/components/DialogPanel.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     Hero: typeof import('./src/components/Hero.vue')['default']
     Installation: typeof import('./src/components/Installation.vue')['default']
-    'Mdi:heart': typeof import('~icons/mdi/heart')['default']
     Options: typeof import('./src/components/Options.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
