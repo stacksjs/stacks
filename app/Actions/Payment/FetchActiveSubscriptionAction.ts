@@ -1,11 +1,12 @@
 import { Action } from '@stacksjs/actions'
+import type { RequestInstance } from '@stacksjs/types'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
   name: 'FetchActiveSubscriptionAction',
   description: 'Fetch the current active subscription',
   method: 'GET',
-  async handle() {
+  async handle(request: RequestInstance) {
     const userId = Number(request.getParam('id'))
 
     const user = await User.find(userId)

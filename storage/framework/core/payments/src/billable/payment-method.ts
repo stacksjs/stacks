@@ -1,6 +1,8 @@
 import type Stripe from 'stripe'
+import type { PaymentMethodModel } from '../../../../orm/src/models/PaymentMethod'
 import type { UserModel } from '../../../../orm/src/models/User'
 import { stripe } from '..'
+import PaymentMethod from '../../../../orm/src/models/PaymentMethod'
 
 export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>
@@ -8,7 +10,7 @@ export interface ManagePaymentMethod {
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
   deletePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrievePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
-  listPaymentMethods: (user: UserModel, cardType?: string) => Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>>
+  listPaymentMethods: (user: UserModel, cardType?: string) => Promise<PaymentMethodModel[]>
 }
 
 export const managePaymentMethod: ManagePaymentMethod = (() => {
@@ -88,24 +90,24 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
   async function listPaymentMethods(
     user: UserModel,
     cardType?: string,
-  ): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
+  ): Promise<PaymentMethodModel[]> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const defaultPayment = await user?.defaultPaymentMethod()
+    const paymentMethods = await PaymentMethod.all()
 
-    const paymentMethods = await stripe.paymentMethod.list({
-      customer: user.stripe_id,
-      type: 'card',
-    })
+    // const paymentMethods = await stripe.paymentMethod.list({
+    //   customer: user.stripe_id,
+    //   type: 'card',
+    // })
 
-    // Filter by card type if provided, and exclude the default payment method ID if it's available
-    paymentMethods.data = paymentMethods.data.filter(
-      method =>
-        (!cardType || method.card?.brand === cardType)
-        && (defaultPayment?.id !== method.id), // Ensure defaultPayment is not null or undefined
-    )
+    // // Filter by card type if provided, and exclude the default payment method ID if it's available
+    // paymentMethods.data = paymentMethods.data.filter(
+    //   method =>
+    //     (!cardType || method.card?.brand === cardType)
+    //     && (defaultPayment?.id !== method.id), // Ensure defaultPayment is not null or undefined
+    // )
 
     return paymentMethods
   }

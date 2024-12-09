@@ -1,5 +1,6 @@
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { PaymentMethodModel } from './PaymentMethod'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -854,7 +855,7 @@ export class UserModel {
     return await manageSubscription.isIncomplete(this, type)
   }
 
-  async paymentMethods(cardType?: string): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
+  async paymentMethods(cardType?: string): Promise<PaymentMethodModel[]> {
     return await managePaymentMethod.listPaymentMethods(this, cardType)
   }
 

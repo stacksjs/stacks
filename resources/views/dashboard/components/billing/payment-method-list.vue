@@ -37,10 +37,10 @@ async function makeDefault(paymentMethodId: string) {
         <div class="w-full p-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <CardBrands :brand="method.card.brand" alt="Brand Logo" />
+              <CardBrands :brand="method.brand" alt="Brand Logo" />
               <h2 class="text-sm text-gray-600">
-                {{ method.card.brand }} •••• {{ method.card.last4 }} <br>
-                <span class="text-xs text-gray-500 italic">Expires {{ method.card.exp_month }} /  {{ method.card.exp_year }} </span>
+                {{ method.brand }} •••• {{ method.last4 }} <br>
+                <span class="text-xs text-gray-500 italic">Expires {{ method.exp_month }} /  {{ method.exp_year }} </span>
               </h2>
             </div>
 

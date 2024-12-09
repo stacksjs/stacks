@@ -1325,9 +1325,10 @@ export async function generateModelString(
       return await manageSubscription.isIncomplete(this, type)
     }
     
-    async paymentMethods(cardType?: string): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
+    async paymentMethods(cardType?: string): Promise<PaymentMethodModel[]> {
       return await managePaymentMethod.listPaymentMethods(this, cardType)
     }
+      
     async newSubscriptionInvoice(
       type: string,
       lookupKey: string,
@@ -1558,6 +1559,7 @@ export async function generateModelString(
     import { verifyTwoFactorCode } from '@stacksjs/auth'
     import { cache } from '@stacksjs/cache'
     import { randomUUIDv7 } from 'bun'
+    import { PaymentMethodModel } from './PaymentMethod'
     ${relationImports}
 
     export interface ${formattedTableName}Table {

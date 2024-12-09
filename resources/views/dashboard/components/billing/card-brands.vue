@@ -17,6 +17,8 @@ const logoSrc = computed(() => {
     case 'mastercard':
     case 'mc':
       return '/images/logos/mastercard.svg'
+    case 'jcb':
+      return '/images/logos/jcb.svg'
     case 'amex':
     case 'american express':
       return '/images/logos/amex.jpg'

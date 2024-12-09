@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import { PaymentMethodModel } from './PaymentMethod'
 import User from './User'
 
 export interface PaymentMethodsTable {
@@ -10,7 +11,8 @@ export interface PaymentMethodsTable {
   type?: string
   last_four?: number
   brand?: string
-  expires?: string
+  exp_month?: number
+  exp_year?: number
   provider_id?: string
   user_id?: number
   uuid?: string
@@ -54,7 +56,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'brand', 'expires', 'provider_id', 'uuid', 'user_id']
+  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'provider_id', 'uuid', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -63,7 +65,8 @@ export class PaymentMethodModel {
   public type: string | undefined
   public last_four: number | undefined
   public brand: string | undefined
-  public expires: string | undefined
+  public exp_month: number | undefined
+  public exp_year: number | undefined
   public provider_id: string | undefined
 
   public created_at: Date | undefined
@@ -76,7 +79,8 @@ export class PaymentMethodModel {
     this.type = paymentmethod?.type
     this.last_four = paymentmethod?.last_four
     this.brand = paymentmethod?.brand
-    this.expires = paymentmethod?.expires
+    this.exp_month = paymentmethod?.exp_month
+    this.exp_year = paymentmethod?.exp_year
     this.provider_id = paymentmethod?.provider_id
 
     this.created_at = paymentmethod?.created_at
@@ -407,10 +411,18 @@ export class PaymentMethodModel {
     return instance
   }
 
-  static whereExpires(value: string): PaymentMethodModel {
+  static whereExpMonth(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    instance.query = instance.query.where('expires', '=', value)
+    instance.query = instance.query.where('exp_month', '=', value)
+
+    return instance
+  }
+
+  static whereExpYear(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.query = instance.query.where('exp_year', '=', value)
 
     return instance
   }
@@ -641,7 +653,8 @@ export class PaymentMethodModel {
       type: this.type,
       last_four: this.last_four,
       brand: this.brand,
-      expires: this.expires,
+      exp_month: this.exp_month,
+      exp_year: this.exp_year,
       provider_id: this.provider_id,
 
       created_at: this.created_at,
@@ -720,8 +733,15 @@ export async function whereBrand(value: string): Promise<PaymentMethodModel[]> {
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
-export async function whereExpires(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('expires', '=', value)
+export async function whereExpMonth(value: number): Promise<PaymentMethodModel[]> {
+  const query = db.selectFrom('payment_methods').where('exp_month', '=', value)
+  const results = await query.execute()
+
+  return results.map(modelItem => new PaymentMethodModel(modelItem))
+}
+
+export async function whereExpYear(value: number): Promise<PaymentMethodModel[]> {
+  const query = db.selectFrom('payment_methods').where('exp_year', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))

@@ -31,7 +31,7 @@ route.group({ prefix: '/payments' }, async () => {
   route.get('/fetch-user-subscriptions/{id}', 'Actions/Payment/FetchUserSubscriptionsAction')
   route.get('/fetch-active-subscription/{id}', 'Actions/Payment/FetchActiveSubscriptionAction')
   route.get('/default-payment-method/{id}', 'Actions/Payment/FetchDefaultPaymentMethodAction')
-  route.get('/user-payment-methods/{id}', 'Actions/Payment/FetchPaymentMethodsAction')
+  route.get('/payment-methods/{id}', 'Actions/Payment/FetchPaymentMethodsAction')
   route.get('/create-setup-intent/{id}', 'Actions/Payment/CreateSetupIntentAction')
   route.delete('/delete-payment-method/{id}', 'Actions/Payment/DeleteDefaultPaymentAction')
   route.put('/update-default-payment-method/{id}', 'Actions/Payment/UpdateDefaultPaymentMethodAction')

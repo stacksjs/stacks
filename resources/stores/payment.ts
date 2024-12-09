@@ -132,7 +132,7 @@ export const usePaymentStore = defineStore('payment', {
     async fetchUserPaymentMethods(): Promise<void> {
       this.setLoadingState('fetchUserPaymentMethods')
 
-      const response: any = await fetch(`${apiUrl}/payments/user-payment-methods`, {
+      const response: any = await fetch(`${apiUrl}/payments/payment-methods/1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ export const usePaymentStore = defineStore('payment', {
       if (response.status !== 204) {
         const res = await response.json()
 
-        this.paymentMethods = res.data
+        this.paymentMethods = res
       }
 
       this.removeLoadingState('fetchUserPaymentMethods')
@@ -154,7 +154,7 @@ export const usePaymentStore = defineStore('payment', {
     async fetchTransactionHistory(): Promise<void> {
       this.setLoadingState('fetchTransactionHistory')
 
-      const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history/1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ export const usePaymentStore = defineStore('payment', {
     async fetchStripeCustomer(): Promise<void> {
       this.setLoadingState('fetchStripeCustomer')
 
-      const response: any = await fetch(`${apiUrl}/payments/fetch-customer`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-customer/1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +248,7 @@ export const usePaymentStore = defineStore('payment', {
     async fetchDefaultPaymentMethod(): Promise<void> {
       this.setLoadingState('fetchDefaultPaymentMethod')
 
-      const response: any = await fetch(`${apiUrl}/payments/default-payment-method`, {
+      const response: any = await fetch(`${apiUrl}/payments/default-payment-method/1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +269,7 @@ export const usePaymentStore = defineStore('payment', {
 
     async fetchUserActivePlan(): Promise<void> {
       this.setLoadingState('fetchActivePlan')
-      const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription/1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

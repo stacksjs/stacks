@@ -54,17 +54,30 @@ export default {
       factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
-    expires: {
+    exp_month: {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.number(),
         message: {
-          string: 'expires must be a string',
-          required: 'expires is required',
+          string: 'exp_month must be a number',
+          required: 'exp_month is required',
         },
       },
-      factory: () => faker.date.anytime().toDateString(),
+      factory: () => faker.number.int({ min: 1, max: 12 }),
+    },
+
+    exp_year: {
+      required: true,
+      fillable: true,
+      validation: {
+        rule: schema.number(),
+        message: {
+          string: 'exp_year must be a number',
+          required: 'exp_year is required',
+        },
+      },
+      factory: () => faker.number.int({ min: 2024, max: 2050 }),
     },
 
     providerId: {

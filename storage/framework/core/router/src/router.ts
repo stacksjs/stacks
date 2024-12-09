@@ -180,7 +180,7 @@ export class Router implements RouterInterface {
 
     cb = callback
 
-    const { prefix, middleware = [] } = options as RouteGroupOptions
+    const { middleware = [] } = options as RouteGroupOptions
 
     // Save a reference to the original routes array
     const originalRoutes = this.routes
@@ -190,7 +190,7 @@ export class Router implements RouterInterface {
 
     // Execute the callback. This will add routes to the new this.routes array
     cb()
-    
+
     // For each route added by the callback, adjust the URI and add to the original routes array
     this.routes.forEach((r) => {
       if (middleware.length)
