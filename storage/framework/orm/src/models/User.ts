@@ -30,6 +30,7 @@ export interface UsersTable {
   post_id?: number
   public_passkey?: string
   stripe_id?: string
+  default_payment_method?: string
   uuid?: string
 
   created_at?: Date
@@ -71,12 +72,13 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'default_payment_method', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
   public stripe_id: string | undefined
+  public default_payment_method: number | undefined
   public uuid: string | undefined
   public public_passkey: string | undefined
   public name: string | undefined
@@ -93,6 +95,7 @@ export class UserModel {
   constructor(user: Partial<UserType> | null) {
     this.id = user?.id
     this.stripe_id = user?.stripe_id
+    this.default_payment_method = user?.default_payment_method
     this.uuid = user?.uuid
     this.public_passkey = user?.public_passkey
     this.name = user?.name
@@ -739,16 +742,8 @@ export class UserModel {
     return customer
   }
 
-  async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | object> {
-    const customer = await this.retrieveStripeUser()
-
-    const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method as string
-
-    if (!defaultPaymentMethodId) {
-      return {}
-    }
-
-    const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, defaultPaymentMethodId)
+  async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
+    const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
 
     return defaultPaymentMethod
   }

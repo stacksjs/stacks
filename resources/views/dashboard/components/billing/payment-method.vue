@@ -47,7 +47,7 @@ function cancelPaymentForm() {
       Payment Info
     </h2>
 
-    <div v-if="!paymentStore.hasPaymentMethods && (!paymentStore.isStateLoading('fetchDefaultPaymentMethod') && !paymentStore.isStateLoading('fetchStripeCustomer'))">
+    <div v-if="!paymentStore.hasPaymentMethods && (!paymentStore.isStateLoading('fetchDefaultPaymentMethod') || !paymentStore.isStateLoading('fetchStripeCustomer'))">
       <div class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
         <div class="w-full px-4 py-5">
           <h2 class="text-center text-sm text-gray-600">

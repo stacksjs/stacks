@@ -9,7 +9,7 @@ export interface ManagePaymentMethod {
   updatePaymentMethod: (user: UserModel, paymentMethodId: string, updateParams?: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
   deletePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
-  retrievePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodModel | undefined>
   listPaymentMethods: (user: UserModel, cardType?: string) => Promise<PaymentMethodModel[]>
 }
 
@@ -95,7 +95,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethods = await PaymentMethod.all()
+    const paymentMethods = await PaymentMethod.where('user_id', user.id).get()
 
     // const paymentMethods = await stripe.paymentMethod.list({
     //   customer: user.stripe_id,
@@ -112,19 +112,15 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     return paymentMethods
   }
 
-  async function retrievePaymentMethod(user: UserModel, paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+  async function retrieveDefaultPaymentMethod(user: UserModel): Promise<PaymentMethodModel | undefined> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethod = await stripe.paymentMethod.retrieve(paymentMethodId)
-
-    if (paymentMethod.customer !== user.stripe_id) {
-      throw new Error('Payment method does not belong to this customer')
-    }
+    const paymentMethod = await PaymentMethod.find(Number(user?.default_payment_method))
 
     return paymentMethod
   }
 
-  return { addPaymentMethod, deletePaymentMethod, retrievePaymentMethod, updatePaymentMethod, listPaymentMethods, setDefaultPaymentMethod }
+  return { addPaymentMethod, deletePaymentMethod, retrieveDefaultPaymentMethod, updatePaymentMethod, listPaymentMethods, setDefaultPaymentMethod }
 })()

@@ -14,6 +14,15 @@ async function seedModel(name: string, model?: Model) {
     return
   }
 
+  if (
+    typeof model?.traits === 'object'
+    && model?.traits !== undefined
+    && !('useSeeder' in model.traits)
+  ) {
+    log.info(`Skipping seeding for ${italic(name)}`)
+    return
+  }
+
   if (!model)
     model = (await import(path.userModelsPath(name))) as Model
 

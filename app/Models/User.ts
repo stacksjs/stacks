@@ -49,7 +49,7 @@ export default {
   attributes: {
     name: {
       required: true,
-      order: 3,
+      order: 2,
       fillable: true,
       validation: {
         rule: schema.string().minLength(5).maxLength(255),
@@ -93,7 +93,7 @@ export default {
     },
     password: {
       required: true,
-      order: 2,
+      order: 3,
       hidden: true,
       fillable: true,
       validation: {

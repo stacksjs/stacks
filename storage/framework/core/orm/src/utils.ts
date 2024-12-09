@@ -236,8 +236,10 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
   const usePasskey = typeof model.traits?.useAuth === 'object' ? model.traits?.useAuth.usePasskey : false
   const useUuid = typeof model.traits?.useUuid || false
 
-  if (useBillable)
+  if (useBillable) {
     additionalCols.push('stripe_id')
+    additionalCols.push('default_payment_method')
+  }
 
   if (useUuid)
     additionalCols.push('uuid')
@@ -1208,16 +1210,8 @@ export async function generateModelString(
       return customer
     }
 
-    async defaultPaymentMethod(): Promise<Stripe.PaymentMethod | object> {
-      const customer = await this.retrieveStripeUser()
-
-      const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method as string
-
-      if (!defaultPaymentMethodId) {
-        return {}
-    }
-
-      const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, defaultPaymentMethodId)
+     async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
+      const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
 
       return defaultPaymentMethod
     }
@@ -1419,8 +1413,10 @@ export async function generateModelString(
     `
 
     declareFields += `public stripe_id: string | undefined\n`
+    declareFields += `public default_payment_method: number | undefined\n`
 
     constructorFields += `this.stripe_id = ${formattedModelName}?.stripe_id\n   `
+    constructorFields += `this.default_payment_method = ${formattedModelName}?.default_payment_method\n   `
   }
 
   if (useTwoFactor) {
@@ -1529,8 +1525,10 @@ export async function generateModelString(
   if (usePasskey && tableName === 'users')
     fieldString += 'public_passkey?: string \n'
 
-  if (useBillable && tableName === 'users')
+  if (useBillable && tableName === 'users') {
     fieldString += 'stripe_id?: string \n'
+    fieldString += 'default_payment_method?: string \n'
+  }
 
   if (useUuid)
     fieldString += 'uuid?: string \n'

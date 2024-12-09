@@ -237,8 +237,10 @@ async function createTableMigration(modelPath: string) {
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
 
-  if (useBillable)
+  if (useBillable) {
     migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
+    migrationContent += `    .addColumn('default_payment_method', 'integer')\n`
+  }
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {

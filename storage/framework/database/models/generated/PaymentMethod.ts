@@ -12,6 +12,9 @@ export default {
   belongsTo: ['User'],
   traits: {
     useUuid: true,
+    useSeeder: {
+      count: 3,
+    },
   },
   attributes: {
     type: {
