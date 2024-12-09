@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { notification } from '@stacksjs/notification'
-import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/popover'
+// import { notification } from '@stacksjs/notification'
+// import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/popover'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
 
@@ -12,7 +12,7 @@ async function deletePayment(paymentMethodId: string) {
   await paymentStore.deletePaymentMethod(paymentMethodId)
 
   paymentStore.fetchUserPaymentMethods()
-  notification.success('Payment method deleted')
+  // notification.success('Payment method deleted')
 }
 
 async function makeDefault(paymentMethodId: string) {
@@ -23,14 +23,14 @@ async function makeDefault(paymentMethodId: string) {
   await paymentStore.fetchUserPaymentMethods()
   await paymentStore.fetchDefaultPaymentMethod()
 
-  notification.success('Default payment method updated')
+  // notification.success('Default payment method updated')
   isDefaultLoading.value[paymentMethodId] = false
 }
 </script>
 
 <template>
   <div class="mt-4">
-    <LoadingCard v-if="paymentStore.isStateLoading('fetchUserPaymentMethods')" />
+    <LoadingCard v-if="paymentStore.isStateLoading('fetchUserPaymentMethods') && paymentStore.isStateLoading('fetchStripeCustomer')" />
 
     <ul v-else role="list" class="grid grid-cols-1 gap-6 lg:grid-cols-1 sm:grid-cols-1">
       <li v-for="(method, index) in paymentStore.getPaymentMethods" :key="index" class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
@@ -55,7 +55,7 @@ async function makeDefault(paymentMethodId: string) {
                 <span v-if="isDefaultLoading[method.id]" class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin text-gray-500" />
               </button>
 
-              <Popover v-slot="{ open }">
+              <!-- <Popover v-slot="{ open }">
                 <PopoverButton>
                   <div
                     :class="open ? 'text-red-500' : 'text-red-500/90'"
@@ -85,12 +85,12 @@ async function makeDefault(paymentMethodId: string) {
                   </div>
                 </PopoverPanel>
 
-                <!-- <PopoverPanel class="absolute z-10">
+                <PopoverPanel class="absolute z-10">
                   <div class="p-4 bg-white rounded-lg shadow-lg  ">
                     <h3 class="text-sm leading-6 text-gray-900">Delete Payment Method</h3>
                   </div>
-                </PopoverPanel> -->
-              </Popover>
+                </PopoverPanel>
+              </Popover> -->
             </div>
           </div>
         </div>

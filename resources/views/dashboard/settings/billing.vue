@@ -29,7 +29,7 @@ onMounted(() => {
       <TransactionHistory />
       <div class="flex space-x-8">
         <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <LoadingDetails v-if="paymentStore.isStateLoading('fetchActivePlan')" :height="24" />
+          <LoadingDetails v-if="paymentStore.isStateLoading('fetchActivePlan') && paymentStore.isStateLoading('fetchStripeCustomer')" :height="24" />
 
           <div v-else class="w-full">
             <ActivePlan v-if="showCurrentPlan" />
