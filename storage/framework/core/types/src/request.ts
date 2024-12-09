@@ -41,6 +41,8 @@ export interface RequestInstance {
 
   getParam: (key: string) => number | string | null
 
+  route: (key: string) => number | string | null
+
   getParams: () => RouteParams
 
   getParamAsInt: (key: string) => number | null

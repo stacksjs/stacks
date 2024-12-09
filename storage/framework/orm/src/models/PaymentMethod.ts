@@ -12,6 +12,7 @@ export interface PaymentMethodsTable {
   brand?: string
   expires?: string
   provider_id?: string
+  user_id?: number
   uuid?: string
 
   created_at?: Date
@@ -53,7 +54,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'brand', 'expires', 'provider_id', 'uuid']
+  private fillable = ['type', 'last_four', 'brand', 'expires', 'provider_id', 'uuid', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -67,6 +68,7 @@ export class PaymentMethodModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
+  public user_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     this.id = paymentmethod?.id
@@ -80,6 +82,8 @@ export class PaymentMethodModel {
     this.created_at = paymentmethod?.created_at
 
     this.updated_at = paymentmethod?.updated_at
+
+    this.user_id = paymentmethod?.user_id
 
     this.query = db.selectFrom('payment_methods')
     this.hasSelect = false

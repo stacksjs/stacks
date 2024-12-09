@@ -8,6 +8,8 @@ import { dispatch } from '@stacksjs/events'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
 import Deployment from './Deployment'
 
+import PaymentMethod from './PaymentMethod'
+
 import Post from './Post'
 
 import Subscriber from './Subscriber'
@@ -667,6 +669,18 @@ export class UserModel {
       .execute()
 
     return results.map(modelItem => new Subscription(modelItem))
+  }
+
+  async payment_methods() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await db.selectFrom('payment_methods')
+      .where('user_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    return results.map(modelItem => new PaymentMethod(modelItem))
   }
 
   async userTeams() {

@@ -89,6 +89,10 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.params ? this.params[key] || null : null
   }
 
+  public route(key: string): number | string | null {
+    return this.getParam(key)
+  }
+
   public bearerToken(): string | null | AuthToken {
     const authorizationHeader = this.headers.get('authorization')
 

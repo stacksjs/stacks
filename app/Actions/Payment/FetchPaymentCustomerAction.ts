@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
@@ -5,8 +6,10 @@ export default new Action({
   name: 'FetchPaymentCustomerAction',
   description: 'Fetch the payment customer',
   method: 'GET',
-  async handle() {
-    const user = await User.find(1)
+  async handle(request: RequestInstance) {
+    const id = Number(request.getParam('id'))
+
+    const user = await User.find(id)
 
     const customer = await user?.asStripeUser()
 

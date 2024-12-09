@@ -7,7 +7,8 @@ export default new Action({
   description: 'Set the customers default payment method',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const user = await User.find(1)
+    const userId = Number(request.getParam('id'))
+    const user = await User.find(userId)
     const paymentIntent = request.get('setupIntent') as string
 
     const paymentMethod = await user?.setDefaultPaymentMethod(paymentIntent)

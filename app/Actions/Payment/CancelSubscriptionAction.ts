@@ -7,9 +7,10 @@ export default new Action({
   description: 'Cancel Subscription for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
+    const userId = Number(request.getParam('id'))
     const providerId = request.get('providerId') as string
 
-    const user = await User.find(1)
+    const user = await User.find(userId)
 
     const subscription = await user?.cancelSubscription(providerId)
 

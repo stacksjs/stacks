@@ -11,7 +11,8 @@ export default new Action({
     const plan = request.get('plan') as string
     const description = request.get('description') as string
 
-    const user = await User.find(1)
+    const userId = Number(request.getParam('id'))
+    const user = await User.find(userId)
 
     const subscription = await user?.updateSubscription(plan, type, { description })
 

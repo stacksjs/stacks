@@ -6,7 +6,9 @@ export default new Action({
   description: 'Fetch the current active subscription',
   method: 'GET',
   async handle() {
-    const user = await User.find(1)
+    const userId = Number(request.getParam('id'))
+
+    const user = await User.find(userId)
 
     const subscription = await user?.activeSubscription()
 

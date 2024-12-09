@@ -7,9 +7,10 @@ export default new Action({
   description: 'Create Payment Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
+    const userId = Number(request.getParam('id'))
     const amount = Number(request.get('amount'))
 
-    const user = await User.find(1)
+    const user = await User.find(userId)
 
     const paymentIntent = await user?.paymentIntent({
       amount,

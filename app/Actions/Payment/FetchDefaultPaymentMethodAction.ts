@@ -6,7 +6,8 @@ export default new Action({
   description: 'Fetch the users default payment method',
   method: 'GET',
   async handle() {
-    const user = await User.find(1)
+    const userId = Number(request.getParam('id'))
+    const user = await User.find(userId)
 
     const paymentMethod = await user?.defaultPaymentMethod()
 

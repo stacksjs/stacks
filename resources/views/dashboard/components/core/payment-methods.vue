@@ -13,7 +13,7 @@ const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 const paymentStore = usePaymentStore()
 
 onMounted(async () => {
-    await paymentStore.fetchUserPaymentMethods()
+  await paymentStore.fetchUserPaymentMethods()
 })
 
 // async function deletePayment(paymentMethodId: string) {
