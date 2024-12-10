@@ -14,7 +14,7 @@ const userId = props.userId
 
 const paymentStore = usePaymentStore()
 
-onMounted( async () => {
+onMounted(async () => {
   await paymentStore.fetchUserPaymentMethods(userId)
 })
 
