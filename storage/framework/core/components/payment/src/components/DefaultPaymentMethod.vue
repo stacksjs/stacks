@@ -3,11 +3,11 @@ import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
 
 interface PaymentMethod {
-  id: number,
-  brand: string,
-  last_four: string,
-  exp_month: number,
-  exp_year: number,
+  id: number
+  brand: string
+  last_four: string
+  exp_month: number
+  exp_year: number
 }
 
 interface Props {
@@ -36,9 +36,8 @@ const paymentStore = usePaymentStore()
         <div class="w-full p-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              
               <CardBrands v-if="paymentMethod.brand" :brand="paymentMethod.brand" alt="Brand Logo" />
-             
+
               <h2 class="text-sm text-gray-600">
                 {{ paymentMethod.brand }} •••• {{ paymentMethod.last_four }}
                 <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>

@@ -11,7 +11,7 @@ const defaultProps = {
 const { brand, width = defaultProps.width } = props
 
 const logoSrc = computed(() => {
-  if (!props.brand) 
+  if (!props.brand)
     return ''
 
   switch (props.brand.toLowerCase()) {

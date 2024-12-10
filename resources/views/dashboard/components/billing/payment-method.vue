@@ -53,9 +53,8 @@ function cancelPaymentForm() {
         <div class="w-full p-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              
               <CardBrands v-if="paymentStore.getDefaultPaymentMethod.brand" :brand="paymentStore.getDefaultPaymentMethod.brand" alt="Brand Logo" />
-             
+
               <h2 class="text-sm text-gray-600">
                 {{ paymentStore.getDefaultPaymentMethod.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.last_four }}
                 <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>
@@ -78,7 +77,7 @@ function cancelPaymentForm() {
       </div>
     </div>
 
-    <PaymentMethodList  :userId="1"/>
+    <PaymentMethodList :user-id="1" />
 
     <div v-show="showStripe">
       <PaymentForm />

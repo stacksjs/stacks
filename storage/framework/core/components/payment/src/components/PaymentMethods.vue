@@ -2,22 +2,20 @@
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
 
-const isDefaultLoading = ref<{ [key: string]: boolean }>({})
+const props = defineProps<Props>()
 const emit = defineEmits(['deletePaymentMethod', 'makeDefault'])
-
+const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 interface PaymentMethod {
-  id: number,
-  brand: string,
-  last_four: string,
-  exp_month: number,
-  exp_year: number,
+  id: number
+  brand: string
+  last_four: string
+  exp_month: number
+  exp_year: number
 }
 
 interface Props {
   paymentMethods: PaymentMethod[]
 }
-
-const props = defineProps<Props>()
 
 const paymentMethods = props.paymentMethods
 

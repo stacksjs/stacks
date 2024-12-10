@@ -2,13 +2,13 @@
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
 
+const props = defineProps<Props>()
+
 const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 
 interface Props {
   userId: number
 }
-
-const props = defineProps<Props>()
 
 const userId = props.userId
 
@@ -31,7 +31,7 @@ async function makeDefault(paymentMethodId: number) {
 
   await paymentStore.fetchUserPaymentMethods()
   await paymentStore.fetchDefaultPaymentMethod()
-  
+
   isDefaultLoading.value[paymentMethodId] = false
 }
 </script>
