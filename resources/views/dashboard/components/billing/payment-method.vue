@@ -3,6 +3,7 @@
 import { useBillable } from '../../../../functions/billing/payments'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
+import PaymentForm from './payment-form.vue'
 
 import PaymentMethodList from './payment-method-list.vue'
 
@@ -17,9 +18,7 @@ const { loadStripeElement, handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
   isLoadingWebElement.value = true
-  clientSecret.value = await paymentStore.fetchSetupIntent()
-
-  elements.value = await loadStripeElement(clientSecret.value)
+  clientSecret.value = await paymentStore.fetchSetupIntent(1)
 
   showStripe.value = true
   isLoadingWebElement.value = false
@@ -82,26 +81,7 @@ function cancelPaymentForm() {
     <PaymentMethodList  :userId="1"/>
 
     <div v-show="showStripe">
-      <form id="payment-form">
-        <div id="payment-element" />
-        <div class="flex pt-4 space-x-2">
-          <button
-            type="button"
-            class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-            @click="submitPaymentMethod(clientSecret, elements)"
-          >
-            Save Payment Method
-          </button>
-
-          <button
-            type="button"
-            class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-700 font-semibold shadow-sm hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-            @click="cancelPaymentForm()"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+      <PaymentForm />
     </div>
 
     <div v-if="!showStripe" class="mt-8 flex justify-end">

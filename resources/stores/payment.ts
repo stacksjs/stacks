@@ -20,8 +20,8 @@ export const usePaymentStore = defineStore('payment', {
   },
 
   actions: {
-    async fetchSetupIntent(): Promise<string> {
-      const url = 'http://localhost:3008/payments/create-setup-intent'
+    async fetchSetupIntent(id: number): Promise<string> {
+      const url = `http://localhost:3008/payments/create-setup-intent/${id}`
 
       const response = await fetch(url, {
         method: 'GET',
