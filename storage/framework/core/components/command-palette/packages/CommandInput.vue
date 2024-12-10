@@ -3,7 +3,7 @@ import { computed, ref, watchEffect } from 'vue'
 </script>
 
 <script lang="ts" setup>
-import type { CommandInputEmits, CommandInputProps } from './types';
+import type { CommandInputEmits, CommandInputProps } from './types'
 import { useCommandState } from './useCommandState'
 
 defineOptions({

@@ -3,7 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { PaymentMethodModel } from './PaymentMethod'
+
 import User from './User'
 
 export interface PaymentMethodsTable {
@@ -13,6 +13,7 @@ export interface PaymentMethodsTable {
   brand?: string
   exp_month?: number
   exp_year?: number
+  is_default?: boolean
   provider_id?: string
   user_id?: number
   uuid?: string
@@ -56,7 +57,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'provider_id', 'uuid', 'user_id']
+  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
@@ -67,6 +68,7 @@ export class PaymentMethodModel {
   public brand: string | undefined
   public exp_month: number | undefined
   public exp_year: number | undefined
+  public is_default: boolean | undefined
   public provider_id: string | undefined
 
   public created_at: Date | undefined
@@ -81,6 +83,7 @@ export class PaymentMethodModel {
     this.brand = paymentmethod?.brand
     this.exp_month = paymentmethod?.exp_month
     this.exp_year = paymentmethod?.exp_year
+    this.is_default = paymentmethod?.is_default
     this.provider_id = paymentmethod?.provider_id
 
     this.created_at = paymentmethod?.created_at
@@ -387,6 +390,20 @@ export class PaymentMethodModel {
     return instance
   }
 
+  static whereNull(column: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): PaymentMethodModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
+  }
+
   static whereType(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
@@ -414,7 +431,7 @@ export class PaymentMethodModel {
   static whereExpMonth(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    instance.query = instance.query.where('exp_month', '=', value)
+    instance.query = instance.query.where('expMonth', '=', value)
 
     return instance
   }
@@ -422,7 +439,15 @@ export class PaymentMethodModel {
   static whereExpYear(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    instance.query = instance.query.where('exp_year', '=', value)
+    instance.query = instance.query.where('expYear', '=', value)
+
+    return instance
+  }
+
+  static whereIsDefault(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.query = instance.query.where('isDefault', '=', value)
 
     return instance
   }
@@ -655,6 +680,7 @@ export class PaymentMethodModel {
       brand: this.brand,
       exp_month: this.exp_month,
       exp_year: this.exp_year,
+      is_default: this.is_default,
       provider_id: this.provider_id,
 
       created_at: this.created_at,
@@ -742,6 +768,13 @@ export async function whereExpMonth(value: number): Promise<PaymentMethodModel[]
 
 export async function whereExpYear(value: number): Promise<PaymentMethodModel[]> {
   const query = db.selectFrom('payment_methods').where('exp_year', '=', value)
+  const results = await query.execute()
+
+  return results.map(modelItem => new PaymentMethodModel(modelItem))
+}
+
+export async function whereIsDefault(value: boolean): Promise<PaymentMethodModel[]> {
+  const query = db.selectFrom('payment_methods').where('is_default', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))

@@ -57,7 +57,7 @@ export default {
       factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
-    exp_month: {
+    expMonth: {
       required: true,
       fillable: true,
       validation: {
@@ -70,7 +70,7 @@ export default {
       factory: () => faker.number.int({ min: 1, max: 12 }),
     },
 
-    exp_year: {
+    expYear: {
       required: true,
       fillable: true,
       validation: {
@@ -82,7 +82,12 @@ export default {
       },
       factory: () => faker.number.int({ min: 2024, max: 2050 }),
     },
-
+    isDefault: {
+      fillable: true,
+      validation: {
+        rule: schema.boolean(),
+      },
+    },
     providerId: {
       fillable: true,
       validation: {

@@ -11,7 +11,6 @@ export async function up(db: Database<any>) {
     .addColumn('password', 'varchar(255)', col => col.notNull())
     .addColumn('job_title', 'varchar(255)', col => col.notNull())
     .addColumn('stripe_id', 'varchar(255)')
-    .addColumn('default_payment_id', 'varchar(255)')
     .addColumn('team_id', 'integer', col =>
       col.references('teams.id').onDelete('cascade'))
     .addColumn('deployment_id', 'integer', col =>

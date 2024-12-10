@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import Item from './Item.vue'
 import { Command } from '../../../../packages'
-
 import { isDark } from '../../../composables/useDarkmode'
-import ProjectsIcon from '../../icons/VercelProjectsIcon.vue'
-import PlusIcon from '../../icons/VercelPlusIcon.vue'
-import TeamsIcon from '../../icons/VercelTeamsIcon.vue'
+
+import MoonIcon from '../../icons/MoonIcon.vue'
+import SunIcon from '../../icons/SunIcon.vue'
+import ContactIcon from '../../icons/VercelContactIcon.vue'
 import DocsIcon from '../../icons/VercelDocsIcon.vue'
 import FeedbackIcon from '../../icons/VercelFeedbackIcon.vue'
-import ContactIcon from '../../icons/VercelContactIcon.vue'
-import SunIcon from '../../icons/SunIcon.vue'
-import MoonIcon from '../../icons/MoonIcon.vue'
+import PlusIcon from '../../icons/VercelPlusIcon.vue'
+import ProjectsIcon from '../../icons/VercelProjectsIcon.vue'
+import TeamsIcon from '../../icons/VercelTeamsIcon.vue'
+import Item from './Item.vue'
 
 const items1 = [
   {

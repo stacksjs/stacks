@@ -47,28 +47,30 @@ function cancelPaymentForm() {
       Payment Info
     </h2>
 
-    <div v-if="!paymentStore.hasPaymentMethods && (!paymentStore.isStateLoading('fetchDefaultPaymentMethod') || !paymentStore.isStateLoading('fetchStripeCustomer'))">
-      <div class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
-        <div class="w-full px-4 py-5">
-          <h2 class="text-center text-sm text-gray-600">
-            You haven't added any payment methods yet.
-          </h2>
-        </div>
-      </div>
-    </div>
-
     <LoadingCard v-if="paymentStore.isStateLoading('fetchDefaultPaymentMethod') && paymentStore.isStateLoading('fetchStripeCustomer')" class="mt-8" />
 
-    <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
-      <div class="w-full p-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <CardBrands :brand="paymentStore.getDefaultPaymentMethod.card.brand" alt="Brand Logo" />
-            <h2 class="text-sm text-gray-600">
-              {{ paymentStore.getDefaultPaymentMethod.card.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.card.last4 }}
-              <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>
-              <br>
-              <span class="text-xs text-gray-500 italic">Expires {{ paymentStore.getDefaultPaymentMethod.card.exp_month }} /  {{ paymentStore.getDefaultPaymentMethod.card.exp_year }} </span>
+    <div v-else>
+      <div v-if="paymentStore.hasPaymentMethods" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
+        <div class="w-full p-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <CardBrands :brand="paymentStore.getDefaultPaymentMethod.brand" alt="Brand Logo" />
+              <h2 class="text-sm text-gray-600">
+                {{ paymentStore.getDefaultPaymentMethod.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.last_four }}
+                <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>
+                <br>
+                <span class="text-xs text-gray-500 italic">Expires {{ paymentStore.getDefaultPaymentMethod.exp_month }} /  {{ paymentStore.getDefaultPaymentMethod.exp_year }} </span>
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else>
+        <div class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
+          <div class="w-full px-4 py-5">
+            <h2 class="text-center text-sm text-gray-600">
+              You haven't added any payment methods yet.
             </h2>
           </div>
         </div>

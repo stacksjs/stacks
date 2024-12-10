@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+
 import User from './User'
 
 export interface SubscriptionsTable {
@@ -396,6 +397,20 @@ export class SubscriptionModel {
     instance.query = instance.query.where(column, operator, value)
 
     return instance
+  }
+
+  static whereNull(column: string): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): SubscriptionModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
   }
 
   static whereType(value: string): SubscriptionModel {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { Command } from '../../../../packages'
 import type { ItemInfo } from '../../../../packages/types'
+import { Command } from '../../../../packages'
 
 defineProps({
   isCommand: {

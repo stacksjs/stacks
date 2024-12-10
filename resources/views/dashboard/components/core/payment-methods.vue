@@ -1,38 +1,31 @@
 <script setup lang="ts">
+// import { notification } from '@stacksjs/notification'
+// import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/popover'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
-
-const props = defineProps<{
-  customer: string
-}>()
-
-const { customer } = props
 
 const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 
 const paymentStore = usePaymentStore()
 
-onMounted(async () => {
+async function deletePayment(paymentMethodId: string) {
+  await paymentStore.deletePaymentMethod(paymentMethodId)
+
+  paymentStore.fetchUserPaymentMethods()
+  // notification.success('Payment method deleted')
+}
+
+async function makeDefault(paymentMethodId: string) {
+  isDefaultLoading.value[paymentMethodId] = true
+
+  await paymentStore.updateDefaultPaymentMethod(paymentMethodId)
+
   await paymentStore.fetchUserPaymentMethods()
-})
+  await paymentStore.fetchDefaultPaymentMethod()
 
-// async function deletePayment(paymentMethodId: string) {
-//   await paymentStore.deletePaymentMethod(paymentMethodId)
-
-//   paymentStore.fetchUserPaymentMethods()
-//   // notification.success('Payment method deleted')
-// }
-
-// async function makeDefault(paymentMethodId: string) {
-//   isDefaultLoading.value[paymentMethodId] = true
-
-//   await paymentStore.updateDefaultPaymentMethod(paymentMethodId)
-
-//   await paymentStore.fetchUserPaymentMethods()
-//   await paymentStore.fetchDefaultPaymentMethod()
-
-//   isDefaultLoading.value[paymentMethodId] = false
-// }
+  // notification.success('Default payment method updated')
+  isDefaultLoading.value[paymentMethodId] = false
+}
 </script>
 
 <template>
@@ -44,10 +37,10 @@ onMounted(async () => {
         <div class="w-full p-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <CardBrands :brand="method.card.brand" alt="Brand Logo" />
+              <CardBrands :brand="method.brand" alt="Brand Logo" />
               <h2 class="text-sm text-gray-600">
-                {{ method.card.brand }} •••• {{ method.card.last4 }} <br>
-                <span class="text-xs text-gray-500 italic">Expires {{ method.card.exp_month }} /  {{ method.card.exp_year }} </span>
+                {{ method.brand }} •••• {{ method.last_four }} <br>
+                <span class="text-xs text-gray-500 italic">Expires {{ method.exp_month }} /  {{ method.exp_year }} </span>
               </h2>
             </div>
 

@@ -1,10 +1,10 @@
 import { computed, defineComponent, h } from 'vue'
-import Root from './CommandRoot.vue'
 import Dialog from './CommandDialog.vue'
 import Group from './CommandGroup.vue'
 import Input from './CommandInput.vue'
 import Item from './CommandItem.vue'
 import List from './CommandList.vue'
+import Root from './CommandRoot.vue'
 import { useCommandState } from './useCommandState'
 
 /**
@@ -18,22 +18,22 @@ const Empty = defineComponent({
     return () =>
       isRender.value
         ? h(
-          'div',
-          {
-            'command-empty': '',
-            'role': 'presentation',
-            ...attrs,
-          },
-          slots,
-        )
+            'div',
+            {
+              'command-empty': '',
+              'role': 'presentation',
+              ...attrs,
+            },
+            slots,
+          )
         : h('div', {
-          'command-empty': 'hidden',
-          'role': 'presentation',
-          'style': {
-            display: 'none',
-          },
-          ...attrs,
-        })
+            'command-empty': 'hidden',
+            'role': 'presentation',
+            'style': {
+              display: 'none',
+            },
+            ...attrs,
+          })
   },
 })
 

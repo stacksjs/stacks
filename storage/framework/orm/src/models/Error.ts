@@ -376,6 +376,20 @@ export class ErrorModel {
     return instance
   }
 
+  static whereNull(column: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): ErrorModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
+  }
+
   static whereType(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 

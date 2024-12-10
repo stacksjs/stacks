@@ -361,6 +361,20 @@ export class ReleaseModel {
     return instance
   }
 
+  static whereNull(column: string): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): ReleaseModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
+  }
+
   static whereVersion(value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 

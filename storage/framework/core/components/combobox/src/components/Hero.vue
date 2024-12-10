@@ -23,11 +23,11 @@ const filteredPeople = computed(() =>
   query.value === ''
     ? people
     : people.value.filter((person: Person) =>
-      person.name
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .includes(query.value.toLowerCase().replace(/\s+/g, '')),
-    ),
+        person.name
+          .toLowerCase()
+          .replace(/\s+/g, '')
+          .includes(query.value.toLowerCase().replace(/\s+/g, '')),
+      ),
 ) as Ref<Person[]>
 </script>
 

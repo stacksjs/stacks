@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import type { ItemInfo } from './types'
+import { ref } from 'vue'
 
 export interface Events {
   selectItem: ItemInfo

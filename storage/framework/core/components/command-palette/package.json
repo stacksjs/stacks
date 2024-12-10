@@ -31,10 +31,10 @@
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {
-    "@stacksjs/ui": "workspace:*",
     "@stacksjs/browser": "workspace:*",
-    "highlight.js": "^11.10.0",
-    "fuse.js": "^6.6.2"
+    "@stacksjs/ui": "workspace:*",
+    "fuse.js": "^6.6.2",
+    "highlight.js": "^11.10.0"
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.1",
@@ -44,7 +44,7 @@
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.7.0",
     "clean-css": "^5.3.3",
-    "unplugin-icons": "^0.20.2",
-    "sass": "^1.71.1"
+    "sass": "^1.71.1",
+    "unplugin-icons": "^0.20.2"
   }
 }

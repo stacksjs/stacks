@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
+import type { CommandRootEmits, CommandRootProps } from './types'
 import { refDebounced } from '@vueuse/core'
 import Fuse from 'fuse.js'
 
-import { useCommandState } from './useCommandState'
+import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useCommandEvent } from './useCommandEvent'
+import { useCommandState } from './useCommandState'
 import { findNextSibling, findPreviousSibling } from './utils'
-import type { CommandRootEmits, CommandRootProps, ItemInfo } from './types'
 
 defineOptions({
   name: 'Command.Root',

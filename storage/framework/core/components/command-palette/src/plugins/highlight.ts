@@ -1,8 +1,8 @@
 import type { Plugin } from 'vue'
-import { computed, defineComponent, h, ref, watch } from 'vue'
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import xml from 'highlight.js/lib/languages/xml'
+import { computed, defineComponent, h, ref, watch } from 'vue'
 
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('xml', xml)

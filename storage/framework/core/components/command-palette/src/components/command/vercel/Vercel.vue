@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import type { ItemInfo } from '../../../../packages/types'
 import { useMagicKeys, whenever } from '@vueuse/core'
 
+import { computed, ref } from 'vue'
+import { Command, useCommandState } from '../../../../packages'
+import { toggleDarkmode } from '../../../composables/useDarkmode'
 import Home from './Home.vue'
 import Projects from './Projects.vue'
-import { toggleDarkmode } from '../../../composables/useDarkmode'
-import { Command, useCommandState } from '../../../../packages'
-import type { ItemInfo } from '../../../../packages/types'
 
 const { current } = useMagicKeys()
 const { search } = useCommandState()

@@ -1,12 +1,12 @@
 <script lang="ts" setup>
+import { Command } from '../../../packages'
 import LinearAssignToIcon from '../icons/LinearAssignToIcon.vue'
 import LinearAssignToMeIcon from '../icons/LinearAssignToMeIcon.vue'
-import LinearChangeStatusIcon from '../icons/LinearChangeStatusIcon.vue'
-import LinearChangePriorityIcon from '../icons/LinearChangePriorityIcon.vue'
 import LinearChangeLabelsIcon from '../icons/LinearChangeLabelsIcon.vue'
+import LinearChangePriorityIcon from '../icons/LinearChangePriorityIcon.vue'
+import LinearChangeStatusIcon from '../icons/LinearChangeStatusIcon.vue'
 import LinearRemoveLabelIcon from '../icons/LinearRemoveLabelIcon.vue'
 import LinearSetDueDateIcon from '../icons/LinearSetDueDateIcon.vue'
-import { Command } from '../../../packages'
 
 const items = [
   {

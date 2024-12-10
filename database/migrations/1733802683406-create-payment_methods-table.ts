@@ -11,6 +11,7 @@ export async function up(db: Database<any>) {
     .addColumn('brand', 'varchar(50)', col => col.notNull())
     .addColumn('exp_month', 'integer', col => col.notNull())
     .addColumn('exp_year', 'integer', col => col.notNull())
+    .addColumn('is_default', 'boolean')
     .addColumn('provider_id', 'varchar(255)')
     .addColumn('user_id', 'integer', col =>
       col.references('users.id').onDelete('cascade'))

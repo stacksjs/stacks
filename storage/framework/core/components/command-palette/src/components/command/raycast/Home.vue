@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import Item from './Item.vue'
 import { Command } from '../../../../packages'
 import FigmaIcon from '../../icons/FigmaIcon.vue'
-import RaycastIcon from '../../icons/RaycastIcon.vue'
-import YouTubeIcon from '../../icons/YouTubeIcon.vue'
-import SlackIcon from '../../icons/SlackIcon.vue'
 import LinearIcon from '../../icons/LinearIcon.vue'
-
 import ClipboardIcon from '../../icons/RaycastClipboardIcon.vue'
 import HammerIcon from '../../icons/RaycastHammerIcon.vue'
+import RaycastIcon from '../../icons/RaycastIcon.vue'
+import SlackIcon from '../../icons/SlackIcon.vue'
+
+import YouTubeIcon from '../../icons/YouTubeIcon.vue'
+import Item from './Item.vue'
 
 const items1 = [
   {

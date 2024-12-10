@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+
 import Team from './Team'
 
 export interface PersonalAccessTokensTable {
@@ -373,6 +374,20 @@ export class AccessTokenModel {
     instance.query = instance.query.where(column, operator, value)
 
     return instance
+  }
+
+  static whereNull(column: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): AccessTokenModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
   }
 
   static whereName(value: string): AccessTokenModel {

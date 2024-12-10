@@ -1,6 +1,6 @@
 export {
-  nanoid as random,
   customAlphabet,
   customRandom,
+  nanoid as random,
   urlAlphabet,
 } from 'nanoid'

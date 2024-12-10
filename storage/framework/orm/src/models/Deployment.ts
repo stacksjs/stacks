@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+
 import User from './User'
 
 export interface DeploymentsTable {
@@ -387,6 +388,20 @@ export class DeploymentModel {
     instance.query = instance.query.where(column, operator, value)
 
     return instance
+  }
+
+  static whereNull(column: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): DeploymentModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
   }
 
   static whereCommitSha(value: string): DeploymentModel {

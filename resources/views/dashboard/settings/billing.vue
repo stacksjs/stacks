@@ -11,8 +11,8 @@ const { isEmpty, showCurrentPlan } = useBillable()
 
 const paymentStore = usePaymentStore()
 
-onMounted(() => {
-  paymentStore.fetchStripeCustomer().then(async () => {
+onMounted(async () => {
+  await paymentStore.fetchStripeCustomer().then(async () => {
     if (!isEmpty(paymentStore.getStripeCustomer)) {
       await paymentStore.fetchDefaultPaymentMethod()
       await paymentStore.fetchUserPaymentMethods()
@@ -36,8 +36,9 @@ onMounted(() => {
             <Plans v-else />
           </div>
         </div>
-
-        <PaymentMethod />
+        <Suspense>
+          <PaymentMethod />
+        </Suspense>
       </div>
     </div>
   </div>

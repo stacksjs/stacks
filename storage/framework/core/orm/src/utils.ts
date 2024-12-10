@@ -236,10 +236,8 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
   const usePasskey = typeof model.traits?.useAuth === 'object' ? model.traits?.useAuth.usePasskey : false
   const useUuid = typeof model.traits?.useUuid || false
 
-  if (useBillable) {
+  if (useBillable)
     additionalCols.push('stripe_id')
-    additionalCols.push('default_payment_method')
-  }
 
   if (useUuid)
     additionalCols.push('uuid')
@@ -989,6 +987,7 @@ export async function generateModelString(
   let whereFunctionStatements = ''
   let relationMethods = ``
   let relationImports = ``
+  let paymentImports = ``
   let twoFactorStatements = ''
   let billableStatements = ''
   let displayableStatements = ''
@@ -1183,6 +1182,8 @@ export async function generateModelString(
   }
 
   if (useBillable) {
+    paymentImports += `import { PaymentMethodModel } from './PaymentMethod'`
+
     billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createStripeCustomer(this, options)
 
@@ -1263,7 +1264,7 @@ export async function generateModelString(
       return deletedPaymentMethod
     }
 
-    async retrievePaymentMethod(paymentMethod: string): Promise<Stripe.Response<Stripe.PaymentMethod> | null> {
+    async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodModel | undefined> {
       const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
 
       return defaultPaymentMethod
@@ -1413,10 +1414,8 @@ export async function generateModelString(
     `
 
     declareFields += `public stripe_id: string | undefined\n`
-    declareFields += `public default_payment_method: number | undefined\n`
 
     constructorFields += `this.stripe_id = ${formattedModelName}?.stripe_id\n   `
-    constructorFields += `this.default_payment_method = ${formattedModelName}?.default_payment_method\n   `
   }
 
   if (useTwoFactor) {
@@ -1525,10 +1524,8 @@ export async function generateModelString(
   if (usePasskey && tableName === 'users')
     fieldString += 'public_passkey?: string \n'
 
-  if (useBillable && tableName === 'users') {
+  if (useBillable && tableName === 'users')
     fieldString += 'stripe_id?: string \n'
-    fieldString += 'default_payment_method?: string \n'
-  }
 
   if (useUuid)
     fieldString += 'uuid?: string \n'
@@ -1557,7 +1554,7 @@ export async function generateModelString(
     import { verifyTwoFactorCode } from '@stacksjs/auth'
     import { cache } from '@stacksjs/cache'
     import { randomUUIDv7 } from 'bun'
-    import { PaymentMethodModel } from './PaymentMethod'
+    ${paymentImports}
     ${relationImports}
 
     export interface ${formattedTableName}Table {
@@ -1907,6 +1904,20 @@ export async function generateModelString(
         instance.query = instance.query.where(column, operator, value)
 
         return instance
+      }
+
+      static whereNull(column: string): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        instance.query = instance.query.where(column, 'is', null)
+
+        return instance
+      }
+
+      whereNull(column: string): ${modelName}Model {
+        this.query = this.query.where(column, 'is', null)
+
+        return this
       }
 
        ${whereStatements}

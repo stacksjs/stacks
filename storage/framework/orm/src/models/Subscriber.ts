@@ -365,6 +365,20 @@ export class SubscriberModel {
     return instance
   }
 
+  static whereNull(column: string): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): SubscriberModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
+  }
+
   static whereSubscribed(value: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 

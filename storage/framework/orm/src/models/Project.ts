@@ -370,6 +370,20 @@ export class ProjectModel {
     return instance
   }
 
+  static whereNull(column: string): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): ProjectModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
+  }
+
   static whereName(value: string): ProjectModel {
     const instance = new ProjectModel(null)
 

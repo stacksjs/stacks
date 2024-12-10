@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import Home from './Home.vue'
-import { isDark } from '../../../composables/useDarkmode'
-
-import { Command } from '../../../../packages'
 import type { ItemInfo } from '../../../../packages/types'
-import RaycastLightIcon from '../../icons/RaycastLightIcon.vue'
+import { Command } from '../../../../packages'
+
+import { isDark } from '../../../composables/useDarkmode'
 import RaycastDarkIcon from '../../icons/RaycastDarkIcon.vue'
+import RaycastLightIcon from '../../icons/RaycastLightIcon.vue'
+import Home from './Home.vue'
 
 function handleSelectItem(item: ItemInfo) {
   console.log(item)

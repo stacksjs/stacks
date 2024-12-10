@@ -9,6 +9,6 @@ export function lazy<T>(getter: () => T): { value: T } {
       const value = getter()
       Object.defineProperty(this, 'value', { value })
       return value
-    }
+    },
   }
 }

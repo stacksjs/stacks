@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+
 import User from './User'
 
 export interface ProductsTable {
@@ -383,6 +384,20 @@ export class ProductModel {
     instance.query = instance.query.where(column, operator, value)
 
     return instance
+  }
+
+  static whereNull(column: string): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): ProductModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
   }
 
   static whereName(value: string): ProductModel {

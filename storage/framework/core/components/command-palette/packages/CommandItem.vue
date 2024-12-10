@@ -3,12 +3,12 @@ import { computed, onBeforeUnmount, ref, watchEffect } from 'vue'
 </script>
 
 <script lang="ts" setup>
-import { random } from '@stacksjs/browser'
-import { useMagicKeys, whenever } from '@vueuse/core'
-
-import { useCommandState } from './useCommandState'
-import { useCommandEvent } from './useCommandEvent'
 import type { CommandItemEmits, CommandItemProps } from './types'
+import { random } from '@stacksjs/browser'
+
+import { useMagicKeys, whenever } from '@vueuse/core'
+import { useCommandEvent } from './useCommandEvent'
+import { useCommandState } from './useCommandState'
 
 defineOptions({
   name: 'Command.Item',

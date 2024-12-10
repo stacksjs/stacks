@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+
 import AccessToken from './AccessToken'
 
 import User from './User'
@@ -390,6 +391,20 @@ export class TeamModel {
     instance.query = instance.query.where(column, operator, value)
 
     return instance
+  }
+
+  static whereNull(column: string): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): TeamModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
   }
 
   static whereName(value: string): TeamModel {

@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
 import { onClickOutside, useMagicKeys, whenever } from '@vueuse/core'
+import { computed, ref } from 'vue'
 
 import { Command, useCommandState } from '../../../packages'
 import { isDark, toggleDarkmode } from '../../composables/useDarkmode'
-import RaycastIcon from '../icons/RaycastIcon.vue'
 import LinearIcon from '../icons/LinearIcon.vue'
-import VercelIcon from '../icons/VercelIcon.vue'
-import SunIcon from '../icons/SunIcon.vue'
-import MoonIcon from '../icons/MoonIcon.vue'
 import Logo from '../icons/Logo.vue'
+import MoonIcon from '../icons/MoonIcon.vue'
+import RaycastIcon from '../icons/RaycastIcon.vue'
+import SunIcon from '../icons/SunIcon.vue'
+import VercelIcon from '../icons/VercelIcon.vue'
 
 defineProps<{
   visible: boolean
@@ -71,8 +71,9 @@ whenever(
       isHomePage.value
       || inputValue.value.length
       || commandInputEl.value.length
-    )
+    ) {
       return
+    }
     togglePage()
   },
 )
@@ -135,8 +136,8 @@ onClickOutside(el, (e: Event) => {
             :perform="item.perform"
             @select="() => toggleDarkmode()"
           >
-            <MoonIcon v-if="isDark" class="w-6 h-6" />
-            <SunIcon v-else class="w-6 h-6" />
+            <MoonIcon v-if="isDark" class="h-6 w-6" />
+            <SunIcon v-else class="h-6 w-6" />
             {{ item.label }}
             <div command-linear-shortcuts class="hidden">
               <svg width="20" height="20" viewBox="0 0 20 20">

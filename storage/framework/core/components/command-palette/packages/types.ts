@@ -12,7 +12,7 @@ export interface CommandRootProps {
   fuseOptions?: IFuseOptions<any>
 }
 
-export type CommandRootEmits = {
+export interface CommandRootEmits {
   selectItem: [item: ItemInfo]
 }
 
@@ -21,7 +21,7 @@ export interface CommandItemProps {
   perform?: Noop
 }
 
-export type CommandItemEmits = {
+export interface CommandItemEmits {
   select: [item: ItemInfo]
 }
 
@@ -30,8 +30,8 @@ export interface CommandInputProps {
   value?: string
 }
 
-export type CommandInputEmits = {
-  input: [ie: InputEvent]
+export interface CommandInputEmits {
+  'input': [ie: InputEvent]
   'update:value': [val: any]
 }
 

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
+import type { CommandGroupProps } from './types'
 import { random } from '@stacksjs/browser'
 
+import { computed } from 'vue'
 import { useCommandState } from './useCommandState'
-import type { CommandGroupProps } from './types';
 
 defineOptions({
   name: 'Command.Group',

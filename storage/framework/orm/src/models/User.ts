@@ -30,7 +30,6 @@ export interface UsersTable {
   post_id?: number
   public_passkey?: string
   stripe_id?: string
-  default_payment_method?: string
   uuid?: string
 
   created_at?: Date
@@ -72,13 +71,12 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'default_payment_method', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
   private softDeletes = false
   protected query: any
   protected hasSelect: boolean
   public id: number | undefined
   public stripe_id: string | undefined
-  public default_payment_method: number | undefined
   public uuid: string | undefined
   public public_passkey: string | undefined
   public name: string | undefined
@@ -95,7 +93,6 @@ export class UserModel {
   constructor(user: Partial<UserType> | null) {
     this.id = user?.id
     this.stripe_id = user?.stripe_id
-    this.default_payment_method = user?.default_payment_method
     this.uuid = user?.uuid
     this.public_passkey = user?.public_passkey
     this.name = user?.name
@@ -417,6 +414,20 @@ export class UserModel {
     instance.query = instance.query.where(column, operator, value)
 
     return instance
+  }
+
+  static whereNull(column: string): UserModel {
+    const instance = new UserModel(null)
+
+    instance.query = instance.query.where(column, 'is', null)
+
+    return instance
+  }
+
+  whereNull(column: string): UserModel {
+    this.query = this.query.where(column, 'is', null)
+
+    return this
   }
 
   static whereName(value: string): UserModel {
@@ -794,7 +805,7 @@ export class UserModel {
     return deletedPaymentMethod
   }
 
-  async retrievePaymentMethod(paymentMethod: string): Promise<Stripe.Response<Stripe.PaymentMethod> | null> {
+  async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodModel | undefined> {
     const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
 
     return defaultPaymentMethod

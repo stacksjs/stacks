@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { onBeforeUnmount, ref, watch } from 'vue'
+import type { ItemInfo } from './types'
 import { whenever } from '@vueuse/core'
 
+import { onBeforeUnmount, ref, watch } from 'vue'
 import Command from './CommandRoot.vue'
-import { useCommandState } from './useCommandState'
 import { useCommandEvent } from './useCommandEvent'
-import type { ItemInfo } from './types'
+import { useCommandState } from './useCommandState'
 
 defineOptions({
   name: 'Command.Dialog',
