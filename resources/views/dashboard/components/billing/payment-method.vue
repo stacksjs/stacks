@@ -13,7 +13,7 @@ const isLoadingWebElement = ref(false)
 const showStripe = ref(false)
 const elements = ref('')
 
-const { loadStripeElement, isEmpty, handleAddPaymentMethod } = useBillable()
+const { loadStripeElement, handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
   isLoadingWebElement.value = true
@@ -50,11 +50,13 @@ function cancelPaymentForm() {
     <LoadingCard v-if="paymentStore.isStateLoading('fetchDefaultPaymentMethod') && paymentStore.isStateLoading('fetchStripeCustomer')" class="mt-8" />
 
     <div v-else>
-      <div v-if="paymentStore.hasPaymentMethods" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
+      <div v-if="paymentStore.getDefaultPaymentMethod" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
         <div class="w-full p-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <CardBrands :brand="paymentStore.getDefaultPaymentMethod.brand" alt="Brand Logo" />
+              
+              <CardBrands v-if="paymentStore.getDefaultPaymentMethod.brand" :brand="paymentStore.getDefaultPaymentMethod.brand" alt="Brand Logo" />
+             
               <h2 class="text-sm text-gray-600">
                 {{ paymentStore.getDefaultPaymentMethod.brand }} •••• {{ paymentStore.getDefaultPaymentMethod.last_four }}
                 <span class="ml-4 inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-medium ring-1 ring-indigo-700/10 ring-inset">Default</span>
@@ -77,7 +79,7 @@ function cancelPaymentForm() {
       </div>
     </div>
 
-    <PaymentMethodList />
+    <PaymentMethodList  :userId="1"/>
 
     <div v-show="showStripe">
       <form id="payment-form">

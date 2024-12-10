@@ -129,10 +129,10 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('subscription:canceled')
     },
 
-    async fetchUserPaymentMethods(): Promise<void> {
+    async fetchUserPaymentMethods(id: number): Promise<void> {
       this.setLoadingState('fetchUserPaymentMethods')
 
-      const response: any = await fetch(`${apiUrl}/payments/payment-methods/1`, {
+      const response: any = await fetch(`${apiUrl}/payments/payment-methods/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -151,10 +151,10 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('paymentMethods:fetched')
     },
 
-    async fetchTransactionHistory(): Promise<void> {
+    async fetchTransactionHistory(id: number): Promise<void> {
       this.setLoadingState('fetchTransactionHistory')
 
-      const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history/1`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('paymentMethods:fetched')
     },
 
-    async deletePaymentMethod(paymentMethod: string): Promise<void> {
+    async deletePaymentMethod(paymentMethod: number): Promise<void> {
       this.setLoadingState('deletePaymentMethod')
       const url = 'http://localhost:3008/payments/delete-payment-method'
 
@@ -224,10 +224,10 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('paymentMethod:updated')
     },
 
-    async fetchStripeCustomer(): Promise<void> {
+    async fetchStripeCustomer(id: number): Promise<void> {
       this.setLoadingState('fetchStripeCustomer')
 
-      const response: any = await fetch(`${apiUrl}/payments/fetch-customer/1`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-customer/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -245,10 +245,10 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('customer:fetched')
     },
 
-    async fetchDefaultPaymentMethod(): Promise<void> {
+    async fetchDefaultPaymentMethod(id: number): Promise<void> {
       this.setLoadingState('fetchDefaultPaymentMethod')
 
-      const response: any = await fetch(`${apiUrl}/payments/default-payment-method/1`, {
+      const response: any = await fetch(`${apiUrl}/payments/default-payment-method/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -267,9 +267,9 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('paymentMethod:fetched')
     },
 
-    async fetchUserActivePlan(): Promise<void> {
+    async fetchUserActivePlan(id: number): Promise<void> {
       this.setLoadingState('fetchActivePlan')
-      const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription/1`, {
+      const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

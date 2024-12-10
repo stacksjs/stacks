@@ -1,29 +1,37 @@
 <script setup lang="ts">
-// import { notification } from '@stacksjs/notification'
-// import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/popover'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
 
 const isDefaultLoading = ref<{ [key: string]: boolean }>({})
 
+interface Props {
+  userId: number
+}
+
+const props = defineProps<Props>()
+
+const userId = props.userId
+
 const paymentStore = usePaymentStore()
 
-async function deletePayment(paymentMethodId: string) {
+onMounted( async () => {
+  await paymentStore.fetchUserPaymentMethods(userId)
+})
+
+async function deletePayment(paymentMethodId: number) {
   await paymentStore.deletePaymentMethod(paymentMethodId)
 
   paymentStore.fetchUserPaymentMethods()
-  // notification.success('Payment method deleted')
 }
 
-async function makeDefault(paymentMethodId: string) {
+async function makeDefault(paymentMethodId: number) {
   isDefaultLoading.value[paymentMethodId] = true
 
   await paymentStore.updateDefaultPaymentMethod(paymentMethodId)
 
   await paymentStore.fetchUserPaymentMethods()
   await paymentStore.fetchDefaultPaymentMethod()
-
-  // notification.success('Default payment method updated')
+  
   isDefaultLoading.value[paymentMethodId] = false
 }
 </script>
@@ -55,42 +63,14 @@ async function makeDefault(paymentMethodId: string) {
                 <span v-if="isDefaultLoading[method.id]" class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin text-gray-500" />
               </button>
 
-              <!-- <Popover v-slot="{ open }">
-                <PopoverButton>
-                  <div
-                    :class="open ? 'text-red-500' : 'text-red-500/90'"
-                    class="border rounded-md bg-white px-2 py-1 text-sm font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-red-600 focus-visible:outline-offset-2 focus-visible:outline"
-                  >
-                    <span class="i-heroicons-trash text-red-500" />
-                  </div>
-                </PopoverButton>
-
-                <PopoverPanel
-                  class="absolute z-10 mt-2 w-56 border border-gray-200 rounded-lg bg-white p-4 text-xs shadow-lg"
-                >
-                  <span> Delete Payment Method? </span>
-                  <div class="mt-2 flex justify-end space-x-4">
-                    <button
-                      class="border rounded-md bg-white px-2 py-1 text-sm text-red-500 font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-red-600 focus-visible:outline-offset-2 focus-visible:outline"
-                      @click="deletePayment(method.id)"
-                    >
-                      Yes
-                    </button>
-                    <button
-                      class="border rounded-md bg-white px-2 py-1 text-sm font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-red-600 focus-visible:outline-offset-2 focus-visible:outline"
-                      @click="open = false"
-                    >
-                      No
-                    </button>
-                  </div>
-                </PopoverPanel>
-
-                <PopoverPanel class="absolute z-10">
-                  <div class="p-4 bg-white rounded-lg shadow-lg  ">
-                    <h3 class="text-sm leading-6 text-gray-900">Delete Payment Method</h3>
-                  </div>
-                </PopoverPanel>
-              </Popover> -->
+              <button
+                type="button"
+                class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                :disabled="isDefaultLoading[method.id]"
+                @click="deletePayment(method.id)"
+              >
+                <span class="i-heroicons-trash text-gray-700" />
+              </button>
             </div>
           </div>
         </div>

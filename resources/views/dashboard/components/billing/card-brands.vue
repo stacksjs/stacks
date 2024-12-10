@@ -11,6 +11,9 @@ const defaultProps = {
 const { brand, width = defaultProps.width } = props
 
 const logoSrc = computed(() => {
+  if (!props.brand) 
+    return ''
+
   switch (props.brand.toLowerCase()) {
     case 'visa':
       return '/images/logos/visa.png'
