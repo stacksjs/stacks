@@ -416,6 +416,11 @@
     "wordBoundary": true,
     "wordChar": true,
     "usePaymentStore": true,
-    "saas": true
+    "saas": true,
+    "customAlphabet": true,
+    "customRandom": true,
+    "lazy": true,
+    "random": true,
+    "urlAlphabet": true
   }
 }
