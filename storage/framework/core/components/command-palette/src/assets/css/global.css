@@ -155,6 +155,8 @@ div [command-dialog-footer] {
 
 code.hljs {
   border-radius: 16px;
+  color: #24292e;
+  background: #ffffff;
 }
 
 /*

@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, ref, watchEffect } from 'vue'
 
 <script lang="ts" setup>
 import type { CommandItemEmits, CommandItemProps } from './types'
-import { random } from '@stacksjs/browser'
+import { random } from '@stacksjs/strings'
 
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { useCommandEvent } from './useCommandEvent'

@@ -3,6 +3,7 @@ import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import xml from 'highlight.js/lib/languages/xml'
 import { computed, defineComponent, h, ref, watch } from 'vue'
+import 'highlight.js/styles/github.css'
 
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('xml', xml)
@@ -18,6 +19,10 @@ function escapeHtml(value: string): string {
 
 const component = defineComponent({
   props: {
+    className: {
+      type: String,
+      default: '',
+    },
     code: {
       type: String,
       required: true,
@@ -45,23 +50,18 @@ const component = defineComponent({
     )
 
     const autodetect = computed(() => props.autodetect || !language.value)
-    const cannotDetectLanguage = computed(
-      () => !autodetect.value && !hljs.getLanguage(language.value),
-    )
+    const cannotDetectLanguage = computed(() => !autodetect.value && !hljs.getLanguage(language.value))
 
     const className = computed((): string => {
       if (cannotDetectLanguage.value)
         return ''
-      else
-        return `hljs ${language.value}`
+      return `hljs ${language.value} ${props.className}`
     })
 
     const highlightedCode = computed((): string => {
       // No idea what language to use, return raw code
       if (cannotDetectLanguage.value) {
-        console.warn(
-          `The language "${language.value}" you specified could not be found.`,
-        )
+        console.warn(`The language "${language.value}" you specified could not be found.`)
         return escapeHtml(props.code)
       }
 
@@ -70,13 +70,13 @@ const component = defineComponent({
         language.value = result.language ?? ''
         return result.value
       }
-      else {
-        const result = hljs.highlight(props.code, {
-          language: language.value,
-          ignoreIllegals: props.ignoreIllegals,
-        })
-        return result.value
-      }
+
+      const result = hljs.highlight(props.code, {
+        language: language.value,
+        ignoreIllegals: props.ignoreIllegals,
+      })
+
+      return result.value
     })
 
     return {

@@ -70,7 +70,7 @@ function handleSelectItem(item: ItemInfo) {
         placeholder="What do you need?"
       />
     </template>
-    <!-- <Command.Loading> Hang on... </Command.Loading> -->
+
     <template #body>
       <Command.List ref="dialogRef">
         <Command.Empty>No results found.</Command.Empty>

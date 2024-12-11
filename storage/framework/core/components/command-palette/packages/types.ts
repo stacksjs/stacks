@@ -1,5 +1,3 @@
-import type { IFuseOptions } from 'fuse.js'
-
 export interface ItemInfo {
   key: string
   value: string
@@ -9,7 +7,10 @@ export type Noop = () => void
 
 export interface CommandRootProps {
   theme?: string
-  fuseOptions?: IFuseOptions<any>
+  options?: {
+    threshold?: number
+    key?: string
+  }
 }
 
 export interface CommandRootEmits {

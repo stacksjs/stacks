@@ -1,27 +1,43 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { notification } from '../../'
-import { useCopyCode } from '../../composables/Demo/useCopyCode'
+import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `<!-- App.vue -->
+const code = `
+<!-- App.vue -->
 <script lang="ts" setup>
-import { Notification, notification } from '@stacksjs/notification'
+import { ref } from 'vue'
+import { Command } from '@stackjs/command-pallete'
+
+
+const visible = ref(false)
 <\/script>
 
-<template>
-  <!-- ... -->
-  <Notification />
-  <button @click="() => notification('My first notification')">
-    Give me a notification
-  </button>
-</template>
+<!-- <template> -->
+<Command.Dialog :visible="visible" theme="custom">
+  <template #header>
+    <Command.Input placeholder="Type a command or search..." />
+  </template>
+  <template #body>
+    <Command.List>
+      <Command.Empty>No results found.</Command.Empty>
+
+      <Command.Group heading="Letters">
+        <Command.Item>a</Command.Item>
+        <Command.Item>b</Command.Item>
+        <Command.Separator />
+        <Command.Item>c</Command.Item>
+      </Command.Group>
+
+      <Command.Item>Apple</Command.Item>
+    </Command.List>
+  </template>
+</Command.Dialog>
 `
 
 const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!')
 }
 </script>
 
@@ -30,9 +46,7 @@ async function handleCopyCode() {
     <h1 class="my-2 text-lg font-semibold">
       Usage
     </h1>
-    <p class="my-3 text-base">
-      Render the toaster in the root of your app.
-    </p>
+
     <div class="code-block group relative">
       <Highlight
         class-name="rounded-md text-xs"

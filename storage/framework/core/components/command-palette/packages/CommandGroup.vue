@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { CommandGroupProps } from './types'
-import { random } from '@stacksjs/browser'
+import { random } from '@stacksjs/strings'
 
 import { computed } from 'vue'
 import { useCommandState } from './useCommandState'

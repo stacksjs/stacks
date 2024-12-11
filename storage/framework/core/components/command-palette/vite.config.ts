@@ -47,8 +47,8 @@ export default defineConfig(({ mode }) => {
   if (mode === 'lib') {
     userConfig.build = {
       lib: {
-        entry: resolve(__dirname, 'src/index.ts'),
-        name: 'StacksNotification',
+        entry: resolve(__dirname, 'packages/index.ts'),
+        name: 'StacksCommandPalette',
         fileName: 'index',
       },
       outDir: 'dist',
@@ -89,7 +89,7 @@ export default defineConfig(({ mode }) => {
 
           return {
             code: `\
-            function __insertCSSStacksNotification(code) {
+            function __insertCSSStacksCommandPalette(code) {
               if (!code || typeof document == 'undefined') return
               let head = document.head || document.getElementsByTagName('head')[0]
               let style = document.createElement('style')
@@ -97,7 +97,7 @@ export default defineConfig(({ mode }) => {
               head.appendChild(style)
               ;style.styleSheet ? (style.styleSheet.cssText = code) : style.appendChild(document.createTextNode(code))
             }\n
-            __insertCSSStacksNotification(${JSON.stringify(cssCodeStr)})
+            __insertCSSStacksCommandPalette(${JSON.stringify(cssCodeStr)})
             \n ${code}`,
             map: { mappings: '' },
           }
@@ -112,6 +112,9 @@ export default defineConfig(({ mode }) => {
       '~/config/errors': p.projectConfigPath('errors.ts'),
 
       ...alias,
+    },
+    server: {
+      port: 3000,
     },
     plugins: [...commonPlugins],
     ...userConfig,

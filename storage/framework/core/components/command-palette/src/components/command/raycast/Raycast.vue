@@ -5,7 +5,7 @@ import { Command } from '../../../../packages'
 import { isDark } from '../../../composables/useDarkmode'
 import RaycastDarkIcon from '../../icons/RaycastDarkIcon.vue'
 import RaycastLightIcon from '../../icons/RaycastLightIcon.vue'
-import Home from './Home.vue'
+import Home from './RaycastHome.vue'
 
 function handleSelectItem(item: ItemInfo) {
   console.log(item)
@@ -24,7 +24,6 @@ function handleSelectItem(item: ItemInfo) {
       <hr command-raycast-loader="">
     </template>
     <template #body>
-      <!-- <Command.Loading> Hang on... </Command.Loading> -->
       <Command.List ref="dialogRef">
         <Command.Empty>No results found.</Command.Empty>
         <Home />

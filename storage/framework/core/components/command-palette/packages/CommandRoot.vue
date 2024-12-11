@@ -1,24 +1,22 @@
 <script lang="ts" setup>
 import type { CommandRootEmits, CommandRootProps } from './types'
 import { refDebounced } from '@vueuse/core'
-import Fuse from 'fuse.js'
 
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useCommandEvent } from './useCommandEvent'
 import { useCommandState } from './useCommandState'
 import { findNextSibling, findPreviousSibling } from './utils'
+import { collect } from 'ts-collect'
 
 defineOptions({
-  name: 'Command.Root',
+  name: 'Command.Root'
 })
 
 const props = withDefaults(defineProps<CommandRootProps>(), {
   theme: 'default',
-  fuseOptions() {
-    return {
-      threshold: 0.2,
-      keys: ['label'],
-    }
+  options: {
+    threshold: 0.2,
+    key: 'label',
   },
 })
 
@@ -45,23 +43,15 @@ const commandList = refDebounced(ref(new Map()), 333)
 const allItemIds = refDebounced(ref<Set<string>>(new Set()), 333) // [...itemIds]
 const allGroupIds = refDebounced(ref<Map<string, Set<string>>>(new Map())) // groupId -> [...itemIds]
 
-const commandFuseList = computed(() => {
-  const fuseList = [] as any[]
+const commandSearchList = computed(() => {
+  const list = [] as any[]
   for (const [key, label] of commandList.value.entries()) {
-    fuseList.push({
+    list.push({
       key,
       label,
     })
   }
-  return fuseList
-})
-
-const fuse = computed(() => {
-  const fuseIndex = Fuse.createIndex(
-    props.fuseOptions.keys!,
-    commandFuseList.value,
-  )
-  return new Fuse(commandFuseList.value, props.fuseOptions, fuseIndex)
+  return list
 })
 
 function scrollSelectedIntoView() {
@@ -266,12 +256,15 @@ function filterItems() {
   filtered.value.groups = new Set()
 
   const items = new Map()
+  const key = props.options.key || 'label'
+  const threshold = props.options.threshold || 0.2
 
-  const list = fuse.value.search(search.value).map(r => r.item)
+  const list = collect(commandSearchList.value).fuzzyMatch(key, search.value, threshold).all()
 
   // transform list to map
-  for (const { key, label } of list)
+  for (const { key, label } of list){
     items.set(key, label)
+  }
 
   // Check which groups have at least 1 item shown
   for (const [groupId, itemIdsInGroup] of allGroupIds.value) {
@@ -366,6 +359,8 @@ watch(
 onMounted(() => {
   initStore()
   nextTick(selectedFirstItem)
+
+  console.log(commandSearchList.value)
 })
 </script>
 

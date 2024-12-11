@@ -1,15 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { notification } from '../../'
-import { useCopyCode } from '../../composables/Demo/useCopyCode'
+import { useCopyCode } from '../composables/useCopyCode'
 
-const code = `bun install @stacksjs/notification`
+const code = `bun install @stacksjs/command-palette`
 
 const showCheckIcon = ref(false)
 
 async function handleCopyCode() {
   await useCopyCode({ code, checkIconRef: showCheckIcon })
-  notification('Copied to your clipboard!')
 }
 </script>
 

@@ -63,7 +63,6 @@ function handleSelectItem(item: any) {
       <Command.Input placeholder="Type a command or search..." />
     </template>
     <template #body>
-      <!-- <Command.Loading> Hang on... </Command.Loading> -->
       <Command.List>
         <Command.Empty>No results found.</Command.Empty>
         <Command.Item

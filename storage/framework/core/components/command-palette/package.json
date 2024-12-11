@@ -31,10 +31,10 @@
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {
-    "@stacksjs/browser": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "fuse.js": "^6.6.2",
-    "highlight.js": "^11.10.0"
+    "highlight.js": "^11.10.0",
+    "ts-collect": "^0.4.0"
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.1",

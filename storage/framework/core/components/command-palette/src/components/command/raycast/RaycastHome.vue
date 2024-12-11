@@ -8,7 +8,7 @@ import RaycastIcon from '../../icons/RaycastIcon.vue'
 import SlackIcon from '../../icons/SlackIcon.vue'
 
 import YouTubeIcon from '../../icons/YouTubeIcon.vue'
-import Item from './Item.vue'
+import Item from './RaycastItem.vue'
 
 const items1 = [
   {
