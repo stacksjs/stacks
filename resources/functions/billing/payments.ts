@@ -1,4 +1,4 @@
-import { cardElement } from '@stacksjs/browser'
+import { loadCardElement, confirmCardSetup } from '@stacksjs/browser'
 
 const paymentStore = usePaymentStore()
 
@@ -32,39 +32,22 @@ export function useBillable() {
     return `${month} ${day}, ${year}`
   }
 
-  async function loadPaymentElement(clientSecret: string): Promise<any> {
-    const element = cardElement()
+  async function loadPaymentElement(clientSecret: string): Promise<boolean> {
+    const isCreated = await loadCardElement(clientSecret)
 
-    return element
-
-    // if (stripe) {
-    //   elements.value = stripe.value.elements({ clientSecret })
-
-    //   const paymentElement = elements.value.create('payment', {
-    //     fields: { billingDetails: 'auto' },
-    //   })
-
-    //   paymentElement.mount('#payment-element')
-
-    //   return true
-    // }
-
-    // return false
+    return isCreated
   }
 
   async function handleAddPaymentMethod(clientSecret: string, elements: any) {
-    if (!stripe.value || !elements)
-      return
-
-    const { setupIntent, error } = await stripe.value.confirmCardSetup(
+    const param = {
       clientSecret,
-      {
-        payment_method: {
-          card: elements,
-          billing_details: { name: 'Chris Breuer' },
-        },
+      payment_method: {
+        card: elements,
+        billing_details: { name: 'Chris Breuer' },
       },
-    )
+    };
+
+    const { setupIntent, error } = await confirmCardSetup(param)
 
     if (error) {
       console.error(error.message)
