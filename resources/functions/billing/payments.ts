@@ -41,21 +41,23 @@ export function useBillable() {
   async function handleAddPaymentMethod(clientSecret: string, elements: any) {
     const param = {
       clientSecret,
-      payment_method: {
+      paymentMethod: {
         card: elements,
         billing_details: { name: 'Chris Breuer' },
       },
     };
 
-    const { setupIntent, error } = await confirmCardSetup(param)
 
-    if (error) {
-      console.error(error.message)
-    } // Display or handle error for the user
-    else {
-      if (!paymentStore.hasPaymentMethods)
-        await paymentStore.setDefaultPaymentMethod(setupIntent.payment_method)
-    }
+    // const { setupIntent, error } = 
+    await confirmCardSetup(param)
+
+    // if (error) {
+    //   console.error(error.message)
+    // } // Display or handle error for the user
+    // else {
+    //   if (!paymentStore.hasPaymentMethods)
+    //     await paymentStore.setDefaultPaymentMethod(setupIntent.payment_method)
+    // }
   }
 
   function isEmpty(object: any) {

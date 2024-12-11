@@ -10,40 +10,62 @@ interface PaymentMethod {
 
 interface PaymentParam {
   clientSecret: string;
-  payment_method: PaymentMethod;
+  paymentMethod: PaymentMethod;
 }
 
 export const publishableKey: string = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY || ''
 
 const client = ref(null as any)
 
-export async function loadCardElement(clientSecret: string): Promise<boolean> {
+export async function loadCardElement(clientSecret: string): Promise<any> {
   client.value = await loadStripe(publishableKey)
 
   const elements = client.value.elements()
-  const cardElement = elements.create('card')
+  const cardElement = elements.create('card', {
+    style: {
+      base: {
+        color: '#32325d',
+        fontFamily: '"Poppins", sans-serif',
+        fontSize: '16px',
+        fontWeight: '500',
+        '::placeholder': {
+          color: '#aab7c4',
+        },
+      },
+      invalid: {
+        color: '#fa755a',
+      },
+    },
+  })
+
+  cardElement.mount('#card-element')
+
+  return cardElement
+}
+
+export async function loadPaymentElement(clientSecret: string): Promise<any> {
+  client.value = await loadStripe(publishableKey)
+
+  const elements = client.value.elements()
+  const cardElement = elements.create('payment')
 
   cardElement.mount('#payment-element')
 
-  if (client) {
-    elements.value = client.value.elements({ clientSecret })
+  elements.value = client.value.elements({ clientSecret })
 
-    const paymentElement = elements.value.create('payment', {
-      fields: { billingDetails: 'auto' },
-    })
+  const paymentElement = elements.value.create('payment', {
+    fields: { billingDetails: 'auto' },
+  })
 
-    paymentElement.mount('#payment-element')
+  paymentElement.mount('#payment-element')
 
-    return true
-  }
-
-  return false
+  return cardElement
 }
 
 export async function confirmCardSetup(card: PaymentParam): Promise<{ setupIntent: any, error: any }> {
-  const clientSecret = card.clientSecret
+  console.log(card)
 
-  const { setupIntent, error } = await client.value.confirmCardSetup(card)
+  const { setupIntent, error } = await client.value.confirmCardSetup(card.clientSecret, { payment_method: card.paymentMethod })
 
   return { setupIntent, error }
 }

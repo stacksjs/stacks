@@ -1,95 +1,55 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useBillable } from '../../../../functions/billing/payments'
 
-const cardNumber = ref('')
+const { loadPaymentElement, handleAddPaymentMethod } = useBillable()
+const paymentStore = usePaymentStore()
 
-function formatCardNumber(e: Event) {
-  const input = e.target as HTMLInputElement
-  let value = input.value.replace(/\D/g, '')
-  value = value.replace(/(.{4})/g, '$1 ').trim()
-  cardNumber.value = value
-}
+const paymentIntent = ref('')
+const element = ref(null as any)
 
-const expiryDate = ref('')
+onMounted( async () => {
+  paymentIntent.value = await paymentStore.fetchSetupIntent(1)
 
-function formatExpiryDate(e: Event) {
-  const input = e.target as HTMLInputElement
-  let value = input.value.replace(/\D/g, '')
+  element.value = await loadPaymentElement(paymentIntent.value)
+})
 
-  if (value.length > 2) {
-    value = `${value.slice(0, 2)}/${value.slice(2)}`
-  }
-
-  expiryDate.value = value.slice(0, 5)
+async function addPaymentMethod() {
+  // console.log(paymentIntent.value)
+  // console.log(element.value)
+  await handleAddPaymentMethod(paymentIntent.value, element.value)
 }
 </script>
 
 <template>
-  <div class="flex items-center justify-center bg-gray-50 px-4 py-8 lg:px-8 sm:px-6">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="text-center text-3xl text-gray-900 font-extrabold">
-          Payment Form
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Enter your card details below
-        </p>
-      </div>
-      <form id="payment-form" class="mt-8 rounded-lg bg-white p-6 shadow-md space-y-6">
-        <div>
-          <label for="card-number" class="block text-sm text-gray-700 font-medium">Card Number</label>
-          <input
-            id="card-number"
-            v-model="cardNumber"
-            type="text"
-            maxlength="19"
-            placeholder="4242 4242 4242 4242"
-            class="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:border-indigo-500 sm:text-sm focus:ring-indigo-500"
-            @input="formatCardNumber"
-          >
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="expiry-date" class="block text-sm text-gray-700 font-medium">Expiry Date</label>
-            <input
-              id="expiry-date"
-              v-model="expiryDate"
-              type="text"
-              maxlength="5"
-              placeholder="MM/YY"
-              class="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:border-indigo-500 sm:text-sm focus:ring-indigo-500"
-              @input="formatExpiryDate"
-            >
-          </div>
-          <div>
-            <label for="cvc" class="block text-sm text-gray-700 font-medium">CVC</label>
-            <input
-              id="cvc"
-              type="text"
-              maxlength="3"
-              placeholder="CVC"
-              class="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:border-indigo-500 sm:text-sm focus:ring-indigo-500"
-              required
-            >
-          </div>
-        </div>
-
-        <div class="mt-6 flex justify-between space-x-4">
-          <button
-            type="button"
-            class="w-full border border-gray-300 rounded-lg bg-white px-4 py-2 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Save Payment Method
-          </button>
-        </div>
-      </form>
-    </div>
+  <div>
+    <form
+      id="payment-form"
+    >
+      <div id="link-authentication-element" />
+      <div id="card-element" />
+      <button @click="addPaymentMethod" type="button" class="rounded bg-indigo-600 w-full px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save Payment Method</button>
+    </form>
   </div>
 </template>
+
+<style>
+#payment-message {
+  color: rgb(105, 115, 134);
+  font-size: 16px;
+  line-height: 20px;
+  padding-top: 12px;
+  text-align: center;
+}
+
+#payment-element {
+  margin-bottom: 24px;
+}
+
+#payment-form {
+  width: 30vw;
+  min-width: 500px;
+  align-self: center;
+  border-radius: 7px;
+  padding: 40px;
+}
+</style>
