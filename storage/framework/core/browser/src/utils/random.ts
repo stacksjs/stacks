@@ -9,11 +9,12 @@ function fillPool(bytes: number) {
     pool = new Uint8Array(bytes * POOL_SIZE_MULTIPLIER)
     globalThis.crypto.getRandomValues(pool)
     poolOffset = 0
-  } else if (poolOffset + bytes > pool.length) {
+  }
+  else if (poolOffset + bytes > pool.length) {
     globalThis.crypto.getRandomValues(pool)
     poolOffset = 0
   }
-  poolOffset += bytes;
+  poolOffset += bytes
 }
 
 function randomPool(bytes: number): Uint8Array {
@@ -27,19 +28,20 @@ function randomPool(bytes: number): Uint8Array {
 }
 
 function customRandom(alphabet: string, defaultSize: number, getRandom: (bytes: number) => Uint8Array) {
-  let mask = (2 << (31 - Math.clz32((alphabet.length - 1) | 1))) - 1
+  const mask = (2 << (31 - Math.clz32((alphabet.length - 1) | 1))) - 1
 
-  let step = Math.ceil((1.6 * mask * defaultSize) / alphabet.length)
+  const step = Math.ceil((1.6 * mask * defaultSize) / alphabet.length)
 
   return (size: number = defaultSize): string => {
     let id = ''
     while (true) {
-      let bytes = getRandom(step)
+      const bytes = getRandom(step)
       let i = step
 
       while (i--) {
         id += alphabet[bytes[i] & mask] || ''
-        if (id.length >= size) return id
+        if (id.length >= size)
+          return id
       }
     }
   }
@@ -78,8 +80,8 @@ function random(size: number = 21): string {
 console.log(random())
 
 export {
-  random,
   customAlphabet,
   customRandom,
-  randomNonSecure
+  random,
+  randomNonSecure,
 }

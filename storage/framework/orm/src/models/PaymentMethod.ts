@@ -288,8 +288,6 @@ export class PaymentMethodModel {
       Object.entries(newPaymentMethod).filter(([key]) => instance.fillable.includes(key)),
     ) as NewPaymentMethod
 
-    filteredValues.uuid = randomUUIDv7()
-
     const result = await db.insertInto('payment_methods')
       .values(filteredValues)
       .executeTakeFirst()
@@ -299,7 +297,7 @@ export class PaymentMethodModel {
     return model
   }
 
-  static async createMany(newPaymentMethods: NewUser[]): Promise<void> {
+  static async createMany(newPaymentMethods: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(null)
 
     const filteredValues = newPaymentMethods.map(newUser =>

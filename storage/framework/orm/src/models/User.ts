@@ -304,8 +304,6 @@ export class UserModel {
       Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
     ) as NewUser
 
-    filteredValues.uuid = randomUUIDv7()
-
     const result = await db.insertInto('users')
       .values(filteredValues)
       .executeTakeFirst()

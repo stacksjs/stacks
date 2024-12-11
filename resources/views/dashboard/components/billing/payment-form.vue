@@ -7,7 +7,7 @@ const paymentStore = usePaymentStore()
 const paymentIntent = ref('')
 const element = ref(null as any)
 
-onMounted( async () => {
+onMounted(async () => {
   paymentIntent.value = await paymentStore.fetchSetupIntent(1)
 
   element.value = await loadPaymentElement(paymentIntent.value)
@@ -25,7 +25,9 @@ async function addPaymentMethod() {
     >
       <div id="link-authentication-element" />
       <div id="card-element" />
-      <button @click="addPaymentMethod" type="button" class="rounded bg-indigo-600 w-full px-2 py-1 mt-4 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save Payment Method</button>
+      <button type="button" class="mt-4 w-full rounded bg-indigo-600 px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="addPaymentMethod">
+        Save Payment Method
+      </button>
     </form>
   </div>
 </template>

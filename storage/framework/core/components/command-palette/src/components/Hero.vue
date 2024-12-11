@@ -1,16 +1,10 @@
 <script lang="ts" setup>
-import { TransitionRoot } from '@headlessui/vue'
 import { useMagicKeys } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
 import Linear from './command/Linear.vue'
 import Raycast from './command/raycast/Raycast.vue'
 import Vercel from './command/vercel/Vercel.vue'
-import Logo from './icons/Logo.vue'
-import MoonIcon from './icons/MoonIcon.vue'
-import SunIcon from './icons/SunIcon.vue'
-import { isDark, toggleDarkmode } from '../composables/useDarkmode'
-
 
 const isOpenDialog = ref(false)
 const isOpenThemeDialog = ref(false)
@@ -74,14 +68,14 @@ watch(Escape, (v) => {
     <div class="flex gap-2">
       <div class="relative z-20 mr-auto inline-block flex text-left">
         <button
-            class="w-full flex cursor-pointer items-center justify-center rounded-md btn-primary px-6 py-2 text-lg text-white font-semibold transition sm:w-auto space-x-3"
-            @click="isOpenDialog = true"
-          >
+          class="btn-primary w-full flex cursor-pointer items-center justify-center rounded-md px-6 py-2 text-lg text-white font-semibold transition sm:w-auto space-x-3"
+          @click="isOpenDialog = true"
+        >
           <span>Try it out</span>
           <span class="hidden sm:inline-flex space-x-1">
-          <span
-            class="rounded from-white via-white to-gray-200 bg-gradient-to-b px-1 pb-0.5 pt-px text-sm text-gray-800"
-          >
+            <span
+              class="rounded from-white via-white to-gray-200 bg-gradient-to-b px-1 pb-0.5 pt-px text-sm text-gray-800"
+            >
               ⌘
             </span>
             <span
@@ -89,7 +83,7 @@ watch(Escape, (v) => {
             >
               K
             </span>
-        </span>
+          </span>
         </button>
       </div>
 
@@ -102,13 +96,13 @@ watch(Escape, (v) => {
       </a>
     </div>
     <div class="mx-auto w-full">
-        <Self
-          :visible="isOpenDialog"
-          @dialog="handleOpenDialog"
-          @select="handleChangeDialog"
-        />
-        <component :is="currentDialog" v-if="isOpenThemeDialog" />
-      </div>
+      <Self
+        :visible="isOpenDialog"
+        @dialog="handleOpenDialog"
+        @select="handleChangeDialog"
+      />
+      <component :is="currentDialog" v-if="isOpenThemeDialog" />
+    </div>
   </div>
 </template>
 

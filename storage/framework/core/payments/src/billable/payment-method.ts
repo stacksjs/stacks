@@ -36,6 +36,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       })
     }
 
+    console.log(stripePaymentMethod)
     storePaymentMethod(user, stripePaymentMethod.id)
 
     return stripePaymentMethod as Stripe.Response<Stripe.PaymentMethod>
@@ -74,12 +75,12 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     const method = {
       type: 'card',
-      last_four: Number(paymentMethod.card?.last4), 
+      last_four: Number(paymentMethod.card?.last4),
       brand: paymentMethod.card?.brand,
       exp_year: paymentMethod.card?.exp_year,
       exp_month: paymentMethod.card?.exp_month,
       user_id: user.id,
-      provider_id: paymentMethod.id 
+      provider_id: paymentMethod.id,
     }
 
     if (paymentMethod.customer !== user.stripe_id) {

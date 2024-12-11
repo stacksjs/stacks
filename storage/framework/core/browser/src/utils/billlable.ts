@@ -2,15 +2,15 @@ import { loadStripe } from '@stripe/stripe-js'
 import { ref } from 'vue'
 
 interface PaymentMethod {
-  card: any; // Replace `any` with the appropriate type for `elements`
+  card: any // Replace `any` with the appropriate type for `elements`
   billing_details: {
-    name: string;
-  };
+    name: string
+  }
 }
 
 interface PaymentParam {
-  clientSecret: string;
-  paymentMethod: PaymentMethod;
+  clientSecret: string
+  paymentMethod: PaymentMethod
 }
 
 export const publishableKey: string = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY || ''

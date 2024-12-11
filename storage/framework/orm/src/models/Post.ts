@@ -279,7 +279,7 @@ export class PostModel {
     return model
   }
 
-  static async createMany(newPosts: NewUser[]): Promise<void> {
+  static async createMany(newPosts: NewPost[]): Promise<void> {
     const instance = new PostModel(null)
 
     const filteredValues = newPosts.map(newUser =>

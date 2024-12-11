@@ -279,7 +279,7 @@ export class ProjectModel {
     return model
   }
 
-  static async createMany(newProjects: NewUser[]): Promise<void> {
+  static async createMany(newProjects: NewProject[]): Promise<void> {
     const instance = new ProjectModel(null)
 
     const filteredValues = newProjects.map(newUser =>

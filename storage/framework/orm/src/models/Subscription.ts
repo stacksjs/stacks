@@ -297,8 +297,6 @@ export class SubscriptionModel {
       Object.entries(newSubscription).filter(([key]) => instance.fillable.includes(key)),
     ) as NewSubscription
 
-    filteredValues.uuid = randomUUIDv7()
-
     const result = await db.insertInto('subscriptions')
       .values(filteredValues)
       .executeTakeFirst()
@@ -308,7 +306,7 @@ export class SubscriptionModel {
     return model
   }
 
-  static async createMany(newSubscriptions: NewUser[]): Promise<void> {
+  static async createMany(newSubscriptions: NewSubscription[]): Promise<void> {
     const instance = new SubscriptionModel(null)
 
     const filteredValues = newSubscriptions.map(newUser =>

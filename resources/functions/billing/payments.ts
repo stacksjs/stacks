@@ -1,4 +1,4 @@
-import { loadCardElement, confirmCardSetup } from '@stacksjs/browser'
+import { confirmCardSetup, loadCardElement } from '@stacksjs/browser'
 
 const paymentStore = usePaymentStore()
 
@@ -56,7 +56,7 @@ export function useBillable() {
       if (!paymentStore.hasPaymentMethods)
         await paymentStore.setDefaultPaymentMethod(setupIntent.payment_method)
       else
-       await paymentStore.storePaymentMethod(setupIntent.payment_method)
+        await paymentStore.storePaymentMethod(setupIntent.payment_method)
     }
   }
 

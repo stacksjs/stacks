@@ -274,7 +274,7 @@ export class SubscriberEmailModel {
     return model
   }
 
-  static async createMany(newSubscriberEmails: NewUser[]): Promise<void> {
+  static async createMany(newSubscriberEmails: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(null)
 
     const filteredValues = newSubscriberEmails.map(newUser =>

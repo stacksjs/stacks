@@ -302,7 +302,7 @@ export class TeamModel {
     return model
   }
 
-  static async createMany(newTeams: NewUser[]): Promise<void> {
+  static async createMany(newTeams: NewTeam[]): Promise<void> {
     const instance = new TeamModel(null)
 
     const filteredValues = newTeams.map(newUser =>

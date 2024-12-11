@@ -1801,8 +1801,6 @@ export async function generateModelString(
           Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
         ) as New${modelName}
 
-        ${uuidQuery}
-
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)
           .executeTakeFirst()
@@ -1814,7 +1812,7 @@ export async function generateModelString(
         return model
       }
 
-      static async createMany(new${formattedTableName}: NewUser[]): Promise<void> {
+      static async createMany(new${formattedTableName}: New${modelName}[]): Promise<void> {
         const instance = new ${modelName}Model(null)
 
         const filteredValues = new${formattedTableName}.map(newUser =>

@@ -285,7 +285,7 @@ export class ErrorModel {
     return model
   }
 
-  static async createMany(newErrors: NewUser[]): Promise<void> {
+  static async createMany(newErrors: NewError[]): Promise<void> {
     const instance = new ErrorModel(null)
 
     const filteredValues = newErrors.map(newUser =>

@@ -284,8 +284,6 @@ export class ProductModel {
       Object.entries(newProduct).filter(([key]) => instance.fillable.includes(key)),
     ) as NewProduct
 
-    filteredValues.uuid = randomUUIDv7()
-
     const result = await db.insertInto('products')
       .values(filteredValues)
       .executeTakeFirst()
@@ -295,7 +293,7 @@ export class ProductModel {
     return model
   }
 
-  static async createMany(newProducts: NewUser[]): Promise<void> {
+  static async createMany(newProducts: NewProduct[]): Promise<void> {
     const instance = new ProductModel(null)
 
     const filteredValues = newProducts.map(newUser =>

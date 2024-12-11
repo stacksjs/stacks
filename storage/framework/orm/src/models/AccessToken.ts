@@ -285,7 +285,7 @@ export class AccessTokenModel {
     return model
   }
 
-  static async createMany(newPersonalAccessTokens: NewUser[]): Promise<void> {
+  static async createMany(newPersonalAccessTokens: NewAccessToken[]): Promise<void> {
     const instance = new AccessTokenModel(null)
 
     const filteredValues = newPersonalAccessTokens.map(newUser =>

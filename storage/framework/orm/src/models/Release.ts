@@ -270,7 +270,7 @@ export class ReleaseModel {
     return model
   }
 
-  static async createMany(newReleases: NewUser[]): Promise<void> {
+  static async createMany(newReleases: NewRelease[]): Promise<void> {
     const instance = new ReleaseModel(null)
 
     const filteredValues = newReleases.map(newUser =>

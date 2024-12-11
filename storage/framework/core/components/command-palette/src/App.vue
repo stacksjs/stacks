@@ -1,12 +1,11 @@
 <script lang="ts" setup>
+import Footer from './components/Footer.vue'
 import Hero from './components/Hero.vue'
 import Installation from './components/Installation.vue'
-import Footer from './components/Footer.vue'
 
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()
-
 </script>
 
 <template>

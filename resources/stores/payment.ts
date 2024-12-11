@@ -77,9 +77,9 @@ export const usePaymentStore = defineStore('payment', {
 
     async setDefaultPaymentMethod(setupIntent: string): Promise<string> {
       const url = 'http://localhost:3008/stripe/set-default-payment-method'
-  
+
       const body = { setupIntent }
-  
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -88,17 +88,17 @@ export const usePaymentStore = defineStore('payment', {
         },
         body: JSON.stringify(body),
       })
-  
+
       const res: any = await response.json()
-  
+
       return res
     },
 
     async storePaymentMethod(setupIntent: string): Promise<string> {
-      const url = 'http://localhost:3008/stripe/payment-method/1'
-  
+      const url = 'http://localhost:3008/payments/payment-method/1'
+
       const body = { setupIntent }
-  
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -107,9 +107,9 @@ export const usePaymentStore = defineStore('payment', {
         },
         body: JSON.stringify(body),
       })
-  
+
       const res: any = await response.json()
-  
+
       return res
     },
 

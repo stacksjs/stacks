@@ -288,8 +288,6 @@ export class DeploymentModel {
       Object.entries(newDeployment).filter(([key]) => instance.fillable.includes(key)),
     ) as NewDeployment
 
-    filteredValues.uuid = randomUUIDv7()
-
     const result = await db.insertInto('deployments')
       .values(filteredValues)
       .executeTakeFirst()
@@ -299,7 +297,7 @@ export class DeploymentModel {
     return model
   }
 
-  static async createMany(newDeployments: NewUser[]): Promise<void> {
+  static async createMany(newDeployments: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(null)
 
     const filteredValues = newDeployments.map(newUser =>

@@ -2,14 +2,14 @@
 import type { CommandRootEmits, CommandRootProps } from './types'
 import { refDebounced } from '@vueuse/core'
 
+import { collect } from 'ts-collect'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useCommandEvent } from './useCommandEvent'
 import { useCommandState } from './useCommandState'
 import { findNextSibling, findPreviousSibling } from './utils'
-import { collect } from 'ts-collect'
 
 defineOptions({
-  name: 'Command.Root'
+  name: 'Command.Root',
 })
 
 const props = withDefaults(defineProps<CommandRootProps>(), {
@@ -262,7 +262,7 @@ function filterItems() {
   const list = collect(commandSearchList.value).fuzzyMatch(key, search.value, threshold).all()
 
   // transform list to map
-  for (const { key, label } of list){
+  for (const { key, label } of list) {
     items.set(key, label)
   }
 
