@@ -1,9 +1,6 @@
-import { loadStripe } from '@stripe/stripe-js'
+import { cardElement } from '@stacksjs/browser'
 
-export const publishableKey = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY
 const paymentStore = usePaymentStore()
-
-const stripe = ref(null as any)
 
 export function useBillable() {
   function convertUnixTimestampToDate(timestamp: number): string {
@@ -35,15 +32,10 @@ export function useBillable() {
     return `${month} ${day}, ${year}`
   }
 
-  async function loadStripeElement(clientSecret: string): Promise<any> {
-    stripe.value = await loadStripe(publishableKey)
+  async function loadPaymentElement(clientSecret: string): Promise<any> {
+    const element = cardElement()
 
-    const elements = stripe.value.elements()
-    const cardElement = elements.create('card')
-
-    cardElement.mount('#payment-element')
-
-    return cardElement
+    return element
 
     // if (stripe) {
     //   elements.value = stripe.value.elements({ clientSecret })
@@ -58,25 +50,6 @@ export function useBillable() {
     // }
 
     // return false
-  }
-
-  async function setDefaultPaymentMethod(setupIntent: string): Promise<string> {
-    const url = 'http://localhost:3008/stripe/set-default-payment-method'
-
-    const body = { setupIntent }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-
-    const res: any = await response.json()
-
-    return res
   }
 
   async function handleAddPaymentMethod(clientSecret: string, elements: any) {
@@ -98,7 +71,7 @@ export function useBillable() {
     } // Display or handle error for the user
     else {
       if (!paymentStore.hasPaymentMethods)
-        await setDefaultPaymentMethod(setupIntent.payment_method)
+        await paymentStore.setDefaultPaymentMethod(setupIntent.payment_method)
     }
   }
 
@@ -128,5 +101,5 @@ export function useBillable() {
     paymentStore.closePlans()
   }
 
-  return { loadStripeElement, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
+  return { loadPaymentElement, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
 }

@@ -12,9 +12,8 @@ const clientSecret = ref('')
 
 const isLoadingWebElement = ref(false)
 const showStripe = ref(false)
-const elements = ref('')
 
-const { loadStripeElement, handleAddPaymentMethod } = useBillable()
+const { handleAddPaymentMethod } = useBillable()
 
 async function loadWebElement() {
   isLoadingWebElement.value = true
