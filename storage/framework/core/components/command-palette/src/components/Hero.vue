@@ -95,7 +95,7 @@ watch(Escape, (v) => {
 
       <a
         class="button btn-secondary"
-        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/combobox"
+        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/command-palette"
         target="_blank"
       >
         GitHub

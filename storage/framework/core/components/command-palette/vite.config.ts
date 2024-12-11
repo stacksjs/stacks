@@ -113,9 +113,6 @@ export default defineConfig(({ mode }) => {
 
       ...alias,
     },
-    server: {
-      port: 3000,
-    },
     plugins: [...commonPlugins],
     ...userConfig,
   }
