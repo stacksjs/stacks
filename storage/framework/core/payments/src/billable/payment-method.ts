@@ -8,6 +8,7 @@ export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   updatePaymentMethod: (user: UserModel, paymentMethodId: string, updateParams?: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
+  storePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<PaymentMethodModel>
   deletePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodModel | undefined>
   retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodModel | undefined>
@@ -35,6 +36,8 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       })
     }
 
+    storePaymentMethod(user, stripePaymentMethod.id)
+
     return stripePaymentMethod as Stripe.Response<Stripe.PaymentMethod>
   }
 
@@ -57,7 +60,37 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
+    storePaymentMethod(user, paymentMethodId)
+
     return updatedCustomer
+  }
+
+  async function storePaymentMethod(user: UserModel, paymentMethodId: string): Promise<PaymentMethodModel> {
+    if (!user.hasStripeId()) {
+      throw new Error('Customer does not exist in Stripe')
+    }
+
+    const paymentMethod = await stripe.paymentMethod.retrieve(paymentMethodId)
+
+    const method = {
+      type: 'card',
+      last_four: Number(paymentMethod.card?.last4), 
+      brand: paymentMethod.card?.brand,
+      exp_year: paymentMethod.card?.exp_year,
+      exp_month: paymentMethod.card?.exp_month,
+      user_id: user.id,
+      provider_id: paymentMethod.id 
+    }
+
+    if (paymentMethod.customer !== user.stripe_id) {
+      await stripe.paymentMethod.attach(paymentMethod.id, {
+        customer: user.stripe_id || '',
+      })
+    }
+
+    const model = await PaymentMethod.create(method)
+
+    return model
   }
 
   async function deletePaymentMethod(user: UserModel, paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
@@ -124,5 +157,5 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     return paymentMethod
   }
 
-  return { addPaymentMethod, deletePaymentMethod, retrieveDefaultPaymentMethod, updatePaymentMethod, listPaymentMethods, setDefaultPaymentMethod, retrievePaymentMethod }
+  return { addPaymentMethod, deletePaymentMethod, retrieveDefaultPaymentMethod, updatePaymentMethod, listPaymentMethods, setDefaultPaymentMethod, storePaymentMethod, retrievePaymentMethod }
 })()

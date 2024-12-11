@@ -21,22 +21,7 @@ export async function loadCardElement(clientSecret: string): Promise<any> {
   client.value = await loadStripe(publishableKey)
 
   const elements = client.value.elements()
-  const cardElement = elements.create('card', {
-    style: {
-      base: {
-        color: '#32325d',
-        fontFamily: '"Poppins", sans-serif',
-        fontSize: '16px',
-        fontWeight: '500',
-        '::placeholder': {
-          color: '#aab7c4',
-        },
-      },
-      invalid: {
-        color: '#fa755a',
-      },
-    },
-  })
+  const cardElement = elements.create('card')
 
   cardElement.mount('#card-element')
 
@@ -63,9 +48,9 @@ export async function loadPaymentElement(clientSecret: string): Promise<any> {
 }
 
 export async function confirmCardSetup(card: PaymentParam): Promise<{ setupIntent: any, error: any }> {
-  console.log(card)
+  const data = await client.value.confirmCardSetup(card.clientSecret, { payment_method: card.paymentMethod })
 
-  const { setupIntent, error } = await client.value.confirmCardSetup(card.clientSecret, { payment_method: card.paymentMethod })
+  const { setupIntent, error } = data
 
   return { setupIntent, error }
 }

@@ -94,6 +94,25 @@ export const usePaymentStore = defineStore('payment', {
       return res
     },
 
+    async storePaymentMethod(setupIntent: string): Promise<string> {
+      const url = 'http://localhost:3008/stripe/payment-method/1'
+  
+      const body = { setupIntent }
+  
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+  
+      const res: any = await response.json()
+  
+      return res
+    },
+
     openPlans() {
       this.planState = true
     },

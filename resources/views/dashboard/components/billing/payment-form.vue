@@ -14,8 +14,6 @@ onMounted( async () => {
 })
 
 async function addPaymentMethod() {
-  // console.log(paymentIntent.value)
-  // console.log(element.value)
   await handleAddPaymentMethod(paymentIntent.value, element.value)
 }
 </script>
@@ -27,7 +25,7 @@ async function addPaymentMethod() {
     >
       <div id="link-authentication-element" />
       <div id="card-element" />
-      <button @click="addPaymentMethod" type="button" class="rounded bg-indigo-600 w-full px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save Payment Method</button>
+      <button @click="addPaymentMethod" type="button" class="rounded bg-indigo-600 w-full px-2 py-1 mt-4 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save Payment Method</button>
     </form>
   </div>
 </template>
