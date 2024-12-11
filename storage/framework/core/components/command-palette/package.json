@@ -33,7 +33,7 @@
   "dependencies": {
     "@stacksjs/browser": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "fuse.js": "^6.6.2",
+    "fuse.js": "^7.0.0",
     "highlight.js": "^11.10.0"
   },
   "devDependencies": {
