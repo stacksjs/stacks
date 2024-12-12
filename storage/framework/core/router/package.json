@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/router",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/router#readme",
@@ -15,49 +16,38 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "router",
-    "stacks",
-    "framework",
-    "typescript",
-    "javascript"
-  ],
+  "keywords": ["router", "stacks", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.7.0",
-    "vue-router": "^4.2.5"
+    "build": "bun build.ts",
+    "build:user": "bun build2.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/actions": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "unplugin-vue-router": "^0.7.0",
-    "vue-router": "^4.2.5"
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
+    "unplugin-vue-router": "^0.10.8",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   }
 }

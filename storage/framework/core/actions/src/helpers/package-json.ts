@@ -1,12 +1,17 @@
 import { log } from '@stacksjs/logging'
-import { writeTextFile } from '@stacksjs/storage'
 import { packageJsonPath } from '@stacksjs/path'
+import { writeTextFile } from '@stacksjs/storage'
 import library from '~/config/library'
 
 type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
 
-export async function generatePackageJson(type: PackageJsonType) {
-  let name, description, directory, keywords, config, prettyName
+export async function generatePackageJson(type: PackageJsonType): Promise<void> {
+  let name
+  let description
+  let directory
+  let keywords
+  let config
+  let prettyName
 
   if (type === 'vue-components') {
     name = library.vueComponents?.name
@@ -15,7 +20,6 @@ export async function generatePackageJson(type: PackageJsonType) {
     keywords = library.vueComponents?.keywords
     config = 'vue-components'
   }
-
   else if (type === 'web-components') {
     name = library.webComponents?.name
     description = library.webComponents?.description
@@ -23,7 +27,6 @@ export async function generatePackageJson(type: PackageJsonType) {
     keywords = library.webComponents?.keywords
     config = 'web-components'
   }
-
   else if (type === 'functions') {
     name = library.functions?.name
     description = library.functions?.description
@@ -72,7 +75,7 @@ export async function generatePackageJson(type: PackageJsonType) {
   ],
   "scripts": {
     "build": "vite build -c ../build/${config}.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/whois",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "Easily get whois info.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/whois#readme",
@@ -26,34 +27,24 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "types": "./dist/index.d.ts",
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "node-fetch": "^3.3.2",
-    "socks": "^2.7.1"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "node-fetch": "^3.3.2",
-    "socks": "^2.7.1"
+    "socks": "^2.8.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

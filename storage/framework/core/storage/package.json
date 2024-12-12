@@ -1,9 +1,12 @@
 {
   "name": "@stacksjs/storage",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/storage#readme",
@@ -28,51 +31,38 @@
     "stacks"
   ],
   ".": {
-    "bun": "./src/index.ts",
     "import": "./dist/index.js"
   },
   "./*": {
-    "bun": "./src/*",
     "import": "./dist/*"
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@types/archiver": "^6.0.2",
-    "archiver": "^6.0.1"
-  },
-  "dependencies": {
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@types/archiver": "^6.0.2",
-    "archiver": "^6.0.1",
-    "fast-glob": "^3.3.2",
-    "fs-extra": "^11.2.0",
-    "unstorage": "^1.10.1"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@aws-sdk/client-s3": "^3.703.0",
+    "@flystorage/aws-s3": "^0.1.7",
+    "@flystorage/chaos": "^0.1.2",
+    "@flystorage/file-storage": "^0.1.7",
+    "@flystorage/in-memory": "^0.1.4",
+    "@flystorage/local-fs": "^0.1.7",
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@types/archiver": "^6.0.3",
+    "archiver": "^7.0.1",
+    "fs-extra": "^11.2.0",
+    "tinyglobby": "^0.2.10"
   }
 }

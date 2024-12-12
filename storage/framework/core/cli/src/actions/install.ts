@@ -1,4 +1,3 @@
-import type { ExecaReturnValue } from 'execa'
 import { installPackage as installPkg } from '@antfu/install-pkg'
 
 interface InstallPackageOptions {
@@ -11,6 +10,8 @@ interface InstallPackageOptions {
   additionalArgs?: string[]
 }
 
+// TODO: improve return types here
+
 /**
  * Install an npm package.
  *
@@ -18,7 +19,7 @@ interface InstallPackageOptions {
  * @param options - The options to pass to the install.The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installPackage(name: string, options?: InstallPackageOptions): Promise<ExecaReturnValue<string>> {
+export async function installPackage(name: string, options?: InstallPackageOptions): Promise<any> {
   if (options)
     return await installPkg(name, options)
 
@@ -32,7 +33,7 @@ export async function installPackage(name: string, options?: InstallPackageOptio
  * @param options - The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installStack(name: string, options?: InstallPackageOptions) {
+export async function installStack(name: string, options?: InstallPackageOptions): Promise<any> {
   if (options)
     return await installPkg(`@stacksjs/${name}`, options)
 

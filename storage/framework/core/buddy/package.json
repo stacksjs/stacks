@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/buddy",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/stacks#readme",
@@ -37,12 +38,11 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts"
+      "import": "./dist/index.js"
     },
     "./cli": {
-      "bun": "./src/cli.ts",
       "types": "./dist/cli.d.ts",
-      "import": "./dist/cli.mjs"
+      "import": "./dist/cli.js"
     },
     "./*": {
       "bun": "./*"
@@ -50,72 +50,25 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
   "bin": {
-    "stacks": "dist/cli.mjs",
-    "stx": "dist/cli.mjs",
-    "buddy": "dist/cli.mjs",
-    "bud": "dist/cli.mjs"
+    "stacks": "dist/cli.js",
+    "stx": "dist/cli.js",
+    "buddy": "dist/cli.js",
+    "bud": "dist/cli.js"
   },
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "buddy": "bunx ./src/cli.ts",
-    "build": "bun --bun build.ts",
-    "compile": "bun build ./src/cli.ts --compile --outfile budd",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/actions": "workspace:*",
-    "@stacksjs/ai": "workspace:*",
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/auth": "workspace:*",
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/cache": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/cloud": "workspace:*",
-    "@stacksjs/collections": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
-    "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/dns": "workspace:*",
-    "@stacksjs/docs": "workspace:*",
-    "@stacksjs/email": "workspace:*",
-    "@stacksjs/enums": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/events": "workspace:*",
-    "@stacksjs/faker": "workspace:*",
-    "@stacksjs/git": "workspace:*",
-    "@stacksjs/health": "workspace:*",
-    "@stacksjs/lint": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/notifications": "workspace:*",
-    "@stacksjs/objects": "workspace:*",
-    "@stacksjs/orm": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/payments": "workspace:*",
-    "@stacksjs/realtime": "workspace:*",
-    "@stacksjs/router": "workspace:*",
-    "@stacksjs/search-engine": "workspace:*",
-    "@stacksjs/security": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@stacksjs/signals": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/testing": "workspace:*",
-    "@stacksjs/tunnel": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/ui": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "buddy": "bunx --bun ./src/cli.ts",
+    "build": "bun build.ts",
+    "compile": "bun build ./bin/cli.ts --compile --minify --sourcemap --outfile dist/buddy",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/buddy-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/buddy-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/buddy-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/buddy-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/buddy-darwin-arm64",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build && bun run compile:all"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",
@@ -153,7 +106,6 @@
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@stacksjs/signals": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/testing": "workspace:*",

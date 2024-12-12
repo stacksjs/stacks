@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/notifications",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks notifications integration.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/notifications#readme",
@@ -26,46 +27,25 @@
     "slack",
     "discord",
     "webhooks",
-    "stacks",
-    "maizzle"
+    "stacks"
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/chat": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/push": "workspace:*",
-    "@stacksjs/sms": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@maizzle/framework": "^4.7.5",
     "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -74,29 +54,6 @@
     "@stacksjs/push": "workspace:*",
     "@stacksjs/sms": "workspace:*",
     "@stacksjs/types": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@novu/discord": "^0.23.0",
-    "@novu/emailjs": "^0.23.0",
-    "@novu/gupshup": "^0.23.0",
-    "@novu/mailgun": "^0.23.0",
-    "@novu/mailjet": "^0.23.0",
-    "@novu/mandrill": "^0.23.0",
-    "@novu/netcore": "^0.23.0",
-    "@novu/nexmo": "^0.23.0",
-    "@novu/node": "^0.23.0",
-    "@novu/nodemailer": "^0.23.0",
-    "@novu/plivo": "^0.23.0",
-    "@novu/postmark": "^0.23.0",
-    "@novu/sendgrid": "^0.23.0",
-    "@novu/ses": "^0.23.0",
-    "@novu/slack": "^0.23.0",
-    "@novu/sms77": "^0.23.0",
-    "@novu/sns": "^0.23.0",
-    "@novu/stateless": "^0.23.0",
-    "@novu/telnyx": "^0.23.0",
-    "@novu/termii": "^0.23.0",
-    "@novu/twilio": "^0.23.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/scheduler",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks scheduler.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/scheduler#readme",
@@ -15,46 +16,27 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "scheduler",
-    "node-cron",
-    "jobs",
-    "bun",
-    "stacks"
-  ],
+  "keywords": ["scheduler", "node-cron", "jobs", "bun", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "luxon": "^3.4.4"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "luxon": "^3.4.4"
+    "cron": "^3.2.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "sinon": "^17.0.1"
+    "@stacksjs/development": "workspace:*"
   }
 }

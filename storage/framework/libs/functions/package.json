@@ -4,6 +4,7 @@
   "version": "",
   "description": "Your function library description.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/functions#readme",
   "repository": {
@@ -14,8 +15,13 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["functions", "composables", "library", "typescript", "javascript"],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "keywords": [
+    "functions",
+    "composables",
+    "library",
+    "typescript",
+    "javascript"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,14 +32,10 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "vite build -c ../build/functions.ts",
-    "prepublishOnly": "bun --bun run build"
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

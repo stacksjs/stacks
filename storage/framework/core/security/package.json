@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/security",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks framework security.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/security#readme",
@@ -15,50 +16,30 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "security",
-    "framework",
-    "typescript",
-    "javascript"
-  ],
+  "keywords": ["security", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bcryptjs": "^2.4.3",
     "crypto-js": "^4.2.0",
-    "js-base64": "^3.7.6"
+    "js-base64": "^3.7.7"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

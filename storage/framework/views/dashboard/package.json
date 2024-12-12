@@ -1,10 +1,11 @@
 {
   "name": "stacks-dashboard",
   "type": "module",
-  "version": "0.51.0",
+  "version": "0.68.2",
   "private": "true",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/dashboard#readme",
@@ -31,27 +32,19 @@
   ],
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "dev": "bunx vite -c ../../core/vite/src/dashboard.ts",
-    "dev:app": "bunx tauri dev",
-    "build": "bunx vite build -c ../../core/vite/src/dashboard.ts",
-    "build:app": "bunx tauri build",
-    "prepublishOnly": "bun --bun run build",
-    "typecheck": "bun --bun tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@stacksjs/desktop": "workspace:*"
+    "dev": "bunx --bun vite -c ../../core/vite-config/src/dashboard.ts",
+    "dev:app": "bunx --bun tauri dev",
+    "build": "bunx --bun vite build -c ../../core/vite-config/src/dashboard.ts",
+    "build:app": "bunx --bun tauri build",
+    "prepublishOnly": "bun run build",
+    "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/notification": "workspace:*",
+    "@stacksjs/popover": "workspace:*"
   }
 }

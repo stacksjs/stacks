@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/docs",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/docs#readme",
@@ -15,56 +16,34 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "docs",
-    "utilities",
-    "functions",
-    "stacks"
-  ],
+  "keywords": ["docs", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.42"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.42",
+    "vitepress": "1.5.0",
     "vitepress-plugin-twoslash": "^0.10.2"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "@vite-pwa/vitepress": "^0.3.1"
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vite-pwa/vitepress": "^0.5.3"
   }
 }

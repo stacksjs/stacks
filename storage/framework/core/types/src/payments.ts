@@ -1,5 +1,12 @@
+import type Stripe from 'stripe'
+
 export interface PaymentOptions {
   driver: 'stripe'
+
+  stripe: {
+    publishableKey: string
+    secretKey: string
+  }
 }
 
 export type PaymentConfig = Partial<PaymentOptions>
@@ -15,6 +22,21 @@ export interface ChargeOptions {
     query?: string
     limit?: number
   }
+}
+
+export interface StripeCustomerOptions {
+  address?: {
+    line1?: string
+    city?: string
+    state?: string
+    postal_code?: string
+    country?: string
+  }
+  name?: string
+  phone?: string
+  metadata?: Stripe.Emptyable<Stripe.MetadataParam>
+  email?: string
+  preferred_locales?: string[]
 }
 
 export interface CustomerOptions {
@@ -62,4 +84,14 @@ export interface EventOptions {
     starting_after?: string
     type?: string
   }
+}
+
+export interface CheckoutLineItem {
+  priceId: string
+  quantity: number
+}
+
+export interface CheckoutOptions extends Partial<Stripe.Checkout.SessionCreateParams> {
+  enableTax?: boolean
+  allowPromotions?: boolean
 }

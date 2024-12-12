@@ -2,9 +2,9 @@ import { log } from '@stacksjs/cli'
 import { Middleware } from '@stacksjs/router'
 
 export default new Middleware({
-  name: 'logger',
-  priority: 1,
+  name: 'Logger',
+  priority: 2,
   handle() {
-    log.info('logger middleware')
+    log.info('Logger middleware')
   },
 })

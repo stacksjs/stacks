@@ -1,7 +1,8 @@
+import type { CliOptions, ErrorLike, SpawnOptions, Subprocess } from '@stacksjs/types'
 import process from 'node:process'
-import { type Result, err, handleError, ok } from '@stacksjs/error-handling'
-import type { CliOptions, StacksError, Subprocess } from '@stacksjs/types'
+import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
+import { italic, log } from './'
 
 /**
  * Execute a command.
@@ -23,33 +24,43 @@ import { ExitCode } from '@stacksjs/types'
  * const result = await exec('ls', { cwd: '/home' })
  * ```
  */
-export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, StacksError>> {
-  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]+|"[^"]*")+/g)
+export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
+
+  log.debug('exec:', Array.isArray(command) ? command.join(' ') : command, options)
+  log.debug('cmd:', cmd)
 
   if (!cmd)
     return err(handleError(`Failed to parse command: ${cmd}`, options))
 
-  if (options?.verbose)
-    // eslint-disable-next-line no-console
-    console.log('exec', { command, cmd, options })
+  const cwd = options?.cwd ?? process.cwd()
 
   const proc = Bun.spawn(cmd, {
-    ...options,
-    stdout: options?.silent ? 'ignore' : (options?.stdin ? options.stdin : (options?.stdout || 'inherit')),
-    stderr: options?.silent ? 'ignore' : (options?.stderr || 'inherit'),
-    detached: options?.background || false,
-    cwd: options?.cwd || import.meta.dir,
+    // ...options,
+    stdin: options?.stdin ?? 'inherit',
+    stdout: (options?.silent || options?.quiet) ? 'ignore' : options?.stdin ? options.stdin : (options?.stdout || 'inherit'),
+    stderr: (options?.silent || options?.quiet) ? 'ignore' : (options?.stderr || 'inherit'),
+
+    // detached: options?.background || false,
+    cwd,
     // env: { ...e, ...options?.env },
-    onExit(_subprocess, exitCode, _signalCode, _error) {
-      if (exitCode && exitCode !== ExitCode.Success)
-        process.exit(exitCode)
+    onExit(
+      subprocess: Subprocess<SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable>,
+      exitCode: number | null,
+      signalCode: number | null,
+      error: ErrorLike | undefined,
+    ) {
+      exitHandler('spawn', subprocess, exitCode, signalCode, error)
     },
   })
 
   // Check if we need to write to stdin
+  // this is currently only used for `buddy aws:configure`
   if (options?.stdin === 'pipe' && options.input) {
     if (proc.stdin) {
+      // @ts-expect-error - this works even though there is a type error
       proc.stdin.write(options.input)
+      // @ts-expect-error - this works even though there is a type error
       proc.stdin.end()
     }
   }
@@ -58,7 +69,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (exited === ExitCode.Success)
     return ok(proc)
 
-  return err(handleError(`Failed to execute command: ${cmd.join(' ')}`))
+  return err(handleError(`Failed to execute command: ${italic(cmd.join(' '))} in ${italic(cwd)}`, options))
 }
 
 /**
@@ -78,20 +89,53 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  * ```
  */
 export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
-  const cmd = Array.isArray(command) ? command : command.split(' ')
+  log.debug('Running execSync:', command)
+  log.debug('execSync options:', options)
+
+  const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
+
+  if (!cmd) {
+    log.error(`Failed to parse command: ${cmd}`, options)
+    process.exit(ExitCode.FatalError)
+  }
+
   const proc = Bun.spawnSync(cmd, {
     ...options,
-    // stdin: 'inherit',
+    stdin: options?.stdin ?? 'inherit',
     stdout: options?.stdout ?? 'pipe',
     stderr: options?.stderr ?? 'inherit',
-    cwd: options?.cwd ?? import.meta.dir,
+    cwd: options?.cwd ?? process.cwd(),
     // env: { ...Bun.env, ...options?.env },
-    onExit(_subprocess, exitCode, _signalCode, _error) {
-      // console.log('onExit', { subprocess, exitCode, signalCode, error })
-      if (exitCode !== ExitCode.Success && exitCode)
-        process.exit(exitCode)
+    onExit(
+      subprocess: Subprocess<SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable>,
+      exitCode: number | null,
+      signalCode: number | null,
+      error: ErrorLike | undefined,
+    ) {
+      exitHandler('spawnSync', subprocess, exitCode, signalCode, error)
     },
   })
 
-  return proc.stdout.toString()
+  return proc.stdout?.toString() ?? ''
+}
+
+function exitHandler(
+  type: 'spawn' | 'spawnSync',
+  subprocess: Subprocess,
+  exitCode: number | null,
+  signalCode: number | null,
+  error?: Error,
+) {
+  log.debug(`exitHandler: ${type}`)
+  log.debug('subprocess', subprocess)
+  log.debug('exitCode', exitCode)
+  log.debug('signalCode', signalCode)
+
+  if (error) {
+    log.error(error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  if (exitCode !== ExitCode.Success && exitCode)
+    process.exit(exitCode)
 }

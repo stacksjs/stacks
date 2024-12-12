@@ -1,5 +1,5 @@
-import { send } from './client'
 import type { Log } from './types'
+import { send } from './client'
 
 // import { ray } from 'node-ray'
 
@@ -20,7 +20,7 @@ async function ray(content: any): Promise<void> {
 }
 
 function getErrorObject() {
-  const callerLine: Error = (new Error('err'))
+  const callerLine: Error = new Error('err')
 
   const newLine = callerLine.stack?.split('\n')[4]
   const index = newLine?.indexOf('at ') || 0

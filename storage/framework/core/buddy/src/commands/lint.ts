@@ -1,10 +1,10 @@
-import process from 'node:process'
 import type { CLI, LintOptions } from '@stacksjs/types'
-import { intro, log, outro } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
+import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
+import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 
-export function lint(buddy: CLI) {
+export function lint(buddy: CLI): void {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',
@@ -15,26 +15,27 @@ export function lint(buddy: CLI) {
   buddy
     .command('lint', descriptions.lint)
     .option('-f, --fix', descriptions.lintFix, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
-      const startTime = await intro('buddy lint')
-      const result = await runAction(Action.Lint, options)
+      log.debug('Running `buddy lint` ...', options)
 
-      // console.log('res', result)
-      if (result.isErr()) {
-        await outro('While running `buddy lint`, there was an issue', { startTime, useSeconds: true }, result.error)
-        process.exit()
-      }
+      const startTime = await intro('buddy lint')
+
+      if (options.fix)
+        await runAction(Action.LintFix, { ...options })
+      else await runCommand('bunx --bun eslint .')
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })
 
   buddy
     .command('lint:fix', descriptions.lintFix)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
+      log.debug('Running `buddy lint:fix` ...', options)
+
       log.info('Fixing lint errors...')
       const result = await runAction(Action.LintFix, { ...options })
 

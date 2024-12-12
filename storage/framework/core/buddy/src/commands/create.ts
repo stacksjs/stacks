@@ -1,15 +1,16 @@
-import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
-import { useOnline } from '@stacksjs/utils'
-import { isFolder } from '@stacksjs/storage'
-import { resolve } from '@stacksjs/path'
-import { Action } from '@stacksjs/enums'
+import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
+import { bold, cyan, dim, intro, log, runCommand } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
+import { resolve } from '@stacksjs/path'
+import { isFolder } from '@stacksjs/storage'
+import { ExitCode } from '@stacksjs/types'
+import { useOnline } from '@stacksjs/utils'
 
-export function create(buddy: CLI) {
+export function create(buddy: CLI): void {
   const descriptions = {
+    name: 'The name of the project',
     command: 'Create a new Stacks project',
     ui: 'Are you building a UI?',
     components: 'Are you building UI components?',
@@ -19,12 +20,17 @@ export function create(buddy: CLI) {
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
     database: 'Do you need a database?',
+    notifications: 'Do you need notifications? e.g. email, SMS, push or chat notifications',
+    cache: 'Do you need caching?',
+    email: 'Do you need email?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
 
   buddy
-    .command('new <name>', descriptions.command)
+    .command('new [name]', descriptions.command)
+    .alias('create [name]')
+    .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true }) // if no, -v and -w would be false
     .option('-w, --web-components', descriptions.webComponents, { default: true })
@@ -33,19 +39,25 @@ export function create(buddy: CLI) {
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
     .option('-d, --database', descriptions.database, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-ca, --cache', descriptions.cache, { default: false })
+    .option('-e, --email', descriptions.email, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-    .action(async (options: CreateOptions) => {
+    .action(async (name, options: CreateOptions) => {
+      log.debug('Running `buddy new <name>` ...', options)
+
       const startTime = await intro('stacks new')
-      const name = options.name
+
+      name = name ?? options.name
       const path = resolve(process.cwd(), name)
 
       isFolderCheck(path)
       onlineCheck()
+
       const result = await download(name, path, options)
 
-      if (result?.isErr()) {
+      if (result.isErr()) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -89,7 +101,7 @@ function onlineCheck() {
 
 async function download(name: string, path: string, options: CreateOptions) {
   log.info('Setting up your stack.')
-  const result = await runCommand(`bunx giget stacks ${name}`, options)
+  const result = await runCommand(`bunx --bun giget stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
   return result

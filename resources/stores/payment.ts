@@ -1,0 +1,379 @@
+import type Stripe from 'stripe'
+import type { StripePaymentMethod } from '../types/billing'
+import { dispatch } from '@stacksjs/events'
+
+const apiUrl = `http://localhost:3008`
+
+export const usePaymentStore = defineStore('payment', {
+  state: (): any => {
+    return {
+      loadingStates: {} as Record<string, boolean>,
+      paymentMethods: [] as StripePaymentMethod[],
+      transactionHistory: [] as Stripe.Invoice[],
+      defaultPaymentMethod: {} as StripePaymentMethod,
+      activeSubscription: {} as Stripe.Subscription,
+      subscriptions: [] as Stripe.Subscription[],
+      stripeCustomer: {} as Stripe.Customer,
+      paymentPlans: [] as any[],
+      planState: false as boolean,
+    }
+  },
+
+  actions: {
+    async fetchSetupIntent(id: number): Promise<string> {
+      const url = `http://localhost:3008/payments/create-setup-intent/${id}`
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      const client: any = await response.json()
+      const clientSecret = client.client_secret
+
+      return clientSecret
+    },
+
+    async subscribeToPlan(body: { type: string, plan: string, description: string }): Promise<string> {
+      const url = 'http://localhost:3008/payments/create-subscription'
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const client: any = await response.json()
+
+      dispatch('subscription:created')
+
+      return client
+    },
+
+    async updatePlan(body: { type: string, plan: string, description: string }): Promise<string> {
+      const url = 'http://localhost:3008/payments/update-subscription'
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const client: any = await response.json()
+
+      dispatch('subscription:updated')
+
+      return client
+    },
+
+    async setDefaultPaymentMethod(paymentId: string): Promise<string> {
+      const url = 'http://localhost:3008/payments/set-default-payment-method/1'
+
+      const body = { paymentId }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const res: any = await response.json()
+
+      return res
+    },
+
+    async setUserDefaultPaymentMethod(setupIntent: string): Promise<string> {
+      const url = 'http://localhost:3008/payments/user-default-payment-method/1'
+
+      const body = { setupIntent }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const res: any = await response.json()
+
+      return res
+    },
+
+    async storePaymentMethod(setupIntent: string): Promise<string> {
+      const url = 'http://localhost:3008/payments/payment-method/1'
+
+      const body = { setupIntent }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const res: any = await response.json()
+
+      return res
+    },
+
+    openPlans() {
+      this.planState = true
+    },
+
+    closePlans() {
+      this.planState = false
+    },
+
+    async fetchSubscriptions(): Promise<void> {
+      this.setLoadingState('fetchSubscriptions')
+
+      const url = 'http://localhost:3008/payments/fetch-user-subscriptions'
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.subscriptions = res
+      }
+      await response.json()
+
+      this.removeLoadingState('fetchSubscriptions')
+
+      dispatch('subscription:created')
+    },
+
+    async cancelPlan(): Promise<void> {
+      const url = 'http://localhost:3008/payments/cancel-subscription'
+
+      const providerId = this.getCurrentPlan.subscription.provider_id
+      const subscriptionId = this.getCurrentPlan.subscription.id
+      const body = { providerId, subscriptionId }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      if (response.status !== 204)
+        await response.json()
+
+      dispatch('subscription:canceled')
+    },
+
+    async fetchUserPaymentMethods(id: number): Promise<void> {
+      this.setLoadingState('fetchUserPaymentMethods')
+
+      const response: any = await fetch(`${apiUrl}/payments/payment-methods/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.paymentMethods = res
+      }
+
+      this.removeLoadingState('fetchUserPaymentMethods')
+
+      dispatch('paymentMethods:fetched')
+    },
+
+    async fetchTransactionHistory(id: number): Promise<void> {
+      this.setLoadingState('fetchTransactionHistory')
+
+      const response: any = await fetch(`${apiUrl}/payments/fetch-transaction-history/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.transactionHistory = res.data
+      }
+
+      this.removeLoadingState('fetchTransactionHistory')
+
+      dispatch('paymentMethods:fetched')
+    },
+
+    async deletePaymentMethod(paymentMethod: number): Promise<void> {
+      this.setLoadingState('deletePaymentMethod')
+      const url = 'http://localhost:3008/payments/delete-payment-method/1'
+
+      const body = { paymentMethod }
+
+      try {
+        await fetch(url, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+      }
+      catch (err: any) {
+        console.log(err)
+      }
+
+      this.removeLoadingState('deletePaymentMethod')
+
+      dispatch('paymentMethod:deleted')
+    },
+
+    async updateDefaultPaymentMethod(paymentMethod: string): Promise<void> {
+      this.setLoadingState('updateDefaultPaymentMethod')
+
+      const url = 'http://localhost:3008/payments/update-default-payment-method/1'
+
+      const body = { paymentMethod }
+
+      try {
+        await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+      }
+      catch (err: any) {
+        console.log(err)
+      }
+
+      this.removeLoadingState('updateDefaultPaymentMethod')
+
+      dispatch('paymentMethod:updated')
+    },
+
+    async fetchStripeCustomer(id: number): Promise<void> {
+      this.setLoadingState('fetchStripeCustomer')
+
+      const response: any = await fetch(`${apiUrl}/payments/fetch-customer/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+        this.stripeCustomer = res
+      }
+
+      this.removeLoadingState('fetchStripeCustomer')
+
+      dispatch('customer:fetched')
+    },
+
+    async fetchDefaultPaymentMethod(id: number): Promise<void> {
+      this.setLoadingState('fetchDefaultPaymentMethod')
+
+      const response: any = await fetch(`${apiUrl}/payments/default-payment-method/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.defaultPaymentMethod = res
+      }
+
+      this.removeLoadingState('fetchDefaultPaymentMethod')
+
+      dispatch('paymentMethod:fetched')
+    },
+
+    async fetchUserActivePlan(id: number): Promise<void> {
+      this.setLoadingState('fetchActivePlan')
+      const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.activeSubscription = res
+      }
+      else {
+        this.activeSubscription = {}
+      }
+
+      this.removeLoadingState('fetchActivePlan')
+
+      dispatch('subscription:fetched')
+    },
+
+    setLoadingState(statusKey: string): void {
+      this.loadingStates[statusKey] = true
+    },
+    removeLoadingState(statusKey: string): void {
+      this.loadingStates[statusKey] = false
+    },
+    isStateLoading(statusKey: string): boolean {
+      return this.loadingStates[statusKey] === undefined ? true : this.loadingStates[statusKey]
+    },
+  },
+
+  getters: {
+    isLoading: state => state.loadingStates.size > 0,
+    getPaymentMethods: (state): StripePaymentMethod[] => state.paymentMethods,
+    getCurrentPlan: (state): Stripe.Subscription => state.activeSubscription,
+    getTransactionHistory: (state): Stripe.Invoice[] => state.transactionHistory,
+    hasPaymentMethods: (state): boolean =>
+      state.paymentMethods.length > 0
+      || !(state.defaultPaymentMethod == null
+        || (typeof state.defaultPaymentMethod === 'object' && Object.keys(state.defaultPaymentMethod).length === 0)),
+
+    getDefaultPaymentMethod: (state): StripePaymentMethod[] => state.defaultPaymentMethod,
+    getStripeCustomer: (state): any => state.stripeCustomer,
+    getPlanState: (state): boolean => state.planState,
+  },
+})
+
+if (import.meta.hot)
+  import.meta.hot.accept(acceptHMRUpdate(usePaymentStore, import.meta.hot))

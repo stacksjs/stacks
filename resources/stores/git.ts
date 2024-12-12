@@ -1,4 +1,4 @@
-import type { GithubCommit, WorkflowRun } from '../types/git'
+import type { GitHubCommit, WorkflowRun } from '../types/git'
 
 const owner = 'stacksjs'
 const repo = 'stacks'
@@ -12,7 +12,7 @@ const token = ''
 export const useGitStore = defineStore('git', {
   state: (): any => {
     return {
-      commitLists: [] as GithubCommit[],
+      commitLists: [] as GitHubCommit[],
       workflowRuns: [] as WorkflowRun[],
       workflowRun: {} as WorkflowRun,
     }
@@ -51,7 +51,7 @@ export const useGitStore = defineStore('git', {
   },
 
   getters: {
-    getCommits(state): GithubCommit[] {
+    getCommits(state): GitHubCommit[] {
       return state.commitLists
     },
 
@@ -63,7 +63,7 @@ export const useGitStore = defineStore('git', {
       return state.workflowRuns.length
     },
 
-    getWorkflowRuns(state): GithubCommit[] {
+    getWorkflowRuns(state): GitHubCommit[] {
       return state.workflowRuns
     },
   },

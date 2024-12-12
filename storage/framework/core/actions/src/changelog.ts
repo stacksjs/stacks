@@ -1,11 +1,21 @@
-import { execSync, runCommand } from '@stacksjs/cli'
+import { execSync, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
+// when log.debug is used, only log to file in production
+log.debug('Generating changelog')
 const fromRevision = await execSync('git describe --abbrev=0 --tags HEAD^')
-// console.log('fromRevision', fromRevision)
+log.debug('FromRevision', fromRevision)
 const toRevision = await execSync('git describe')
-// console.log('toRevision', toRevision)
+log.debug('ToRevision', toRevision)
+const options = parseOptions()
+log.debug('Changelog Options', options)
 
-await runCommand(`bunx changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}`, {
+const command = options?.dryRun
+  ? `bunx --bun changelogen --no-output --from ${fromRevision} --to ${toRevision}`
+  : `bunx --bun changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}`
+
+await runCommand(command, {
   cwd: projectPath(),
+  quiet: options?.quiet,
+  verbose: options?.verbose,
 })

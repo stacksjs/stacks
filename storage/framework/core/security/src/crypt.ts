@@ -1,6 +1,6 @@
+import { env } from '@stacksjs/env'
 import aes from 'crypto-js/aes'
 import utf8 from 'crypto-js/enc-utf8'
-import { env } from '@stacksjs/env'
 
 function encrypt(message: string): string {
   const passphrase = env.APP_KEY
@@ -20,4 +20,4 @@ function decrypt(encrypted: string): string {
   return aes.decrypt(encrypted, passphrase).toString(utf8)
 }
 
-export { encrypt, decrypt }
+export { decrypt, encrypt }

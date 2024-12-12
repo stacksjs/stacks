@@ -1,12 +1,13 @@
-import type { IEmailOptions } from '@novu/stateless'
-
-export type EmailOptions = Omit<IEmailOptions, 'from'> & {
+export interface EmailOptions {
   from: {
-    name?: string
-    address?: string
+    name: string
+    address: string
   }
 
   mailboxes: string[]
+
+  url: string
+  charset: string // e.g. UTF-8
 
   server: {
     scan?: boolean

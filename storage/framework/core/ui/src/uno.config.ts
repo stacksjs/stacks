@@ -1,5 +1,6 @@
+import { presetForms } from '@julr/unocss-preset-forms'
+import { ui } from '@stacksjs/config'
 import {
-  defineConfig,
   presetAttributify,
   presetIcons,
   presetTypography,
@@ -8,19 +9,16 @@ import {
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
+  type UserConfig as UnoConfig,
 } from 'unocss'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
-import { ui } from '@stacksjs/config'
-import { presetForms } from '@julr/unocss-preset-forms'
 
-export default defineConfig({
+const config: UnoConfig = {
   shortcuts: ui.shortcuts,
 
   content: {
     pipeline: {
-      include: [
-        /\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/,
-      ],
+      include: [/\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/],
       // exclude files
       // exclude: []
     },
@@ -35,7 +33,9 @@ export default defineConfig({
     presetIcons({
       prefix: 'i-',
       warn: true,
-      // collections: ui.icons,
+      collections: {
+        heroicons: () => import('@iconify-json/heroicons/icons.json').then(i => i.default as any),
+      },
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
@@ -47,10 +47,9 @@ export default defineConfig({
       fonts: {
         sans: 'Inter',
         serif: 'Inter',
-        mono: 'Inter',
+        // mono: 'Inter',
       },
     }),
-
   ],
 
   transformers: [
@@ -63,4 +62,18 @@ export default defineConfig({
   ],
 
   safelist: ui.safelist?.split(' ') || [],
-})
+
+  theme: {
+    extend: {
+      colors: {
+        primary: '#1F1FE9',
+        secondary: '#B80C09',
+        success: '#CAFE48',
+        dark: '#1A181B',
+        light: '#F5F3F5',
+      },
+    },
+  },
+}
+
+export default config

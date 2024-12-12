@@ -1,10 +1,10 @@
-import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
+import process from 'node:process'
 import { config } from '@stacksjs/config'
+import { ExitCode } from '@stacksjs/types'
 
 // import { path } from '@stacksjs/path'
-import { runCommandSync } from '@stacksjs/cli'
+import { log, runCommandSync } from '@stacksjs/cli'
 
 // function runCommand(command: string): Promise<string> {
 //   return new Promise((resolve, reject) => {
@@ -27,7 +27,7 @@ interface HttpOptions {
   verbose?: boolean
 }
 
-export function http(buddy: CLI) {
+export function http(buddy: CLI): void {
   const descriptions = {
     http: 'Send an HTTP request to a domain',
     project: 'Target a specific project',
@@ -36,9 +36,11 @@ export function http(buddy: CLI) {
 
   buddy
     .command('http [domain]', descriptions.http)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     // .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: HttpOptions) => {
+      log.debug('Running `buddy http [domain]` ...', options)
+
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)
         .filter(([key, value]) => key !== '--' && key.length > 1 && value !== false) // filter out '--' key and short options
@@ -46,9 +48,9 @@ export function http(buddy: CLI) {
         .join(' ')
 
       const command = `http GET ${domain || config.app.url} ${optionsString}`
-      // eslint-disable-next-line no-console
-      console.log(`Running command: ${command}`)
-      runCommandSync(command)
+
+      log.info(`Running command: ${command}`)
+      await runCommandSync(command)
 
       process.exit(ExitCode.Success)
     })

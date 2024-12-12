@@ -1,4 +1,4 @@
-import slugify from 'slugify'
+import { slugify } from './slug'
 
 interface SlugOptions {
   replacement?: string
@@ -11,7 +11,7 @@ interface SlugOptions {
 
 // port from nanoid
 // https://github.com/ai/nanoid
-const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
+export const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 
 /**
  * Replace backslash to slash
@@ -22,7 +22,7 @@ const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwy
  * slash('C:\\Users\\Chris') => 'C:/Users/Chris'
  * ```
  */
-export function slash(str: string) {
+export function slash(str: string): string {
   return str.replace(/\\/g, '/')
 }
 
@@ -35,7 +35,7 @@ export function slash(str: string) {
  * ensurePrefix('https://', 'google.com') => 'https://google.com'
  * ensurePrefix('https://', 'http://google.com') => 'https://google.com'
  */
-export function ensurePrefix(prefix: string, str: string) {
+export function ensurePrefix(prefix: string, str: string): string {
   if (!str.startsWith(prefix))
     return prefix + str
   return str
@@ -51,7 +51,7 @@ export function ensurePrefix(prefix: string, str: string) {
  * ensureSuffix('.js', 'index.js') => 'index.js'
  * ```
  */
-export function ensureSuffix(suffix: string, str: string) {
+export function ensureSuffix(suffix: string, str: string): string {
   return str.endsWith(suffix) ? str : str + suffix
 }
 
@@ -68,14 +68,14 @@ export function ensureSuffix(suffix: string, str: string) {
  * ```
  */
 export function template(str: string, ...args: any[]): string {
-  return str.replace(/{(\d+)}/g, (match, key) => {
+  return str.replace(/\{(\d+)\}/g, (match, key) => {
     const index = Number(key)
 
     return Number.isNaN(index) ? match : args[index]
   })
 }
 
-export function truncate(str: string, length: number, end = '...') {
+export function truncate(str: string, length: number, end = '...'): string {
   if (str.length <= length)
     return str
 
@@ -86,12 +86,11 @@ export function truncate(str: string, length: number, end = '...') {
  * Generate a random string
  * @category String
  */
-export function random(size = 16, dict = urlAlphabet) {
+export function random(size = 16, dict: string = urlAlphabet): string {
   let id = ''
   let i = size
   const len = dict.length
-  while (i--)
-    id += dict[(Math.random() * len) | 0]
+  while (i--) id += dict[(Math.random() * len) | 0]
   return id
 }
 
@@ -113,5 +112,5 @@ export function slug(str: string, options?: SlugOptions): string {
   })
 }
 
-export { default as detectIndent } from 'detect-indent'
-export { detectNewline } from 'detect-newline'
+export * from './detect-indent'
+export * from './detect-newline'

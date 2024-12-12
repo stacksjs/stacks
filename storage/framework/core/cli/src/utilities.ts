@@ -1,2 +1,0 @@
-export * as kolorist from 'kolorist'
-export { ansi256Bg, bgBlack, bgBlue, bgCyan, bgGray, bgGreen, bgLightBlue, bgLightCyan, bgLightGray, bgLightGreen, bgLightMagenta, bgLightRed, bgLightYellow, bgMagenta, bgRed, bgWhite, bgYellow, black, blue, bold, cyan, dim, gray, green, hidden, inverse, italic, lightBlue, lightCyan, lightGray, lightGreen, lightMagenta, lightRed, lightYellow, link, magenta, red, reset, strikethrough, underline, white, yellow, ansi256, trueColor, trueColorBg, stripColors } from 'kolorist'

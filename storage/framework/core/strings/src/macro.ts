@@ -3,15 +3,15 @@ import * as p from './pluralize'
 import * as u from './utils'
 
 export const Str = {
-  slash(str: string) {
+  slash(str: string): string {
     return u.slash(str)
   },
 
-  ensurePrefix(prefix: string, str: string) {
+  ensurePrefix(prefix: string, str: string): string {
     return u.ensurePrefix(prefix, str)
   },
 
-  ensureSuffix(suffix: string, str: string) {
+  ensureSuffix(suffix: string, str: string): string {
     return u.ensureSuffix(suffix, str)
   },
 
@@ -22,110 +22,114 @@ export const Str = {
   /**
    * Truncate a string
    */
-  truncate(str: string, length: number, end = '...') {
+  truncate(str: string, length: number, end = '...'): string {
     return u.truncate(str, length, end)
   },
 
-  random(length = 16) {
-    return u.random(length)
+  random(length = 16, dict?: string): string {
+    return u.random(length, dict)
   },
 
-  capitalize(str: string) {
+  capitalize(str: string): string {
     return c.capitalize(str)
   },
 
-  slug(str: string) {
+  slug(str: string): string {
     return u.slug(str)
   },
 
-  detectIndent(str: string) {
+  detectIndent(str: string): {
+    amount: number
+    type: string | undefined
+    indent: string
+  } {
     return u.detectIndent(str)
   },
 
-  detectNewline(str: string) {
+  detectNewline(str: string): '\r\n' | '\n' | undefined {
     return u.detectNewline(str)
   },
 
-  camelCase(str: string) {
+  camelCase(str: string): string {
     return c.camelCase(str)
   },
 
-  capitalCase(str: string) {
+  capitalCase(str: string): string {
     return c.capitalCase(str)
   },
 
-  constantCase(str: string) {
+  constantCase(str: string): string {
     return c.constantCase(str)
   },
 
-  dotCase(str: string) {
+  dotCase(str: string): string {
     return c.dotCase(str)
   },
 
-  noCase(str: string) {
+  noCase(str: string): string {
     return c.noCase(str)
   },
 
-  paramCase(str: string) {
+  paramCase(str: string): string {
     return c.paramCase(str)
   },
 
-  pascalCase(str: string) {
+  pascalCase(str: string): string {
     return c.pascalCase(str)
   },
 
-  pathCase(str: string) {
+  pathCase(str: string): string {
     return c.pathCase(str)
   },
 
-  sentenceCase(str: string) {
+  sentenceCase(str: string): string {
     return c.sentenceCase(str)
   },
 
-  snakeCase(str: string) {
+  snakeCase(str: string): string {
     return c.snakeCase(str)
   },
 
-  titleCase(str: string) {
+  titleCase(str: string): string {
     return c.titleCase(str)
   },
 
-  kebabCase(str: string) {
+  kebabCase(str: string): string {
     return c.kebabCase(str)
   },
 
-  plural(str: string) {
+  plural(str: string): string {
     // plural, singular, isPlural, isSingular, addPluralRule, addSingularRule, addIrregularRule, addUncountableRule
     return p.plural(str)
   },
 
-  singular(str: string) {
+  singular(str: string): string {
     return p.singular(str)
   },
 
-  isPlural(str: string) {
+  isPlural(str: string): boolean {
     return p.isPlural(str)
   },
 
-  isSingular(str: string) {
+  isSingular(str: string): boolean {
     return p.isSingular(str)
   },
 
-  addPluralRule(rule: string | RegExp, repl: string) {
-    return p.addPluralRule(rule, repl)
+  addPluralRule(rule: string | RegExp, repl: string): void {
+    p.addPluralRule(rule, repl)
   },
 
-  addSingularRule(rule: string | RegExp, repl: string) {
-    return p.addSingularRule(rule, repl)
+  addSingularRule(rule: string | RegExp, repl: string): void {
+    p.addSingularRule(rule, repl)
   },
 
-  addIrregularRule(single: string, plural: string) {
-    return p.addIrregularRule(single, plural)
+  addIrregularRule(single: string, plural: string): void {
+    p.addIrregularRule(single, plural)
   },
 
-  addUncountableRule(word: string | RegExp) {
-    return p.addUncountableRule(word)
+  addUncountableRule(word: string | RegExp): void {
+    p.addUncountableRule(word)
   },
 }
 
-export const str = Str
+export const str: typeof Str = Str

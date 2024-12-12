@@ -1,8 +1,9 @@
 import type { BunFile } from 'bun'
+import type { Ports } from './ports'
 
-type ArrayBufferView = TypedArray | DataView
+type ArrayBufferView = NodeJS.TypedArray | DataView
 
-export type { Subprocess, SyncSubprocess } from 'bun'
+export type { ErrorLike, SpawnOptions, Subprocess, SyncSubprocess } from 'bun'
 export type Readable =
   | 'pipe'
   | 'inherit'
@@ -29,7 +30,7 @@ export type Writable =
 
 export type In = Readable
 export type Out = Writable
-export type Err = Writable
+// export type Err = Writable // TODO: find a workaround for this to not clash with our other Err export
 
 /**
  * The file descriptor for the standard input. It may be:
@@ -122,6 +123,16 @@ export interface CliOptions {
   silent?: boolean
 
   /**
+   * **Quiet Mode**
+   *
+   * When you are using "quiet"-mode, the CLI will output minimally
+   * to the console.
+   *
+   * @default false
+   */
+  quiet?: boolean
+
+  /**
    * **Current Work Directory**
    *
    * Based on the `cwd` value, that's where the command...
@@ -129,6 +140,16 @@ export interface CliOptions {
    * @default projectPath()
    */
   cwd?: string
+
+  stdio?: [In, Out, Out]
+
+  /**
+   * **stdio**
+   *
+   * The `stdio` option lets you configure the standard I/O of the spawned process.
+   *
+   */
+  // stdio?: [SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable]
 
   /**
    * @default 'pipe'
@@ -160,6 +181,10 @@ export interface CliOptions {
    * @default false
    */
   withLocalhost?: boolean
+
+  input?: string | ArrayBufferView | ReadableStream | Blob | Response | Request
+
+  project?: string // TODO: can create an action that automates creating a type for this
 }
 
 export type CliConfig = CliOptions
@@ -177,68 +202,122 @@ export type ActionOptions = {
   types?: boolean
   domains?: boolean
   count?: number
-} & CliOptions & DomainsOptions
+  dryRun?: boolean // used in buddy release
+} & CliOptions &
+DomainsOptions
 
-export type BuildOption = 'components' | 'vueComponents' | 'webComponents' | 'elements' | 'functions' | 'docs' | 'views' | 'stacks' | 'all' | 'buddy' | 'server'
+export type BuildOption =
+  | 'components'
+  | 'vueComponents'
+  | 'webComponents'
+  | 'elements'
+  | 'functions'
+  | 'docs'
+  | 'views'
+  | 'stacks'
+  | 'all'
+  | 'buddy'
+  | 'server'
 export type BuildOptions = {
-  [key in BuildOption]: boolean;
+  [key in BuildOption]: boolean
 } & CliOptions
 
 export type AddOption = 'table' | 'calendar' | 'all'
 export type AddOptions = {
-  [key in AddOption]?: boolean;
+  [key in AddOption]?: boolean
 } & CliOptions
 
 export type CreateStringOption = 'name'
-export type CreateBooleanOption = 'ui' | 'components' | 'web-components' | 'vue' | 'views' | 'functions' | 'api' | 'database'
+export type CreateBooleanOption =
+  | 'ui'
+  | 'components'
+  | 'web-components'
+  | 'vue'
+  | 'views'
+  | 'functions'
+  | 'api'
+  | 'database'
 export type CreateOptions = {
   [key in CreateBooleanOption]: boolean
 } & {
   [key in CreateStringOption]: string
 } & CliOptions
 
-export type DevOption = 'components' | 'docs' | 'frontend' | 'api' | 'desktop' | 'all' | 'email' | 'system-tray' | 'interactive' | 'verbose'
+export type DevOption =
+  | 'components'
+  | 'docs'
+  | 'frontend'
+  | 'api'
+  | 'desktop'
+  | 'all'
+  | 'email'
+  | 'system-tray'
+  | 'interactive'
+  | 'verbose'
 export type DevOptions = {
-  [key in DevOption]: boolean;
+  [key in DevOption]: boolean
 } & CliOptions
 
-export type GeneratorOption = 'types' | 'entries' | 'webTypes' | 'customData' | 'ideHelpers' | 'componentMeta'
+export type GeneratorOption =
+  | 'types'
+  | 'entries'
+  | 'webTypes'
+  | 'customData'
+  | 'ideHelpers'
+  | 'componentMeta'
+  | 'coreSymlink'
+  | 'openApiSpec'
+  | 'pkgxConfig'
+  | 'openapi'
+  | 'modelFiles'
 export type GeneratorOptions = {
-  [key in GeneratorOption]?: boolean;
+  [key in GeneratorOption]?: boolean
 } & CliOptions
 
 export type LintOption = 'fix'
 export type LintOptions = {
-  [key in LintOption]: boolean;
+  [key in LintOption]: boolean
 } & CliOptions
 
 export type MakeStringOption = 'name' | 'chat' | 'sms' | 'env'
-export type MakeBooleanOption = 'component' | 'page' | 'function' | 'language' | 'database' | 'migration' | 'model' | 'notification' | 'stack'
+export type MakeBooleanOption =
+  | 'component'
+  | 'page'
+  | 'function'
+  | 'language'
+  | 'database'
+  | 'migration'
+  | 'model'
+  | 'notification'
+  | 'stack'
 export type MakeOptions = {
   [key in MakeBooleanOption]: boolean
 } & {
   [key in MakeStringOption]: string
 } & CliOptions
 
-export type UpgradeBoolean = 'framework' | 'dependencies' | 'packageManager' | 'node' | 'all' | 'force'
+export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force'
+
 export type UpgradeString = 'version'
 
 export type UpgradeOptions = {
-  [key in UpgradeBoolean]: boolean;
+  [key in UpgradeBoolean]: boolean
 } & {
-  [key in UpgradeString]: string;
+  [key in UpgradeString]: string
 } & CliOptions
 
 export type ExamplesString = 'version'
 export type ExamplesBoolean = 'components' | 'vue' | 'webComponents' | 'elements' | 'all' | 'force'
-export type ExamplesOption = ExamplesString & ExamplesBoolean | void
+export type ExamplesOption = ExamplesString & ExamplesBoolean
 export type ExamplesOptions = {
-  [key in ExamplesString]: string;
+  [key in ExamplesString]: string
 } & {
-  [key in ExamplesBoolean]: boolean;
+  [key in ExamplesBoolean]: boolean
 } & CliOptions
 export type TestOptions = CliOptions & {
-  showReport?: boolean
+  ui?: boolean
+  feature?: boolean
+  unit?: boolean
 }
 export type DomainsOptions = CliOptions & {
   domain?: string
@@ -282,23 +361,47 @@ export type DomainsOptions = CliOptions & {
   contactType?: string
 }
 
-export interface CleanOptions extends CliOptions { }
+export interface CleanOptions extends CliOptions {}
+
+export interface SaasOptions extends CliOptions {}
+
+export interface SearchCommandOptions extends CliOptions {
+  model: string
+  settings: boolean
+  flush: boolean
+}
 export interface CloudCliOptions extends CliOptions {
   ssh?: boolean
   connect?: boolean
   jumpBox?: boolean
+  invalidateCache?: boolean
+  paths?: string
+  diff?: boolean
 }
-export interface CommitOptions extends CliOptions { }
-export interface KeyOptions extends CliOptions { }
-export interface FreshOptions extends CliOptions { }
-export interface MigrateOptions extends CliOptions { }
-export interface InspireOptions extends CliOptions { }
-export interface InstallOptions extends CliOptions { }
-export interface ReleaseOptions extends CliOptions { }
-export interface PreinstallOptions extends CliOptions { }
-export interface PrepublishOptions extends CliOptions { }
-export interface TinkerOptions extends CliOptions { }
-export interface TypesOptions extends CliOptions { }
+export interface CommitOptions extends CliOptions {}
+export interface KeyOptions extends CliOptions {}
+export interface FreshOptions extends CliOptions {
+  dryRun?: boolean
+  quiet?: boolean
+}
+export interface MigrateOptions extends CliOptions {
+  diff?: boolean
+}
+export interface InspireOptions extends CliOptions {}
+export interface InstallOptions extends CliOptions {}
+export interface ReleaseOptions extends CliOptions {
+  dryRun?: boolean
+}
+export interface ProjectsOptions extends CliOptions {
+  list?: boolean
+}
+export interface PreinstallOptions extends CliOptions {}
+export interface PrepublishOptions extends CliOptions {}
+export interface PortsOptions extends CliOptions {
+  ports?: Partial<Ports>
+}
+export interface TinkerOptions extends CliOptions {}
+export interface TypesOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 

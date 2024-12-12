@@ -1,8 +1,10 @@
-import type { CliOptions, CommandError, Subprocess } from '@stacksjs/types'
-import type { Result } from '@stacksjs/error-handling'
-import { exec, execSync } from './exec'
-import { italic, underline } from './utilities'
+import type { Ok, Result } from '@stacksjs/error-handling'
+import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import process from 'node:process'
+import { handleError } from '@stacksjs/error-handling'
+import { ExitCode } from '@stacksjs/types'
 import { log } from './console'
+import { exec, execSync } from './exec'
 
 /**
  * Run a command.
@@ -30,17 +32,27 @@ import { log } from './console'
  * ```
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  if (options?.verbose)
-    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+  log.debug('runCommand:', command, options)
 
-  return await exec(command, options)
+  const opts: CliOptions = {
+    ...options,
+    stdio: options?.stdio ?? [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    verbose: options?.verbose ?? false,
+  }
+
+  return await exec(command, opts)
 }
 
 export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  if (options?.verbose)
-    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+  log.debug('runProcess:', command, options)
 
-  return await exec(command, options)
+  const opts: CliOptions = {
+    ...options,
+    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    verbose: options?.verbose ?? false,
+  }
+
+  return await exec(command, opts)
 }
 
 /**
@@ -69,17 +81,15 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  * ```
  */
 export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
-  if (options?.verbose)
-    log.debug('Running command:', underline(italic(command)), 'with options:', options)
+  log.debug('runCommandSync:', command, options)
 
-  const result = await execSync(command, options)
+  const opts: CliOptions = {
+    ...options,
+    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    verbose: options?.verbose ?? false,
+  }
 
-  // if (result.isErr())
-  //   return err(result.error)
-
-  // return ok(result.value)
-
-  return result
+  return await execSync(command, opts)
 }
 
 /**
@@ -89,11 +99,22 @@ export async function runCommandSync(command: string, options?: CliOptions): Pro
  * @param options The options to pass to the command.
  * @returns The result of the command.
  */
-export async function runCommands(commands: string[], options?: CliOptions) {
+export async function runCommands(
+  commands: string[],
+  options?: CliOptions,
+): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[]> {
   const results = []
 
-  for (const command of commands)
-    results.push(await runCommand(command, options))
+  for (const command of commands) {
+    const result = await runCommand(command, options)
+
+    if (result.isErr()) {
+      handleError('Error during runCommands', result.error)
+      process.exit(ExitCode.FatalError)
+    }
+
+    results.push(result)
+  }
 
   return results
 }

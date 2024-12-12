@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .error-container {
+            background-color: #ffefef;
+            border: 1px solid #ff4d4d;
+            color: #d8000c;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .error-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .error-message {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-title">An Error Occurred</div>
+        <p class="error-message">{{ERROR_MESSAGE}}</p>
+        <p class="error-message">{{STACK_TRACE}}</p>
+    </div>
+</body>
+</html>

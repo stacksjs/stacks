@@ -1,9 +1,36 @@
 {
-  "name": "stacks-raycast",
-  "type": "module",
-  "version": "0.58.56",
-  "description": "The Stacks Raycast plugin.",
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "buddy",
+  "title": "Stacks Buddy",
+  "version": "0.68.2",
+  "description": "The Stacks Raycast extension.",
+  "author": "Stacks.js",
+  "license": "MIT",
+  "categories": ["Documentation"],
+  "icon": "stacks-logo.ico",
+  "owner": "stacks",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Stacks Buddy",
+      "subtitle": "Stacks Buddy Commands",
+      "description": "Search and view Stacks Buddy commands",
+      "mode": "view"
+    }
+  ],
   "scripts": {
-    "build": "echo 'No build step required yet.'"
+    "build": "echo 'wip'",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "bunx --bun @raycast/api@latest publish"
+  },
+  "dependencies": {
+    "@raycast/api": "^1.86.1",
+    "@raycast/utils": "^1.18.1"
+  },
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "typescript": "^5.7.2"
   }
 }

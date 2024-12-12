@@ -1,6 +1,6 @@
 export {
   Dialog,
+  DialogDescription,
   DialogPanel,
   DialogTitle,
-  DialogDescription,
 } from '@headlessui/vue'

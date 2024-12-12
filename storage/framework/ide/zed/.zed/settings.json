@@ -1,0 +1,146 @@
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
+{
+  "languages": {
+    "JavaScript": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "TypeScript": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "Vue.js": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "HTML": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "CSS": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "Markdown": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "JSON": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "JSONC": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "YAML": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "XML": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "TOML": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    }
+  },
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "rulesCustomizations": [
+          {
+            "rule": "style/*",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "format/*",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*-indent",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*-spacing",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*-spaces",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*-order",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*-dangle",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*-newline",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*quotes",
+            "severity": "off",
+            "fixable": true
+          },
+          {
+            "rule": "*semi",
+            "severity": "off",
+            "fixable": true
+          }
+        ]
+      }
+    }
+  },
+  "file_types": {
+    "JavaScript": [
+      "buddy"
+    ]
+  }
+}

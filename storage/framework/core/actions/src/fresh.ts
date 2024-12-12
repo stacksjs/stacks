@@ -1,15 +1,15 @@
 import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
 import { runCommand } from '@stacksjs/cli'
-import { logger } from '@stacksjs/logging'
+import { handleError } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
 import { cleanProject } from '@stacksjs/utils'
 
-logger.log('Cleaning project...')
+log.info('Cleaning project...')
 await cleanProject()
 
-logger.log('Installing dependencies...')
-
+log.info('Installing dependencies...')
 const result = await runCommand('bun install', {
   cwd: projectPath(),
 })

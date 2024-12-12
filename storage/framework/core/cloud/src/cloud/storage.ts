@@ -1,15 +1,20 @@
-import type { aws_kms as kms } from 'aws-cdk-lib'
-import { RemovalPolicy, Tags, aws_backup as backup, aws_iam as iam, aws_s3 as s3 } from 'aws-cdk-lib'
+import type { aws_cloudfront as cloudfront, aws_kms as kms } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+import { config } from '@stacksjs/config'
+import { path as p } from '@stacksjs/path'
+import { hasFiles } from '@stacksjs/storage'
+import { aws_backup as backup, aws_iam as iam, RemovalPolicy, aws_s3 as s3, Tags } from 'aws-cdk-lib'
 
 export interface StorageStackProps extends NestedCloudProps {
   kmsKey: kms.Key
+  originAccessIdentity: cloudfront.OriginAccessIdentity
 }
 
 export class StorageStack {
   publicBucket: s3.Bucket
   privateBucket: s3.Bucket
+  docsBucket?: s3.Bucket
   logBucket: s3.Bucket
   bucketPrefix: string
   vault: backup.BackupVault
@@ -25,9 +30,29 @@ export class StorageStack {
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      websiteIndexDocument: 'index.html',
+      websiteErrorDocument: 'index.html',
+      publicReadAccess: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
     })
 
     Tags.of(this.publicBucket).add('daily-backup', 'true')
+
+    if (this.shouldDeployDocs()) {
+      this.docsBucket = new s3.Bucket(scope, 'DocsBucket', {
+        bucketName: `${this.bucketPrefix}-docs-${props.timestamp}`,
+        versioned: true,
+        autoDeleteObjects: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        encryption: s3.BucketEncryption.S3_MANAGED,
+        websiteIndexDocument: 'index.html',
+        websiteErrorDocument: 'index.html',
+        publicReadAccess: true,
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
+      })
+
+      Tags.of(this.docsBucket).add('weekly-backup', 'true')
+    }
 
     this.privateBucket = new s3.Bucket(scope, 'PrivateBucket', {
       bucketName: `${this.bucketPrefix}-private-${props.timestamp}`,
@@ -79,7 +104,7 @@ export class StorageStack {
     })
   }
 
-  createBackupRole(scope: Construct) {
+  createBackupRole(scope: Construct): iam.Role {
     const backupRole = new iam.Role(scope, 'BackupRole', {
       assumedBy: new iam.ServicePrincipal('backup.amazonaws.com'),
     })
@@ -164,5 +189,9 @@ export class StorageStack {
     )
 
     return backupRole
+  }
+
+  shouldDeployDocs(): boolean {
+    return (hasFiles(p.projectPath('docs')) || config.app.docMode) ?? false
   }
 }

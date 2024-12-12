@@ -1,12 +1,6 @@
 export interface DatabaseOptions {
   default: string
 
-  /**
-   * The name of the database to use.
-   * @default stacks
-   */
-  name: string
-
   connections: {
     mysql?: {
       url?: string
@@ -24,11 +18,27 @@ export interface DatabaseOptions {
       prefix?: string
     }
 
-    planetscale?: object
-    postgres?: object
+    dynamodb?: {
+      key?: string
+      secret?: string
+      region?: string
+      prefix?: string
+      endpoint?: string
+    }
+
+    postgres?: {
+      url?: string
+      host?: string
+      port?: number
+      name?: string
+      username?: string
+      password?: string
+      prefix?: string
+    }
   }
 
   migrations: string
+  migrationLocks: string
 }
 
 export type DatabaseConfig = Partial<DatabaseOptions>

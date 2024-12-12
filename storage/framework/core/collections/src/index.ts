@@ -1,1 +1,1 @@
-export { Collection, collect } from 'collect.js'
+export { collect } from 'ts-collect'

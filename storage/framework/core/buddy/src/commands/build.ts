@@ -1,12 +1,11 @@
+import type { BuildOptions, CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro, prompt } from '@stacksjs/cli'
-import type { BuildOptions, CLI } from '@stacksjs/types'
-import { ExitCode } from '@stacksjs/types'
+import { intro, log, outro, prompts } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { isString } from '@stacksjs/validation'
+import { ExitCode } from '@stacksjs/types'
 
-export function build(buddy: CLI) {
+export function build(buddy: CLI): void {
   const descriptions = {
     build: 'Build any of your libraries (packages) for production use',
     components: 'Build your component library',
@@ -29,18 +28,21 @@ export function build(buddy: CLI) {
   buddy
     .command('build [type]', descriptions.build)
     .option('-c, --components', descriptions.components)
-    .option('-v, --vue-components', descriptions.vueComponents) // these are automatically built with your -c option as well
-    .option('-w, --web-components', descriptions.webComponents) // these are automatically built with your -c option as well
-    .option('-e, --elements', descriptions.elements)
+    .option('-v, --vue-components', descriptions.vueComponents) // also automatically built via the -c flag
+    .option('-w, --web-components', descriptions.webComponents) // also automatically built via the -c flag
+    .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
     .option('-p, --views', descriptions.pages)
+    .option('--pages', descriptions.pages) // alias for --views
     .option('-d, --docs', descriptions.docs)
     .option('-b, --buddy', descriptions.buddy, { default: false })
     .option('-s, --stacks', descriptions.framework, { default: false })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('--project [project]', descriptions.project, { default: false })
     .option('--server', descriptions.server, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: BuildOptions) => {
+      log.debug('Running `buddy build` ...', options)
+
       switch (server) {
         case 'components':
           options.components = true
@@ -70,37 +72,57 @@ export function build(buddy: CLI) {
           options.stacks = true
           break
         case 'server':
-          options.stacks = true
+          options.server = true
           break
         default:
           break
       }
 
-      if (hasNoOptions(options)) {
-        let answers = await prompt.require()
-          .multiselect(descriptions.select, {
-            options: [
-              { label: 'Components', value: 'components' },
-              // { label: 'Vue Components', value: 'vue-components' },
-              { label: 'Web Components', value: 'web-components' },
-              { label: 'Functions', value: 'functions' },
-              { label: 'Views', value: 'views' },
-              { label: 'Documentation', value: 'docs' },
-            ],
-          })
+      console.log('server', server, options)
 
+      // TODO: uncomment this when prompt is available
+      if (hasNoOptions(options)) {
+        console.log('has no')
+        const answers = await prompts({
+          type: 'multiselect',
+          name: 'build',
+          message: descriptions.select,
+          choices: [
+            { title: 'Components', value: 'components' },
+            // { label: 'Vue Components', value: 'vue-components' },
+            { title: 'Web Components', value: 'web-components' },
+            { title: 'Functions', value: 'functions' },
+            { title: 'Views', value: 'views' },
+            { title: 'Documentation', value: 'docs' },
+          ],
+        })
+
+        console.log('answers', answers)
         if (answers !== null)
           process.exit(ExitCode.InvalidArgument)
-
-        if (isString(answers))
-          answers = [answers]
-
-        // creates an object out of array and sets answers to true
-        options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      }
+      else {
+        console.log('has op')
       }
 
-      await runAction(Action.BuildStacks, options)
-
+      if (options.docs)
+        await runAction(Action.BuildDocs)
+      if (options.components)
+        await runAction(Action.BuildComponentLibs)
+      if (options.vueComponents)
+        await runAction(Action.BuildVueComponentLib)
+      if (options.webComponents)
+        await runAction(Action.BuildWebComponentLib)
+      if (options.functions)
+        await runAction(Action.BuildFunctionLib)
+      if (options.views)
+        await runAction(Action.BuildViews)
+      if (options.stacks)
+        await runAction(Action.BuildStacks)
+      if (options.buddy)
+        await runAction(Action.BuildCli)
+      if (options.server)
+        await runAction(Action.BuildServer)
       process.exit(ExitCode.Success)
     })
 
@@ -108,9 +130,10 @@ export function build(buddy: CLI) {
     .command('build:components', 'Automagically build component libraries for production use & npm/CDN distribution')
     .alias('prod:components')
     .option('-c, --components', descriptions.components, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:components` ...', options)
       await runAction(Action.BuildComponentLibs, options)
     })
 
@@ -118,9 +141,10 @@ export function build(buddy: CLI) {
     .command('build:cli', descriptions.cli)
     .alias('prod:cli')
     .option('-b, --buddy', descriptions.buddy, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:cli` ...', options)
       await runAction(Action.BuildCli, options)
     })
 
@@ -128,18 +152,20 @@ export function build(buddy: CLI) {
     .command('build:server', descriptions.server)
     .alias('prod:server')
     .alias('build:docker')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:server` ...', options)
       await runAction(Action.BuildServer, options)
     })
 
   buddy
     .command('build:functions', 'Automagically build function library for npm/CDN distribution')
     .option('-f, --functions', descriptions.functions, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy `build:functions` ...', options)
       await runAction(Action.BuildFunctionLib, options)
     })
 
@@ -148,11 +174,14 @@ export function build(buddy: CLI) {
     .alias('build:vue')
     .alias('prod:vue-components')
     .alias('prod:vue')
-    .option('-v, --vue-components', descriptions.vueComponents, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-v, --vue-components', descriptions.vueComponents, {
+      default: true,
+    })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('build:vue')
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:vue-components` ...', options)
       await runAction(Action.BuildVueComponentLib, options)
     })
 
@@ -161,10 +190,13 @@ export function build(buddy: CLI) {
     .alias('build:wc')
     .alias('prod:web-components')
     .alias('prod:wc')
-    .option('-w, --web-components', descriptions.webComponents, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-w, --web-components', descriptions.webComponents, {
+      default: true,
+    })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:web-components` ...', options)
       await runAction(Action.BuildWebComponentLib, options)
     })
 
@@ -174,17 +206,20 @@ export function build(buddy: CLI) {
     .alias('build:documentation')
     .alias('prod:documentation')
     .option('-d, --docs', descriptions.docs, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:docs` ...', options)
       await runAction(Action.BuildDocs, options)
     })
 
   buddy
     .command('build:core', 'Automagically build the Stacks core.')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:core` ...', options)
+
       const startTime = await intro('buddy build:core')
       const result = await runAction(Action.BuildCore, options)
 
@@ -193,24 +228,32 @@ export function build(buddy: CLI) {
         process.exit()
       }
 
-      await outro('Core packages built successfully', { startTime, useSeconds: true })
+      await outro('Core packages built successfully', {
+        startTime,
+        useSeconds: true,
+      })
     })
 
   buddy
     .command('build:desktop', descriptions.desktop)
     .alias('prod:desktop')
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:desktop` ...', options)
+
       const perf = await intro('buddy build:desktop')
       const result = await runAction(Action.BuildDesktop, options)
 
       if (result.isErr()) {
-        await outro('While running the build:desktop command, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        await outro(
+          'While running the build:desktop command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
         process.exit()
       }
 
-      // eslint-disable-next-line no-console
       console.log('')
       await outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
@@ -219,9 +262,11 @@ export function build(buddy: CLI) {
   buddy
     .command('build:stacks', 'Build the Stacks framework.')
     .option('-s, --stacks', descriptions.framework, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:stacks` ...', options)
+
       const startTime = await intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)
 
@@ -240,5 +285,15 @@ export function build(buddy: CLI) {
 }
 
 function hasNoOptions(options: BuildOptions) {
-  return !options.components && !options.vueComponents && !options.webComponents && !options.elements && !options.functions && !options.views && !options.docs && !options.stacks && !options.buddy
+  return (
+    !options.components
+    && !options.vueComponents
+    && !options.webComponents
+    && !options.elements
+    && !options.functions
+    && !options.views
+    && !options.docs
+    && !options.stacks
+    && !options.buddy
+  )
 }

@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/helpers#readme",
@@ -28,7 +29,6 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -37,43 +37,14 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build",
-    "size": "tsx scripts/export-size.ts"
-  },
-  "peerDependencies": {
-    "@stacksjs/actions": "workspace:*",
-    "@stacksjs/arrays": "workspace:*",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/lint": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@types/js-yaml": "^4.0.9",
-    "@vueuse/core": "^10.7.2",
-    "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^10.7.2",
-    "@vueuse/shared": "^10.7.2",
-    "export-size": "^0.7.0",
-    "js-yaml": "^4.1.0",
-    "rimraf": "^5.0.5",
-    "yaml": "^2.3.4"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build",
+    "size": "bun scripts/export-size.ts"
   },
   "dependencies": {
-    "@dinero.js/currencies": "2.0.0-alpha.14",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
@@ -83,29 +54,31 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^10.7.2",
+    "@vueuse/core": "^12.0.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^10.7.2",
-    "@vueuse/shared": "^10.7.2",
+    "@vueuse/math": "^12.0.0",
+    "@vueuse/shared": "^12.0.0",
+    "ace-builds": "^1.36.5",
+    "bun-plugin-env": "^0.4.1",
+    "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
-    "dinero.js": "2.0.0-alpha.14",
     "export-size": "^0.7.0",
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
-    "magic-regexp": "^0.7.0",
-    "p-limit": "^5.0.0",
+    "magic-regexp": "^0.8.0",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
-    "rimraf": "^5.0.5",
-    "yaml": "^2.3.4"
+    "resize-observer-polyfill": "^1.5.1",
+    "vue3-ace-editor": "^2.2.4",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "markdown-table": "^3.0.3",
+    "markdown-table": "^3.0.4",
     "vue-starport": "^0.4.0"
   }
 }

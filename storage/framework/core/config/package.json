@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/config",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks config helper methods.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/config#readme",
@@ -15,36 +16,20 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "config",
-    "utilities",
-    "functions",
-    "stacks"
-  ],
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "keywords": ["config", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
       "bun": "./*"
     }
   },
-  "files": [
-    "README.md",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

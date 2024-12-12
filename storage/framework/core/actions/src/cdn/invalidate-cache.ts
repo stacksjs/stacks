@@ -1,5 +1,5 @@
 // TODO: port over logic from meemalabs/cloudfront to invalidate cache
-// buddy cloud invalidate-cache --paths /index.html /about.html
+// buddy cloud --invalidate-cache --paths /index.html /about.html
 
 // import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront'
 

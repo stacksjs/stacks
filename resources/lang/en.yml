@@ -1,0 +1,15 @@
+default:
+  button:
+    about: About
+    back: Back
+    go: GO
+    home: Home
+    toggle_dark: Toggle dark mode
+    toggle_langs: Change languages
+  intro:
+    desc: Rapid Application Development
+    dynamic_route: Demo of dynamic route
+    hi: 'Hi, {name}!'
+    aka: Also known as
+    whats_your_name: What’s your name?
+    not_found: Not found

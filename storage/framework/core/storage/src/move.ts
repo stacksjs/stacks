@@ -1,4 +1,4 @@
-import { type Result, err, ok } from '@stacksjs/error-handling'
+import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from './fs'
@@ -20,10 +20,8 @@ export async function move(
         const to = path.resolve(dest, path.basename(file))
         const result = await rename(from, to, options)
 
-        if (result.isErr()) {
-          log.error(result.error)
-          return err(handleError(result.error.message, result.error))
-        }
+        if (result.isErr())
+          return log.error(result.error)
       })
 
       await Promise.all(operations)
@@ -47,7 +45,11 @@ export async function move(
   }
 }
 
-export async function rename(from: string, to: string, options?: MoveOptions): Promise<Result<{ message: string }, Error>> {
+export async function rename(
+  from: string,
+  to: string,
+  options?: MoveOptions,
+): Promise<Result<{ message: string }, Error>> {
   return new Promise((resolve, reject) => {
     try {
       // Check if the "to" directory exists
@@ -75,8 +77,7 @@ export async function rename(from: string, to: string, options?: MoveOptions): P
     catch (error: any) {
       if (error.code === 'ENOENT')
         log.error('File or directory does not exist\n\n', error)
-      else
-        log.error(error)
+      else log.error(error)
 
       return reject(err(new Error(error)))
     }

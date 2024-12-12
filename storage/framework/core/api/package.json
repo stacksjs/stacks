@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/api",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks array utilities.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/arrays#readme",
@@ -25,36 +26,25 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/utils": "workspace:*"
+    "build": "bun build.ts",
+    "generate-types": "openapi-typescript ./../../api/openapi.json --output ./../../api/api-types.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@flareapp/flare-client": "^3.0.5",
     "@stacksjs/utils": "workspace:*",
-    "ofetch": "^1.3.3"
+    "ofetch": "^1.4.1",
+    "openapi-typescript": "^7.4.4"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

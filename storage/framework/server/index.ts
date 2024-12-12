@@ -1,21 +1,15 @@
 import process from 'node:process'
 import type { Server, ServerWebSocket } from 'bun'
 import { serverResponse } from '@stacksjs/router'
-import { log } from '@stacksjs/logging'
 
 if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB)
     throw new Error('Missing JOB environment variable')
 
-  const jobModule = await import(`./app/Jobs/${process.env.JOB}`)
-
-  log.info('Running job...', process.env.JOB)
-
-  if (typeof jobModule.default.handle === 'function')
-    await jobModule.default.handle()
-  else
-    throw new Error('`handle()` function is undefined')
-
+  const jobModule = await import('./app/Jobs/DummyJob.ts')
+  // eslint-disable-next-line no-console
+  console.log('Running job', process.env.JOB)
+  await jobModule.default.handle()
   process.exit(0)
 }
 

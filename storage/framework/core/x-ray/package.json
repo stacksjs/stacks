@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/x-ray",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/x-ray#readme",
@@ -22,28 +23,20 @@
     "dump",
     "logs",
     "console",
-    "consola",
     "type safe",
     "stacks"
   ],
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "echo 'wip'",
     "serve": "vite --config ../build/src/desktop.ts",
     "serve:tauri": "vite",
-    "prepublishOnly": "bun --bun run build",
-    "typecheck": "bun --bun tsc --noEmit"
+    "prepublishOnly": "bun run build",
+    "typecheck": "bun tsc --noEmit"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@stacksjs/desktop": "workspace:*",
     "@stacksjs/logging": "workspace:*"
   },

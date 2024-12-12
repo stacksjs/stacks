@@ -1,5 +1,4 @@
-import type { IChatOptions as ChatOptions } from '@novu/stateless'
-
+interface ChatOptions {}
 export type { ChatOptions }
 
 export type ChatConfig = ChatOptions

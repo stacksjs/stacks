@@ -1,32 +1,66 @@
 {
-  "vue.inlayHints.missingProps": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.preferGoToSourceDefinition": true,
-  "eslint.experimental.useFlatConfig": true,
   // Disable the default formatter, use eslint instead
   "prettier.enable": false,
+  "biome.enabled": false,
   "editor.formatOnSave": false,
-
   // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
+    "source.fixAll.eslint": "never",
     "source.organizeImports": "never"
   },
-
-  // Silent the stylistic rules in you IDE, but still auto fix them
   // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
-    { "rule": "style/*", "severity": "off" },
-    { "rule": "*-indent", "severity": "off" },
-    { "rule": "*-spacing", "severity": "off" },
-    { "rule": "*-spaces", "severity": "off" },
-    { "rule": "*-order", "severity": "off" },
-    { "rule": "*-dangle", "severity": "off" },
-    { "rule": "*-newline", "severity": "off" },
-    { "rule": "*quotes", "severity": "off" },
-    { "rule": "*semi", "severity": "off" }
+    {
+      "rule": "style/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "format/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-indent",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spacing",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spaces",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-order",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-dangle",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-newline",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*quotes",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*semi",
+      "severity": "off",
+      "fixable": true
+    }
   ],
-
   // Enable eslint for all supported languages
   "eslint.validate": [
     "javascript",
@@ -34,55 +68,41 @@
     "typescript",
     "typescriptreact",
     "vue",
-    "stx",
     "html",
     "markdown",
     "json",
     "jsonc",
     "yaml",
-    "toml"
+    "toml",
+    "xml",
+    "gql",
+    "graphql",
+    "astro",
+    "svelte",
+    "css",
+    "less",
+    "scss",
+    "pcss",
+    "postcss"
   ],
-
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "[stx]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-  "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // TypeScript
+  "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
+  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
+  // Shell
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[yaml]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
+  // Markdown
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true
   },
-  "[shellscript]": {
+  "[dockerfile]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-
-  "editor.quickSuggestions": {
-    "strings": true
-  },
-  "files.associations": {
-    "buddy": "typescript",
-    "*.stx": "vue"
-  },
-  "vsicons.associations.files": [
-    {
-      "icon": "public/favicon",
-      "extensions": ["stx"],
-      "format": "svg"
-    }
-  ],
-  "git.enableSmartCommit": true,
-  "npm.enableRunFromFolder": true,
-  "npm.packageManager": "bun",
-  "editor.gotoLocation.multipleDefinitions": "goto",
-  "unocss.root": "./storage/framework/core/ui/src/unocss.config.ts",
-  "markdownlint.ignore": [
-    "CHANGELOG.md"
-  ],
   "markdownlint.config": {
     "default": true,
     "MD033": {
@@ -97,8 +117,34 @@
     },
     "MD041": false
   },
+  // Stacks
+  "vue.inlayHints.missingProps": true,
+  "typescript.preferGoToSourceDefinition": true,
+  "files.associations": {
+    "buddy": "typescript",
+    "*.stx": "vue"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "vsicons.associations.files": [
+    {
+      "icon": "${workspaceFolder}/public/favicon.svg",
+      "extensions": [
+        "stx"
+      ],
+      "format": "svg"
+    }
+  ],
+  "git.enableSmartCommit": true,
+  "npm.enableRunFromFolder": true,
+  "npm.packageManager": "bun",
+  "editor.gotoLocation.multipleDefinitions": "goto",
   "search.exclude": {
     "**/node_modules": true,
+    "**/cdk.out": true,
+    "**/dist": true,
+    "**/storage/public": true,
     "CHANGELOG.md": true
   },
   "explorer.confirmDragAndDrop": false,
@@ -128,5 +174,5 @@
   ],
   "grammarly.files.exclude": [
     "**/dictionary.txt"
-  ]
+  ],
 }

@@ -2,7 +2,7 @@
 
 What is the Composability-First Design pattern? Also known as "Atomic-First Design," read along for an explanation and to learn more about how these design principles to improve your development experience (DX).
 
-![Atomic UI & FX Design](../../resources/assets/images/diagram.png)
+<!-- ![Atomic UI & FX Design](../../resources/assets/images/diagram.png) -->
 
 ## The Why
 
@@ -11,7 +11,7 @@ Building complex components is oftentimes difficult using traditional developmen
 It is interesting to note that this is not necessarily due to the complexity of the development tasks required but rather due to the sheer amount of moving pieces required to build & engineer truly composable libraries. You may have already asked yourself one or many of the following questions/scenarios:
 
 - Which code style should be followed?
-- Code formatting setup _(e.g. Eslint, tslint, Prettier, etc.)_
+- Code formatting setup _(i.e. ESLint, tslint, Prettier, etc.)_
 - Create a custom, project-specific CI _(e.g. GitHub Actions, Circle CI, Travis CI, etc.)_
 - Automatic library changelog generations upon releases, based on git naming conventions
 - Distribution channels setup _(e.g. package managers like npm & CDNs)_
@@ -28,7 +28,7 @@ In concept, you can characterize a "composable library" as a collection of compo
 
 >Think of Lodash for "functions," and minimal HTML for the "components."
 
-## How do I know if it's right for me?
+## How do I know if it’s right for me?
 
 When wanting to adapt the "Composability-First Design" pattern, you will want to ask the following questions to identify whether or not this design pattern is a fit for you:
 

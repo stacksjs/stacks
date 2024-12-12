@@ -1,13 +1,51 @@
 {
-  "name": "stacks-cloud",
+  "name": "stacks-server",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
+  "description": "The Stacks server.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/server",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/server"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "cloud",
+    "serverless",
+    "infrastructure as code",
+    "automation",
+    "aws",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "files": ["README.md", "dist"],
   "scripts": {
+    "dev": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",
+    "dev:local": "./dev local",
     "build": "bun build.ts"
   },
-  "dependencies": {
-    "@stacksjs/queue": "^0.58.56",
-    "@stacksjs/router": "^0.58.56",
-    "aws4fetch": "^1.0.17"
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
   }
 }

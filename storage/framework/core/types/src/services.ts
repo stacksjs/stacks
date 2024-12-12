@@ -14,30 +14,26 @@ export interface ServicesOptions {
     apiKey: string
   }
 
+  lemonSqueezy?: {
+    appId: string
+    apiKey: string
+  }
+
   stripe?: {
     appId: string
     apiKey: string
   }
 
-  planetscale?: {
-    appId: string
-    apiKey: string
-  }
-
-  supabase?: {
-    appId: string
-    apiKey: string
-  }
+  // supabase?: {
+  //   appId: string
+  //   apiKey: string
+  // }
 
   aws?: {
     accountId: string
     appId: string
     apiKey: string
     region: string
-  }
-
-  novu?: {
-    key: string
   }
 }
 

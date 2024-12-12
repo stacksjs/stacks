@@ -8,6 +8,7 @@ hero:
   name: Stacks.js
   text: Build. Ship. Faster.
   tagline: Rapid application, cloud & library development framework. For the best full-stack teams.
+  image: /images/logos/logo-white.png
   actions:
     - theme: brand
       text: Coming Soon
@@ -67,3 +68,5 @@ features:
     icon: 🧪
     details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
 ---
+
+<Home />

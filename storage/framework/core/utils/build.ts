@@ -1,8 +1,44 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { dts } from 'bun-plugin-dtsx'
+import { intro, outro } from '../build/src'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/config --external @stacksjs/cli --external @stacksjs/path --external @stacksjs/storage --external @stacksjs/arrays --external @stacksjs/types --external @stacksjs/actions --external @stacksjs/env --external export-size --external yaml --external js-yaml --external vue --external rimraf --external @stacksjs/enums --external @dinero.js/currencies --external dinero.js --external bun --external neverthrow --external macroable --external hookable --external perfect-debounce --external vue-demi --external @vueuse/shared --external @vueuse/math --external p-limit --external @vueuse/core --external @vueuse/head --external @stacksjs/error-handling --external @stacksjs/strings --external @stacksjs/validation --target bun', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-if (result.isErr())
-  log.error(result.error)
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  // sourcemap: 'linked',
+  minify: true,
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/logging',
+    '@stacksjs/arrays',
+    '@stacksjs/collections',
+    '@stacksjs/config',
+    '@stacksjs/enums',
+    '@stacksjs/env',
+    '@stacksjs/error-handling',
+    '@stacksjs/objects',
+    '@stacksjs/path',
+    '@stacksjs/storage',
+    '@stacksjs/types',
+    '@stacksjs/validation',
+    '@stacksjs/strings',
+    'bun',
+  ],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

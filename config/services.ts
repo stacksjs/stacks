@@ -1,5 +1,5 @@
-import { env } from '@stacksjs/env'
 import type { ServicesConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Services**
@@ -31,17 +31,7 @@ export default {
     apiKey: '',
   },
 
-  planetscale: {
-    appId: '',
-    apiKey: '',
-  },
-
   stripe: {
-    appId: '',
-    apiKey: '',
-  },
-
-  supabase: {
     appId: '',
     apiKey: '',
   },

@@ -18,5 +18,6 @@ export default {
     glenn: 'glenn@stacksjs.org',
     dorell: 'dorell@stacksjs.org',
     avery: 'avery@stacksjs.org',
+    adelino: 'adelino@stacksjs.org',
   },
 } satisfies Team

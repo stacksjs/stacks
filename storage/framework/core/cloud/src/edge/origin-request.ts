@@ -1,27 +1,33 @@
 const config = {
   suffix: '.html',
-  appendToDirs: 'index.html',
   removeTrailingSlash: false,
 }
 
 const regexSuffixless = /\/[^/.]+$/ // e.g. "/some/page" but not "/", "/some/" or "/some.jpg"
 const regexTrailingSlash = /.+\/$/ // e.g. "/some/" or "/some/page/" but not root "/"
 
-export function handler(event, context, callback) {
+// TODO: narrow types here
+export function handler(event: any, context: any, callback: any): void {
   const { request } = event.Records[0].cf
   const { uri } = request
-  const { suffix, appendToDirs } = config
+  const { suffix } = config
+
+  if (uri === '/') {
+    request.uri = '/index.html'
+    callback(null, request)
+    return
+  }
 
   // Append ".html" to origin request
-  if (suffix && uri.match(regexSuffixless)) {
+  if (uri.match(regexSuffixless)) {
     request.uri = uri + suffix
     callback(null, request)
     return
   }
 
-  // Append "index.html" to origin request
-  if (appendToDirs && uri.match(regexTrailingSlash)) {
-    request.uri = uri + appendToDirs
+  // Remove trailing slash and append ".html" to origin request
+  if (uri.match(regexTrailingSlash)) {
+    request.uri = `${uri.slice(0, -1)}.html`
     callback(null, request)
     return
   }

@@ -1,12 +1,11 @@
-/* eslint-disable no-new */
 import type { CfnResource } from 'aws-cdk-lib'
-import { AssetHashType, CfnOutput as Output, RemovalPolicy, aws_lambda as lambda } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
+import type { NestedCloudProps } from '../types'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { originRequestFunctionHash } from '@stacksjs/utils'
-import type { NestedCloudProps } from '../types'
+import { AssetHashType, aws_lambda as lambda, CfnOutput as Output, RemovalPolicy } from 'aws-cdk-lib'
 
 export interface DocsStackProps extends NestedCloudProps {
   //
@@ -17,7 +16,7 @@ export class DocsStack {
 
   constructor(scope: Construct, props: DocsStackProps) {
     // if docsPrefix is not set, then we know we are in docsMode and the documentation lives at the root of the domain
-    const docsPrefix = config.app.docMode ? '' : config.docs.base
+    const docsPrefix = 'docs'
 
     // this edge function ensures pretty docs urls
     // soon to be reused for our Meema features
@@ -25,11 +24,11 @@ export class DocsStack {
       // this needs to have timestamp to ensure uniqueness. Since Origin Request (Lambda@Edge) functions are replicated functions, the
       // deletion process takes a "long time". This way, the function is always unique in cases of quick recreations.
       functionName: `${props.slug}-${props.appEnv}-origin-request-${props.timestamp}`,
-      description: 'The Stacks Origin Request function that prettifies URLs',
-      runtime: lambda.Runtime.NODEJS_18_X,
+      description: 'The Stacks Origin Request function that prettifies URLs by removing the .html extension',
+      runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'dist/origin-request.handler',
-      code: lambda.Code.fromAsset(p.corePath('cloud/dist.zip'), {
-        assetHash: originRequestFunctionHash,
+      code: lambda.Code.fromAsset(p.cloudPath('dist.zip'), {
+        assetHash: originRequestFunctionHash(),
         assetHashType: AssetHashType.CUSTOM,
       }),
     })
@@ -43,7 +42,7 @@ export class DocsStack {
 
     if (!config.app.docMode && storage.hasFiles(p.projectPath('docs'))) {
       new Output(scope, 'DocsUrl', {
-        value: `https://${props.domain}/${docsPrefix}`,
+        value: `https://${docsPrefix}.${props.domain}`,
         description: 'The URL of the deployed documentation',
       })
     }

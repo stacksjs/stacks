@@ -1,16 +1,23 @@
 import stacks from '@stacksjs/eslint-config'
 
 export default stacks({
+  // Enable stylistic formatting rules
+  // stylistic: true,
+
+  // Or customize the stylistic rules
   stylistic: {
     indent: 2, // 4, or 'tab'
     quotes: 'single', // or 'double'
   },
 
-  stacks: true,
   typescript: true,
-
-  // Enable jsonc, yaml, toml support
+  vue: true,
   jsonc: true,
-  yaml: false,
-  toml: true,
+  yaml: true,
+  unocss: true,
+
+  ignores: [
+    '**/fixtures',
+    // ...globs
+  ],
 })

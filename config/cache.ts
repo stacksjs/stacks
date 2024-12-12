@@ -1,5 +1,5 @@
-import { env } from '@stacksjs/env'
 import type { CacheConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Cache Configuration**
@@ -9,7 +9,7 @@ import type { CacheConfig } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  driver: 'redis',
+  driver: 'dynamodb',
   prefix: 'stacks',
   ttl: 3600,
 
@@ -28,11 +28,13 @@ export default {
       options: {
         // Memcached::OPT_CONNECT_TIMEOUT => 2000,
       },
-      servers: [{
-        host: '127.0.0.1',
-        port: 11211,
-        weight: 100,
-      }],
+      servers: [
+        {
+          host: '127.0.0.1',
+          port: 11211,
+          weight: 100,
+        },
+      ],
     },
 
     redis: {

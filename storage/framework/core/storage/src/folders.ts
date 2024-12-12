@@ -13,15 +13,15 @@ export function isFolder(path: string): boolean {
   }
 }
 
-export function isDirectory(path: string): boolean {
-  return isFolder(path)
-}
+// export function isDirectory(path: string): boolean {
+//   return isFolder(path)
+// }
 
 export function isDir(path: string): boolean {
   return isFolder(path)
 }
 
-export function doesFolderExist(path: string) {
+export function doesFolderExist(path: string): boolean {
   return fs.existsSync(path)
 }
 
@@ -30,9 +30,7 @@ export function createFolder(dir: string): Promise<void> {
     fs.mkdirs(dir, (err: any) => {
       if (err)
         reject(err)
-
-      else
-        resolve()
+      else resolve()
     })
   })
 }
@@ -43,7 +41,14 @@ export function getFolders(dir: string): string[] {
   })
 }
 
-export const folders = {
+export interface Folders {
+  isFolder: (path: string) => boolean
+  doesFolderExist: (path: string) => boolean
+  createFolder: (dir: string) => Promise<void>
+  getFolders: (dir: string) => string[]
+}
+
+export const folders: Folders = {
   isFolder,
   doesFolderExist,
   createFolder,

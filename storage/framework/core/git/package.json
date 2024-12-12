@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/git",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/git#readme",
@@ -15,53 +16,30 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "git",
-    "github",
-    "utilities",
-    "functions",
-    "stacks"
-  ],
+  "keywords": ["git", "github", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "bumpp": "^9.3.0",
-    "changelogen": "^0.5.5",
-    "commitizen": "^4.3.0",
-    "cz-git": "^1.8.0",
-    "giget": "^1.2.1",
-    "simple-git-hooks": "^2.9.0"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bumpp": "^9.3.0",
-    "changelogen": "^0.5.5",
-    "commitizen": "^4.3.0",
-    "cz-git": "^1.8.0",
-    "giget": "^1.2.1",
-    "simple-git-hooks": "^2.9.0"
+    "bumpp": "^9.8.1",
+    "changelogen": "^0.5.7",
+    "commitizen": "^4.3.1",
+    "cz-git": "^1.11.0",
+    "giget": "^1.2.3",
+    "simple-git-hooks": "^2.11.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

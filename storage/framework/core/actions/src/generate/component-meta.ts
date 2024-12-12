@@ -12,8 +12,6 @@ log.info('Generating component meta...')
 
 if (hasComponents())
   generateComponentMeta()
-
-else
-  log.info('No components found. Skipping component meta generation.')
+else log.info('No components found. Skipping component meta generation.')
 
 log.success('Generated component meta.')

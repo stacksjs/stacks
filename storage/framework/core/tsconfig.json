@@ -3,39 +3,46 @@
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "moduleDetection": "force",
     "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
       "@stacksjs/*": ["./*/src"],
+      "@stacksjs/utils/*": ["./utils/src/*"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
       "buddy/*": ["./buddy/src/*"],
-      "config/*": ["../../../config/*"],
+      "Actions/*": ["../../../app/Actions/*"],
+      "Commands/*": ["../../../app/Commands/*"],
+      "Jobs/*": ["../../../app/Jobs/*"],
+      "Middleware/*": ["../../../app/Middleware/*"],
+      "Models/*": ["../../../app/Models/*"],
+      "Notifications/*": ["../../../app/Notifications/*"],
       "~/*": ["../../../*"]
     },
     "resolveJsonModule": true,
     "types": [
+      "bun",
       "vite/client",
       // "vue/ref-macros",
       "vite-plugin-pages/client",
       "vite-plugin-pwa/client",
       "vite-plugin-vue-layouts/client",
-      "@intlify/unplugin-vue-i18n/messages"
+      "@intlify/unplugin-vue-i18n/messages",
+      "@vite-pwa/vitepress",
+      "vitepress"
     ],
     "allowImportingTsExtensions": true,
-    "allowJs": true,
     "strict": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
     "noUnusedLocals": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "outDir": "./dist/types",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -52,18 +59,31 @@
   "include": [
     "../../../*.stx",
     "../../../**/*.stx",
+    "../../../*.vue",
+    "../../../**/*.vue",
     "../../../*.ts",
     "../../../**/*.ts",
+    "../../../*.yaml",
+    "../../../**/*.yaml",
+    "../../../*.yml",
+    "../../../**/*.yml",
     "../../../*.d.ts",
     "../../../**/*.d.ts",
     "../docs/.vitepress/*"
   ],
   "exclude": [
     "../**/cdk.out",
-    "../commitlint.config.cjs",
     "../**/dist",
     "../**/fixtures",
     "../node_modules",
-    "../**/node_modules"
+    "../**/node_modules",
+    "../**/out", // not needed by us, but potentially by the user
+    "../server/app",
+    "../server/config",
+    "../server/core",
+    "../server/docs",
+    "../server/routes",
+    "../server/storage",
+    "../../../.stacks"
   ]
 }

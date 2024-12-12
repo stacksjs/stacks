@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/env",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "Stacks env helper methods.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/env#readme",
@@ -15,18 +16,9 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "env",
-    "utilities",
-    "functions",
-    "stacks"
-  ],
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
+  "keywords": ["env", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -34,18 +26,16 @@
       "import": "./dist/*"
     }
   },
-  "files": [
-    "README.md",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@stacksjs/validation": "workspace:*",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "std-env": "^3.8.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

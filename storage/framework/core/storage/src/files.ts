@@ -1,8 +1,9 @@
-import type { BunFile, PathLike } from 'bun'
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
-import { detectIndent, detectNewline } from '@stacksjs/strings'
-import { dirname, join, path as p } from '@stacksjs/path'
 import { contains } from '@stacksjs/arrays'
+import { log } from '@stacksjs/logging'
+import { dirname, join, path as p } from '@stacksjs/path'
+import { detectIndent, detectNewline } from '@stacksjs/strings'
+import { createFolder, isFolder } from './'
 import { existsSync, fs } from './fs'
 
 /**
@@ -20,21 +21,19 @@ export async function readJsonFile(name: string, cwd?: string): Promise<JsonFile
 /**
  * Reads a package.json file and returns the parsed data.
  */
-export async function readPackageJson(name: string, cwd?: string) {
+export async function readPackageJson(name: string, cwd?: string): Promise<PackageJson> {
   const file = await readJsonFile(name, cwd)
   return file.data as PackageJson
 }
 
-type Path = BunFile | PathLike
-type Data = Blob | TypedArray | ArrayBufferLike | string | BlobPart[]
-
 /**
  * Writes the given text to the specified file.
  */
-export async function writeFile(path: Path, data: Data): Promise<number> {
+export async function writeFile(path: string, data: any): Promise<number> {
+  // export async function writeFile(path: Path, data: Data): Promise<number> {
   if (typeof path === 'string') {
     const dirPath = dirname(path)
-    if (!await existsSync(dirPath))
+    if (!(await existsSync(dirPath)))
       await createFolder(dirPath)
 
     return await Bun.write(Bun.file(path), data)
@@ -64,8 +63,7 @@ export function readTextFile(name: string, cwd?: string): Promise<TextFile> {
 
     if (cwd)
       filePath = join(cwd, name)
-    else
-      filePath = name
+    else filePath = name
 
     fs.readFile(filePath, 'utf8', (err, text) => {
       if (err) {
@@ -91,7 +89,7 @@ export async function writeTextFile(file: TextFile): Promise<number> {
 /**
  * Determine whether a path exists.
  */
-export function isFile(path: string): boolean {
+function isFile(path: string): boolean {
   return fs.existsSync(path)
 }
 
@@ -111,6 +109,7 @@ export function hasFiles(folder: string): boolean {
     return fs.readdirSync(folder).length > 0
   }
   catch (err) {
+    log.debug(`Error reading folder: ${folder}`, err)
     return false
   }
 }
@@ -123,18 +122,15 @@ export function hasFunctions(): boolean {
   return hasFiles(p.functionsPath())
 }
 
-export function deleteFiles(dir: string, exclude: string[] = []) {
+export function deleteFiles(dir: string, exclude: string[] = []): void {
   if (fs.existsSync(dir)) {
     fs.readdirSync(dir).forEach((file) => {
       const p = join(dir, file)
       if (fs.statSync(p).isDirectory()) {
         if (fs.readdirSync(p).length === 0)
           fs.rmSync(p, { recursive: true, force: true })
-
-        else
-          deleteFiles(p, exclude)
+        else deleteFiles(p, exclude)
       }
-
       else if (!contains(p, exclude)) {
         fs.rmSync(p)
       }
@@ -150,9 +146,8 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
     file = join(dir, file)
     const stat = fs.statSync(file)
 
-    if (stat && stat.isDirectory())
+    if (stat.isDirectory())
       results = results.concat(getFiles(file, exclude))
-
     else if (!contains(file, exclude))
       results.push(file)
   })
@@ -160,7 +155,7 @@ export function getFiles(dir: string, exclude: string[] = []): string[] {
   return results
 }
 
-export function put(path: string, contents: string) {
+export function put(path: string, contents: string): void {
   const dirPath = dirname(path)
 
   if (!fs.existsSync(dirPath))
@@ -173,13 +168,27 @@ export async function get(path: string): Promise<string> {
   return Bun.file(path).text()
 }
 
-export const files = {
+export interface Files {
+  readJsonFile: typeof readJsonFile
+  readPackageJson: typeof readPackageJson
+  readTextFile: typeof readTextFile
+  writeJsonFile: typeof writeJsonFile
+  writeTextFile: typeof writeTextFile
+  hasFiles: typeof hasFiles
+  hasComponents: typeof hasComponents
+  hasFunctions: typeof hasFunctions
+  deleteFiles: typeof deleteFiles
+  getFiles: typeof getFiles
+  put: typeof put
+  get: typeof get
+}
+
+export const files: Files = {
   readJsonFile,
   readPackageJson,
   readTextFile,
   writeJsonFile,
   writeTextFile,
-  isFile,
   hasFiles,
   hasComponents,
   hasFunctions,

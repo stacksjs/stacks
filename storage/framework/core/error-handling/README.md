@@ -28,16 +28,16 @@ You can now use it in your project:
 ```js
 import {
   Err,
-  Ok,
-  Result,
-  ResultAsync,
   err,
   errAsync,
   fromPromise,
   fromSafePromise,
   fromThrowable,
+  Ok,
   ok,
   okAsync,
+  Result,
+  ResultAsync,
 } from '@stacksjs/error-handling'
 
 // ...
@@ -55,7 +55,7 @@ result.isErr() // false
 ### Example #2
 
 ```js
-const command = 'rimraf ./bun.lockb ./node_modules ./core/**/dist'
+const command = 'bunx --bun rimraf ./bun.lockb ./node_modules ./core/**/dist'
 const result = await runCommand(command, options)
 
 if (result.isOk()) {

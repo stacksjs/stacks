@@ -1,8 +1,8 @@
 import process from 'node:process'
 import { italic, log } from '@stacksjs/cli'
+import { corePath } from '@stacksjs/path'
 import { glob, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { corePath } from '@stacksjs/path'
 
 log.info('Getting started to move d.ts & d.ts.map files...')
 
@@ -21,9 +21,7 @@ if (files.length === 0) {
 }
 
 for (const file of files) {
-  const path = file
-    .replace('../dist/types/storage/framework/core/', '../src/')
-    .replace('/src/', '/dist/')
+  const path = file.replace('../dist/types/storage/framework/core/', '../src/').replace('/src/', '/dist/')
 
   log.info('Moving', italic(file), 'to', italic(path))
 

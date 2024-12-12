@@ -1,40 +1,42 @@
 {
-  "name": "hello-world-vue",
+  "name": "@stacksjs/hello-world-vue",
   "type": "module",
   "version": "",
   "description": "Your Vue component library description",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/components#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "components"
+    "directory": "resources/components"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["component", "library", "vue", "vite", "typescript", "javascript"],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "keywords": [
+    "component",
+    "library",
+    "vue",
+    "vite",
+    "typescript",
+    "javascript"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "dev": "vite -c ../../../core/vite/src/components.ts",
-    "build": "vite build -c ../../../core/vite/src/components.ts",
-    "prepublishOnly": "bun --bun run build"
+    "dev": "bunx --bun vite -c ../../../core/vite-config/src/components.ts",
+    "build": "bunx --bun vite build -c ../../../core/vite-config/src/components.ts",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

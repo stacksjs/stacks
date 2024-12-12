@@ -1,23 +1,60 @@
+import type { RequestInstance, RouteParam, VineType } from '@stacksjs/types'
+
+import { customValidate, validateField } from '@stacksjs/validation'
+
 interface RequestData {
-  [key: string]: string
+  [key: string]: any
 }
 
-type RouteParams = { [key: string]: string } | null
+interface ValidationField {
+  rule: VineType
+  message: Record<string, string>
+}
 
-export class Request {
-  private query: RequestData = {}
-  private params: RouteParams = null
+type AuthToken = `${number}:${number}:${string}`
+
+interface CustomAttributes {
+  [key: string]: ValidationField
+}
+
+type RouteParams = { [key: string]: string | number } | null
+
+export class Request<T extends RequestData = RequestData> implements RequestInstance {
+  public query: T = {} as T
+  public params: RouteParams = null
+  public headers: any = {}
 
   public addQuery(url: URL): void {
-    this.query = Object.fromEntries(url.searchParams)
+    this.query = Object.fromEntries(url.searchParams) as unknown as T
   }
 
-  public get(element: string): string | number | undefined {
+  public addBodies(params: any): void {
+    this.query = params
+  }
+
+  public addParam(param: RouteParam): void {
+    this.params = param
+  }
+
+  public addHeaders(headerParams: Headers): void {
+    this.headers = headerParams
+  }
+
+  public get(element: string): any {
     return this.query[element]
   }
 
-  public all(): RequestData {
+  public all(): T {
     return this.query
+  }
+
+  public async validate(attributes?: CustomAttributes): Promise<void> {
+    if (attributes === undefined || attributes === null) {
+      await validateField('Release', this.all())
+    }
+    else {
+      await customValidate(attributes, this.all())
+    }
   }
 
   public has(element: string): boolean {
@@ -33,12 +70,47 @@ export class Request {
     const match = pattern.exec(pathname)
 
     if (match?.groups)
-      this.params = match?.groups
+      this.params = match.groups
   }
 
-  public getParams(key: string): number | string | null {
-    return this.params ? (this.params[key] || null) : null
+  public header(headerParam: string): string | number | boolean | null {
+    return this.headers.get(headerParam)
+  }
+
+  public getHeaders(): any {
+    return this.headers
+  }
+
+  public Header(headerParam: string): string | number | boolean | null {
+    return this.headers.get(headerParam)
+  }
+
+  public getParam(key: string): number | string | null {
+    return this.params ? this.params[key] || null : null
+  }
+
+  public route(key: string): number | string | null {
+    return this.getParam(key)
+  }
+
+  public bearerToken(): string | null | AuthToken {
+    const authorizationHeader = this.headers.get('authorization')
+
+    if (authorizationHeader?.startsWith('Bearer ')) {
+      return authorizationHeader.substring(7)
+    }
+
+    return null
+  }
+
+  public getParams(): RouteParams {
+    return this.params
+  }
+
+  public getParamAsInt(key: string): number | null {
+    const value = this.getParam(key)
+    return value ? Number.parseInt(value.toString()) : null
   }
 }
 
-export const request = new Request()
+export const request: Request = new Request()

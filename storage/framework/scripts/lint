@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd ../../..
+
+# run linter and formatter
+# eslint . --fix

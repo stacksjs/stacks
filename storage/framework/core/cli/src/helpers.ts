@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
-import { config } from '@stacksjs/config'
+import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { ExitCode } from '@stacksjs/types'
 import { bgCyan, bold, cyan, dim, gray, green, italic } from 'kolorist'
 import { version } from '../package.json'
@@ -18,11 +16,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
       console.log()
     }
 
-    let msg = `Running  ${bgCyan(italic(bold(` ${command} `)))}`
-    if (command === 'buddy deploy')
-      msg = `Running  ${bgCyan(italic(bold(` ${command} `)))}  for ${bold(`${config.app.name}`)} ${italic(`via ${config.app.url}`)}`
-
-    log.info(msg)
+    log.info(`Running  ${bgCyan(italic(bold(` ${command} `)))}`)
 
     if (options?.showPerformance === false || options?.quiet)
       return resolve(0)
@@ -34,7 +28,7 @@ export async function intro(command: string, options?: IntroOptions): Promise<nu
 /**
  * Prints the outro message.
  */
-export function outro(text: string, options?: OutroOptions, error?: Error | string) {
+export function outro(text: string, options?: OutroOptions, error?: Error | string): Promise<number> {
   const opts = {
     type: 'success',
     useSeconds: true,
@@ -58,18 +52,23 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
       if (opts.quiet === true)
         return resolve(ExitCode.Success)
 
-      if (error)
+      if (error) {
         log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
-      else if (opts.type === 'info')
-        console.log(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
-      else
-        console.log(`${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(green(opts.message ?? 'Complete'))}`)
+      }
+      else if (opts.type === 'info') {
+        log.info(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
+      }
+      else {
+        log.success(
+          `${dim(gray(bold(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`)))} ${bold(
+            green(opts.message ?? 'Complete'),
+          )}`,
+        )
+      }
     }
-
     else {
       if (opts?.type === 'info')
-        console.log(text)
-
+        log.info(text)
       // the following condition triggers in the case of "Cleaned up" messages
       else if (opts?.type === 'success' && opts?.quiet !== true)
         log.success(text)

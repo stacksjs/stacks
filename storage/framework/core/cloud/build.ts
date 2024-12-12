@@ -1,12 +1,50 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { dts } from 'bun-plugin-dtsx'
+import { intro, outro } from '../build/src'
 
-await runCommand('bun build ./src/index.ts --outfile ./dist/index.js --outdir ./dist/ --external @aws-sdk/client-cloudformation --external @aws-sdk/client-cloudwatch-logs --external @aws-sdk/client-ec2 --external @aws-sdk/client-efs --external @aws-sdk/client-iam --external @aws-sdk/client-ssm --external @aws-sdk/lambda --external @aws-sdk/client-route-53-domains --external @aws-sdk/client-s3 --external @stacksjs/config --external @stacksjs/error-handling --external @stacksjs/logging --external @stacksjs/path --external @stacksjs/utils --external @stacksjs/strings --external @stacksjs/storage --external aws-cdk-lib --external constructs --external @stacksjs/env --external @smithy/types --external @smithy/protocol-http --external @aws-sdk/middleware-logger --external @aws-sdk/middleware-recursion-detection --external @aws-sdk/middleware-host-header --external @smithy/property-provider --external @aws-crypto/crc32 --external @smithy/util-hex-encoding --external @smithy/smithy-client --external @smithy/signature-v4 --external @smithy/util-endpoints --external @aws-sdk/util-endpoints --external @smithy/util-middleware --external @aws-sdk/middleware-user-agent --external @smithy/util-config-provider --external @smithy/config-resolver --external @smithy/middleware-content-length --external @smithy/middleware-endpoint --external @smithy/util-retry --external @smithy/service-error-classification --external @smithy/middleware-retry --external @smithy/core --external @aws-sdk/core --external @smithy/middleware-serde --external fast-xml-parser --external @smithy/shared-ini-file-loader --external @smithy/credential-provider-imds --external @aws-sdk/credential-provider-env --external @aws-sdk/client-sso --external @aws-sdk/credential-provider-sso --external @aws-sdk/credential-provider-ini --external @aws-sdk/credential-provider-process --external @aws-sdk/credential-provider-web-identity --external universalify  --external graceful-fs --external fs-extra --external fast-glob --external kleur --external @stacksjs/cli --external @aws-sdk/middleware-signing --external @smithy/eventstream-serde-config-resolver --external @aws-sdk/client-lambda --target bun', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-const result = await runCommand('bun build ./src/edge/origin-request.ts --outfile ./dist/origin-request.js --outdir ./dist/', {
-  cwd: import.meta.dir,
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  target: 'bun',
+  // sourcemap: 'linked',
+  minify: true,
+  external: [
+    '@stacksjs/cli',
+    '@stacksjs/cloud',
+    '@stacksjs/config',
+    '@stacksjs/error-handling',
+    '@stacksjs/logging',
+    '@stacksjs/path',
+    '@stacksjs/utils',
+    '@stacksjs/strings',
+    '@stacksjs/storage',
+    '@stacksjs/env',
+    '@stacksjs/cli',
+    'aws-cdk-lib', // TODO: a recent AWS issue. We want to potentially remove this once the issue is resolved. Dig deeper into this before removing
+  ],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
 })
 
-if (result.isErr())
-  log.error(result.error)
+// Building the edge/origin-request separately
+const res = await Bun.build({
+  entrypoints: ['./src/edge/origin-request.ts'],
+  outdir: './dist',
+  // Specify any additional options if needed
+})
+
+if (!res.success)
+  throw new Error('Failed to build edge/origin-request')
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

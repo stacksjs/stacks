@@ -8,8 +8,9 @@ export class Job {
   rate: JobOptions['rate']
   tries: JobOptions['tries']
   backoff: JobOptions['backoff']
+  enabled: JobOptions['enabled']
 
-  constructor({ name, description, handle, rate, tries, backoff, action }: JobOptions) {
+  constructor({ name, description, handle, rate, tries, backoff, action, enabled }: JobOptions) {
     this.name = name
     this.description = description
     this.handle = handle
@@ -17,5 +18,8 @@ export class Job {
     this.action = action
     this.tries = tries
     this.backoff = backoff
+    this.enabled = enabled
   }
 }
+
+export { DeferQueue } from '@poppinss/defer'

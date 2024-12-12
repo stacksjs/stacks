@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/strings",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/strings#readme",
@@ -35,48 +36,29 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "change-case": "^5.4.2",
-    "detect-indent": "^7.0.1",
-    "detect-newline": "^4.0.1",
     "macroable": "^7.0.2",
-    "pluralize": "^8.0.0",
-    "slugify": "^1.6.6",
-    "string-ts": "^2.0.0",
-    "title-case": "^4.3.1",
-    "validator": "^13.11.0"
+    "validator": "^13.12.0"
   },
   "devDependencies": {
+    "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@types/validator": "^13.11.9"
+    "@stacksjs/types": "workspace:*",
+    "@types/validator": "^13.12.2"
   }
 }

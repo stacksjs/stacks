@@ -29,7 +29,10 @@ import { isObject } from '@stacksjs/validation'
  * // { b: 2 }
  * ```
  */
-export function objectMap<K extends string, V, NK = K, NV = V>(obj: Record<K, V>, fn: (key: K, value: V) => [NK, NV] | undefined): Record<K, V> {
+export function objectMap<K extends string, V, NK = K, NV = V>(
+  obj: Record<K, V>,
+  fn: (key: K, value: V) => [NK, NV] | undefined,
+): Record<K, V> {
   return Object.fromEntries(
     Object.entries(obj)
       .map(([k, v]) => fn(k as K, v as V))
@@ -72,7 +75,10 @@ export function objectEntries<T extends object>(obj: T) {
  *
  * @category Object
  */
-export function deepMerge<T extends object = object, S extends object = T>(target: T, ...sources: S[]): DeepMerge<T, S> {
+export function deepMerge<T extends object = object, S extends object = T>(
+  target: T,
+  ...sources: S[]
+): DeepMerge<T, S> {
   if (!sources.length)
     return target as any
 
@@ -86,7 +92,7 @@ export function deepMerge<T extends object = object, S extends object = T>(targe
       if (isMergeableObject(source[key])) {
         // @ts-expect-error some description
         if (!target[key])
-        // @ts-expect-error some description
+          // @ts-expect-error some description
           target[key] = {}
 
         // @ts-expect-error some description
@@ -111,14 +117,17 @@ function isMergeableObject(item: any): item is object {
  *
  * @category Object
  */
-export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false) {
-  return keys.reduce((n, k) => {
-    if (k in obj) {
-      if (!omitUndefined || obj[k] !== undefined)
-        n[k] = obj[k]
-    }
-    return n
-  }, {} as Pick<O, T>)
+export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false): Pick<O, T> {
+  return keys.reduce(
+    (n, k) => {
+      if (k in obj) {
+        if (!omitUndefined || obj[k] !== undefined)
+          n[k] = obj[k]
+      }
+      return n
+    },
+    {} as Pick<O, T>,
+  )
 }
 
 /**
@@ -127,19 +136,15 @@ export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[
  * @category Object
  */
 export function clearUndefined<T extends object>(obj: T): T {
-  // @ts-expect-error some description
-  Object.keys(obj).forEach((key: string) => (obj[key] === undefined ? delete obj[key] : {}))
+  ;(Object.keys(obj) as Array<keyof T>).forEach(key => obj[key] === undefined && delete obj[key])
   return obj
 }
 
 /**
  * Determines whether an object has a property with the specified name
  *
- * @see https://eslint.org/docs/rules/no-prototype-builtins
  * @category Object
  */
-export function hasOwnProperty<T>(obj: T, v: PropertyKey) {
-  return obj == null
-    ? false
-    : Object.prototype.hasOwnProperty.call(obj, v)
+export function hasOwnProperty<T>(obj: T, v: PropertyKey): boolean {
+  return obj == null ? false : Object.prototype.hasOwnProperty.call(obj, v)
 }

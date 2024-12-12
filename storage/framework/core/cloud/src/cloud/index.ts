@@ -1,23 +1,23 @@
-import { Stack } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
-import { config } from '@stacksjs/config'
 import type { CloudOptions } from '../types'
+import { config } from '@stacksjs/config'
+import { Stack } from 'aws-cdk-lib'
 import { AiStack } from './ai'
 import { CdnStack } from './cdn'
 import { CliStack } from './cli'
+import { ComputeStack } from './compute'
+import { DeploymentStack } from './deployment'
 import { DnsStack } from './dns'
 import { DocsStack } from './docs'
-import { StorageStack } from './storage'
-import { SecurityStack } from './security'
-import { DeploymentStack } from './deployment'
-import { JumpBoxStack } from './jump-box'
-import { FileSystemStack } from './file-system'
-import { NetworkStack } from './network'
-import { RedirectsStack } from './redirects'
 import { EmailStack } from './email'
+import { FileSystemStack } from './file-system'
+import { JumpBoxStack } from './jump-box'
+import { NetworkStack } from './network'
 import { PermissionsStack } from './permissions'
-import { ComputeStack } from './compute'
 import { QueueStack } from './queue'
+import { RedirectsStack } from './redirects'
+import { SecurityStack } from './security'
+import { StorageStack } from './storage'
 
 // import { DashboardStack } from './dashboard'
 
@@ -34,9 +34,9 @@ export class Cloud extends Stack {
   permissions: PermissionsStack
   ai: AiStack
   cli: CliStack
-  api!: ComputeStack
+  api?: ComputeStack
   cdn!: CdnStack
-  queue!: QueueStack
+  queue?: QueueStack
   deployment!: DeploymentStack
   scope: Construct
   props: CloudOptions
@@ -56,6 +56,7 @@ export class Cloud extends Stack {
     this.storage = new StorageStack(this, {
       ...props,
       kmsKey: this.security.kmsKey,
+      originAccessIdentity: this.security.originAccessIdentity,
     })
 
     this.network = new NetworkStack(this, props)
@@ -91,9 +92,10 @@ export class Cloud extends Stack {
 
   // we use an async init() method here because we need to wait for the
 
-  async init() {
-    if (config.cloud.api?.deploy) {
-      const props = this.props
+  async init(): Promise<void> {
+    const props = this.props
+
+    if (this.shouldDeployApi()) {
       this.api = new ComputeStack(this, {
         ...props,
         vpc: this.network.vpc,
@@ -109,27 +111,31 @@ export class Cloud extends Stack {
       })
 
       await this.queue.init()
-
-      this.cdn = new CdnStack(this, {
-        ...props,
-        publicBucket: this.storage.publicBucket,
-        logBucket: this.storage.logBucket,
-        certificate: this.security.certificate,
-        firewall: this.security.firewall,
-        originRequestFunction: this.docs.originRequestFunction,
-        zone: this.dns.zone,
-        cliSetupUrl: this.cli.cliSetupUrl,
-        askAiUrl: this.ai.askAiUrl,
-        summarizeAiUrl: this.ai.summarizeAiUrl,
-        lb: this.api?.lb,
-      })
-
-      this.deployment = new DeploymentStack(this, {
-        ...props,
-        publicBucket: this.storage.publicBucket,
-        privateBucket: this.storage.privateBucket,
-        cdn: this.cdn.distribution,
-      })
     }
+
+    this.cdn = new CdnStack(this, {
+      ...props,
+      publicBucket: this.storage.publicBucket,
+      docsBucket: this.storage.docsBucket,
+      logBucket: this.storage.logBucket,
+      certificate: this.security.certificate,
+      firewall: this.security.firewall,
+      originRequestFunction: this.docs.originRequestFunction,
+      zone: this.dns.zone,
+      lb: this.api?.lb,
+    })
+
+    this.deployment = new DeploymentStack(this, {
+      ...props,
+      publicBucket: this.storage.publicBucket,
+      privateBucket: this.storage.privateBucket,
+      docsBucket: this.storage.docsBucket,
+      mainDistribution: this.cdn.mainDistribution,
+      docsDistribution: this.cdn.docsDistribution,
+    })
+  }
+
+  shouldDeployApi(): boolean {
+    return config.cloud.api?.deploy ?? false
   }
 }

@@ -175,7 +175,7 @@ _By following these minor steps, Stacks is able to automatically release new ver
 
 When you're all done, head over to the [repository][stacks], and click the big green `Compare & Pull Request` button that should appear after you've pushed changes to your fork.
 
-Don't expect your PR to be accepted immediately or even accepted at all. Give the community time to vet it and see if it should be merged. Please don't be disheartened if it's not accepted. Your contribution is appreciated more than you can imagine, and even a unmerged PR can teach us a lot ❤️
+Don't expect your PR to be accepted immediately or even accepted at all. Give the community time to vet it and see if it should be merged. Please don't be disheartened if it’s not accepted. Your contribution is appreciated more than you can imagine, and even a unmerged PR can teach us a lot ❤️
 
 [typescript]: https://www.typescriptlang.org
 [vue]: https://vuejs.org/

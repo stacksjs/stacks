@@ -11,9 +11,7 @@ export function copy(src: string | string[], dest: string, exclude: string[] = [
   else {
     if (fs.statSync(src).isDirectory())
       copyFolder(src, dest, exclude)
-
-    else
-      copyFile(src, dest)
+    else copyFile(src, dest)
   }
 }
 
@@ -33,9 +31,7 @@ export function copyFolder(src: string, dest: string, exclude: string[] = []): v
 
         if (fs.statSync(srcPath).isDirectory())
           copyFolder(srcPath, destPath, exclude)
-
-        else
-          fs.copyFileSync(srcPath, destPath)
+        else fs.copyFileSync(srcPath, destPath)
       }
     })
   }

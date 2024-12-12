@@ -9,13 +9,6 @@ on:
     branches:
       - main
 
-env:
-  PR_NUMBER: '${{ github.event.number }}'
-  SOURCE_BRANCH: $GITHUB_HEAD_REF
-  FIXER_BRANCH: auto-fixed/$GITHUB_HEAD_REF
-  TITLE: 'chore: apply fixes from JS-CS-Fixer'
-  DESCRIPTION: This merge request applies JS code style fixes from an analysis carried out through GitHub Actions.
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -112,63 +105,4 @@ jobs:
         run: bun buddy key:generate
 
       - name: Test Suite
-        run: bun --bun run test
-
-  # you may need to "Allow GitHub Actions to create and approve pull requests"
-  # https://stackoverflow.com/questions/72376229/github-actions-is-not-permitted-to-create-or-approve-pull-requests-createpullre
-  js-cs-fixer:
-    if: github.event_name == 'pull_request' && ! startsWith(github.ref, 'refs/heads/auto-fixed/')
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-
-      - name: Use cached node_modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lockb') }}
-          restore-keys: |
-            node-modules-
-
-      - name: Install Dependencies
-        run: bun install
-
-      - name: Set Application Key
-        run: bun buddy key:generate
-
-      - name: Prepare Git User
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "action@github.com"
-          git checkout -B "${{ env.FIXER_BRANCH }}"
-
-      - name: Apply auto-fixers
-        run: bun lint:fix
-
-      - name: Create Fixer PR
-        run: |
-          if [[ -z $(git status --porcelain) ]]; then
-            echo "Nothing to fix... Exiting."
-            exit 0
-          fi
-          OPEN_PRS=`curl --silent -H "Accept: application/vnd.github.v3+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls?state=open"`
-          OPEN_FIXER_PRS=`echo ${OPEN_PRS} | grep -o "\"ref\": \"${{ env.FIXER_BRANCH }}\"" | wc -l`
-          git commit -am "${{ env.TITLE }}"
-          git push origin "${{ env.FIXER_BRANCH }}" --force
-          if [ ${OPEN_FIXER_PRS} -eq "0" ]; then
-            curl -X POST \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls" \
-              -d "{ \"head\":\"${{ env.FIXER_BRANCH }}\", \"base\":\"${{ env.SOURCE_BRANCH }}\", \"title\":\"${{ env.TITLE }}\", \"body\":\"${{ env.DESCRIPTION }}\n\nTriggered by #${{ env.PR_NUMBER }}\" }"
-          fi
-          exit 1
+        run: bun run test

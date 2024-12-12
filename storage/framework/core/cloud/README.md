@@ -16,6 +16,10 @@ This package assists you in setting up & maintaining your application's cloud in
 
 - the maximum email size (including headers) is 40 MB. Emails larger than that bounce
 
+#### CDN
+
+This solution provides a single, flexible CDN that can serve either your main application or your docs as the primary content, while still supporting additional behaviors for AI endpoints and CLI setup.
+
 ### TODO
 
 - [ ] Driver: AWS

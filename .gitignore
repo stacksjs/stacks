@@ -1,7 +1,9 @@
 node_modules
+
 .DS_Store
 .DS_STORE
 .cache
+temp
 .temp
 .env
 *.local
@@ -9,9 +11,17 @@ node_modules
 updates
 tests/unit/coverage
 dist*
+
+data.ms
 !.gitkeep
+database/stacks_testing.sqlite
+database/stacks.sqlite
 custom-cli
+*bun-build
 
 .fleet
 .idea
+.stacks
 .vscode
+.zed
+./test.ts

@@ -1,19 +1,19 @@
-import { frameworkPath, join, parse, projectPath } from '@stacksjs/path'
-import { existsSync, glob, mkdirSync, writeFileSync } from '@stacksjs/storage'
+import { frameworkPath, join, path, projectPath } from '@stacksjs/path'
+import { existsSync, globSync, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
-import { type ComponentMeta, type MetaCheckerOptions, createComponentMetaChecker } from 'vue-component-meta'
+import { type ComponentMeta, createComponentMetaChecker, type MetaCheckerOptions } from 'vue-component-meta'
 
 /**
  * ℹ️ Useful Links
  *
- * vue-component-meta tests: https://github.com/johnsoncodehk/volar/blob/master/vue-language-tools/vue-component-meta/tests/index.spec.ts
+ * vue-component-meta tests: https://github.com/vuejs/language-tools/tree/master/packages/component-meta/tests/index.spec.ts
  * Discord thread about improving vue-component-meta: https://discord.com/channels/793943652350427136/1027819645677350912
  * GitHub issue for improving vue-component-meta based on runtime/dynamic props: https://github.com/johnsoncodehk/volar/issues/1854
  * Discord chat: https://discord.com/channels/793943652350427136/1027819645677350912
  * original script: https://raw.githubusercontent.com/jd-solanki/anu/main/scripts/gen-component-meta.ts
  */
 
-export function generateComponentMeta() {
+export function generateComponentMeta(): void {
   const md = new MarkdownIt()
   const checkerOptions: MetaCheckerOptions = {
     forceUseTs: true,
@@ -21,10 +21,7 @@ export function generateComponentMeta() {
     printer: { newLine: 1 },
   }
 
-  const tsconfigChecker = createComponentMetaChecker(
-    projectPath('tsconfig.json'),
-    checkerOptions,
-  )
+  const tsconfigChecker = createComponentMetaChecker(projectPath('tsconfig.json'), checkerOptions)
 
   const filterMeta = (meta: ComponentMeta): ComponentApi => {
     // const clonedMeta: ComponentMeta = JSON.parse(JSON.stringify(meta))
@@ -55,14 +52,14 @@ export function generateComponentMeta() {
     }
   }
 
-  const components = glob.sync(['components/*.stx', 'components/**/*.stx'], {
+  const components = globSync(['components/*.stx', 'components/**/*.stx', 'components/*.vue', 'components/**/*.vue'], {
     cwd: projectPath(),
     absolute: true,
   })
 
-  components.forEach((componentPath) => {
+  components.forEach((componentPath: string) => {
     // Thanks: https://futurestud.io/tutorials/node-js-get-a-file-name-with-or-without-extension
-    const componentExportName = parse(componentPath).name
+    const componentExportName = path.parse(componentPath).name
     const meta = filterMeta(tsconfigChecker.getComponentMeta(componentPath, componentExportName))
 
     const metaDirPath = frameworkPath('component-meta')

@@ -1,10 +1,10 @@
-import process from 'node:process'
 import type { CLI, KeyOptions } from '@stacksjs/types'
+import process from 'node:process'
+import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { runAction } from '@stacksjs/actions'
 
-export function key(buddy: CLI) {
+export function key(buddy: CLI): void {
   const descriptions = {
     command: 'Generate & set the application key.',
     project: 'Target a specific project',
@@ -13,9 +13,11 @@ export function key(buddy: CLI) {
 
   buddy
     .command('key:generate', descriptions.command)
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: KeyOptions) => {
+      log.debug('Running `buddy key:generate` ...', options)
+
       await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
 

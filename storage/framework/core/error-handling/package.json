@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/error-handling",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/error-handling#readme",
@@ -15,16 +16,9 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "errors",
-    "error-handling",
-    "neverthrow",
-    "type safe",
-    "stacks"
-  ],
+  "keywords": ["errors", "error-handling", "neverthrow", "type safe", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -33,31 +27,19 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*"
-  },
-  "dependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "neverthrow": "^6.1.0"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
+    "neverthrow": "^8.1.1"
   }
 }

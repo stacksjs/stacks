@@ -1,14 +1,13 @@
-import { frameworkPath, vitePath } from '@stacksjs/path'
-import { parseOptions, runCommand } from '@stacksjs/cli'
 import type { DeployOptions } from '@stacksjs/types'
+import { parseOptions, runCommand } from '@stacksjs/cli'
+import { libsPath } from '@stacksjs/path'
 
 const options: DeployOptions = parseOptions()
 
 if (options.verbose)
-// eslint-disable-next-line no-console
   console.log('dev components options', options)
 
-await runCommand(`bunx vite --config ${vitePath('src/components.ts')}`, {
+await runCommand(`bun run dev`, {
   ...options,
-  cwd: frameworkPath(),
+  cwd: libsPath('components/vue'),
 })

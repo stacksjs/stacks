@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Get the absolute path to the directory containing this script
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+# Assuming the project directories are three levels up from the script
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/../../../" && pwd)
+
+# Construct the absolute paths
+APP_DIR="$PROJECT_ROOT/app"
+CONFIG_DIR="$PROJECT_ROOT/config"
+DOCS_DIR="$PROJECT_ROOT/docs"
+ROUTES_DIR="$PROJECT_ROOT/routes"
+
+if [ "$1" = "local" ]; then
+  ENV="local"
+else
+  ENV="remote" # Default to remote because we are using EFS
+fi
+
+if [ "$ENV" != "local" ]; then
+  STORAGE_DIR="/mnt/efs" # Use EFS mount for non-local environments
+else # Local environment
+  STORAGE_DIR="$PROJECT_ROOT/storage"
+fi
+
+docker run -p 3000:3000 \
+  -v "$APP_DIR:/usr/src/app/app" \
+  -v "$CONFIG_DIR:/usr/src/app/config" \
+  -v "$DOCS_DIR:/usr/src/app/docs" \
+  -v "$ROUTES_DIR:/usr/src/app/routes" \
+  -v "$STORAGE_DIR:/usr/src/app/storage" \
+  stacks

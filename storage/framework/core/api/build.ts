@@ -1,7 +1,27 @@
-import { runCommand } from '@stacksjs/cli'
+import { dts } from 'bun-plugin-dtsx'
+import { intro, outro } from '../build/src'
 
-const command: string = 'bun build ./src/index.ts --outdir dist --format esm --target bun'
+const { startTime } = await intro({
+  dir: import.meta.dir,
+})
 
-await runCommand(command, {
-  cwd: import.meta.dir,
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  // sourcemap: 'linked',
+  minify: true,
+  plugins: [
+    dts({
+      outdir: './dist',
+      root: './src',
+    }),
+  ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
 })

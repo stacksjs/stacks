@@ -1,4 +1,4 @@
-name: Release
+name: CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    # name: Release
     runs-on: ubuntu-latest
 
     steps:
@@ -16,17 +16,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      # this is only needed while `bun publish` is not yet available (npm publish is used instead)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-          registry-url: "https://registry.npmjs.org"
-
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
 
-      - name: Use cached node_modules
+      - name: Use Cached node_modules
         uses: actions/cache@v4
         with:
           path: node_modules
@@ -37,30 +30,36 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Prepublish # these packages are required for the "Publish framework" step
-        run: bunx pnpm --filter='./storage/framework' build
-
-      - name: Publish framework
+      - name: Publish Framework
         run: ./storage/framework/scripts/publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish dummy libraries
-        run: bunx pnpm --filter='./storage/framework' publish:dummy-libs
+      - name: Publish Dummy Libraries
+        run: bun --filter='./storage/framework' run publish:dummy-libs
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      # temporary workaround until npm publish is replaced with bun publish
-      - name: Install VS Code Extension Dependencies
-        run: cd storage/framework/ide/vscode && bun install && cd ../../../../
-
-      # TODO: remove npm once bun publish is available
       - name: Publish VS Code Extension
-        run: cd storage/framework/ide/vscode && npm run release && cd ../../../../
+        run: |
+          cd storage/framework/ide/vscode
+          bun install
+          bunx --bun vsce publish
+          cd ../../../../
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
-      - name: Create GitHub release
+      - name: Create GitHub Release
         run: bunx changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Attach Binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            storage/framework/core/buddy/dist/bin/buddy-linux-x64
+            storage/framework/core/buddy/dist/bin/buddy-linux-arm64
+            storage/framework/core/buddy/dist/bin/buddy-windows-x64.exe
+            storage/framework/core/buddy/dist/bin/buddy-darwin-x64
+            storage/framework/core/buddy/dist/bin/buddy-darwin-arm64

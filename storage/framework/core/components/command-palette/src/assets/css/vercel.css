@@ -1,0 +1,165 @@
+.vercel [command-root] {
+  max-width: 640px;
+  width: 100%;
+  padding: 8px;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  border: 1px solid var(--gray6);
+  box-shadow: var(--command-shadow);
+  transition: transform 100ms ease;
+}
+.dark .vercel [command-root] {
+  background: rgba(22, 22, 22, 0.7);
+}
+.vercel [command-input] {
+  font-family: var(--font-sans);
+  border: none;
+  width: 100%;
+  font-size: 17px;
+  padding: 8px 8px 16px 8px;
+  outline: none;
+  background: var(--bg);
+  color: var(--gray12);
+  border-bottom: 1px solid var(--gray6);
+  margin-bottom: 16px;
+  border-radius: 0;
+}
+.vercel [command-input]::-moz-placeholder {
+  color: var(--gray9);
+}
+.vercel [command-input]::placeholder {
+  color: var(--gray9);
+}
+.vercel [command-vercel-badge] {
+  height: 20px;
+  background: var(--grayA3);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--grayA11);
+  border-radius: 4px;
+  margin: 4px 0 4px 4px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+.vercel [command-item] {
+  content-visibility: auto;
+  cursor: pointer;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  color: var(--gray11);
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  will-change: background, color;
+  transition: all 150ms ease;
+  transition-property: none;
+}
+.vercel [command-item][aria-selected=true] {
+  background: var(--grayA3);
+  color: var(--gray12);
+}
+.vercel [command-item][aria-disabled=true] {
+  color: var(--gray8);
+  cursor: not-allowed;
+}
+.vercel [command-item]:active {
+  transition-property: background;
+  background: var(--gray4);
+}
+.vercel [command-item] + [command-item] {
+  margin-top: 4px;
+}
+.vercel [command-item] svg {
+  width: 18px;
+  height: 18px;
+}
+.vercel [command-list] {
+  height: min(330px, (var(--command-list-height)));
+  max-height: 400px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  transition: 100ms ease;
+  transition-property: height;
+}
+.vercel [command-vercel-shortcuts] {
+  display: flex;
+  margin-left: auto;
+  gap: 8px;
+}
+.vercel [command-vercel-shortcuts] kbd {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  min-width: 20px;
+  padding: 4px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--gray11);
+  background: var(--gray4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+.vercel [command-separator] {
+  height: 1px;
+  width: 100%;
+  background: var(--gray5);
+  margin: 4px 0;
+}
+.vercel *:not([hidden]) + [command-group] {
+  margin-top: 8px;
+}
+.vercel [command-group-heading] {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  font-size: 12px;
+  color: var(--gray11);
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.vercel [command-empty] {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  white-space: pre-wrap;
+  color: var(--gray11);
+}
+.vercel [command-dialog-wrapper] {
+  padding: 8px;
+}
+
+.pop-page-enter-active {
+  animation: scale-in 0.2s;
+}
+.pop-page-leave-active {
+  animation: scale-in 0.2s reverse;
+}
+
+@keyframes scale-in {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,5 +1,5 @@
-import process from 'node:process'
 import type { PlaywrightTestConfig } from '@playwright/test'
+import process from 'node:process'
 import { devices } from '@playwright/test'
 import { projectPath, testsPath } from '@stacksjs/path'
 

@@ -1,7 +1,11 @@
 import type { UserConfig } from 'vitepress'
 
-export type DocsConfig = UserConfig
-export type DocsOptions = DocsConfig
+export interface DocsUserConfig extends UserConfig {
+  deploy: boolean
+}
+
+export type DocsConfig = DocsUserConfig
+export type DocsOptions = Partial<DocsConfig>
 
 export interface SocialLink {
   icon: SocialLinkIcon
@@ -10,6 +14,7 @@ export interface SocialLink {
 }
 
 export enum SocialLinkIcon {
+  Bluesky = 'bluesky',
   Discord = 'discord',
   Facebook = 'facebook',
   GitHub = 'github',

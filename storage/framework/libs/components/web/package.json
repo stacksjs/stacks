@@ -1,9 +1,10 @@
 {
-  "name": "hello-world-elements",
+  "name": "@stacksjs/hello-world-elements",
   "type": "module",
   "version": "",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/components#readme",
   "repository": {
@@ -14,8 +15,14 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["custom-elements", "web-components", "library", "framework-agnostic", "typescript", "javascript"],
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "keywords": [
+    "custom-elements",
+    "web-components",
+    "library",
+    "framework-agnostic",
+    "typescript",
+    "javascript"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,14 +33,11 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "vite build -c ../build/web-components.ts",
-    "prepublishOnly": "bun --bun run build"
+    "dev": "bunx --bun vite -c ../../../core/vite-config/src/web-components.ts",
+    "build": "bunx --bun vite build -c ../../../core/vite-config/src/web-components.ts",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "stacks": "workspace:*"

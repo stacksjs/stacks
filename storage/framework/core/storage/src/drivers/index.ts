@@ -1,1 +1,3 @@
-export * as aws from './aws'
+export * from './aws'
+export * from './local'
+export * from './memory'

@@ -1,37 +1,73 @@
-import { cache } from '@stacksjs/config'
-import Redis, { Command } from 'ioredis'
+import type { CacheDriver } from '@stacksjs/types'
+import { BentoCache, bentostore } from 'bentocache'
+import { redisDriver } from 'bentocache/drivers/redis'
 
-export const client = new Redis({
-  host: cache.drivers?.redis?.host,
-  port: cache.drivers?.redis?.port,
-  username: cache.drivers?.redis?.username,
-  password: cache.drivers?.redis?.password,
+const client = new BentoCache({
+  default: 'redis',
+  stores: {
+    redis: bentostore().useL2Layer(
+      redisDriver({
+        connection: { host: '127.0.0.1', port: 6379 },
+      }),
+    ),
+  },
 })
 
-export async function set(key: string, value: any): Promise<void> {
-  await client.set(key, value)
-}
+export const redis: CacheDriver = {
+  async set(key: string, value: string, ttl?: number): Promise<void> {
+    const data: { key: string, value: string, gracePeriod?: { enabled: boolean, duration: string } } = {
+      key,
+      value,
+    }
 
-export async function get(key: string): Promise<any> {
-  const value = await client.get(key)
+    if (ttl) {
+      data.gracePeriod = {
+        enabled: true,
+        duration: `${ttl}m`,
+      }
+    }
 
-  return value
-}
+    await client.set(data)
+  },
+  async setForever(key: string, value: string): Promise<void> {
+    await client.setForever({
+      key,
+      value,
+    })
+  },
+  async get(key: string): Promise<string | undefined | null> {
+    const items = await client.get<string>(key)
 
-export async function remove(key: string): Promise<void> {
-  await client.del(key)
-}
+    return items
+  },
+  async getOrSet(key: string, value: string): Promise<string | undefined | null> {
+    const items = await client.getOrSet(key, () => value)
 
-export async function del(key: string): Promise<void> {
-  await client.del(key)
-}
-
-export async function flushAll(): Promise<void> {
-  const command = new Command('FLUSHALL', ['ASYNC'], { replyEncoding: 'utf-8' }, () => {})
-  await client.sendCommand(command)
-}
-
-export async function flushDB(): Promise<void> {
-  const command = new Command('FLUSHDB', ['ASYNC'], { replyEncoding: 'utf-8' }, () => {})
-  await client.sendCommand(command)
+    return items
+  },
+  async del(key: string): Promise<void> {
+    await client.delete({ key })
+  },
+  async deleteMany(keys: string[]): Promise<void> {
+    await client.deleteMany({ keys })
+  },
+  async remove(key: string): Promise<void> {
+    await client.delete({ key })
+  },
+  async has(key: string): Promise<boolean> {
+    return await client.has({ key })
+  },
+  async missing(key: string): Promise<boolean> {
+    return await client.missing({ key })
+  },
+  async deleteAll(): Promise<void> {
+    await client.clear()
+  },
+  async clear(): Promise<void> {
+    await client.clear()
+  },
+  async disconnect(): Promise<void> {
+    await client.disconnect()
+  },
+  client,
 }

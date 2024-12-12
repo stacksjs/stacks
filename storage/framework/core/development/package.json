@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/development",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/development#readme",
@@ -26,26 +27,19 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md"
-  ],
+  "files": ["README.md"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -55,23 +49,22 @@
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "eslint": "^8.56.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/rpx": "^0.4.0",
     "@stacksjs/testing": "workspace:*",
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "eslint": "^8.56.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
-    "@total-typescript/ts-reset": "^0.5.1",
-    "eslint": "^8.56.0",
-    "eslint-ts-patch": "^8.55.0-1"
+    "@stacksjs/build": "workspace:*",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "bun-plugin-dtsx": "^0.21.9"
   }
 }

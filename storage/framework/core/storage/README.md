@@ -6,8 +6,13 @@ This package contains the Stacks File System source.
 
 - Easily create your own cloud storage
 - Driver-based architecture
+- Local, S3, and memory drivers
 - Laravel-like Storage API
-- Drop-in Node.js module replacement
+
+### TODO
+
+- [ ] Add Google Cloud Storage driver
+- [ ] Add Azure Blob Storage driver
 
 ## 🤖 Usage
 

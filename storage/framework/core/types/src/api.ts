@@ -27,6 +27,18 @@ export interface ApiOptions {
    */
   prefix: string
 
+  middleware: string[]
+
+  routes:
+    | {
+      index: boolean
+      show: boolean
+      store: boolean
+      update: boolean
+      destroy: boolean
+    }
+    | boolean
+
   /**
    * **API Prewarm**
    *

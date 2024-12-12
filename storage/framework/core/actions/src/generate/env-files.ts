@@ -1,10 +1,10 @@
+import { env as e, envEnum } from '@stacksjs/env'
+import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
-import { env as e, enums } from '@stacksjs/env'
-import { logger } from '@stacksjs/logging'
 import { envKeys } from '../../../../env'
 
-logger.log('Generating type env files...')
+log.info('Generating type env files...')
 
 // generate ./storage/framework/types/env.d.ts file from .env
 const envTypes = `
@@ -15,60 +15,60 @@ const envTypes = `
 
 declare module 'bun' {
   namespace env {
-    ${envKeys.map((key) => {
-      let type: string | undefined = typeof e[key]
-      let value: string | boolean | number | undefined = e[key]
+    ${envKeys
+      .map((key) => {
+        let type: string | undefined = typeof e[key]
+        let value: string | boolean | number | undefined = e[key]
 
-      if (!value) {
-        if (enums[key]) {
-          type = enums[key]?.map(item => `'${item}'`).join(' | ')
-          value = enums[key]?.[0] // default to the first enum value
-        }
- else {
-          switch (type) {
-            case 'number':
-              value = '0'
-              break
-            case 'boolean':
-              value = false
-              break
-            default:
-              value = ''
+        if (!value) {
+          if (envEnum[key]) {
+            type = envEnum[key]?.map(item => `'${item}'`).join(' | ')
+            value = envEnum[key]?.[0] // default to the first enum value
+          }
+          else {
+            switch (type) {
+              case 'number':
+                value = '0'
+                break
+              case 'boolean':
+                value = false
+                break
+              default:
+                value = ''
+            }
           }
         }
-      }
 
-      type = 'string'
-      if (typeof value === 'string') {
-        if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
-          type = 'boolean'
+        type = 'string'
+        if (typeof value === 'string') {
+          if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
+            type = 'boolean'
+          }
+          else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
+            type = 'number'
+          }
+          else if (envEnum[key]) {
+            // @ts-expect-error envEnum[key] is defined
+            type = envEnum[key].map(item => `'${item}'`).join(' | ')
+          }
         }
-        else if (!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value))) {
+        else if (typeof value === 'number') {
           type = 'number'
         }
-        else if (enums[key]) {
-          // @ts-expect-error enums[key] is defined
-          type = enums[key].map(item => `'${item}'`).join(' | ')
+        else if (typeof value === 'boolean') {
+          type = 'boolean'
         }
-      }
 
-      else if (typeof value === 'number') {
-        type = 'number'
-      }
-
-      else if (typeof value === 'boolean') {
-        type = 'boolean'
-      }
-
-      return `const ${key}: ${type}`
-    }).join('\n    ')}
+        return `const ${key}: ${type}`
+      })
+      .join('\n    ')}
   }
 }
 `
 
 await storage.writeFile(p.frameworkPath('types/env.d.ts'), envTypes)
 
-logger.log('  - ./storage/framework/env.ts')
+log.info('  - ./storage/framework/env.ts')
 
 // generate ./storage/framework/env.ts file based on Bun.env
 const env = `
@@ -86,4 +86,4 @@ export type EnvKey = typeof envKeys[number]
 
 await storage.writeFile(p.frameworkPath('env.ts'), env)
 
-logger.log('  - ./storage/framework/env.d.ts')
+log.info('  - ./storage/framework/env.d.ts')

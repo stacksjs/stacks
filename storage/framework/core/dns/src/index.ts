@@ -10,7 +10,6 @@
 //     if (!app.url)
 //       throw new Error('./config app.url is not defined')
 
-//     // eslint-disable-next-line no-new
 //     new route53.PublicHostedZone(this, 'HostedZone', {
 //       zoneName: app.url,
 //     })

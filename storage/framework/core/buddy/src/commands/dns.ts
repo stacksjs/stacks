@@ -1,8 +1,8 @@
-import process from 'node:process'
-import { ExitCode } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
+import process from 'node:process'
+import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
-import { runCommand } from '@stacksjs/cli'
+import { ExitCode } from '@stacksjs/types'
 
 // import { Action } from '@stacksjs/enums'
 // import { runAction } from '@stacksjs/actions'
@@ -23,7 +23,7 @@ interface DnsOptions {
   verbose?: boolean
 }
 
-export function dns(buddy: CLI) {
+export function dns(buddy: CLI): void {
   const descriptions = {
     dns: 'Lists the DNS records for a domain',
     query: 'Host name or IP address to query',
@@ -56,16 +56,17 @@ export function dns(buddy: CLI) {
     .option('-1, --short', descriptions.short, { default: false })
     .option('-J, --json', descriptions.json, { default: false })
     .option('-p, --pretty', descriptions.pretty, { default: true })
-    .option('-p, --project', descriptions.project, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: DnsOptions) => {
+      log.debug('Running `buddy dns [domain]` ...', options)
       // let prettyOutput = false
 
       // if (options.json && options.pretty)
       //   prettyOutput = true
 
-      delete options.pretty
-      delete options.p
+      options.pretty = undefined
+      options.p = undefined
 
       // Convert options object to command-line options string
       const optionsString = Object.entries(options)
@@ -77,4 +78,9 @@ export function dns(buddy: CLI) {
 
       process.exit(ExitCode.Success)
     })
+
+  buddy.on('dns:*', () => {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
+    process.exit(1)
+  })
 }

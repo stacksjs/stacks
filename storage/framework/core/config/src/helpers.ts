@@ -1,8 +1,42 @@
-import type { AppConfig, CacheConfig, CdnConfig, ChatConfig, CliConfig, DatabaseConfig, DependenciesConfig, DnsConfig, EmailConfig, Events, GitConfig, HashingConfig, JobConfig, LibraryConfig, Model, NotificationConfig, PaymentConfig, QueueConfig, SearchEngineConfig, SecurityConfig, ServicesConfig, SmsConfig, StacksConfig, StorageConfig, UiConfig } from '@stacksjs/types'
+import type {
+  AppConfig,
+  CacheConfig,
+  CdnConfig,
+  ChatConfig,
+  CliConfig,
+  DatabaseConfig,
+  DependenciesConfig,
+  DnsConfig,
+  EmailConfig,
+  Events,
+  GitConfig,
+  HashingConfig,
+  JobConfig,
+  LibraryConfig,
+  Model,
+  NotificationConfig,
+  PaymentConfig,
+  QueueConfig,
+  SearchEngineConfig,
+  SecurityConfig,
+  ServicesConfig,
+  StacksConfig,
+  StorageConfig,
+  UiConfig,
+} from '@stacksjs/types'
 import { createLocalTunnel } from '@stacksjs/tunnel'
 import { config } from '.'
 
-export type LocalUrlType = 'frontend' | 'backend' | 'api' | 'admin' | 'library' | 'email' | 'docs' | 'inspect' | 'desktop'
+export type LocalUrlType =
+  | 'frontend'
+  | 'backend'
+  | 'api'
+  | 'admin'
+  | 'library'
+  | 'email'
+  | 'docs'
+  | 'inspect'
+  | 'desktop'
 
 export async function localUrl({
   domain = config.app.url || 'stacks',
@@ -10,247 +44,185 @@ export async function localUrl({
   localhost = false,
   https = undefined as boolean | undefined,
   network = undefined as boolean | undefined,
-} = {}) {
-  // Ensure url starts with http:// or https://
-  // if (!url.startsWith('http://') && !url.startsWith('https://'))
-  //   url = 'https://' + url
-  let url
+}: {
+  domain?: string
+  type?: LocalUrlType
+  network?: boolean
+  localhost?: boolean
+  https?: boolean
+} = {}): Promise<string> {
+  let url = domain.replace(/\.[^.]+$/, '.localhost')
 
   switch (type) {
     case 'frontend':
       if (network)
-        return await createLocalTunnel(config.app.ports?.frontend || 3333)
-
+        return await createLocalTunnel(config.ports?.frontend || 3000)
       if (localhost)
-        return `http://localhost:${config.app.ports?.frontend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.frontend}`
+      break
     case 'backend':
       if (network)
-        return await createLocalTunnel(config.app.ports?.backend || 3334)
-
+        return await createLocalTunnel(config.ports?.backend || 3001)
       if (localhost)
-        return `http://localhost:${config.app.ports?.backend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
-    case 'api':
-      if (network)
-        return await createLocalTunnel(config.app.ports?.backend || 3334)
-
-      if (localhost)
-        return `http://localhost:${config.app.ports?.backend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/api/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.backend}`
+      url = `api.${url}`
+      break
     case 'admin':
       if (network)
-        return await createLocalTunnel(config.app.ports?.admin || 3335)
-
+        return await createLocalTunnel(config.ports?.admin || 3002)
       if (localhost)
-        return `http://localhost:${config.app.ports?.admin}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/admin/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.admin}`
+      url = `admin.${url}`
+      break
     case 'library':
       if (network)
-        return await createLocalTunnel(config.app.ports?.library || 3336)
-
+        return await createLocalTunnel(config.ports?.library || 3003)
       if (localhost)
-        return `http://localhost:${config.app.ports?.library}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/libs/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.library}`
+      url = `libs.${url}`
+      break
     case 'email':
       if (network)
-        return await createLocalTunnel(config.app.ports?.email || 3338)
-
+        return await createLocalTunnel(config.ports?.email || 3005)
       if (localhost)
-        return `http://localhost:${config.app.ports?.email}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.email}`
+      url = `email.${url}`
+      break
     case 'desktop':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3337)
-
+        return await createLocalTunnel(config.ports?.desktop || 3004)
       if (localhost)
-        return `http://localhost:${config.app.ports?.email}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/email/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.desktop}`
+      url = `desktop.${url}`
+      break
     case 'docs':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3339)
-
+        return await createLocalTunnel(config.ports?.docs || 3006)
       if (localhost)
-        return `http://localhost:${config.app.ports?.docs}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/docs/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.docs}`
+      url = `docs.${url}`
+      break
     case 'inspect':
       if (network)
-        return await createLocalTunnel(config.app.ports?.desktop || 3340)
-
+        return await createLocalTunnel(config.ports?.inspect || 3007)
       if (localhost)
-        return `http://localhost:${config.app.ports?.inspect}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost/__inspect/')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.inspect}`
+      url = `inspect.${url}`
+      break
     default:
       if (localhost)
-        return `http://localhost:${config.app.ports?.frontend}`
-
-      url = domain.replace(/\.[^\.]+$/, '.localhost')
-
-      if (https)
-        return `https://${url}`
-
-      return url
+        return `http://localhost:${config.ports?.frontend}`
   }
+
+  if (https)
+    return `https://${url}`
+  return `http://${url}`
 }
 
-export function defineStacksConfig(config: StacksConfig) {
+export function defineStacksConfig(config: StacksConfig): StacksConfig {
   return config
 }
 
-export function defineApp(config: AppConfig) {
+export function defineApp(config: AppConfig): AppConfig {
   return config
 }
 
-export function defineCache(config: CacheConfig) {
+export function defineCache(config: CacheConfig): CacheConfig {
   return config
 }
 
-export function defineCdn(config: CdnConfig) {
+export function defineCdn(config: CdnConfig): CdnConfig {
   return config
 }
 
-export function defineChat(config: ChatConfig) {
+export function defineChat(config: ChatConfig): ChatConfig {
   return config
 }
 
-export function defineCli(config: CliConfig) {
+export function defineCli(config: CliConfig): CliConfig {
   return config
 }
 
-export function defineJob(config: JobConfig) {
+export function defineJob(config: JobConfig): JobConfig {
   return config
 }
 
-export function defineCronJob(config: JobConfig) {
+export function defineCronJob(config: JobConfig): JobConfig {
   return config
 }
 
-export function defineDatabase(config: DatabaseConfig) {
+export function defineDatabase(config: DatabaseConfig): DatabaseConfig {
   return config
 }
 
-export function defineDependencies(config: DependenciesConfig) {
+export function defineDependencies(config: DependenciesConfig): DependenciesConfig {
   return config
 }
 
-export function defineDns(config: DnsConfig) {
+export function defineDns(config: DnsConfig): DnsConfig {
   return config
 }
 
-export function defineEmailConfig(config: EmailConfig) {
+export function defineEmailConfig(config: EmailConfig): EmailConfig {
   return config
 }
 
-export function defineEmail(config: EmailConfig) {
+export function defineEmail(config: EmailConfig): EmailConfig {
   return config
 }
 
-export function defineGit(config: GitConfig) {
+export function defineGit(config: GitConfig): GitConfig {
   return config
 }
 
-export function defineHashing(config: HashingConfig) {
+export function defineHashing(config: HashingConfig): HashingConfig {
   return config
 }
 
-export function defineLibrary(config: LibraryConfig) {
+export function defineLibrary(config: LibraryConfig): LibraryConfig {
   return config
 }
 
-export function defineNotification(config: NotificationConfig) {
+export function defineNotification(config: NotificationConfig): NotificationConfig {
   return config
 }
 
-export function definePayment(config: PaymentConfig) {
+export function definePayment(config: PaymentConfig): PaymentConfig {
   return config
 }
 
-export function defineQueue(config: QueueConfig) {
+export function defineQueue(config: QueueConfig): QueueConfig {
   return config
 }
 
-export function defineSearchEngine(config: SearchEngineConfig) {
+export function defineSearchEngine(config: SearchEngineConfig): SearchEngineConfig {
   return config
 }
 
-export function defineSecurity(config: SecurityConfig) {
+export function defineSecurity(config: SecurityConfig): SecurityConfig {
   return config
 }
 
-export function defineServices(config: ServicesConfig) {
+export function defineServices(config: ServicesConfig): ServicesConfig {
   return config
 }
 
-export function defineSms(config: SmsConfig) {
+export function defineSms(config: any): any {
   return config
 }
 
-export function defineStorage(config: StorageConfig) {
+export function defineStorage(config: StorageConfig): StorageConfig {
   return config
 }
 
-export function defineUi(config: UiConfig) {
+export function defineUi(config: UiConfig): UiConfig {
   return config
 }
 
-export function defineModel(config: Model) {
+export function defineModel(config: Model): Model {
   return config
 }
 
-export function defineEvents(config: Events) {
+export function defineEvents(config: Events): Events {
   return config
 }

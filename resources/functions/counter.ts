@@ -10,7 +10,4 @@ function increment() {
   count.value++
 }
 
-export {
-  count,
-  increment,
-}
+export { count, increment }

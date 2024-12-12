@@ -1,8 +1,36 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { dts } from 'bun-plugin-dtsx'
+import { intro, outro } from '../build/src'
 
-const result = await runCommand('bun build ./src/index.ts --outdir dist --format esm --external @stacksjs/types --external @stacksjs/tunnel --external @stacksjs/env --external @stacksjs/path --external @stacksjs/validation --external @stacksjs/path --external @vinejs/compiler --external pluralize --external @stacksjs/strings --external dinero.js --external @dinero.js/currencies --external validator --external @vinejs/vine --external @stacksjs/validation --target bun', {
-  cwd: import.meta.dir,
+const { startTime } = await intro({
+  dir: import.meta.dir,
 })
 
-if (result.isErr())
-  log.error(result.error)
+const result = await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  // sourcemap: 'linked',
+  minify: true,
+
+  external: [
+    '@stacksjs/types',
+    '@stacksjs/tunnel',
+    '@stacksjs/env',
+    '@stacksjs/path',
+    '@stacksjs/validation',
+    '@stacksjs/strings',
+  ],
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
+})
+
+await outro({
+  dir: import.meta.dir,
+  startTime,
+  result,
+})

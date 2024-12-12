@@ -1,70 +1,145 @@
+/* eslint no-console: 0 */
 import process from 'node:process'
-import consola from 'consola'
+import { buddyOptions, stripAnsi } from '@stacksjs/cli'
+import { handleError, writeToLogFile } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
-import { logsPath } from '@stacksjs/path'
+import { consola, createConsola } from 'consola'
 
-export const logger = consola
+// import type { Prompt } from '@stacksjs/cli'
 
-export const logFilePath = logsPath('console.log')
+export function logLevel(): number {
+  /**
+   * This regex checks for:
+   *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
+   *   - --verbose - followed by optional spaces at the end.
+   *   - --verbose followed by optional spaces at the end.
+   *
+   * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
+   */
+  const verboseRegex = /--verbose(?!\s*=\s*false|\s+false)(?:\s+|=true)?(?:$|\s)/
+  const opts = buddyOptions()
 
-async function writeToLogFile(message: string) {
-  const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
-  try {
-    const file = Bun.file(logFilePath)
-    const writer = file.writer()
-    const text = await file.text()
-    writer.write(`${text}\n`)
-    writer.write(`${formattedMessage}\n`)
-    await writer.end()
-  }
-  catch (error) {
-    // Assuming the error is due to the file not existing
-    // Create the file and then write the message
-    const file = Bun.file(logFilePath) // Use the create option
-    const writer = file.writer()
-    writer.write(`${formattedMessage}\n`)
-    await writer.end()
-  }
+  if (verboseRegex.test(opts))
+    return 4
+
+  // const config = await import('@stacksjs/config')
+  // console.log('config', config)
+
+  // return config.logger.level
+  return 3
 }
 
-export const log = {
-  info: async (...arg: any) => {
-    consola.info(...arg)
-    await writeToLogFile(`INFO: ${arg}`)
+export const logger: Log = {
+  ...createConsola({
+    level: logLevel(),
+    // fancy: true,
+  }),
+  warning: (message: string) => console.warn(message),
+  dump: (...args: any[]) => console.log(...args),
+  dd: (...args: any[]) => {
+    console.log(...args)
+    process.exit(ExitCode.FatalError)
   },
-
-  success: async (msg: string) => {
-    consola.success(msg)
-    await writeToLogFile(`SUCCESS: ${msg}`)
-  },
-
-  error: async (err: string, options?: any) => {
-    handleError(err, options) // Assuming handleError logs the error
-    await writeToLogFile(`ERROR: ${err}`)
-  },
-
-  warn: async (arg: string) => {
-    consola.warn(arg)
-    await writeToLogFile(`WARN: ${arg}`)
-  },
-
-  debug: async (arg: string) => {
-    consola.debug(arg)
-    await writeToLogFile(`DEBUG: ${arg}`)
-  },
-
-  // prompt,
-  dump,
-  dd,
+  echo: (message: string) => console.log(message),
 }
 
-export function dump(...args: any[]) {
+export { consola, createConsola }
+
+type ErrorMessage = string
+export type ErrorOptions =
+  | {
+    shouldExit: boolean
+    silent?: boolean
+    message?: ErrorMessage
+  }
+  | any
+  | Error
+
+export interface Log {
+  info: (...args: any[]) => void
+  success: (msg: string) => void
+  error: (err: string | Error | object | unknown, options?: ErrorOptions) => void
+  warn: (arg: string) => void
+  warning: (arg: string) => void
+  debug: (...args: any[]) => void
+  // prompt: Prompt
+  // start: logger.Start
+  // box: logger.Box
+  // start: any
+  // box: any
+  dump: (...args: any[]) => void
+  dd: (...args: any[]) => void
+  echo: (...args: any[]) => void
+}
+
+export interface LogOptions {
+  styled?: boolean
+}
+
+export const log: Log = {
+  info: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false)
+      console.log(message)
+    else logger.info(message)
+    await writeToLogFile(`INFO: ${stripAnsi(message)}`)
+  },
+
+  success: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false)
+      console.log(message)
+    else logger.success(message)
+    await writeToLogFile(`SUCCESS: ${stripAnsi(message)}`)
+  },
+
+  warn: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false)
+      console.log(message)
+    else logger.warn(message)
+    await writeToLogFile(`WARN: ${stripAnsi(message)}`)
+  },
+
+  /** alias for `log.warn()`. */
+  warning: async (message: string, options?: LogOptions) => {
+    if (options?.styled === false)
+      console.log(message)
+    else logger.warn(message)
+    await writeToLogFile(`WARN: ${stripAnsi(message)}`)
+  },
+
+  error: async (err: string | Error | object | unknown, options?: ErrorOptions) => {
+    handleError(err, options)
+  },
+
+  debug: async (...args: any[]) => {
+    const formattedArgs = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
+    const message = `DEBUG: ${formattedArgs.join(' ')}`
+
+    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
+      return writeToLogFile(message)
+
+    logger.debug(message)
+    await writeToLogFile(stripAnsi(message))
+  },
+
+  dump: (...args: any[]) => args.forEach(arg => console.log(arg)),
+  dd: (...args: any[]) => {
+    args.forEach(arg => console.log(arg))
+    process.exit(ExitCode.FatalError)
+  },
+  echo: (...args: any[]) => console.log(...args),
+}
+
+export function dump(...args: any[]): void {
   args.forEach(arg => log.debug(arg))
 }
 
-export function dd(...args: any[]) {
-  args.forEach(arg => log.debug(arg))
+export function dd(...args: any[]): void {
+  log.info(args)
   // we need to return a non-zero exit code to indicate an error
   // e.g. if used in a CDK script, we want it to fail the deployment
   process.exit(ExitCode.FatalError)
+}
+
+export function echo(...args: any[]): void {
+  console.log(...args)
 }

@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/tinker",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "All you need to tinker.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/stacks/tinker-app#readme",
@@ -15,31 +16,13 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "tinker-stack",
-    "repl",
-    "ts",
-    "vue",
-    "stacks"
-  ],
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "keywords": ["tinker-stack", "repl", "ts", "vue", "stacks"],
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "echo 'wip'",
-    "prepublishOnly": "bun --bun run build",
-    "typecheck": "bun --bun tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/repl": "workspace:*"
+    "prepublishOnly": "bun run build",
+    "test": "bun test",
+    "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

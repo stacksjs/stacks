@@ -1,9 +1,10 @@
 {
   "name": "@bun-examples/bud",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "Your project description.",
   "author": "your-name <your-email>",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -14,32 +15,20 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": [
-    "project-starter",
-    "stacks"
-  ],
+  "keywords": ["project-starter", "stacks"],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "buddy": "bun --bun ./storage/framework/core/buddy/src/cli.ts",
+    "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",
     "setup": "./storage/framework/scripts/setup.sh",
     "fresh": "bun run buddy fresh",
@@ -122,7 +111,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "eslint --fix"
+    "*": "bunx --bun eslint . --fix"
   },
   "config": {
     "commitizen": {

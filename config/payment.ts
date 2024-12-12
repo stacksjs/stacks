@@ -1,4 +1,5 @@
 import type { PaymentConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Payment Configuration**
@@ -9,6 +10,11 @@ import type { PaymentConfig } from '@stacksjs/types'
  */
 export default {
   driver: 'stripe',
+
+  stripe: {
+    publishableKey: env.STRIPE_PUBLISHABLE_KEY || '',
+    secretKey: env.STRIPE_SECRET_KEY || '',
+  },
 
   // wip
 } satisfies PaymentConfig

@@ -34,7 +34,20 @@ export function avg(arr: number[]): number {
  * ```
  */
 export function median(arr: number[]): number {
-  return arr[Math.floor(arr.length / 2)]
+  if (arr.length === 0)
+    throw new Error('Cannot compute median of an empty array')
+
+  const sorted = [...arr].sort((a, b) => a - b)
+
+  const mid = Math.floor(sorted.length / 2)
+
+  let medianValue: number
+
+  if (sorted.length % 2 !== 0)
+    medianValue = sorted[mid] as number
+  else medianValue = ((sorted[mid] as number) + (sorted[mid - 1] as number)) / 2 // or (sorted[mid - 1] + sorted[mid]) / 2
+
+  return medianValue
 }
 
 /**
@@ -51,7 +64,7 @@ export function median(arr: number[]): number {
  * ```
  */
 export function mode(arr: number[]): number {
-  return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop()!
+  return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop() as number
 }
 
 /**
@@ -182,7 +195,15 @@ export function zScore(array: number[], num: number): number {
  * @see https://en.wikipedia.org/wiki/Percentile
  */
 export function percentile(array: number[], num: number): number {
-  return array.filter(n => n < num).length / array.length
+  const sorted = [...array].sort((a, b) => a - b)
+  const index = (num / 100) * (sorted.length - 1)
+  const lower = Math.floor(index)
+  const upper = Math.ceil(index)
+  const weight = index - lower
+
+  if (upper === lower)
+    return sorted[index] ?? 0
+  return (1 - weight) * (sorted[lower] ?? 0) + weight * (sorted[upper] ?? 0)
 }
 
 /**
@@ -214,7 +235,11 @@ export function interquartileRange(array: number[]): number {
  * ```
  */
 export function covariance(array1: number[], array2: number[]): number {
+  if (array1.length !== array2.length)
+    throw new Error('Arrays must have the same length')
+
   const mean1 = average(array1)
   const mean2 = average(array2)
-  return average(array1.map((num1, i) => (num1 - mean1) * (array2[i] - mean2)))
+
+  return average(array1.map((num1, i) => (num1 - mean1) * ((array2[i] as number) - mean2)))
 }

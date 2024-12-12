@@ -1,10 +1,10 @@
 import type { Result } from '@stacksjs/error-handling'
-import { err, ok } from '@stacksjs/error-handling'
 import { italic, log } from '@stacksjs/cli'
-import { isFile } from './files'
+import { err, handleError, ok } from '@stacksjs/error-handling'
+import { join } from '@stacksjs/path'
 import { isFolder } from './folders'
-import { glob } from './glob'
 import { fs } from './fs'
+import { glob } from './glob'
 
 export function deleteFolder(path: string): Promise<Result<string, Error>> {
   return new Promise((resolve, reject) => {
@@ -28,8 +28,7 @@ export async function isDirectoryEmpty(path: string): Promise<Result<boolean, Er
       if (fs.statSync(path).isDirectory()) {
         if (fs.readdirSync(path).length === 0)
           return resolve(ok(true))
-        else
-          return resolve(ok(false))
+        return resolve(ok(false))
       }
 
       return resolve(ok(false))
@@ -48,7 +47,8 @@ export async function deleteEmptyFolder(path: string): Promise<Result<string, Er
           fs.rmSync(path, { recursive: true, force: true })
           return resolve(ok(`Deleted ${path}`))
         }
-        else { return resolve(ok(`Path ${path} was not empty`)) }
+
+        return resolve(ok(`Path ${path} was not empty`))
       }
 
       return resolve(ok(`Path ${path} was not a directory`))
@@ -70,8 +70,7 @@ export async function deleteEmptyFolders(dir: string): Promise<Result<string, Er
       if (isFolder(p)) {
         if (fs.readdirSync(p).length === 0)
           fs.rmSync(p, { recursive: true, force: true })
-        else
-          await deleteEmptyFolders(p)
+        else await deleteEmptyFolders(p)
       }
     }
 
@@ -85,7 +84,7 @@ export async function deleteEmptyFolders(dir: string): Promise<Result<string, Er
 export function deleteFile(path: string): Promise<Result<string, Error>> {
   return new Promise((resolve, reject) => {
     try {
-      if (isFile(path)) {
+      if (fs.statSync(path).isFile()) {
         fs.rmSync(path, { recursive: true, force: true })
         return resolve(ok(`Deleted ${path}`))
       }
@@ -118,7 +117,7 @@ export async function deleteGlob(path: string): Promise<Result<string, Error>> {
 }
 
 export async function del(path: string): Promise<Result<string, Error>> {
-  if (isFile(path))
+  if (fs.existsSync(path) && fs.statSync(path).isFile())
     return await deleteFile(path)
 
   if (isFolder(path))

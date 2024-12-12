@@ -1,14 +1,22 @@
+# Please note, this file is auto-generated based on your ./config & local environment.
+# It's recommended to keep it in your project's root directory, and to commit it.
+#
+# The framework understands your project's dependencies, knows which ones are
+# already installed in your environment, and which aren't — prompting
+# to automatically install missing dependencies when needed.
+#
+# To learn more, please visit:
+# https://stacksjs.org/docs/dependency-management
+
 dependencies:
-  aws.amazon.com/cli: ^2.13.7
-  bun.sh: ^1.0.16
-  caddyserver.com: ^2.7.4
+  aws.amazon.com/cli: ^2.17.13
+  bun.sh: ^1.1.38
   dns.lookup.dog: ^0.1.0
+  httpie.io: ^3.2.2
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
   mailpit.axllent.org: ^1.10.0
-  npmjs.com: ^9.7.2 # can soon be removed when Bun-native support is released
-  redis.io: ^7.0.11
+  redis.io: ^7.2.5
   sqlite.org: ^3.42.0
-  stedolan.github.io/jq: ^1.7
-  httpie.io: ^3.2.2
-  rust-lang.org: ^1.74.1 # optional, for certain dev purposes only
+  # openjdk.org: ^21.0.3.6
+  # rust-lang.org: ^1.74.1

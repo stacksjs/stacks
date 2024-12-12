@@ -1,68 +1,41 @@
-import { defineConfig } from 'vitepress'
-import { alias } from '@stacksjs/alias'
-import { path as p } from '@stacksjs/path'
 import { pwaDocs as pwa } from '@stacksjs/docs'
-import { server } from '@stacksjs/server'
-import { transformerTwoslash } from 'vitepress-plugin-twoslash'
+import { path as p } from '@stacksjs/path'
 import { withPwa } from '@vite-pwa/vitepress'
-import userConfig from '../../../../config/docs'
-import { analyticsHead, faviconHead } from './head'
-
-// import { config } from '@stacksjs/config'
-// import { kolorist as c } from '@stacksjs/cli'
-// import { version } from '../../../../stacks/package.json'
+import { defineConfig } from 'vitepress'
+import { transformerTwoslash } from 'vitepress-plugin-twoslash'
+import userConfig from '../../../../docs/config'
+import viteConfig from './vite.config'
 
 // https://vitepress.dev/reference/site-config
-export default withPwa(defineConfig({
-  srcDir: p.projectPath('docs'),
-  outDir: p.frameworkPath('docs/dist'),
-  cacheDir: p.frameworkPath('cache/docs'),
-  assetsDir: p.assetsPath(),
+export default withPwa(
+  defineConfig({
+    srcDir: p.projectPath('docs'),
+    outDir: p.frameworkPath('docs/dist'),
+    cacheDir: p.frameworkPath('cache/docs'),
+    assetsDir: '/assets',
+    emptyOutDir: true,
+    ignoreDeadLinks: true,
 
-  // sitemap: {
-  //   hostname: 'stacks.localhost',
-  // },
+    // sitemap: {
+    //   hostname: 'stacks.localhost',
+    // },
 
-  vite: {
-    publicDir: p.publicPath(),
+    pwa,
 
-    server: server({
-      type: 'docs',
-    }),
+    markdown: {
+      theme: {
+        light: 'vitesse-light',
+        dark: 'vitesse-dark',
+      },
 
-    resolve: {
-      alias,
+      codeTransformers: [
+        transformerTwoslash(),
+      ],
     },
 
-    // plugins: [
-    //   {
-    //     name: 'stacks-plugin',
-    //     configureServer(server) {
-    //       // const base = server.config.base || '/'
-    //       // const _print = server.printUrls
-    //       server.printUrls = () => { // eslint-disable-next-line no-console
-    //         console.log(`  ${c.blue(c.bold('STACKS'))} ${c.blue(version)}`)
-    //         // console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('http://stacks.localhost:3333/docs')}`)
-    //         // eslint-disable-next-line no-console
-    //         console.log(`  ${c.green('➜')}  ${c.bold('Docs')}: ${c.cyan('https://stacks.localhost/docs')}`)
-    //       }
-    //     },
-    //   },
-    // ],
-  },
 
-  head: [
-    ...faviconHead,
-    ...analyticsHead,
-  ],
+    vite: viteConfig,
 
-  pwa,
-
-  markdown: {
-    codeTransformers: [
-      transformerTwoslash(),
-    ],
-  },
-
-  ...userConfig,
-}))
+    ...userConfig,
+  }),
+)

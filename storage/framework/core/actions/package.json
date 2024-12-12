@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/actions#readme",
@@ -26,48 +27,22 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/cloud": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
-    "@stacksjs/dns": "workspace:*",
-    "@stacksjs/enums": "workspace:*",
-    "@stacksjs/env": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/security": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "markdown-it": "^14.0.0",
-    "vue-component-meta": "^1.8.27"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/api": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
@@ -81,8 +56,9 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "markdown-it": "^14.0.0",
-    "vue-component-meta": "^1.8.27"
+    "@stacksjs/validation": "workspace:*",
+    "markdown-it": "^14.1.0",
+    "vue-component-meta": "^2.1.10"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

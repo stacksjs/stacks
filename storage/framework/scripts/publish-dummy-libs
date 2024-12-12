@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Get the script's directory
+script_dir=$(realpath $(dirname "$0"))
+
+# Get all directories in the core path except for src/bun-create
+dirs=$(find "$script_dir/../libs/components" "$script_dir/../libs/functions" -type d -maxdepth 1)
+
+# Check if no directories found
+if [ -z "$dirs" ]; then
+  echo "No components found"
+  exit 1
+fi
+
+# Loop through each directory
+for dir in $dirs; do
+  echo ""
+  echo "🏗️  Releasing..."
+  echo "📦 $dir"
+
+  # Change to the directory
+  cd $dir
+
+  bun publish --access public || echo "Failed to publish $dir"
+
+  # Check if the build command was successful
+  if [ $? -ne 0 ]; then
+    echo "Failed to publish $dir"
+    exit 1
+  fi
+
+  echo "✅ Latest is published"
+  echo ""
+
+  # Change back to the original directory
+  cd - >/dev/null
+done

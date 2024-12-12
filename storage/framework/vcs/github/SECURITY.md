@@ -8,7 +8,7 @@ Only the latest major version receives security fixes.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this package, please send an email to Chris Breuer at <chris@stackjs.org>. All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within this package, please send an email to Chris Breuer at <chris@stacksjs.org>. All security vulnerabilities will be promptly addressed.
 
 ### Public PGP Key
 

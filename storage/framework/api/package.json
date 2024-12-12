@@ -1,0 +1,19 @@
+{
+  "name": "stacks-api",
+  "type": "module",
+  "version": "0.68.2",
+  "scripts": {
+    "build": "bun build.ts",
+    "dev": "bun --hot run dev.ts",
+    "prod": "bun --hot run dist/dev.js"
+  },
+  "dependencies": {
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/queue": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/utils": "workspace:*",
+    "aws4fetch": "^1.0.20"
+  },
+  "workspaces": ["../core/*"]
+}

@@ -1,79 +1,22 @@
 import { log } from '@stacksjs/logging'
+import ansiEscapes from 'ansi-escapes'
 import prompts from 'prompts'
+import supportsHyperlinks from 'supports-hyperlinks'
 
-export class Prompt {
-  private required: boolean
+export { log, prompts }
 
-  constructor() {
-    this.required = false
+// thanks to https://github.com/sindresorhus/terminal-link/blob/main/index.js
+// eslint-disable-next-line ts/no-unsafe-function-type
+export default function terminalLink(text: string, url: string, { target = 'stdout', ...options }: { target?: string, fallback?: boolean | Function }): string {
+  // @ts-expect-error - it is not properly typed
+  if (!supportsHyperlinks[target]) {
+    // If the fallback has been explicitly disabled, don't modify the text itself.
+    if (options.fallback === false) {
+      return text
+    }
+
+    return typeof options.fallback === 'function' ? options.fallback(text, url) : `${text} (\u200B${url}\u200B)`
   }
 
-  require() {
-    this.required = true
-    return this
-  }
-
-  isRequired() {
-    return this.required
-  }
-
-  async select(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'select', required: true })
-
-    return log.prompt(message, { ...options, type: 'select' })
-  }
-
-  async checkbox(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'multiselect', required: true })
-
-    return log.prompt(message, { ...options, type: 'multiselect' })
-  }
-
-  async confirm(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'confirm', required: true })
-
-    return log.prompt(message, { ...options, type: 'confirm' })
-  }
-
-  async input(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'text', required: true })
-
-    return log.prompt(message, { ...options, type: 'text' })
-  }
-
-  async password(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'password', required: true })
-
-    return log.prompt(message, { ...options, type: 'password' })
-  }
-
-  async number(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'numeral', required: true })
-
-    return log.prompt(message, { ...options, type: 'numeral' })
-  }
-
-  async multiselect(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'multiselect', required: true })
-
-    return log.prompt(message, { ...options, type: 'multiselect' })
-  }
-
-  async autocomplete(message: any, options: any) {
-    if (this.isRequired())
-      return log.prompt(message, { ...options, type: 'autocomplete', required: true })
-
-    return log.prompt(message, { ...options, type: 'autocomplete' })
-  }
+  return ansiEscapes.link(text, url)
 }
-
-export { prompts, log }
-
-export const prompt = new Prompt()

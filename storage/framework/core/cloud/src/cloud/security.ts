@@ -1,9 +1,17 @@
-// waf and encryption
-import { config } from '@stacksjs/config'
 import type { aws_route53 as route53 } from 'aws-cdk-lib'
-import { Duration, RemovalPolicy, Tags, aws_certificatemanager as acm, aws_kms as kms, aws_wafv2 as wafv2 } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 import type { NestedCloudProps } from '../types'
+// waf and encryption
+import { config } from '@stacksjs/config'
+import {
+  aws_certificatemanager as acm,
+  aws_cloudfront as cloudfront,
+  Duration,
+  aws_kms as kms,
+  RemovalPolicy,
+  Tags,
+  aws_wafv2 as wafv2,
+} from 'aws-cdk-lib'
 
 export interface StorageStackProps extends NestedCloudProps {
   zone: route53.IHostedZone
@@ -13,6 +21,7 @@ export class SecurityStack {
   firewall: wafv2.CfnWebACL
   kmsKey: kms.Key
   certificate: acm.Certificate
+  originAccessIdentity: cloudfront.OriginAccessIdentity
 
   constructor(scope: Construct, props: StorageStackProps) {
     const firewallOptions = config.cloud.firewall
@@ -28,13 +37,15 @@ export class SecurityStack {
         cloudWatchMetricsEnabled: true,
         metricName: 'firewallMetric',
       },
-      rules: this.getFirewallRules(),
+      rules: this.getFirewallRules(scope),
     }
 
     this.firewall = new wafv2.CfnWebACL(scope, 'StacksWebFirewall', options)
     Tags.of(this.firewall).add('Name', 'waf-cloudfront', { priority: 300 })
     Tags.of(this.firewall).add('Purpose', 'CloudFront', { priority: 300 })
-    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', { priority: 300 })
+    Tags.of(this.firewall).add('CreatedBy', 'CloudFormation', {
+      priority: 300,
+    })
 
     this.kmsKey = new kms.Key(scope, 'EncryptionKey', {
       alias: 'stacks-encryption-key',
@@ -47,11 +58,13 @@ export class SecurityStack {
     this.certificate = new acm.Certificate(scope, 'Certificate', {
       domainName: props.domain,
       validation: acm.CertificateValidation.fromDns(props.zone),
-      subjectAlternativeNames: [`www.${props.domain}`, `api.${props.domain}`],
+      subjectAlternativeNames: [`www.${props.domain}`, `api.${props.domain}`, `docs.${props.domain}`],
     })
+
+    this.originAccessIdentity = new cloudfront.OriginAccessIdentity(scope, 'OAI')
   }
 
-  getFirewallRules() {
+  getFirewallRules(scope: Construct): wafv2.CfnWebACL.RuleProperty[] {
     const rules: wafv2.CfnWebACL.RuleProperty[] = []
     const priorities = []
 
@@ -62,7 +75,7 @@ export class SecurityStack {
         priority: priorities.length,
         statement: {
           geoMatchStatement: {
-            countryCodes: config.security.firewall.countryCodes,
+            countryCodes: config.security.firewall.countryCodes as string[],
           },
         },
         action: {
@@ -77,11 +90,11 @@ export class SecurityStack {
     }
 
     if (config.security.firewall?.ipAddresses?.length) {
-      const ipSet = new wafv2.CfnIPSet(this, 'IpSet', {
+      const ipSet = new wafv2.CfnIPSet(scope, 'IpSet', {
         name: 'IpSet',
         description: 'IP Set',
         scope: 'CLOUDFRONT',
-        addresses: config.security.firewall.ipAddresses,
+        addresses: config.security.firewall.ipAddresses as string[],
         ipAddressVersion: 'IPV4',
       })
 
@@ -106,7 +119,7 @@ export class SecurityStack {
     }
 
     if (config.security.firewall?.httpHeaders?.length) {
-      config.security.firewall.httpHeaders.forEach((header, index) => {
+      config.security.firewall.httpHeaders.forEach((header: string | undefined, index: number) => {
         priorities.push(1)
         rules.push({
           name: `HttpHeaderRule${index}`,
@@ -122,7 +135,7 @@ export class SecurityStack {
               searchString: 'true',
               textTransformations: [
                 {
-                  priority: index,
+                  priority: 0,
                   type: 'NONE',
                 },
               ],

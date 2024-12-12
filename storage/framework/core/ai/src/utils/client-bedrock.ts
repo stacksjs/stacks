@@ -1,17 +1,31 @@
-import type { CreateModelCustomizationJobCommandInput, CreateModelCustomizationJobCommandOutput, GetModelCustomizationJobCommandInput, GetModelCustomizationJobCommandOutput, ListFoundationModelsCommandInput, ListFoundationModelsCommandOutput } from '@aws-sdk/client-bedrock'
-import { BedrockClient, CreateModelCustomizationJobCommand, GetModelCustomizationJobCommand, ListFoundationModelsCommand } from '@aws-sdk/client-bedrock'
+import type {
+  CreateModelCustomizationJobCommandInput,
+  CreateModelCustomizationJobCommandOutput,
+  GetModelCustomizationJobCommandInput,
+  GetModelCustomizationJobCommandOutput,
+  ListFoundationModelsCommandInput,
+  ListFoundationModelsCommandOutput,
+} from '@aws-sdk/client-bedrock'
+import process from 'node:process'
+import {
+  BedrockClient,
+  CreateModelCustomizationJobCommand,
+  GetModelCustomizationJobCommand,
+  ListFoundationModelsCommand,
+} from '@aws-sdk/client-bedrock'
 
-// eslint-disable-next-line node/prefer-global/process
 const client = new BedrockClient({ region: process.env.REGION || 'us-east-1' })
 const logger = console // import your own logger
 
 /*
-* Create Model Customization Job
-* @param {CreateModelCustomizationJobCommandInput} params
-* @returns {Promise<CreateModelCustomizationJobCommandOutput>}
-* @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Bedrock.html#CreateModelCustomizationJob-property
-*/
-export async function createModelCustomizationJob(param: CreateModelCustomizationJobCommandInput): Promise<CreateModelCustomizationJobCommandOutput> {
+ * Create Model Customization Job
+ * @param {CreateModelCustomizationJobCommandInput} params
+ * @returns {Promise<CreateModelCustomizationJobCommandOutput>}
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Bedrock.html#CreateModelCustomizationJob-property
+ */
+export async function createModelCustomizationJob(
+  param: CreateModelCustomizationJobCommandInput,
+): Promise<CreateModelCustomizationJobCommandOutput> {
   logger.debug(param)
   const command = new CreateModelCustomizationJobCommand(param)
   const res = await client.send(command)
@@ -21,12 +35,14 @@ export async function createModelCustomizationJob(param: CreateModelCustomizatio
 }
 
 /*
-* Get Model Customization Job
-* @param {GetModelCustomizationJobCommandInput} params
-* @returns {Promise<GetModelCustomizationJobCommandOutput>}
-* @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Bedrock.html#getModelCustomizationJob-property
-*/
-export async function getModelCustomizationJob(params: GetModelCustomizationJobCommandInput): Promise<GetModelCustomizationJobCommandOutput> {
+ * Get Model Customization Job
+ * @param {GetModelCustomizationJobCommandInput} params
+ * @returns {Promise<GetModelCustomizationJobCommandOutput>}
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Bedrock.html#getModelCustomizationJob-property
+ */
+export async function getModelCustomizationJob(
+  params: GetModelCustomizationJobCommandInput,
+): Promise<GetModelCustomizationJobCommandOutput> {
   logger.debug(params)
   const command = new GetModelCustomizationJobCommand(params)
   const res = await client.send(command)
@@ -36,12 +52,14 @@ export async function getModelCustomizationJob(params: GetModelCustomizationJobC
 }
 
 /*
-* List Foundation Models
-* @param {ListFoundationModelsCommandInput} params
-* @returns {Promise<ListFoundationModelsCommandOutput>}
-* @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Bedrock.html#listFoundationModels-property
-*/
-export async function listFoundationModels(params: ListFoundationModelsCommandInput): Promise<ListFoundationModelsCommandOutput> {
+ * List Foundation Models
+ * @param {ListFoundationModelsCommandInput} params
+ * @returns {Promise<ListFoundationModelsCommandOutput>}
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Bedrock.html#listFoundationModels-property
+ */
+export async function listFoundationModels(
+  params: ListFoundationModelsCommandInput,
+): Promise<ListFoundationModelsCommandOutput> {
   logger.debug(params)
   const command = new ListFoundationModelsCommand(params)
   const res = await client.send(command)
@@ -50,4 +68,8 @@ export async function listFoundationModels(params: ListFoundationModelsCommandIn
   return res
 }
 
-export type { CreateModelCustomizationJobCommandInput, GetModelCustomizationJobCommandInput, ListFoundationModelsCommandInput }
+export type {
+  CreateModelCustomizationJobCommandInput,
+  GetModelCustomizationJobCommandInput,
+  ListFoundationModelsCommandInput,
+}

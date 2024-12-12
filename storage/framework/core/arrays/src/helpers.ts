@@ -31,8 +31,8 @@ export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
  * flatten([1, [2, [3, [4, [5]]]]]) // [1, 2, 3, 4, 5]
  * ```
  */
-export function flatten<T>(array?: Nullable<Arrayable<T | Array<T>>>): Array<T> {
-  return toArray(array).flat(1) as Array<T>
+export function flatten<T>(array?: Nullable<Arrayable<T | T[]>>): T[] {
+  return toArray(array).reduce((acc: T[], val) => acc.concat(Array.isArray(val) ? flatten(val) : (val as T)), [])
 }
 
 /**
@@ -63,23 +63,51 @@ export type PartitionFilter<T> = (i: T, idx: number, arr: readonly T[]) => any
  */
 export function partition<T>(array: readonly T[], f1: PartitionFilter<T>): [T[], T[]]
 export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>): [T[], T[], T[]]
-export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>, f3: PartitionFilter<T>): [T[], T[], T[], T[]]
-export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>, f3: PartitionFilter<T>, f4: PartitionFilter<T>): [T[], T[], T[], T[], T[]]
-export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>, f3: PartitionFilter<T>, f4: PartitionFilter<T>, f5: PartitionFilter<T>): [T[], T[], T[], T[], T[], T[]]
-export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>, f3: PartitionFilter<T>, f4: PartitionFilter<T>, f5: PartitionFilter<T>, f6: PartitionFilter<T>): [T[], T[], T[], T[], T[], T[], T[]]
+export function partition<T>(
+  array: readonly T[],
+  f1: PartitionFilter<T>,
+  f2: PartitionFilter<T>,
+  f3: PartitionFilter<T>,
+): [T[], T[], T[], T[]]
+export function partition<T>(
+  array: readonly T[],
+  f1: PartitionFilter<T>,
+  f2: PartitionFilter<T>,
+  f3: PartitionFilter<T>,
+  f4: PartitionFilter<T>,
+): [T[], T[], T[], T[], T[]]
+export function partition<T>(
+  array: readonly T[],
+  f1: PartitionFilter<T>,
+  f2: PartitionFilter<T>,
+  f3: PartitionFilter<T>,
+  f4: PartitionFilter<T>,
+  f5: PartitionFilter<T>,
+): [T[], T[], T[], T[], T[], T[]]
+export function partition<T>(
+  array: readonly T[],
+  f1: PartitionFilter<T>,
+  f2: PartitionFilter<T>,
+  f3: PartitionFilter<T>,
+  f4: PartitionFilter<T>,
+  f5: PartitionFilter<T>,
+  f6: PartitionFilter<T>,
+): [T[], T[], T[], T[], T[], T[], T[]]
 export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>[]): any {
-  const result: T[][] = Array.from({ length: filters.length + 1 }).fill(null).map(() => [])
+  const result: T[][] = Array.from({ length: filters.length + 1 })
+    .fill(null)
+    .map(() => [])
 
   array.forEach((e, idx, arr) => {
     let i = 0
     for (const filter of filters) {
       if (filter(e, idx, arr)) {
-        result[i].push(e)
+        ;(result[i] as T[]).push(e)
         return
       }
       i += 1
     }
-    result[i].push(e)
+    ;(result[i] as T[]).push(e)
   })
   return result
 }
@@ -154,7 +182,7 @@ export function last<T>(array: readonly T[]): T | undefined {
  * Arr.remove(arr, 4) // false
  * console.log(arr) // [1, 3]
  */
-export function remove<T>(array: T[], value: T) {
+export function remove<T>(array: T[], value: T): boolean {
   if (!array)
     return false
 
@@ -220,7 +248,7 @@ export function move<T>(array: T[], from: number, to: number): T[] {
     to += len
 
   const item = array.splice(from, 1)[0]
-  array.splice(to, 0, item)
+  array.splice(to, 0, item as T)
   return array
 }
 
@@ -237,7 +265,7 @@ export function move<T>(array: T[], from: number, to: number): T[] {
  * clampArrayRange([1, 2, 3], 4) // 2
  * clampArrayRange([1, 2, 3], -1) // 0
  */
-export function clampArrayRange(arr: readonly unknown[], n: number) {
+export function clampArrayRange(arr: readonly unknown[], n: number): number {
   return clamp(n, 0, arr.length - 1)
 }
 
@@ -250,8 +278,8 @@ export function clampArrayRange(arr: readonly unknown[], n: number) {
  * sample([1, 2, 3, 4], 2) // [2, 3]
  * ```
  */
-export function sample<T>(arr: T[], count: number) {
-  return Array.from({ length: count }, _ => arr[Math.round(Math.random() * (arr.length - 1))])
+export function sample<T>(arr: T[], count: number): T[] {
+  return Array.from({ length: count }, () => arr[Math.floor(Math.random() * arr.length)]!)
 }
 
 /**
@@ -265,8 +293,8 @@ export function sample<T>(arr: T[], count: number) {
  */
 export function shuffle<T>(array: T[]): T[] {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]]
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[array[i] as T, array[j] as T] = [array[j] as T, array[i] as T]
   }
   return array
 }

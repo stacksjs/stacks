@@ -1,10 +1,11 @@
 {
   "name": "stacks-docs",
   "type": "module",
+  "version": "0.68.2",
   "scripts": {
-    "dev": "bunx vitepress dev",
-    "build": "npx vitepress build",
-    "preview": "bunx vitepress preview"
+    "dev": "bun --bun vitepress dev",
+    "build": "bun --bun vitepress build",
+    "preview": "bun --bun vitepress preview"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",
@@ -15,7 +16,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/vite": "workspace:*",
-    "vitepress": "1.0.0-rc.42"
+    "@stacksjs/vite-config": "workspace:*",
+    "vitepress": "1.5.0"
   }
 }

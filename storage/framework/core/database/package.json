@@ -1,9 +1,10 @@
 {
   "name": "@stacksjs/database",
   "type": "module",
-  "version": "0.58.56",
+  "version": "0.68.2",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/database#readme",
@@ -21,46 +22,27 @@
     "sqlite",
     "mysql",
     "postgres",
-    "planetscale",
     "bun",
     "stacks"
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {
-      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": [
-    "Chris Breuer <chris@stacksjs.org>"
-  ],
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun --bun build.ts",
-    "typecheck": "bun --bun tsc --noEmit",
-    "prepublishOnly": "bun --bun run build"
-  },
-  "peerDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/faker": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.5.6"
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -68,12 +50,17 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "kysely-bun-worker": "^0.5.6"
+    "kysely-bun-worker": "^0.7.0"
   },
   "optionalDependencies": {
-    "mysql2": "^3.9.1"
+    "mysql2": "^3.11.5"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@types/tar": "^6.1.13",
+    "debug": "^4.3.7",
+    "mkdirp": "^3.0.1",
+    "q": "^1.5.1",
+    "tar": "^7.4.3"
   }
 }

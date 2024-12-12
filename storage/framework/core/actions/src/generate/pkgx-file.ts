@@ -1,6 +1,6 @@
+import { log, runCommand } from '@stacksjs/cli'
 // generates the pkgx file based on the user configuration
 import { config } from '@stacksjs/config'
-import { runCommand } from '@stacksjs/cli'
 
 // @ts-expect-error - no types
 import data from '../../../../../pkgx.yaml'

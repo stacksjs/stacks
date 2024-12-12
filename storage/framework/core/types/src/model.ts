@@ -1,16 +1,76 @@
+import type { ModelNames, TableNames } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
-import type { Nullable, SearchEngineSettings } from '.'
+import type { DeepPartial, Nullable } from '.'
+import type { SearchOptions } from './search-engine'
 
-export interface AuthOptions {}
+export type Model = Partial<ModelOptions>
 
+export interface FieldArrayElement {
+  entity: string
+  charValue?: string | null
+  // Add other properties as needed
+}
+
+export interface ModelElement {
+  field: string
+  default: string | number | boolean | Date | undefined | null
+  unique: boolean
+  fieldArray: FieldArrayElement | null
+}
+
+export interface AuthOptions {
+  useTwoFactor?: boolean
+  usePasskey?: boolean
+}
+
+type ActionPath = string
+type ActionName = string
+type Action = ActionPath | ActionName | undefined
+
+export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
+
+export type VineType = VineString | VineNumber | VineBoolean | Date | Nullable<any>
 export interface SeedOptions {
   count: number
 }
+
+type LogAttribute = string
+
+interface ActivityLogOption {
+  exclude: LogAttribute[]
+  include: LogAttribute[] // default to “*”
+  logOnly: LogAttribute[]
+}
+
+interface BelongsToManyType {
+  model: ModelNames
+  firstForeignKey?: string
+  secondForeignKey?: string
+  pivotTable?: string
+  relationName?: string
+}
+
+export interface ApiSettings {
+  uri: string
+  middleware: string[]
+  routes:
+    | {
+      [key in ApiRoutes]: Action
+    }
+    | string[]
+  openApi: boolean
+}
+
+type ApiOptions = DeepPartial<ApiSettings>
 
 export interface TimestampOptions {
   createdAt?: string // defaults to 'created_at'
   updatedAt?: string
   deletedAt?: string
+}
+
+interface ValidatorMessage {
+  [key: string]: string
 }
 
 export interface SoftDeleteOptions {
@@ -23,50 +83,113 @@ interface Base {}
  * Model.
  */
 export interface ModelOptions extends Base {
+  /**
+   * The name of the model.
+   *
+   * @default string - The file name of the model.
+   */
   name: string // defaults to the file name of the model
-  table: string // defaults to the lowercase, plural name of the model
-  useUuid: boolean
-  fields: Fields
-  hasOne: string // hasOne: 'Post'
-  hasMany: {
-    model: string // should be typed as ModelName
+  table?: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
+  primaryKey?: string // defaults to `id`
+  autoIncrement?: boolean // defaults to true
+  dashboard?: {
+    highlight?: boolean | number // defaults to undefined
+  }
+
+  traits?: {
+    useUuid?: boolean // defaults to false
+    useTimestamps?: boolean | TimestampOptions // defaults to true
+    timestampable?: boolean | TimestampOptions // useTimestamps alias
+    useSoftDeletes?: boolean | SoftDeleteOptions // defaults to false
+    softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
+
+    useAuth?: boolean | AuthOptions // defaults to false
+    authenticatable?: boolean | AuthOptions // useAuth alias
+    useSeeder?: boolean | SeedOptions // defaults to a count of 10
+    seedable?: boolean | SeedOptions // useSeeder alias
+    useSearch?: boolean | SearchOptions // defaults to false
+    searchable?: boolean | SearchOptions // useSearch alias
+    useApi?: ApiOptions | boolean
+    observe?: string[] | boolean
+    billable?: boolean
+    useActivityLog?: boolean | ActivityLogOption
+  }
+
+  attributes?: Attributes
+
+  // relationships
+  hasOne?:
+    | {
+      model: ModelNames
+      foreignKey?: string
+      relationName?: string
+    }[]
+    | string[]
+  hasMany?:
+    | {
+      model: ModelNames // should be typed as ModelName
+      foreignKey?: string
+      relationName?: string
+    }[]
+    | ModelNames[]
+  belongsTo?:
+    | {
+      model: ModelNames // should be typed as ModelName
+      foreignKey?: string
+      relationName?: string
+    }[]
+    | ModelNames[] // belongsTo: 'User'
+  belongsToMany?: BelongsToManyType[] | ModelNames[]
+  hasOneThrough?: {
+    model: ModelNames
+    through: ModelNames
     foreignKey?: string
-  }
-  belongsToMany: object
-  hasThrough: {
-    model: string // should be typed as ModelName
-    through: string
-    using: string
-  }
-  authenticatable: boolean | AuthOptions
-  seedable: boolean | SeedOptions
-  searchable: boolean | SearchEngineSettings
-  useSeed: boolean | SeedOptions
-  useSearch: boolean | SearchEngineSettings
-  useSearchEngine: boolean | SearchEngineSettings
-  useTimestamps: boolean | TimestampOptions
-  useSoftDeletes: boolean | SoftDeleteOptions
+    throughForeignKey?: string
+    relationName?: string
+  }[]
 
-  attributes: {
-    [key: string]: {
-      get: (value: any) => any
-      set: (value: any) => any
-    }
+  scopes?: {
+    [key: string]: (value: any) => any
+  }
+
+  get?: {
+    [key: string]: (value: any) => any
+  }
+
+  set?: {
+    [key: string]: (value: any) => any
   }
 }
 
-export interface Fields {
-  [key: string]: {
-    default?: string | number | boolean | Date
-    unique?: boolean
-    required?: boolean
-    factory?: () => any
-    validator?: {
-      rule: VineString | VineNumber | VineBoolean | Date | Nullable<any>
-      message: string
-    }
-    // validation?: String | Number | Boolean | Date
+export interface Attribute {
+  default?: string | number | boolean | Date
+  unique?: boolean
+  order?: number
+  required?: boolean
+  hidden?: boolean
+  fillable?: boolean
+  factory?: () => any
+  validation?: {
+    rule: VineType
+    message?: ValidatorMessage
   }
+  // validation?: String | Number | Boolean | Date
 }
 
-export type Model = Partial<ModelOptions>
+export interface Attributes {
+  [key: string]: Attribute
+}
+
+export interface RelationConfig {
+  relationship: string
+  model: string
+  table: TableNames
+  relationModel?: string
+  relationTable?: string
+  foreignKey: string
+  modelKey: string
+  relationName?: string
+  throughModel?: string
+  throughForeignKey?: string
+  pivotTable: TableNames
+}

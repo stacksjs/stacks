@@ -1,1 +1,1 @@
-export type { Schedule, Scheduler } from '@stacksjs/scheduler'
+export type { Schedule } from '@stacksjs/scheduler'

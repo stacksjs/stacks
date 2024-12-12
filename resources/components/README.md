@@ -23,7 +23,7 @@ Additionally, the `package.json` contains some useful snippets you likely want t
 
 ## 🤖 Usage
 
-Because this project is optimized toward the development of easily reusable & composable component libraries, it's very easy to use (and distribute):
+Because this project is optimized toward the development of easily reusable & composable component libraries, it’s very easy to use (and distribute):
 
 ```vue
 <script setup lang="ts">
@@ -52,7 +52,7 @@ Read more about these tips in the docs.
 
 ### Coding Style
 
-You may want to consider using the "Composition API" with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227), as it is perfectly suited for building component libraries via Stacks. [ESLint](https://eslint.org/) also comes pre-configured to statically analyze, fix and format your code without the need for Prettier.
+You may want to consider using the "Composition API" with [`<script setup>` SFC syntax](https://github.com/vuejs/rfcs/pull/227), as it is perfectly suited for building component libraries via Stacks. [ESLint](https://github.com/eslint) also comes pre-configured to statically analyze, fix and format your code without the need for Prettier.
 
 When using this template, feel free to adjust it to your needs. It is a framework to help you quickly & efficiently bootstrap and design component libraries using industry best practices.
 

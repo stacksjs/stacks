@@ -13,3 +13,5 @@ helm-charts
 .editorconfig
 .idea
 coverage*
+cdk.out
+.DS_Store

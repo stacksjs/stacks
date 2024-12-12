@@ -9,7 +9,7 @@
  * contains('foo', ['bar']) // false
  * ```
  */
-export function contains(needle: string, haystack: string[]) {
+export function contains(needle: string, haystack: string[]): boolean {
   return haystack.some(hay => needle.includes(hay))
 }
 
@@ -23,7 +23,7 @@ export function contains(needle: string, haystack: string[]) {
  * containsAll(['foo', 'bar'], ['foo', 'baz']) // false
  * ```
  */
-export function containsAll(needles: string[], haystack: string[]) {
+export function containsAll(needles: string[], haystack: string[]): boolean {
   return needles.every(needle => contains(needle, haystack))
 }
 
@@ -38,7 +38,7 @@ export function containsAll(needles: string[], haystack: string[]) {
  * containsAny(['foo', 'bar'], ['baz']) // false
  * ```
  */
-export function containsAny(needles: string[], haystack: string[]) {
+export function containsAny(needles: string[], haystack: string[]): boolean {
   return needles.some(needle => contains(needle, haystack))
 }
 
@@ -53,7 +53,7 @@ export function containsAny(needles: string[], haystack: string[]) {
  * containsNone(['foo', 'bar'], ['baz']) // true
  * ```
  */
-export function containsNone(needles: string[], haystack: string[]) {
+export function containsNone(needles: string[], haystack: string[]): boolean {
   return !containsAny(needles, haystack)
 }
 
@@ -68,7 +68,7 @@ export function containsNone(needles: string[], haystack: string[]) {
  * containsOnly(['foo', 'bar'], ['foo', 'bar']) // true
  * ```
  */
-export function containsOnly(needles: string[], haystack: string[]) {
+export function containsOnly(needles: string[], haystack: string[]): boolean {
   return containsAll(haystack, needles)
 }
 
@@ -82,6 +82,6 @@ export function containsOnly(needles: string[], haystack: string[]) {
  * doesNotContain('foo', ['bar']) // true
  * ```
  */
-export function doesNotContain(needle: string, haystack: string[]) {
+export function doesNotContain(needle: string, haystack: string[]): boolean {
   return !contains(needle, haystack)
 }

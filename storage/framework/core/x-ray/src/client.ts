@@ -1,5 +1,5 @@
-import request from './http'
 import type { Log } from './types'
+import request from './http'
 
 // should be an .env value
 const apiURL = 'http://127.0.0.1'

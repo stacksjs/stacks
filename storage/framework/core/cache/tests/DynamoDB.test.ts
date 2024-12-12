@@ -1,135 +1,77 @@
-import { DynamoDB, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-import { expect, it } from '@stacksjs/testing'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 
-const dynamodb = new DynamoDB({ region: 'us-east-1' })
+import { deleteStacksTable, launchServer } from '@stacksjs/testing'
+import { dynamodb } from '../src/drivers/dynamodb'
 
-describe('dynamoDB test', () => {
-  it('it should create a table for dynamodb cache', async () => {
-    await createTable()
-  })
-
-  it('it should set dynamodb cache', async () => {
-    await set('foo', 'bar')
-    const value = await get('foo')
-    expect(value).toBe('bar')
-  })
-
-  it('it should get dynamodb cache', async () => {
-    await set('foo', 'bar')
-    const value = await get('foo')
-    expect(value).toBe('bar')
-  })
-
-  it('it should delete dynamodb cache', async () => {
-    await set('foo', 'bar')
-    await remove('foo')
-    const value = await get('foo')
-    expect(value).toBe(null)
-  })
+beforeAll(async () => {
+  await launchServer()
 })
 
-async function createTable() {
-  const tables = await dynamodb.send(new ListTablesCommand({}))
+afterEach(async () => {
+  await dynamodb.clear()
+})
 
-  const tableExists = tables.TableNames?.includes('cache')
+afterAll(async () => {
+  await deleteStacksTable()
+})
 
-  if (tableExists)
-    return
+describe('@stacksjs/cache - DynamoDB', () => {
+  it('should set and get a dynamodb cache value', async () => {
+    await dynamodb.set('key1', 'value1')
+    expect(await dynamodb.get('key1')).toBe('value1')
+  })
 
-  const params = {
-    AttributeDefinitions: [
-      {
-        AttributeName: 'key',
-        AttributeType: 'S',
-      },
-    ],
-    KeySchema: [
-      {
-        AttributeName: 'key',
-        KeyType: 'HASH',
-      },
-    ],
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 5,
-      WriteCapacityUnits: 5,
-    },
-    TableName: 'cache',
-  }
+  it('should set a dynamodb cache value with no TTL and get it', async () => {
+    await dynamodb.setForever('key2', 'value2')
+    expect(await dynamodb.get('key2')).toBe('value2')
+  })
 
-  await dynamodb.createTable(params)
-}
+  it('should get or set a dynamodb cache value if not set', async () => {
+    expect(await dynamodb.get('key3')).toBeUndefined()
 
-// TODO: needs to be imported to cache package
-async function set(key: string, value: string | number): Promise<void> {
-  // eslint-disable-next-line no-console
-  console.log('set', key, value)
-  return Promise.resolve()
-  // const valueAttribute = 'value'
-  // const keyAttribute = 'key'
-  //
-  // const params: PutItemCommandInput = {
-  //   TableName: 'cache',
-  //   Item: {
-  //     [keyAttribute]: {
-  //       S: key,
-  //     },
-  //     [valueAttribute]: {
-  //       [getValueType(value)]: serialize(value),
-  //     },
-  //   },
-  // }
-  //
-  // await dynamodb.putItem(params)
-}
+    await dynamodb.getOrSet('key3', 'value3')
+    expect(await dynamodb.get('key3')).toBe('value3')
+  })
 
-// TODO: needs to be imported to cache package
-async function get(key: string): Promise<string | undefined | null> {
-  const valueAttribute = 'value'
-  const keyAttribute = 'key'
+  it('should delete a dynamodb cache value', async () => {
+    await dynamodb.set('key4', 'value4')
+    await dynamodb.del('key4')
+    expect(await dynamodb.get('key4')).toBeUndefined()
+  })
 
-  const params = {
-    TableName: 'cache',
-    Key: {
-      [keyAttribute]: {
-        S: key,
-      },
-    },
-  }
+  it('should delete multiple dynamodb cache values', async () => {
+    await dynamodb.set('key5', 'value5')
+    await dynamodb.set('key6', 'value6')
+    await dynamodb.deleteMany(['key5', 'key6'])
 
-  const response = await dynamodb.getItem(params)
+    expect(await dynamodb.get('key5')).toBeUndefined()
+    expect(await dynamodb.get('key6')).toBeUndefined()
+  })
 
-  if (!response.Item)
-    return null
+  it('should check if a key exists in dynamodb cache', async () => {
+    await dynamodb.set('key7', 'value7')
+    expect(await dynamodb.has('key7')).toBe(true)
+  })
 
-  return response.Item[valueAttribute].S ?? response.Item[valueAttribute].N
-}
+  it('should return false if a key is missing in dynamodb cache', async () => {
+    expect(await dynamodb.missing('nonExistentKey')).toBe(true)
+    await dynamodb.set('key8', 'value8')
+    expect(await dynamodb.missing('key8')).toBe(false)
+  })
 
-// TODO: needs to be imported to cache package
-async function remove(key: string): Promise<void> {
-  const keyAttribute = 'key'
+  it('should clear all dynamodb cache values', async () => {
+    await dynamodb.set('key9', 'value9')
+    await dynamodb.set('key10', 'value10')
+    await dynamodb.clear()
 
-  const params = {
-    TableName: 'cache',
-    Key: {
-      [keyAttribute]: {
-        S: key,
-      },
-    },
-  }
+    expect(await dynamodb.get('key9')).toBeUndefined()
+    expect(await dynamodb.get('key10')).toBeUndefined()
+  })
 
-  await dynamodb.deleteItem(params)
-}
+  it('should remove a specific dynamodb cache value', async () => {
+    await dynamodb.set('key11', 'value11')
+    await dynamodb.remove('key11')
 
-// TODO: needs to be imported to cache package
-// async function del(key: string): Promise<void> {
-//   const params = {
-//     TableName: 'cache',
-//     Key: {
-//       [keyAttribute]: {
-//         S: key,
-//       },
-//     },
-//   }
-
-//   await dynamodb.deleteItem(params)
-// }
+    expect(await dynamodb.get('key11')).toBeUndefined()
+  })
+})

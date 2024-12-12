@@ -61,7 +61,9 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [ESLint](https://github.com/eslint/eslint)
+- [ESLint](https://github.com/eslint)
+- [antfu](https://github.com/antfu/eslint-config)
+- [publint](https://github.com/bluwy/publint)
 - [lint-staged](https://github.com/okonet/lint-staged)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)

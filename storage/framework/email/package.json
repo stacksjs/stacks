@@ -1,0 +1,16 @@
+{
+  "name": "stacks-email",
+  "type": "module",
+  "version": "0.68.2",
+  "private": true,
+  "scripts": {
+    "build": "wip",
+    "dev": "wip",
+    "typecheck": "bunx --bun vue-tsc --noEmit",
+    "sizecheck": "bunx --bun vite-bundle-visualizer"
+  },
+  "dependencies": {
+    "@stacksjs/path": "workspace:*",
+    "@vue-email/compiler": "^0.8.14"
+  }
+}

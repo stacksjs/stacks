@@ -1,4 +1,5 @@
-import type { CliOptions } from '@stacksjs/types'
+import type { Result } from '@stacksjs/error-handling'
+import type { CliOptions, Readable, Subprocess, Writable } from '@stacksjs/types'
 import { runCommand } from './run'
 
 type CommandOptionTuple = [string, string, { default: boolean }]
@@ -37,11 +38,17 @@ export class Command {
 }
 
 export const command = {
-  run: async (command: string, options?: CliOptions) => {
+  run: async (
+    command: string,
+    options?: CliOptions,
+  ): Promise<Result<Subprocess<Writable, Readable, Readable>, Error>> => {
     return await runCommand(command, options)
   },
 
-  runSync: async (command: string, options?: CliOptions) => {
+  runSync: async (
+    command: string,
+    options?: CliOptions,
+  ): Promise<Result<Subprocess<Writable, Readable, Readable>, Error>> => {
     return await runCommand(command, options)
   },
 }
