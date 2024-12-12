@@ -759,13 +759,19 @@ export class UserModel {
     return defaultPaymentMethod
   }
 
-  async setDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
-    const updatedCustomer = await managePaymentMethod.setDefaultPaymentMethod(this, paymentMethodId)
+  async setDefaultPaymentMethod(pmId: number): Promise<Stripe.Response<Stripe.Customer>> {
+    const updatedCustomer = await managePaymentMethod.setDefaultPaymentMethod(this, pmId)
 
     return updatedCustomer
   }
 
-  async updateDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
+  async setUserDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
+    const updatedCustomer = await managePaymentMethod.setUserDefaultPayment(this, paymentMethodId)
+
+    return updatedCustomer
+  }
+
+  async updateDefaultPaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.Customer>> {
     const updatedCustomer = this.setDefaultPaymentMethod(paymentMethodId)
 
     return updatedCustomer

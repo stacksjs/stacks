@@ -9,9 +9,9 @@ export default new Action({
   async handle(request: RequestInstance) {
     const userId = Number(request.getParam('id'))
     const user = await User.find(userId)
-    const paymentIntent = request.get('setupIntent') as string
+    const paymentId = Number(request.get('setupIntent'))
 
-    const paymentMethod = await user?.setDefaultPaymentMethod(paymentIntent)
+    const paymentMethod = await user?.setDefaultPaymentMethod(paymentId)
 
     return paymentMethod
   },

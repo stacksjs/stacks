@@ -8,33 +8,35 @@ import PaymentForm from './payment-form.vue'
 import PaymentMethodList from './payment-method-list.vue'
 
 const paymentStore = usePaymentStore()
-const clientSecret = ref('')
 
 const isLoadingWebElement = ref(false)
-const showStripe = ref(false)
+const showCardForm = ref(false)
 
-const { handleAddPaymentMethod, isEmpty } = useBillable()
+const { isEmpty } = useBillable()
 
 async function loadWebElement() {
   isLoadingWebElement.value = true
-  clientSecret.value = await paymentStore.fetchSetupIntent(1)
 
-  showStripe.value = true
+  showCardForm.value = true
   isLoadingWebElement.value = false
 }
 
-async function submitPaymentMethod(clientSecret: string, elements: any) {
-  await handleAddPaymentMethod(clientSecret, elements)
-
-  await paymentStore.fetchDefaultPaymentMethod()
-  await paymentStore.fetchUserPaymentMethods()
-
-  showStripe.value = false
+function cancelForm() {
+  showCardForm.value = false
 }
 
-function cancelPaymentForm() {
-  showStripe.value = false
-}
+// async function submitPaymentMethod(clientSecret: string, elements: any) {
+//   await handleAddPaymentMethod(clientSecret, elements)
+
+//   await paymentStore.fetchDefaultPaymentMethod()
+//   await paymentStore.fetchUserPaymentMethods()
+
+//   showStripe.value = false
+// }
+
+// function cancelPaymentForm() {
+//   showStripe.value = false
+// }
 </script>
 
 <template>
@@ -78,11 +80,11 @@ function cancelPaymentForm() {
 
     <PaymentMethodList :user-id="1" />
 
-    <div v-show="showStripe">
-      <PaymentForm />
+    <div v-show="showCardForm">
+      <PaymentForm @cancel-payment-method-addition="cancelForm" />
     </div>
 
-    <div v-if="!showStripe" class="mt-8 flex justify-end">
+    <div v-if="!showCardForm" class="mt-8 flex justify-end">
       <button
         type="button"
         class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"

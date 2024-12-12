@@ -38,7 +38,9 @@ export function useBillable() {
     return isCreated
   }
 
-  async function handleAddPaymentMethod(clientSecret: string, elements: any) {
+  async function handleAddPaymentMethod(elements: any) {
+    const clientSecret = await paymentStore.fetchSetupIntent(1)
+
     const param = {
       clientSecret,
       paymentMethod: {
@@ -51,12 +53,13 @@ export function useBillable() {
 
     if (error) {
       console.error(error.message)
-    } // Display or handle error for the user
+    }
     else {
-      if (!paymentStore.hasPaymentMethods)
-        await paymentStore.setDefaultPaymentMethod(setupIntent.payment_method)
-      else
-        await paymentStore.storePaymentMethod(setupIntent.payment_method)
+      await paymentStore.storePaymentMethod(setupIntent.payment_method)
+
+      if (!paymentStore.hasPaymentMethods)       
+        await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
+
     }
   }
 

@@ -11,7 +11,7 @@ export default {
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
   traits: {
-    useUuid: true
+    useUuid: true,
   },
   attributes: {
     type: {

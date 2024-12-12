@@ -36,6 +36,7 @@ route.group({ prefix: '/payments' }, async () => {
   route.delete('/delete-payment-method/{id}', 'Actions/Payment/DeleteDefaultPaymentAction')
   route.put('/update-default-payment-method/{id}', 'Actions/Payment/UpdateDefaultPaymentMethodAction')
   route.post('/set-default-payment-method/{id}', 'Actions/Payment/SetDefaultPaymentAction')
+  route.post('/user-default-payment-method/{id}', 'Actions/Payment/SetUserDefaultPaymentAction')
   route.post('/payment-method/{id}', 'Actions/Payment/StorePaymentMethodAction')
   route.post('/create-payment-intent/{id}', 'Actions/Payment/CreatePaymentIntentAction')
   route.post('/create-subscription/{id}', 'Actions/Payment/CreateSubscriptionAction')
