@@ -1,8 +1,14 @@
 /* eslint no-console: 0 */
+import type { ReverseProxyOptions } from '@stacksjs/rpx'
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
+import { startProxies } from '@stacksjs/rpx'
 import { kolorist as c, parseOptions } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
 import { version } from '../../package.json'
+import os from 'node:os'
+import path from 'node:path'
+import process from 'node:process'
+import { createInterface } from 'node:readline'
 
 interface StacksPluginOptions {
   frontend?: boolean
@@ -66,6 +72,8 @@ export function stacks(options?: StacksPluginOptions): Plugin {
 
         console.log(`  ${c.blue(c.bold('STACKSsss'))} ${c.blue(stacksVersion)}`)
         console.log('')
+
+        await startProxy()
 
         for (const [option, url] of Object.entries(urls)) {
           if (options?.[option as keyof StacksPluginOptions]) {
@@ -208,5 +216,65 @@ export function stacks(options?: StacksPluginOptions): Plugin {
         }
       }
     },
+  }
+}
+
+async function startProxy() {
+  console.log('Starting proxies...')
+
+  // Save current stdin settings
+  const originalStdinRawMode = process.stdin.isRaw
+  const originalIsTTY = process.stdin.isTTY
+
+  // Ensure stdin is in the correct mode for password input
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(false)
+    // Create a readline interface for password input
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+    // Ensure the readline interface doesn't interfere with other stdin handling
+    rl.on('SIGINT', () => {
+      rl.close()
+      process.exit(0)
+    })
+  }
+
+  const options: ReverseProxyOptions = {
+    https: {
+      caCertPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.ca.crt`),
+      certPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.crt`),
+      keyPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.crt.key`),
+    },
+
+    etcHostsCleanup: true,
+
+    proxies: [
+      {
+        from: 'localhost:3000',
+        to: 'stacks.localhost',
+      },
+      {
+        from: 'localhost:5173',
+        to: 'stackss.localhost',
+      },
+    ],
+
+    verbose: false,
+  }
+
+  try {
+    await startProxies(options)
+    console.log('Proxies started')
+  }
+  catch (error) {
+    console.error('Failed to start proxies:', error)
+  }
+  finally {
+    // Restore original stdin settings
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(originalStdinRawMode)
+    }
   }
 }

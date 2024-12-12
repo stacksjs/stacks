@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.68.2",
   "scripts": {
-    "dev": "bunx --bun vitepress dev",
-    "build": "bunx --bun vitepress build",
-    "preview": "bunx --bun vitepress preview"
+    "dev": "bun --bun vitepress dev",
+    "build": "bun --bun vitepress build",
+    "preview": "bun --bun vitepress preview"
   },
   "dependencies": {
     "@stacksjs/alias": "workspace:*",

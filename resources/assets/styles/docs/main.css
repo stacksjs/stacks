@@ -1,0 +1,31 @@
+html.dark {
+  color-scheme: dark;
+}
+
+.vp-doc h2 {
+  border-top: 0;
+  margin-top: 10px;
+}
+
+.VPMenuLink .link {
+  line-height: 28px !important;
+}
+
+.VPSidebarGroup .link {
+  padding: 3px 0 !important;
+}
+
+.vp-doc a:has(> code) {
+  text-decoration: none;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc a:has(> code):hover {
+  text-decoration: underline;
+}
+
+#app a:focus-visible,
+#app button:focus-visible,
+#app input[type='checkbox']:focus-visible {
+  --at-apply: outline-1 outline-primary ring-2 ring-primary;
+}

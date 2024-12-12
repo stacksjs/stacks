@@ -14,6 +14,7 @@ export interface SocialLink {
 }
 
 export enum SocialLinkIcon {
+  Bluesky = 'bluesky',
   Discord = 'discord',
   Facebook = 'facebook',
   GitHub = 'github',

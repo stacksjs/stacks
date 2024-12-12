@@ -1,5 +1,54 @@
+import type { HeadConfig } from 'vitepress'
 import type { DocsConfig } from '@stacksjs/types'
 import { SocialLinkIcon } from '@stacksjs/types'
+import analytics from '../config/analytics'
+
+export const faviconHead: HeadConfig[] = [
+  [
+    'link',
+    {
+      rel: 'icon',
+      href: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',
+    },
+  ],
+]
+
+export const googleAnalyticsHead: HeadConfig[] = [
+  [
+    'script',
+    {
+      async: '',
+      src: `https://www.googletagmanager.com/gtag/js?id=${analytics.drivers?.googleAnalytics?.trackingId}`,
+    },
+  ],
+  [
+    'script',
+    {},
+    `window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'TAG_ID');`,
+  ],
+]
+
+export const fathomAnalyticsHead: HeadConfig[] = [
+  [
+    'script',
+    {
+      'src': 'https://cdn.usefathom.com/script.js',
+      'data-site': analytics.drivers?.fathom?.siteId || '',
+      'defer': '',
+    },
+  ],
+]
+
+export const analyticsHead
+  = analytics.driver === 'fathom'
+    ? fathomAnalyticsHead
+    : analytics.driver === 'google-analytics'
+      ? googleAnalyticsHead
+      : []
+
 
 const nav = [
   {
@@ -576,8 +625,24 @@ export default {
   deploy: true,
   base: '/',
 
+  metaChunk: true,
+
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/images/logos/logo-mini.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', href: '/images/logos/logo.png' }],
+    ['meta', { name: 'theme-color', content: '#1e40af' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:locale', content: 'en' }],
+    ['meta', { property: 'og:title', content: 'Stacks | A better developer environment.' }],
+    ['meta', { property: 'og:site_name', content: 'Stacks' }],
+    ['meta', { property: 'og:image', content: 'https://stacksjs.org/images/og-image.png' }],
+    ['meta', { property: 'og:url', content: 'https://stacksjs.org/' }],
+    // ['script', { 'src': 'https://cdn.usefathom.com/script.js', 'data-site': '', 'data-spa': 'auto', 'defer': '' }],
+    ...analyticsHead
+  ],
+
   themeConfig: {
-    logo: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',
+    logo: '/images/logos/logo-transparent.svg',
 
     nav,
     sidebar,
@@ -594,10 +659,8 @@ export default {
 
     socialLinks: [
       { icon: SocialLinkIcon.Twitter, link: 'https://twitter.com/stacksjs' },
-      {
-        icon: SocialLinkIcon.GitHub,
-        link: 'https://github.com/stacksjs/stacks',
-      },
+      { icon: SocialLinkIcon.Bluesky, link: 'https://bsky.app/profile/chrisbreuer.dev' },
+      { icon: SocialLinkIcon.GitHub, link: 'https://github.com/stacksjs/stacks' },
       { icon: SocialLinkIcon.Discord, link: 'https://discord.gg/stacksjs' },
     ],
 
