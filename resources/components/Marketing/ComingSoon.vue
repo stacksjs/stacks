@@ -96,7 +96,7 @@ async function submitEmail() {
             </div>
           </div>
 
-          <a href="https://docs.stacksjs.org" class="text-sm text-gray-900 font-semibold leading-6">Learn more <span aria-hidden="true">→</span></a>
+          <a href="https://stacksjs-docs.netlify.app" class="text-sm text-gray-900 font-semibold leading-6">Learn more <span aria-hidden="true">→</span></a>
         </div>
 
         <p v-for="error in errors" :key="error" class="pt-2 text-xs text-red-500">

@@ -421,6 +421,11 @@
     "customRandom": true,
     "lazy": true,
     "random": true,
-    "urlAlphabet": true
+    "urlAlphabet": true,
+    "confirmCardSetup": true,
+    "loadCardElement": true,
+    "loadPaymentElement": true,
+    "publishableKey": true,
+    "randomNonSecure": true
   }
 }

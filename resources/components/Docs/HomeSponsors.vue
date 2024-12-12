@@ -10,4 +10,10 @@
       <img src="https://cdn.jsdelivr.net/gh/stacksjs/sponsors/sponsorkit/sponsors.svg" class="m-auto">
     </a>
   </p>
+
+  <p class="mt-5 text-center">
+    <a href="https://github.com/sponsors/chrisbbreuer" class="italic text-xs">
+      Click here to become a sponsor.
+    </a>
+  </p>
 </template>
