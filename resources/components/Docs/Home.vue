@@ -4,6 +4,6 @@
 
     <HomeSponsors />
 
-    <!-- <HomeContributors /> -->
+    <HomeContributors />
   </div>
 </template>
