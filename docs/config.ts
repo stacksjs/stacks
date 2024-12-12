@@ -52,10 +52,6 @@ export const analyticsHead
 
 const nav = [
   {
-    text: 'Docs',
-    link: '/guide/intro',
-  },
-  {
     text: 'Changelog',
     link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
   },
@@ -64,6 +60,8 @@ const nav = [
     text: 'Resources',
     items: [
       { text: 'Team', link: '/team' },
+      { text: 'Sponsors', link: '/sponsors' },
+      { text: 'Partners', link: '/partners' },
       { text: 'Postcardware', link: '/postcardware' },
       {
         items: [
