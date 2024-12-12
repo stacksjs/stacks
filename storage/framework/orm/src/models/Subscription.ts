@@ -297,6 +297,8 @@ export class SubscriptionModel {
       Object.entries(newSubscription).filter(([key]) => instance.fillable.includes(key)),
     ) as NewSubscription
 
+    filteredValues.uuid = randomUUIDv7()
+
     const result = await db.insertInto('subscriptions')
       .values(filteredValues)
       .executeTakeFirst()

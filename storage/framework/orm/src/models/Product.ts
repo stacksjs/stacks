@@ -284,6 +284,8 @@ export class ProductModel {
       Object.entries(newProduct).filter(([key]) => instance.fillable.includes(key)),
     ) as NewProduct
 
+    filteredValues.uuid = randomUUIDv7()
+
     const result = await db.insertInto('products')
       .values(filteredValues)
       .executeTakeFirst()

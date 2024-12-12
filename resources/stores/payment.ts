@@ -213,7 +213,7 @@ export const usePaymentStore = defineStore('payment', {
 
     async deletePaymentMethod(paymentMethod: number): Promise<void> {
       this.setLoadingState('deletePaymentMethod')
-      const url = 'http://localhost:3008/payments/delete-payment-method'
+      const url = 'http://localhost:3008/payments/delete-payment-method/1'
 
       const body = { paymentMethod }
 

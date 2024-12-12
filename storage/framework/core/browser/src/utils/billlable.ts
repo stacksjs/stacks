@@ -17,11 +17,28 @@ export const publishableKey: string = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY
 
 const client = ref(null as any)
 
-export async function loadCardElement(clientSecret: string): Promise<any> {
+export async function loadCardElement(): Promise<any> {
   client.value = await loadStripe(publishableKey)
 
+  const style = {
+    base: {
+      'color': '#32325d',
+      'lineHeight': '18px',
+      'fontFamily': '"Helvetica Neue", Helvetica, sans-serif',
+      'fontSmoothing': 'antialiased',
+      'fontSize': '16px',
+      '::placeholder': {
+        color: '#aab7c4',
+      },
+    },
+    invalid: {
+      color: '#fa755a',
+      iconColor: '#fa755a',
+    },
+  }
+
   const elements = client.value.elements()
-  const cardElement = elements.create('card')
+  const cardElement = elements.create('card', { style })
 
   cardElement.mount('#card-element')
 

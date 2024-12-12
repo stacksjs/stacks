@@ -21,7 +21,7 @@ onMounted(async () => {
 async function deletePayment(paymentMethodId: number) {
   await paymentStore.deletePaymentMethod(paymentMethodId)
 
-  paymentStore.fetchUserPaymentMethods()
+  paymentStore.fetchUserPaymentMethods(1)
 }
 
 async function makeDefault(paymentMethodId: number) {

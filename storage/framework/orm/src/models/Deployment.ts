@@ -288,6 +288,8 @@ export class DeploymentModel {
       Object.entries(newDeployment).filter(([key]) => instance.fillable.includes(key)),
     ) as NewDeployment
 
+    filteredValues.uuid = randomUUIDv7()
+
     const result = await db.insertInto('deployments')
       .values(filteredValues)
       .executeTakeFirst()

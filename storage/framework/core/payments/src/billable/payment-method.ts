@@ -9,7 +9,7 @@ export interface ManagePaymentMethod {
   updatePaymentMethod: (user: UserModel, paymentMethodId: string, updateParams?: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
   storePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<PaymentMethodModel>
-  deletePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  deletePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodModel | undefined>
   retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodModel | undefined>
   listPaymentMethods: (user: UserModel, cardType?: string) => Promise<PaymentMethodModel[]>
@@ -94,18 +94,22 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     return model
   }
 
-  async function deletePaymentMethod(user: UserModel, paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+  async function deletePaymentMethod(user: UserModel, paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethod = await stripe.paymentMethod.retrieve(paymentMethodId)
+    const pm = await PaymentMethod.find(paymentMethodId)
+
+    const paymentMethod = await stripe.paymentMethod.retrieve(String(pm?.provider_id))
 
     if (paymentMethod.customer !== user.stripe_id) {
       throw new Error('Payment method does not belong to this customer')
     }
 
-    return await stripe.paymentMethod.detach(paymentMethodId)
+    pm?.delete()
+
+    return await stripe.paymentMethod.detach(String(pm?.provider_id))
   }
 
   async function updatePaymentMethod(user: UserModel, paymentMethodId: string, updateParams?: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {

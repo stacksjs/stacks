@@ -983,6 +983,7 @@ export async function generateModelString(
   let jsonFields = '{\n'
   let declareFields = ''
   let uuidQuery = ''
+  let uuidQueryMany = ''
   let whereStatements = ''
   let whereFunctionStatements = ''
   let relationMethods = ``
@@ -1008,8 +1009,14 @@ export async function generateModelString(
   const observer = model?.traits?.observe
   const useUuid = model?.traits?.useUuid || false
 
-  if (useUuid)
+  if (useUuid) {
     uuidQuery += `filteredValues['uuid'] = randomUUIDv7()`
+    uuidQueryMany += `
+        filteredValues.forEach(model => {
+          model.uuid = randomUUIDv7()
+        })
+     `
+  }
 
   if (typeof observer === 'boolean') {
     if (observer) {
@@ -1259,7 +1266,7 @@ export async function generateModelString(
     }
 
 
-    async deletePaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+    async deletePaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
       const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
       return deletedPaymentMethod
     }
@@ -1801,6 +1808,8 @@ export async function generateModelString(
           Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
         ) as New${modelName}
 
+        ${uuidQuery}
+
         const result = await db.insertInto('${tableName}')
           .values(filteredValues)
           .executeTakeFirst()
@@ -1821,10 +1830,8 @@ export async function generateModelString(
             ) as New${modelName}
         )
 
-        filteredValues.forEach(model => {
-          model.uuid = randomUUIDv7()
-        })
-
+        ${uuidQueryMany}
+        
         await db.insertInto('${tableName}')
           .values(filteredValues)
           .executeTakeFirst()

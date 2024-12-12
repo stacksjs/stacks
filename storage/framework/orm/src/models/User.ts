@@ -304,6 +304,8 @@ export class UserModel {
       Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
     ) as NewUser
 
+    filteredValues.uuid = randomUUIDv7()
+
     const result = await db.insertInto('users')
       .values(filteredValues)
       .executeTakeFirst()
@@ -798,7 +800,7 @@ export class UserModel {
     return updatedPaymentMethod
   }
 
-  async deletePaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+  async deletePaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
     return deletedPaymentMethod
   }

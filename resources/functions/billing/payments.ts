@@ -32,8 +32,8 @@ export function useBillable() {
     return `${month} ${day}, ${year}`
   }
 
-  async function loadPaymentElement(clientSecret: string): Promise<boolean> {
-    const isCreated = await loadCardElement(clientSecret)
+  async function loadCardForm(): Promise<boolean> {
+    const isCreated = await loadCardElement()
 
     return isCreated
   }
@@ -86,5 +86,5 @@ export function useBillable() {
     paymentStore.closePlans()
   }
 
-  return { loadPaymentElement, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
+  return { loadCardForm, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
 }

@@ -11,10 +11,7 @@ export default {
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
   traits: {
-    useUuid: true,
-    useSeeder: {
-      count: 3,
-    },
+    useUuid: true
   },
   attributes: {
     type: {
