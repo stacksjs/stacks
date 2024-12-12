@@ -13,7 +13,7 @@ const clientSecret = ref('')
 const isLoadingWebElement = ref(false)
 const showStripe = ref(false)
 
-const { handleAddPaymentMethod } = useBillable()
+const { handleAddPaymentMethod, isEmpty } = useBillable()
 
 async function loadWebElement() {
   isLoadingWebElement.value = true
@@ -48,7 +48,7 @@ function cancelPaymentForm() {
     <LoadingCard v-if="paymentStore.isStateLoading('fetchDefaultPaymentMethod') && paymentStore.isStateLoading('fetchStripeCustomer')" class="mt-8" />
 
     <div v-else>
-      <div v-if="paymentStore.getDefaultPaymentMethod" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
+      <div v-if="!isEmpty(paymentStore.getDefaultPaymentMethod)" class="col-span-1 mt-8 border rounded-lg bg-white shadow divide-y divide-gray-200">
         <div class="w-full p-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">

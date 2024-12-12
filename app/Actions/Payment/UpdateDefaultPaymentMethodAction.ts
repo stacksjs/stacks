@@ -14,6 +14,6 @@ export default new Action({
 
     await user?.setDefaultPaymentMethod(paymentMethod)
 
-    return {}
+    return
   },
 })

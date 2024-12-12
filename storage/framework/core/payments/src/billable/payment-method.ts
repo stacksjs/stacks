@@ -7,8 +7,8 @@ import PaymentMethod from '../../../../orm/src/models/PaymentMethod'
 export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   updatePaymentMethod: (user: UserModel, paymentMethodId: string, updateParams?: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
-  setDefaultPaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
-  storePaymentMethod: (user: UserModel, paymentMethodId: string) => Promise<PaymentMethodModel>
+  setDefaultPaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.Customer>>
+  storePaymentMethod: (user: UserModel, paymentMethodId: Stripe.PaymentMethod) => Promise<PaymentMethodModel>
   deletePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodModel | undefined>
   retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodModel | undefined>
@@ -36,18 +36,19 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       })
     }
 
-    console.log(stripePaymentMethod)
-    storePaymentMethod(user, stripePaymentMethod.id)
+    storePaymentMethod(user, stripePaymentMethod)
 
     return stripePaymentMethod as Stripe.Response<Stripe.PaymentMethod>
   }
 
-  async function setDefaultPaymentMethod(user: UserModel, paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
+  async function setDefaultPaymentMethod(user: UserModel, paymentMethodId: number): Promise<Stripe.Response<Stripe.Customer>> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethod = await stripe.paymentMethod.retrieve(paymentMethodId)
+    const pm = await PaymentMethod.find(paymentMethodId)
+
+    const paymentMethod = await stripe.paymentMethod.retrieve(String(pm?.provider_id))
 
     if (paymentMethod.customer !== user.stripe_id) {
       await stripe.paymentMethod.attach(paymentMethod.id, {
@@ -57,21 +58,19 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     const updatedCustomer = await stripe.customer.update(user?.stripe_id || '', {
       invoice_settings: {
-        default_payment_method: paymentMethodId,
+        default_payment_method: String(pm?.provider_id),
       },
     })
 
-    storePaymentMethod(user, paymentMethodId)
+    storePaymentMethod(user, paymentMethod)
 
     return updatedCustomer
   }
 
-  async function storePaymentMethod(user: UserModel, paymentMethodId: string): Promise<PaymentMethodModel> {
+  async function storePaymentMethod(user: UserModel, paymentMethod: Stripe.PaymentMethod): Promise<PaymentMethodModel> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
-
-    const paymentMethod = await stripe.paymentMethod.retrieve(paymentMethodId)
 
     const method = {
       type: 'card',

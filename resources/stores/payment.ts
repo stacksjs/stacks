@@ -239,7 +239,7 @@ export const usePaymentStore = defineStore('payment', {
     async updateDefaultPaymentMethod(paymentMethod: string): Promise<void> {
       this.setLoadingState('updateDefaultPaymentMethod')
 
-      const url = 'http://localhost:3008/payments/update-default-payment-method'
+      const url = 'http://localhost:3008/payments/update-default-payment-method/1'
 
       const body = { paymentMethod }
 
