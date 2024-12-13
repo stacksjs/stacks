@@ -1,14 +1,14 @@
 /* eslint no-console: 0 */
 import type { ReverseProxyOptions } from '@stacksjs/rpx'
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
-import { startProxies } from '@stacksjs/rpx'
-import { kolorist as c, parseOptions } from '@stacksjs/cli'
-import { localUrl } from '@stacksjs/config'
-import { version } from '../../package.json'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { createInterface } from 'node:readline'
+import { kolorist as c, parseOptions } from '@stacksjs/cli'
+import { localUrl } from '@stacksjs/config'
+import { startProxies } from '@stacksjs/rpx'
+import { version } from '../../package.json'
 
 interface StacksPluginOptions {
   frontend?: boolean
@@ -232,7 +232,7 @@ async function startProxy() {
     // Create a readline interface for password input
     const rl = createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     })
     // Ensure the readline interface doesn't interfere with other stdin handling
     rl.on('SIGINT', () => {

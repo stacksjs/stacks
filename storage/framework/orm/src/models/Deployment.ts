@@ -59,7 +59,7 @@ export class DeploymentModel {
   private hidden = []
   private fillable = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public uuid: string | undefined
@@ -92,7 +92,7 @@ export class DeploymentModel {
 
     this.user_id = deployment?.user_id
 
-    this.query = db.selectFrom('deployments')
+    this.selectFromQuery = db.selectFrom('deployments')
     this.hasSelect = false
   }
 
@@ -183,19 +183,19 @@ export class DeploymentModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
   }
@@ -204,19 +204,19 @@ export class DeploymentModel {
   async get(): Promise<DeploymentModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.execute()
 
     return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
   }
@@ -225,10 +225,10 @@ export class DeploymentModel {
     const instance = new DeploymentModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -236,15 +236,15 @@ export class DeploymentModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -362,7 +362,7 @@ export class DeploymentModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     return this
   }
@@ -385,7 +385,7 @@ export class DeploymentModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -393,7 +393,7 @@ export class DeploymentModel {
   static whereNull(column: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where((eb: any) =>
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -401,7 +401,7 @@ export class DeploymentModel {
   }
 
   whereNull(column: string): DeploymentModel {
-    this.query = this.query.where((eb: any) =>
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -411,7 +411,7 @@ export class DeploymentModel {
   static whereCommitSha(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('commitSha', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('commitSha', '=', value)
 
     return instance
   }
@@ -419,7 +419,7 @@ export class DeploymentModel {
   static whereCommitMessage(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('commitMessage', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('commitMessage', '=', value)
 
     return instance
   }
@@ -427,7 +427,7 @@ export class DeploymentModel {
   static whereBranch(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('branch', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('branch', '=', value)
 
     return instance
   }
@@ -435,7 +435,7 @@ export class DeploymentModel {
   static whereStatus(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
@@ -443,7 +443,7 @@ export class DeploymentModel {
   static whereExecutionTime(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('executionTime', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('executionTime', '=', value)
 
     return instance
   }
@@ -451,7 +451,7 @@ export class DeploymentModel {
   static whereDeployScript(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('deployScript', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('deployScript', '=', value)
 
     return instance
   }
@@ -459,7 +459,7 @@ export class DeploymentModel {
   static whereTerminalOutput(value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where('terminalOutput', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('terminalOutput', '=', value)
 
     return instance
   }
@@ -467,13 +467,13 @@ export class DeploymentModel {
   static whereIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<DeploymentModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -483,7 +483,7 @@ export class DeploymentModel {
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No DeploymentModel results found for query')
@@ -492,7 +492,7 @@ export class DeploymentModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -517,13 +517,13 @@ export class DeploymentModel {
   static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -531,13 +531,13 @@ export class DeploymentModel {
   static orderByDesc(column: keyof DeploymentType): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof DeploymentType): DeploymentModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -545,13 +545,13 @@ export class DeploymentModel {
   static orderByAsc(column: keyof DeploymentType): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof DeploymentType): DeploymentModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -640,7 +640,7 @@ export class DeploymentModel {
   }
 
   distinct(column: keyof DeploymentType): DeploymentModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -650,7 +650,7 @@ export class DeploymentModel {
   static distinct(column: keyof DeploymentType): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -658,7 +658,7 @@ export class DeploymentModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): DeploymentModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -666,7 +666,7 @@ export class DeploymentModel {
   static join(table: string, firstCol: string, secondCol: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }

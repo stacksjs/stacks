@@ -49,7 +49,7 @@ export class SubscriberModel {
   private hidden = []
   private fillable = ['subscribed', 'uuid', 'user_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public subscribed: boolean | undefined
@@ -68,7 +68,7 @@ export class SubscriberModel {
 
     this.user_id = subscriber?.user_id
 
-    this.query = db.selectFrom('subscribers')
+    this.selectFromQuery = db.selectFrom('subscribers')
     this.hasSelect = false
   }
 
@@ -159,19 +159,19 @@ export class SubscriberModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
   }
@@ -180,19 +180,19 @@ export class SubscriberModel {
   async get(): Promise<SubscriberModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.execute()
 
     return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
   }
@@ -201,10 +201,10 @@ export class SubscriberModel {
     const instance = new SubscriberModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -212,15 +212,15 @@ export class SubscriberModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -332,7 +332,7 @@ export class SubscriberModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     return this
   }
@@ -355,7 +355,7 @@ export class SubscriberModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -363,7 +363,7 @@ export class SubscriberModel {
   static whereNull(column: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.where((eb: any) =>
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -371,7 +371,7 @@ export class SubscriberModel {
   }
 
   whereNull(column: string): SubscriberModel {
-    this.query = this.query.where((eb: any) =>
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -381,7 +381,7 @@ export class SubscriberModel {
   static whereSubscribed(value: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.where('subscribed', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('subscribed', '=', value)
 
     return instance
   }
@@ -389,13 +389,13 @@ export class SubscriberModel {
   static whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<SubscriberModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -405,7 +405,7 @@ export class SubscriberModel {
   }
 
   async firstOrFail(): Promise<SubscriberModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No SubscriberModel results found for query')
@@ -414,7 +414,7 @@ export class SubscriberModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -439,13 +439,13 @@ export class SubscriberModel {
   static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -453,13 +453,13 @@ export class SubscriberModel {
   static orderByDesc(column: keyof SubscriberType): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -467,13 +467,13 @@ export class SubscriberModel {
   static orderByAsc(column: keyof SubscriberType): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -548,7 +548,7 @@ export class SubscriberModel {
   }
 
   distinct(column: keyof SubscriberType): SubscriberModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -558,7 +558,7 @@ export class SubscriberModel {
   static distinct(column: keyof SubscriberType): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -566,7 +566,7 @@ export class SubscriberModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -574,7 +574,7 @@ export class SubscriberModel {
   static join(table: string, firstCol: string, secondCol: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }

@@ -10,18 +10,18 @@ defineProps<{
   <div text-center>
     <img
       loading="lazy"
-      width="100" height="100" m-auto rounded-full min-w-25 min-h-25 h-25 w-25
+      width="100" height="100" m-auto h-25 min-h-25 min-w-25 w-25 rounded-full
       :src="data.avatar"
       :alt="`${data.name}'s avatar`"
     >
-    <div text-xl mt-2 mb-1>
+    <div mb-1 mt-2 text-xl>
       {{ data.name }}
     </div>
-    <div op60 h-80px v-html="data.description" />
+    <div h-80px op60 v-html="data.description" />
 
     <div flex="~ inline gap-2" py2 text-2xl>
       <a
-        class="i-carbon-logo-github inline-block text-current op30 hover:op100 mya transition duration-200"
+        class="i-carbon-logo-github mya inline-block text-current op30 transition duration-200 hover:op100"
         :href="`https://github.com/${data.github}`"
         target="_blank"
         rel="noopener noreferrer"
@@ -30,7 +30,7 @@ defineProps<{
 
       <a
         v-if="data.sponsors"
-        class="i-carbon-favorite-filled inline-block mya text-current op30 hover:op100 transition duration-200"
+        class="i-carbon-favorite-filled mya inline-block text-current op30 transition duration-200 hover:op100"
         :href="`https://github.com/sponsors/${data.github}`"
         target="_blank"
         rel="noopener noreferrer"
@@ -39,9 +39,9 @@ defineProps<{
       />
     </div>
 
-    <div v-if="data.functions || data.packages" bg-gray:5 mb2 p3 rounded grid="~ cols-[20px_1fr] gap-x-1 gap-y-2" items-start w="5/6" mxa>
+    <div v-if="data.functions || data.packages" grid="~ cols-[20px_1fr] gap-x-1 gap-y-2" w="5/6" mxa mb2 items-start rounded bg-gray:5 p3>
       <template v-if="data.functions">
-        <div op50 ma i-carbon:function-math title="Functions" />
+        <div i-carbon:function-math ma op50 title="Functions" />
         <div flex="~ row wrap gap-2" text-left text-sm>
           <a v-for="f of data.functions" :key="f" :href="`/${f}`" target="_blank">
             <code>{{ f }}</code>
@@ -50,7 +50,7 @@ defineProps<{
       </template>
 
       <template v-if="data.packages">
-        <div op50 ma i-carbon-cube title="Packages" />
+        <div i-carbon-cube ma op50 title="Packages" />
         <div flex="~ row wrap gap-2" text-left text-sm>
           <a v-for="f of data.packages" :key="f" href="/add-ons">
             <code>{{ f }}</code>

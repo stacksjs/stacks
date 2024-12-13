@@ -1,5 +1,5 @@
-import type { HeadConfig } from 'vitepress'
 import type { DocsConfig } from '@stacksjs/types'
+import type { HeadConfig } from 'vitepress'
 import { SocialLinkIcon } from '@stacksjs/types'
 import analytics from '../config/analytics'
 
@@ -48,7 +48,6 @@ export const analyticsHead
     : analytics.driver === 'google-analytics'
       ? googleAnalyticsHead
       : []
-
 
 const nav = [
   {
@@ -636,7 +635,7 @@ export default {
     ['meta', { property: 'og:image', content: 'https://stacksjs.org/images/og-image.png' }],
     ['meta', { property: 'og:url', content: 'https://stacksjs.org/' }],
     // ['script', { 'src': 'https://cdn.usefathom.com/script.js', 'data-site': '', 'data-spa': 'auto', 'defer': '' }],
-    ...analyticsHead
+    ...analyticsHead,
   ],
 
   themeConfig: {

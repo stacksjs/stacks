@@ -53,7 +53,7 @@ export class ErrorModel {
   private hidden = []
   private fillable = ['type', 'message', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public type: undefined | undefined
@@ -79,7 +79,7 @@ export class ErrorModel {
 
     this.updated_at = error?.updated_at
 
-    this.query = db.selectFrom('errors')
+    this.selectFromQuery = db.selectFrom('errors')
     this.hasSelect = false
   }
 
@@ -170,19 +170,19 @@ export class ErrorModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
   }
@@ -191,19 +191,19 @@ export class ErrorModel {
   async get(): Promise<ErrorModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.execute()
 
     return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
   }
@@ -212,10 +212,10 @@ export class ErrorModel {
     const instance = new ErrorModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -223,15 +223,15 @@ export class ErrorModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -343,7 +343,7 @@ export class ErrorModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     return this
   }
@@ -366,7 +366,7 @@ export class ErrorModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -374,7 +374,7 @@ export class ErrorModel {
   static whereNull(column: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where((eb: any) =>
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -382,7 +382,7 @@ export class ErrorModel {
   }
 
   whereNull(column: string): ErrorModel {
-    this.query = this.query.where((eb: any) =>
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -392,7 +392,7 @@ export class ErrorModel {
   static whereType(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where('type', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
     return instance
   }
@@ -400,7 +400,7 @@ export class ErrorModel {
   static whereMessage(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where('message', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('message', '=', value)
 
     return instance
   }
@@ -408,7 +408,7 @@ export class ErrorModel {
   static whereStack(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where('stack', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('stack', '=', value)
 
     return instance
   }
@@ -416,7 +416,7 @@ export class ErrorModel {
   static whereStatus(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
@@ -424,7 +424,7 @@ export class ErrorModel {
   static whereUserId(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where('user_id', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('user_id', '=', value)
 
     return instance
   }
@@ -432,7 +432,7 @@ export class ErrorModel {
   static whereAdditionalInfo(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where('additional_info', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('additional_info', '=', value)
 
     return instance
   }
@@ -440,13 +440,13 @@ export class ErrorModel {
   static whereIn(column: keyof ErrorType, values: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<ErrorModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -456,7 +456,7 @@ export class ErrorModel {
   }
 
   async firstOrFail(): Promise<ErrorModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No ErrorModel results found for query')
@@ -465,7 +465,7 @@ export class ErrorModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -490,13 +490,13 @@ export class ErrorModel {
   static orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -504,13 +504,13 @@ export class ErrorModel {
   static orderByDesc(column: keyof ErrorType): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof ErrorType): ErrorModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -518,13 +518,13 @@ export class ErrorModel {
   static orderByAsc(column: keyof ErrorType): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof ErrorType): ErrorModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -599,7 +599,7 @@ export class ErrorModel {
   }
 
   distinct(column: keyof ErrorType): ErrorModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -609,7 +609,7 @@ export class ErrorModel {
   static distinct(column: keyof ErrorType): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -617,7 +617,7 @@ export class ErrorModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ErrorModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -625,7 +625,7 @@ export class ErrorModel {
   static join(table: string, firstCol: string, secondCol: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }

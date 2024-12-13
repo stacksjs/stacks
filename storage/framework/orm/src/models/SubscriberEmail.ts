@@ -48,7 +48,7 @@ export class SubscriberEmailModel {
   private hidden = []
   private fillable = ['email', 'uuid']
   private softDeletes = true
-  protected query: any
+  protected selectFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public email: string | undefined
@@ -68,7 +68,7 @@ export class SubscriberEmailModel {
 
     this.deleted_at = subscriberemail?.deleted_at
 
-    this.query = db.selectFrom('subscriber_emails')
+    this.selectFromQuery = db.selectFrom('subscriber_emails')
     this.hasSelect = false
   }
 
@@ -159,19 +159,19 @@ export class SubscriberEmailModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
@@ -180,19 +180,19 @@ export class SubscriberEmailModel {
   async get(): Promise<SubscriberEmailModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.execute()
 
     return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
@@ -201,10 +201,10 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -212,15 +212,15 @@ export class SubscriberEmailModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -332,7 +332,7 @@ export class SubscriberEmailModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     return this
   }
@@ -355,7 +355,7 @@ export class SubscriberEmailModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -363,7 +363,7 @@ export class SubscriberEmailModel {
   static whereNull(column: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.where((eb: any) =>
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -371,7 +371,7 @@ export class SubscriberEmailModel {
   }
 
   whereNull(column: string): SubscriberEmailModel {
-    this.query = this.query.where((eb: any) =>
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -381,7 +381,7 @@ export class SubscriberEmailModel {
   static whereEmail(value: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.where('email', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
     return instance
   }
@@ -389,13 +389,13 @@ export class SubscriberEmailModel {
   static whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -405,7 +405,7 @@ export class SubscriberEmailModel {
   }
 
   async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No SubscriberEmailModel results found for query')
@@ -414,7 +414,7 @@ export class SubscriberEmailModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -439,13 +439,13 @@ export class SubscriberEmailModel {
   static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -453,13 +453,13 @@ export class SubscriberEmailModel {
   static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -467,13 +467,13 @@ export class SubscriberEmailModel {
   static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -548,7 +548,7 @@ export class SubscriberEmailModel {
   }
 
   distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -558,7 +558,7 @@ export class SubscriberEmailModel {
   static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -566,7 +566,7 @@ export class SubscriberEmailModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -574,7 +574,7 @@ export class SubscriberEmailModel {
   static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }

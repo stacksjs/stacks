@@ -48,7 +48,7 @@ export class ReleaseModel {
   private hidden = []
   private fillable = ['version', 'uuid']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public version: string | undefined
@@ -64,7 +64,7 @@ export class ReleaseModel {
 
     this.updated_at = release?.updated_at
 
-    this.query = db.selectFrom('releases')
+    this.selectFromQuery = db.selectFrom('releases')
     this.hasSelect = false
   }
 
@@ -155,19 +155,19 @@ export class ReleaseModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
@@ -176,19 +176,19 @@ export class ReleaseModel {
   async get(): Promise<ReleaseModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.execute()
 
     return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
@@ -197,10 +197,10 @@ export class ReleaseModel {
     const instance = new ReleaseModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -208,15 +208,15 @@ export class ReleaseModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -328,7 +328,7 @@ export class ReleaseModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     return this
   }
@@ -351,7 +351,7 @@ export class ReleaseModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -359,7 +359,7 @@ export class ReleaseModel {
   static whereNull(column: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.where((eb: any) =>
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -367,7 +367,7 @@ export class ReleaseModel {
   }
 
   whereNull(column: string): ReleaseModel {
-    this.query = this.query.where((eb: any) =>
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -377,7 +377,7 @@ export class ReleaseModel {
   static whereVersion(value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.where('version', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('version', '=', value)
 
     return instance
   }
@@ -385,13 +385,13 @@ export class ReleaseModel {
   static whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<ReleaseModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -401,7 +401,7 @@ export class ReleaseModel {
   }
 
   async firstOrFail(): Promise<ReleaseModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No ReleaseModel results found for query')
@@ -410,7 +410,7 @@ export class ReleaseModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -435,13 +435,13 @@ export class ReleaseModel {
   static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -449,13 +449,13 @@ export class ReleaseModel {
   static orderByDesc(column: keyof ReleaseType): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof ReleaseType): ReleaseModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -463,13 +463,13 @@ export class ReleaseModel {
   static orderByAsc(column: keyof ReleaseType): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof ReleaseType): ReleaseModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -544,7 +544,7 @@ export class ReleaseModel {
   }
 
   distinct(column: keyof ReleaseType): ReleaseModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -554,7 +554,7 @@ export class ReleaseModel {
   static distinct(column: keyof ReleaseType): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -562,7 +562,7 @@ export class ReleaseModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -570,7 +570,7 @@ export class ReleaseModel {
   static join(table: string, firstCol: string, secondCol: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }

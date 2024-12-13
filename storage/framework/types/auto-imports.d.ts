@@ -1220,416 +1220,94 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
-    readonly Head: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['Head']>
-    readonly HeadVuePlugin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
-    readonly and: UnwrapRef<typeof import('../core/browser/src/utils/math')['and']>
-    readonly anyOf: UnwrapRef<typeof import('../core/browser/src/utils/regex')['anyOf']>
-    readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['asyncComputed']>
-    readonly autoResetRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['autoResetRef']>
-    readonly batchInvoke: UnwrapRef<typeof import('../core/browser/src/utils/function')['batchInvoke']>
-    readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']>
-    readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']>
-    readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']>
-    readonly breakpointsQuasar: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']>
-    readonly breakpointsSematic: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']>
-    readonly breakpointsTailwind: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']>
-    readonly breakpointsVuetify: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']>
-    readonly calculateDelay: UnwrapRef<typeof import('../core/browser/src/utils/retry')['calculateDelay']>
-    readonly carriageReturn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['carriageReturn']>
-    readonly caseInsensitive: UnwrapRef<typeof import('../core/browser/src/utils/regex')['caseInsensitive']>
-    readonly char: UnwrapRef<typeof import('../core/browser/src/utils/regex')['char']>
-    readonly charIn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['charIn']>
-    readonly charNotIn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['charNotIn']>
-    readonly clamp: UnwrapRef<typeof import('../core/browser/src/utils/math')['clamp']>
-    readonly cloneFnJSON: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['cloneFnJSON']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
-    readonly computedAsync: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedAsync']>
-    readonly computedEager: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedEager']>
-    readonly computedInject: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedInject']>
-    readonly computedWithControl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedWithControl']>
-    readonly confirmCardSetup: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['confirmCardSetup']>
-    readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
-    readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
-    readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
-    readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
-    readonly createFetch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createFetch']>
-    readonly createGenericProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['createGenericProjection']>
-    readonly createGlobalState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createGlobalState']>
-    readonly createHead: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createHead']>
-    readonly createInjectionState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createInjectionState']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
-    readonly createProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['createProjection']>
-    readonly createPromiseLock: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createPromiseLock']>
-    readonly createReactiveFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createReactiveFn']>
-    readonly createRegExp: UnwrapRef<typeof import('../core/browser/src/utils/regex')['createRegExp']>
-    readonly createReusableTemplate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createReusableTemplate']>
-    readonly createSharedComposable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createSharedComposable']>
-    readonly createSingletonPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createSingletonPromise']>
-    readonly createTemplatePromise: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createTemplatePromise']>
-    readonly createUnrefFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createUnrefFn']>
-    readonly customAlphabet: UnwrapRef<typeof import('../core/browser/src/utils/random')['customAlphabet']>
-    readonly customRandom: UnwrapRef<typeof import('../core/browser/src/utils/random')['customRandom']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
-    readonly customStorageEventName: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['customStorageEventName']>
-    readonly debounce: UnwrapRef<typeof import('../core/browser/src/utils/debounce')['debounce']>
-    readonly debouncedRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['debouncedRef']>
-    readonly debouncedWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['debouncedWatch']>
-    readonly defaultDocument: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultDocument']>
-    readonly defaultLocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultLocation']>
-    readonly defaultNavigator: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultNavigator']>
-    readonly defaultWindow: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultWindow']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
-    readonly delay: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['delay']>
-    readonly digit: UnwrapRef<typeof import('../core/browser/src/utils/regex')['digit']>
-    readonly dotAll: UnwrapRef<typeof import('../core/browser/src/utils/regex')['dotAll']>
-    readonly eagerComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
-    readonly exactly: UnwrapRef<typeof import('../core/browser/src/utils/regex')['exactly']>
-    readonly executeTransition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['executeTransition']>
-    readonly extendRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['extendRef']>
-    readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getSSRHandler: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['getSSRHandler']>
-    readonly global: UnwrapRef<typeof import('../core/browser/src/utils/regex')['global']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
-    readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
-    readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
     readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
-    readonly isDefined: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
-    readonly isTruthy: UnwrapRef<typeof import('../core/browser/src/utils/guards')['isTruthy']>
-    readonly lazy: UnwrapRef<typeof import('../core/browser/src/utils/lazy')['lazy']>
-    readonly letter: UnwrapRef<typeof import('../core/browser/src/utils/regex')['letter']>
-    readonly linefeed: UnwrapRef<typeof import('../core/browser/src/utils/regex')['linefeed']>
-    readonly loadCardElement: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['loadCardElement']>
-    readonly loadPaymentElement: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['loadPaymentElement']>
-    readonly logicNot: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicNot']>
-    readonly logicOr: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicOr']>
-    readonly loop: UnwrapRef<typeof import('../core/browser/src/utils/base')['loop']>
-    readonly makeDestructurable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
-    readonly mapGamepadToXbox360Controller: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['mapGamepadToXbox360Controller']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
     readonly mapState: UnwrapRef<typeof import('pinia')['mapState']>
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
-    readonly maybe: UnwrapRef<typeof import('../core/browser/src/utils/regex')['maybe']>
-    readonly multiline: UnwrapRef<typeof import('../core/browser/src/utils/regex')['multiline']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
-    readonly noNull: UnwrapRef<typeof import('../core/browser/src/utils/guards')['noNull']>
-    readonly not: UnwrapRef<typeof import('../core/browser/src/utils/regex')['not']>
-    readonly notNullish: UnwrapRef<typeof import('../core/browser/src/utils/guards')['notNullish']>
-    readonly notUndefined: UnwrapRef<typeof import('../core/browser/src/utils/guards')['notUndefined']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
     readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
-    readonly onClickOutside: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onClickOutside']>
     readonly onDeactivated: UnwrapRef<typeof import('vue')['onDeactivated']>
     readonly onErrorCaptured: UnwrapRef<typeof import('vue')['onErrorCaptured']>
-    readonly onKeyDown: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyDown']>
-    readonly onKeyPressed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyPressed']>
-    readonly onKeyStroke: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyStroke']>
-    readonly onKeyUp: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onKeyUp']>
-    readonly onLongPress: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onLongPress']>
     readonly onMounted: UnwrapRef<typeof import('vue')['onMounted']>
     readonly onRenderTracked: UnwrapRef<typeof import('vue')['onRenderTracked']>
     readonly onRenderTriggered: UnwrapRef<typeof import('vue')['onRenderTriggered']>
     readonly onScopeDispose: UnwrapRef<typeof import('vue')['onScopeDispose']>
     readonly onServerPrefetch: UnwrapRef<typeof import('vue')['onServerPrefetch']>
-    readonly onStartTyping: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onStartTyping']>
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
-    readonly oneOrMore: UnwrapRef<typeof import('../core/browser/src/utils/regex')['oneOrMore']>
-    readonly or: UnwrapRef<typeof import('../core/browser/src/utils/math')['or']>
-    readonly pausableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['pausableWatch']>
     readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
-    readonly provideLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['provideLocal']>
-    readonly publishableKey: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['publishableKey']>
-    readonly rand: UnwrapRef<typeof import('../core/browser/src/utils/math')['rand']>
-    readonly random: UnwrapRef<typeof import('../core/browser/src/utils/random')['random']>
-    readonly randomNonSecure: UnwrapRef<typeof import('../core/browser/src/utils/random')['randomNonSecure']>
-    readonly reactify: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactify']>
-    readonly reactifyObject: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactifyObject']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
-    readonly reactiveComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactiveComputed']>
-    readonly reactiveOmit: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactiveOmit']>
-    readonly reactivePick: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactivePick']>
-    readonly readableSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['readableSize']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
-    readonly refAutoReset: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refAutoReset']>
-    readonly refDebounced: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refDebounced']>
-    readonly refDefault: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refDefault']>
-    readonly refThrottled: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refThrottled']>
-    readonly refWithControl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refWithControl']>
-    readonly renderHeadToString: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['renderHeadToString']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly resolveRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveRef']>
-    readonly resolveUnref: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveUnref']>
-    readonly retry: UnwrapRef<typeof import('../core/browser/src/utils/retry')['retry']>
-    readonly saas: UnwrapRef<typeof import('../core/browser/src/utils/plans')['saas']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
-    readonly setSSRHandler: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['setSSRHandler']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
-    readonly sleep: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['sleep']>
-    readonly sticky: UnwrapRef<typeof import('../core/browser/src/utils/regex')['sticky']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
-    readonly syncRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRef']>
-    readonly syncRefs: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRefs']>
-    readonly tab: UnwrapRef<typeof import('../core/browser/src/utils/regex')['tab']>
-    readonly tap: UnwrapRef<typeof import('../core/browser/src/utils/function')['tap']>
-    readonly templateRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['templateRef']>
-    readonly throttle: UnwrapRef<typeof import('../core/browser/src/utils/throttle')['throttle']>
-    readonly throttledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['throttledRef']>
-    readonly throttledWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['throttledWatch']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
-    readonly toReactive: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['toReactive']>
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
-    readonly toString: UnwrapRef<typeof import('../core/browser/src/utils/base')['toString']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
-    readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']>
-    readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']>
-    readonly tryOnMounted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnMounted']>
-    readonly tryOnScopeDispose: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnScopeDispose']>
-    readonly tryOnUnmounted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnUnmounted']>
-    readonly unicode: UnwrapRef<typeof import('../core/browser/src/utils/regex')['unicode']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
-    readonly unrefElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['unrefElement']>
-    readonly until: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['until']>
-    readonly useAbs: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAbs']>
-    readonly useActiveElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useActiveElement']>
-    readonly useAnimate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAnimate']>
-    readonly useArrayDifference: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayDifference']>
-    readonly useArrayEvery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayEvery']>
-    readonly useArrayFilter: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayFilter']>
-    readonly useArrayFind: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayFind']>
-    readonly useArrayFindIndex: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayFindIndex']>
-    readonly useArrayIncludes: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayIncludes']>
-    readonly useArrayMap: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayMap']>
-    readonly useArrayReduce: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayReduce']>
-    readonly useArraySome: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArraySome']>
-    readonly useArrayUnique: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useArrayUnique']>
-    readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']>
-    readonly useAsyncState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
-    readonly useAverage: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAverage']>
-    readonly useBase64: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBase64']>
-    readonly useBattery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBattery']>
-    readonly useBluetooth: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBluetooth']>
-    readonly useBreakpoints: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBreakpoints']>
-    readonly useBroadcastChannel: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBroadcastChannel']>
-    readonly useBrowserLocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBrowserLocation']>
-    readonly useCached: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCached']>
-    readonly useCeil: UnwrapRef<typeof import('../core/browser/src/utils/math')['useCeil']>
-    readonly useClamp: UnwrapRef<typeof import('../core/browser/src/utils/math')['useClamp']>
-    readonly useClipboard: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useClipboard']>
-    readonly useClipboardItems: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useClipboardItems']>
-    readonly useCloned: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCloned']>
-    readonly useColorMode: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useColorMode']>
-    readonly useConfirmDialog: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useConfirmDialog']>
-    readonly useCounter: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCounter']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
-    readonly useCssVar: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCssVar']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
-    readonly useCurrentElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCurrentElement']>
-    readonly useCycleList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useCycleList']>
-    readonly useDark: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDark']>
-    readonly useDateFormat: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDateFormat']>
-    readonly useDebounce: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDebounce']>
-    readonly useDebounceFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDebounceFn']>
-    readonly useDebouncedRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDebouncedRefHistory']>
-    readonly useDeviceMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDeviceMotion']>
-    readonly useDeviceOrientation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDeviceOrientation']>
-    readonly useDevicePixelRatio: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDevicePixelRatio']>
-    readonly useDevicesList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDevicesList']>
-    readonly useDisplayMedia: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDisplayMedia']>
-    readonly useDocumentVisibility: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDocumentVisibility']>
-    readonly useDraggable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDraggable']>
-    readonly useDropZone: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useDropZone']>
-    readonly useElementBounding: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementBounding']>
-    readonly useElementByPoint: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementByPoint']>
-    readonly useElementHover: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementHover']>
-    readonly useElementSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementSize']>
-    readonly useElementVisibility: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useElementVisibility']>
-    readonly useEventBus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEventBus']>
-    readonly useEventListener: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEventListener']>
-    readonly useEventSource: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEventSource']>
-    readonly useEyeDropper: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useEyeDropper']>
-    readonly useFavicon: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFavicon']>
-    readonly useFetch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFetch']>
-    readonly useFileDialog: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFileDialog']>
-    readonly useFileSystemAccess: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFileSystemAccess']>
-    readonly useFloor: UnwrapRef<typeof import('../core/browser/src/utils/math')['useFloor']>
-    readonly useFocus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFocus']>
-    readonly useFocusWithin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFocusWithin']>
-    readonly useFps: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFps']>
-    readonly useFullscreen: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFullscreen']>
-    readonly useGamepad: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGamepad']>
-    readonly useGeolocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGeolocation']>
     readonly useGitStore: UnwrapRef<typeof import('../../../resources/stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
-    readonly useIdle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIdle']>
-    readonly useImage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useImage']>
-    readonly useInfiniteScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useInfiniteScroll']>
-    readonly useIntersectionObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIntersectionObserver']>
-    readonly useInterval: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useInterval']>
-    readonly useIntervalFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIntervalFn']>
-    readonly useKeyModifier: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useKeyModifier']>
-    readonly useLastChanged: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useLastChanged']>
     readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
-    readonly useLocalStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useLocalStorage']>
-    readonly useMagicKeys: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMagicKeys']>
-    readonly useManualRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useManualRefHistory']>
-    readonly useMath: UnwrapRef<typeof import('../core/browser/src/utils/math')['useMath']>
-    readonly useMax: UnwrapRef<typeof import('../core/browser/src/utils/math')['useMax']>
-    readonly useMediaControls: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMediaControls']>
-    readonly useMediaQuery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMediaQuery']>
-    readonly useMemoize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMemoize']>
-    readonly useMemory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMemory']>
-    readonly useMin: UnwrapRef<typeof import('../core/browser/src/utils/math')['useMin']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
-    readonly useMounted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMounted']>
-    readonly useMouse: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMouse']>
-    readonly useMouseInElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMouseInElement']>
-    readonly useMousePressed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMousePressed']>
-    readonly useMutationObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMutationObserver']>
-    readonly useNavigatorLanguage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useNavigatorLanguage']>
-    readonly useNetwork: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useNetwork']>
-    readonly useNow: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useNow']>
-    readonly useObjectUrl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useObjectUrl']>
-    readonly useOffsetPagination: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useOffsetPagination']>
-    readonly useOnline: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useOnline']>
-    readonly usePageLeave: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePageLeave']>
-    readonly useParallax: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useParallax']>
-    readonly useParentElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useParentElement']>
     readonly usePaymentStore: UnwrapRef<typeof import('../../../resources/stores/payment')['usePaymentStore']>
-    readonly usePerformanceObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePerformanceObserver']>
-    readonly usePermission: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePermission']>
-    readonly usePointer: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointer']>
-    readonly usePointerLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointerLock']>
-    readonly usePointerSwipe: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointerSwipe']>
-    readonly usePrecision: UnwrapRef<typeof import('../core/browser/src/utils/math')['usePrecision']>
-    readonly usePreferredColorScheme: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredColorScheme']>
-    readonly usePreferredContrast: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredContrast']>
-    readonly usePreferredDark: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredDark']>
-    readonly usePreferredLanguages: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredLanguages']>
-    readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']>
-    readonly usePrevious: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePrevious']>
-    readonly useProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['useProjection']>
-    readonly useRafFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRafFn']>
-    readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRefHistory']>
-    readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useResizeObserver']>
-    readonly useRound: UnwrapRef<typeof import('../core/browser/src/utils/math')['useRound']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
-    readonly useScreenOrientation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScreenOrientation']>
-    readonly useScreenSafeArea: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScreenSafeArea']>
-    readonly useScriptTag: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScriptTag']>
-    readonly useScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScroll']>
-    readonly useScrollLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScrollLock']>
     readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>
     readonly useServerHead: UnwrapRef<typeof import('@unhead/vue')['useServerHead']>
     readonly useServerHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useServerHeadSafe']>
     readonly useServerSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useServerSeoMeta']>
-    readonly useSessionStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSessionStorage']>
-    readonly useShare: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useShare']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
-    readonly useSorted: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSorted']>
-    readonly useSpeechRecognition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSpeechRecognition']>
-    readonly useSpeechSynthesis: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSpeechSynthesis']>
-    readonly useStepper: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStepper']>
-    readonly useStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStorage']>
-    readonly useStorageAsync: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStorageAsync']>
-    readonly useStyleTag: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStyleTag']>
-    readonly useSum: UnwrapRef<typeof import('../core/browser/src/utils/math')['useSum']>
-    readonly useSupported: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSupported']>
-    readonly useSwipe: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSwipe']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
-    readonly useTemplateRefsList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTemplateRefsList']>
-    readonly useTextDirection: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTextDirection']>
-    readonly useTextSelection: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTextSelection']>
-    readonly useTextareaAutosize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTextareaAutosize']>
-    readonly useThrottle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useThrottle']>
-    readonly useThrottleFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useThrottleFn']>
-    readonly useThrottledRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useThrottledRefHistory']>
-    readonly useTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeAgo']>
-    readonly useTimeout: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeout']>
-    readonly useTimeoutFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeoutFn']>
-    readonly useTimeoutPoll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimeoutPoll']>
-    readonly useTimestamp: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTimestamp']>
-    readonly useTitle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTitle']>
-    readonly useToNumber: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToNumber']>
-    readonly useToString: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToString']>
-    readonly useToggle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToggle']>
-    readonly useTransition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTransition']>
-    readonly useTrunc: UnwrapRef<typeof import('../core/browser/src/utils/math')['useTrunc']>
-    readonly useUrlSearchParams: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']>
-    readonly useUserMedia: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUserMedia']>
     readonly useUserStore: UnwrapRef<typeof import('../../../resources/stores/user')['useUserStore']>
-    readonly useVModel: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVModel']>
-    readonly useVModels: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVModels']>
-    readonly useVibrate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVibrate']>
-    readonly useVirtualList: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVirtualList']>
-    readonly useWakeLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWakeLock']>
-    readonly useWebNotification: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebNotification']>
-    readonly useWebSocket: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebSocket']>
-    readonly useWebWorker: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebWorker']>
-    readonly useWebWorkerFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWebWorkerFn']>
-    readonly useWindowFocus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWindowFocus']>
-    readonly useWindowScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWindowScroll']>
-    readonly useWindowSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useWindowSize']>
-    readonly wait: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['wait']>
-    readonly waitUntil: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['waitUntil']>
-    readonly waitWhile: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['waitWhile']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
-    readonly watchArray: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchArray']>
-    readonly watchAtMost: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchAtMost']>
-    readonly watchDebounced: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchDebounced']>
-    readonly watchDeep: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchDeep']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
-    readonly watchIgnorable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchIgnorable']>
-    readonly watchImmediate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchImmediate']>
-    readonly watchOnce: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchOnce']>
-    readonly watchPausable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchPausable']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>
     readonly watchSyncEffect: UnwrapRef<typeof import('vue')['watchSyncEffect']>
-    readonly watchThrottled: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchThrottled']>
-    readonly watchTriggerable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchTriggerable']>
-    readonly watchWithFilter: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['watchWithFilter']>
-    readonly whenever: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['whenever']>
-    readonly whitespace: UnwrapRef<typeof import('../core/browser/src/utils/regex')['whitespace']>
-    readonly withIndices: UnwrapRef<typeof import('../core/browser/src/utils/regex')['withIndices']>
-    readonly word: UnwrapRef<typeof import('../core/browser/src/utils/regex')['word']>
-    readonly wordBoundary: UnwrapRef<typeof import('../core/browser/src/utils/regex')['wordBoundary']>
-    readonly wordChar: UnwrapRef<typeof import('../core/browser/src/utils/regex')['wordChar']>
   }
 }
