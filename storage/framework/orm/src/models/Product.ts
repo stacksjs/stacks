@@ -90,6 +90,7 @@ export class ProductModel {
     this.updated_at = product?.updated_at
 
     this.selectFromQuery = db.selectFrom('products')
+    this.updateFromQuery = db.updateTable('products')
     this.hasSelect = false
   }
 
@@ -213,7 +214,7 @@ export class ProductModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ProductModel) => new ProductModel(modelItem))
   }
@@ -484,7 +485,7 @@ export class ProductModel {
   }
 
   async first(): Promise<ProductModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

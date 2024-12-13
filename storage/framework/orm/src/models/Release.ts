@@ -66,6 +66,7 @@ export class ReleaseModel {
     this.updated_at = release?.updated_at
 
     this.selectFromQuery = db.selectFrom('releases')
+    this.updateFromQuery = db.updateTable('releases')
     this.hasSelect = false
   }
 
@@ -189,7 +190,7 @@ export class ReleaseModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
   }
@@ -406,7 +407,7 @@ export class ReleaseModel {
   }
 
   async first(): Promise<ReleaseModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

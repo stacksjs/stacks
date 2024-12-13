@@ -89,6 +89,8 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
+    await PaymentMethod.where('user_id', 1).update({ is_default: false })
+
     pm?.update({ is_default: true })
 
     return updatedCustomer

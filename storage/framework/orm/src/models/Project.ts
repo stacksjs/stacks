@@ -75,6 +75,7 @@ export class ProjectModel {
     this.updated_at = project?.updated_at
 
     this.selectFromQuery = db.selectFrom('projects')
+    this.updateFromQuery = db.updateTable('projects')
     this.hasSelect = false
   }
 
@@ -198,7 +199,7 @@ export class ProjectModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
   }
@@ -439,7 +440,7 @@ export class ProjectModel {
   }
 
   async first(): Promise<ProjectModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

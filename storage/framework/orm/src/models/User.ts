@@ -110,6 +110,7 @@ export class UserModel {
     this.post_id = user?.post_id
 
     this.selectFromQuery = db.selectFrom('users')
+    this.updateFromQuery = db.updateTable('users')
     this.hasSelect = false
   }
 
@@ -233,7 +234,7 @@ export class UserModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
@@ -490,7 +491,7 @@ export class UserModel {
   }
 
   async first(): Promise<UserModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

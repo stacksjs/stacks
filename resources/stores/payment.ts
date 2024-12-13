@@ -200,7 +200,6 @@ export const usePaymentStore = defineStore('payment', {
       if (response.status !== 204) {
         const res = await response.json()
 
-        console.log(res)
         this.paymentMethods = res
       }
 

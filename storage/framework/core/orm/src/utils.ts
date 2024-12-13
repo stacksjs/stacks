@@ -1616,6 +1616,7 @@ export async function generateModelString(
         ${constructorFields}
 
         this.selectFromQuery = db.selectFrom('${tableName}')
+        this.updateFromQuery = db.updateTable('${tableName}')
         this.hasSelect = false
       }
 
@@ -1742,7 +1743,7 @@ export async function generateModelString(
           this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
         }
 
-        const model = await this.selectFromQuery.execute()
+        const model = await this.selectFromQuery.selectAll().execute()
 
         return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
@@ -1961,7 +1962,7 @@ export async function generateModelString(
       }
 
       async first(): Promise<${modelName}Model | undefined> {
-        const model = await this.selectFromQuery.executeTakeFirst()
+        const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
         if (! model) {
           return undefined

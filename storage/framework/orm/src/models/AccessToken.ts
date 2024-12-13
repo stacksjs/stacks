@@ -81,6 +81,7 @@ export class AccessTokenModel {
     this.team_id = accesstoken?.team_id
 
     this.selectFromQuery = db.selectFrom('personal_access_tokens')
+    this.updateFromQuery = db.updateTable('personal_access_tokens')
     this.hasSelect = false
   }
 
@@ -204,7 +205,7 @@ export class AccessTokenModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
   }
@@ -445,7 +446,7 @@ export class AccessTokenModel {
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

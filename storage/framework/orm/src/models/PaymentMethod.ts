@@ -94,6 +94,7 @@ export class PaymentMethodModel {
     this.user_id = paymentmethod?.user_id
 
     this.selectFromQuery = db.selectFrom('payment_methods')
+    this.updateFromQuery = db.updateTable('payment_methods')
     this.hasSelect = false
   }
 
@@ -217,7 +218,7 @@ export class PaymentMethodModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
   }
@@ -488,7 +489,7 @@ export class PaymentMethodModel {
   }
 
   async first(): Promise<PaymentMethodModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

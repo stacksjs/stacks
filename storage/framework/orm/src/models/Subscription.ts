@@ -103,6 +103,7 @@ export class SubscriptionModel {
     this.user_id = subscription?.user_id
 
     this.selectFromQuery = db.selectFrom('subscriptions')
+    this.updateFromQuery = db.updateTable('subscriptions')
     this.hasSelect = false
   }
 
@@ -226,7 +227,7 @@ export class SubscriptionModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
   }
@@ -521,7 +522,7 @@ export class SubscriptionModel {
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

@@ -98,6 +98,7 @@ export class TeamModel {
     this.user_id = team?.user_id
 
     this.selectFromQuery = db.selectFrom('teams')
+    this.updateFromQuery = db.updateTable('teams')
     this.hasSelect = false
   }
 
@@ -221,7 +222,7 @@ export class TeamModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
   }
@@ -494,7 +495,7 @@ export class TeamModel {
   }
 
   async first(): Promise<TeamModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

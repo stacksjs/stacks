@@ -81,6 +81,7 @@ export class ErrorModel {
     this.updated_at = error?.updated_at
 
     this.selectFromQuery = db.selectFrom('errors')
+    this.updateFromQuery = db.updateTable('errors')
     this.hasSelect = false
   }
 
@@ -204,7 +205,7 @@ export class ErrorModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
   }
@@ -461,7 +462,7 @@ export class ErrorModel {
   }
 
   async first(): Promise<ErrorModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

@@ -70,6 +70,7 @@ export class SubscriberEmailModel {
     this.deleted_at = subscriberemail?.deleted_at
 
     this.selectFromQuery = db.selectFrom('subscriber_emails')
+    this.updateFromQuery = db.updateTable('subscriber_emails')
     this.hasSelect = false
   }
 
@@ -193,7 +194,7 @@ export class SubscriberEmailModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
@@ -410,7 +411,7 @@ export class SubscriberEmailModel {
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined

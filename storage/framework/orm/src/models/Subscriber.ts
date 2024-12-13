@@ -70,6 +70,7 @@ export class SubscriberModel {
     this.user_id = subscriber?.user_id
 
     this.selectFromQuery = db.selectFrom('subscribers')
+    this.updateFromQuery = db.updateTable('subscribers')
     this.hasSelect = false
   }
 
@@ -193,7 +194,7 @@ export class SubscriberModel {
       this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.selectFromQuery.execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
   }
@@ -410,7 +411,7 @@ export class SubscriberModel {
   }
 
   async first(): Promise<SubscriberModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
