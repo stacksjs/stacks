@@ -572,12 +572,13 @@ export class DeploymentModel {
   }
 
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Deployment ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
     ) as NewDeployment
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('deployments')
       .set(filteredValues)
@@ -590,8 +591,9 @@ export class DeploymentModel {
   }
 
   async forceUpdate(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Deployment ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(deployment).execute()
+    }
 
     await db.updateTable('deployments')
       .set(deployment)

@@ -529,12 +529,13 @@ export class AccessTokenModel {
   }
 
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'AccessToken ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(accesstoken).filter(([key]) => this.fillable.includes(key)),
     ) as NewAccessToken
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('personal_access_tokens')
       .set(filteredValues)
@@ -547,8 +548,9 @@ export class AccessTokenModel {
   }
 
   async forceUpdate(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'AccessToken ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(accesstoken).execute()
+    }
 
     await db.updateTable('personal_access_tokens')
       .set(accesstoken)

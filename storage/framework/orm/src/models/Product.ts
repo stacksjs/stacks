@@ -568,12 +568,13 @@ export class ProductModel {
   }
 
   async update(product: ProductUpdate): Promise<ProductModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Product ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(product).filter(([key]) => this.fillable.includes(key)),
     ) as NewProduct
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('products')
       .set(filteredValues)
@@ -586,8 +587,9 @@ export class ProductModel {
   }
 
   async forceUpdate(product: ProductUpdate): Promise<ProductModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Product ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(product).execute()
+    }
 
     await db.updateTable('products')
       .set(product)

@@ -578,12 +578,13 @@ export class TeamModel {
   }
 
   async update(team: TeamUpdate): Promise<TeamModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Team ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(team).filter(([key]) => this.fillable.includes(key)),
     ) as NewTeam
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('teams')
       .set(filteredValues)
@@ -596,8 +597,9 @@ export class TeamModel {
   }
 
   async forceUpdate(team: TeamUpdate): Promise<TeamModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Team ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(team).execute()
+    }
 
     await db.updateTable('teams')
       .set(team)

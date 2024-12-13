@@ -2045,12 +2045,13 @@ export async function generateModelString(
       }
 
       async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
-        if (this.id === undefined)
-          throw new HttpError(500, '${modelName} ID is undefined')
-
         const filteredValues = Object.fromEntries(
           Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
         ) as New${modelName}
+
+        if (this.id === undefined) {
+          this.updateFromQuery.set(filteredValues).execute()
+        }
 
         await db.updateTable('${tableName}')
           .set(filteredValues)
@@ -2065,8 +2066,9 @@ export async function generateModelString(
       }
 
       async forceUpdate(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
-        if (this.id === undefined)
-          throw new HttpError(500, '${modelName} ID is undefined')
+        if (this.id === undefined) {
+          this.updateFromQuery.set(${formattedModelName}).execute()
+        }
 
         await db.updateTable('${tableName}')
           .set(${formattedModelName})

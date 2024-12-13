@@ -572,12 +572,13 @@ export class PaymentMethodModel {
   }
 
   async update(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'PaymentMethod ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(paymentmethod).filter(([key]) => this.fillable.includes(key)),
     ) as NewPaymentMethod
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('payment_methods')
       .set(filteredValues)
@@ -590,8 +591,9 @@ export class PaymentMethodModel {
   }
 
   async forceUpdate(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'PaymentMethod ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(paymentmethod).execute()
+    }
 
     await db.updateTable('payment_methods')
       .set(paymentmethod)

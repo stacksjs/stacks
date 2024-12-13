@@ -507,12 +507,13 @@ export class PostModel {
   }
 
   async update(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Post ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(post).filter(([key]) => this.fillable.includes(key)),
     ) as NewPost
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('posts')
       .set(filteredValues)
@@ -525,8 +526,9 @@ export class PostModel {
   }
 
   async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Post ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(post).execute()
+    }
 
     await db.updateTable('posts')
       .set(post)

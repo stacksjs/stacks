@@ -523,12 +523,13 @@ export class ProjectModel {
   }
 
   async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Project ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(project).filter(([key]) => this.fillable.includes(key)),
     ) as NewProject
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('projects')
       .set(filteredValues)
@@ -541,8 +542,9 @@ export class ProjectModel {
   }
 
   async forceUpdate(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Project ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(project).execute()
+    }
 
     await db.updateTable('projects')
       .set(project)

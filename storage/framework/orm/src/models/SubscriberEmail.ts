@@ -494,12 +494,13 @@ export class SubscriberEmailModel {
   }
 
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'SubscriberEmail ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
     ) as NewSubscriberEmail
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('subscriber_emails')
       .set(filteredValues)
@@ -512,8 +513,9 @@ export class SubscriberEmailModel {
   }
 
   async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'SubscriberEmail ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(subscriberemail).execute()
+    }
 
     await db.updateTable('subscriber_emails')
       .set(subscriberemail)

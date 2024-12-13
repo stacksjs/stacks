@@ -574,12 +574,13 @@ export class UserModel {
   }
 
   async update(user: UserUpdate): Promise<UserModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'User ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(user).filter(([key]) => this.fillable.includes(key)),
     ) as NewUser
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('users')
       .set(filteredValues)
@@ -595,8 +596,9 @@ export class UserModel {
   }
 
   async forceUpdate(user: UserUpdate): Promise<UserModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'User ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(user).execute()
+    }
 
     await db.updateTable('users')
       .set(user)

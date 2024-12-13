@@ -545,12 +545,13 @@ export class ErrorModel {
   }
 
   async update(error: ErrorUpdate): Promise<ErrorModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Error ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(error).filter(([key]) => this.fillable.includes(key)),
     ) as NewError
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('errors')
       .set(filteredValues)
@@ -563,8 +564,9 @@ export class ErrorModel {
   }
 
   async forceUpdate(error: ErrorUpdate): Promise<ErrorModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Error ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(error).execute()
+    }
 
     await db.updateTable('errors')
       .set(error)

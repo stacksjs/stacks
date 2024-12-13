@@ -494,12 +494,13 @@ export class SubscriberModel {
   }
 
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Subscriber ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(subscriber).filter(([key]) => this.fillable.includes(key)),
     ) as NewSubscriber
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('subscribers')
       .set(filteredValues)
@@ -512,8 +513,9 @@ export class SubscriberModel {
   }
 
   async forceUpdate(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Subscriber ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(subscriber).execute()
+    }
 
     await db.updateTable('subscribers')
       .set(subscriber)

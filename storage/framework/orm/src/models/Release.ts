@@ -490,12 +490,13 @@ export class ReleaseModel {
   }
 
   async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Release ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(release).filter(([key]) => this.fillable.includes(key)),
     ) as NewRelease
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('releases')
       .set(filteredValues)
@@ -508,8 +509,9 @@ export class ReleaseModel {
   }
 
   async forceUpdate(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Release ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(release).execute()
+    }
 
     await db.updateTable('releases')
       .set(release)
