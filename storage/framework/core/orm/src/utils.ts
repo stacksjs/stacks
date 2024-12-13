@@ -1920,13 +1920,17 @@ export async function generateModelString(
       static whereNull(column: string): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.where(column, 'is', null)
+        instance.query = instance.query.where((eb: any) =>
+          eb(column, '=', '').or(column, 'is', null)
+        )
 
         return instance
       }
 
       whereNull(column: string): ${modelName}Model {
-        this.query = this.query.where(column, 'is', null)
+        this.query = this.query.where((eb: any) =>
+          eb(column, '=', '').or(column, 'is', null)
+        )
 
         return this
       }

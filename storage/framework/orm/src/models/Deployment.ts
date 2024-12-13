@@ -393,13 +393,17 @@ export class DeploymentModel {
   static whereNull(column: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.query = instance.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): DeploymentModel {
-    this.query = this.query.where(column, 'is', null)
+    this.query = this.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }

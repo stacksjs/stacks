@@ -10,7 +10,7 @@ export default new Action({
     const userId = Number(request.getParam('id'))
     const user = await User.find(userId)
 
-    const paymentMethod = request.get('paymentMethod') as string
+    const paymentMethod = Number(request.get('paymentMethod'))
 
     await user?.setDefaultPaymentMethod(paymentMethod)
   },

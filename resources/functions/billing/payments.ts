@@ -57,9 +57,8 @@ export function useBillable() {
     else {
       await paymentStore.storePaymentMethod(setupIntent.payment_method)
 
-      if (!paymentStore.hasPaymentMethods)       
+      if (!paymentStore.hasPaymentMethods)
         await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
-
     }
   }
 

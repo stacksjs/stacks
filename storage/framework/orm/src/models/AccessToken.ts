@@ -374,13 +374,17 @@ export class AccessTokenModel {
   static whereNull(column: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.query = instance.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): AccessTokenModel {
-    this.query = this.query.where(column, 'is', null)
+    this.query = this.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }

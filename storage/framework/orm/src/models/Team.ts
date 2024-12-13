@@ -391,13 +391,17 @@ export class TeamModel {
   static whereNull(column: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.query = instance.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): TeamModel {
-    this.query = this.query.where(column, 'is', null)
+    this.query = this.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }

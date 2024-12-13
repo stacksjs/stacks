@@ -389,13 +389,17 @@ export class ProductModel {
   static whereNull(column: string): ProductModel {
     const instance = new ProductModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.query = instance.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): ProductModel {
-    this.query = this.query.where(column, 'is', null)
+    this.query = this.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }

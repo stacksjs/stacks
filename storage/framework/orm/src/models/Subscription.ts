@@ -402,13 +402,17 @@ export class SubscriptionModel {
   static whereNull(column: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.query = instance.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): SubscriptionModel {
-    this.query = this.query.where(column, 'is', null)
+    this.query = this.query.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }

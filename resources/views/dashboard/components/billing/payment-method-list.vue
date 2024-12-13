@@ -29,8 +29,8 @@ async function makeDefault(paymentMethodId: number) {
 
   await paymentStore.updateDefaultPaymentMethod(paymentMethodId)
 
-  await paymentStore.fetchUserPaymentMethods()
-  await paymentStore.fetchDefaultPaymentMethod()
+  await paymentStore.fetchUserPaymentMethods(1)
+  await paymentStore.fetchDefaultPaymentMethod(1)
 
   isDefaultLoading.value[paymentMethodId] = false
 }

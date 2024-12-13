@@ -89,6 +89,8 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
+    pm?.update({ is_default: true })
+
     return updatedCustomer
   }
 
@@ -123,7 +125,6 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     return paymentMethod as PaymentMethodModel
   }
-
 
   async function deletePaymentMethod(user: UserModel, paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     if (!user.hasStripeId()) {
