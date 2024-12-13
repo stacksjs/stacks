@@ -60,6 +60,7 @@ export class PaymentMethodModel {
   private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected updateFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public uuid: string | undefined
@@ -364,6 +365,8 @@ export class PaymentMethodModel {
 
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+
     return this
   }
 
@@ -387,6 +390,8 @@ export class PaymentMethodModel {
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
     return instance
   }
 
@@ -397,11 +402,19 @@ export class PaymentMethodModel {
       eb(column, '=', '').or(column, 'is', null),
     )
 
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
     return instance
   }
 
   whereNull(column: string): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -468,6 +481,8 @@ export class PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
 
     return instance
   }

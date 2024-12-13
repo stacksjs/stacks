@@ -50,6 +50,7 @@ export class SubscriberModel {
   private fillable = ['subscribed', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected updateFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public subscribed: boolean | undefined
@@ -334,6 +335,8 @@ export class SubscriberModel {
 
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+
     return this
   }
 
@@ -357,6 +360,8 @@ export class SubscriberModel {
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
     return instance
   }
 
@@ -367,11 +372,19 @@ export class SubscriberModel {
       eb(column, '=', '').or(column, 'is', null),
     )
 
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
     return instance
   }
 
   whereNull(column: string): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -390,6 +403,8 @@ export class SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
 
     return instance
   }
