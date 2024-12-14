@@ -6,7 +6,7 @@ export default stacks({
 
   // Or customize the stylistic rules
   stylistic: {
-    indent: 2, // 4, or 'tab'
+    indent: 4, // 4, or 'tab'
     quotes: 'single', // or 'double'
   },
 

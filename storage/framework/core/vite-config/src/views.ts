@@ -17,6 +17,8 @@ import {
   uiEngine,
 } from '@stacksjs/vite-plugin'
 import generateSitemap from 'vite-ssg-sitemap'
+import Local from 'vite-plugin-local'
+
 
 // import { fonts } from './plugin/fonts'
 
@@ -27,15 +29,8 @@ export const viewsConfig: ViteConfig = {
   build: {
     rollupOptions: {
       external: [
-        'fsevents',
-        'tinyexec',
         '@iconify/utils',
         '@antfu/install-pkg',
-        'local-pkg',
-        'mlly',
-        'fs',
-        'bun',
-        '@stacksjs/logging',
       ],
     },
   },
@@ -59,6 +54,16 @@ export const viewsConfig: ViteConfig = {
   },
 
   plugins: [
+    Local({
+      domain: 'stacks.localhost', // default: stacks.localhost
+      https: true, // Use default SSL config, pass TlsConfig options to customize
+      cleanup: {
+        hosts: true, // Clean up relating /etc/hosts entry
+        certs: false, // Clean up relating SSL certificates
+      },
+      verbose: false, // Enable detailed logging
+    }),
+
     uiEngine(),
 
     router({

@@ -73,13 +73,15 @@ export function config(options: ServerOptions): {
     return {
       host: serversMap[options.type].host,
       port: serversMap[options.type].port,
-      open: true,
+      open: false,
+      // open: true,
     }
   }
 
   return {
     host: options.host || 'stacks.localhost',
     port: options.port || 3000,
-    open: options.open || false,
+    open: false,
+    // open: options.open || false,
   }
 }
