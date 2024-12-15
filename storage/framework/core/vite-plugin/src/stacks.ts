@@ -1,14 +1,6 @@
 /* eslint no-console: 0 */
-import type { ReverseProxyOptions } from '@stacksjs/rpx'
 import type { ViteDevServer as DevServer, Plugin } from 'vite'
-import os from 'node:os'
-import path from 'node:path'
-import process from 'node:process'
-import { createInterface } from 'node:readline'
-import { kolorist as c, parseOptions } from '@stacksjs/cli'
-import { localUrl } from '@stacksjs/config'
-import { startProxies } from '@stacksjs/rpx'
-import { version } from '../../package.json'
+import { parseOptions } from '@stacksjs/cli'
 
 interface StacksPluginOptions {
   frontend?: boolean

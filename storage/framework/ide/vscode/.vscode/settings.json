@@ -150,6 +150,7 @@
   "explorer.confirmDragAndDrop": false,
   "todo-tree.highlights.enabled": true,
   "cSpell.ignorePaths": [
+    "cdk.out",
     "node_modules",
     "lang/de.yml"
   ],

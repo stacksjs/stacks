@@ -44,7 +44,7 @@ jobs:
         run: bun install
 
       - name: Lint
-        run: bunx --bun eslint .
+        run: bunx --bun eslint --flag unstable_ts_config .
 
   typecheck:
     runs-on: ${{ matrix.os }}

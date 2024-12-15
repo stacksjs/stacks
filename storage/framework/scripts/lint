@@ -3,4 +3,4 @@
 cd ../../..
 
 # run linter and formatter
-# eslint . --fix
+# eslint --flag unstable_ts_config . --fix

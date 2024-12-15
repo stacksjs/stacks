@@ -124,7 +124,7 @@ describe('@stacksjs/error-handling', () => {
       const consoleErrorSpy = spyOn(console, 'error')
       const consoleLogSpy = spyOn(console, 'log')
 
-      const error = `Failed to execute command: ${italic('bunx --bun eslint . --fix')}`
+      const error = `Failed to execute command: ${italic('bunx --bun eslint --flag unstable_ts_config . --fix')}`
       ErrorHandler.writeErrorToConsole(error)
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(error)
