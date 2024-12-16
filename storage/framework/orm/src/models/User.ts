@@ -638,7 +638,7 @@ export class UserModel {
   // Method to delete (soft delete) the user instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'User ID is undefined')
+      this.deleteFromQuery.execute()
 
     const model = await this.find(this.id)
 

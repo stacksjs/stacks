@@ -581,7 +581,7 @@ export class ProjectModel {
   // Method to delete (soft delete) the project instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Project ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

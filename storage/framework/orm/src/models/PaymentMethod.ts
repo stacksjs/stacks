@@ -630,7 +630,7 @@ export class PaymentMethodModel {
   // Method to delete (soft delete) the paymentmethod instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'PaymentMethod ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

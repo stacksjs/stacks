@@ -603,7 +603,7 @@ export class ErrorModel {
   // Method to delete (soft delete) the error instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Error ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

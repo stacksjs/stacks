@@ -587,7 +587,7 @@ export class AccessTokenModel {
   // Method to delete (soft delete) the accesstoken instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'AccessToken ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

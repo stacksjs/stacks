@@ -663,7 +663,7 @@ export class SubscriptionModel {
   // Method to delete (soft delete) the subscription instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Subscription ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

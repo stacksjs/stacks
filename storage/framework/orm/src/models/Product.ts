@@ -626,7 +626,7 @@ export class ProductModel {
   // Method to delete (soft delete) the product instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Product ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

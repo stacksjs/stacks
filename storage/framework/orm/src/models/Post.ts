@@ -565,7 +565,7 @@ export class PostModel {
   // Method to delete (soft delete) the post instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Post ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

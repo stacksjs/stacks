@@ -630,7 +630,7 @@ export class DeploymentModel {
   // Method to delete (soft delete) the deployment instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Deployment ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

@@ -548,7 +548,7 @@ export class ReleaseModel {
   // Method to delete (soft delete) the release instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Release ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

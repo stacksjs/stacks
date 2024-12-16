@@ -2107,8 +2107,9 @@ export async function generateModelString(
 
       // Method to delete (soft delete) the ${formattedModelName} instance
       async delete(): Promise<void> {
-          if (this.id === undefined)
-              throw new HttpError(500, '${modelName} ID is undefined')
+        if (this.id === undefined)
+          this.deleteFromQuery.execute()
+            
 
           ${mittDeleteFindStatement}
 
