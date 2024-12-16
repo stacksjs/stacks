@@ -1903,6 +1903,62 @@ export async function generateModelString(
         return this
       }
 
+      orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
+        if (args.length === 0) {
+          throw new HttpError(500, "At least one condition must be provided");
+        }
+
+        // Use the expression builder to append the OR conditions
+        this.selectFromQuery = this.selectFromQuery.where((eb) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+        this.updateFromQuery = this.updateFromQuery.where((eb) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+        this.deleteFromQuery = this.deleteFromQuery.where((eb) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        )
+
+        return this
+      }
+
+      static orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        if (args.length === 0) {
+          throw new HttpError(500, "At least one condition must be provided");
+        }
+
+        // Use the expression builder to append the OR conditions
+       instance.selectFromQuery =instance.selectFromQuery.where((eb) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+       instance.updateFromQuery =instance.updateFromQuery.where((eb) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+       instance.deleteFromQuery =instance.deleteFromQuery.where((eb) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        )
+
+        return instance
+      }
+
       static where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
         let column: any
         let operator: any

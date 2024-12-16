@@ -26,7 +26,7 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   public name = ''
   public token = ''
   public plain_text_token = ''
-  public abilities = []
+  public abilities = ''
   public team_id = 0
   public created_at = new Date()
   public updated_at = new Date()
