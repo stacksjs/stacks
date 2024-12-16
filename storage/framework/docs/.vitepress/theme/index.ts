@@ -1,6 +1,6 @@
 import type { Theme } from 'vitepress'
-import DefaultTheme from 'vitepress/theme'
 import TwoSlashFloatingVue from 'vitepress-plugin-twoslash/client'
+import DefaultTheme from 'vitepress/theme'
 import { h } from 'vue'
 import 'uno.css'
 

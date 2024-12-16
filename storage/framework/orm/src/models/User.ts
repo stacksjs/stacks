@@ -75,6 +75,7 @@ export class UserModel {
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public stripe_id: string | undefined
@@ -111,6 +112,7 @@ export class UserModel {
 
     this.selectFromQuery = db.selectFrom('users')
     this.updateFromQuery = db.updateTable('users')
+    this.deleteFromQuery = db.deleteFrom('users')
     this.hasSelect = false
   }
 
@@ -393,6 +395,7 @@ export class UserModel {
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
   }
@@ -418,6 +421,8 @@ export class UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -486,6 +491,8 @@ export class UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }

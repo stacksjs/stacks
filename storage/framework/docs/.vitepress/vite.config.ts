@@ -1,13 +1,13 @@
 import { resolve } from 'node:path'
+// import Inspect from 'vite-plugin-inspect'
+import { alias } from '@stacksjs/alias'
+import { path } from '@stacksjs/path'
+import { server } from '@stacksjs/server'
 import UnoCSS from 'unocss/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
-// import Inspect from 'vite-plugin-inspect'
-import { alias } from '@stacksjs/alias'
-import { path } from '@stacksjs/path'
-import { server } from '@stacksjs/server'
 
 export default defineConfig({
   publicDir: path.publicPath(),

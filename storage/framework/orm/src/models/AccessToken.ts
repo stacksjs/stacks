@@ -56,6 +56,7 @@ export class AccessTokenModel {
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public name: string | undefined
@@ -82,6 +83,7 @@ export class AccessTokenModel {
 
     this.selectFromQuery = db.selectFrom('personal_access_tokens')
     this.updateFromQuery = db.updateTable('personal_access_tokens')
+    this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
     this.hasSelect = false
   }
 
@@ -348,6 +350,7 @@ export class AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
   }
@@ -373,6 +376,8 @@ export class AccessTokenModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -441,6 +446,8 @@ export class AccessTokenModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }

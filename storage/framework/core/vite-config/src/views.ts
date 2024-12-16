@@ -16,9 +16,8 @@ import {
   stacks,
   uiEngine,
 } from '@stacksjs/vite-plugin'
-import generateSitemap from 'vite-ssg-sitemap'
 import Local from 'vite-plugin-local'
-
+import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
 

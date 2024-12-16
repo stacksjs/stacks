@@ -60,6 +60,7 @@ export class ProductModel {
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public uuid: string | undefined
@@ -91,6 +92,7 @@ export class ProductModel {
 
     this.selectFromQuery = db.selectFrom('products')
     this.updateFromQuery = db.updateTable('products')
+    this.deleteFromQuery = db.deleteFrom('products')
     this.hasSelect = false
   }
 
@@ -363,6 +365,7 @@ export class ProductModel {
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
   }
@@ -388,6 +391,8 @@ export class ProductModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -480,6 +485,8 @@ export class ProductModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }

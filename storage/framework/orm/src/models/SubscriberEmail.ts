@@ -50,6 +50,7 @@ export class SubscriberEmailModel {
   private softDeletes = true
   protected selectFromQuery: any
   protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public email: string | undefined
@@ -71,6 +72,7 @@ export class SubscriberEmailModel {
 
     this.selectFromQuery = db.selectFrom('subscriber_emails')
     this.updateFromQuery = db.updateTable('subscriber_emails')
+    this.deleteFromQuery = db.deleteFrom('subscriber_emails')
     this.hasSelect = false
   }
 
@@ -337,6 +339,7 @@ export class SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
   }
@@ -362,6 +365,8 @@ export class SubscriberEmailModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -406,6 +411,8 @@ export class SubscriberEmailModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }

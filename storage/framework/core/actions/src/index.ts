@@ -17,7 +17,6 @@ export {
   createModel,
   createNotification,
   createPage,
-  make as runMake,
   makeAction,
   makeComponent,
   makeDatabase,
@@ -26,4 +25,5 @@ export {
   makeNotification,
   makePage,
   makeStack,
+  make as runMake,
 } from './make'

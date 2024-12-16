@@ -50,6 +50,7 @@ export class ReleaseModel {
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public version: string | undefined
@@ -67,6 +68,7 @@ export class ReleaseModel {
 
     this.selectFromQuery = db.selectFrom('releases')
     this.updateFromQuery = db.updateTable('releases')
+    this.deleteFromQuery = db.deleteFrom('releases')
     this.hasSelect = false
   }
 
@@ -333,6 +335,7 @@ export class ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
   }
@@ -358,6 +361,8 @@ export class ReleaseModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -402,6 +407,8 @@ export class ReleaseModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }

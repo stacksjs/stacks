@@ -1,7 +1,7 @@
-import { Action } from '@stacksjs/actions'
-import { attempt, authToken, team } from '@stacksjs/auth'
 // import { epmailSubscribeRequest } from '@stacksjs/validation'
 import type { RequestInstance } from '@stacksjs/types'
+import { Action } from '@stacksjs/actions'
+import { attempt, authToken, team } from '@stacksjs/auth'
 import { schema } from '@stacksjs/validation'
 
 export default new Action({

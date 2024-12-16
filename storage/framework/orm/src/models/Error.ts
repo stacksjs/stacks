@@ -55,6 +55,7 @@ export class ErrorModel {
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number | undefined
   public type: undefined | undefined
@@ -82,6 +83,7 @@ export class ErrorModel {
 
     this.selectFromQuery = db.selectFrom('errors')
     this.updateFromQuery = db.updateTable('errors')
+    this.deleteFromQuery = db.deleteFrom('errors')
     this.hasSelect = false
   }
 
@@ -348,6 +350,7 @@ export class ErrorModel {
     this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
 
     this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
   }
@@ -373,6 +376,8 @@ export class ErrorModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -457,6 +462,8 @@ export class ErrorModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
