@@ -169,8 +169,9 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     const paymentMethods = await PaymentMethod.where('user_id', user.id)
       .orWhere(
-        ['is_default', '=', null],
+        ['is_default', 'is', null],
         ['is_default', '=', false],
+        ['is_default', '=', ''],
       )
       .get()
 

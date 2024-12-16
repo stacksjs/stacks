@@ -80,7 +80,7 @@ function cancelForm() {
 
     <PaymentMethodList :user-id="1" />
 
-    <div v-show="showCardForm">
+    <div v-if="showCardForm">
       <PaymentForm @cancel-payment-method-addition="cancelForm" />
     </div>
 

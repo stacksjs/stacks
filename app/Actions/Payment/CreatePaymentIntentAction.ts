@@ -8,14 +8,12 @@ export default new Action({
   method: 'POST',
   async handle(request: RequestInstance) {
     const userId = Number(request.getParam('id'))
-    const amount = Number(request.get('amount'))
 
     const user = await User.find(userId)
 
     const paymentIntent = await user?.paymentIntent({
-      amount,
+      amount: 1000,
       currency: 'usd',
-      description: 'Subscription to Stacks Pro',
       payment_method_types: ['card'],
     })
 

@@ -10,7 +10,9 @@ export default new Action({
     const userId = Number(request.getParam('id'))
     const user = await User.find(userId)
 
-    const setupIntent = await user?.createSetupIntent()
+    const setupIntent = await user?.createSetupIntent({
+      payment_method_types: ['card', 'link', 'us_bank_account'],
+    })
 
     return setupIntent
   },

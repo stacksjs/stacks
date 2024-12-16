@@ -6,13 +6,16 @@ const { loadCardForm, handleAddPaymentMethod } = useBillable()
 const paymentStore = usePaymentStore()
 
 const element = ref(null as any)
+let clientSecret: string
 
 onMounted(async () => {
-  element.value = await loadCardForm()
+  clientSecret = await paymentStore.fetchSetupIntent(1)
+
+  element.value = await loadCardForm(clientSecret)
 })
 
 async function addPaymentMethod() {
-  await handleAddPaymentMethod(element.value)
+  await handleAddPaymentMethod(clientSecret, element.value)
 
   await paymentStore.fetchUserPaymentMethods(1)
   await paymentStore.fetchDefaultPaymentMethod(1)

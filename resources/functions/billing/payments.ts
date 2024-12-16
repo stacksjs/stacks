@@ -32,33 +32,30 @@ export function useBillable() {
     return `${month} ${day}, ${year}`
   }
 
-  async function loadCardForm(): Promise<boolean> {
-    const isCreated = await loadCardElement()
+  async function loadCardForm(clientSecret: string): Promise<boolean> {
+    const isCreated = await loadCardElement(clientSecret)
 
     return isCreated
   }
 
-  async function handleAddPaymentMethod(elements: any) {
-    const clientSecret = await paymentStore.fetchSetupIntent(1)
+  async function handleAddPaymentMethod(clientSecret: string, elements: any) {
+    try {
+      const { error, setupIntent } = await confirmCardSetup(clientSecret, elements)
 
-    const param = {
-      clientSecret,
-      paymentMethod: {
-        card: elements,
-        billing_details: { name: 'Chris Breuer' },
-      },
+      if (error) {
+        console.error(error.message)
+      }
+      else {
+        await paymentStore.storePaymentMethod(setupIntent.payment_method)
+
+        if (!paymentStore.hasPaymentMethods) {
+          await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
+        }
+      }
     }
-
-    const { setupIntent, error } = await confirmCardSetup(param)
-
-    if (error) {
-      console.error(error.message)
-    }
-    else {
-      await paymentStore.storePaymentMethod(setupIntent.payment_method)
-
-      if (!paymentStore.hasPaymentMethods)
-        await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
+    catch (err) {
+      console.error('Error processing payment:', err)
+      // Handle any unexpected errors
     }
   }
 
