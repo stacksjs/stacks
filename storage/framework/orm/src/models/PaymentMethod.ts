@@ -380,19 +380,19 @@ export class PaymentMethodModel {
     }
 
     // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where(eb =>
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb.or(
         args.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
-    this.updateFromQuery = this.updateFromQuery.where(eb =>
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
       eb.or(
         args.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
-    this.deleteFromQuery = this.deleteFromQuery.where(eb =>
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
       eb.or(
         args.map(([column, operator, value]) => eb(column, operator, value)),
       ),
@@ -409,19 +409,19 @@ export class PaymentMethodModel {
     }
 
     // Use the expression builder to append the OR conditions
-    instance.selectFromQuery = instance.selectFromQuery.where(eb =>
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb.or(
         args.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
-    instance.updateFromQuery = instance.updateFromQuery.where(eb =>
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
       eb.or(
         args.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(eb =>
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb.or(
         args.map(([column, operator, value]) => eb(column, operator, value)),
       ),
