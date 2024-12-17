@@ -65,9 +65,6 @@ export async function dropSqliteTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('subscriptions').ifExists().execute()
-  await db.schema.dropTable('payment_methods').ifExists().execute()
-  await db.schema.dropTable('products').ifExists().execute()
   await db.schema.dropTable('errors').ifExists().execute()
 
   for (const userModel of userModelFiles) {
@@ -202,6 +199,7 @@ async function createTableMigration(modelPath: string) {
   if (useBillable && tableName === 'users') {
     await createTableMigration(path.storagePath('framework/database/models/generated/Subscription.ts'))
     await createTableMigration(path.storagePath('framework/database/models/generated/PaymentMethod.ts'))
+    await createTableMigration(path.storagePath('framework/database/models/generated/Transaction.ts'))
     await createTableMigration(path.storagePath('framework/database/models/generated/Product.ts'))
   }
 
