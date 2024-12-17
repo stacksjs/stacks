@@ -28,22 +28,18 @@ export async function loadCardElement(clientSecret: string): Promise<any> {
 }
 
 export async function loadPaymentElement(clientSecret: string): Promise<any> {
+  console.log('clientsecret', clientSecret)
   client = await loadStripe(publishableKey)
 
-  const elements = client.elements()
-  const cardElement = elements.create('payment')
+  const elements = client.elements({ clientSecret })
 
-  cardElement.mount('#payment-element')
-
-  elements.value = client.elements({ clientSecret })
-
-  const paymentElement = elements.value.create('payment', {
+  const paymentElement = elements.create('payment', {
     fields: { billingDetails: 'auto' },
   })
 
   paymentElement.mount('#payment-element')
 
-  return cardElement
+  return elements
 }
 
 export async function confirmCardSetup(clientSecret: string, elements: any): Promise<{ setupIntent: any, error: any }> {

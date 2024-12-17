@@ -3,7 +3,7 @@
 import { useBillable } from '../../../../functions/billing/payments'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
-import PaymentForm from './payment-form.vue'
+import CardForm from './card-form.vue'
 
 import PaymentMethodList from './payment-method-list.vue'
 
@@ -80,9 +80,7 @@ function cancelForm() {
 
     <PaymentMethodList :user-id="1" />
 
-    <div v-if="showCardForm">
-      <PaymentForm @cancel-payment-method-addition="cancelForm" />
-    </div>
+    <CardForm v-if="showCardForm" @cancel-payment-method-addition="cancelForm" />
 
     <div v-if="!showCardForm" class="mt-8 flex justify-end">
       <button

@@ -1,4 +1,4 @@
-import { confirmCardSetup, loadCardElement } from '@stacksjs/browser'
+import { confirmCardSetup, loadCardElement, loadPaymentElement } from '@stacksjs/browser'
 
 const paymentStore = usePaymentStore()
 
@@ -38,6 +38,12 @@ export function useBillable() {
     return isCreated
   }
 
+  async function loadPaymentForm(clientSecret: string): Promise<boolean> {
+    const isCreated = await loadPaymentElement(clientSecret)
+
+    return isCreated
+  }
+
   async function handleAddPaymentMethod(clientSecret: string, elements: any) {
     try {
       const { error, setupIntent } = await confirmCardSetup(clientSecret, elements)
@@ -52,6 +58,18 @@ export function useBillable() {
           await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
         }
       }
+    }
+    catch (err) {
+      console.error('Error processing payment:', err)
+      // Handle any unexpected errors
+    }
+  }
+
+  async function handlePayment(clientSecret: string, elements: any) {
+    try {
+      const data = await confirmCardSetup(clientSecret, elements)
+
+      console.log(data)
     }
     catch (err) {
       console.error('Error processing payment:', err)
@@ -85,5 +103,17 @@ export function useBillable() {
     paymentStore.closePlans()
   }
 
-  return { loadCardForm, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
+  return {
+    loadCardForm,
+    loadPaymentForm,
+    handleAddPaymentMethod,
+    handlePayment,
+    isEmpty,
+    convertUnixTimestampToDate,
+    editPlan,
+    updatingPlanState,
+    showCurrentPlan,
+    cancelEditPlan,
+    showPlans,
+  }
 }
