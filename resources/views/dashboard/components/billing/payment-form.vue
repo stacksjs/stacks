@@ -2,7 +2,7 @@
 import { useBillable } from '../../../../functions/billing/payments'
 
 const emit = defineEmits(['cancelPayment'])
-const { loadPaymentForm, handleAddPaymentMethod } = useBillable()
+const { loadPaymentForm, handlePayment } = useBillable()
 const paymentStore = usePaymentStore()
 
 const element = ref(null as any)
@@ -15,7 +15,7 @@ onMounted(async () => {
 })
 
 async function addPaymentMethod() {
-  await handleAddPaymentMethod(clientSecret, element.value)
+  await handlePayment(clientSecret, element.value)
 
   await paymentStore.fetchUserPaymentMethods(1)
   await paymentStore.fetchDefaultPaymentMethod(1)
@@ -28,7 +28,6 @@ async function addPaymentMethod() {
   <div>
     <form
       id="payment-form"
-      class="mt-8 border border-gray-200 p-8"
     >
       <div id="link-authentication-element" />
       <div id="payment-element" />

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useBillable } from '../../../functions/billing/payments'
 
-import PaymentForm from '../components/billing/payment-form.vue'
+import OneTimePayment from '../components/billing/one-time-payment.vue'
 // import ActivePlan from '../components/billing/active-plan.vue'
 
 // import Plans from '../components/billing/plans.vue'
@@ -26,41 +26,19 @@ onMounted(async () => {
   <div class="mx-auto px-4 py-8 container lg:px-8">
     <div id="subscribed">
       <TransactionHistory />
-      <!-- <div class="flex space-x-8">
+      <div class="flex space-x-8">
         <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <LoadingDetails v-if="paymentStore.isStateLoading('fetchActivePlan') && paymentStore.isStateLoading('fetchStripeCustomer')" :height="24" />
 
-          <div v-else class="w-full">
+          <!-- <div v-else class="w-full">
             <ActivePlan v-if="showCurrentPlan" />
             <Plans v-else />
-          </div>
+          </div> -->
+
+          <OneTimePayment />
         </div>
         <PaymentMethod />
-      </div> -->
-
-      <PaymentForm />
+      </div>
     </div>
   </div>
 </template>
-
-<style>
-#payment-message {
-  color: rgb(105, 115, 134);
-  font-size: 16px;
-  line-height: 20px;
-  padding-top: 12px;
-  text-align: center;
-}
-
-#payment-element {
-  margin-bottom: 24px;
-}
-
-#payment-form {
-  width: 30vw;
-  min-width: 500px;
-  align-self: center;
-  border-radius: 7px;
-  padding: 40px;
-}
-</style>

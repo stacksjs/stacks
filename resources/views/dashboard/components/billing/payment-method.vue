@@ -97,25 +97,3 @@ function cancelForm() {
     </div>
   </div>
 </template>
-
-<style>
-#payment-message {
-  color: rgb(105, 115, 134);
-  font-size: 16px;
-  line-height: 20px;
-  padding-top: 12px;
-  text-align: center;
-}
-
-#payment-element {
-  margin-bottom: 24px;
-}
-
-#payment-form {
-  width: 30vw;
-  min-width: 500px;
-  align-self: center;
-  border-radius: 7px;
-  padding: 40px;
-}
-</style>
