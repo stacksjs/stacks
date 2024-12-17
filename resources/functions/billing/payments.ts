@@ -1,4 +1,4 @@
-import { confirmCardSetup, loadCardElement, loadPaymentElement } from '@stacksjs/browser'
+import { confirmCardSetup, confirmPayment, loadCardElement, loadPaymentElement } from '@stacksjs/browser'
 
 const paymentStore = usePaymentStore()
 
@@ -65,9 +65,9 @@ export function useBillable() {
     }
   }
 
-  async function handlePayment(clientSecret: string, elements: any) {
+  async function handlePayment(elements: any) {
     try {
-      const data = await confirmCardSetup(clientSecret, elements)
+      const data = await confirmPayment(elements)
 
       console.log(data)
     }

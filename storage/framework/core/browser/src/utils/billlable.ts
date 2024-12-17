@@ -95,11 +95,9 @@ export async function confirmPayment(elements: any): Promise<{ paymentIntent: an
     const data = await client.confirmPayment({
       elements,
       confirmParams: {
-        // Return URL where the customer should be redirected after the PaymentIntent is confirmed.
         return_url: 'http://localhost:5173/settings/billing',
       },
-    },
-    )
+    })
 
     const { paymentIntent, error } = data
 

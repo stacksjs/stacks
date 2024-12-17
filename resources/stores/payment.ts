@@ -11,6 +11,7 @@ export const usePaymentStore = defineStore('payment', {
       paymentMethods: [] as StripePaymentMethod[],
       transactionHistory: [] as Stripe.Invoice[],
       defaultPaymentMethod: {} as StripePaymentMethod,
+      product: {},
       activeSubscription: {} as Stripe.Subscription,
       subscriptions: [] as Stripe.Subscription[],
       stripeCustomer: {} as Stripe.Customer,
@@ -37,7 +38,9 @@ export const usePaymentStore = defineStore('payment', {
       return clientSecret
     },
 
-    async fetchPaymentIntent(id: number): Promise<string> {
+    async fetchPaymentIntent(id: number, productId: number): Promise<string> {
+      const body = { productId }
+
       const url = `http://localhost:3008/payments/create-payment-intent/${id}`
 
       const response = await fetch(url, {
@@ -46,6 +49,7 @@ export const usePaymentStore = defineStore('payment', {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        body: JSON.stringify(body),
       })
 
       const client: any = await response.json()
@@ -341,6 +345,28 @@ export const usePaymentStore = defineStore('payment', {
       dispatch('paymentMethod:fetched')
     },
 
+    async fetchProduct(id: number): Promise<void> {
+      this.setLoadingState('fetchProduct')
+
+      const response: any = await fetch(`${apiUrl}/payments/fetch-product/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.status !== 204) {
+        const res = await response.json()
+
+        this.product = res
+      }
+
+      this.removeLoadingState('fetchProduct')
+
+      dispatch('product:fetched')
+    },
+
     async fetchUserActivePlan(id: number): Promise<void> {
       this.setLoadingState('fetchActivePlan')
       const response: any = await fetch(`${apiUrl}/payments/fetch-active-subscription/${id}`, {
@@ -379,6 +405,7 @@ export const usePaymentStore = defineStore('payment', {
   getters: {
     isLoading: state => state.loadingStates.size > 0,
     getPaymentMethods: (state): StripePaymentMethod[] => state.paymentMethods,
+    getProduct: (state): StripePaymentMethod[] => state.product,
     getCurrentPlan: (state): Stripe.Subscription => state.activeSubscription,
     getTransactionHistory: (state): Stripe.Invoice[] => state.transactionHistory,
     hasPaymentMethods: (state): boolean =>

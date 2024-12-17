@@ -519,7 +519,7 @@ export class ErrorModel {
 
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }

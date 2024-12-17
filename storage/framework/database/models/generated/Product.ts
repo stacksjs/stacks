@@ -26,7 +26,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.lorem.lines(1),
+      factory: () => faker.food.dish(),
     },
 
     description: {

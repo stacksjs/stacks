@@ -24,19 +24,6 @@ async function loadWebElement() {
 function cancelForm() {
   showCardForm.value = false
 }
-
-// async function submitPaymentMethod(clientSecret: string, elements: any) {
-//   await handleAddPaymentMethod(clientSecret, elements)
-
-//   await paymentStore.fetchDefaultPaymentMethod()
-//   await paymentStore.fetchUserPaymentMethods()
-
-//   showStripe.value = false
-// }
-
-// function cancelPaymentForm() {
-//   showStripe.value = false
-// }
 </script>
 
 <template>
