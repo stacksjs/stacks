@@ -4,8 +4,6 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
-import User from './User'
-
 export interface ProductsTable {
   id?: Generated<number>
   name?: string
@@ -700,20 +698,6 @@ export class ProductModel {
         .where('id', '=', this.id)
         .execute()
     }
-  }
-
-  async user() {
-    if (this.user_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = await User
-      .where('id', '=', this.user_id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
   }
 
   distinct(column: keyof ProductType): ProductModel {

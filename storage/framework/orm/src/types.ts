@@ -64,6 +64,7 @@ export interface Database {
   posts: PostsTable
   products: ProductsTable
   payment_methods: PaymentMethodsTable
+  payment_methods: PaymentMethodsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
   passkeys: PasskeysTable

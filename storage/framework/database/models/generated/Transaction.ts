@@ -14,31 +14,42 @@ export default {
     useUuid: true,
   },
   attributes: {
-    type: {
+    name: {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().maxLength(255),
         message: {
-          string: 'type must be a string',
-          required: 'type is required',
-          maxLength: 'type must have a maximum of 512 characters',
+          string: 'name must be a string',
+          required: 'name is required',
+          maxLength: 'name must have a maximum of 255 characters',
         },
       },
-      factory: () => 'card',
+      factory: () => 'Dashboard Subscription',
     },
 
-    lastFour: {
+    description: {
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'description must be a string',
+        },
+      },
+      factory: () => faker.lorem.lines(2),
+    },
+
+    amount: {
       required: true,
       fillable: true,
       validation: {
         rule: schema.number(),
         message: {
-          number: 'last_four must be a number',
-          required: 'last_four is required',
+          number: 'amount must be a number',
+          required: 'amount is required',
         },
       },
-      factory: () => faker.string.numeric(4),
+      factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
     brand: {
@@ -54,43 +65,24 @@ export default {
       factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
-    expMonth: {
+    type: {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.string().maxLength(50),
         message: {
-          string: 'exp_month must be a number',
-          required: 'exp_month is required',
+          string: 'type must be a string',
+          maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.number.int({ min: 1, max: 12 }),
-    },
-
-    expYear: {
-      required: true,
-      fillable: true,
-      validation: {
-        rule: schema.number(),
-        message: {
-          string: 'exp_year must be a number',
-          required: 'exp_year is required',
-        },
-      },
-      factory: () => faker.number.int({ min: 2024, max: 2050 }),
-    },
-    isDefault: {
-      fillable: true,
-      validation: {
-        rule: schema.boolean(),
-      },
+      factory: () => collect(['one-time', 'subscription']).random().first(),
     },
     providerId: {
       fillable: true,
       validation: {
         rule: schema.string().maxLength(255),
         message: {
-          string: 'provider_id must be a string',
+          string: 'provider_id must be a number',
           required: 'provider_id is required',
         },
       },
