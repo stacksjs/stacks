@@ -5,11 +5,10 @@ import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'PaymentMethod', // defaults to the sanitized file name
-  table: 'payment_methods', // defaults to the lowercase, plural name of the model name (or the name of the model file)
+  name: 'Transaction', // defaults to the sanitized file name
+  table: 'transactions', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
-  belongsTo: ['User'],
   traits: {
     useUuid: true,
   },

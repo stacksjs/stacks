@@ -19,6 +19,8 @@ import Subscription from './Subscription'
 
 import Team from './Team'
 
+import Transaction from './Transaction'
+
 export interface UsersTable {
   id?: Generated<number>
   name?: string
@@ -781,6 +783,18 @@ export class UserModel {
       .execute()
 
     return results.map(modelItem => new PaymentMethod(modelItem))
+  }
+
+  async transactions() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await db.selectFrom('transactions')
+      .where('user_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    return results.map(modelItem => new Transaction(modelItem))
   }
 
   async userTeams() {
