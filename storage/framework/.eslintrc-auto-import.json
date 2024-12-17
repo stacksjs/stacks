@@ -426,6 +426,9 @@
     "loadCardElement": true,
     "loadPaymentElement": true,
     "publishableKey": true,
-    "randomNonSecure": true
+    "randomNonSecure": true,
+    "confirmCardPayment": true,
+    "confirmPayment": true,
+    "createPaymentMethod": true
   }
 }

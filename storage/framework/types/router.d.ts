@@ -30,6 +30,8 @@ declare module 'vue-router/auto-routes' {
     '/dashboard/components/': RouteRecordInfo<'/dashboard/components/', '/dashboard/components', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/active-plan': RouteRecordInfo<'/dashboard/components/billing/active-plan', '/dashboard/components/billing/active-plan', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/card-brands': RouteRecordInfo<'/dashboard/components/billing/card-brands', '/dashboard/components/billing/card-brands', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/billing/card-form': RouteRecordInfo<'/dashboard/components/billing/card-form', '/dashboard/components/billing/card-form', Record<never, never>, Record<never, never>>,
+    '/dashboard/components/billing/one-time-payment': RouteRecordInfo<'/dashboard/components/billing/one-time-payment', '/dashboard/components/billing/one-time-payment', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/payment-form': RouteRecordInfo<'/dashboard/components/billing/payment-form', '/dashboard/components/billing/payment-form', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/payment-method': RouteRecordInfo<'/dashboard/components/billing/payment-method', '/dashboard/components/billing/payment-method', Record<never, never>, Record<never, never>>,
     '/dashboard/components/billing/payment-method-list': RouteRecordInfo<'/dashboard/components/billing/payment-method-list', '/dashboard/components/billing/payment-method-list', Record<never, never>, Record<never, never>>,

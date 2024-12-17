@@ -11,7 +11,7 @@ export default stacks({
   },
 
   typescript: true,
-  vue: true,
+  vue: false,
   jsonc: true,
   yaml: true,
   unocss: true,

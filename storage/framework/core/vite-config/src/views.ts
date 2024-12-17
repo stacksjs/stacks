@@ -41,7 +41,7 @@ export const viewsConfig: ViteConfig = {
   assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
-    exclude: ['vue', 'bun'],
+    exclude: ['vue'],
   },
 
   server: server({
