@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PostsTable {
-  id?: Generated<number>
+  id: Generated<number>
   title?: string
   body?: string
   user_id?: number
@@ -55,7 +55,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public title: string | undefined
   public body: string | undefined
 
@@ -64,7 +64,7 @@ export class PostModel {
   public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
-    this.id = post?.id
+    this.id = post?.id || 1
     this.title = post?.title
     this.body = post?.body
 

@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface SubscriptionsTable {
-  id?: Generated<number>
+  id: Generated<number>
   type?: string
   provider_id?: string
   provider_status?: string
@@ -65,7 +65,7 @@ export class SubscriptionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public uuid: string | undefined
   public type: string | undefined
   public provider_id: string | undefined
@@ -83,7 +83,7 @@ export class SubscriptionModel {
   public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
-    this.id = subscription?.id
+    this.id = subscription?.id || 1
     this.uuid = subscription?.uuid
     this.type = subscription?.type
     this.provider_id = subscription?.provider_id

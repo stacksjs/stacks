@@ -37,7 +37,7 @@ export interface MigrationsTable {
   timestamp: string
 }
 export interface PasskeysTable {
-  id?: string
+  id?: number
   cred_public_key: string
   user_id: number
   webauthn_user_id: string

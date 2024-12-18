@@ -5,7 +5,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProductsTable {
-  id?: Generated<number>
+  id: Generated<number>
   name?: string
   description?: number
   key?: number
@@ -59,7 +59,7 @@ export class ProductModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public uuid: string | undefined
   public name: string | undefined
   public description: number | undefined
@@ -73,7 +73,7 @@ export class ProductModel {
   public updated_at: Date | undefined
 
   constructor(product: Partial<ProductType> | null) {
-    this.id = product?.id
+    this.id = product?.id || 1
     this.uuid = product?.uuid
     this.name = product?.name
     this.description = product?.description

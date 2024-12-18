@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PaymentMethodsTable {
-  id?: Generated<number>
+  id: Generated<number>
   type?: string
   last_four?: number
   brand?: string
@@ -62,7 +62,7 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public uuid: string | undefined
   public type: string | undefined
   public last_four: number | undefined
@@ -77,7 +77,7 @@ export class PaymentMethodModel {
   public user_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
-    this.id = paymentmethod?.id
+    this.id = paymentmethod?.id || 1
     this.uuid = paymentmethod?.uuid
     this.type = paymentmethod?.type
     this.last_four = paymentmethod?.last_four

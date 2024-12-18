@@ -8,7 +8,7 @@ import AccessToken from './AccessToken'
 import User from './User'
 
 export interface TeamsTable {
-  id?: Generated<number>
+  id: Generated<number>
   name?: string
   company_name?: string
   email?: string
@@ -64,7 +64,7 @@ export class TeamModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public name: string | undefined
   public company_name: string | undefined
   public email: string | undefined
@@ -80,7 +80,7 @@ export class TeamModel {
   public user_id: number | undefined
 
   constructor(team: Partial<TeamType> | null) {
-    this.id = team?.id
+    this.id = team?.id || 1
     this.name = team?.name
     this.company_name = team?.company_name
     this.email = team?.email

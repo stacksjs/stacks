@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ErrorsTable {
-  id?: Generated<number>
+  id: Generated<number>
   type?: undefined
   message?: undefined
   stack?: undefined
@@ -56,7 +56,7 @@ export class ErrorModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public type: undefined | undefined
   public message: undefined | undefined
   public stack: undefined | undefined
@@ -68,7 +68,7 @@ export class ErrorModel {
   public updated_at: Date | undefined
 
   constructor(error: Partial<ErrorType> | null) {
-    this.id = error?.id
+    this.id = error?.id || 1
     this.type = error?.type
     this.message = error?.message
     this.stack = error?.stack

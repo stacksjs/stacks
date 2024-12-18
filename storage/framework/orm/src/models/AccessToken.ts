@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import Team from './Team'
 
 export interface PersonalAccessTokensTable {
-  id?: Generated<number>
+  id: Generated<number>
   name?: string
   token?: string
   plain_text_token?: string
@@ -57,7 +57,7 @@ export class AccessTokenModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public name: string | undefined
   public token: string | undefined
   public plain_text_token: string | undefined
@@ -68,7 +68,7 @@ export class AccessTokenModel {
   public team_id: number | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
-    this.id = accesstoken?.id
+    this.id = accesstoken?.id || 1
     this.name = accesstoken?.name
     this.token = accesstoken?.token
     this.plain_text_token = accesstoken?.plain_text_token

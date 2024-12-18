@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProjectsTable {
-  id?: Generated<number>
+  id: Generated<number>
   name?: string
   description?: string
   url?: string
@@ -54,7 +54,7 @@ export class ProjectModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public name: string | undefined
   public description: string | undefined
   public url: string | undefined
@@ -64,7 +64,7 @@ export class ProjectModel {
   public updated_at: Date | undefined
 
   constructor(project: Partial<ProjectType> | null) {
-    this.id = project?.id
+    this.id = project?.id || 1
     this.name = project?.name
     this.description = project?.description
     this.url = project?.url

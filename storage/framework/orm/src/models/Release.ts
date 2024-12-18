@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ReleasesTable {
-  id?: Generated<number>
+  id: Generated<number>
   version?: string
 
   created_at?: Date
@@ -51,14 +51,14 @@ export class ReleaseModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public version: string | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
 
   constructor(release: Partial<ReleaseType> | null) {
-    this.id = release?.id
+    this.id = release?.id || 1
     this.version = release?.version
 
     this.created_at = release?.created_at

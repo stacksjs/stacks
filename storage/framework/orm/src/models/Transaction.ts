@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface TransactionsTable {
-  id?: Generated<number>
+  id: Generated<number>
   name?: string
   description?: string
   amount?: number
@@ -61,7 +61,7 @@ export class TransactionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public uuid: string | undefined
   public name: string | undefined
   public description: string | undefined
@@ -75,7 +75,7 @@ export class TransactionModel {
   public user_id: number | undefined
 
   constructor(transaction: Partial<TransactionType> | null) {
-    this.id = transaction?.id
+    this.id = transaction?.id || 1
     this.uuid = transaction?.uuid
     this.name = transaction?.name
     this.description = transaction?.description

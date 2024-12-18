@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface SubscriberEmailsTable {
-  id?: Generated<number>
+  id: Generated<number>
   email?: string
 
   created_at?: Date
@@ -51,7 +51,7 @@ export class SubscriberEmailModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public email: string | undefined
 
   public created_at: Date | undefined
@@ -60,7 +60,7 @@ export class SubscriberEmailModel {
   public deleted_at: string | undefined
 
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
-    this.id = subscriberemail?.id
+    this.id = subscriberemail?.id || 1
     this.email = subscriberemail?.email
 
     this.created_at = subscriberemail?.created_at

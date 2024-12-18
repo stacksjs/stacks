@@ -23,7 +23,7 @@ import Team from './Team'
 import Transaction from './Transaction'
 
 export interface UsersTable {
-  id?: Generated<number>
+  id: Generated<number>
   name?: string
   email?: string
   job_title?: string
@@ -79,7 +79,7 @@ export class UserModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public stripe_id: string | undefined
   public uuid: string | undefined
   public public_passkey: string | undefined
@@ -95,7 +95,7 @@ export class UserModel {
   public post_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
-    this.id = user?.id
+    this.id = user?.id || 1
     this.stripe_id = user?.stripe_id
     this.uuid = user?.uuid
     this.public_passkey = user?.public_passkey

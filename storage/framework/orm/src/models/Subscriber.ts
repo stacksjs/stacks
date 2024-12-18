@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface SubscribersTable {
-  id?: Generated<number>
+  id: Generated<number>
   subscribed?: boolean
   user_id?: number
 
@@ -52,7 +52,7 @@ export class SubscriberModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public subscribed: boolean | undefined
 
   public created_at: Date | undefined
@@ -60,7 +60,7 @@ export class SubscriberModel {
   public user_id: number | undefined
 
   constructor(subscriber: Partial<SubscriberType> | null) {
-    this.id = subscriber?.id
+    this.id = subscriber?.id || 1
     this.subscribed = subscriber?.subscribed
 
     this.created_at = subscriber?.created_at

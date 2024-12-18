@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface DeploymentsTable {
-  id?: Generated<number>
+  id: Generated<number>
   commit_sha?: string
   commit_message?: string
   branch?: string
@@ -62,7 +62,7 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public uuid: string | undefined
   public commit_sha: string | undefined
   public commit_message: string | undefined
@@ -77,7 +77,7 @@ export class DeploymentModel {
   public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
-    this.id = deployment?.id
+    this.id = deployment?.id || 1
     this.uuid = deployment?.uuid
     this.commit_sha = deployment?.commit_sha
     this.commit_message = deployment?.commit_message

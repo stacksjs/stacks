@@ -908,7 +908,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += 'name: string\n timestamp: string \n }'
 
   text += '\nexport interface PasskeysTable {\n'
-  text += '  id?: string\n'
+  text += '  id?: number\n'
   text += '  cred_public_key: string\n'
   text += '  user_id: number;\n'
   text += '  webauthn_user_id: string\n'
@@ -1164,9 +1164,9 @@ export async function generateModelString(
     }
   }
 
-  declareFields += `public id: number | undefined \n   `
+  declareFields += `public id: number \n   `
 
-  constructorFields += `this.id = ${formattedModelName}?.id\n   `
+  constructorFields += `this.id = ${formattedModelName}?.id || 1\n   `
 
   const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
@@ -1578,7 +1578,7 @@ export async function generateModelString(
     ${relationImports}
 
     export interface ${formattedTableName}Table {
-      id?: Generated<number>
+      id: Generated<number>
      ${fieldString}
     }
 
