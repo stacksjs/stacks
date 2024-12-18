@@ -1,10 +1,10 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ErrorsTable {
-  id: Generated<number>
+  id: number
   type?: undefined
   message?: undefined
   stack?: undefined
@@ -31,7 +31,7 @@ interface ErrorResponse {
 }
 
 export type ErrorType = Selectable<ErrorsTable>
-export type NewError = Insertable<ErrorsTable>
+export type NewError = Partial<Insertable<ErrorsTable>>
 export type ErrorUpdate = Updateable<ErrorsTable>
 export type Errors = ErrorType[]
 
@@ -621,7 +621,7 @@ export class ErrorModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -636,7 +636,7 @@ export class ErrorModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

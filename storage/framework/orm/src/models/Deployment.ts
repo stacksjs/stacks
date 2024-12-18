@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface DeploymentsTable {
-  id: Generated<number>
+  id: number
   commit_sha?: string
   commit_message?: string
   branch?: string
@@ -37,7 +37,7 @@ interface DeploymentResponse {
 }
 
 export type DeploymentType = Selectable<DeploymentsTable>
-export type NewDeployment = Insertable<DeploymentsTable>
+export type NewDeployment = Partial<Insertable<DeploymentsTable>>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
 export type Deployments = DeploymentType[]
 
@@ -648,7 +648,7 @@ export class DeploymentModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -663,7 +663,7 @@ export class DeploymentModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

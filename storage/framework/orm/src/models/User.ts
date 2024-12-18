@@ -1,5 +1,5 @@
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
@@ -23,7 +23,7 @@ import Team from './Team'
 import Transaction from './Transaction'
 
 export interface UsersTable {
-  id: Generated<number>
+  id: number
   name?: string
   email?: string
   job_title?: string
@@ -54,7 +54,7 @@ interface UserResponse {
 }
 
 export type UserType = Selectable<UsersTable>
-export type NewUser = Insertable<UsersTable>
+export type NewUser = Partial<Insertable<UsersTable>>
 export type UserUpdate = Updateable<UsersTable>
 export type Users = UserType[]
 
@@ -653,7 +653,7 @@ export class UserModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     if (model)
       dispatch('user:updated', model)
@@ -671,7 +671,7 @@ export class UserModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     if (model)
       dispatch('user:updated', model)

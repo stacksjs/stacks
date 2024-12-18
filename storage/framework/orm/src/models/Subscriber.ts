@@ -1,10 +1,10 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface SubscribersTable {
-  id: Generated<number>
+  id: number
   subscribed?: boolean
   user_id?: number
 
@@ -27,7 +27,7 @@ interface SubscriberResponse {
 }
 
 export type SubscriberType = Selectable<SubscribersTable>
-export type NewSubscriber = Insertable<SubscribersTable>
+export type NewSubscriber = Partial<Insertable<SubscribersTable>>
 export type SubscriberUpdate = Updateable<SubscribersTable>
 export type Subscribers = SubscriberType[]
 
@@ -570,7 +570,7 @@ export class SubscriberModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -585,7 +585,7 @@ export class SubscriberModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

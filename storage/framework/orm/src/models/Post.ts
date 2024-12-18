@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PostsTable {
-  id: Generated<number>
+  id: number
   title?: string
   body?: string
   user_id?: number
@@ -30,7 +30,7 @@ interface PostResponse {
 }
 
 export type PostType = Selectable<PostsTable>
-export type NewPost = Insertable<PostsTable>
+export type NewPost = Partial<Insertable<PostsTable>>
 export type PostUpdate = Updateable<PostsTable>
 export type Posts = PostType[]
 
@@ -583,7 +583,7 @@ export class PostModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -598,7 +598,7 @@ export class PostModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

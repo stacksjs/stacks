@@ -1,17 +1,5 @@
 import { loadStripe } from '@stripe/stripe-js'
 
-interface PaymentMethod {
-  card: any // Replace `any` with the appropriate type for `elements`
-  billing_details: {
-    name: string
-  }
-}
-
-interface PaymentParam {
-  clientSecret: string
-  paymentMethod: PaymentMethod
-}
-
 export const publishableKey: string = import.meta.env.FRONTEND_STRIPE_PUBLIC_KEY || ''
 
 let client: any
@@ -28,7 +16,6 @@ export async function loadCardElement(clientSecret: string): Promise<any> {
 }
 
 export async function loadPaymentElement(clientSecret: string): Promise<any> {
-  console.log('clientsecret', clientSecret)
   client = await loadStripe(publishableKey)
 
   const elements = client.elements({ clientSecret })
@@ -77,8 +64,6 @@ export async function createPaymentMethod(elements: any): Promise<{ paymentInten
       type: 'card',
       card: elements,
     })
-
-    console.log('data from create payment method', data)
 
     const { paymentIntent, error } = data
 

@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface SubscriptionsTable {
-  id: Generated<number>
+  id: number
   type?: string
   provider_id?: string
   provider_status?: string
@@ -40,7 +40,7 @@ interface SubscriptionResponse {
 }
 
 export type SubscriptionType = Selectable<SubscriptionsTable>
-export type NewSubscription = Insertable<SubscriptionsTable>
+export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 export type Subscriptions = SubscriptionType[]
 
@@ -681,7 +681,7 @@ export class SubscriptionModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -696,7 +696,7 @@ export class SubscriptionModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

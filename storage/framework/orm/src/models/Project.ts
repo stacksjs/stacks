@@ -1,10 +1,10 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProjectsTable {
-  id: Generated<number>
+  id: number
   name?: string
   description?: string
   url?: string
@@ -29,7 +29,7 @@ interface ProjectResponse {
 }
 
 export type ProjectType = Selectable<ProjectsTable>
-export type NewProject = Insertable<ProjectsTable>
+export type NewProject = Partial<Insertable<ProjectsTable>>
 export type ProjectUpdate = Updateable<ProjectsTable>
 export type Projects = ProjectType[]
 
@@ -599,7 +599,7 @@ export class ProjectModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -614,7 +614,7 @@ export class ProjectModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

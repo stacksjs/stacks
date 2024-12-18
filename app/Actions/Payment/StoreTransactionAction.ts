@@ -7,18 +7,13 @@ export default new Action({
   description: 'Store transactions',
   method: 'POST',
   async handle(request: RequestInstance) {
-    try {
-      const userId = Number(request.getParam('id'))
-      const productId = Number(request.get('productId'))
+    const userId = Number(request.getParam('id'))
+    const productId = Number(request.get('productId'))
 
-      const user = await User.find(userId)
+    const user = await User.find(userId)
 
-      const transaction = await user?.storeTransaction(productId)
+    const transaction = await user?.storeTransaction(productId)
 
-      return transaction
-    }
-    catch (err) {
-      throw err
-    }
+    return transaction
   },
 })

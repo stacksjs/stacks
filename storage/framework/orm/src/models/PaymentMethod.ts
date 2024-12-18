@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PaymentMethodsTable {
-  id: Generated<number>
+  id: number
   type?: string
   last_four?: number
   brand?: string
@@ -37,7 +37,7 @@ interface PaymentMethodResponse {
 }
 
 export type PaymentMethodType = Selectable<PaymentMethodsTable>
-export type NewPaymentMethod = Insertable<PaymentMethodsTable>
+export type NewPaymentMethod = Partial<Insertable<PaymentMethodsTable>>
 export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
 export type PaymentMethods = PaymentMethodType[]
 
@@ -648,7 +648,7 @@ export class PaymentMethodModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -663,7 +663,7 @@ export class PaymentMethodModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import Team from './Team'
 
 export interface PersonalAccessTokensTable {
-  id: Generated<number>
+  id: number
   name?: string
   token?: string
   plain_text_token?: string
@@ -32,7 +32,7 @@ interface AccessTokenResponse {
 }
 
 export type AccessTokenType = Selectable<PersonalAccessTokensTable>
-export type NewAccessToken = Insertable<PersonalAccessTokensTable>
+export type NewAccessToken = Partial<Insertable<PersonalAccessTokensTable>>
 export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
 export type PersonalAccessTokens = AccessTokenType[]
 
@@ -605,7 +605,7 @@ export class AccessTokenModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -620,7 +620,7 @@ export class AccessTokenModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

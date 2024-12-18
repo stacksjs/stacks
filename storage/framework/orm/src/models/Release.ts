@@ -1,10 +1,10 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ReleasesTable {
-  id: Generated<number>
+  id: number
   version?: string
 
   created_at?: Date
@@ -26,7 +26,7 @@ interface ReleaseResponse {
 }
 
 export type ReleaseType = Selectable<ReleasesTable>
-export type NewRelease = Insertable<ReleasesTable>
+export type NewRelease = Partial<Insertable<ReleasesTable>>
 export type ReleaseUpdate = Updateable<ReleasesTable>
 export type Releases = ReleaseType[]
 
@@ -566,7 +566,7 @@ export class ReleaseModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -581,7 +581,7 @@ export class ReleaseModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

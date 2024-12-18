@@ -9,28 +9,23 @@ export default new Action({
   description: 'Create Payment Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    try {
-      const userId = Number(request.getParam('id'))
-      const productId = Number(request.get('productId'))
+    const userId = Number(request.getParam('id'))
+    const productId = Number(request.get('productId'))
 
-      const product = await Product.find(productId)
+    const product = await Product.find(productId)
 
-      const user = await User.find(userId)
+    const user = await User.find(userId)
 
-      if (!product) {
-        throw new HttpError(422, 'Product not found!')
-      }
-
-      const paymentIntent = await user?.paymentIntent({
-        amount: Number(product.unit_price),
-        currency: 'usd',
-        payment_method_types: ['card'],
-      })
-
-      return paymentIntent
+    if (!product) {
+      throw new HttpError(422, 'Product not found!')
     }
-    catch (err) {
-      throw err
-    }
+
+    const paymentIntent = await user?.paymentIntent({
+      amount: Number(product.unit_price),
+      currency: 'usd',
+      payment_method_types: ['card'],
+    })
+
+    return paymentIntent
   },
 })

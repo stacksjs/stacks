@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface TransactionsTable {
-  id: Generated<number>
+  id: number
   name?: string
   description?: string
   amount?: number
@@ -36,7 +36,7 @@ interface TransactionResponse {
 }
 
 export type TransactionType = Selectable<TransactionsTable>
-export type NewTransaction = Insertable<TransactionsTable>
+export type NewTransaction = Partial<Insertable<TransactionsTable>>
 export type TransactionUpdate = Updateable<TransactionsTable>
 export type Transactions = TransactionType[]
 
@@ -637,7 +637,7 @@ export class TransactionModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -652,7 +652,7 @@ export class TransactionModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

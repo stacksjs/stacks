@@ -1578,7 +1578,7 @@ export async function generateModelString(
     ${relationImports}
 
     export interface ${formattedTableName}Table {
-      id: Generated<number>
+      id: number
      ${fieldString}
     }
 
@@ -1593,7 +1593,7 @@ export async function generateModelString(
     }
       
     export type ${modelName}Type = Selectable<${formattedTableName}Table>
-    export type New${modelName} = Insertable<${formattedTableName}Table>
+    export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
     export type ${modelName}Update = Updateable<${formattedTableName}Table>
     export type ${formattedTableName} = ${modelName}Type[]
 
@@ -2128,7 +2128,7 @@ export async function generateModelString(
           .where('id', '=', this.id)
           .executeTakeFirst()
 
-        const model = await this.find(Number(this.id))
+        const model = await this.find(this.id)
 
         ${mittUpdateStatement}
 
@@ -2145,7 +2145,7 @@ export async function generateModelString(
           .where('id', '=', this.id)
           .executeTakeFirst()
 
-        const model = await this.find(Number(this.id))
+        const model = await this.find(this.id)
 
 
           ${mittUpdateStatement}

@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,7 +8,7 @@ import AccessToken from './AccessToken'
 import User from './User'
 
 export interface TeamsTable {
-  id: Generated<number>
+  id: number
   name?: string
   company_name?: string
   email?: string
@@ -39,7 +39,7 @@ interface TeamResponse {
 }
 
 export type TeamType = Selectable<TeamsTable>
-export type NewTeam = Insertable<TeamsTable>
+export type NewTeam = Partial<Insertable<TeamsTable>>
 export type TeamUpdate = Updateable<TeamsTable>
 export type Teams = TeamType[]
 
@@ -654,7 +654,7 @@ export class TeamModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -669,7 +669,7 @@ export class TeamModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }

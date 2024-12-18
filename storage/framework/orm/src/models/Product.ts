@@ -1,11 +1,11 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProductsTable {
-  id: Generated<number>
+  id: number
   name?: string
   description?: number
   key?: number
@@ -34,7 +34,7 @@ interface ProductResponse {
 }
 
 export type ProductType = Selectable<ProductsTable>
-export type NewProduct = Insertable<ProductsTable>
+export type NewProduct = Partial<Insertable<ProductsTable>>
 export type ProductUpdate = Updateable<ProductsTable>
 export type Products = ProductType[]
 
@@ -642,7 +642,7 @@ export class ProductModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -657,7 +657,7 @@ export class ProductModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
