@@ -4,7 +4,8 @@ import { useBillable } from '../../../../functions/billing/payments'
 import PaymentForm from './payment-form.vue'
 
 interface Props {
-  product: number
+  product: number,
+  paymentIntent: string,
 }
 
 const props = defineProps<Props>()
@@ -39,6 +40,6 @@ onMounted(async () => {
         </div>
       </li>
     </ul>
-    <PaymentForm :product-id="1" :price="unitPrice" class="w-2/3" />
+    <PaymentForm :paymentIntent="props.paymentIntent" :product-id="1" :price="unitPrice" class="w-2/3" />
   </div>
 </template>

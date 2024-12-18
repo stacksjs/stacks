@@ -3,7 +3,8 @@ import { useBillable } from '../../../../functions/billing/payments'
 
 interface Props {
   productId: number
-  price: string
+  price: string,
+  paymentIntent: string,
 }
 
 const props = defineProps<Props>()
@@ -13,12 +14,9 @@ const { loadPaymentForm, handlePayment } = useBillable()
 const paymentStore = usePaymentStore()
 
 const element = ref(null as any)
-let clientSecret: string
 
 onMounted(async () => {
-  clientSecret = await paymentStore.fetchPaymentIntent(1, props.productId)
-
-  element.value = await loadPaymentForm(clientSecret)
+  element.value = await loadPaymentForm(props.paymentIntent)
 })
 
 async function pay() {

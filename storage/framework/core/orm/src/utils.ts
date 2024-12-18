@@ -1278,7 +1278,6 @@ export async function generateModelString(
       return updatedPaymentMethod
     }
 
-
     async deletePaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
       const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
       return deletedPaymentMethod
@@ -1314,6 +1313,10 @@ export async function generateModelString(
 
     async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
       return manageInvoice.list(this)
+    }
+
+    async transactionHistory(): Promise<TransactionModel[]> {
+      return manageTransaction.list(this)
     }
 
     async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {

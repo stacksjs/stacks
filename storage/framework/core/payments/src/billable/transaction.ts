@@ -25,5 +25,11 @@ export const manageTransaction: ManageTransaction = (() => {
     return transaction
   }
 
-  return { store }
+  async function list(user: UserModel): Promise<TransactionModel[]> {
+    const transaction = await Transaction.where('user_id', user.id).get()
+
+    return transaction
+  }
+
+  return { store, list }
 })()

@@ -948,6 +948,10 @@ export class UserModel {
     return manageInvoice.list(this)
   }
 
+  async transactionHistory(): Promise<TransactionModel[]> {
+    return manageTransaction.list(this)
+  }
+
   async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
     return manageInvoice.list(this)
   }
