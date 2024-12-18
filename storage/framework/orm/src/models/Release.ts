@@ -267,7 +267,7 @@ export class ReleaseModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ReleaseModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
     return model
   }
@@ -291,7 +291,7 @@ export class ReleaseModel {
       .values(newRelease)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ReleaseModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
     return model
   }
@@ -707,7 +707,7 @@ export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
     .values(newRelease)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as ReleaseModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

@@ -316,7 +316,7 @@ export class UserModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as UserModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
       dispatch('user:created', model)
@@ -347,7 +347,7 @@ export class UserModel {
       .values(newUser)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as UserModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
       dispatch('user:created', model)
@@ -1151,7 +1151,7 @@ export async function create(newUser: NewUser): Promise<UserModel> {
     .values(newUser)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as UserModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

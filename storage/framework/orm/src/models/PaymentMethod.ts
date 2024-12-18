@@ -297,7 +297,7 @@ export class PaymentMethodModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as PaymentMethodModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
 
     return model
   }
@@ -325,7 +325,7 @@ export class PaymentMethodModel {
       .values(newPaymentMethod)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as PaymentMethodModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
 
     return model
   }
@@ -809,7 +809,7 @@ export async function create(newPaymentMethod: NewPaymentMethod): Promise<Paymen
     .values(newPaymentMethod)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as PaymentMethodModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

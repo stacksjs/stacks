@@ -294,7 +294,7 @@ export class TransactionModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as TransactionModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 
     return model
   }
@@ -322,7 +322,7 @@ export class TransactionModel {
       .values(newTransaction)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as TransactionModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 
     return model
   }
@@ -797,7 +797,7 @@ export async function create(newTransaction: NewTransaction): Promise<Transactio
     .values(newTransaction)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as TransactionModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

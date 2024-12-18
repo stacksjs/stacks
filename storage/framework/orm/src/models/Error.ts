@@ -282,7 +282,7 @@ export class ErrorModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ErrorModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 
     return model
   }
@@ -306,7 +306,7 @@ export class ErrorModel {
       .values(newError)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ErrorModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 
     return model
   }
@@ -767,7 +767,7 @@ export async function create(newError: NewError): Promise<ErrorModel> {
     .values(newError)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as ErrorModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

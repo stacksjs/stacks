@@ -291,7 +291,7 @@ export class ProductModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ProductModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
     return model
   }
@@ -319,7 +319,7 @@ export class ProductModel {
       .values(newProduct)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ProductModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
     return model
   }
@@ -789,7 +789,7 @@ export async function create(newProduct: NewProduct): Promise<ProductModel> {
     .values(newProduct)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as ProductModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

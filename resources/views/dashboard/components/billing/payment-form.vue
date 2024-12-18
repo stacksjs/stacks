@@ -22,7 +22,7 @@ onMounted(async () => {
 })
 
 async function pay() {
-  await paymentStore.fetchPaymentIntent(1, props.productId)
+  await paymentStore.storeTransaction(1, props.productId)
 
   await handlePayment(element.value)
 

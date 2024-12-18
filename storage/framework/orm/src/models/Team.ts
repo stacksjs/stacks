@@ -299,7 +299,7 @@ export class TeamModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as TeamModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     return model
   }
@@ -323,7 +323,7 @@ export class TeamModel {
       .values(newTeam)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as TeamModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     return model
   }
@@ -840,7 +840,7 @@ export async function create(newTeam: NewTeam): Promise<TeamModel> {
     .values(newTeam)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as TeamModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

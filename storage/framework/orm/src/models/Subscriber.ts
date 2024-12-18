@@ -271,7 +271,7 @@ export class SubscriberModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as SubscriberModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 
     return model
   }
@@ -295,7 +295,7 @@ export class SubscriberModel {
       .values(newSubscriber)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as SubscriberModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 
     return model
   }
@@ -711,7 +711,7 @@ export async function create(newSubscriber: NewSubscriber): Promise<SubscriberMo
     .values(newSubscriber)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as SubscriberModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

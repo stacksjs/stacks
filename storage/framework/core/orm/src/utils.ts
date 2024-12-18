@@ -1830,7 +1830,7 @@ export async function generateModelString(
           .values(filteredValues)
           .executeTakeFirst()
 
-        const model = await find(Number(result.insertId)) as ${modelName}Model
+        const model = await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
         ${mittCreateStatement}
 
@@ -1858,7 +1858,7 @@ export async function generateModelString(
           .values(new${modelName})
           .executeTakeFirst()
 
-        const model = await find(Number(result.insertId)) as ${modelName}Model
+        const model = await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
         ${mittCreateStatement}
 
@@ -2279,7 +2279,7 @@ export async function generateModelString(
         .values(new${modelName})
         .executeTakeFirstOrThrow()
 
-      return await find(Number(result.insertId)) as ${modelName}Model
+      return await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
     }
 
     export async function rawQuery(rawQuery: string): Promise<any> {

@@ -282,7 +282,7 @@ export class AccessTokenModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as AccessTokenModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     return model
   }
@@ -306,7 +306,7 @@ export class AccessTokenModel {
       .values(newAccessToken)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as AccessTokenModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     return model
   }
@@ -763,7 +763,7 @@ export async function create(newAccessToken: NewAccessToken): Promise<AccessToke
     .values(newAccessToken)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as AccessTokenModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

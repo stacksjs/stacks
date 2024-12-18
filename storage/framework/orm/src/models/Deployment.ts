@@ -297,7 +297,7 @@ export class DeploymentModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as DeploymentModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 
     return model
   }
@@ -325,7 +325,7 @@ export class DeploymentModel {
       .values(newDeployment)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as DeploymentModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 
     return model
   }
@@ -809,7 +809,7 @@ export async function create(newDeployment: NewDeployment): Promise<DeploymentMo
     .values(newDeployment)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as DeploymentModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
