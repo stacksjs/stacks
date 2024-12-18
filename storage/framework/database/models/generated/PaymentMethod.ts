@@ -12,6 +12,9 @@ export default {
   belongsTo: ['User'],
   hasMany: ['Transaction'],
   traits: {
+    useSeeder: {
+      count: 5,
+    },
     useUuid: true,
   },
   attributes: {
