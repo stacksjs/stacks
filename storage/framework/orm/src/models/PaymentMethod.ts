@@ -4,6 +4,8 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
+import Transaction from './Transaction'
+
 import User from './User'
 
 export interface PaymentMethodsTable {
@@ -717,6 +719,18 @@ export class PaymentMethodModel {
       throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
+  }
+
+  async transactions() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await db.selectFrom('transactions')
+      .where('paymentmethod_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    return results.map(modelItem => new Transaction(modelItem))
   }
 
   distinct(column: keyof PaymentMethodType): PaymentMethodModel {

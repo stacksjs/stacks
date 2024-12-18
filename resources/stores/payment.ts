@@ -288,6 +288,7 @@ export const usePaymentStore = defineStore('payment', {
         })
       }
       catch (err: any) {
+        // eslint-disable-next-line no-console
         console.log(err)
       }
 
@@ -314,6 +315,7 @@ export const usePaymentStore = defineStore('payment', {
         })
       }
       catch (err: any) {
+        // eslint-disable-next-line no-console
         console.log(err)
       }
 

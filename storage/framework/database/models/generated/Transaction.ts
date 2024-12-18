@@ -9,7 +9,7 @@ export default {
   table: 'transactions', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
-  belongsTo: ['User'],
+  belongsTo: ['User', 'PaymentMethod'],
   traits: {
     useUuid: true,
     useSeeder: {

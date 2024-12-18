@@ -10,6 +10,7 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
+  hasMany: ['Transaction'],
   traits: {
     useUuid: true,
   },

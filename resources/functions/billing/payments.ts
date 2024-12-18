@@ -32,6 +32,33 @@ export function useBillable() {
     return `${month} ${day}, ${year}`
   }
 
+  function formatTimestampDate(timestamp: string): string {
+    const date = new Date(timestamp)
+
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ]
+
+    // Extract day, month, and year
+    const day = date.getDate()
+    const month = monthNames[date.getMonth()]
+    const year = date.getFullYear()
+
+    // Return the formatted string in "Month Day, Year" format
+    return `${month} ${day}, ${year}`
+  }
+
   async function loadCardForm(clientSecret: string): Promise<boolean> {
     const isCreated = await loadCardElement(clientSecret)
 
@@ -108,6 +135,7 @@ export function useBillable() {
     handlePayment,
     isEmpty,
     convertUnixTimestampToDate,
+    formatTimestampDate,
     editPlan,
     updatingPlanState,
     showCurrentPlan,
