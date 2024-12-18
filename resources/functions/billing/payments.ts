@@ -68,8 +68,6 @@ export function useBillable() {
   async function handlePayment(elements: any) {
     try {
       const data = await confirmPayment(elements)
-
-      console.log(data)
     }
     catch (err) {
       console.error('Error processing payment:', err)

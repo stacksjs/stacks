@@ -52,7 +52,7 @@ export default {
           required: 'amount is required',
         },
       },
-      factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
+      factory: () => faker.number.int({ min: 1000, max: 10000 }),
     },
 
     brand: {

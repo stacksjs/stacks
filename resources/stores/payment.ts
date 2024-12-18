@@ -58,6 +58,26 @@ export const usePaymentStore = defineStore('payment', {
       return clientSecret
     },
 
+    async storeTransaction(id: number, productId: number): Promise<string> {
+      const body = { productId }
+
+      const url = `http://localhost:3008/payments/store-transaction/${id}`
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const client: any = await response.json()
+      const clientSecret = client.client_secret
+
+      return clientSecret
+    },
+
     async subscribeToPlan(body: { type: string, plan: string, description: string }): Promise<string> {
       const url = 'http://localhost:3008/payments/create-subscription'
 

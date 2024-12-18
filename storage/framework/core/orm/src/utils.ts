@@ -1189,7 +1189,8 @@ export async function generateModelString(
   }
 
   if (useBillable) {
-    paymentImports += `import { PaymentMethodModel } from './PaymentMethod'`
+    paymentImports += `import { PaymentMethodModel } from './PaymentMethod'\n`
+    paymentImports += `import { TransactionModel } from './Transaction'`
 
     billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createStripeCustomer(this, options)
@@ -1201,6 +1202,12 @@ export async function generateModelString(
       const customer = await manageCustomer.updateStripeCustomer(this, options)
 
       return customer
+    }
+
+    async storeTransaction(productId: number): Promise<TransactionModel> {
+      const transaction = await manageTransaction.store(this, productId)
+
+      return transaction
     }
 
     async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
@@ -1558,7 +1565,7 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
+    import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
     import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'

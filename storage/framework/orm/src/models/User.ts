@@ -1,12 +1,13 @@
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
 import type { PaymentMethodModel } from './PaymentMethod'
+import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
 import Deployment from './Deployment'
 
 import PaymentMethod from './PaymentMethod'
@@ -835,6 +836,12 @@ export class UserModel {
     const customer = await manageCustomer.updateStripeCustomer(this, options)
 
     return customer
+  }
+
+  async storeTransaction(productId: number): Promise<TransactionModel> {
+    const transaction = await manageTransaction.store(this, productId)
+
+    return transaction
   }
 
   async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {

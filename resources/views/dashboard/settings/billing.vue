@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { useBillable } from '../../../functions/billing/payments'
 
-import ActivePlan from '../components/billing/active-plan.vue'
+// import ActivePlan from '../components/billing/active-plan.vue'
 
-import PaymentMethod from '../components/billing/payment-method.vue'
-import Plans from '../components/billing/plans.vue'
+// import PaymentMethod from '../components/billing/payment-method.vue'
+// import Plans from '../components/billing/plans.vue'
 
-import LoadingDetails from '../components/skeleton/loading-card.vue'
-import TransactionHistory from '../components/transaction/index.vue'
+// import LoadingDetails from '../components/skeleton/loading-card.vue'
+// import TransactionHistory from '../components/transaction/index.vue'
+
+import OneTimePayment from '../components/billing/one-time-payment.vue'
 
 const { isEmpty, showCurrentPlan } = useBillable()
 
@@ -26,7 +28,7 @@ onMounted(async () => {
 
 <template>
   <div class="mx-auto px-4 py-8 container lg:px-8">
-    <div id="subscribed">
+    <!-- <div id="subscribed">
       <TransactionHistory />
       <div class="flex space-x-8">
         <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
@@ -38,6 +40,8 @@ onMounted(async () => {
         </div>
         <PaymentMethod />
       </div>
-    </div>
+    </div> -->
+
+    <OneTimePayment :product="1" />
   </div>
 </template>
