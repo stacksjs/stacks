@@ -25,10 +25,9 @@ interface ReleaseResponse {
   next_cursor: number | null
 }
 
-export type Release = ReleasesTable
-export type ReleaseType = Selectable<Release>
-export type NewRelease = Insertable<Release>
-export type ReleaseUpdate = Updateable<Release>
+export type ReleaseType = Selectable<ReleasesTable>
+export type NewRelease = Insertable<ReleasesTable>
+export type ReleaseUpdate = Updateable<ReleasesTable>
 export type Releases = ReleaseType[]
 
 export type ReleaseColumn = Releases

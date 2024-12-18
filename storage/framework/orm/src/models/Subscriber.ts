@@ -26,10 +26,9 @@ interface SubscriberResponse {
   next_cursor: number | null
 }
 
-export type Subscriber = SubscribersTable
-export type SubscriberType = Selectable<Subscriber>
-export type NewSubscriber = Insertable<Subscriber>
-export type SubscriberUpdate = Updateable<Subscriber>
+export type SubscriberType = Selectable<SubscribersTable>
+export type NewSubscriber = Insertable<SubscribersTable>
+export type SubscriberUpdate = Updateable<SubscribersTable>
 export type Subscribers = SubscriberType[]
 
 export type SubscriberColumn = Subscribers

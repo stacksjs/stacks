@@ -31,10 +31,9 @@ interface AccessTokenResponse {
   next_cursor: number | null
 }
 
-export type AccessToken = PersonalAccessTokensTable
-export type AccessTokenType = Selectable<AccessToken>
-export type NewAccessToken = Insertable<AccessToken>
-export type AccessTokenUpdate = Updateable<AccessToken>
+export type AccessTokenType = Selectable<PersonalAccessTokensTable>
+export type NewAccessToken = Insertable<PersonalAccessTokensTable>
+export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
 export type PersonalAccessTokens = AccessTokenType[]
 
 export type AccessTokenColumn = PersonalAccessTokens

@@ -39,10 +39,9 @@ interface SubscriptionResponse {
   next_cursor: number | null
 }
 
-export type Subscription = SubscriptionsTable
-export type SubscriptionType = Selectable<Subscription>
-export type NewSubscription = Insertable<Subscription>
-export type SubscriptionUpdate = Updateable<Subscription>
+export type SubscriptionType = Selectable<SubscriptionsTable>
+export type NewSubscription = Insertable<SubscriptionsTable>
+export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 export type Subscriptions = SubscriptionType[]
 
 export type SubscriptionColumn = Subscriptions

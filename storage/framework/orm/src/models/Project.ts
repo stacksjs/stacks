@@ -28,10 +28,9 @@ interface ProjectResponse {
   next_cursor: number | null
 }
 
-export type Project = ProjectsTable
-export type ProjectType = Selectable<Project>
-export type NewProject = Insertable<Project>
-export type ProjectUpdate = Updateable<Project>
+export type ProjectType = Selectable<ProjectsTable>
+export type NewProject = Insertable<ProjectsTable>
+export type ProjectUpdate = Updateable<ProjectsTable>
 export type Projects = ProjectType[]
 
 export type ProjectColumn = Projects

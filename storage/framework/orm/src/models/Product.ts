@@ -33,10 +33,9 @@ interface ProductResponse {
   next_cursor: number | null
 }
 
-export type Product = ProductsTable
-export type ProductType = Selectable<Product>
-export type NewProduct = Insertable<Product>
-export type ProductUpdate = Updateable<Product>
+export type ProductType = Selectable<ProductsTable>
+export type NewProduct = Insertable<ProductsTable>
+export type ProductUpdate = Updateable<ProductsTable>
 export type Products = ProductType[]
 
 export type ProductColumn = Products

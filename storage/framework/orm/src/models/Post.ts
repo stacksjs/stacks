@@ -29,10 +29,9 @@ interface PostResponse {
   next_cursor: number | null
 }
 
-export type Post = PostsTable
-export type PostType = Selectable<Post>
-export type NewPost = Insertable<Post>
-export type PostUpdate = Updateable<Post>
+export type PostType = Selectable<PostsTable>
+export type NewPost = Insertable<PostsTable>
+export type PostUpdate = Updateable<PostsTable>
 export type Posts = PostType[]
 
 export type PostColumn = Posts

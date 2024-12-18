@@ -30,10 +30,9 @@ interface ErrorResponse {
   next_cursor: number | null
 }
 
-export type Error = ErrorsTable
-export type ErrorType = Selectable<Error>
-export type NewError = Insertable<Error>
-export type ErrorUpdate = Updateable<Error>
+export type ErrorType = Selectable<ErrorsTable>
+export type NewError = Insertable<ErrorsTable>
+export type ErrorUpdate = Updateable<ErrorsTable>
 export type Errors = ErrorType[]
 
 export type ErrorColumn = Errors

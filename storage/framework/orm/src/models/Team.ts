@@ -38,10 +38,9 @@ interface TeamResponse {
   next_cursor: number | null
 }
 
-export type Team = TeamsTable
-export type TeamType = Selectable<Team>
-export type NewTeam = Insertable<Team>
-export type TeamUpdate = Updateable<Team>
+export type TeamType = Selectable<TeamsTable>
+export type NewTeam = Insertable<TeamsTable>
+export type TeamUpdate = Updateable<TeamsTable>
 export type Teams = TeamType[]
 
 export type TeamColumn = Teams

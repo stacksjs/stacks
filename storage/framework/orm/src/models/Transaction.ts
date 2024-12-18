@@ -35,10 +35,9 @@ interface TransactionResponse {
   next_cursor: number | null
 }
 
-export type Transaction = TransactionsTable
-export type TransactionType = Selectable<Transaction>
-export type NewTransaction = Insertable<Transaction>
-export type TransactionUpdate = Updateable<Transaction>
+export type TransactionType = Selectable<TransactionsTable>
+export type NewTransaction = Insertable<TransactionsTable>
+export type TransactionUpdate = Updateable<TransactionsTable>
 export type Transactions = TransactionType[]
 
 export type TransactionColumn = Transactions

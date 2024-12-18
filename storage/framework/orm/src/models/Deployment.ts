@@ -36,10 +36,9 @@ interface DeploymentResponse {
   next_cursor: number | null
 }
 
-export type Deployment = DeploymentsTable
-export type DeploymentType = Selectable<Deployment>
-export type NewDeployment = Insertable<Deployment>
-export type DeploymentUpdate = Updateable<Deployment>
+export type DeploymentType = Selectable<DeploymentsTable>
+export type NewDeployment = Insertable<DeploymentsTable>
+export type DeploymentUpdate = Updateable<DeploymentsTable>
 export type Deployments = DeploymentType[]
 
 export type DeploymentColumn = Deployments

@@ -53,10 +53,9 @@ interface UserResponse {
   next_cursor: number | null
 }
 
-export type User = UsersTable
-export type UserType = Selectable<User>
-export type NewUser = Insertable<User>
-export type UserUpdate = Updateable<User>
+export type UserType = Selectable<UsersTable>
+export type NewUser = Insertable<UsersTable>
+export type UserUpdate = Updateable<UsersTable>
 export type Users = UserType[]
 
 export type UserColumn = Users
@@ -359,7 +358,7 @@ export class UserModel {
   // Method to remove a User
   static async remove(id: number): Promise<void> {
     const instance = new UserModel(null)
-    const model = await instance.find(id)
+    const model = await instance.find(Number(id))
 
     if (instance.softDeletes) {
       await db.updateTable('users')
@@ -699,7 +698,7 @@ export class UserModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    const model = await this.find(this.id)
+    const model = await this.find(Number(this.id))
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {

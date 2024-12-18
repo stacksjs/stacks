@@ -36,10 +36,9 @@ interface PaymentMethodResponse {
   next_cursor: number | null
 }
 
-export type PaymentMethod = PaymentMethodsTable
-export type PaymentMethodType = Selectable<PaymentMethod>
-export type NewPaymentMethod = Insertable<PaymentMethod>
-export type PaymentMethodUpdate = Updateable<PaymentMethod>
+export type PaymentMethodType = Selectable<PaymentMethodsTable>
+export type NewPaymentMethod = Insertable<PaymentMethodsTable>
+export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
 export type PaymentMethods = PaymentMethodType[]
 
 export type PaymentMethodColumn = PaymentMethods

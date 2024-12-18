@@ -1024,8 +1024,8 @@ export async function generateModelString(
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
 
-      mittDeleteStaticFindStatement += 'const model = await instance.find(id)'
-      mittDeleteFindStatement += 'const model = await this.find(this.id)'
+      mittDeleteStaticFindStatement += 'const model = await instance.find(Number(id))'
+      mittDeleteFindStatement += 'const model = await this.find(Number(this.id))'
     }
   }
 
@@ -1591,11 +1591,10 @@ export async function generateModelString(
       }
       next_cursor: number | null
     }
-
-    export type ${modelName} = ${formattedTableName}Table
-    export type ${modelName}Type = Selectable<${modelName}>
-    export type New${modelName} = Insertable<${modelName}>
-    export type ${modelName}Update = Updateable<${modelName}>
+      
+    export type ${modelName}Type = Selectable<${formattedTableName}Table>
+    export type New${modelName} = Insertable<${formattedTableName}Table>
+    export type ${modelName}Update = Updateable<${formattedTableName}Table>
     export type ${formattedTableName} = ${modelName}Type[]
 
     export type ${modelName}Column = ${formattedTableName}
