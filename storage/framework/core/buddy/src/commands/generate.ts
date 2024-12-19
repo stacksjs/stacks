@@ -129,7 +129,7 @@ export function generate(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:component-meta` ...', options)
-      await generateComponentMeta(options)
+      await generateComponentMeta()
     })
 
   buddy

@@ -2,13 +2,13 @@ import type { Model, RelationConfig } from '@stacksjs/types'
 import { randomUUIDv7 } from 'bun'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { fetchOtherModelRelations, getModelName, getRelationType, modelTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { singular, snakeCase } from '@stacksjs/strings'
 
-async function seedModel(name: string, model?: Model) {
+async function seedModel(name: string, modelPath: string, model: Model) {
   if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {
     log.info(`Skipping seeding for ${italic(name)}`)
     return
@@ -23,10 +23,7 @@ async function seedModel(name: string, model?: Model) {
     return
   }
 
-  if (!model)
-    model = (await import(path.userModelsPath(name))) as Model
-
-  const tableName = await modelTableName(model)
+  const tableName = await getTableName(model, modelPath)
 
   const ormModel = (await import(path.storagePath(`framework/orm/src/models/${name}`))).default
 
@@ -35,7 +32,7 @@ async function seedModel(name: string, model?: Model) {
 
   log.info(`Seeding ${seedCount} records into ${italic(tableName)}`)
 
-  const modelName = getModelName(model, path.userModelsPath(name))
+  const modelName = getModelName(model, modelPath)
 
   const otherRelations = await fetchOtherModelRelations(modelName)
 
@@ -51,6 +48,7 @@ async function seedModel(name: string, model?: Model) {
         record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
       else record[formattedFieldName] = field?.factory ? field.factory() : undefined
     }
+    
 
     if (otherRelations?.length) {
       for (let j = 0; j < otherRelations.length; j++) {
@@ -75,8 +73,13 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const record: any = {}
   const record2: any = {}
   const pivotRecord: any = {}
+  let modelInstance: Model
 
-  const modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
+  if (fs.existsSync(path.userModelsPath(`${relation?.model}.ts`)))
+    modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
+  else
+    modelInstance = (await import(path.storagePath(`framework/database/models/generated/${relation?.model}.ts`))).default as Model
+
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
   const useUuid = modelInstance?.traits?.useUuid || false
@@ -129,8 +132,13 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
 }
 
 async function seedModelRelation(modelName: string): Promise<bigint | number> {
-  const modelInstance = (await import(path.userModelsPath(modelName))).default
+  let modelInstance: Model
 
+  if (fs.existsSync(path.userModelsPath(`${modelName}.ts`)))
+    modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
+  else
+    modelInstance = (await import(path.storagePath(`framework/database/models/generated/${modelName}.ts`))).default as Model
+  
   if (!modelInstance)
     return 1
 
@@ -191,12 +199,14 @@ export async function seed(): Promise<void> {
   for (const file of modelFiles) {
     const modelPath = path.join(modelsDir, file)
     const model = await import(modelPath)
-    await seedModel(file, model.default)
+
+    await seedModel(file, modelPath, model.default)
   }
 
   for (const coreModel of coreModelFiles) {
-    const modelPath = path.join(coreModelsDir, coreModel)
-    const model = await import(modelPath)
-    await seedModel(coreModel, model.default)
+    const coreModelPath = path.join(coreModelsDir, coreModel)
+    const modelCore = await import(coreModelPath)
+
+    await seedModel(coreModel, coreModelPath, modelCore.default)
   }
 }
