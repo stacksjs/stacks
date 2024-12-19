@@ -498,9 +498,11 @@ export class SubscriberModel {
   }
 
   static async first(): Promise<SubscriberType | undefined> {
-    return await db.selectFrom('subscribers')
+    const model = await db.selectFrom('subscribers')
       .selectAll()
       .executeTakeFirst()
+
+    return new SubscriberModel(model)
   }
 
   async last(): Promise<SubscriberType | undefined> {

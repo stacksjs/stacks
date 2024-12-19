@@ -12,9 +12,10 @@ export async function up(db: Database<any>) {
     .addColumn('brand', 'varchar(50)', col => col.notNull())
     .addColumn('type', 'varchar(50)', col => col.notNull())
     .addColumn('provider_id', 'varchar(255)')
-    .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
-      ) 
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
+    .addColumn('paymentmethod_id', 'integer', col =>
+      col.references('payment_methods.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

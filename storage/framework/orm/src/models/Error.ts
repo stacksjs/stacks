@@ -549,9 +549,11 @@ export class ErrorModel {
   }
 
   static async first(): Promise<ErrorType | undefined> {
-    return await db.selectFrom('errors')
+    const model = await db.selectFrom('errors')
       .selectAll()
       .executeTakeFirst()
+
+    return new ErrorModel(model)
   }
 
   async last(): Promise<ErrorType | undefined> {

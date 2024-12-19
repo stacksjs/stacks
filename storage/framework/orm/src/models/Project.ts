@@ -527,9 +527,11 @@ export class ProjectModel {
   }
 
   static async first(): Promise<ProjectType | undefined> {
-    return await db.selectFrom('projects')
+    const model = await db.selectFrom('projects')
       .selectAll()
       .executeTakeFirst()
+
+    return new ProjectModel(model)
   }
 
   async last(): Promise<ProjectType | undefined> {

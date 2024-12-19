@@ -1,4 +1,4 @@
-import type { UserRequestType } from '../types/requests'
+import type { TransactionRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -10,40 +10,34 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataUser {
+interface RequestDataTransaction {
   id: number
   name: string
-  email: string
-  job_title: string
-  password: string
-  team_id: number
-  deployment_id: number
-  post_id: number
+  description: string
+  amount: number
+  type: string
+  provider_id: string
+  user_id: number
   paymentmethod_id: number
-  transaction_id: number
-  subscription_id: number
   created_at?: Date
   updated_at?: Date
   deleted_at?: Date
 }
-export class UserRequest extends Request<RequestDataUser> implements UserRequestType {
+export class TransactionRequest extends Request<RequestDataTransaction> implements TransactionRequestType {
   public id = 1
   public name = ''
-  public email = ''
-  public job_title = ''
-  public password = ''
-  public team_id = 0
-  public deployment_id = 0
-  public post_id = 0
+  public description = ''
+  public amount = 0
+  public type = ''
+  public provider_id = ''
+  public user_id = 0
   public paymentmethod_id = 0
-  public transaction_id = 0
-  public subscription_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('User', this.all())
+      await validateField('Transaction', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -51,4 +45,4 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   }
 }
 
-export const request = new UserRequest()
+export const request = new TransactionRequest()

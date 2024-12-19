@@ -18,6 +18,7 @@ export interface PaymentMethodsTable {
   is_default?: boolean
   provider_id?: string
   user_id?: number
+  transaction_id?: number
   uuid?: string
 
   created_at?: Date
@@ -58,7 +59,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
+  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id', 'transaction_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -77,6 +78,7 @@ export class PaymentMethodModel {
   public created_at: Date | undefined
   public updated_at: Date | undefined
   public user_id: number | undefined
+  public transaction_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     this.id = paymentmethod?.id || 1
@@ -94,6 +96,7 @@ export class PaymentMethodModel {
     this.updated_at = paymentmethod?.updated_at
 
     this.user_id = paymentmethod?.user_id
+    this.transaction_id = paymentmethod?.transaction_id
 
     this.selectFromQuery = db.selectFrom('payment_methods')
     this.updateFromQuery = db.updateTable('payment_methods')
@@ -578,9 +581,11 @@ export class PaymentMethodModel {
   }
 
   static async first(): Promise<PaymentMethodType | undefined> {
-    return await db.selectFrom('payment_methods')
+    const model = await db.selectFrom('payment_methods')
       .selectAll()
       .executeTakeFirst()
+
+    return new PaymentMethodModel(model)
   }
 
   async last(): Promise<PaymentMethodType | undefined> {

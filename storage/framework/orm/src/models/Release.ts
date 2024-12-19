@@ -494,9 +494,11 @@ export class ReleaseModel {
   }
 
   static async first(): Promise<ReleaseType | undefined> {
-    return await db.selectFrom('releases')
+    const model = await db.selectFrom('releases')
       .selectAll()
       .executeTakeFirst()
+
+    return new ReleaseModel(model)
   }
 
   async last(): Promise<ReleaseType | undefined> {

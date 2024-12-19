@@ -96,6 +96,7 @@ dotenv
 Doyon
 dprint
 Drasner
+dtsx
 ecommerce
 edgelambda
 elasticloadbalancingv

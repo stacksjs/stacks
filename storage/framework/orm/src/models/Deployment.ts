@@ -576,9 +576,11 @@ export class DeploymentModel {
   }
 
   static async first(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments')
+    const model = await db.selectFrom('deployments')
       .selectAll()
       .executeTakeFirst()
+
+    return new DeploymentModel(model)
   }
 
   async last(): Promise<DeploymentType | undefined> {

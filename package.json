@@ -77,5 +77,8 @@
   ],
   "devDependencies": {
     "typescript": "5.7.2"
+  },
+  "overrides": {
+    "unconfig": "0.3.10"
   }
 }

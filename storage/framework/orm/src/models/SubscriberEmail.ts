@@ -498,9 +498,11 @@ export class SubscriberEmailModel {
   }
 
   static async first(): Promise<SubscriberEmailType | undefined> {
-    return await db.selectFrom('subscriber_emails')
+    const model = await db.selectFrom('subscriber_emails')
       .selectAll()
       .executeTakeFirst()
+
+    return new SubscriberEmailModel(model)
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {

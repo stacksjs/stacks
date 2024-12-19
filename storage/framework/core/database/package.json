@@ -58,7 +58,7 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@types/tar": "^6.1.13",
-    "debug": "^4.3.7",
+    "debug": "^4.4.0",
     "mkdirp": "^3.0.1",
     "q": "^1.5.1",
     "tar": "^7.4.3"

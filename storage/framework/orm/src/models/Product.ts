@@ -570,9 +570,11 @@ export class ProductModel {
   }
 
   static async first(): Promise<ProductType | undefined> {
-    return await db.selectFrom('products')
+    const model = await db.selectFrom('products')
       .selectAll()
       .executeTakeFirst()
+
+    return new ProductModel(model)
   }
 
   async last(): Promise<ProductType | undefined> {

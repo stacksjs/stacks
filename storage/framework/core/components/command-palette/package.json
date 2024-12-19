@@ -33,18 +33,18 @@
   "dependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ui": "workspace:*",
-    "highlight.js": "^11.10.0",
+    "highlight.js": "^11.11.0",
     "ts-collect": "^0.4.0"
   },
   "devDependencies": {
-    "@iconify-json/heroicons": "^1.2.1",
-    "@microsoft/api-extractor": "^7.47.12",
+    "@iconify-json/heroicons": "^1.2.2",
+    "@microsoft/api-extractor": "^7.48.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.7.0",
     "clean-css": "^5.3.3",
-    "sass": "^1.71.1",
-    "unplugin-icons": "^0.20.2"
+    "sass": "^1.83.0",
+    "unplugin-icons": "^0.22.0"
   }
 }
