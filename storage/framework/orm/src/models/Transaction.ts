@@ -13,7 +13,6 @@ export interface TransactionsTable {
   name?: string
   description?: string
   amount?: number
-  brand?: string
   type?: string
   provider_id?: string
   user_id?: number
@@ -58,7 +57,7 @@ interface QueryOptions {
 
 export class TransactionModel {
   private hidden = []
-  private fillable = ['name', 'description', 'amount', 'brand', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
+  private fillable = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -69,7 +68,6 @@ export class TransactionModel {
   public name: string | undefined
   public description: string | undefined
   public amount: number | undefined
-  public brand: string | undefined
   public type: string | undefined
   public provider_id: string | undefined
 
@@ -84,7 +82,6 @@ export class TransactionModel {
     this.name = transaction?.name
     this.description = transaction?.description
     this.amount = transaction?.amount
-    this.brand = transaction?.brand
     this.type = transaction?.type
     this.provider_id = transaction?.provider_id
 
@@ -508,14 +505,6 @@ export class TransactionModel {
     return instance
   }
 
-  static whereBrand(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('brand', '=', value)
-
-    return instance
-  }
-
   static whereType(value: string): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -570,9 +559,11 @@ export class TransactionModel {
   }
 
   static async first(): Promise<TransactionType | undefined> {
-    return await db.selectFrom('transactions')
+    const model = await db.selectFrom('transactions')
       .selectAll()
       .executeTakeFirst()
+
+    return new TransactionModel(model)
   }
 
   async last(): Promise<TransactionType | undefined> {
@@ -770,7 +761,6 @@ export class TransactionModel {
       name: this.name,
       description: this.description,
       amount: this.amount,
-      brand: this.brand,
       type: this.type,
       provider_id: this.provider_id,
 
@@ -845,13 +835,6 @@ export async function whereDescription(value: string): Promise<TransactionModel[
 
 export async function whereAmount(value: number): Promise<TransactionModel[]> {
   const query = db.selectFrom('transactions').where('amount', '=', value)
-  const results = await query.execute()
-
-  return results.map(modelItem => new TransactionModel(modelItem))
-}
-
-export async function whereBrand(value: string): Promise<TransactionModel[]> {
-  const query = db.selectFrom('transactions').where('brand', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TransactionModel(modelItem))

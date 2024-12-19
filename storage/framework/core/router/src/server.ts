@@ -6,6 +6,7 @@ import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
+import { isNumber } from '@stacksjs/validation'
 import { route } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
@@ -203,6 +204,17 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
 
   if (isString(foundCallback)) {
     return new Response(foundCallback, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+      },
+      status: 200,
+    })
+  }
+
+  if (isNumber(foundCallback)) {
+    return new Response(String(foundCallback), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',

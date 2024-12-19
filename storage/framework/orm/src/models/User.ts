@@ -590,9 +590,11 @@ export class UserModel {
   }
 
   static async first(): Promise<UserType | undefined> {
-    return await db.selectFrom('users')
+    const model = await db.selectFrom('users')
       .selectAll()
       .executeTakeFirst()
+
+    return new UserModel(model)
   }
 
   async last(): Promise<UserType | undefined> {

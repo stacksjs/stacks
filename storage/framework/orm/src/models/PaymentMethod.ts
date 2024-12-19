@@ -581,9 +581,11 @@ export class PaymentMethodModel {
   }
 
   static async first(): Promise<PaymentMethodType | undefined> {
-    return await db.selectFrom('payment_methods')
+    const model = await db.selectFrom('payment_methods')
       .selectAll()
       .executeTakeFirst()
+
+    return new PaymentMethodModel(model)
   }
 
   async last(): Promise<PaymentMethodType | undefined> {

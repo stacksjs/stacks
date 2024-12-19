@@ -48,7 +48,6 @@ async function seedModel(name: string, modelPath: string, model: Model) {
         record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
       else record[formattedFieldName] = field?.factory ? field.factory() : undefined
     }
-    
 
     if (otherRelations?.length) {
       for (let j = 0; j < otherRelations.length; j++) {
@@ -138,7 +137,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
     modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
   else
     modelInstance = (await import(path.storagePath(`framework/database/models/generated/${modelName}.ts`))).default as Model
-  
+
   if (!modelInstance)
     return 1
 

@@ -55,19 +55,6 @@ export default {
       factory: () => faker.number.int({ min: 1000, max: 10000 }),
     },
 
-    brand: {
-      required: true,
-      fillable: true,
-      validation: {
-        rule: schema.string().maxLength(50),
-        message: {
-          number: 'brand must be a number',
-          required: 'brand is required',
-        },
-      },
-      factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
-    },
-
     type: {
       required: true,
       fillable: true,

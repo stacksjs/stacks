@@ -533,9 +533,11 @@ export class AccessTokenModel {
   }
 
   static async first(): Promise<AccessTokenType | undefined> {
-    return await db.selectFrom('personal_access_tokens')
+    const model = await db.selectFrom('personal_access_tokens')
       .selectAll()
       .executeTakeFirst()
+
+    return new AccessTokenModel(model)
   }
 
   async last(): Promise<AccessTokenType | undefined> {

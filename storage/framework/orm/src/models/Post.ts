@@ -511,9 +511,11 @@ export class PostModel {
   }
 
   static async first(): Promise<PostType | undefined> {
-    return await db.selectFrom('posts')
+    const model = await db.selectFrom('posts')
       .selectAll()
       .executeTakeFirst()
+
+    return new PostModel(model)
   }
 
   async last(): Promise<PostType | undefined> {

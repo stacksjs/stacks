@@ -609,9 +609,11 @@ export class SubscriptionModel {
   }
 
   static async first(): Promise<SubscriptionType | undefined> {
-    return await db.selectFrom('subscriptions')
+    const model = await db.selectFrom('subscriptions')
       .selectAll()
       .executeTakeFirst()
+
+    return new SubscriptionModel(model)
   }
 
   async last(): Promise<SubscriptionType | undefined> {

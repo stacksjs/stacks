@@ -2063,10 +2063,12 @@ export async function generateModelString(
         return model !== null || model !== undefined
       }
 
-      static async first(): Promise<${modelName}Type | undefined> {
-        return await db.selectFrom('${tableName}')
+       static async first(): Promise<${modelName}Type | undefined> {
+        const model = await db.selectFrom('${tableName}')
           .selectAll()
           .executeTakeFirst()
+
+        return new ${modelName}Model(model)
       }
 
       async last(): Promise<${modelName}Type | undefined> {

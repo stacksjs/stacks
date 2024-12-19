@@ -15,7 +15,6 @@ interface RequestDataTransaction {
   name: string
   description: string
   amount: number
-  brand: string
   type: string
   provider_id: string
   user_id: number
@@ -29,7 +28,6 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   public name = ''
   public description = ''
   public amount = 0
-  public brand = ''
   public type = ''
   public provider_id = ''
   public user_id = 0

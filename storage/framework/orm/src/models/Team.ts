@@ -582,9 +582,11 @@ export class TeamModel {
   }
 
   static async first(): Promise<TeamType | undefined> {
-    return await db.selectFrom('teams')
+    const model = await db.selectFrom('teams')
       .selectAll()
       .executeTakeFirst()
+
+    return new TeamModel(model)
   }
 
   async last(): Promise<TeamType | undefined> {
