@@ -53,7 +53,7 @@
     "@flystorage/chaos": "^0.1.2",
     "@flystorage/file-storage": "^0.1.7",
     "@flystorage/in-memory": "^0.1.4",
-    "@flystorage/local-fs": "^0.1.10",
+    "@flystorage/local-fs": "^1.0.0",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
