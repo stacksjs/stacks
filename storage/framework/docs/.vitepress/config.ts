@@ -33,7 +33,6 @@ export default withPwa(
       ],
     },
 
-
     vite: viteConfig,
 
     ...userConfig,

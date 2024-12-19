@@ -1,4 +1,4 @@
-import { confirmCardSetup, loadCardElement } from '@stacksjs/browser'
+import { confirmCardSetup, confirmPayment, loadCardElement, loadPaymentElement } from '@stacksjs/browser'
 
 const paymentStore = usePaymentStore()
 
@@ -32,34 +32,73 @@ export function useBillable() {
     return `${month} ${day}, ${year}`
   }
 
-  async function loadCardForm(): Promise<boolean> {
-    const isCreated = await loadCardElement()
+  function formatTimestampDate(timestamp: string): string {
+    const date = new Date(timestamp)
+
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ]
+
+    // Extract day, month, and year
+    const day = date.getDate()
+    const month = monthNames[date.getMonth()]
+    const year = date.getFullYear()
+
+    // Return the formatted string in "Month Day, Year" format
+    return `${month} ${day}, ${year}`
+  }
+
+  async function loadCardForm(clientSecret: string): Promise<boolean> {
+    const isCreated = await loadCardElement(clientSecret)
 
     return isCreated
   }
 
-  async function handleAddPaymentMethod(elements: any) {
-    const clientSecret = await paymentStore.fetchSetupIntent(1)
+  async function loadPaymentForm(clientSecret: string): Promise<boolean> {
+    const isCreated = await loadPaymentElement(clientSecret)
 
-    const param = {
-      clientSecret,
-      paymentMethod: {
-        card: elements,
-        billing_details: { name: 'Chris Breuer' },
-      },
+    return isCreated
+  }
+
+  async function handleAddPaymentMethod(clientSecret: string, elements: any) {
+    try {
+      const { error, setupIntent } = await confirmCardSetup(clientSecret, elements)
+
+      if (error) {
+        console.error(error.message)
+      }
+      else {
+        await paymentStore.storePaymentMethod(setupIntent.payment_method)
+
+        if (!paymentStore.hasPaymentMethods) {
+          await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
+        }
+      }
     }
-
-    const { setupIntent, error } = await confirmCardSetup(param)
-
-    if (error) {
-      console.error(error.message)
+    catch (err) {
+      console.error('Error processing payment:', err)
+      // Handle any unexpected errors
     }
-    else {
-      await paymentStore.storePaymentMethod(setupIntent.payment_method)
+  }
 
-      if (!paymentStore.hasPaymentMethods)       
-        await paymentStore.setUserDefaultPaymentMethod(setupIntent.payment_method)
-
+  async function handlePayment(elements: any) {
+    try {
+      await confirmPayment(elements)
+    }
+    catch (err) {
+      console.error('Error processing payment:', err)
+      // Handle any unexpected errors
     }
   }
 
@@ -89,5 +128,18 @@ export function useBillable() {
     paymentStore.closePlans()
   }
 
-  return { loadCardForm, handleAddPaymentMethod, isEmpty, convertUnixTimestampToDate, editPlan, updatingPlanState, showCurrentPlan, cancelEditPlan, showPlans }
+  return {
+    loadCardForm,
+    loadPaymentForm,
+    handleAddPaymentMethod,
+    handlePayment,
+    isEmpty,
+    convertUnixTimestampToDate,
+    formatTimestampDate,
+    editPlan,
+    updatingPlanState,
+    showCurrentPlan,
+    cancelEditPlan,
+    showPlans,
+  }
 }

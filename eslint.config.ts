@@ -6,12 +6,12 @@ export default stacks({
 
   // Or customize the stylistic rules
   stylistic: {
-    indent: 2, // 4, or 'tab'
+    indent: 2,
     quotes: 'single', // or 'double'
   },
 
   typescript: true,
-  vue: true,
+  vue: false,
   jsonc: true,
   yaml: true,
   unocss: true,

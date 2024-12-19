@@ -45,6 +45,10 @@ route.group({ prefix: '/payments' }, async () => {
   route.post('/create-invoice-subscription/{id}', 'Actions/Payment/CreateInvoiceSubscription')
   route.patch('/update-customer/{id}', 'Actions/Payment/UpdateCustomerAction')
   route.post('/checkout/{id}', 'Actions/Payment/CreateCheckoutAction')
+
+  route.get('/fetch-product/{id}', 'Actions/Payment/FetchProductAction')
+
+  route.post('/store-transaction/{id}', 'Actions/Payment/StoreTransactionAction')
 })
 
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`

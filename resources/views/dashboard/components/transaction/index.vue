@@ -50,7 +50,7 @@ interface LineItem {
   plan: Plan
   price: Price
 }
-const { convertUnixTimestampToDate } = useBillable()
+const { formatTimestampDate } = useBillable()
 
 const paymentStore = usePaymentStore()
 
@@ -67,7 +67,7 @@ function getLastDigits(paymentIntent: any) {
 }
 
 function getBrand(paymentIntent: any) {
-  return paymentIntent.payment_method.card.brand
+  return 'visa'
 }
 </script>
 
@@ -115,19 +115,19 @@ function getBrand(paymentIntent: any) {
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="(transaction, index) in paymentStore.getTransactionHistory" :key="index">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                  Dashboard Subscription <em class="italic">({{ getTransactionType(transaction.lines.data) }}ly)</em>
+                  Dashboard Subscription <em class="italic">({{ getTransactionType(transaction.name) }}ly)</em>
                 </td>
 
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  {{ convertUnixTimestampToDate(transaction.created) }}
+                  {{ formatTimestampDate(transaction.created_at) }}
                 </td>
 
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  ${{ getUnitPrice(transaction.lines.data) }}
+                  ${{ getUnitPrice(transaction.unit_price) }}
                 </td>
 
                 <td class="flex items-center whitespace-nowrap px-3 py-4 text-sm text-gray-500 space-x-2">
-                  <CardBrands :width="2" :brand="getBrand(transaction.payment_intent)" alt="Brand Logo" />
+                  <CardBrands :width="2" :brand="transaction.brand" alt="Brand Logo" />
                   <span>•••• •••• •••• {{ getLastDigits(transaction.payment_intent) }}</span>
                 </td>
 

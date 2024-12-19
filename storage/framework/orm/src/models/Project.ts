@@ -1,10 +1,10 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProjectsTable {
-  id?: Generated<number>
+  id: number
   name?: string
   description?: string
   url?: string
@@ -28,10 +28,9 @@ interface ProjectResponse {
   next_cursor: number | null
 }
 
-export type Project = ProjectsTable
-export type ProjectType = Selectable<Project>
-export type NewProject = Insertable<Project>
-export type ProjectUpdate = Updateable<Project>
+export type ProjectType = Selectable<ProjectsTable>
+export type NewProject = Partial<Insertable<ProjectsTable>>
+export type ProjectUpdate = Updateable<ProjectsTable>
 export type Projects = ProjectType[]
 
 export type ProjectColumn = Projects
@@ -51,9 +50,11 @@ export class ProjectModel {
   private hidden = []
   private fillable = ['name', 'description', 'url', 'status', 'uuid']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public name: string | undefined
   public description: string | undefined
   public url: string | undefined
@@ -63,7 +64,7 @@ export class ProjectModel {
   public updated_at: Date | undefined
 
   constructor(project: Partial<ProjectType> | null) {
-    this.id = project?.id
+    this.id = project?.id || 1
     this.name = project?.name
     this.description = project?.description
     this.url = project?.url
@@ -73,7 +74,9 @@ export class ProjectModel {
 
     this.updated_at = project?.updated_at
 
-    this.query = db.selectFrom('projects')
+    this.selectFromQuery = db.selectFrom('projects')
+    this.updateFromQuery = db.updateTable('projects')
+    this.deleteFromQuery = db.deleteFrom('projects')
     this.hasSelect = false
   }
 
@@ -164,19 +167,19 @@ export class ProjectModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
   }
@@ -185,19 +188,19 @@ export class ProjectModel {
   async get(): Promise<ProjectModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
   }
@@ -206,10 +209,10 @@ export class ProjectModel {
     const instance = new ProjectModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -217,15 +220,15 @@ export class ProjectModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -273,7 +276,7 @@ export class ProjectModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ProjectModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 
     return model
   }
@@ -297,7 +300,7 @@ export class ProjectModel {
       .values(newProject)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as ProjectModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 
     return model
   }
@@ -337,9 +340,68 @@ export class ProjectModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
+  }
+
+  orWhere(...args: Array<[string, string, any]>): ProjectModel {
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return this
+  }
+
+  static orWhere(...args: Array<[string, string, any]>): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return instance
   }
 
   static where(...args: (string | number | boolean | undefined | null)[]): ProjectModel {
@@ -360,7 +422,11 @@ export class ProjectModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -368,13 +434,25 @@ export class ProjectModel {
   static whereNull(column: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): ProjectModel {
-    this.query = this.query.where(column, 'is', null)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -382,7 +460,7 @@ export class ProjectModel {
   static whereName(value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
@@ -390,7 +468,7 @@ export class ProjectModel {
   static whereDescription(value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.where('description', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
     return instance
   }
@@ -398,7 +476,7 @@ export class ProjectModel {
   static whereUrl(value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.where('url', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('url', '=', value)
 
     return instance
   }
@@ -406,7 +484,7 @@ export class ProjectModel {
   static whereStatus(value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
@@ -414,13 +492,17 @@ export class ProjectModel {
   static whereIn(column: keyof ProjectType, values: any[]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<ProjectModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -430,7 +512,7 @@ export class ProjectModel {
   }
 
   async firstOrFail(): Promise<ProjectModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No ProjectModel results found for query')
@@ -439,7 +521,7 @@ export class ProjectModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -464,13 +546,13 @@ export class ProjectModel {
   static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -478,13 +560,13 @@ export class ProjectModel {
   static orderByDesc(column: keyof ProjectType): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof ProjectType): ProjectModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -492,45 +574,47 @@ export class ProjectModel {
   static orderByAsc(column: keyof ProjectType): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof ProjectType): ProjectModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
   async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Project ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(project).filter(([key]) => this.fillable.includes(key)),
     ) as NewProject
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('projects')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
 
   async forceUpdate(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Project ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(project).execute()
+    }
 
     await db.updateTable('projects')
       .set(project)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -552,7 +636,7 @@ export class ProjectModel {
   // Method to delete (soft delete) the project instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Project ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -573,7 +657,7 @@ export class ProjectModel {
   }
 
   distinct(column: keyof ProjectType): ProjectModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -583,7 +667,7 @@ export class ProjectModel {
   static distinct(column: keyof ProjectType): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -591,7 +675,7 @@ export class ProjectModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ProjectModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -599,7 +683,7 @@ export class ProjectModel {
   static join(table: string, firstCol: string, secondCol: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
@@ -659,7 +743,7 @@ export async function create(newProject: NewProject): Promise<ProjectModel> {
     .values(newProject)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as ProjectModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

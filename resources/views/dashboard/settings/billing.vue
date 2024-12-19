@@ -2,9 +2,11 @@
 import { useBillable } from '../../../functions/billing/payments'
 
 import ActivePlan from '../components/billing/active-plan.vue'
+
 import PaymentMethod from '../components/billing/payment-method.vue'
 import Plans from '../components/billing/plans.vue'
-import LoadingDetails from '../components/skeleton/loading-details.vue'
+
+import LoadingDetails from '../components/skeleton/loading-card.vue'
 import TransactionHistory from '../components/transaction/index.vue'
 
 const { isEmpty, showCurrentPlan } = useBillable()
@@ -29,7 +31,6 @@ onMounted(async () => {
       <div class="flex space-x-8">
         <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <LoadingDetails v-if="paymentStore.isStateLoading('fetchActivePlan') && paymentStore.isStateLoading('fetchStripeCustomer')" :height="24" />
-
           <div v-else class="w-full">
             <ActivePlan v-if="showCurrentPlan" />
             <Plans v-else />
@@ -40,25 +41,3 @@ onMounted(async () => {
     </div>
   </div>
 </template>
-
-<style>
-#payment-message {
-  color: rgb(105, 115, 134);
-  font-size: 16px;
-  line-height: 20px;
-  padding-top: 12px;
-  text-align: center;
-}
-
-#payment-element {
-  margin-bottom: 24px;
-}
-
-#payment-form {
-  width: 30vw;
-  min-width: 500px;
-  align-self: center;
-  border-radius: 7px;
-  padding: 40px;
-}
-</style>

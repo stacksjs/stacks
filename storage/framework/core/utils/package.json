@@ -65,6 +65,7 @@
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
     "export-size": "^0.7.0",
+    "jiti": "^2.4.1",
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",

@@ -5,8 +5,13 @@
   "editor.formatOnSave": false,
   // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "never",
+    "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
+  },
+  "eslint.options": {
+    "flags": [
+      "unstable_ts_config"
+    ]
   },
   // Silent the stylistic rules in you IDE, but still auto fix them
   "eslint.rules.customizations": [
@@ -64,9 +69,7 @@
   // Enable eslint for all supported languages
   "eslint.validate": [
     "javascript",
-    "javascriptreact",
     "typescript",
-    "typescriptreact",
     "vue",
     "html",
     "markdown",
@@ -77,8 +80,6 @@
     "xml",
     "gql",
     "graphql",
-    "astro",
-    "svelte",
     "css",
     "less",
     "scss",
@@ -150,6 +151,7 @@
   "explorer.confirmDragAndDrop": false,
   "todo-tree.highlights.enabled": true,
   "cSpell.ignorePaths": [
+    "cdk.out",
     "node_modules",
     "lang/de.yml"
   ],

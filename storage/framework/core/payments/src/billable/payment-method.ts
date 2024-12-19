@@ -89,6 +89,10 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
+    await PaymentMethod.where('user_id', 1).update({ is_default: false })
+
+    pm?.update({ is_default: true })
+
     return updatedCustomer
   }
 
@@ -123,7 +127,6 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     return paymentMethod as PaymentMethodModel
   }
-
 
   async function deletePaymentMethod(user: UserModel, paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     if (!user.hasStripeId()) {
@@ -165,7 +168,11 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     }
 
     const paymentMethods = await PaymentMethod.where('user_id', user.id)
-      .whereNull('is_default')
+      .orWhere(
+        ['is_default', 'is', null],
+        ['is_default', '=', false],
+        ['is_default', '=', ''],
+      )
       .get()
 
     return paymentMethods

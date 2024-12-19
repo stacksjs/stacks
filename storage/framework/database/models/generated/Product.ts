@@ -7,7 +7,6 @@ export default {
   table: 'products', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
-  belongsTo: ['User'],
   traits: {
     useSeeder: {
       count: 10,
@@ -26,7 +25,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.lorem.lines(1),
+      factory: () => faker.food.dish(),
     },
 
     description: {

@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import Team from './Team'
 
 export interface PersonalAccessTokensTable {
-  id?: Generated<number>
+  id: number
   name?: string
   token?: string
   plain_text_token?: string
@@ -31,10 +31,9 @@ interface AccessTokenResponse {
   next_cursor: number | null
 }
 
-export type AccessToken = PersonalAccessTokensTable
-export type AccessTokenType = Selectable<AccessToken>
-export type NewAccessToken = Insertable<AccessToken>
-export type AccessTokenUpdate = Updateable<AccessToken>
+export type AccessTokenType = Selectable<PersonalAccessTokensTable>
+export type NewAccessToken = Partial<Insertable<PersonalAccessTokensTable>>
+export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
 export type PersonalAccessTokens = AccessTokenType[]
 
 export type AccessTokenColumn = PersonalAccessTokens
@@ -54,9 +53,11 @@ export class AccessTokenModel {
   private hidden = []
   private fillable = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public name: string | undefined
   public token: string | undefined
   public plain_text_token: string | undefined
@@ -67,7 +68,7 @@ export class AccessTokenModel {
   public team_id: number | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
-    this.id = accesstoken?.id
+    this.id = accesstoken?.id || 1
     this.name = accesstoken?.name
     this.token = accesstoken?.token
     this.plain_text_token = accesstoken?.plain_text_token
@@ -79,7 +80,9 @@ export class AccessTokenModel {
 
     this.team_id = accesstoken?.team_id
 
-    this.query = db.selectFrom('personal_access_tokens')
+    this.selectFromQuery = db.selectFrom('personal_access_tokens')
+    this.updateFromQuery = db.updateTable('personal_access_tokens')
+    this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
     this.hasSelect = false
   }
 
@@ -170,19 +173,19 @@ export class AccessTokenModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
   }
@@ -191,19 +194,19 @@ export class AccessTokenModel {
   async get(): Promise<AccessTokenModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
   }
@@ -212,10 +215,10 @@ export class AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -223,15 +226,15 @@ export class AccessTokenModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -279,7 +282,7 @@ export class AccessTokenModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as AccessTokenModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     return model
   }
@@ -303,7 +306,7 @@ export class AccessTokenModel {
       .values(newAccessToken)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as AccessTokenModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     return model
   }
@@ -343,9 +346,68 @@ export class AccessTokenModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
+  }
+
+  orWhere(...args: Array<[string, string, any]>): AccessTokenModel {
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return this
+  }
+
+  static orWhere(...args: Array<[string, string, any]>): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return instance
   }
 
   static where(...args: (string | number | boolean | undefined | null)[]): AccessTokenModel {
@@ -366,7 +428,11 @@ export class AccessTokenModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -374,13 +440,25 @@ export class AccessTokenModel {
   static whereNull(column: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): AccessTokenModel {
-    this.query = this.query.where(column, 'is', null)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -388,7 +466,7 @@ export class AccessTokenModel {
   static whereName(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
@@ -396,7 +474,7 @@ export class AccessTokenModel {
   static whereToken(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where('token', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
 
     return instance
   }
@@ -404,7 +482,7 @@ export class AccessTokenModel {
   static wherePlainTextToken(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where('plainTextToken', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('plainTextToken', '=', value)
 
     return instance
   }
@@ -412,7 +490,7 @@ export class AccessTokenModel {
   static whereAbilities(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where('abilities', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('abilities', '=', value)
 
     return instance
   }
@@ -420,13 +498,17 @@ export class AccessTokenModel {
   static whereIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -436,7 +518,7 @@ export class AccessTokenModel {
   }
 
   async firstOrFail(): Promise<AccessTokenModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No AccessTokenModel results found for query')
@@ -445,7 +527,7 @@ export class AccessTokenModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -470,13 +552,13 @@ export class AccessTokenModel {
   static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -484,13 +566,13 @@ export class AccessTokenModel {
   static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -498,45 +580,47 @@ export class AccessTokenModel {
   static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'AccessToken ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(accesstoken).filter(([key]) => this.fillable.includes(key)),
     ) as NewAccessToken
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('personal_access_tokens')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
 
   async forceUpdate(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'AccessToken ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(accesstoken).execute()
+    }
 
     await db.updateTable('personal_access_tokens')
       .set(accesstoken)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -558,7 +642,7 @@ export class AccessTokenModel {
   // Method to delete (soft delete) the accesstoken instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'AccessToken ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -593,7 +677,7 @@ export class AccessTokenModel {
   }
 
   distinct(column: keyof AccessTokenType): AccessTokenModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -603,7 +687,7 @@ export class AccessTokenModel {
   static distinct(column: keyof AccessTokenType): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -611,7 +695,7 @@ export class AccessTokenModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -619,7 +703,7 @@ export class AccessTokenModel {
   static join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
@@ -679,7 +763,7 @@ export async function create(newAccessToken: NewAccessToken): Promise<AccessToke
     .values(newAccessToken)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as AccessTokenModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

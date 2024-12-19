@@ -39,7 +39,7 @@ const coreTeamMembers: CoreTeam[] = [
     sponsors: true,
     description: 'Open sourceror<br>Core team member of Stacks<br>Working at Stacks.js, Inc.',
     packages: ['core'],
-    functions: ['cloud', 'backend', 'frontend', 'ci/cd']
+    functions: ['cloud', 'backend', 'frontend', 'ci/cd'],
   },
 
   {
@@ -65,7 +65,7 @@ const coreTeamMembers: CoreTeam[] = [
   },
 
   {
-    avatar: contributorsAvatars['konkonam'] || 'default-avatar.png',
+    avatar: contributorsAvatars.konkonam || 'default-avatar.png',
     name: 'Zoltan',
     github: 'konkonam',
     sponsors: true,

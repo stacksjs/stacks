@@ -3,17 +3,17 @@ import { Action } from '@stacksjs/actions'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
-  name: 'CreateSetupIntentAction',
-  description: 'Create Setup Intent for stripe',
+  name: 'StoreTransactionAction',
+  description: 'Store transactions',
   method: 'POST',
   async handle(request: RequestInstance) {
     const userId = Number(request.getParam('id'))
+    const productId = Number(request.get('productId'))
+
     const user = await User.find(userId)
 
-    const setupIntent = await user?.createSetupIntent({
-      payment_method_types: ['card', 'link', 'us_bank_account'],
-    })
+    const transaction = await user?.storeTransaction(productId)
 
-    return setupIntent
+    return transaction
   },
 })

@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface SubscriptionsTable {
-  id?: Generated<number>
+  id: number
   type?: string
   provider_id?: string
   provider_status?: string
@@ -39,10 +39,9 @@ interface SubscriptionResponse {
   next_cursor: number | null
 }
 
-export type Subscription = SubscriptionsTable
-export type SubscriptionType = Selectable<Subscription>
-export type NewSubscription = Insertable<Subscription>
-export type SubscriptionUpdate = Updateable<Subscription>
+export type SubscriptionType = Selectable<SubscriptionsTable>
+export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
+export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 export type Subscriptions = SubscriptionType[]
 
 export type SubscriptionColumn = Subscriptions
@@ -62,9 +61,11 @@ export class SubscriptionModel {
   private hidden = []
   private fillable = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public uuid: string | undefined
   public type: string | undefined
   public provider_id: string | undefined
@@ -82,7 +83,7 @@ export class SubscriptionModel {
   public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
-    this.id = subscription?.id
+    this.id = subscription?.id || 1
     this.uuid = subscription?.uuid
     this.type = subscription?.type
     this.provider_id = subscription?.provider_id
@@ -101,7 +102,9 @@ export class SubscriptionModel {
 
     this.user_id = subscription?.user_id
 
-    this.query = db.selectFrom('subscriptions')
+    this.selectFromQuery = db.selectFrom('subscriptions')
+    this.updateFromQuery = db.updateTable('subscriptions')
+    this.deleteFromQuery = db.deleteFrom('subscriptions')
     this.hasSelect = false
   }
 
@@ -192,19 +195,19 @@ export class SubscriptionModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
   }
@@ -213,19 +216,19 @@ export class SubscriptionModel {
   async get(): Promise<SubscriptionModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
   }
@@ -234,10 +237,10 @@ export class SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -245,15 +248,15 @@ export class SubscriptionModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -303,7 +306,7 @@ export class SubscriptionModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as SubscriptionModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
 
     return model
   }
@@ -331,7 +334,7 @@ export class SubscriptionModel {
       .values(newSubscription)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as SubscriptionModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
 
     return model
   }
@@ -371,9 +374,68 @@ export class SubscriptionModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
+  }
+
+  orWhere(...args: Array<[string, string, any]>): SubscriptionModel {
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return this
+  }
+
+  static orWhere(...args: Array<[string, string, any]>): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return instance
   }
 
   static where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
@@ -394,7 +456,11 @@ export class SubscriptionModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -402,13 +468,25 @@ export class SubscriptionModel {
   static whereNull(column: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): SubscriptionModel {
-    this.query = this.query.where(column, 'is', null)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -416,7 +494,7 @@ export class SubscriptionModel {
   static whereType(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('type', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
     return instance
   }
@@ -424,7 +502,7 @@ export class SubscriptionModel {
   static whereProviderId(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('providerId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
 
     return instance
   }
@@ -432,7 +510,7 @@ export class SubscriptionModel {
   static whereProviderStatus(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('providerStatus', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('providerStatus', '=', value)
 
     return instance
   }
@@ -440,7 +518,7 @@ export class SubscriptionModel {
   static whereUnitPrice(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('unitPrice', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
 
     return instance
   }
@@ -448,7 +526,7 @@ export class SubscriptionModel {
   static whereProviderType(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('providerType', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('providerType', '=', value)
 
     return instance
   }
@@ -456,7 +534,7 @@ export class SubscriptionModel {
   static whereProviderPriceId(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('providerPriceId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('providerPriceId', '=', value)
 
     return instance
   }
@@ -464,7 +542,7 @@ export class SubscriptionModel {
   static whereQuantity(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('quantity', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
     return instance
   }
@@ -472,7 +550,7 @@ export class SubscriptionModel {
   static whereTrialEndsAt(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('trialEndsAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('trialEndsAt', '=', value)
 
     return instance
   }
@@ -480,7 +558,7 @@ export class SubscriptionModel {
   static whereEndsAt(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('endsAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('endsAt', '=', value)
 
     return instance
   }
@@ -488,7 +566,7 @@ export class SubscriptionModel {
   static whereLastUsedAt(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where('lastUsedAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
 
     return instance
   }
@@ -496,13 +574,17 @@ export class SubscriptionModel {
   static whereIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -512,7 +594,7 @@ export class SubscriptionModel {
   }
 
   async firstOrFail(): Promise<SubscriptionModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No SubscriptionModel results found for query')
@@ -521,7 +603,7 @@ export class SubscriptionModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -546,13 +628,13 @@ export class SubscriptionModel {
   static orderBy(column: keyof SubscriptionType, order: 'asc' | 'desc'): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof SubscriptionType, order: 'asc' | 'desc'): SubscriptionModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -560,13 +642,13 @@ export class SubscriptionModel {
   static orderByDesc(column: keyof SubscriptionType): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof SubscriptionType): SubscriptionModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -574,45 +656,47 @@ export class SubscriptionModel {
   static orderByAsc(column: keyof SubscriptionType): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof SubscriptionType): SubscriptionModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
   async update(subscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Subscription ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(subscription).filter(([key]) => this.fillable.includes(key)),
     ) as NewSubscription
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('subscriptions')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
 
   async forceUpdate(subscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Subscription ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(subscription).execute()
+    }
 
     await db.updateTable('subscriptions')
       .set(subscription)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -634,7 +718,7 @@ export class SubscriptionModel {
   // Method to delete (soft delete) the subscription instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Subscription ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -669,7 +753,7 @@ export class SubscriptionModel {
   }
 
   distinct(column: keyof SubscriptionType): SubscriptionModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -679,7 +763,7 @@ export class SubscriptionModel {
   static distinct(column: keyof SubscriptionType): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -687,7 +771,7 @@ export class SubscriptionModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriptionModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -695,7 +779,7 @@ export class SubscriptionModel {
   static join(table: string, firstCol: string, secondCol: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
@@ -761,7 +845,7 @@ export async function create(newSubscription: NewSubscription): Promise<Subscrip
     .values(newSubscription)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as SubscriptionModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

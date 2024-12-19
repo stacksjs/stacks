@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,7 +8,7 @@ import AccessToken from './AccessToken'
 import User from './User'
 
 export interface TeamsTable {
-  id?: Generated<number>
+  id: number
   name?: string
   company_name?: string
   email?: string
@@ -38,10 +38,9 @@ interface TeamResponse {
   next_cursor: number | null
 }
 
-export type Team = TeamsTable
-export type TeamType = Selectable<Team>
-export type NewTeam = Insertable<Team>
-export type TeamUpdate = Updateable<Team>
+export type TeamType = Selectable<TeamsTable>
+export type NewTeam = Partial<Insertable<TeamsTable>>
+export type TeamUpdate = Updateable<TeamsTable>
 export type Teams = TeamType[]
 
 export type TeamColumn = Teams
@@ -61,9 +60,11 @@ export class TeamModel {
   private hidden = []
   private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'accesstoken_id', 'user_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public name: string | undefined
   public company_name: string | undefined
   public email: string | undefined
@@ -79,7 +80,7 @@ export class TeamModel {
   public user_id: number | undefined
 
   constructor(team: Partial<TeamType> | null) {
-    this.id = team?.id
+    this.id = team?.id || 1
     this.name = team?.name
     this.company_name = team?.company_name
     this.email = team?.email
@@ -96,7 +97,9 @@ export class TeamModel {
     this.accesstoken_id = team?.accesstoken_id
     this.user_id = team?.user_id
 
-    this.query = db.selectFrom('teams')
+    this.selectFromQuery = db.selectFrom('teams')
+    this.updateFromQuery = db.updateTable('teams')
+    this.deleteFromQuery = db.deleteFrom('teams')
     this.hasSelect = false
   }
 
@@ -187,19 +190,19 @@ export class TeamModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
   }
@@ -208,19 +211,19 @@ export class TeamModel {
   async get(): Promise<TeamModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
   }
@@ -229,10 +232,10 @@ export class TeamModel {
     const instance = new TeamModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -240,15 +243,15 @@ export class TeamModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -296,7 +299,7 @@ export class TeamModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as TeamModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     return model
   }
@@ -320,7 +323,7 @@ export class TeamModel {
       .values(newTeam)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as TeamModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     return model
   }
@@ -360,9 +363,68 @@ export class TeamModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
+  }
+
+  orWhere(...args: Array<[string, string, any]>): TeamModel {
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return this
+  }
+
+  static orWhere(...args: Array<[string, string, any]>): TeamModel {
+    const instance = new TeamModel(null)
+
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return instance
   }
 
   static where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
@@ -383,7 +445,11 @@ export class TeamModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -391,13 +457,25 @@ export class TeamModel {
   static whereNull(column: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): TeamModel {
-    this.query = this.query.where(column, 'is', null)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -405,7 +483,7 @@ export class TeamModel {
   static whereName(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
@@ -413,7 +491,7 @@ export class TeamModel {
   static whereCompanyName(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('companyName', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('companyName', '=', value)
 
     return instance
   }
@@ -421,7 +499,7 @@ export class TeamModel {
   static whereEmail(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('email', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
     return instance
   }
@@ -429,7 +507,7 @@ export class TeamModel {
   static whereBillingEmail(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('billingEmail', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('billingEmail', '=', value)
 
     return instance
   }
@@ -437,7 +515,7 @@ export class TeamModel {
   static whereStatus(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
@@ -445,7 +523,7 @@ export class TeamModel {
   static whereDescription(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('description', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
     return instance
   }
@@ -453,7 +531,7 @@ export class TeamModel {
   static wherePath(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('path', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
 
     return instance
   }
@@ -461,7 +539,7 @@ export class TeamModel {
   static whereIsPersonal(value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where('isPersonal', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('isPersonal', '=', value)
 
     return instance
   }
@@ -469,13 +547,17 @@ export class TeamModel {
   static whereIn(column: keyof TeamType, values: any[]): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<TeamModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -485,7 +567,7 @@ export class TeamModel {
   }
 
   async firstOrFail(): Promise<TeamModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No TeamModel results found for query')
@@ -494,7 +576,7 @@ export class TeamModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -519,13 +601,13 @@ export class TeamModel {
   static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -533,13 +615,13 @@ export class TeamModel {
   static orderByDesc(column: keyof TeamType): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof TeamType): TeamModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -547,45 +629,47 @@ export class TeamModel {
   static orderByAsc(column: keyof TeamType): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof TeamType): TeamModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
   async update(team: TeamUpdate): Promise<TeamModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Team ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(team).filter(([key]) => this.fillable.includes(key)),
     ) as NewTeam
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('teams')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
 
   async forceUpdate(team: TeamUpdate): Promise<TeamModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Team ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(team).execute()
+    }
 
     await db.updateTable('teams')
       .set(team)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -607,7 +691,7 @@ export class TeamModel {
   // Method to delete (soft delete) the team instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Team ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -666,7 +750,7 @@ export class TeamModel {
   }
 
   distinct(column: keyof TeamType): TeamModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -676,7 +760,7 @@ export class TeamModel {
   static distinct(column: keyof TeamType): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -684,7 +768,7 @@ export class TeamModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): TeamModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -692,7 +776,7 @@ export class TeamModel {
   static join(table: string, firstCol: string, secondCol: string): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
@@ -756,7 +840,7 @@ export async function create(newTeam: NewTeam): Promise<TeamModel> {
     .values(newTeam)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as TeamModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

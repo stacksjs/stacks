@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PostsTable {
-  id?: Generated<number>
+  id: number
   title?: string
   body?: string
   user_id?: number
@@ -29,10 +29,9 @@ interface PostResponse {
   next_cursor: number | null
 }
 
-export type Post = PostsTable
-export type PostType = Selectable<Post>
-export type NewPost = Insertable<Post>
-export type PostUpdate = Updateable<Post>
+export type PostType = Selectable<PostsTable>
+export type NewPost = Partial<Insertable<PostsTable>>
+export type PostUpdate = Updateable<PostsTable>
 export type Posts = PostType[]
 
 export type PostColumn = Posts
@@ -52,9 +51,11 @@ export class PostModel {
   private hidden = []
   private fillable = ['title', 'body', 'uuid', 'user_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public title: string | undefined
   public body: string | undefined
 
@@ -63,7 +64,7 @@ export class PostModel {
   public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
-    this.id = post?.id
+    this.id = post?.id || 1
     this.title = post?.title
     this.body = post?.body
 
@@ -73,7 +74,9 @@ export class PostModel {
 
     this.user_id = post?.user_id
 
-    this.query = db.selectFrom('posts')
+    this.selectFromQuery = db.selectFrom('posts')
+    this.updateFromQuery = db.updateTable('posts')
+    this.deleteFromQuery = db.deleteFrom('posts')
     this.hasSelect = false
   }
 
@@ -164,19 +167,19 @@ export class PostModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: PostModel) => new PostModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: PostModel) => new PostModel(modelItem))
   }
@@ -185,19 +188,19 @@ export class PostModel {
   async get(): Promise<PostModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: PostModel) => new PostModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: PostModel) => new PostModel(modelItem))
   }
@@ -206,10 +209,10 @@ export class PostModel {
     const instance = new PostModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -217,15 +220,15 @@ export class PostModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -273,7 +276,7 @@ export class PostModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as PostModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
 
     return model
   }
@@ -297,7 +300,7 @@ export class PostModel {
       .values(newPost)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as PostModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
 
     return model
   }
@@ -337,9 +340,68 @@ export class PostModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
+  }
+
+  orWhere(...args: Array<[string, string, any]>): PostModel {
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return this
+  }
+
+  static orWhere(...args: Array<[string, string, any]>): PostModel {
+    const instance = new PostModel(null)
+
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return instance
   }
 
   static where(...args: (string | number | boolean | undefined | null)[]): PostModel {
@@ -360,7 +422,11 @@ export class PostModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -368,13 +434,25 @@ export class PostModel {
   static whereNull(column: string): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): PostModel {
-    this.query = this.query.where(column, 'is', null)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -382,7 +460,7 @@ export class PostModel {
   static whereTitle(value: string): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.where('title', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
 
     return instance
   }
@@ -390,7 +468,7 @@ export class PostModel {
   static whereBody(value: string): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.where('body', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
 
     return instance
   }
@@ -398,13 +476,17 @@ export class PostModel {
   static whereIn(column: keyof PostType, values: any[]): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<PostModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -414,7 +496,7 @@ export class PostModel {
   }
 
   async firstOrFail(): Promise<PostModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No PostModel results found for query')
@@ -423,7 +505,7 @@ export class PostModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -448,13 +530,13 @@ export class PostModel {
   static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -462,13 +544,13 @@ export class PostModel {
   static orderByDesc(column: keyof PostType): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof PostType): PostModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -476,45 +558,47 @@ export class PostModel {
   static orderByAsc(column: keyof PostType): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof PostType): PostModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
   async update(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Post ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(post).filter(([key]) => this.fillable.includes(key)),
     ) as NewPost
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('posts')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
 
   async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Post ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(post).execute()
+    }
 
     await db.updateTable('posts')
       .set(post)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     return model
   }
@@ -536,7 +620,7 @@ export class PostModel {
   // Method to delete (soft delete) the post instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'Post ID is undefined')
+      this.deleteFromQuery.execute()
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -571,7 +655,7 @@ export class PostModel {
   }
 
   distinct(column: keyof PostType): PostModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -581,7 +665,7 @@ export class PostModel {
   static distinct(column: keyof PostType): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -589,7 +673,7 @@ export class PostModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): PostModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -597,7 +681,7 @@ export class PostModel {
   static join(table: string, firstCol: string, secondCol: string): PostModel {
     const instance = new PostModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
@@ -655,7 +739,7 @@ export async function create(newPost: NewPost): Promise<PostModel> {
     .values(newPost)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as PostModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

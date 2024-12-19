@@ -1,5 +1,5 @@
-import type { HeadConfig } from 'vitepress'
 import type { DocsConfig } from '@stacksjs/types'
+import type { HeadConfig } from 'vitepress'
 import { SocialLinkIcon } from '@stacksjs/types'
 import analytics from '../config/analytics'
 
@@ -49,12 +49,7 @@ export const analyticsHead
       ? googleAnalyticsHead
       : []
 
-
 const nav = [
-  {
-    text: 'Docs',
-    link: '/guide/intro',
-  },
   {
     text: 'Changelog',
     link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
@@ -64,6 +59,8 @@ const nav = [
     text: 'Resources',
     items: [
       { text: 'Team', link: '/team' },
+      { text: 'Sponsors', link: '/sponsors' },
+      { text: 'Partners', link: '/partners' },
       { text: 'Postcardware', link: '/postcardware' },
       {
         items: [
@@ -638,7 +635,7 @@ export default {
     ['meta', { property: 'og:image', content: 'https://stacksjs.org/images/og-image.png' }],
     ['meta', { property: 'og:url', content: 'https://stacksjs.org/' }],
     // ['script', { 'src': 'https://cdn.usefathom.com/script.js', 'data-site': '', 'data-spa': 'auto', 'defer': '' }],
-    ...analyticsHead
+    ...analyticsHead,
   ],
 
   themeConfig: {

@@ -4,7 +4,7 @@ import { coreTeamMembers } from './contributors'
 
 <template>
   <div class="vp-doc">
-    <h2 op50 font-normal pt-5 pb-2>
+    <h2 pb-2 pt-5 font-normal op50>
       Meet The Team
     </h2>
   </div>

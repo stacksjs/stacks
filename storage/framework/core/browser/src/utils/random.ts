@@ -77,8 +77,6 @@ function random(size: number = 21): string {
   return id
 }
 
-console.log(random())
-
 export {
   customAlphabet,
   customRandom,

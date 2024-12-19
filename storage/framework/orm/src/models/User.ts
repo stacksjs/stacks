@@ -1,12 +1,13 @@
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 import type { PaymentMethodModel } from './PaymentMethod'
+import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
 import Deployment from './Deployment'
 
 import PaymentMethod from './PaymentMethod'
@@ -19,8 +20,10 @@ import Subscription from './Subscription'
 
 import Team from './Team'
 
+import Transaction from './Transaction'
+
 export interface UsersTable {
-  id?: Generated<number>
+  id: number
   name?: string
   email?: string
   job_title?: string
@@ -50,10 +53,9 @@ interface UserResponse {
   next_cursor: number | null
 }
 
-export type User = UsersTable
-export type UserType = Selectable<User>
-export type NewUser = Insertable<User>
-export type UserUpdate = Updateable<User>
+export type UserType = Selectable<UsersTable>
+export type NewUser = Partial<Insertable<UsersTable>>
+export type UserUpdate = Updateable<UsersTable>
 export type Users = UserType[]
 
 export type UserColumn = Users
@@ -73,9 +75,11 @@ export class UserModel {
   private hidden = ['password']
   private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
   private softDeletes = false
-  protected query: any
+  protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number | undefined
+  public id: number
   public stripe_id: string | undefined
   public uuid: string | undefined
   public public_passkey: string | undefined
@@ -91,7 +95,7 @@ export class UserModel {
   public post_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
-    this.id = user?.id
+    this.id = user?.id || 1
     this.stripe_id = user?.stripe_id
     this.uuid = user?.uuid
     this.public_passkey = user?.public_passkey
@@ -108,7 +112,9 @@ export class UserModel {
     this.deployment_id = user?.deployment_id
     this.post_id = user?.post_id
 
-    this.query = db.selectFrom('users')
+    this.selectFromQuery = db.selectFrom('users')
+    this.updateFromQuery = db.updateTable('users')
+    this.deleteFromQuery = db.deleteFrom('users')
     this.hasSelect = false
   }
 
@@ -199,19 +205,19 @@ export class UserModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.query = instance.query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.query.execute()
+      const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: UserModel) => new UserModel(modelItem))
     }
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await instance.query.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
@@ -220,19 +226,19 @@ export class UserModel {
   async get(): Promise<UserModel[]> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const model = await this.query.execute()
+      const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: UserModel) => new UserModel(modelItem))
     }
 
     if (this.softDeletes) {
-      this.query = this.query.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const model = await this.query.selectAll().execute()
+    const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
@@ -241,10 +247,10 @@ export class UserModel {
     const instance = new UserModel(null)
 
     if (instance.softDeletes) {
-      instance.query = instance.query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
-    const results = await instance.query.selectAll().execute()
+    const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
   }
@@ -252,15 +258,15 @@ export class UserModel {
   async count(): Promise<number> {
     if (this.hasSelect) {
       if (this.softDeletes) {
-        this.query = this.query.where('deleted_at', 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }
 
-      const results = await this.query.execute()
+      const results = await this.selectFromQuery.execute()
 
       return results.length
     }
 
-    const results = await this.query.selectAll().execute()
+    const results = await this.selectFromQuery.execute()
 
     return results.length
   }
@@ -310,7 +316,7 @@ export class UserModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as UserModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
       dispatch('user:created', model)
@@ -341,7 +347,7 @@ export class UserModel {
       .values(newUser)
       .executeTakeFirst()
 
-    const model = await find(Number(result.insertId)) as UserModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
       dispatch('user:created', model)
@@ -352,7 +358,7 @@ export class UserModel {
   // Method to remove a User
   static async remove(id: number): Promise<void> {
     const instance = new UserModel(null)
-    const model = await instance.find(id)
+    const model = await instance.find(Number(id))
 
     if (instance.softDeletes) {
       await db.updateTable('users')
@@ -388,9 +394,68 @@ export class UserModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    this.query = this.query.where(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
     return this
+  }
+
+  orWhere(...args: Array<[string, string, any]>): UserModel {
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return this
+  }
+
+  static orWhere(...args: Array<[string, string, any]>): UserModel {
+    const instance = new UserModel(null)
+
+    if (args.length === 0) {
+      throw new HttpError(500, 'At least one condition must be provided')
+    }
+
+    // Use the expression builder to append the OR conditions
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb.or(
+        args.map(([column, operator, value]) => eb(column, operator, value)),
+      ),
+    )
+
+    return instance
   }
 
   static where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -411,7 +476,11 @@ export class UserModel {
       throw new HttpError(500, 'Invalid number of arguments')
     }
 
-    instance.query = instance.query.where(column, operator, value)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
   }
@@ -419,13 +488,25 @@ export class UserModel {
   static whereNull(column: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.where(column, 'is', null)
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return instance
   }
 
   whereNull(column: string): UserModel {
-    this.query = this.query.where(column, 'is', null)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -433,7 +514,7 @@ export class UserModel {
   static whereName(value: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
@@ -441,7 +522,7 @@ export class UserModel {
   static whereEmail(value: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.where('email', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
     return instance
   }
@@ -449,7 +530,7 @@ export class UserModel {
   static whereJobTitle(value: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.where('jobTitle', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('jobTitle', '=', value)
 
     return instance
   }
@@ -457,7 +538,7 @@ export class UserModel {
   static wherePassword(value: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.where('password', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('password', '=', value)
 
     return instance
   }
@@ -465,13 +546,17 @@ export class UserModel {
   static whereIn(column: keyof UserType, values: any[]): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
     return instance
   }
 
   async first(): Promise<UserModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
     if (!model) {
       return undefined
@@ -481,7 +566,7 @@ export class UserModel {
   }
 
   async firstOrFail(): Promise<UserModel | undefined> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, 'No UserModel results found for query')
@@ -490,7 +575,7 @@ export class UserModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.query.selectAll().executeTakeFirst()
+    const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
@@ -515,13 +600,13 @@ export class UserModel {
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.orderBy(column, order)
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
   orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
-    this.query = this.query.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
@@ -529,13 +614,13 @@ export class UserModel {
   static orderByDesc(column: keyof UserType): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.orderBy(column, 'desc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
   orderByDesc(column: keyof UserType): UserModel {
-    this.query = this.orderBy(column, 'desc')
+    this.selectFromQuery = this.orderBy(column, 'desc')
 
     return this
   }
@@ -543,31 +628,32 @@ export class UserModel {
   static orderByAsc(column: keyof UserType): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.orderBy(column, 'asc')
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
   orderByAsc(column: keyof UserType): UserModel {
-    this.query = this.query.orderBy(column, 'desc')
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
   async update(user: UserUpdate): Promise<UserModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'User ID is undefined')
-
     const filteredValues = Object.fromEntries(
       Object.entries(user).filter(([key]) => this.fillable.includes(key)),
     ) as NewUser
+
+    if (this.id === undefined) {
+      this.updateFromQuery.set(filteredValues).execute()
+    }
 
     await db.updateTable('users')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     if (model)
       dispatch('user:updated', model)
@@ -576,15 +662,16 @@ export class UserModel {
   }
 
   async forceUpdate(user: UserUpdate): Promise<UserModel | undefined> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'User ID is undefined')
+    if (this.id === undefined) {
+      this.updateFromQuery.set(user).execute()
+    }
 
     await db.updateTable('users')
       .set(user)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(Number(this.id))
+    const model = await this.find(this.id)
 
     if (model)
       dispatch('user:updated', model)
@@ -609,9 +696,9 @@ export class UserModel {
   // Method to delete (soft delete) the user instance
   async delete(): Promise<void> {
     if (this.id === undefined)
-      throw new HttpError(500, 'User ID is undefined')
+      this.deleteFromQuery.execute()
 
-    const model = await this.find(this.id)
+    const model = await this.find(Number(this.id))
 
     // Check if soft deletes are enabled
     if (this.softDeletes) {
@@ -698,6 +785,18 @@ export class UserModel {
     return results.map(modelItem => new PaymentMethod(modelItem))
   }
 
+  async transactions() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await db.selectFrom('transactions')
+      .where('user_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    return results.map(modelItem => new Transaction(modelItem))
+  }
+
   async userTeams() {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -736,6 +835,12 @@ export class UserModel {
     const customer = await manageCustomer.updateStripeCustomer(this, options)
 
     return customer
+  }
+
+  async storeTransaction(productId: number): Promise<TransactionModel> {
+    const transaction = await manageTransaction.store(this, productId)
+
+    return transaction
   }
 
   async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
@@ -841,6 +946,10 @@ export class UserModel {
 
   async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
     return manageInvoice.list(this)
+  }
+
+  async transactionHistory(): Promise<TransactionModel[]> {
+    return manageTransaction.list(this)
   }
 
   async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
@@ -960,7 +1069,7 @@ export class UserModel {
   }
 
   distinct(column: keyof UserType): UserModel {
-    this.query = this.query.select(column).distinct()
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
 
@@ -970,7 +1079,7 @@ export class UserModel {
   static distinct(column: keyof UserType): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.select(column).distinct()
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
     instance.hasSelect = true
 
@@ -978,7 +1087,7 @@ export class UserModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): UserModel {
-    this.query = this.query.innerJoin(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
     return this
   }
@@ -986,7 +1095,7 @@ export class UserModel {
   static join(table: string, firstCol: string, secondCol: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
@@ -1046,7 +1155,7 @@ export async function create(newUser: NewUser): Promise<UserModel> {
     .values(newUser)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.insertId)) as UserModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

@@ -11,6 +11,7 @@ import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
 import type { TeamsTable } from '../src/models/Team'
+import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
 
 export interface PersonalAccessTokenTeamsTable {
@@ -36,7 +37,7 @@ export interface MigrationsTable {
   timestamp: string
 }
 export interface PasskeysTable {
-  id?: string
+  id?: number
   cred_public_key: string
   user_id: number
   webauthn_user_id: string
@@ -64,6 +65,7 @@ export interface Database {
   posts: PostsTable
   products: ProductsTable
   payment_methods: PaymentMethodsTable
+  transactions: TransactionsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
   passkeys: PasskeysTable

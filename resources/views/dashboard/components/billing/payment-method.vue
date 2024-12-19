@@ -3,7 +3,7 @@
 import { useBillable } from '../../../../functions/billing/payments'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
-import PaymentForm from './payment-form.vue'
+import CardForm from './card-form.vue'
 
 import PaymentMethodList from './payment-method-list.vue'
 
@@ -24,19 +24,6 @@ async function loadWebElement() {
 function cancelForm() {
   showCardForm.value = false
 }
-
-// async function submitPaymentMethod(clientSecret: string, elements: any) {
-//   await handleAddPaymentMethod(clientSecret, elements)
-
-//   await paymentStore.fetchDefaultPaymentMethod()
-//   await paymentStore.fetchUserPaymentMethods()
-
-//   showStripe.value = false
-// }
-
-// function cancelPaymentForm() {
-//   showStripe.value = false
-// }
 </script>
 
 <template>
@@ -80,9 +67,7 @@ function cancelForm() {
 
     <PaymentMethodList :user-id="1" />
 
-    <div v-show="showCardForm">
-      <PaymentForm @cancel-payment-method-addition="cancelForm" />
-    </div>
+    <CardForm v-if="showCardForm" @cancel-payment-method-addition="cancelForm" />
 
     <div v-if="!showCardForm" class="mt-8 flex justify-end">
       <button
@@ -99,25 +84,3 @@ function cancelForm() {
     </div>
   </div>
 </template>
-
-<style>
-#payment-message {
-  color: rgb(105, 115, 134);
-  font-size: 16px;
-  line-height: 20px;
-  padding-top: 12px;
-  text-align: center;
-}
-
-#payment-element {
-  margin-bottom: 24px;
-}
-
-#payment-form {
-  width: 30vw;
-  min-width: 500px;
-  align-self: center;
-  border-radius: 7px;
-  padding: 40px;
-}
-</style>

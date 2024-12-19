@@ -10,7 +10,7 @@ export default new Action({
     const userId = Number(request.getParam('id'))
     const user = await User.find(userId)
 
-    const transactions = await user?.subscriptionHistory()
+    const transactions = await user?.transactionHistory()
 
     return transactions
   },

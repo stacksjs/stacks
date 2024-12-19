@@ -1,7 +1,6 @@
 import type { PwaOptions } from '@vite-pwa/vitepress'
 import { docs } from '@stacksjs/config'
 import { frameworkPath } from '@stacksjs/path'
-import { githubusercontentRegex, pwaFontsRegex, pwaFontStylesRegex } from '../meta'
 
 export const pwaDocs: PwaOptions = {
   outDir: frameworkPath('docs/dist'),

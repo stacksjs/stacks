@@ -90,6 +90,7 @@
     "vite": "^5.4.11",
     "vite-plugin-full-reload": "^1.2.0",
     "vite-plugin-inspect": "^0.10.2",
+    "vite-plugin-local": "^0.3.0",
     "vite-plugin-pages": "^0.32.4",
     "vite-plugin-pwa": "^0.21.1",
     "vite-plugin-vue-markdown": "^0.23.8",

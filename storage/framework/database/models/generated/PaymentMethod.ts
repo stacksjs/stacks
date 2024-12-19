@@ -10,7 +10,11 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
+  hasMany: ['Transaction'],
   traits: {
+    useSeeder: {
+      count: 5,
+    },
     useUuid: true,
   },
   attributes: {
@@ -90,8 +94,8 @@ export default {
       validation: {
         rule: schema.string().maxLength(255),
         message: {
-          string: 'unit_price must be a number',
-          required: 'unit_price is required',
+          string: 'provider_id must be a string',
+          required: 'provider_id is required',
         },
       },
       factory: () => faker.string.alphanumeric(10),

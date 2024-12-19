@@ -1,6 +1,5 @@
-// eslint-disable-next-line spaced-comment
 /// <reference types="vite/client" />
-// eslint-disable-next-line spaced-comment
+
 /// <reference lib="webworker" />
 
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'

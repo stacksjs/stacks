@@ -908,7 +908,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += 'name: string\n timestamp: string \n }'
 
   text += '\nexport interface PasskeysTable {\n'
-  text += '  id?: string\n'
+  text += '  id?: number\n'
   text += '  cred_public_key: string\n'
   text += '  user_id: number;\n'
   text += '  webauthn_user_id: string\n'
@@ -1024,8 +1024,8 @@ export async function generateModelString(
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
 
-      mittDeleteStaticFindStatement += 'const model = await instance.find(id)'
-      mittDeleteFindStatement += 'const model = await this.find(this.id)'
+      mittDeleteStaticFindStatement += 'const model = await instance.find(Number(id))'
+      mittDeleteFindStatement += 'const model = await this.find(Number(this.id))'
     }
   }
 
@@ -1164,9 +1164,9 @@ export async function generateModelString(
     }
   }
 
-  declareFields += `public id: number | undefined \n   `
+  declareFields += `public id: number \n   `
 
-  constructorFields += `this.id = ${formattedModelName}?.id\n   `
+  constructorFields += `this.id = ${formattedModelName}?.id || 1\n   `
 
   const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
@@ -1189,7 +1189,8 @@ export async function generateModelString(
   }
 
   if (useBillable) {
-    paymentImports += `import { PaymentMethodModel } from './PaymentMethod'`
+    paymentImports += `import { PaymentMethodModel } from './PaymentMethod'\n`
+    paymentImports += `import { TransactionModel } from './Transaction'`
 
     billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await manageCustomer.createStripeCustomer(this, options)
@@ -1201,6 +1202,12 @@ export async function generateModelString(
       const customer = await manageCustomer.updateStripeCustomer(this, options)
 
       return customer
+    }
+
+    async storeTransaction(productId: number): Promise<TransactionModel> {
+      const transaction = await manageTransaction.store(this, productId)
+
+      return transaction
     }
 
     async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
@@ -1271,7 +1278,6 @@ export async function generateModelString(
       return updatedPaymentMethod
     }
 
-
     async deletePaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
       const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
       return deletedPaymentMethod
@@ -1307,6 +1313,10 @@ export async function generateModelString(
 
     async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
       return manageInvoice.list(this)
+    }
+
+    async transactionHistory(): Promise<TransactionModel[]> {
+      return manageTransaction.list(this)
     }
 
     async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
@@ -1477,7 +1487,7 @@ export async function generateModelString(
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.where('${attribute.field}', '=', value)
+        instance.selectFromQuery = instance.selectFromQuery.where('${attribute.field}', '=', value)
 
         return instance
       } \n\n`
@@ -1558,7 +1568,7 @@ export async function generateModelString(
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
 
   return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
-    import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
+    import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
     import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
     import { HttpError } from '@stacksjs/error-handling'
@@ -1571,7 +1581,7 @@ export async function generateModelString(
     ${relationImports}
 
     export interface ${formattedTableName}Table {
-      id?: Generated<number>
+      id: number
      ${fieldString}
     }
 
@@ -1584,11 +1594,10 @@ export async function generateModelString(
       }
       next_cursor: number | null
     }
-
-    export type ${modelName} = ${formattedTableName}Table
-    export type ${modelName}Type = Selectable<${modelName}>
-    export type New${modelName} = Insertable<${modelName}>
-    export type ${modelName}Update = Updateable<${modelName}>
+      
+    export type ${modelName}Type = Selectable<${formattedTableName}Table>
+    export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
+    export type ${modelName}Update = Updateable<${formattedTableName}Table>
     export type ${formattedTableName} = ${modelName}Type[]
 
     export type ${modelName}Column = ${formattedTableName}
@@ -1608,13 +1617,17 @@ export async function generateModelString(
       private hidden = ${hidden}
       private fillable = ${fillable}
       private softDeletes = ${useSoftDeletes}
-      protected query: any
+      protected selectFromQuery: any
+      protected updateFromQuery: any
+      protected deleteFromQuery: any
       protected hasSelect: boolean
       ${declareFields}
       constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
         ${constructorFields}
 
-        this.query = db.selectFrom('${tableName}')
+        this.selectFromQuery = db.selectFrom('${tableName}')
+        this.updateFromQuery = db.updateTable('${tableName}')
+        this.deleteFromQuery = db.deleteFrom('${tableName}')
         this.hasSelect = false
       }
 
@@ -1706,19 +1719,19 @@ export async function generateModelString(
 
         if (instance.hasSelect) {
           if (instance.softDeletes) {
-            instance.query = instance.query.where('deleted_at', 'is', null)
+            instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
           }
 
-          const model = await instance.query.execute()
+          const model = await instance.selectFromQuery.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
         if (instance.softDeletes) {
-          instance.query = instance.query.where('deleted_at', 'is', null)
+          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
         }
 
-        const model = await instance.query.selectAll().execute()
+        const model = await instance.selectFromQuery.selectAll().execute()
 
        return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
@@ -1729,19 +1742,19 @@ export async function generateModelString(
         if (this.hasSelect) {
 
           if (this.softDeletes) {
-            this.query = this.query.where('deleted_at', 'is', null);
+            this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
           }
 
-          const model = await this.query.execute()
+          const model = await this.selectFromQuery.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
         if (this.softDeletes) {
-          this.query = this.query.where('deleted_at', 'is', null);
+          this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
         }
 
-        const model = await this.query.selectAll().execute()
+        const model = await this.selectFromQuery.selectAll().execute()
 
         return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
       }
@@ -1750,10 +1763,10 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
 
         if (instance.softDeletes) {
-          instance.query = instance.query.where('deleted_at', 'is', null);
+          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null);
         }
 
-        const results = await instance.query.selectAll().execute()
+        const results = await instance.selectFromQuery.selectAll().execute()
 
         return results.length
       }
@@ -1762,15 +1775,15 @@ export async function generateModelString(
         if (this.hasSelect) {
 
           if (this.softDeletes) {
-            this.query = this.query.where('deleted_at', 'is', null);
+            this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
           }
 
-          const results = await this.query.execute()
+          const results = await this.selectFromQuery.execute()
 
           return results.length
         }
 
-        const results = await this.query.selectAll().execute()
+        const results = await this.selectFromQuery.execute()
 
         return results.length
       }
@@ -1820,7 +1833,7 @@ export async function generateModelString(
           .values(filteredValues)
           .executeTakeFirst()
 
-        const model = await find(Number(result.insertId)) as ${modelName}Model
+        const model = await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
         ${mittCreateStatement}
 
@@ -1848,7 +1861,7 @@ export async function generateModelString(
           .values(new${modelName})
           .executeTakeFirst()
 
-        const model = await find(Number(result.insertId)) as ${modelName}Model
+        const model = await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
         ${mittCreateStatement}
 
@@ -1891,9 +1904,68 @@ export async function generateModelString(
           throw new HttpError(500, "Invalid number of arguments")
         }
 
-        this.query = this.query.where(column, operator, value)
+        this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+        
+        this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+        this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
         return this
+      }
+
+      orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
+        if (args.length === 0) {
+          throw new HttpError(500, "At least one condition must be provided");
+        }
+
+        // Use the expression builder to append the OR conditions
+        this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+        this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+        this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        )
+
+        return this
+      }
+
+      static orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        if (args.length === 0) {
+          throw new HttpError(500, "At least one condition must be provided");
+        }
+
+        // Use the expression builder to append the OR conditions
+       instance.selectFromQuery =instance.selectFromQuery.where((eb: any) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+       instance.updateFromQuery =instance.updateFromQuery.where((eb: any) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        );
+
+       instance.deleteFromQuery =instance.deleteFromQuery.where((eb: any) =>
+          eb.or(
+            args.map(([column, operator, value]) => eb(column, operator, value))
+          )
+        )
+
+        return instance
       }
 
       static where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
@@ -1912,7 +1984,11 @@ export async function generateModelString(
           throw new HttpError(500, "Invalid number of arguments")
         }
 
-        instance.query = instance.query.where(column, operator, value)
+        instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+        instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+        instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
         return instance
       }
@@ -1920,13 +1996,25 @@ export async function generateModelString(
       static whereNull(column: string): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.where(column, 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+          eb(column, '=', '').or(column, 'is', null)
+        )
+
+        instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+          eb(column, '=', '').or(column, 'is', null)
+        )
 
         return instance
       }
 
       whereNull(column: string): ${modelName}Model {
-        this.query = this.query.where(column, 'is', null)
+        this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+          eb(column, '=', '').or(column, 'is', null)
+        )
+
+        this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+          eb(column, '=', '').or(column, 'is', null)
+        )
 
         return this
       }
@@ -1936,13 +2024,17 @@ export async function generateModelString(
       static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.where(column, 'in', values)
+        instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
+
+        instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
+
+        instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
 
         return instance
       }
 
       async first(): Promise<${modelName}Model | undefined> {
-        const model = await this.query.selectAll().executeTakeFirst()
+        const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
         if (! model) {
           return undefined
@@ -1952,7 +2044,7 @@ export async function generateModelString(
       }
 
       async firstOrFail(): Promise<${modelName}Model | undefined> {
-        const model = await this.query.selectAll().executeTakeFirst()
+        const model = await this.selectFromQuery.executeTakeFirst()
 
         if (model === undefined)
           throw new HttpError(404, 'No ${modelName}Model results found for query')
@@ -1961,7 +2053,7 @@ export async function generateModelString(
       }
 
       async exists(): Promise<boolean> {
-        const model = await this.query.selectAll().executeTakeFirst()
+        const model = await this.selectFromQuery.executeTakeFirst()
 
         return model !== null || model !== undefined
       }
@@ -1986,13 +2078,13 @@ export async function generateModelString(
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.orderBy(column, order)
+        instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
         return instance
       }
 
       orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
-        this.query = this.query.orderBy(column, order)
+        this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
         return this
       }
@@ -2000,13 +2092,13 @@ export async function generateModelString(
       static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.orderBy(column, 'desc')
+        instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
         return instance
       }
 
       orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
-        this.query = this.orderBy(column, 'desc')
+        this.selectFromQuery = this.orderBy(column, 'desc')
 
         return this
       }
@@ -2014,31 +2106,32 @@ export async function generateModelString(
       static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.orderBy(column, 'asc')
+        instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
         return instance
       }
 
       orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
-        this.query = this.query.orderBy(column, 'desc')
+        this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
         return this
       }
 
       async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
-        if (this.id === undefined)
-          throw new HttpError(500, '${modelName} ID is undefined')
-
         const filteredValues = Object.fromEntries(
           Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
         ) as New${modelName}
+
+        if (this.id === undefined) {
+          this.updateFromQuery.set(filteredValues).execute()
+        }
 
         await db.updateTable('${tableName}')
           .set(filteredValues)
           .where('id', '=', this.id)
           .executeTakeFirst()
 
-        const model = await this.find(Number(this.id))
+        const model = await this.find(this.id)
 
         ${mittUpdateStatement}
 
@@ -2046,15 +2139,16 @@ export async function generateModelString(
       }
 
       async forceUpdate(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
-        if (this.id === undefined)
-          throw new HttpError(500, '${modelName} ID is undefined')
+        if (this.id === undefined) {
+          this.updateFromQuery.set(${formattedModelName}).execute()
+        }
 
         await db.updateTable('${tableName}')
           .set(${formattedModelName})
           .where('id', '=', this.id)
           .executeTakeFirst()
 
-        const model = await this.find(Number(this.id))
+        const model = await this.find(this.id)
 
 
           ${mittUpdateStatement}
@@ -2078,8 +2172,9 @@ export async function generateModelString(
 
       // Method to delete (soft delete) the ${formattedModelName} instance
       async delete(): Promise<void> {
-          if (this.id === undefined)
-              throw new HttpError(500, '${modelName} ID is undefined')
+        if (this.id === undefined)
+          this.deleteFromQuery.execute()
+            
 
           ${mittDeleteFindStatement}
 
@@ -2110,7 +2205,7 @@ export async function generateModelString(
       ${billableStatements}
 
       distinct(column: keyof ${modelName}Type): ${modelName}Model {
-        this.query = this.query.select(column).distinct()
+        this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
         this.hasSelect = true
 
@@ -2120,7 +2215,7 @@ export async function generateModelString(
       static distinct(column: keyof ${modelName}Type): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.select(column).distinct()
+        instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
         instance.hasSelect = true
 
@@ -2128,7 +2223,7 @@ export async function generateModelString(
       }
 
       join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
-        this.query = this.query.innerJoin(table, firstCol, secondCol)
+        this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
 
         return this
       }
@@ -2136,7 +2231,7 @@ export async function generateModelString(
       static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
-        instance.query = instance.query.innerJoin(table, firstCol, secondCol)
+        instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
         return instance
       }
@@ -2187,7 +2282,7 @@ export async function generateModelString(
         .values(new${modelName})
         .executeTakeFirstOrThrow()
 
-      return await find(Number(result.insertId)) as ${modelName}Model
+      return await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
     }
 
     export async function rawQuery(rawQuery: string): Promise<any> {

@@ -78,7 +78,7 @@ export class ErrorHandler {
 
     if (
       errorString.includes('bunx --bun cdk destroy')
-      || errorString === `Failed to execute command: ${italic('bunx --bun eslint . --fix')}`
+      || errorString === `Failed to execute command: ${italic('bunx --bun eslint --flag unstable_ts_config . --fix')}`
       || errorString === `Failed to execute command: ${italic('bun storage/framework/core/actions/src/lint/fix.ts')}`
     ) {
       if (!this.isTestEnvironment) {
