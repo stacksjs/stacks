@@ -1,4 +1,4 @@
-import type { AccessTokenRequestType } from '../types/requests'
+import type { TransactionRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -10,30 +10,36 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataAccessToken {
+interface RequestDataTransaction {
   id: number
   name: string
-  token: string
-  plain_text_token: string
-  abilities: string[]
-  team_id: number
+  description: string
+  amount: number
+  brand: string
+  type: string
+  provider_id: string
+  user_id: number
+  paymentmethod_id: number
   created_at?: Date
   updated_at?: Date
   deleted_at?: Date
 }
-export class AccessTokenRequest extends Request<RequestDataAccessToken> implements AccessTokenRequestType {
+export class TransactionRequest extends Request<RequestDataTransaction> implements TransactionRequestType {
   public id = 1
   public name = ''
-  public token = ''
-  public plain_text_token = ''
-  public abilities = ''
-  public team_id = 0
+  public description = ''
+  public amount = 0
+  public brand = ''
+  public type = ''
+  public provider_id = ''
+  public user_id = 0
+  public paymentmethod_id = 0
   public created_at = new Date()
   public updated_at = new Date()
-
+  public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('AccessToken', this.all())
+      await validateField('Transaction', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -41,4 +47,4 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   }
 }
 
-export const request = new AccessTokenRequest()
+export const request = new TransactionRequest()

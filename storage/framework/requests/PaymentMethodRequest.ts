@@ -1,4 +1,4 @@
-import type { SubscriberRequestType } from '../types/requests'
+import type { PaymentMethodRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -10,24 +10,38 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataSubscriber {
+interface RequestDataPaymentMethod {
   id: number
-  subscribed: boolean
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_id: string
   user_id: number
+  transaction_id: number
   created_at?: Date
   updated_at?: Date
   deleted_at?: Date
 }
-export class SubscriberRequest extends Request<RequestDataSubscriber> implements SubscriberRequestType {
+export class PaymentMethodRequest extends Request<RequestDataPaymentMethod> implements PaymentMethodRequestType {
   public id = 1
-  public subscribed = false
+  public type = ''
+  public last_four = 0
+  public brand = ''
+  public exp_month = 0
+  public exp_year = 0
+  public is_default = false
+  public provider_id = ''
   public user_id = 0
+  public transaction_id = 0
   public created_at = new Date()
   public updated_at = new Date()
-
+  public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Subscriber', this.all())
+      await validateField('PaymentMethod', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -35,4 +49,4 @@ export class SubscriberRequest extends Request<RequestDataSubscriber> implements
   }
 }
 
-export const request = new SubscriberRequest()
+export const request = new PaymentMethodRequest()

@@ -1,4 +1,4 @@
-import type { SubscriberEmailRequestType } from '../types/requests'
+import type { ErrorRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -10,24 +10,20 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataSubscriberEmail {
+interface RequestDataError {
   id: number
-  email: string
   created_at?: Date
   updated_at?: Date
   deleted_at?: Date
 }
-export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> implements SubscriberEmailRequestType {
+export class ErrorRequest extends Request<RequestDataError> implements ErrorRequestType {
   public id = 1
-  public email = ''
   public created_at = new Date()
   public updated_at = new Date()
 
-  public deleted_at = ''
-
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('SubscriberEmail', this.all())
+      await validateField('Error', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -35,4 +31,4 @@ export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> 
   }
 }
 
-export const request = new SubscriberEmailRequest()
+export const request = new ErrorRequest()

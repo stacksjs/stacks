@@ -31,6 +31,9 @@ export interface UsersTable {
   team_id?: number
   deployment_id?: number
   post_id?: number
+  paymentmethod_id?: number
+  transaction_id?: number
+  subscription_id?: number
   public_passkey?: string
   stripe_id?: string
   uuid?: string
@@ -73,7 +76,7 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id', 'paymentmethod_id', 'transaction_id', 'subscription_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -93,6 +96,9 @@ export class UserModel {
   public team_id: number | undefined
   public deployment_id: number | undefined
   public post_id: number | undefined
+  public paymentmethod_id: number | undefined
+  public transaction_id: number | undefined
+  public subscription_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
     this.id = user?.id || 1
@@ -111,6 +117,9 @@ export class UserModel {
     this.team_id = user?.team_id
     this.deployment_id = user?.deployment_id
     this.post_id = user?.post_id
+    this.paymentmethod_id = user?.paymentmethod_id
+    this.transaction_id = user?.transaction_id
+    this.subscription_id = user?.subscription_id
 
     this.selectFromQuery = db.selectFrom('users')
     this.updateFromQuery = db.updateTable('users')

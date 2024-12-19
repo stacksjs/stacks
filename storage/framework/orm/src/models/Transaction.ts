@@ -17,6 +17,7 @@ export interface TransactionsTable {
   type?: string
   provider_id?: string
   user_id?: number
+  paymentmethod_id?: number
   uuid?: string
 
   created_at?: Date
@@ -57,7 +58,7 @@ interface QueryOptions {
 
 export class TransactionModel {
   private hidden = []
-  private fillable = ['name', 'description', 'amount', 'brand', 'type', 'provider_id', 'uuid', 'user_id']
+  private fillable = ['name', 'description', 'amount', 'brand', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -75,6 +76,7 @@ export class TransactionModel {
   public created_at: Date | undefined
   public updated_at: Date | undefined
   public user_id: number | undefined
+  public paymentmethod_id: number | undefined
 
   constructor(transaction: Partial<TransactionType> | null) {
     this.id = transaction?.id || 1
@@ -91,6 +93,7 @@ export class TransactionModel {
     this.updated_at = transaction?.updated_at
 
     this.user_id = transaction?.user_id
+    this.paymentmethod_id = transaction?.paymentmethod_id
 
     this.selectFromQuery = db.selectFrom('transactions')
     this.updateFromQuery = db.updateTable('transactions')

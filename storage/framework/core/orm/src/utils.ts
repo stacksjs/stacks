@@ -63,9 +63,6 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
-  // console.log(model.table !== '')
-  // if (model.table !== 'users') return
-
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
@@ -187,11 +184,17 @@ export async function getPivotTables(
 
 export async function fetchOtherModelRelations(modelName?: string): Promise<RelationConfig[]> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+
+  const allModelFiles = [...modelFiles, ...coreModelFiles]
+
+  // console.log(allModelFiles)
 
   const modelRelations = []
 
-  for (let i = 0; i < modelFiles.length; i++) {
-    const modelFileElement = modelFiles[i] as string
+  for (let i = 0; i < allModelFiles.length; i++) {
+    const modelFileElement = allModelFiles[i] as string
+
     const modelFile = await import(modelFileElement)
 
     if (modelName === modelFile.default.name)
@@ -353,6 +356,9 @@ export async function writeTableNames(): Promise<void> {
 
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const allModelFiles = [...coreModelFiles, ...coreModelFiles]
+
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
   let importTypes = ``
@@ -368,14 +374,15 @@ export async function writeModelRequest(): Promise<void> {
     [key: string]: ValidationField
   }\n\n`
 
-  for (let i = 0; i < modelFiles.length; i++) {
+  for (let i = 0; i < allModelFiles.length; i++) {
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
     let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
 
-    const modeFileElement = modelFiles[i] as string
+    const modeFileElement = allModelFiles[i] as string
     const model = (await import(modeFileElement)).default as Model
+
     const modelName = getModelName(model, modeFileElement)
     const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
     const useUuid = model?.traits?.useUuid || false
@@ -422,6 +429,8 @@ export async function writeModelRequest(): Promise<void> {
     }
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
+
+    console.log(otherModelRelations)
 
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
@@ -2327,6 +2336,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Model Names')
     }
     catch (error) {
+      log.error(error)
       handleError('Error while writing Model Names', error)
     }
 
@@ -2345,6 +2355,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Model Requests')
     }
     catch (error) {
+      // throw error
       handleError('Error while writing Model Requests', error)
     }
 
@@ -2403,6 +2414,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await ensureCodeStyle()
   }
   catch (error) {
+    // throw error
     handleError('Error while generating model files', error)
   }
 }

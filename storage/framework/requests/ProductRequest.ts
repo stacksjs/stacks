@@ -1,4 +1,4 @@
-import type { ReleaseRequestType } from '../types/requests'
+import type { ProductRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -10,22 +10,34 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataRelease {
+interface RequestDataProduct {
   id: number
-  version: string
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
   created_at?: Date
   updated_at?: Date
   deleted_at?: Date
 }
-export class ReleaseRequest extends Request<RequestDataRelease> implements ReleaseRequestType {
+export class ProductRequest extends Request<RequestDataProduct> implements ProductRequestType {
   public id = 1
-  public version = ''
+  public name = ''
+  public description = 0
+  public key = 0
+  public unit_price = 0
+  public status = ''
+  public image = ''
+  public provider_id = ''
   public created_at = new Date()
   public updated_at = new Date()
-
+  public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Release', this.all())
+      await validateField('Product', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -33,4 +45,4 @@ export class ReleaseRequest extends Request<RequestDataRelease> implements Relea
   }
 }
 
-export const request = new ReleaseRequest()
+export const request = new ProductRequest()
