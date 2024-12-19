@@ -24,8 +24,6 @@ export interface TeamsTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface TeamResponse {
@@ -134,13 +132,9 @@ export class TeamModel {
   }
 
   static async all(): Promise<TeamModel[]> {
-    let query = db.selectFrom('teams').selectAll()
+    const query = db.selectFrom('teams').selectAll()
 
     const instance = new TeamModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -151,10 +145,6 @@ export class TeamModel {
     let query = db.selectFrom('teams').where('id', '=', id)
 
     const instance = new TeamModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -172,10 +162,6 @@ export class TeamModel {
     let query = db.selectFrom('teams').where('id', 'in', ids)
 
     const instance = new TeamModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -210,17 +196,9 @@ export class TeamModel {
   // Method to get a Team by criteria
   async get(): Promise<TeamModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -242,10 +220,6 @@ export class TeamModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

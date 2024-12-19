@@ -19,8 +19,6 @@ export interface ProductsTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface ProductResponse {
@@ -124,13 +122,9 @@ export class ProductModel {
   }
 
   static async all(): Promise<ProductModel[]> {
-    let query = db.selectFrom('products').selectAll()
+    const query = db.selectFrom('products').selectAll()
 
     const instance = new ProductModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -141,10 +135,6 @@ export class ProductModel {
     let query = db.selectFrom('products').where('id', '=', id)
 
     const instance = new ProductModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -162,10 +152,6 @@ export class ProductModel {
     let query = db.selectFrom('products').where('id', 'in', ids)
 
     const instance = new ProductModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -200,17 +186,9 @@ export class ProductModel {
   // Method to get a Product by criteria
   async get(): Promise<ProductModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ProductModel) => new ProductModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -232,10 +210,6 @@ export class ProductModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

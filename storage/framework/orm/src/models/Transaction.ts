@@ -23,8 +23,6 @@ export interface TransactionsTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface TransactionResponse {
@@ -129,13 +127,9 @@ export class TransactionModel {
   }
 
   static async all(): Promise<TransactionModel[]> {
-    let query = db.selectFrom('transactions').selectAll()
+    const query = db.selectFrom('transactions').selectAll()
 
     const instance = new TransactionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -146,10 +140,6 @@ export class TransactionModel {
     let query = db.selectFrom('transactions').where('id', '=', id)
 
     const instance = new TransactionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -167,10 +157,6 @@ export class TransactionModel {
     let query = db.selectFrom('transactions').where('id', 'in', ids)
 
     const instance = new TransactionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -205,17 +191,9 @@ export class TransactionModel {
   // Method to get a Transaction by criteria
   async get(): Promise<TransactionModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -237,10 +215,6 @@ export class TransactionModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

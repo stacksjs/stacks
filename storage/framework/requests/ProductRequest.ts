@@ -21,7 +21,6 @@ interface RequestDataProduct {
   provider_id: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class ProductRequest extends Request<RequestDataProduct> implements ProductRequestType {
   public id = 1

@@ -12,8 +12,6 @@ export interface SubscribersTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface SubscriberResponse {
@@ -106,13 +104,9 @@ export class SubscriberModel {
   }
 
   static async all(): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers').selectAll()
+    const query = db.selectFrom('subscribers').selectAll()
 
     const instance = new SubscriberModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -123,10 +117,6 @@ export class SubscriberModel {
     let query = db.selectFrom('subscribers').where('id', '=', id)
 
     const instance = new SubscriberModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -144,10 +134,6 @@ export class SubscriberModel {
     let query = db.selectFrom('subscribers').where('id', 'in', ids)
 
     const instance = new SubscriberModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -182,17 +168,9 @@ export class SubscriberModel {
   // Method to get a Subscriber by criteria
   async get(): Promise<SubscriberModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -214,10 +192,6 @@ export class SubscriberModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

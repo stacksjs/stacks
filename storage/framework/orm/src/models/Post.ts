@@ -15,8 +15,6 @@ export interface PostsTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface PostResponse {
@@ -111,13 +109,9 @@ export class PostModel {
   }
 
   static async all(): Promise<PostModel[]> {
-    let query = db.selectFrom('posts').selectAll()
+    const query = db.selectFrom('posts').selectAll()
 
     const instance = new PostModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -128,10 +122,6 @@ export class PostModel {
     let query = db.selectFrom('posts').where('id', '=', id)
 
     const instance = new PostModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -149,10 +139,6 @@ export class PostModel {
     let query = db.selectFrom('posts').where('id', 'in', ids)
 
     const instance = new PostModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -187,17 +173,9 @@ export class PostModel {
   // Method to get a Post by criteria
   async get(): Promise<PostModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: PostModel) => new PostModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -219,10 +197,6 @@ export class PostModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

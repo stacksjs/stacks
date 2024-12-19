@@ -42,8 +42,6 @@ export interface UsersTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface UserResponse {
@@ -158,13 +156,9 @@ export class UserModel {
   }
 
   static async all(): Promise<UserModel[]> {
-    let query = db.selectFrom('users').selectAll()
+    const query = db.selectFrom('users').selectAll()
 
     const instance = new UserModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -175,10 +169,6 @@ export class UserModel {
     let query = db.selectFrom('users').where('id', '=', id)
 
     const instance = new UserModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -196,10 +186,6 @@ export class UserModel {
     let query = db.selectFrom('users').where('id', 'in', ids)
 
     const instance = new UserModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -234,17 +220,9 @@ export class UserModel {
   // Method to get a User by criteria
   async get(): Promise<UserModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: UserModel) => new UserModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -266,10 +244,6 @@ export class UserModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

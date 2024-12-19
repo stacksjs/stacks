@@ -11,8 +11,6 @@ export interface ReleasesTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface ReleaseResponse {
@@ -102,13 +100,9 @@ export class ReleaseModel {
   }
 
   static async all(): Promise<ReleaseModel[]> {
-    let query = db.selectFrom('releases').selectAll()
+    const query = db.selectFrom('releases').selectAll()
 
     const instance = new ReleaseModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -119,10 +113,6 @@ export class ReleaseModel {
     let query = db.selectFrom('releases').where('id', '=', id)
 
     const instance = new ReleaseModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -140,10 +130,6 @@ export class ReleaseModel {
     let query = db.selectFrom('releases').where('id', 'in', ids)
 
     const instance = new ReleaseModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -178,17 +164,9 @@ export class ReleaseModel {
   // Method to get a Release by criteria
   async get(): Promise<ReleaseModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -210,10 +188,6 @@ export class ReleaseModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

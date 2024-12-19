@@ -22,7 +22,6 @@ interface RequestDataDeployment {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class DeploymentRequest extends Request<RequestDataDeployment> implements DeploymentRequestType {
   public id = 1

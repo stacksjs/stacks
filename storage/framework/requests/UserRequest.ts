@@ -24,7 +24,6 @@ interface RequestDataUser {
   subscription_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class UserRequest extends Request<RequestDataUser> implements UserRequestType {
   public id = 1

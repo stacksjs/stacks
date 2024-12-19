@@ -18,7 +18,6 @@ interface RequestDataProject {
   status: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface ProjectRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -32,7 +31,6 @@ export interface ProjectRequestType extends Request {
   status: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataSubscriberEmail {
@@ -40,7 +38,6 @@ interface RequestDataSubscriberEmail {
   email: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface SubscriberEmailRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -51,7 +48,6 @@ export interface SubscriberEmailRequestType extends Request {
   email: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataAccessToken {
@@ -63,7 +59,6 @@ interface RequestDataAccessToken {
   team_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface AccessTokenRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -78,7 +73,6 @@ export interface AccessTokenRequestType extends Request {
   team_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataTeam {
@@ -95,7 +89,6 @@ interface RequestDataTeam {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface TeamRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -115,7 +108,6 @@ export interface TeamRequestType extends Request {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataSubscriber {
@@ -124,7 +116,6 @@ interface RequestDataSubscriber {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface SubscriberRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -136,7 +127,6 @@ export interface SubscriberRequestType extends Request {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataDeployment {
@@ -151,7 +141,6 @@ interface RequestDataDeployment {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface DeploymentRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -169,7 +158,6 @@ export interface DeploymentRequestType extends Request {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataRelease {
@@ -177,7 +165,6 @@ interface RequestDataRelease {
   version: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface ReleaseRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -188,7 +175,6 @@ export interface ReleaseRequestType extends Request {
   version: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataUser {
@@ -205,7 +191,6 @@ interface RequestDataUser {
   subscription_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface UserRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -225,7 +210,6 @@ export interface UserRequestType extends Request {
   subscription_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataPost {
@@ -235,7 +219,6 @@ interface RequestDataPost {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface PostRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -248,7 +231,6 @@ export interface PostRequestType extends Request {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataProduct {
@@ -262,7 +244,6 @@ interface RequestDataProduct {
   provider_id: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface ProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -279,7 +260,6 @@ export interface ProductRequestType extends Request {
   provider_id: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataPaymentMethod {
@@ -295,7 +275,6 @@ interface RequestDataPaymentMethod {
   transaction_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface PaymentMethodRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -314,7 +293,6 @@ export interface PaymentMethodRequestType extends Request {
   transaction_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataTransaction {
@@ -328,7 +306,6 @@ interface RequestDataTransaction {
   paymentmethod_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -345,7 +322,6 @@ export interface TransactionRequestType extends Request {
   paymentmethod_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataSubscription {
@@ -363,7 +339,6 @@ interface RequestDataSubscription {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface SubscriptionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -384,14 +359,12 @@ export interface SubscriptionRequestType extends Request {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 interface RequestDataError {
   id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -401,7 +374,6 @@ export interface ErrorRequestType extends Request {
   id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 
 export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeSubscriptionRequestTypeErrorRequestType

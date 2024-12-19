@@ -15,7 +15,6 @@ interface RequestDataRelease {
   version: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class ReleaseRequest extends Request<RequestDataRelease> implements ReleaseRequestType {
   public id = 1

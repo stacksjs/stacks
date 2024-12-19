@@ -25,8 +25,6 @@ export interface SubscriptionsTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface SubscriptionResponse {
@@ -139,13 +137,9 @@ export class SubscriptionModel {
   }
 
   static async all(): Promise<SubscriptionModel[]> {
-    let query = db.selectFrom('subscriptions').selectAll()
+    const query = db.selectFrom('subscriptions').selectAll()
 
     const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -156,10 +150,6 @@ export class SubscriptionModel {
     let query = db.selectFrom('subscriptions').where('id', '=', id)
 
     const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -177,10 +167,6 @@ export class SubscriptionModel {
     let query = db.selectFrom('subscriptions').where('id', 'in', ids)
 
     const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -215,17 +201,9 @@ export class SubscriptionModel {
   // Method to get a Subscription by criteria
   async get(): Promise<SubscriptionModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -247,10 +225,6 @@ export class SubscriptionModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

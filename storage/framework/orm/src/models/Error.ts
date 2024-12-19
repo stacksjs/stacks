@@ -16,8 +16,6 @@ export interface ErrorsTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface ErrorResponse {
@@ -117,13 +115,9 @@ export class ErrorModel {
   }
 
   static async all(): Promise<ErrorModel[]> {
-    let query = db.selectFrom('errors').selectAll()
+    const query = db.selectFrom('errors').selectAll()
 
     const instance = new ErrorModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -134,10 +128,6 @@ export class ErrorModel {
     let query = db.selectFrom('errors').where('id', '=', id)
 
     const instance = new ErrorModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -155,10 +145,6 @@ export class ErrorModel {
     let query = db.selectFrom('errors').where('id', 'in', ids)
 
     const instance = new ErrorModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -193,17 +179,9 @@ export class ErrorModel {
   // Method to get a Error by criteria
   async get(): Promise<ErrorModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -225,10 +203,6 @@ export class ErrorModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length

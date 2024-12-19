@@ -447,11 +447,12 @@ export async function writeModelRequest(): Promise<void> {
       fieldStringInt += `
         public deleted_at = ''
       `
+
+      fileString += `deleted_at?: Date`
     }
 
     fieldString += `created_at?: Date
-      updated_at?: Date
-      deleted_at?: Date`
+      updated_at?: Date`
 
     const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
@@ -983,6 +984,9 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
+  let instanceSoftDeleteStatements = ''
+  let thisSoftDeleteStatements = ''
+
   let fieldString = ''
   let constructorFields = ''
   let jsonFields = '{\n'
@@ -1005,9 +1009,8 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
-  for (const relationInstance of relations) {
+  for (const relationInstance of relations)
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
-  }
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -1021,6 +1024,16 @@ export async function generateModelString(
           model.uuid = randomUUIDv7()
         })
      `
+  }
+
+  if (useSoftDeletes) {
+    instanceSoftDeleteStatements += `if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }`
+
+    thisSoftDeleteStatements += ` if (this.softDeletes) {
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+    }`
   }
 
   if (typeof observer === 'boolean') {
@@ -1565,9 +1578,11 @@ export async function generateModelString(
     `
   }
 
-  fieldString += `
-    deleted_at?: Date
-  `
+  if (useSoftDeletes) {
+    fieldString += `
+      deleted_at?: Date
+    `
+  }
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
@@ -1671,9 +1686,7 @@ export async function generateModelString(
 
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null)
-        }
+       ${instanceSoftDeleteStatements}
 
         const results = await query.execute();
 
@@ -1686,9 +1699,7 @@ export async function generateModelString(
 
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+        ${instanceSoftDeleteStatements}
 
         query = query.selectAll()
 
@@ -1707,9 +1718,7 @@ export async function generateModelString(
 
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+        ${instanceSoftDeleteStatements}
 
         query = query.selectAll()
 
@@ -1746,18 +1755,14 @@ export async function generateModelString(
       async get(): Promise<${modelName}Model[]> {
         if (this.hasSelect) {
 
-          if (this.softDeletes) {
-            this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
-          }
+        ${thisSoftDeleteStatements}
 
           const model = await this.selectFromQuery.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
-        if (this.softDeletes) {
-          this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
-        }
+        ${thisSoftDeleteStatements}
 
         const model = await this.selectFromQuery.selectAll().execute()
 
@@ -1768,7 +1773,7 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
 
         if (instance.softDeletes) {
-          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null);
+          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
         }
 
         const results = await instance.selectFromQuery.selectAll().execute()
@@ -1779,9 +1784,7 @@ export async function generateModelString(
       async count(): Promise<number> {
         if (this.hasSelect) {
 
-          if (this.softDeletes) {
-            this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
-          }
+         ${thisSoftDeleteStatements}
 
           const results = await this.selectFromQuery.execute()
 

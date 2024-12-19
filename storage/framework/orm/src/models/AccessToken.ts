@@ -17,8 +17,6 @@ export interface PersonalAccessTokensTable {
 
   updated_at?: Date
 
-  deleted_at?: Date
-
 }
 
 interface AccessTokenResponse {
@@ -117,13 +115,9 @@ export class AccessTokenModel {
   }
 
   static async all(): Promise<AccessTokenModel[]> {
-    let query = db.selectFrom('personal_access_tokens').selectAll()
+    const query = db.selectFrom('personal_access_tokens').selectAll()
 
     const instance = new AccessTokenModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -134,10 +128,6 @@ export class AccessTokenModel {
     let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
 
     const instance = new AccessTokenModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -155,10 +145,6 @@ export class AccessTokenModel {
     let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
 
     const instance = new AccessTokenModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -193,17 +179,9 @@ export class AccessTokenModel {
   // Method to get a AccessToken by criteria
   async get(): Promise<AccessTokenModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -225,10 +203,6 @@ export class AccessTokenModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
