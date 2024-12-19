@@ -429,6 +429,20 @@
     "randomNonSecure": true,
     "confirmCardPayment": true,
     "confirmPayment": true,
-    "createPaymentMethod": true
+    "createPaymentMethod": true,
+    "// Head": true,
+    "ControlledPromise": true,
+    "Flag": true,
+    "HeadObject": true,
+    "HeadObjectPlain": true,
+    "Input": true,
+    "MagicRegExp": true,
+    "MagicRegExpMatchArray": true,
+    "MapToStringCapturedBy": true,
+    "NonNegativeInteger": true,
+    "SaasOption": true,
+    "SingletonPromiseReturn": true,
+    "StringCapturedBy": true,
+    "WaitOptions": true
   }
 }
