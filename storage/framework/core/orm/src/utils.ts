@@ -66,7 +66,6 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
       for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
-        // console.log(relationInstance)
         let relationModel = relationInstance.model
         let modelRelation: Model
         if (isString(relationInstance)) {
@@ -187,8 +186,6 @@ export async function fetchOtherModelRelations(modelName?: string): Promise<Rela
   const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
 
   const allModelFiles = [...modelFiles, ...coreModelFiles]
-
-  // console.log(allModelFiles)
 
   const modelRelations = []
 
@@ -357,7 +354,7 @@ export async function writeTableNames(): Promise<void> {
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
-  const allModelFiles = [...coreModelFiles, ...coreModelFiles]
+  const allModelFiles = [...modelFiles, ...coreModelFiles]
 
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
@@ -381,6 +378,7 @@ export async function writeModelRequest(): Promise<void> {
     let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
 
     const modeFileElement = allModelFiles[i] as string
+
     const model = (await import(modeFileElement)).default as Model
 
     const modelName = getModelName(model, modeFileElement)
@@ -429,8 +427,6 @@ export async function writeModelRequest(): Promise<void> {
     }
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
-
-    console.log(otherModelRelations)
 
     for (const otherModel of otherModelRelations) {
       fieldString += ` ${otherModel.foreignKey}: number\n     `
@@ -2355,7 +2351,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Model Requests')
     }
     catch (error) {
-      // throw error
       handleError('Error while writing Model Requests', error)
     }
 
