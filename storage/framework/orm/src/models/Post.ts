@@ -54,6 +54,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public title: string | undefined
   public body: string | undefined
@@ -63,6 +64,7 @@ export class PostModel {
   public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
+    this.user = post?.user
     this.id = post?.id || 1
     this.title = post?.title
     this.body = post?.body

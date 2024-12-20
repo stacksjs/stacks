@@ -64,6 +64,7 @@ export class SubscriptionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -82,6 +83,7 @@ export class SubscriptionModel {
   public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
+    this.user = subscription?.user
     this.id = subscription?.id || 1
     this.uuid = subscription?.uuid
     this.type = subscription?.type

@@ -61,6 +61,7 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public uuid: string | undefined
   public commit_sha: string | undefined
@@ -76,6 +77,7 @@ export class DeploymentModel {
   public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
+    this.user = deployment?.user
     this.id = deployment?.id || 1
     this.uuid = deployment?.uuid
     this.commit_sha = deployment?.commit_sha

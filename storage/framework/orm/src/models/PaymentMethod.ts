@@ -64,6 +64,7 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -80,6 +81,7 @@ export class PaymentMethodModel {
   public transaction_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
+    this.user = paymentmethod?.user
     this.id = paymentmethod?.id || 1
     this.uuid = paymentmethod?.uuid
     this.type = paymentmethod?.type

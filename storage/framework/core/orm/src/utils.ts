@@ -1175,7 +1175,9 @@ export async function generateModelString(
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
-      fieldString += `${relationName}?: any\n`
+      declareFields += `public ${snakeCase(relationName)}: any\n`
+      constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
+      fieldString += `${snakeCase(relationName)}?: any\n`
       relationString += `
         model.${relationName} = await instance.${relationName}()\n
       `
