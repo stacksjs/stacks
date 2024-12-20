@@ -445,10 +445,10 @@ export async function writeModelRequest(): Promise<void> {
 
     if (useSoftDeletes) {
       fieldStringInt += `
-        public deleted_at = ''
+        public deleted_at = new Date()
       `
 
-      fileString += `deleted_at?: Date`
+      fieldString += `deleted_at?: Date\n`
     }
 
     fieldString += `created_at?: Date

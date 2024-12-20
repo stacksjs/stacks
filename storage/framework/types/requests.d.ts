@@ -36,6 +36,7 @@ export interface ProjectRequestType extends Request {
 interface RequestDataSubscriberEmail {
   id: number
   email: string
+  deleted_at?: Date
   created_at?: Date
   updated_at?: Date
 }
@@ -46,6 +47,7 @@ export interface SubscriberEmailRequestType extends Request {
   all: () => RequestDataSubscriberEmail
   id: number
   email: string
+  deleted_at?: Date
   created_at?: Date
   updated_at?: Date
 }
