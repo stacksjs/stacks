@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProjectsTable {
-  id: number
+  id?: number
   name?: string
   description?: string
   url?: string
@@ -268,7 +268,7 @@ export class ProjectModel {
   }
 
   // Method to remove a Project
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('projects')
       .where('id', '=', id)
       .execute()
@@ -481,7 +481,7 @@ export class ProjectModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ProjectModel(model)
+    return new ProjectModel(model as ProjectType)
   }
 
   async last(): Promise<ProjectType | undefined> {

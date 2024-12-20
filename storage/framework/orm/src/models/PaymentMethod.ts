@@ -9,7 +9,7 @@ import Transaction from './Transaction'
 import User from './User'
 
 export interface PaymentMethodsTable {
-  id: number
+  id?: number
   type?: string
   last_four?: number
   brand?: string
@@ -298,7 +298,7 @@ export class PaymentMethodModel {
   }
 
   // Method to remove a PaymentMethod
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('payment_methods')
       .where('id', '=', id)
       .execute()
@@ -535,7 +535,7 @@ export class PaymentMethodModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new PaymentMethodModel(model)
+    return new PaymentMethodModel(model as PaymentMethodType)
   }
 
   async last(): Promise<PaymentMethodType | undefined> {

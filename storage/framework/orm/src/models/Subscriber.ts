@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface SubscribersTable {
-  id: number
+  id?: number
   subscribed?: boolean
   user_id?: number
 
@@ -263,7 +263,7 @@ export class SubscriberModel {
   }
 
   // Method to remove a Subscriber
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('subscribers')
       .where('id', '=', id)
       .execute()
@@ -452,7 +452,7 @@ export class SubscriberModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriberModel(model)
+    return new SubscriberModel(model as SubscriberType)
   }
 
   async last(): Promise<SubscriberType | undefined> {

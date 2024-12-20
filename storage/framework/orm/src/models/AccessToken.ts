@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import Team from './Team'
 
 export interface PersonalAccessTokensTable {
-  id: number
+  id?: number
   name?: string
   token?: string
   plain_text_token?: string
@@ -274,7 +274,7 @@ export class AccessTokenModel {
   }
 
   // Method to remove a AccessToken
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('personal_access_tokens')
       .where('id', '=', id)
       .execute()
@@ -487,7 +487,7 @@ export class AccessTokenModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new AccessTokenModel(model)
+    return new AccessTokenModel(model as AccessTokenType)
   }
 
   async last(): Promise<AccessTokenType | undefined> {

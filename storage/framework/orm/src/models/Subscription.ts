@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface SubscriptionsTable {
-  id: number
+  id?: number
   type?: string
   provider_id?: string
   provider_status?: string
@@ -302,7 +302,7 @@ export class SubscriptionModel {
   }
 
   // Method to remove a Subscription
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('subscriptions')
       .where('id', '=', id)
       .execute()
@@ -563,7 +563,7 @@ export class SubscriptionModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriptionModel(model)
+    return new SubscriptionModel(model as SubscriptionType)
   }
 
   async last(): Promise<SubscriptionType | undefined> {

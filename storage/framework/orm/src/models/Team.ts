@@ -8,7 +8,7 @@ import AccessToken from './AccessToken'
 import User from './User'
 
 export interface TeamsTable {
-  id: number
+  id?: number
   name?: string
   company_name?: string
   email?: string
@@ -291,7 +291,7 @@ export class TeamModel {
   }
 
   // Method to remove a Team
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('teams')
       .where('id', '=', id)
       .execute()
@@ -536,7 +536,7 @@ export class TeamModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new TeamModel(model)
+    return new TeamModel(model as TeamType)
   }
 
   async last(): Promise<TeamType | undefined> {

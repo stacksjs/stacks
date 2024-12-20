@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface SubscriberEmailsTable {
-  id: number
+  id?: number
   email?: string
 
   created_at?: Date
@@ -301,7 +301,7 @@ export class SubscriberEmailModel {
   }
 
   // Method to remove a SubscriberEmail
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
@@ -501,7 +501,7 @@ export class SubscriberEmailModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriberEmailModel(model)
+    return new SubscriberEmailModel(model as SubscriberEmailType)
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {

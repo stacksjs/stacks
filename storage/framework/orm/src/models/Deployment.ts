@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface DeploymentsTable {
-  id: number
+  id?: number
   commit_sha?: string
   commit_message?: string
   branch?: string
@@ -293,7 +293,7 @@ export class DeploymentModel {
   }
 
   // Method to remove a Deployment
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('deployments')
       .where('id', '=', id)
       .execute()
@@ -530,7 +530,7 @@ export class DeploymentModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new DeploymentModel(model)
+    return new DeploymentModel(model as DeploymentType)
   }
 
   async last(): Promise<DeploymentType | undefined> {

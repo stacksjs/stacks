@@ -292,7 +292,7 @@ export class TransactionModel {
   }
 
   // Method to remove a Transaction
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('transactions')
       .where('id', '=', id)
       .execute()
@@ -513,7 +513,7 @@ export class TransactionModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new TransactionModel(model)
+    return new TransactionModel(model as TransactionType)
   }
 
   async last(): Promise<TransactionType | undefined> {

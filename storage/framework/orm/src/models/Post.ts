@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PostsTable {
-  id: number
+  id?: number
   title?: string
   body?: string
   user_id?: number
@@ -268,7 +268,7 @@ export class PostModel {
   }
 
   // Method to remove a Post
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('posts')
       .where('id', '=', id)
       .execute()
@@ -465,7 +465,7 @@ export class PostModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new PostModel(model)
+    return new PostModel(model as PostType)
   }
 
   async last(): Promise<PostType | undefined> {

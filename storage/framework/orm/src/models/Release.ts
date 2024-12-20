@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ReleasesTable {
-  id: number
+  id?: number
   version?: string
 
   created_at?: Date
@@ -259,7 +259,7 @@ export class ReleaseModel {
   }
 
   // Method to remove a Release
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('releases')
       .where('id', '=', id)
       .execute()
@@ -448,7 +448,7 @@ export class ReleaseModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ReleaseModel(model)
+    return new ReleaseModel(model as ReleaseType)
   }
 
   async last(): Promise<ReleaseType | undefined> {

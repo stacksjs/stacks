@@ -5,7 +5,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ProductsTable {
-  id: number
+  id?: number
   name?: string
   description?: number
   key?: number
@@ -287,7 +287,7 @@ export class ProductModel {
   }
 
   // Method to remove a Product
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('products')
       .where('id', '=', id)
       .execute()
@@ -524,7 +524,7 @@ export class ProductModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ProductModel(model)
+    return new ProductModel(model as ProductType)
   }
 
   async last(): Promise<ProductType | undefined> {

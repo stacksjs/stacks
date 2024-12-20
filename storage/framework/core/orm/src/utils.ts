@@ -903,7 +903,7 @@ export async function generateKyselyTypes(): Promise<void> {
       pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
-        id?: Generated<number>
+        id?: number
         ${pivotTable.firstForeignKey}: number
         ${pivotTable.secondForeignKey}: number
       }\n\n`
@@ -1630,7 +1630,7 @@ export async function generateModelString(
     ${relationImports}
 
     export interface ${formattedTableName}Table {
-      id: number
+      id?: number
      ${fieldString}
     }
 
@@ -1900,7 +1900,7 @@ export async function generateModelString(
       }
 
       // Method to remove a ${modelName}
-      static async remove(id: number): Promise<void> {
+      static async remove(id: number): Promise<any> {
         ${mittDeleteStaticFindStatement}
 
         ${instanceSoftDeleteStatementsUpdateFrom}
@@ -2085,7 +2085,7 @@ export async function generateModelString(
           .selectAll()
           .executeTakeFirst()
 
-        return new ${modelName}Model(model)
+        return new ${modelName}Model(model as ${modelName}Type)
       }
 
       async last(): Promise<${modelName}Type | undefined> {

@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ErrorsTable {
-  id: number
+  id?: number
   type?: undefined
   message?: undefined
   stack?: undefined
@@ -274,7 +274,7 @@ export class ErrorModel {
   }
 
   // Method to remove a Error
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     return await db.deleteFrom('errors')
       .where('id', '=', id)
       .execute()
@@ -503,7 +503,7 @@ export class ErrorModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ErrorModel(model)
+    return new ErrorModel(model as ErrorType)
   }
 
   async last(): Promise<ErrorType | undefined> {

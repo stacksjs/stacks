@@ -23,7 +23,7 @@ import Team from './Team'
 import Transaction from './Transaction'
 
 export interface UsersTable {
-  id: number
+  id?: number
   name?: string
   email?: string
   job_title?: string
@@ -327,7 +327,7 @@ export class UserModel {
   }
 
   // Method to remove a User
-  static async remove(id: number): Promise<void> {
+  static async remove(id: number): Promise<any> {
     const model = await instance.find(Number(id))
 
     return await db.deleteFrom('users')
@@ -545,7 +545,7 @@ export class UserModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new UserModel(model)
+    return new UserModel(model as UserType)
   }
 
   async last(): Promise<UserType | undefined> {
