@@ -501,7 +501,14 @@ export class SubscriberEmailModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriberEmailModel(model as SubscriberEmailType)
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {

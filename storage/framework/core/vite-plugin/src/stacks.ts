@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-import type { ViteDevServer as DevServer, Plugin } from 'vite'
+import type { Plugin } from 'vite'
 import { parseOptions } from '@stacksjs/cli'
 
 interface StacksPluginOptions {
@@ -44,8 +44,8 @@ export function stacks(options?: StacksPluginOptions): Plugin {
     //   return code // Return the unmodified code
     // },
 
-    configureServer(server: DevServer) {
+    // configureServer(server: DevServer) {
 
-    },
+    // },
   }
 }

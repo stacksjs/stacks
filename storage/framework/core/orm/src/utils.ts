@@ -984,6 +984,8 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
+  let relationString = ''
+
   let instanceSoftDeleteStatements = ''
   let thisSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
@@ -1090,6 +1092,10 @@ export async function generateModelString(
     }
   }
 
+  relationString += `
+    const instance = new ${modelName}Model(model as ${modelName}Type)\n
+  `
+
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
@@ -1170,6 +1176,10 @@ export async function generateModelString(
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
       fieldString += `${relationName}?: any\n`
+      relationString += `
+        model.${relationName} = await instance.${relationName}()\n
+      `
+      jsonFields += `${relationName}: this.${relationName},\n`
 
       relationMethods += `
       async ${relationName}() {
@@ -2087,7 +2097,14 @@ export async function generateModelString(
           .selectAll()
           .executeTakeFirst()
 
-        return new ${modelName}Model(model as ${modelName}Type)
+        if (! model)
+          return undefined
+
+        ${relationString}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
+        return data
       }
 
       async last(): Promise<${modelName}Type | undefined> {
@@ -2255,7 +2272,6 @@ export async function generateModelString(
 
       toJSON() {
         const output: Partial<${modelName}Type> = ${jsonFields}
-
 
         type ${modelName} = Omit<${modelName}Type, 'password'>
 

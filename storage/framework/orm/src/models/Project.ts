@@ -481,7 +481,14 @@ export class ProjectModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ProjectModel(model as ProjectType)
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(model as ProjectType)
+
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   async last(): Promise<ProjectType | undefined> {

@@ -452,7 +452,14 @@ export class SubscriberModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriberModel(model as SubscriberType)
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberModel(model as SubscriberType)
+
+    const data = new SubscriberModel(model as SubscriberType)
+
+    return data
   }
 
   async last(): Promise<SubscriberType | undefined> {

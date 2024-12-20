@@ -536,7 +536,16 @@ export class PaymentMethodModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new PaymentMethodModel(model as PaymentMethodType)
+    if (!model)
+      return undefined
+
+    const instance = new PaymentMethodModel(model as PaymentMethodType)
+
+    model.user = await instance.user()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
@@ -714,6 +723,7 @@ export class PaymentMethodModel {
 
   toJSON() {
     const output: Partial<PaymentMethodType> = {
+      user: this.user,
 
       id: this.id,
       type: this.type,

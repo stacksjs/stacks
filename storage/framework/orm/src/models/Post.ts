@@ -466,7 +466,16 @@ export class PostModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new PostModel(model as PostType)
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(model as PostType)
+
+    model.user = await instance.user()
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   async last(): Promise<PostType | undefined> {
@@ -632,6 +641,7 @@ export class PostModel {
 
   toJSON() {
     const output: Partial<PostType> = {
+      user: this.user,
 
       id: this.id,
       title: this.title,

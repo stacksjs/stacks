@@ -503,7 +503,14 @@ export class ErrorModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ErrorModel(model as ErrorType)
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(model as ErrorType)
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
   }
 
   async last(): Promise<ErrorType | undefined> {

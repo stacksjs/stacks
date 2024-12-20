@@ -564,7 +564,16 @@ export class SubscriptionModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriptionModel(model as SubscriptionType)
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(model as SubscriptionType)
+
+    model.user = await instance.user()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   async last(): Promise<SubscriptionType | undefined> {
@@ -730,6 +739,7 @@ export class SubscriptionModel {
 
   toJSON() {
     const output: Partial<SubscriptionType> = {
+      user: this.user,
 
       id: this.id,
       type: this.type,

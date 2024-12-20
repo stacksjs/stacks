@@ -531,7 +531,16 @@ export class DeploymentModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new DeploymentModel(model as DeploymentType)
+    if (!model)
+      return undefined
+
+    const instance = new DeploymentModel(model as DeploymentType)
+
+    model.user = await instance.user()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   async last(): Promise<DeploymentType | undefined> {
@@ -697,6 +706,7 @@ export class DeploymentModel {
 
   toJSON() {
     const output: Partial<DeploymentType> = {
+      user: this.user,
 
       id: this.id,
       commit_sha: this.commit_sha,

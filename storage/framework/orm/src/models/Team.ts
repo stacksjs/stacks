@@ -536,7 +536,14 @@ export class TeamModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new TeamModel(model as TeamType)
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(model as TeamType)
+
+    const data = new TeamModel(model as TeamType)
+
+    return data
   }
 
   async last(): Promise<TeamType | undefined> {

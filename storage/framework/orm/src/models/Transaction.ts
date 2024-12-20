@@ -515,7 +515,18 @@ export class TransactionModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new TransactionModel(model as TransactionType)
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(model as TransactionType)
+
+    model.user = await instance.user()
+
+    model.paymentMethod = await instance.paymentMethod()
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   async last(): Promise<TransactionType | undefined> {
@@ -695,6 +706,8 @@ export class TransactionModel {
 
   toJSON() {
     const output: Partial<TransactionType> = {
+      user: this.user,
+      paymentMethod: this.paymentMethod,
 
       id: this.id,
       name: this.name,

@@ -545,7 +545,14 @@ export class UserModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new UserModel(model as UserType)
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(model as UserType)
+
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   async last(): Promise<UserType | undefined> {

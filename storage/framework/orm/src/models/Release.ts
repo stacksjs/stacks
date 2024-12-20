@@ -448,7 +448,14 @@ export class ReleaseModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ReleaseModel(model as ReleaseType)
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(model as ReleaseType)
+
+    const data = new ReleaseModel(model as ReleaseType)
+
+    return data
   }
 
   async last(): Promise<ReleaseType | undefined> {
