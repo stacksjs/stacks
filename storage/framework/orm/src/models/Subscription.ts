@@ -8,6 +8,7 @@ import User from './User'
 
 export interface SubscriptionsTable {
   id?: number
+  user?: any
   type?: string
   provider_id?: string
   provider_status?: string

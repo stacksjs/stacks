@@ -10,6 +10,7 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id?: number
+  user?: any
   type?: string
   last_four?: number
   brand?: string

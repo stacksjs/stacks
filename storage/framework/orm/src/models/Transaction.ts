@@ -10,6 +10,8 @@ import User from './User'
 
 export interface TransactionsTable {
   id?: number
+  user?: any
+  paymentMethod?: any
   name?: string
   description?: string
   amount?: number
@@ -641,7 +643,7 @@ export class TransactionModel {
     return model
   }
 
-  async paymentmethod() {
+  async paymentMethod() {
     if (this.paymentmethod_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

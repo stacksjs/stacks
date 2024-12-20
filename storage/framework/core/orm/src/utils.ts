@@ -11,7 +11,7 @@ import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
-import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
+import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
@@ -1096,7 +1096,7 @@ export async function generateModelString(
     const modelKeyRelation = relation.modelKey
     const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
-    const formattedModelRelation = modelRelation.toLowerCase()
+    const formattedModelRelation = camelCase(modelRelation)
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
@@ -1167,7 +1167,9 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
-      const relationName = relation.relationName || formattedModelRelation
+      const relationName = camelCase(relation.relationName || formattedModelRelation)
+
+      fieldString += `${relationName}?: any\n`
 
       relationMethods += `
       async ${relationName}() {

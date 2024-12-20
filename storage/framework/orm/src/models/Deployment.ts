@@ -8,6 +8,7 @@ import User from './User'
 
 export interface DeploymentsTable {
   id?: number
+  user?: any
   commit_sha?: string
   commit_message?: string
   branch?: string
