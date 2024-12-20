@@ -176,17 +176,9 @@ export class PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -209,10 +201,6 @@ export class PaymentMethodModel {
 
   static async count(): Promise<number> {
     const instance = new PaymentMethodModel(null)
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
 
     const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -311,21 +299,9 @@ export class PaymentMethodModel {
 
   // Method to remove a PaymentMethod
   static async remove(id: number): Promise<void> {
-    const instance = new PaymentMethodModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('payment_methods')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('payment_methods')
-        .where('id', '=', id)
-        .execute()
-    }
+    return await db.deleteFrom('payment_methods')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): PaymentMethodModel {
@@ -664,26 +640,13 @@ export class PaymentMethodModel {
   }
 
   // Method to delete (soft delete) the paymentmethod instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('payment_methods')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('payment_methods')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('payment_methods')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async user() {

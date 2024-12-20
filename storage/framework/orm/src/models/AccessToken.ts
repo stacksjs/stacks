@@ -158,17 +158,9 @@ export class AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -191,10 +183,6 @@ export class AccessTokenModel {
 
   static async count(): Promise<number> {
     const instance = new AccessTokenModel(null)
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
 
     const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -287,21 +275,9 @@ export class AccessTokenModel {
 
   // Method to remove a AccessToken
   static async remove(id: number): Promise<void> {
-    const instance = new AccessTokenModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('personal_access_tokens')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('personal_access_tokens')
-        .where('id', '=', id)
-        .execute()
-    }
+    return await db.deleteFrom('personal_access_tokens')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): AccessTokenModel {
@@ -616,26 +592,13 @@ export class AccessTokenModel {
   }
 
   // Method to delete (soft delete) the accesstoken instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('personal_access_tokens')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('personal_access_tokens')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('personal_access_tokens')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async team() {

@@ -180,17 +180,9 @@ export class SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -213,10 +205,6 @@ export class SubscriptionModel {
 
   static async count(): Promise<number> {
     const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
 
     const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -315,21 +303,9 @@ export class SubscriptionModel {
 
   // Method to remove a Subscription
   static async remove(id: number): Promise<void> {
-    const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('subscriptions')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('subscriptions')
-        .where('id', '=', id)
-        .execute()
-    }
+    return await db.deleteFrom('subscriptions')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
@@ -692,26 +668,13 @@ export class SubscriptionModel {
   }
 
   // Method to delete (soft delete) the subscription instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('subscriptions')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('subscriptions')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('subscriptions')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async user() {

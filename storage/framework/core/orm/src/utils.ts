@@ -986,6 +986,9 @@ export async function generateModelString(
 
   let instanceSoftDeleteStatements = ''
   let thisSoftDeleteStatements = ''
+  let instanceSoftDeleteStatementsSelectFrom = ''
+  let instanceSoftDeleteStatementsUpdateFrom = ''
+  let thisSoftDeleteStatementsUpdateFrom = ''
 
   let fieldString = ''
   let constructorFields = ''
@@ -1032,7 +1035,33 @@ export async function generateModelString(
     }`
 
     thisSoftDeleteStatements += ` if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+    }`
+
+    instanceSoftDeleteStatementsSelectFrom += ` if (instance.softDeletes) {
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
+    }`
+
+    instanceSoftDeleteStatementsUpdateFrom += `
+      const instance = new ${modelName}Model(null)
+
+      if (instance.softDeletes) {
+        return await db.updateTable('transactions')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+      }
+    `
+
+    thisSoftDeleteStatementsUpdateFrom += `if (this.softDeletes) {
+      return await db.updateTable('${tableName}')
+      .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP')
+      })
+      .where('id', '=', this.id)
+      .execute()
     }`
   }
 
@@ -1732,18 +1761,14 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
 
         if (instance.hasSelect) {
-          if (instance.softDeletes) {
-            instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-          }
+         ${instanceSoftDeleteStatementsSelectFrom}
 
           const model = await instance.selectFromQuery.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
-        if (instance.softDeletes) {
-          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-        }
+        ${instanceSoftDeleteStatementsSelectFrom}
 
         const model = await instance.selectFromQuery.selectAll().execute()
 
@@ -1772,9 +1797,7 @@ export async function generateModelString(
       static async count(): Promise<number> {
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-        }
+        ${instanceSoftDeleteStatementsSelectFrom}
 
         const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -1878,22 +1901,13 @@ export async function generateModelString(
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<void> {
-        const instance = new ${modelName}Model(null)
         ${mittDeleteStaticFindStatement}
 
-        if (instance.softDeletes) {
-        await db.updateTable('${tableName}')
-          .set({
-            deleted_at: sql.raw('CURRENT_TIMESTAMP')
-          })
+        ${instanceSoftDeleteStatementsUpdateFrom}
+        
+        return await db.deleteFrom('${tableName}')
           .where('id', '=', id)
-          .execute();
-        } else {
-          await db.deleteFrom('${tableName}')
-            .where('id', '=', id)
-            .execute();
-        }
-
+          .execute()
 
         ${mittDeleteStatement}
       }
@@ -2181,31 +2195,18 @@ export async function generateModelString(
       }
 
       // Method to delete (soft delete) the ${formattedModelName} instance
-      async delete(): Promise<void> {
+      async delete(): Promise<any> {
         if (this.id === undefined)
           this.deleteFromQuery.execute()
-            
-
           ${mittDeleteFindStatement}
 
-          // Check if soft deletes are enabled
-          if (this.softDeletes) {
-              // Update the deleted_at column with the current timestamp
-              await db.updateTable('${tableName}')
-                  .set({
-                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
-                  })
-                  .where('id', '=', this.id)
-                  .execute();
-          } else {
-              // Perform a hard delete
-              await db.deleteFrom('${tableName}')
-                .where('id', '=', this.id)
-                .execute();
-          }
+          ${thisSoftDeleteStatementsUpdateFrom}
 
+          return await db.deleteFrom('${tableName}')
+            .where('id', '=', this.id)
+            .execute()
 
-          ${mittDeleteStatement}
+        ${mittDeleteStatement}
       }
 
       ${relationMethods}

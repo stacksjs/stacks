@@ -305,18 +305,17 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
-      await db.updateTable('subscriber_emails')
+      return await db.updateTable('transactions')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
         .where('id', '=', id)
         .execute()
     }
-    else {
-      await db.deleteFrom('subscriber_emails')
-        .where('id', '=', id)
-        .execute()
-    }
+
+    return await db.deleteFrom('subscriber_emails')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
@@ -607,26 +606,22 @@ export class SubscriberEmailModel {
   }
 
   // Method to delete (soft delete) the subscriberemail instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
     if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('subscriber_emails')
+      return await db.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
         .where('id', '=', this.id)
         .execute()
     }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('subscriber_emails')
-        .where('id', '=', this.id)
-        .execute()
-    }
+
+    return await db.deleteFrom('subscriber_emails')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {

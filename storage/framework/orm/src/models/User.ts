@@ -199,17 +199,9 @@ export class UserModel {
     const instance = new UserModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: UserModel) => new UserModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -232,10 +224,6 @@ export class UserModel {
 
   static async count(): Promise<number> {
     const instance = new UserModel(null)
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
 
     const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -340,22 +328,11 @@ export class UserModel {
 
   // Method to remove a User
   static async remove(id: number): Promise<void> {
-    const instance = new UserModel(null)
     const model = await instance.find(Number(id))
 
-    if (instance.softDeletes) {
-      await db.updateTable('users')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('users')
-        .where('id', '=', id)
-        .execute()
-    }
+    return await db.deleteFrom('users')
+      .where('id', '=', id)
+      .execute()
 
     if (model)
       dispatch('user:deleted', model)
@@ -679,28 +656,14 @@ export class UserModel {
   }
 
   // Method to delete (soft delete) the user instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
-
     const model = await this.find(Number(this.id))
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('users')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('users')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('users')
+      .where('id', '=', this.id)
+      .execute()
 
     if (model)
       dispatch('user:deleted', model)

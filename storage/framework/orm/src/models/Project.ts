@@ -152,17 +152,9 @@ export class ProjectModel {
     const instance = new ProjectModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -185,10 +177,6 @@ export class ProjectModel {
 
   static async count(): Promise<number> {
     const instance = new ProjectModel(null)
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
 
     const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -281,21 +269,9 @@ export class ProjectModel {
 
   // Method to remove a Project
   static async remove(id: number): Promise<void> {
-    const instance = new ProjectModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('projects')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('projects')
-        .where('id', '=', id)
-        .execute()
-    }
+    return await db.deleteFrom('projects')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): ProjectModel {
@@ -610,26 +586,13 @@ export class ProjectModel {
   }
 
   // Method to delete (soft delete) the project instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('projects')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('projects')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('projects')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   distinct(column: keyof ProjectType): ProjectModel {
