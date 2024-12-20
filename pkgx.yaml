@@ -18,5 +18,6 @@ dependencies:
   mailpit.axllent.org: ^1.10.0
   redis.io: ^7.2.5
   sqlite.org: ^3.42.0
+  nodejs.org: ^22.12.0
   # openjdk.org: ^21.0.3.6
   # rust-lang.org: ^1.74.1

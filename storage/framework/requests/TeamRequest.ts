@@ -24,7 +24,6 @@ interface RequestDataTeam {
   user_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class TeamRequest extends Request<RequestDataTeam> implements TeamRequestType {
   public id = 1

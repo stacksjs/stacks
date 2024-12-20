@@ -9,7 +9,8 @@ import Transaction from './Transaction'
 import User from './User'
 
 export interface PaymentMethodsTable {
-  id: number
+  id?: number
+  user?: any
   type?: string
   last_four?: number
   brand?: string
@@ -24,8 +25,6 @@ export interface PaymentMethodsTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -65,6 +64,7 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -81,6 +81,7 @@ export class PaymentMethodModel {
   public transaction_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
+    this.user = paymentmethod?.user
     this.id = paymentmethod?.id || 1
     this.uuid = paymentmethod?.uuid
     this.type = paymentmethod?.type
@@ -135,13 +136,9 @@ export class PaymentMethodModel {
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
-    let query = db.selectFrom('payment_methods').selectAll()
+    const query = db.selectFrom('payment_methods').selectAll()
 
     const instance = new PaymentMethodModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -152,10 +149,6 @@ export class PaymentMethodModel {
     let query = db.selectFrom('payment_methods').where('id', '=', id)
 
     const instance = new PaymentMethodModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -174,10 +167,6 @@ export class PaymentMethodModel {
 
     const instance = new PaymentMethodModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -190,17 +179,9 @@ export class PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -211,17 +192,9 @@ export class PaymentMethodModel {
   // Method to get a PaymentMethod by criteria
   async get(): Promise<PaymentMethodModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -232,10 +205,6 @@ export class PaymentMethodModel {
   static async count(): Promise<number> {
     const instance = new PaymentMethodModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -243,10 +212,6 @@ export class PaymentMethodModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -336,22 +301,10 @@ export class PaymentMethodModel {
   }
 
   // Method to remove a PaymentMethod
-  static async remove(id: number): Promise<void> {
-    const instance = new PaymentMethodModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('payment_methods')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('payment_methods')
-        .where('id', '=', id)
-        .execute()
-    }
+  static async remove(id: number): Promise<any> {
+    return await db.deleteFrom('payment_methods')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): PaymentMethodModel {
@@ -585,7 +538,16 @@ export class PaymentMethodModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new PaymentMethodModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new PaymentMethodModel(model as PaymentMethodType)
+
+    model.user = await instance.user()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
@@ -690,26 +652,13 @@ export class PaymentMethodModel {
   }
 
   // Method to delete (soft delete) the paymentmethod instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('payment_methods')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('payment_methods')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('payment_methods')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async user() {
@@ -776,6 +725,7 @@ export class PaymentMethodModel {
 
   toJSON() {
     const output: Partial<PaymentMethodType> = {
+      user: this.user,
 
       id: this.id,
       type: this.type,

@@ -1,4 +1,3 @@
-import type { Generated } from 'kysely'
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
@@ -15,19 +14,19 @@ import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
 
 export interface PersonalAccessTokenTeamsTable {
-  id?: Generated<number>
+  id?: number
   team_id: number
   personal_access_token_id: number
 }
 
 export interface TeamUsersTable {
-  id?: Generated<number>
+  id?: number
   team_id: number
   user_id: number
 }
 
 export interface TeamUsersTable {
-  id?: Generated<number>
+  id?: number
   user_id: number
   team_id: number
 }

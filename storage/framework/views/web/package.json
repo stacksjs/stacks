@@ -42,7 +42,7 @@
     "unplugin-vue-components": "^0.28.0",
     "unplugin-vue-markdown": "^0.28.0",
     "unplugin-vue-router": "^0.10.9",
-    "vite": "^5.4.11",
+    "vite": "^6.0.4",
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-inspect": "^0.10.3",
     "vite-plugin-pwa": "^0.21.1",

@@ -7,7 +7,8 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface SubscriptionsTable {
-  id: number
+  id?: number
+  user?: any
   type?: string
   provider_id?: string
   provider_status?: string
@@ -24,8 +25,6 @@ export interface SubscriptionsTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -65,6 +64,7 @@ export class SubscriptionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -83,6 +83,7 @@ export class SubscriptionModel {
   public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
+    this.user = subscription?.user
     this.id = subscription?.id || 1
     this.uuid = subscription?.uuid
     this.type = subscription?.type
@@ -139,13 +140,9 @@ export class SubscriptionModel {
   }
 
   static async all(): Promise<SubscriptionModel[]> {
-    let query = db.selectFrom('subscriptions').selectAll()
+    const query = db.selectFrom('subscriptions').selectAll()
 
     const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -156,10 +153,6 @@ export class SubscriptionModel {
     let query = db.selectFrom('subscriptions').where('id', '=', id)
 
     const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -178,10 +171,6 @@ export class SubscriptionModel {
 
     const instance = new SubscriptionModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -194,17 +183,9 @@ export class SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -215,17 +196,9 @@ export class SubscriptionModel {
   // Method to get a Subscription by criteria
   async get(): Promise<SubscriptionModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -236,10 +209,6 @@ export class SubscriptionModel {
   static async count(): Promise<number> {
     const instance = new SubscriptionModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -247,10 +216,6 @@ export class SubscriptionModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -340,22 +305,10 @@ export class SubscriptionModel {
   }
 
   // Method to remove a Subscription
-  static async remove(id: number): Promise<void> {
-    const instance = new SubscriptionModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('subscriptions')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('subscriptions')
-        .where('id', '=', id)
-        .execute()
-    }
+  static async remove(id: number): Promise<any> {
+    return await db.deleteFrom('subscriptions')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
@@ -613,7 +566,16 @@ export class SubscriptionModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriptionModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(model as SubscriptionType)
+
+    model.user = await instance.user()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   async last(): Promise<SubscriptionType | undefined> {
@@ -718,26 +680,13 @@ export class SubscriptionModel {
   }
 
   // Method to delete (soft delete) the subscription instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('subscriptions')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('subscriptions')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('subscriptions')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async user() {
@@ -792,6 +741,7 @@ export class SubscriptionModel {
 
   toJSON() {
     const output: Partial<SubscriptionType> = {
+      user: this.user,
 
       id: this.id,
       type: this.type,

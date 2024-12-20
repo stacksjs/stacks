@@ -6,7 +6,8 @@ import { HttpError } from '@stacksjs/error-handling'
 import User from './User'
 
 export interface PostsTable {
-  id: number
+  id?: number
+  user?: any
   title?: string
   body?: string
   user_id?: number
@@ -14,8 +15,6 @@ export interface PostsTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -55,6 +54,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
   public id: number
   public title: string | undefined
   public body: string | undefined
@@ -64,6 +64,7 @@ export class PostModel {
   public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
+    this.user = post?.user
     this.id = post?.id || 1
     this.title = post?.title
     this.body = post?.body
@@ -111,13 +112,9 @@ export class PostModel {
   }
 
   static async all(): Promise<PostModel[]> {
-    let query = db.selectFrom('posts').selectAll()
+    const query = db.selectFrom('posts').selectAll()
 
     const instance = new PostModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -128,10 +125,6 @@ export class PostModel {
     let query = db.selectFrom('posts').where('id', '=', id)
 
     const instance = new PostModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -150,10 +143,6 @@ export class PostModel {
 
     const instance = new PostModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -166,17 +155,9 @@ export class PostModel {
     const instance = new PostModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: PostModel) => new PostModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -187,17 +168,9 @@ export class PostModel {
   // Method to get a Post by criteria
   async get(): Promise<PostModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: PostModel) => new PostModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -208,10 +181,6 @@ export class PostModel {
   static async count(): Promise<number> {
     const instance = new PostModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -219,10 +188,6 @@ export class PostModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -306,22 +271,10 @@ export class PostModel {
   }
 
   // Method to remove a Post
-  static async remove(id: number): Promise<void> {
-    const instance = new PostModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('posts')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('posts')
-        .where('id', '=', id)
-        .execute()
-    }
+  static async remove(id: number): Promise<any> {
+    return await db.deleteFrom('posts')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): PostModel {
@@ -515,7 +468,16 @@ export class PostModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new PostModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(model as PostType)
+
+    model.user = await instance.user()
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   async last(): Promise<PostType | undefined> {
@@ -620,26 +582,13 @@ export class PostModel {
   }
 
   // Method to delete (soft delete) the post instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('posts')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('posts')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('posts')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async user() {
@@ -694,6 +643,7 @@ export class PostModel {
 
   toJSON() {
     const output: Partial<PostType> = {
+      user: this.user,
 
       id: this.id,
       title: this.title,

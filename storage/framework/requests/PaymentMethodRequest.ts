@@ -23,7 +23,6 @@ interface RequestDataPaymentMethod {
   transaction_id: number
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class PaymentMethodRequest extends Request<RequestDataPaymentMethod> implements PaymentMethodRequestType {
   public id = 1

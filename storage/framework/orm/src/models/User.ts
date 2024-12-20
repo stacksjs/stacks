@@ -23,7 +23,7 @@ import Team from './Team'
 import Transaction from './Transaction'
 
 export interface UsersTable {
-  id: number
+  id?: number
   name?: string
   email?: string
   job_title?: string
@@ -41,8 +41,6 @@ export interface UsersTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -158,13 +156,9 @@ export class UserModel {
   }
 
   static async all(): Promise<UserModel[]> {
-    let query = db.selectFrom('users').selectAll()
+    const query = db.selectFrom('users').selectAll()
 
     const instance = new UserModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -175,10 +169,6 @@ export class UserModel {
     let query = db.selectFrom('users').where('id', '=', id)
 
     const instance = new UserModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -197,10 +187,6 @@ export class UserModel {
 
     const instance = new UserModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -213,17 +199,9 @@ export class UserModel {
     const instance = new UserModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: UserModel) => new UserModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -234,17 +212,9 @@ export class UserModel {
   // Method to get a User by criteria
   async get(): Promise<UserModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: UserModel) => new UserModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -255,10 +225,6 @@ export class UserModel {
   static async count(): Promise<number> {
     const instance = new UserModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -266,10 +232,6 @@ export class UserModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -365,23 +327,12 @@ export class UserModel {
   }
 
   // Method to remove a User
-  static async remove(id: number): Promise<void> {
-    const instance = new UserModel(null)
+  static async remove(id: number): Promise<any> {
     const model = await instance.find(Number(id))
 
-    if (instance.softDeletes) {
-      await db.updateTable('users')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('users')
-        .where('id', '=', id)
-        .execute()
-    }
+    return await db.deleteFrom('users')
+      .where('id', '=', id)
+      .execute()
 
     if (model)
       dispatch('user:deleted', model)
@@ -594,7 +545,14 @@ export class UserModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new UserModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(model as UserType)
+
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   async last(): Promise<UserType | undefined> {
@@ -705,28 +663,14 @@ export class UserModel {
   }
 
   // Method to delete (soft delete) the user instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
-
     const model = await this.find(Number(this.id))
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('users')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('users')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('users')
+      .where('id', '=', this.id)
+      .execute()
 
     if (model)
       dispatch('user:deleted', model)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import { Notification } from '@stacksjs/notification'
+import { Notification } from '@stacksjs/notification'
 import { useBillable } from '../../../../functions/billing/payments'
 import LoadingCard from '../skeleton/loading-card.vue'
 import CardBrands from './card-brands.vue'
@@ -27,7 +27,7 @@ function cancelForm() {
 </script>
 
 <template>
-  <!-- <Notification position="top-right" rich-colors /> -->
+  <Notification position="top-right" rich-colors />
 
   <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
     <h2 class="text-lg text-gray-900 font-medium">

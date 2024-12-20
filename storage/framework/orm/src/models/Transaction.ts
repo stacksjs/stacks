@@ -9,7 +9,9 @@ import PaymentMethod from './PaymentMethod'
 import User from './User'
 
 export interface TransactionsTable {
-  id: number
+  id?: number
+  user?: any
+  payment_method?: any
   name?: string
   description?: string
   amount?: number
@@ -22,8 +24,6 @@ export interface TransactionsTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -63,6 +63,8 @@ export class TransactionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user: any
+  public payment_method: any
   public id: number
   public uuid: string | undefined
   public name: string | undefined
@@ -77,6 +79,8 @@ export class TransactionModel {
   public paymentmethod_id: number | undefined
 
   constructor(transaction: Partial<TransactionType> | null) {
+    this.user = transaction?.user
+    this.payment_method = transaction?.payment_method
     this.id = transaction?.id || 1
     this.uuid = transaction?.uuid
     this.name = transaction?.name
@@ -129,13 +133,9 @@ export class TransactionModel {
   }
 
   static async all(): Promise<TransactionModel[]> {
-    let query = db.selectFrom('transactions').selectAll()
+    const query = db.selectFrom('transactions').selectAll()
 
     const instance = new TransactionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -146,10 +146,6 @@ export class TransactionModel {
     let query = db.selectFrom('transactions').where('id', '=', id)
 
     const instance = new TransactionModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -168,10 +164,6 @@ export class TransactionModel {
 
     const instance = new TransactionModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -184,17 +176,9 @@ export class TransactionModel {
     const instance = new TransactionModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -205,17 +189,9 @@ export class TransactionModel {
   // Method to get a Transaction by criteria
   async get(): Promise<TransactionModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -226,10 +202,6 @@ export class TransactionModel {
   static async count(): Promise<number> {
     const instance = new TransactionModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -237,10 +209,6 @@ export class TransactionModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -330,22 +298,10 @@ export class TransactionModel {
   }
 
   // Method to remove a Transaction
-  static async remove(id: number): Promise<void> {
-    const instance = new TransactionModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('transactions')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('transactions')
-        .where('id', '=', id)
-        .execute()
-    }
+  static async remove(id: number): Promise<any> {
+    return await db.deleteFrom('transactions')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): TransactionModel {
@@ -563,7 +519,18 @@ export class TransactionModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new TransactionModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(model as TransactionType)
+
+    model.user = await instance.user()
+
+    model.paymentMethod = await instance.paymentMethod()
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   async last(): Promise<TransactionType | undefined> {
@@ -668,26 +635,13 @@ export class TransactionModel {
   }
 
   // Method to delete (soft delete) the transaction instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('transactions')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('transactions')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('transactions')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   async user() {
@@ -704,7 +658,7 @@ export class TransactionModel {
     return model
   }
 
-  async paymentmethod() {
+  async paymentMethod() {
     if (this.paymentmethod_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -756,6 +710,8 @@ export class TransactionModel {
 
   toJSON() {
     const output: Partial<TransactionType> = {
+      user: this.user,
+      paymentMethod: this.paymentMethod,
 
       id: this.id,
       name: this.name,

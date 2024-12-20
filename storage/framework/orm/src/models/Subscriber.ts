@@ -4,15 +4,13 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface SubscribersTable {
-  id: number
+  id?: number
   subscribed?: boolean
   user_id?: number
 
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -106,13 +104,9 @@ export class SubscriberModel {
   }
 
   static async all(): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers').selectAll()
+    const query = db.selectFrom('subscribers').selectAll()
 
     const instance = new SubscriberModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -123,10 +117,6 @@ export class SubscriberModel {
     let query = db.selectFrom('subscribers').where('id', '=', id)
 
     const instance = new SubscriberModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -145,10 +135,6 @@ export class SubscriberModel {
 
     const instance = new SubscriberModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -161,17 +147,9 @@ export class SubscriberModel {
     const instance = new SubscriberModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -182,17 +160,9 @@ export class SubscriberModel {
   // Method to get a Subscriber by criteria
   async get(): Promise<SubscriberModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -203,10 +173,6 @@ export class SubscriberModel {
   static async count(): Promise<number> {
     const instance = new SubscriberModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -214,10 +180,6 @@ export class SubscriberModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -301,22 +263,10 @@ export class SubscriberModel {
   }
 
   // Method to remove a Subscriber
-  static async remove(id: number): Promise<void> {
-    const instance = new SubscriberModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('subscribers')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('subscribers')
-        .where('id', '=', id)
-        .execute()
-    }
+  static async remove(id: number): Promise<any> {
+    return await db.deleteFrom('subscribers')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): SubscriberModel {
@@ -502,7 +452,14 @@ export class SubscriberModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new SubscriberModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberModel(model as SubscriberType)
+
+    const data = new SubscriberModel(model as SubscriberType)
+
+    return data
   }
 
   async last(): Promise<SubscriberType | undefined> {
@@ -607,26 +564,13 @@ export class SubscriberModel {
   }
 
   // Method to delete (soft delete) the subscriber instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('subscribers')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('subscribers')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('subscribers')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   distinct(column: keyof SubscriberType): SubscriberModel {

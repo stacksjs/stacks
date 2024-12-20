@@ -18,7 +18,6 @@ interface RequestDataProject {
   status: string
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class ProjectRequest extends Request<RequestDataProject> implements ProjectRequestType {
   public id = 1

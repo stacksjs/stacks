@@ -13,9 +13,9 @@ interface CustomAttributes {
 interface RequestDataSubscriberEmail {
   id: number
   email: string
+  deleted_at?: Date
   created_at?: Date
   updated_at?: Date
-  deleted_at?: Date
 }
 export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> implements SubscriberEmailRequestType {
   public id = 1
@@ -23,7 +23,7 @@ export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> 
   public created_at = new Date()
   public updated_at = new Date()
 
-  public deleted_at = ''
+  public deleted_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

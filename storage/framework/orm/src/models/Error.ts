@@ -4,7 +4,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
 export interface ErrorsTable {
-  id: number
+  id?: number
   type?: undefined
   message?: undefined
   stack?: undefined
@@ -15,8 +15,6 @@ export interface ErrorsTable {
   created_at?: Date
 
   updated_at?: Date
-
-  deleted_at?: Date
 
 }
 
@@ -117,13 +115,9 @@ export class ErrorModel {
   }
 
   static async all(): Promise<ErrorModel[]> {
-    let query = db.selectFrom('errors').selectAll()
+    const query = db.selectFrom('errors').selectAll()
 
     const instance = new ErrorModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     const results = await query.execute()
 
@@ -134,10 +128,6 @@ export class ErrorModel {
     let query = db.selectFrom('errors').where('id', '=', id)
 
     const instance = new ErrorModel(null)
-
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
 
     query = query.selectAll()
 
@@ -156,10 +146,6 @@ export class ErrorModel {
 
     const instance = new ErrorModel(null)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
     query = query.selectAll()
 
     const model = await query.execute()
@@ -172,17 +158,9 @@ export class ErrorModel {
     const instance = new ErrorModel(null)
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await instance.selectFromQuery.execute()
 
       return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
-    }
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
@@ -193,17 +171,9 @@ export class ErrorModel {
   // Method to get a Error by criteria
   async get(): Promise<ErrorModel[]> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const model = await this.selectFromQuery.execute()
 
       return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
@@ -214,10 +184,6 @@ export class ErrorModel {
   static async count(): Promise<number> {
     const instance = new ErrorModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
     const results = await instance.selectFromQuery.selectAll().execute()
 
     return results.length
@@ -225,10 +191,6 @@ export class ErrorModel {
 
   async count(): Promise<number> {
     if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
       const results = await this.selectFromQuery.execute()
 
       return results.length
@@ -312,22 +274,10 @@ export class ErrorModel {
   }
 
   // Method to remove a Error
-  static async remove(id: number): Promise<void> {
-    const instance = new ErrorModel(null)
-
-    if (instance.softDeletes) {
-      await db.updateTable('errors')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', id)
-        .execute()
-    }
-    else {
-      await db.deleteFrom('errors')
-        .where('id', '=', id)
-        .execute()
-    }
+  static async remove(id: number): Promise<any> {
+    return await db.deleteFrom('errors')
+      .where('id', '=', id)
+      .execute()
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): ErrorModel {
@@ -553,7 +503,14 @@ export class ErrorModel {
       .selectAll()
       .executeTakeFirst()
 
-    return new ErrorModel(model)
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(model as ErrorType)
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
   }
 
   async last(): Promise<ErrorType | undefined> {
@@ -658,26 +615,13 @@ export class ErrorModel {
   }
 
   // Method to delete (soft delete) the error instance
-  async delete(): Promise<void> {
+  async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    // Check if soft deletes are enabled
-    if (this.softDeletes) {
-      // Update the deleted_at column with the current timestamp
-      await db.updateTable('errors')
-        .set({
-          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
-        })
-        .where('id', '=', this.id)
-        .execute()
-    }
-    else {
-      // Perform a hard delete
-      await db.deleteFrom('errors')
-        .where('id', '=', this.id)
-        .execute()
-    }
+    return await db.deleteFrom('errors')
+      .where('id', '=', this.id)
+      .execute()
   }
 
   distinct(column: keyof ErrorType): ErrorModel {

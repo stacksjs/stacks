@@ -11,7 +11,7 @@ import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
-import { pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
+import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
@@ -445,13 +445,14 @@ export async function writeModelRequest(): Promise<void> {
 
     if (useSoftDeletes) {
       fieldStringInt += `
-        public deleted_at = ''
+        public deleted_at = new Date()
       `
+
+      fieldString += `deleted_at?: Date\n`
     }
 
     fieldString += `created_at?: Date
-      updated_at?: Date
-      deleted_at?: Date`
+      updated_at?: Date`
 
     const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
@@ -902,7 +903,7 @@ export async function generateKyselyTypes(): Promise<void> {
       pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
-        id?: Generated<number>
+        id?: number
         ${pivotTable.firstForeignKey}: number
         ${pivotTable.secondForeignKey}: number
       }\n\n`
@@ -983,6 +984,14 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
+  let relationString = ''
+
+  let instanceSoftDeleteStatements = ''
+  let thisSoftDeleteStatements = ''
+  let instanceSoftDeleteStatementsSelectFrom = ''
+  let instanceSoftDeleteStatementsUpdateFrom = ''
+  let thisSoftDeleteStatementsUpdateFrom = ''
+
   let fieldString = ''
   let constructorFields = ''
   let jsonFields = '{\n'
@@ -1005,9 +1014,8 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
-  for (const relationInstance of relations) {
+  for (const relationInstance of relations)
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
-  }
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -1021,6 +1029,42 @@ export async function generateModelString(
           model.uuid = randomUUIDv7()
         })
      `
+  }
+
+  if (useSoftDeletes) {
+    instanceSoftDeleteStatements += `if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }`
+
+    thisSoftDeleteStatements += ` if (this.softDeletes) {
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+    }`
+
+    instanceSoftDeleteStatementsSelectFrom += ` if (instance.softDeletes) {
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
+    }`
+
+    instanceSoftDeleteStatementsUpdateFrom += `
+      const instance = new ${modelName}Model(null)
+
+      if (instance.softDeletes) {
+        return await db.updateTable('transactions')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+      }
+    `
+
+    thisSoftDeleteStatementsUpdateFrom += `if (this.softDeletes) {
+      return await db.updateTable('${tableName}')
+      .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP')
+      })
+      .where('id', '=', this.id)
+      .execute()
+    }`
   }
 
   if (typeof observer === 'boolean') {
@@ -1048,13 +1092,17 @@ export async function generateModelString(
     }
   }
 
+  relationString += `
+    const instance = new ${modelName}Model(model as ${modelName}Type)\n
+  `
+
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
     const modelKeyRelation = relation.modelKey
     const tableRelation = relation.table || ''
     const pivotTableRelation = relation.pivotTable
-    const formattedModelRelation = modelRelation.toLowerCase()
+    const formattedModelRelation = camelCase(modelRelation)
     const relationType = getRelationType(relation.relationship)
     const relationCount = getRelationCount(relation.relationship)
 
@@ -1125,7 +1173,15 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
-      const relationName = relation.relationName || formattedModelRelation
+      const relationName = camelCase(relation.relationName || formattedModelRelation)
+
+      declareFields += `public ${snakeCase(relationName)}: any\n`
+      constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
+      fieldString += `${snakeCase(relationName)}?: any\n`
+      relationString += `
+        model.${relationName} = await instance.${relationName}()\n
+      `
+      jsonFields += `${relationName}: this.${relationName},\n`
 
       relationMethods += `
       async ${relationName}() {
@@ -1565,9 +1621,11 @@ export async function generateModelString(
     `
   }
 
-  fieldString += `
-    deleted_at?: Date
-  `
+  if (useSoftDeletes) {
+    fieldString += `
+      deleted_at?: Date
+    `
+  }
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
@@ -1586,7 +1644,7 @@ export async function generateModelString(
     ${relationImports}
 
     export interface ${formattedTableName}Table {
-      id: number
+      id?: number
      ${fieldString}
     }
 
@@ -1671,9 +1729,7 @@ export async function generateModelString(
 
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null)
-        }
+       ${instanceSoftDeleteStatements}
 
         const results = await query.execute();
 
@@ -1686,9 +1742,7 @@ export async function generateModelString(
 
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+        ${instanceSoftDeleteStatements}
 
         query = query.selectAll()
 
@@ -1707,9 +1761,7 @@ export async function generateModelString(
 
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          query = query.where('deleted_at', 'is', null);
-        }
+        ${instanceSoftDeleteStatements}
 
         query = query.selectAll()
 
@@ -1723,18 +1775,14 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
 
         if (instance.hasSelect) {
-          if (instance.softDeletes) {
-            instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-          }
+         ${instanceSoftDeleteStatementsSelectFrom}
 
           const model = await instance.selectFromQuery.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
-        if (instance.softDeletes) {
-          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-        }
+        ${instanceSoftDeleteStatementsSelectFrom}
 
         const model = await instance.selectFromQuery.selectAll().execute()
 
@@ -1746,18 +1794,14 @@ export async function generateModelString(
       async get(): Promise<${modelName}Model[]> {
         if (this.hasSelect) {
 
-          if (this.softDeletes) {
-            this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
-          }
+        ${thisSoftDeleteStatements}
 
           const model = await this.selectFromQuery.execute()
 
           return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         }
 
-        if (this.softDeletes) {
-          this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
-        }
+        ${thisSoftDeleteStatements}
 
         const model = await this.selectFromQuery.selectAll().execute()
 
@@ -1767,9 +1811,7 @@ export async function generateModelString(
       static async count(): Promise<number> {
         const instance = new ${modelName}Model(null)
 
-        if (instance.softDeletes) {
-          instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null);
-        }
+        ${instanceSoftDeleteStatementsSelectFrom}
 
         const results = await instance.selectFromQuery.selectAll().execute()
 
@@ -1779,9 +1821,7 @@ export async function generateModelString(
       async count(): Promise<number> {
         if (this.hasSelect) {
 
-          if (this.softDeletes) {
-            this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null);
-          }
+         ${thisSoftDeleteStatements}
 
           const results = await this.selectFromQuery.execute()
 
@@ -1874,23 +1914,14 @@ export async function generateModelString(
       }
 
       // Method to remove a ${modelName}
-      static async remove(id: number): Promise<void> {
-        const instance = new ${modelName}Model(null)
+      static async remove(id: number): Promise<any> {
         ${mittDeleteStaticFindStatement}
 
-        if (instance.softDeletes) {
-        await db.updateTable('${tableName}')
-          .set({
-            deleted_at: sql.raw('CURRENT_TIMESTAMP')
-          })
+        ${instanceSoftDeleteStatementsUpdateFrom}
+        
+        return await db.deleteFrom('${tableName}')
           .where('id', '=', id)
-          .execute();
-        } else {
-          await db.deleteFrom('${tableName}')
-            .where('id', '=', id)
-            .execute();
-        }
-
+          .execute()
 
         ${mittDeleteStatement}
       }
@@ -2068,7 +2099,14 @@ export async function generateModelString(
           .selectAll()
           .executeTakeFirst()
 
-        return new ${modelName}Model(model)
+        if (! model)
+          return undefined
+
+        ${relationString}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
+        return data
       }
 
       async last(): Promise<${modelName}Type | undefined> {
@@ -2178,31 +2216,18 @@ export async function generateModelString(
       }
 
       // Method to delete (soft delete) the ${formattedModelName} instance
-      async delete(): Promise<void> {
+      async delete(): Promise<any> {
         if (this.id === undefined)
           this.deleteFromQuery.execute()
-            
-
           ${mittDeleteFindStatement}
 
-          // Check if soft deletes are enabled
-          if (this.softDeletes) {
-              // Update the deleted_at column with the current timestamp
-              await db.updateTable('${tableName}')
-                  .set({
-                      deleted_at: sql.raw('CURRENT_TIMESTAMP')
-                  })
-                  .where('id', '=', this.id)
-                  .execute();
-          } else {
-              // Perform a hard delete
-              await db.deleteFrom('${tableName}')
-                .where('id', '=', this.id)
-                .execute();
-          }
+          ${thisSoftDeleteStatementsUpdateFrom}
 
+          return await db.deleteFrom('${tableName}')
+            .where('id', '=', this.id)
+            .execute()
 
-          ${mittDeleteStatement}
+        ${mittDeleteStatement}
       }
 
       ${relationMethods}
@@ -2249,7 +2274,6 @@ export async function generateModelString(
 
       toJSON() {
         const output: Partial<${modelName}Type> = ${jsonFields}
-
 
         type ${modelName} = Omit<${modelName}Type, 'password'>
 
