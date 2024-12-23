@@ -100,9 +100,11 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    const data = new ProductModel(model as ProductType)
+
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new ProductModel(model))
+    return data
   }
 
   // Method to find a Product by ID
@@ -497,11 +499,12 @@ export class ProductModel {
   async first(): Promise<ProductModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new ProductModel(model))
+    const data = new ProductModel(model as ProductType)
+
+    return data
   }
 
   async firstOrFail(): Promise<ProductModel | undefined> {

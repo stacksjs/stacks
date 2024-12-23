@@ -119,9 +119,13 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new SubscriptionModel(model))
+    return data
   }
 
   // Method to find a Subscription by ID
@@ -544,11 +548,14 @@ export class SubscriptionModel {
   async first(): Promise<SubscriptionModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new SubscriptionModel(model))
+    model.user = await this.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   async firstOrFail(): Promise<SubscriptionModel | undefined> {

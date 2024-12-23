@@ -986,6 +986,7 @@ export async function generateModelString(
 
   let relationDeclare = ''
   let relationString = ''
+  let relationStringThis = ''
 
   let instanceSoftDeleteStatements = ''
   let thisSoftDeleteStatements = ''
@@ -1181,6 +1182,9 @@ export async function generateModelString(
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
       relationString += `
         model.${snakeCase(relationName)} = await instance.${relationName}Belong()\n
+      `
+      relationStringThis += `
+        model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
       `
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
@@ -1710,9 +1714,13 @@ export async function generateModelString(
         if (!model)
           return undefined
 
+        ${relationStringThis}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return this.parseResult(new ${modelName}Model(model))
+        return data
       }
 
       // Method to find a ${modelName} by ID
@@ -2082,11 +2090,14 @@ export async function generateModelString(
       async first(): Promise<${modelName}Model | undefined> {
         const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-        if (! model) {
+         if (! model)
           return undefined
-        }
 
-        return this.parseResult(new ${modelName}Model(model))
+        ${relationStringThis}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
+        return data
       }
 
       async firstOrFail(): Promise<${modelName}Model | undefined> {
@@ -2111,6 +2122,7 @@ export async function generateModelString(
 
         if (! model)
           return undefined
+        
         ${relationDeclare}
         ${relationString}
 

@@ -93,9 +93,11 @@ export class ErrorModel {
     if (!model)
       return undefined
 
+    const data = new ErrorModel(model as ErrorType)
+
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new ErrorModel(model))
+    return data
   }
 
   // Method to find a Error by ID
@@ -476,11 +478,12 @@ export class ErrorModel {
   async first(): Promise<ErrorModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new ErrorModel(model))
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
   }
 
   async firstOrFail(): Promise<ErrorModel | undefined> {

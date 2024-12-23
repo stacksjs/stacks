@@ -139,9 +139,11 @@ export class UserModel {
     if (!model)
       return undefined
 
+    const data = new UserModel(model as UserType)
+
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new UserModel(model))
+    return data
   }
 
   // Method to find a User by ID
@@ -523,11 +525,12 @@ export class UserModel {
   async first(): Promise<UserModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new UserModel(model))
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   async firstOrFail(): Promise<UserModel | undefined> {

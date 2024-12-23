@@ -87,9 +87,11 @@ export class ProjectModel {
     if (!model)
       return undefined
 
+    const data = new ProjectModel(model as ProjectType)
+
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new ProjectModel(model))
+    return data
   }
 
   // Method to find a Project by ID
@@ -454,11 +456,12 @@ export class ProjectModel {
   async first(): Promise<ProjectModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new ProjectModel(model))
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   async firstOrFail(): Promise<ProjectModel | undefined> {

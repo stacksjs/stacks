@@ -113,9 +113,15 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    model.payment_method = await this.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new TransactionModel(model))
+    return data
   }
 
   // Method to find a Transaction by ID
@@ -500,11 +506,16 @@ export class TransactionModel {
   async first(): Promise<TransactionModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new TransactionModel(model))
+    model.user = await this.userBelong()
+
+    model.payment_method = await this.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   async firstOrFail(): Promise<TransactionModel | undefined> {

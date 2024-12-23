@@ -115,9 +115,13 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new PaymentMethodModel(model))
+    return data
   }
 
   // Method to find a PaymentMethod by ID
@@ -516,11 +520,14 @@ export class PaymentMethodModel {
   async first(): Promise<PaymentMethodModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new PaymentMethodModel(model))
+    model.user = await this.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   async firstOrFail(): Promise<PaymentMethodModel | undefined> {

@@ -91,9 +91,13 @@ export class PostModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new PostModel(model as PostType)
+
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new PostModel(model))
+    return data
   }
 
   // Method to find a Post by ID
@@ -446,11 +450,14 @@ export class PostModel {
   async first(): Promise<PostModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new PostModel(model))
+    model.user = await this.userBelong()
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   async firstOrFail(): Promise<PostModel | undefined> {

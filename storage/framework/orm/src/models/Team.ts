@@ -110,9 +110,11 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    const data = new TeamModel(model as TeamType)
+
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new TeamModel(model))
+    return data
   }
 
   // Method to find a Team by ID
@@ -509,11 +511,12 @@ export class TeamModel {
   async first(): Promise<TeamModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new TeamModel(model))
+    const data = new TeamModel(model as TeamType)
+
+    return data
   }
 
   async firstOrFail(): Promise<TeamModel | undefined> {

@@ -84,9 +84,11 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new SubscriberEmailModel(model))
+    return data
   }
 
   // Method to find a SubscriberEmail by ID
@@ -474,11 +476,12 @@ export class SubscriberEmailModel {
   async first(): Promise<SubscriberEmailModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new SubscriberEmailModel(model))
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
   }
 
   async firstOrFail(): Promise<SubscriberEmailModel | undefined> {

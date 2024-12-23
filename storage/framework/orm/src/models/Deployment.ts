@@ -110,9 +110,13 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new DeploymentModel(model))
+    return data
   }
 
   // Method to find a Deployment by ID
@@ -511,11 +515,14 @@ export class DeploymentModel {
   async first(): Promise<DeploymentModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new DeploymentModel(model))
+    model.user = await this.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {
