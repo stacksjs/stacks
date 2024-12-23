@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@antfu/install-pkg": "^0.5.0",
-    "@clack/core": "^0.3.5",
+    "@clack/core": "^0.4.0",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
@@ -64,7 +64,7 @@
     "@types/prompts": "^2.4.9",
     "ansi-escapes": "^7.0.0",
     "cac": "^6.7.14",
-    "consola": "^3.2.3",
+    "consola": "^3.3.1",
     "kolorist": "1.8.0",
     "ora": "^8.1.1",
     "prompts": "^2.4.2",
