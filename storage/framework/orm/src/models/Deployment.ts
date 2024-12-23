@@ -657,7 +657,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  async userBelong() {
+  async userBelong(): UserModel {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
