@@ -4,10 +4,15 @@ import type { PaymentMethodModel } from './PaymentMethod'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
+
 import { db, sql } from '@stacksjs/database'
+
 import { HttpError } from '@stacksjs/error-handling'
+
 import { dispatch } from '@stacksjs/events'
+
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
+
 import Deployment from './Deployment'
 
 import PaymentMethod from './PaymentMethod'

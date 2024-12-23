@@ -1016,8 +1016,10 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
-  for (const relationInstance of relations)
+  for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
+    relationImports += `import type {${relationInstance.model}Model} from './${relationInstance.model}'\n\n`
+  }
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -1176,7 +1178,7 @@ export async function generateModelString(
 
       declareFields += `public ${snakeCase(relationName)}: any\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
-      fieldString += `${snakeCase(relationName)}?: any\n`
+      fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
       relationString += `
         model.${snakeCase(relationName)} = await instance.${relationName}Belong()\n
       `

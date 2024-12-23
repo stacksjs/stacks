@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -7,7 +8,7 @@ import User from './User'
 
 export interface PostsTable {
   id?: number
-  user?: any
+  user?: UserModel
   title?: string
   body?: string
   user_id?: number

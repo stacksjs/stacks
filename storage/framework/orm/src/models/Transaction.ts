@@ -1,4 +1,6 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { PaymentMethodModel } from './PaymentMethod'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -10,8 +12,8 @@ import User from './User'
 
 export interface TransactionsTable {
   id?: number
-  user?: any
-  payment_method?: any
+  user?: UserModel
+  payment_method?: PaymentMethodModel
   name?: string
   description?: string
   amount?: number

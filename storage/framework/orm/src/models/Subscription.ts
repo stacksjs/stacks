@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -8,7 +9,7 @@ import User from './User'
 
 export interface SubscriptionsTable {
   id?: number
-  user?: any
+  user?: UserModel
   type?: string
   provider_id?: string
   provider_status?: string
