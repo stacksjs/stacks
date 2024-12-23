@@ -504,8 +504,6 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(model as SubscriberEmailType)
-
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data

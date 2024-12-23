@@ -490,8 +490,6 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const instance = new AccessTokenModel(model as AccessTokenType)
-
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data

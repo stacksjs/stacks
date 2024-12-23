@@ -524,9 +524,9 @@ export class TransactionModel {
 
     const instance = new TransactionModel(model as TransactionType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
-    model.paymentMethod = await instance.paymentMethod()
+    model.payment_method = await instance.paymentMethodBelong()
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -644,7 +644,7 @@ export class TransactionModel {
       .execute()
   }
 
-  async user() {
+  async userBelong() {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -658,7 +658,7 @@ export class TransactionModel {
     return model
   }
 
-  async paymentMethod() {
+  async paymentMethodBelong() {
     if (this.paymentmethod_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -711,7 +711,7 @@ export class TransactionModel {
   toJSON() {
     const output: Partial<TransactionType> = {
       user: this.user,
-      paymentMethod: this.paymentMethod,
+      payment_method: this.payment_method,
 
       id: this.id,
       name: this.name,

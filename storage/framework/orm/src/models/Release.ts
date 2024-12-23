@@ -451,8 +451,6 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const instance = new ReleaseModel(model as ReleaseType)
-
     const data = new ReleaseModel(model as ReleaseType)
 
     return data

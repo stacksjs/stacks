@@ -571,7 +571,7 @@ export class SubscriptionModel {
 
     const instance = new SubscriptionModel(model as SubscriptionType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -689,7 +689,7 @@ export class SubscriptionModel {
       .execute()
   }
 
-  async user() {
+  async userBelong() {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

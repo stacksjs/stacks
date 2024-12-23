@@ -538,7 +538,7 @@ export class DeploymentModel {
 
     const instance = new DeploymentModel(model as DeploymentType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -656,7 +656,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  async user() {
+  async userBelong() {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

@@ -506,8 +506,6 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(model as ErrorType)
-
     const data = new ErrorModel(model as ErrorType)
 
     return data

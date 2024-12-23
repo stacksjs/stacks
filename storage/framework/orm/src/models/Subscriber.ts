@@ -455,8 +455,6 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberModel(model as SubscriberType)
-
     const data = new SubscriberModel(model as SubscriberType)
 
     return data

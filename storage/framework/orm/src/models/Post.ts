@@ -473,7 +473,7 @@ export class PostModel {
 
     const instance = new PostModel(model as PostType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new PostModel(model as PostType)
 
@@ -591,7 +591,7 @@ export class PostModel {
       .execute()
   }
 
-  async user() {
+  async userBelong() {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

@@ -543,7 +543,7 @@ export class PaymentMethodModel {
 
     const instance = new PaymentMethodModel(model as PaymentMethodType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -661,7 +661,7 @@ export class PaymentMethodModel {
       .execute()
   }
 
-  async user() {
+  async userBelong() {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

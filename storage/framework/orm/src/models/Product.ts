@@ -527,8 +527,6 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const instance = new ProductModel(model as ProductType)
-
     const data = new ProductModel(model as ProductType)
 
     return data

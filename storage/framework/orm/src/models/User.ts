@@ -548,8 +548,6 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(model as UserType)
-
     const data = new UserModel(model as UserType)
 
     return data

@@ -539,8 +539,6 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const instance = new TeamModel(model as TeamType)
-
     const data = new TeamModel(model as TeamType)
 
     return data
