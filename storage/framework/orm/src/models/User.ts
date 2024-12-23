@@ -1,6 +1,8 @@
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
+import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -29,6 +31,10 @@ import Transaction from './Transaction'
 
 export interface UsersTable {
   id?: number
+  deployments?: DeploymentModel[] | undefined
+  subscriptions?: SubscriptionModel[] | undefined
+  payment_methods?: PaymentMethodModel[] | undefined
+  transactions?: TransactionModel[] | undefined
   name?: string
   email?: string
   job_title?: string
@@ -85,6 +91,10 @@ export class UserModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public deployments: DeploymentModel[] | undefined
+  public subscriptions: SubscriptionModel[] | undefined
+  public payment_methods: PaymentMethodModel[] | undefined
+  public transactions: TransactionModel[] | undefined
   public id: number
   public stripe_id: string | undefined
   public uuid: string | undefined
@@ -104,6 +114,10 @@ export class UserModel {
   public subscription_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
+    this.deployments = user?.deployments
+    this.subscriptions = user?.subscriptions
+    this.payment_methods = user?.payment_methods
+    this.transactions = user?.transactions
     this.id = user?.id || 1
     this.stripe_id = user?.stripe_id
     this.uuid = user?.uuid
@@ -154,6 +168,16 @@ export class UserModel {
 
     if (!model)
       return undefined
+
+    const instance = new UserModel(model as UserType)
+
+    model.deployments = await instance.deploymentsHasMany()
+
+    model.subscriptions = await instance.subscriptionsHasMany()
+
+    model.payment_methods = await instance.payment_methodsHasMany()
+
+    model.transactions = await instance.transactionsHasMany()
 
     const data = new UserModel(model as UserType)
 
@@ -556,6 +580,16 @@ export class UserModel {
     if (!model)
       return undefined
 
+    const instance = new UserModel(model as UserType)
+
+    model.deployments = await instance.deploymentsHasMany()
+
+    model.subscriptions = await instance.subscriptionsHasMany()
+
+    model.payment_methods = await instance.payment_methodsHasMany()
+
+    model.transactions = await instance.transactionsHasMany()
+
     const data = new UserModel(model as UserType)
 
     return data
@@ -710,7 +744,7 @@ export class UserModel {
     return model
   }
 
-  async deployments() {
+  async deploymentsHasMany(): Promise<DeploymentModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -722,7 +756,7 @@ export class UserModel {
     return results.map(modelItem => new Deployment(modelItem))
   }
 
-  async subscriptions() {
+  async subscriptionsHasMany(): Promise<SubscriptionModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -734,7 +768,7 @@ export class UserModel {
     return results.map(modelItem => new Subscription(modelItem))
   }
 
-  async payment_methods() {
+  async payment_methodsHasMany(): Promise<PaymentMethodModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -746,7 +780,7 @@ export class UserModel {
     return results.map(modelItem => new PaymentMethod(modelItem))
   }
 
-  async transactions() {
+  async transactionsHasMany(): Promise<TransactionModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -1067,6 +1101,10 @@ export class UserModel {
 
   toJSON() {
     const output: Partial<UserType> = {
+      deployments: this.deployments,
+      subscriptions: this.subscriptions,
+      payment_methods: this.payment_methods,
+      transactions: this.transactions,
 
       id: this.id,
       name: this.name,

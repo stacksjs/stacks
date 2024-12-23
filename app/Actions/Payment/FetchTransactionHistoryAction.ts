@@ -7,10 +7,10 @@ export default new Action({
   description: 'Fetch the users transaction history',
   method: 'GET',
   async handle(request: RequestInstance) {
-    // const userId = Number(request.getParam('id'))
-    // const user = await User.find(userId)
+    const userId = Number(request.getParam('id'))
+    const user = await User.find(userId)
 
-    const transactions = await Transaction.find(1)
+    const transactions = await Transaction.where('user_id', user.id).get()
 
     return transactions
   },

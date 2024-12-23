@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { TransactionModel } from './Transaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -12,6 +13,7 @@ import User from './User'
 export interface PaymentMethodsTable {
   id?: number
   user?: UserModel
+  transactions?: TransactionModel[] | undefined
   type?: string
   last_four?: number
   brand?: string
@@ -66,6 +68,7 @@ export class PaymentMethodModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   public user: UserModel | undefined
+  public transactions: TransactionModel[] | undefined
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -83,6 +86,7 @@ export class PaymentMethodModel {
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     this.user = paymentmethod?.user
+    this.transactions = paymentmethod?.transactions
     this.id = paymentmethod?.id || 1
     this.uuid = paymentmethod?.uuid
     this.type = paymentmethod?.type
@@ -134,6 +138,8 @@ export class PaymentMethodModel {
       return undefined
 
     const instance = new PaymentMethodModel(model as PaymentMethodType)
+
+    model.transactions = await instance.transactionsHasMany()
 
     model.user = await instance.userBelong()
 
@@ -555,6 +561,8 @@ export class PaymentMethodModel {
 
     const instance = new PaymentMethodModel(model as PaymentMethodType)
 
+    model.transactions = await instance.transactionsHasMany()
+
     model.user = await instance.userBelong()
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
@@ -687,7 +695,7 @@ export class PaymentMethodModel {
     return model
   }
 
-  async transactions() {
+  async transactionsHasMany(): Promise<TransactionModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -738,6 +746,7 @@ export class PaymentMethodModel {
   toJSON() {
     const output: Partial<PaymentMethodType> = {
       user: this.user,
+      transactions: this.transactions,
 
       id: this.id,
       type: this.type,

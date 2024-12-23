@@ -985,8 +985,11 @@ export async function generateModelString(
   const formattedModelName = modelName.toLowerCase() // User -> user
 
   let relationDeclare = ''
-  let relationString = ''
-  let relationStringThis = ''
+  let relationStringBelong = ''
+  let relationStringThisBelong = ''
+
+  let relationStringMany = ''
+  let relationStringThisMany = ''
 
   let instanceSoftDeleteStatements = ''
   let thisSoftDeleteStatements = ''
@@ -995,7 +998,7 @@ export async function generateModelString(
   let thisSoftDeleteStatementsUpdateFrom = ''
 
   let fieldString = ''
-  let hasBelongsType = false
+  let hasRelations = false
   let constructorFields = ''
   let jsonFields = '{\n'
   let declareFields = ''
@@ -1140,10 +1143,22 @@ export async function generateModelString(
     }
 
     if (relationType === 'hasType' && relationCount === 'many') {
+      hasRelations = true
       const relationName = relation.relationName || tableRelation
 
+      declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
+      constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
+      fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
+      relationStringMany += `
+        model.${snakeCase(relationName)} = await instance.${relationName}HasMany()\n
+      `
+      relationStringThisMany += `
+        model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
+      `
+      jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
+
       relationMethods += `
-      async ${relationName}() {
+      async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
         if (this.id === undefined)
           throw new HttpError(500, 'Relation Error!')
 
@@ -1174,16 +1189,16 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
-      hasBelongsType = true
+      hasRelations = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
-      relationString += `
+      relationStringBelong += `
         model.${snakeCase(relationName)} = await instance.${relationName}Belong()\n
       `
-      relationStringThis += `
+      relationStringThisBelong += `
         model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
       `
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
@@ -1230,7 +1245,7 @@ export async function generateModelString(
     }
   }
 
-  if (hasBelongsType) {
+  if (hasRelations) {
     relationDeclare += `
       const instance = new ${modelName}Model(model as ${modelName}Type)\n
     `
@@ -1714,7 +1729,7 @@ export async function generateModelString(
         if (!model)
           return undefined
 
-        ${relationStringThis}
+        ${relationStringThisBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -1731,9 +1746,10 @@ export async function generateModelString(
 
         if (!model)
           return undefined
-
+        
         ${relationDeclare}
-        ${relationString}
+        ${relationStringMany}
+        ${relationStringBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -2093,7 +2109,7 @@ export async function generateModelString(
          if (! model)
           return undefined
 
-        ${relationStringThis}
+        ${relationStringThisBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -2124,7 +2140,8 @@ export async function generateModelString(
           return undefined
 
         ${relationDeclare}
-        ${relationString}
+        ${relationStringMany}
+        ${relationStringBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
 
