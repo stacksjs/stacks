@@ -124,16 +124,20 @@ export class PaymentMethodModel {
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
     const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
 
-    const instance = new PaymentMethodModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new PaymentMethodModel(model as PaymentMethodType)
+
+    model.user = await instance.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PaymentMethodModel(model))
+    return data
   }
 
   static async all(): Promise<PaymentMethodModel[]> {

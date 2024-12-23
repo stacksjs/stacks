@@ -100,16 +100,20 @@ export class PostModel {
   static async find(id: number): Promise<PostModel | undefined> {
     const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
-    const instance = new PostModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new PostModel(model as PostType)
+
+    model.user = await instance.userBelong()
+
+    const data = new PostModel(model as PostType)
+
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PostModel(model))
+    return data
   }
 
   static async all(): Promise<PostModel[]> {

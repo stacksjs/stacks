@@ -96,16 +96,16 @@ export class ProjectModel {
   static async find(id: number): Promise<ProjectModel | undefined> {
     const query = db.selectFrom('projects').where('id', '=', id).selectAll()
 
-    const instance = new ProjectModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new ProjectModel(model as ProjectType)
+
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProjectModel(model))
+    return data
   }
 
   static async all(): Promise<ProjectModel[]> {

@@ -102,16 +102,16 @@ export class ErrorModel {
   static async find(id: number): Promise<ErrorModel | undefined> {
     const query = db.selectFrom('errors').where('id', '=', id).selectAll()
 
-    const instance = new ErrorModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new ErrorModel(model as ErrorType)
+
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ErrorModel(model))
+    return data
   }
 
   static async all(): Promise<ErrorModel[]> {

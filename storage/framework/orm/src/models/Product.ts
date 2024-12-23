@@ -109,16 +109,16 @@ export class ProductModel {
   static async find(id: number): Promise<ProductModel | undefined> {
     const query = db.selectFrom('products').where('id', '=', id).selectAll()
 
-    const instance = new ProductModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new ProductModel(model as ProductType)
+
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProductModel(model))
+    return data
   }
 
   static async all(): Promise<ProductModel[]> {

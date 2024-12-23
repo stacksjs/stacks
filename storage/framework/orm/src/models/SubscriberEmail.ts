@@ -57,7 +57,7 @@ export class SubscriberEmailModel {
   public created_at: Date | undefined
   public updated_at: Date | undefined
 
-  public deleted_at: string | undefined
+  public deleted_at: Date | undefined
 
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
     this.id = subscriberemail?.id || 1
@@ -93,16 +93,16 @@ export class SubscriberEmailModel {
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
     const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
 
-    const instance = new SubscriberEmailModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriberEmailModel(model))
+    return data
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {

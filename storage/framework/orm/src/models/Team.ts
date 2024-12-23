@@ -119,16 +119,16 @@ export class TeamModel {
   static async find(id: number): Promise<TeamModel | undefined> {
     const query = db.selectFrom('teams').where('id', '=', id).selectAll()
 
-    const instance = new TeamModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new TeamModel(model as TeamType)
+
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TeamModel(model))
+    return data
   }
 
   static async all(): Promise<TeamModel[]> {

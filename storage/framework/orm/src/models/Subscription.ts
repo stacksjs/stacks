@@ -128,16 +128,20 @@ export class SubscriptionModel {
   static async find(id: number): Promise<SubscriptionModel | undefined> {
     const query = db.selectFrom('subscriptions').where('id', '=', id).selectAll()
 
-    const instance = new SubscriptionModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new SubscriptionModel(model as SubscriptionType)
+
+    model.user = await instance.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriptionModel(model))
+    return data
   }
 
   static async all(): Promise<SubscriptionModel[]> {

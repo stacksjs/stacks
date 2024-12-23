@@ -122,16 +122,22 @@ export class TransactionModel {
   static async find(id: number): Promise<TransactionModel | undefined> {
     const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
 
-    const instance = new TransactionModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new TransactionModel(model as TransactionType)
+
+    model.user = await instance.userBelong()
+
+    model.payment_method = await instance.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TransactionModel(model))
+    return data
   }
 
   static async all(): Promise<TransactionModel[]> {

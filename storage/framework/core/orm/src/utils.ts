@@ -1587,7 +1587,7 @@ export async function generateModelString(
 
   if (useSoftDeletes) {
     declareFields += `
-      public deleted_at: string | undefined
+      public deleted_at: Date | undefined
     `
 
     constructorFields += `
@@ -1719,16 +1719,19 @@ export async function generateModelString(
       static async find(id: number): Promise<${modelName}Model | undefined> {
         let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
-        const instance = new ${modelName}Model(null)
-
         const model = await query.executeTakeFirst()
 
         if (!model)
           return undefined
 
+        ${relationDeclare}
+        ${relationString}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return instance.parseResult(new ${modelName}Model(model))
+        return data
       }
 
       static async all(): Promise<${modelName}Model[]> {

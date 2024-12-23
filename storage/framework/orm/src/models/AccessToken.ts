@@ -102,16 +102,16 @@ export class AccessTokenModel {
   static async find(id: number): Promise<AccessTokenModel | undefined> {
     const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
-    const instance = new AccessTokenModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new AccessTokenModel(model as AccessTokenType)
+
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new AccessTokenModel(model))
+    return data
   }
 
   static async all(): Promise<AccessTokenModel[]> {

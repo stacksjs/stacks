@@ -91,16 +91,16 @@ export class SubscriberModel {
   static async find(id: number): Promise<SubscriberModel | undefined> {
     const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
-    const instance = new SubscriberModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new SubscriberModel(model as SubscriberType)
+
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriberModel(model))
+    return data
   }
 
   static async all(): Promise<SubscriberModel[]> {

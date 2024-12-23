@@ -87,16 +87,16 @@ export class ReleaseModel {
   static async find(id: number): Promise<ReleaseModel | undefined> {
     const query = db.selectFrom('releases').where('id', '=', id).selectAll()
 
-    const instance = new ReleaseModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new ReleaseModel(model as ReleaseType)
+
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ReleaseModel(model))
+    return data
   }
 
   static async all(): Promise<ReleaseModel[]> {

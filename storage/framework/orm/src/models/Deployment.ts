@@ -119,16 +119,20 @@ export class DeploymentModel {
   static async find(id: number): Promise<DeploymentModel | undefined> {
     const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
-    const instance = new DeploymentModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new DeploymentModel(model as DeploymentType)
+
+    model.user = await instance.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new DeploymentModel(model))
+    return data
   }
 
   static async all(): Promise<DeploymentModel[]> {

@@ -148,16 +148,16 @@ export class UserModel {
   static async find(id: number): Promise<UserModel | undefined> {
     const query = db.selectFrom('users').where('id', '=', id).selectAll()
 
-    const instance = new UserModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new UserModel(model as UserType)
+
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new UserModel(model))
+    return data
   }
 
   static async all(): Promise<UserModel[]> {
