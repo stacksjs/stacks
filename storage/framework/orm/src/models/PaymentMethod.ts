@@ -662,7 +662,7 @@ export class PaymentMethodModel {
       .execute()
   }
 
-  async userBelong(): UserModel {
+  async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

@@ -1185,7 +1185,7 @@ export async function generateModelString(
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
       relationMethods += `
-      async ${relationName}Belong(): ${modelRelation}Model {
+      async ${relationName}Belong(): Promise<${modelRelation}Model> {
         if (this.${modelKeyRelation} === undefined)
           throw new HttpError(500, 'Relation Error!')
 
