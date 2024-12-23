@@ -1177,7 +1177,7 @@ export async function generateModelString(
       hasBelongsType = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
-      declareFields += `public ${snakeCase(relationName)}: any\n`
+      declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
       relationString += `
@@ -2122,7 +2122,7 @@ export async function generateModelString(
 
         if (! model)
           return undefined
-        
+
         ${relationDeclare}
         ${relationString}
 

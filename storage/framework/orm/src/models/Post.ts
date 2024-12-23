@@ -55,7 +55,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
+  public user: UserModel | undefined
   public id: number
   public title: string | undefined
   public body: string | undefined

@@ -65,8 +65,8 @@ export class TransactionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
-  public payment_method: any
+  public user: UserModel | undefined
+  public payment_method: PaymentMethodModel | undefined
   public id: number
   public uuid: string | undefined
   public name: string | undefined
