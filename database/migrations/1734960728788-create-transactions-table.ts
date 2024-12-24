@@ -9,7 +9,6 @@ export async function up(db: Database<any>) {
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('description', 'varchar(255)')
     .addColumn('amount', 'integer', col => col.notNull())
-    .addColumn('brand', 'varchar(50)', col => col.notNull())
     .addColumn('type', 'varchar(50)', col => col.notNull())
     .addColumn('provider_id', 'varchar(255)')
     .addColumn('user_id', 'integer', col =>

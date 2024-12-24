@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -8,7 +9,7 @@ import User from './User'
 
 export interface SubscriptionsTable {
   id?: number
-  user?: any
+  user?: UserModel
   type?: string
   provider_id?: string
   provider_status?: string
@@ -64,7 +65,7 @@ export class SubscriptionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
+  public user: UserModel | undefined
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -118,25 +119,33 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new SubscriptionModel(model))
+    return data
   }
 
   // Method to find a Subscription by ID
   static async find(id: number): Promise<SubscriptionModel | undefined> {
     const query = db.selectFrom('subscriptions').where('id', '=', id).selectAll()
 
-    const instance = new SubscriptionModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new SubscriptionModel(model as SubscriptionType)
+
+    model.user = await instance.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriptionModel(model))
+    return data
   }
 
   static async all(): Promise<SubscriptionModel[]> {
@@ -539,11 +548,14 @@ export class SubscriptionModel {
   async first(): Promise<SubscriptionModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new SubscriptionModel(model))
+    model.user = await this.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   async firstOrFail(): Promise<SubscriptionModel | undefined> {
@@ -571,7 +583,7 @@ export class SubscriptionModel {
 
     const instance = new SubscriptionModel(model as SubscriptionType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -689,7 +701,7 @@ export class SubscriptionModel {
       .execute()
   }
 
-  async user() {
+  async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

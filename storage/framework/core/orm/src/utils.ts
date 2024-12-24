@@ -984,7 +984,12 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
-  let relationString = ''
+  let relationDeclare = ''
+  let relationStringBelong = ''
+  let relationStringThisBelong = ''
+
+  let relationStringMany = ''
+  let relationStringThisMany = ''
 
   let instanceSoftDeleteStatements = ''
   let thisSoftDeleteStatements = ''
@@ -993,6 +998,7 @@ export async function generateModelString(
   let thisSoftDeleteStatementsUpdateFrom = ''
 
   let fieldString = ''
+  let hasRelations = false
   let constructorFields = ''
   let jsonFields = '{\n'
   let declareFields = ''
@@ -1014,8 +1020,10 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
-  for (const relationInstance of relations)
+  for (const relationInstance of relations) {
     relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
+    relationImports += `import type {${relationInstance.model}Model} from './${relationInstance.model}'\n\n`
+  }
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -1092,10 +1100,6 @@ export async function generateModelString(
     }
   }
 
-  relationString += `
-    const instance = new ${modelName}Model(model as ${modelName}Type)\n
-  `
-
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey
@@ -1139,10 +1143,22 @@ export async function generateModelString(
     }
 
     if (relationType === 'hasType' && relationCount === 'many') {
+      hasRelations = true
       const relationName = relation.relationName || tableRelation
 
+      declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
+      constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
+      fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
+      relationStringMany += `
+        model.${snakeCase(relationName)} = await instance.${relationName}HasMany()\n
+      `
+      relationStringThisMany += `
+        model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
+      `
+      jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
+
       relationMethods += `
-      async ${relationName}() {
+      async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
         if (this.id === undefined)
           throw new HttpError(500, 'Relation Error!')
 
@@ -1173,18 +1189,22 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
+      hasRelations = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
-      declareFields += `public ${snakeCase(relationName)}: any\n`
+      declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
-      fieldString += `${snakeCase(relationName)}?: any\n`
-      relationString += `
-        model.${relationName} = await instance.${relationName}()\n
+      fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
+      relationStringBelong += `
+        model.${snakeCase(relationName)} = await instance.${relationName}Belong()\n
       `
-      jsonFields += `${relationName}: this.${relationName},\n`
+      relationStringThisBelong += `
+        model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
+      `
+      jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
       relationMethods += `
-      async ${relationName}() {
+      async ${relationName}Belong(): Promise<${modelRelation}Model> {
         if (this.${modelKeyRelation} === undefined)
           throw new HttpError(500, 'Relation Error!')
 
@@ -1223,6 +1243,12 @@ export async function generateModelString(
           return relationResults
       }\n\n`
     }
+  }
+
+  if (hasRelations) {
+    relationDeclare += `
+      const instance = new ${modelName}Model(model as ${modelName}Type)\n
+    `
   }
 
   declareFields += `public id: number \n   `
@@ -1580,7 +1606,7 @@ export async function generateModelString(
 
   if (useSoftDeletes) {
     declareFields += `
-      public deleted_at: string | undefined
+      public deleted_at: Date | undefined
     `
 
     constructorFields += `
@@ -1703,25 +1729,33 @@ export async function generateModelString(
         if (!model)
           return undefined
 
+        ${relationStringThisBelong}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return this.parseResult(new ${modelName}Model(model))
+        return data
       }
 
       // Method to find a ${modelName} by ID
       static async find(id: number): Promise<${modelName}Model | undefined> {
         let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
-        const instance = new ${modelName}Model(null)
-
         const model = await query.executeTakeFirst()
 
         if (!model)
           return undefined
+        
+        ${relationDeclare}
+        ${relationStringMany}
+        ${relationStringBelong}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return instance.parseResult(new ${modelName}Model(model))
+        return data
       }
 
       static async all(): Promise<${modelName}Model[]> {
@@ -2072,11 +2106,14 @@ export async function generateModelString(
       async first(): Promise<${modelName}Model | undefined> {
         const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-        if (! model) {
+         if (! model)
           return undefined
-        }
 
-        return this.parseResult(new ${modelName}Model(model))
+        ${relationStringThisBelong}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
+        return data
       }
 
       async firstOrFail(): Promise<${modelName}Model | undefined> {
@@ -2102,7 +2139,9 @@ export async function generateModelString(
         if (! model)
           return undefined
 
-        ${relationString}
+        ${relationDeclare}
+        ${relationStringMany}
+        ${relationStringBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
 

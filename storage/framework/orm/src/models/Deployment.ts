@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -8,7 +9,7 @@ import User from './User'
 
 export interface DeploymentsTable {
   id?: number
-  user?: any
+  user?: UserModel
   commit_sha?: string
   commit_message?: string
   branch?: string
@@ -61,7 +62,7 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
+  public user: UserModel | undefined
   public id: number
   public uuid: string | undefined
   public commit_sha: string | undefined
@@ -109,25 +110,33 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new DeploymentModel(model))
+    return data
   }
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
     const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
-    const instance = new DeploymentModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new DeploymentModel(model as DeploymentType)
+
+    model.user = await instance.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new DeploymentModel(model))
+    return data
   }
 
   static async all(): Promise<DeploymentModel[]> {
@@ -506,11 +515,14 @@ export class DeploymentModel {
   async first(): Promise<DeploymentModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new DeploymentModel(model))
+    model.user = await this.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {
@@ -538,7 +550,7 @@ export class DeploymentModel {
 
     const instance = new DeploymentModel(model as DeploymentType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -656,7 +668,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  async user() {
+  async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

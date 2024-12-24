@@ -100,25 +100,27 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    const data = new ProductModel(model as ProductType)
+
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new ProductModel(model))
+    return data
   }
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
     const query = db.selectFrom('products').where('id', '=', id).selectAll()
 
-    const instance = new ProductModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new ProductModel(model as ProductType)
+
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProductModel(model))
+    return data
   }
 
   static async all(): Promise<ProductModel[]> {
@@ -497,11 +499,12 @@ export class ProductModel {
   async first(): Promise<ProductModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new ProductModel(model))
+    const data = new ProductModel(model as ProductType)
+
+    return data
   }
 
   async firstOrFail(): Promise<ProductModel | undefined> {
@@ -526,8 +529,6 @@ export class ProductModel {
 
     if (!model)
       return undefined
-
-    const instance = new ProductModel(model as ProductType)
 
     const data = new ProductModel(model as ProductType)
 

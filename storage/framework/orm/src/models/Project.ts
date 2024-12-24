@@ -87,25 +87,27 @@ export class ProjectModel {
     if (!model)
       return undefined
 
+    const data = new ProjectModel(model as ProjectType)
+
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new ProjectModel(model))
+    return data
   }
 
   // Method to find a Project by ID
   static async find(id: number): Promise<ProjectModel | undefined> {
     const query = db.selectFrom('projects').where('id', '=', id).selectAll()
 
-    const instance = new ProjectModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new ProjectModel(model as ProjectType)
+
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProjectModel(model))
+    return data
   }
 
   static async all(): Promise<ProjectModel[]> {
@@ -454,11 +456,12 @@ export class ProjectModel {
   async first(): Promise<ProjectModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new ProjectModel(model))
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   async firstOrFail(): Promise<ProjectModel | undefined> {
@@ -483,8 +486,6 @@ export class ProjectModel {
 
     if (!model)
       return undefined
-
-    const instance = new ProjectModel(model as ProjectType)
 
     const data = new ProjectModel(model as ProjectType)
 

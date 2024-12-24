@@ -1,4 +1,6 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { TransactionModel } from './Transaction'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -10,7 +12,8 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id?: number
-  user?: any
+  user?: UserModel
+  transactions?: TransactionModel[] | undefined
   type?: string
   last_four?: number
   brand?: string
@@ -64,7 +67,8 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
+  public user: UserModel | undefined
+  public transactions: TransactionModel[] | undefined
   public id: number
   public uuid: string | undefined
   public type: string | undefined
@@ -82,6 +86,7 @@ export class PaymentMethodModel {
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     this.user = paymentmethod?.user
+    this.transactions = paymentmethod?.transactions
     this.id = paymentmethod?.id || 1
     this.uuid = paymentmethod?.uuid
     this.type = paymentmethod?.type
@@ -114,25 +119,35 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new PaymentMethodModel(model))
+    return data
   }
 
   // Method to find a PaymentMethod by ID
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
     const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
 
-    const instance = new PaymentMethodModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new PaymentMethodModel(model as PaymentMethodType)
+
+    model.transactions = await instance.transactionsHasMany()
+
+    model.user = await instance.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PaymentMethodModel(model))
+    return data
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
@@ -511,11 +526,14 @@ export class PaymentMethodModel {
   async first(): Promise<PaymentMethodModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new PaymentMethodModel(model))
+    model.user = await this.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   async firstOrFail(): Promise<PaymentMethodModel | undefined> {
@@ -543,7 +561,9 @@ export class PaymentMethodModel {
 
     const instance = new PaymentMethodModel(model as PaymentMethodType)
 
-    model.user = await instance.user()
+    model.transactions = await instance.transactionsHasMany()
+
+    model.user = await instance.userBelong()
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -661,7 +681,7 @@ export class PaymentMethodModel {
       .execute()
   }
 
-  async user() {
+  async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -675,7 +695,7 @@ export class PaymentMethodModel {
     return model
   }
 
-  async transactions() {
+  async transactionsHasMany(): Promise<TransactionModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -726,6 +746,7 @@ export class PaymentMethodModel {
   toJSON() {
     const output: Partial<PaymentMethodType> = {
       user: this.user,
+      transactions: this.transactions,
 
       id: this.id,
       type: this.type,

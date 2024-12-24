@@ -82,25 +82,27 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
+    const data = new SubscriberModel(model as SubscriberType)
+
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new SubscriberModel(model))
+    return data
   }
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
     const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
-    const instance = new SubscriberModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new SubscriberModel(model as SubscriberType)
+
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriberModel(model))
+    return data
   }
 
   static async all(): Promise<SubscriberModel[]> {
@@ -425,11 +427,12 @@ export class SubscriberModel {
   async first(): Promise<SubscriberModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new SubscriberModel(model))
+    const data = new SubscriberModel(model as SubscriberType)
+
+    return data
   }
 
   async firstOrFail(): Promise<SubscriberModel | undefined> {
@@ -454,8 +457,6 @@ export class SubscriberModel {
 
     if (!model)
       return undefined
-
-    const instance = new SubscriberModel(model as SubscriberType)
 
     const data = new SubscriberModel(model as SubscriberType)
 

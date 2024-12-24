@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -7,7 +8,7 @@ import User from './User'
 
 export interface PostsTable {
   id?: number
-  user?: any
+  user?: UserModel
   title?: string
   body?: string
   user_id?: number
@@ -54,7 +55,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
+  public user: UserModel | undefined
   public id: number
   public title: string | undefined
   public body: string | undefined
@@ -90,25 +91,33 @@ export class PostModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    const data = new PostModel(model as PostType)
+
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new PostModel(model))
+    return data
   }
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
     const query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
-    const instance = new PostModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new PostModel(model as PostType)
+
+    model.user = await instance.userBelong()
+
+    const data = new PostModel(model as PostType)
+
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PostModel(model))
+    return data
   }
 
   static async all(): Promise<PostModel[]> {
@@ -441,11 +450,14 @@ export class PostModel {
   async first(): Promise<PostModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new PostModel(model))
+    model.user = await this.userBelong()
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   async firstOrFail(): Promise<PostModel | undefined> {
@@ -473,7 +485,7 @@ export class PostModel {
 
     const instance = new PostModel(model as PostType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
     const data = new PostModel(model as PostType)
 
@@ -591,7 +603,7 @@ export class PostModel {
       .execute()
   }
 
-  async user() {
+  async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 

@@ -93,25 +93,27 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
+    const data = new AccessTokenModel(model as AccessTokenType)
+
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new AccessTokenModel(model))
+    return data
   }
 
   // Method to find a AccessToken by ID
   static async find(id: number): Promise<AccessTokenModel | undefined> {
     const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
-    const instance = new AccessTokenModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const data = new AccessTokenModel(model as AccessTokenType)
+
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new AccessTokenModel(model))
+    return data
   }
 
   static async all(): Promise<AccessTokenModel[]> {
@@ -460,11 +462,12 @@ export class AccessTokenModel {
   async first(): Promise<AccessTokenModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new AccessTokenModel(model))
+    const data = new AccessTokenModel(model as AccessTokenType)
+
+    return data
   }
 
   async firstOrFail(): Promise<AccessTokenModel | undefined> {
@@ -489,8 +492,6 @@ export class AccessTokenModel {
 
     if (!model)
       return undefined
-
-    const instance = new AccessTokenModel(model as AccessTokenType)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 

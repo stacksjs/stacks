@@ -1,4 +1,6 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { PaymentMethodModel } from './PaymentMethod'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -10,8 +12,8 @@ import User from './User'
 
 export interface TransactionsTable {
   id?: number
-  user?: any
-  payment_method?: any
+  user?: UserModel
+  payment_method?: PaymentMethodModel
   name?: string
   description?: string
   amount?: number
@@ -63,8 +65,8 @@ export class TransactionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public user: any
-  public payment_method: any
+  public user: UserModel | undefined
+  public payment_method: PaymentMethodModel | undefined
   public id: number
   public uuid: string | undefined
   public name: string | undefined
@@ -111,25 +113,37 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    model.user = await this.userBelong()
+
+    model.payment_method = await this.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    return this.parseResult(new TransactionModel(model))
+    return data
   }
 
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
     const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
 
-    const instance = new TransactionModel(null)
-
     const model = await query.executeTakeFirst()
 
     if (!model)
       return undefined
 
+    const instance = new TransactionModel(model as TransactionType)
+
+    model.user = await instance.userBelong()
+
+    model.payment_method = await instance.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TransactionModel(model))
+    return data
   }
 
   static async all(): Promise<TransactionModel[]> {
@@ -492,11 +506,16 @@ export class TransactionModel {
   async first(): Promise<TransactionModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
-    if (!model) {
+    if (!model)
       return undefined
-    }
 
-    return this.parseResult(new TransactionModel(model))
+    model.user = await this.userBelong()
+
+    model.payment_method = await this.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   async firstOrFail(): Promise<TransactionModel | undefined> {
@@ -524,9 +543,9 @@ export class TransactionModel {
 
     const instance = new TransactionModel(model as TransactionType)
 
-    model.user = await instance.user()
+    model.user = await instance.userBelong()
 
-    model.paymentMethod = await instance.paymentMethod()
+    model.payment_method = await instance.paymentMethodBelong()
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -644,7 +663,7 @@ export class TransactionModel {
       .execute()
   }
 
-  async user() {
+  async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -658,7 +677,7 @@ export class TransactionModel {
     return model
   }
 
-  async paymentMethod() {
+  async paymentMethodBelong(): Promise<PaymentMethodModel> {
     if (this.paymentmethod_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
@@ -711,7 +730,7 @@ export class TransactionModel {
   toJSON() {
     const output: Partial<TransactionType> = {
       user: this.user,
-      paymentMethod: this.paymentMethod,
+      payment_method: this.payment_method,
 
       id: this.id,
       name: this.name,
