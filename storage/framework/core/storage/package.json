@@ -52,7 +52,7 @@
     "@flystorage/aws-s3": "^0.1.8",
     "@flystorage/chaos": "^0.1.2",
     "@flystorage/file-storage": "^0.1.7",
-    "@flystorage/in-memory": "^0.1.4",
+    "@flystorage/in-memory": "^1.0.0",
     "@flystorage/local-fs": "^0.1.10",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/development": "workspace:*",
