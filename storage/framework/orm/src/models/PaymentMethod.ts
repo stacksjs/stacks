@@ -12,6 +12,8 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id?: number
+  user_id?: number
+  transaction_id?: number
   user?: UserModel
   transactions?: TransactionModel[] | undefined
   type?: string
@@ -21,8 +23,6 @@ export interface PaymentMethodsTable {
   exp_year?: number
   is_default?: boolean
   provider_id?: string
-  user_id?: number
-  transaction_id?: number
   uuid?: string
 
   created_at?: Date
@@ -67,6 +67,8 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
+  public transaction_id: number | undefined
   public user: UserModel | undefined
   public transactions: TransactionModel[] | undefined
   public id: number
@@ -81,10 +83,10 @@ export class PaymentMethodModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
-  public transaction_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
+    this.user_id = paymentmethod?.user_id
+    this.transaction_id = paymentmethod?.transaction_id
     this.user = paymentmethod?.user
     this.transactions = paymentmethod?.transactions
     this.id = paymentmethod?.id || 1
@@ -100,9 +102,6 @@ export class PaymentMethodModel {
     this.created_at = paymentmethod?.created_at
 
     this.updated_at = paymentmethod?.updated_at
-
-    this.user_id = paymentmethod?.user_id
-    this.transaction_id = paymentmethod?.transaction_id
 
     this.selectFromQuery = db.selectFrom('payment_methods')
     this.updateFromQuery = db.updateTable('payment_methods')

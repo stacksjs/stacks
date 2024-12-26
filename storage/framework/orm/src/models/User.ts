@@ -39,12 +39,6 @@ export interface UsersTable {
   email?: string
   job_title?: string
   password?: string
-  team_id?: number
-  deployment_id?: number
-  post_id?: number
-  paymentmethod_id?: number
-  transaction_id?: number
-  subscription_id?: number
   public_passkey?: string
   stripe_id?: string
   uuid?: string
@@ -106,12 +100,6 @@ export class UserModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public team_id: number | undefined
-  public deployment_id: number | undefined
-  public post_id: number | undefined
-  public paymentmethod_id: number | undefined
-  public transaction_id: number | undefined
-  public subscription_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
     this.deployments = user?.deployments
@@ -130,13 +118,6 @@ export class UserModel {
     this.created_at = user?.created_at
 
     this.updated_at = user?.updated_at
-
-    this.team_id = user?.team_id
-    this.deployment_id = user?.deployment_id
-    this.post_id = user?.post_id
-    this.paymentmethod_id = user?.paymentmethod_id
-    this.transaction_id = user?.transaction_id
-    this.subscription_id = user?.subscription_id
 
     this.selectFromQuery = db.selectFrom('users')
     this.updateFromQuery = db.updateTable('users')

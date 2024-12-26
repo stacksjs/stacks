@@ -6,7 +6,6 @@ import { HttpError } from '@stacksjs/error-handling'
 export interface SubscribersTable {
   id?: number
   subscribed?: boolean
-  user_id?: number
 
   created_at?: Date
 
@@ -55,7 +54,6 @@ export class SubscriberModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(subscriber: Partial<SubscriberType> | null) {
     this.id = subscriber?.id || 1
@@ -64,8 +62,6 @@ export class SubscriberModel {
     this.created_at = subscriber?.created_at
 
     this.updated_at = subscriber?.updated_at
-
-    this.user_id = subscriber?.user_id
 
     this.selectFromQuery = db.selectFrom('subscribers')
     this.updateFromQuery = db.updateTable('subscribers')

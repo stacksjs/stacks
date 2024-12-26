@@ -9,6 +9,7 @@ import User from './User'
 
 export interface DeploymentsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   commit_sha?: string
   commit_message?: string
@@ -17,7 +18,6 @@ export interface DeploymentsTable {
   execution_time?: number
   deploy_script?: string
   terminal_output?: string
-  user_id?: number
   uuid?: string
 
   created_at?: Date
@@ -62,6 +62,7 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
   public uuid: string | undefined
@@ -75,9 +76,9 @@ export class DeploymentModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
+    this.user_id = deployment?.user_id
     this.user = deployment?.user
     this.id = deployment?.id || 1
     this.uuid = deployment?.uuid
@@ -92,8 +93,6 @@ export class DeploymentModel {
     this.created_at = deployment?.created_at
 
     this.updated_at = deployment?.updated_at
-
-    this.user_id = deployment?.user_id
 
     this.selectFromQuery = db.selectFrom('deployments')
     this.updateFromQuery = db.updateTable('deployments')

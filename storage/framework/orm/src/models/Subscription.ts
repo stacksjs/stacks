@@ -9,6 +9,7 @@ import User from './User'
 
 export interface SubscriptionsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   type?: string
   provider_id?: string
@@ -20,7 +21,6 @@ export interface SubscriptionsTable {
   trial_ends_at?: string
   ends_at?: string
   last_used_at?: string
-  user_id?: number
   uuid?: string
 
   created_at?: Date
@@ -65,6 +65,7 @@ export class SubscriptionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
   public uuid: string | undefined
@@ -81,9 +82,9 @@ export class SubscriptionModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
+    this.user_id = subscription?.user_id
     this.user = subscription?.user
     this.id = subscription?.id || 1
     this.uuid = subscription?.uuid
@@ -101,8 +102,6 @@ export class SubscriptionModel {
     this.created_at = subscription?.created_at
 
     this.updated_at = subscription?.updated_at
-
-    this.user_id = subscription?.user_id
 
     this.selectFromQuery = db.selectFrom('subscriptions')
     this.updateFromQuery = db.updateTable('subscriptions')

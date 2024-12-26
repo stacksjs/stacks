@@ -1190,6 +1190,14 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
+      const otherModelRelations = await fetchOtherModelRelations(modelName)
+
+      for (const otherModelRelation of otherModelRelations) {
+        fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
+        declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
+        constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
+      }
+
       hasRelations = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
@@ -1622,12 +1630,6 @@ export async function generateModelString(
   jsonFields += '}'
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
-
-  for (const otherModelRelation of otherModelRelations) {
-    fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
-    declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
-    constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
-  }
 
   if (useTwoFactor && tableName === 'users')
     fieldString += 'two_factor_secret?: string \n'

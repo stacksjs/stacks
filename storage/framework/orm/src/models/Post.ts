@@ -8,10 +8,10 @@ import User from './User'
 
 export interface PostsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   title?: string
   body?: string
-  user_id?: number
 
   created_at?: Date
 
@@ -55,6 +55,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
   public title: string | undefined
@@ -62,9 +63,9 @@ export class PostModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
+    this.user_id = post?.user_id
     this.user = post?.user
     this.id = post?.id || 1
     this.title = post?.title
@@ -73,8 +74,6 @@ export class PostModel {
     this.created_at = post?.created_at
 
     this.updated_at = post?.updated_at
-
-    this.user_id = post?.user_id
 
     this.selectFromQuery = db.selectFrom('posts')
     this.updateFromQuery = db.updateTable('posts')

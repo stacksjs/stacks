@@ -11,7 +11,6 @@ export interface PersonalAccessTokensTable {
   token?: string
   plain_text_token?: string
   abilities?: string[]
-  team_id?: number
 
   created_at?: Date
 
@@ -63,7 +62,6 @@ export class AccessTokenModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public team_id: number | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
     this.id = accesstoken?.id || 1
@@ -75,8 +73,6 @@ export class AccessTokenModel {
     this.created_at = accesstoken?.created_at
 
     this.updated_at = accesstoken?.updated_at
-
-    this.team_id = accesstoken?.team_id
 
     this.selectFromQuery = db.selectFrom('personal_access_tokens')
     this.updateFromQuery = db.updateTable('personal_access_tokens')

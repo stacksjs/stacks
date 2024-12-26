@@ -18,8 +18,6 @@ export interface TeamsTable {
   description?: string
   path?: string
   is_personal?: boolean
-  accesstoken_id?: number
-  user_id?: number
 
   created_at?: Date
 
@@ -75,8 +73,6 @@ export class TeamModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public accesstoken_id: number | undefined
-  public user_id: number | undefined
 
   constructor(team: Partial<TeamType> | null) {
     this.id = team?.id || 1
@@ -92,9 +88,6 @@ export class TeamModel {
     this.created_at = team?.created_at
 
     this.updated_at = team?.updated_at
-
-    this.accesstoken_id = team?.accesstoken_id
-    this.user_id = team?.user_id
 
     this.selectFromQuery = db.selectFrom('teams')
     this.updateFromQuery = db.updateTable('teams')
