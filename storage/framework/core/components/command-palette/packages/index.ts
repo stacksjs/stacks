@@ -61,6 +61,7 @@ const Loading = defineComponent({
  */
 const Separator = defineComponent({
   name: 'Command.Separator',
+  // eslint-disable-next-line unused-imports/no-unused-vars
   setup(props, { attrs, slots }) {
     return () =>
       h('div', {

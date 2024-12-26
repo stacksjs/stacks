@@ -101,8 +101,6 @@ export function calculatePagination(): void {
 watchDebounced(
   query,
   () => {
-    console.log('watchDebounced')
-
     if (table === undefined)
       return
 
@@ -184,7 +182,7 @@ function toggleSort(col: string | Ref<string>) {
   if (table.sort?.includes('desc')) {
     table.sort = `${sortKey}:asc`
 
-    console.log('sort included asc it is now desc for', sortKey)
+    // console.log('sort included asc it is now desc for', sortKey)
 
     return
   }
@@ -192,16 +190,16 @@ function toggleSort(col: string | Ref<string>) {
   if (table.sort?.includes('asc')) {
     table.sort = undefined
 
-    console.log('sort included desc it is now "" for', sortKey)
+    // console.log('sort included desc it is now "" for', sortKey)
 
     return
   }
 
-  console.log('there was no sort. Setting it now in asc order for', sortKey)
+  // console.log('there was no sort. Setting it now in asc order for', sortKey)
 
   table.sort = `${sortKey}:desc`
 
-  console.log('table.sort', table.sort)
+  // console.log('table.sort', table.sort)
 }
 
 function columnName(col: string) {

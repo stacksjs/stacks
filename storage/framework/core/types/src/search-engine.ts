@@ -19,17 +19,17 @@ import type {
 } from 'meilisearch'
 import type { MaybePromise } from '.'
 
-type Search = any
-type Page = any
-type Pages = Page[]
-type Filter = any
-type Filters = Filter[]
-type Result = any
-type Results = Result[]
-type SearchFilter = any
-type SearchFilters = SearchFilter[]
-type Sorts = any
-type Sort = any
+// type Search = any
+// type Page = any
+// type Pages = Page[]
+// type Filter = any
+// type Filters = Filter[]
+// type Result = any
+// type Results = Result[]
+// type SearchFilter = any
+// type SearchFilters = SearchFilter[]
+// type Sorts = any
+// type Sort = any
 
 export interface SearchEngineOptions {
   /**
@@ -116,12 +116,12 @@ export interface SearchEngineDriver {
   getSettings: (index: string) => Promise<Settings>
   updateSettings: (index: string, settings: Settings) => Promise<EnqueuedTask>
   resetSettings: (index: string) => Promise<EnqueuedTask>
-
+  å
   getPagination: (index: string) => Promise<PaginationSettings>
   updatePagination: (index: string, pagination: PaginationSettings) => Promise<EnqueuedTask>
   resetPagination: (index: string) => Promise<EnqueuedTask>
 
-  getSynonyms: (index: string) => Promise<{}>
+  getSynonyms: (index: string) => Promise<any>
   updateSynonyms: (index: string, synonyms: Synonyms) => Promise<EnqueuedTask>
   resetSynonyms: (index: string) => Promise<EnqueuedTask>
 
