@@ -128,9 +128,7 @@ export class PaymentMethodModel {
 
   // Method to find a PaymentMethod by ID
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
-    const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -149,13 +147,19 @@ export class PaymentMethodModel {
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
-    const query = db.selectFrom('payment_methods').selectAll()
+    const models = await db.selectFrom('payment_methods').selectAll().execute()
 
-    const instance = new PaymentMethodModel(null)
+    const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
+      const instance = new PaymentMethodModel(model as PaymentMethodType)
 
-    const results = await query.execute()
+      model.transactions = await instance.transactionsHasMany()
 
-    return results.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
+      model.user = await instance.userBelong()
+
+      return new PaymentMethodModel(model)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<PaymentMethodModel> {

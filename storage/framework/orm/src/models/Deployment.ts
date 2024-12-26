@@ -120,9 +120,7 @@ export class DeploymentModel {
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -139,13 +137,17 @@ export class DeploymentModel {
   }
 
   static async all(): Promise<DeploymentModel[]> {
-    const query = db.selectFrom('deployments').selectAll()
+    const models = await db.selectFrom('deployments').selectAll().execute()
 
-    const instance = new DeploymentModel(null)
+    const data = await Promise.all(models.map(async (model: DeploymentType) => {
+      const instance = new DeploymentModel(model as DeploymentType)
 
-    const results = await query.execute()
+      model.user = await instance.userBelong()
 
-    return results.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
+      return new DeploymentModel(model)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {

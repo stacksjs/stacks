@@ -125,9 +125,7 @@ export class TransactionModel {
 
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
-    const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -146,13 +144,19 @@ export class TransactionModel {
   }
 
   static async all(): Promise<TransactionModel[]> {
-    const query = db.selectFrom('transactions').selectAll()
+    const models = await db.selectFrom('transactions').selectAll().execute()
 
-    const instance = new TransactionModel(null)
+    const data = await Promise.all(models.map(async (model: TransactionType) => {
+      const instance = new TransactionModel(model as TransactionType)
 
-    const results = await query.execute()
+      model.user = await instance.userBelong()
 
-    return results.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
+      model.payment_method = await instance.paymentMethodBelong()
+
+      return new TransactionModel(model)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {

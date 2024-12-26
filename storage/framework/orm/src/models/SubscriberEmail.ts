@@ -93,9 +93,7 @@ export class SubscriberEmailModel {
 
   // Method to find a SubscriberEmail by ID
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -108,17 +106,13 @@ export class SubscriberEmailModel {
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {
-    let query = db.selectFrom('subscriber_emails').selectAll()
+    const models = await db.selectFrom('subscriber_emails').selectAll().execute()
 
-    const instance = new SubscriberEmailModel(null)
+    const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
+      return new SubscriberEmailModel(model)
+    }))
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
-
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {

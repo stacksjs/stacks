@@ -101,9 +101,7 @@ export class PostModel {
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -120,13 +118,17 @@ export class PostModel {
   }
 
   static async all(): Promise<PostModel[]> {
-    const query = db.selectFrom('posts').selectAll()
+    const models = await db.selectFrom('posts').selectAll().execute()
 
-    const instance = new PostModel(null)
+    const data = await Promise.all(models.map(async (model: PostType) => {
+      const instance = new PostModel(model as PostType)
 
-    const results = await query.execute()
+      model.user = await instance.userBelong()
 
-    return results.map(modelItem => instance.parseResult(new PostModel(modelItem)))
+      return new PostModel(model)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<PostModel> {

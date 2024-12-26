@@ -87,9 +87,7 @@ export class SubscriberModel {
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
-    const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -102,13 +100,13 @@ export class SubscriberModel {
   }
 
   static async all(): Promise<SubscriberModel[]> {
-    const query = db.selectFrom('subscribers').selectAll()
+    const models = await db.selectFrom('subscribers').selectAll().execute()
 
-    const instance = new SubscriberModel(null)
+    const data = await Promise.all(models.map(async (model: SubscriberType) => {
+      return new SubscriberModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {

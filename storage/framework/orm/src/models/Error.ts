@@ -102,9 +102,7 @@ export class ErrorModel {
 
   // Method to find a Error by ID
   static async find(id: number): Promise<ErrorModel | undefined> {
-    const query = db.selectFrom('errors').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -117,13 +115,13 @@ export class ErrorModel {
   }
 
   static async all(): Promise<ErrorModel[]> {
-    const query = db.selectFrom('errors').selectAll()
+    const models = await db.selectFrom('errors').selectAll().execute()
 
-    const instance = new ErrorModel(null)
+    const data = await Promise.all(models.map(async (model: ErrorType) => {
+      return new ErrorModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<ErrorModel> {

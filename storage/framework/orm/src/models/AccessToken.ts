@@ -98,9 +98,7 @@ export class AccessTokenModel {
 
   // Method to find a AccessToken by ID
   static async find(id: number): Promise<AccessTokenModel | undefined> {
-    const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -113,13 +111,13 @@ export class AccessTokenModel {
   }
 
   static async all(): Promise<AccessTokenModel[]> {
-    const query = db.selectFrom('personal_access_tokens').selectAll()
+    const models = await db.selectFrom('personal_access_tokens').selectAll().execute()
 
-    const instance = new AccessTokenModel(null)
+    const data = await Promise.all(models.map(async (model: AccessTokenType) => {
+      return new AccessTokenModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {

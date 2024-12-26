@@ -87,9 +87,7 @@ export class ReleaseModel {
 
   // Method to find a Release by ID
   static async find(id: number): Promise<ReleaseModel | undefined> {
-    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -102,13 +100,13 @@ export class ReleaseModel {
   }
 
   static async all(): Promise<ReleaseModel[]> {
-    const query = db.selectFrom('releases').selectAll()
+    const models = await db.selectFrom('releases').selectAll().execute()
 
-    const instance = new ReleaseModel(null)
+    const data = await Promise.all(models.map(async (model: ReleaseType) => {
+      return new ReleaseModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {

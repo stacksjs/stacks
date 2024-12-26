@@ -112,9 +112,7 @@ export class TeamModel {
 
   // Method to find a Team by ID
   static async find(id: number): Promise<TeamModel | undefined> {
-    const query = db.selectFrom('teams').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -127,13 +125,13 @@ export class TeamModel {
   }
 
   static async all(): Promise<TeamModel[]> {
-    const query = db.selectFrom('teams').selectAll()
+    const models = await db.selectFrom('teams').selectAll().execute()
 
-    const instance = new TeamModel(null)
+    const data = await Promise.all(models.map(async (model: TeamType) => {
+      return new TeamModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {

@@ -109,9 +109,7 @@ export class ProductModel {
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
-    const query = db.selectFrom('products').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -124,13 +122,13 @@ export class ProductModel {
   }
 
   static async all(): Promise<ProductModel[]> {
-    const query = db.selectFrom('products').selectAll()
+    const models = await db.selectFrom('products').selectAll().execute()
 
-    const instance = new ProductModel(null)
+    const data = await Promise.all(models.map(async (model: ProductType) => {
+      return new ProductModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new ProductModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {

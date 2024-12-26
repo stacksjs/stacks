@@ -1739,9 +1739,7 @@ export async function generateModelString(
 
       // Method to find a ${modelName} by ID
       static async find(id: number): Promise<${modelName}Model | undefined> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
-
-        const model = await query.executeTakeFirst()
+        const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
 
         if (!model)
           return undefined
@@ -1758,16 +1756,20 @@ export async function generateModelString(
       }
 
       static async all(): Promise<${modelName}Model[]> {
-        let query = db.selectFrom('${tableName}').selectAll()
+        const models = await db.selectFrom('${tableName}').selectAll().execute()
 
-        const instance = new ${modelName}Model(null)
+        const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
+          ${relationDeclare}
+      
+          ${relationStringMany}
+          ${relationStringBelong}
 
-       ${instanceSoftDeleteStatements}
+          return new ${modelName}Model(model)
+        }))
 
-        const results = await query.execute();
-
-        return results.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)));
+        return data
       }
+
 
 
       static async findOrFail(id: number): Promise<${modelName}Model> {

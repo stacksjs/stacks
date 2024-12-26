@@ -96,9 +96,7 @@ export class ProjectModel {
 
   // Method to find a Project by ID
   static async find(id: number): Promise<ProjectModel | undefined> {
-    const query = db.selectFrom('projects').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -111,13 +109,13 @@ export class ProjectModel {
   }
 
   static async all(): Promise<ProjectModel[]> {
-    const query = db.selectFrom('projects').selectAll()
+    const models = await db.selectFrom('projects').selectAll().execute()
 
-    const instance = new ProjectModel(null)
+    const data = await Promise.all(models.map(async (model: ProjectType) => {
+      return new ProjectModel(model)
+    }))
 
-    const results = await query.execute()
-
-    return results.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {

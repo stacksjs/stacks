@@ -151,9 +151,7 @@ export class UserModel {
 
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
-    const query = db.selectFrom('users').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -176,13 +174,23 @@ export class UserModel {
   }
 
   static async all(): Promise<UserModel[]> {
-    const query = db.selectFrom('users').selectAll()
+    const models = await db.selectFrom('users').selectAll().execute()
 
-    const instance = new UserModel(null)
+    const data = await Promise.all(models.map(async (model: UserType) => {
+      const instance = new UserModel(model as UserType)
 
-    const results = await query.execute()
+      model.deployments = await instance.deploymentsHasMany()
 
-    return results.map(modelItem => instance.parseResult(new UserModel(modelItem)))
+      model.subscriptions = await instance.subscriptionsHasMany()
+
+      model.payment_methods = await instance.paymentMethodsHasMany()
+
+      model.transactions = await instance.transactionsHasMany()
+
+      return new UserModel(model)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
