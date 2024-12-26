@@ -1144,7 +1144,7 @@ export async function generateModelString(
 
     if (relationType === 'hasType' && relationCount === 'many') {
       hasRelations = true
-      const relationName = relation.relationName || tableRelation
+      const relationName = camelCase(relation.relationName || tableRelation)
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
@@ -1164,6 +1164,7 @@ export async function generateModelString(
 
         const results = await db.selectFrom('${tableRelation}')
           .where('${foreignKeyRelation}', '=', this.id)
+          .limit(5)
           .selectAll()
           .execute()
 
@@ -1728,7 +1729,7 @@ export async function generateModelString(
 
         if (!model)
           return undefined
-
+        ${relationStringThisMany}
         ${relationStringThisBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
@@ -2109,6 +2110,7 @@ export async function generateModelString(
          if (! model)
           return undefined
 
+        ${relationStringThisMany}
         ${relationStringThisBelong}
 
         const data = new ${modelName}Model(model as ${modelName}Type)
@@ -2259,14 +2261,12 @@ export async function generateModelString(
         if (this.id === undefined)
           this.deleteFromQuery.execute()
           ${mittDeleteFindStatement}
-
+           ${mittDeleteStatement}
           ${thisSoftDeleteStatementsUpdateFrom}
 
           return await db.deleteFrom('${tableName}')
             .where('id', '=', this.id)
             .execute()
-
-        ${mittDeleteStatement}
       }
 
       ${relationMethods}

@@ -153,6 +153,14 @@ export class UserModel {
     if (!model)
       return undefined
 
+    model.deployments = await this.deploymentsHasMany()
+
+    model.subscriptions = await this.subscriptionsHasMany()
+
+    model.payment_methods = await this.paymentMethodsHasMany()
+
+    model.transactions = await this.transactionsHasMany()
+
     const data = new UserModel(model as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
@@ -175,7 +183,7 @@ export class UserModel {
 
     model.subscriptions = await instance.subscriptionsHasMany()
 
-    model.payment_methods = await instance.payment_methodsHasMany()
+    model.payment_methods = await instance.paymentMethodsHasMany()
 
     model.transactions = await instance.transactionsHasMany()
 
@@ -552,6 +560,14 @@ export class UserModel {
     if (!model)
       return undefined
 
+    model.deployments = await this.deploymentsHasMany()
+
+    model.subscriptions = await this.subscriptionsHasMany()
+
+    model.payment_methods = await this.paymentMethodsHasMany()
+
+    model.transactions = await this.transactionsHasMany()
+
     const data = new UserModel(model as UserType)
 
     return data
@@ -586,7 +602,7 @@ export class UserModel {
 
     model.subscriptions = await instance.subscriptionsHasMany()
 
-    model.payment_methods = await instance.payment_methodsHasMany()
+    model.payment_methods = await instance.paymentMethodsHasMany()
 
     model.transactions = await instance.transactionsHasMany()
 
@@ -707,13 +723,12 @@ export class UserModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+    if (model)
+      dispatch('user:deleted', model)
 
     return await db.deleteFrom('users')
       .where('id', '=', this.id)
       .execute()
-
-    if (model)
-      dispatch('user:deleted', model)
   }
 
   async post() {
@@ -750,6 +765,7 @@ export class UserModel {
 
     const results = await db.selectFrom('deployments')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
@@ -762,18 +778,20 @@ export class UserModel {
 
     const results = await db.selectFrom('subscriptions')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
     return results.map(modelItem => new Subscription(modelItem))
   }
 
-  async payment_methodsHasMany(): Promise<PaymentMethodModel[]> {
+  async paymentMethodsHasMany(): Promise<PaymentMethodModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('payment_methods')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
@@ -786,6 +804,7 @@ export class UserModel {
 
     const results = await db.selectFrom('transactions')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 

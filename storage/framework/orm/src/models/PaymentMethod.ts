@@ -119,6 +119,8 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    model.transactions = await this.transactionsHasMany()
+
     model.user = await this.userBelong()
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
@@ -529,6 +531,8 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    model.transactions = await this.transactionsHasMany()
+
     model.user = await this.userBelong()
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
@@ -701,6 +705,7 @@ export class PaymentMethodModel {
 
     const results = await db.selectFrom('transactions')
       .where('paymentmethod_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
