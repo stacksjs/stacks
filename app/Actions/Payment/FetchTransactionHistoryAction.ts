@@ -8,7 +8,7 @@ export default new Action({
   method: 'GET',
   async handle(request: RequestInstance) {
     const userId = Number(request.getParam('id'))
-    const user = await User.find(userId)
+    const user = await User.get()
 
     // const transactions = await Transaction.where('user_id', user?.id).get()
 

@@ -233,19 +233,33 @@ export class UserModel {
     return model.map(modelItem => instance.parseResult(new UserModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<UserModel[]> {
     const instance = new UserModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: UserModel) => new UserModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const userModels = await Promise.all(models.map(async (model: UserModel) => {
+      const instance = new UserModel(model)
 
-    return model.map((modelItem: UserModel) => new UserModel(modelItem))
+      model.deployments = await instance.deploymentsHasMany()
+
+      model.subscriptions = await instance.subscriptionsHasMany()
+
+      model.payment_methods = await instance.paymentMethodsHasMany()
+
+      model.transactions = await instance.transactionsHasMany()
+
+      return model
+    }))
+
+    return userModels
   }
 
   // Method to get a User by criteria

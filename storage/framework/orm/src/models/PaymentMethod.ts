@@ -191,19 +191,29 @@ export class PaymentMethodModel {
     return model.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
-  // Method to get a User by criteria
-  static async get(): Promise<PaymentMethodModel[]> {
-    const instance = new PaymentMethodModel(null)
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    let models
 
     if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-
-      return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const userModels = await Promise.all(models.map(async (model: PaymentMethodModel) => {
+      const instance = new PaymentMethodModel(model)
 
-    return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
+      model.transactions = await instance.transactionsHasMany()
+
+      model.user = await instance.userBelong()
+
+      return model
+    }))
+
+    return userModels
   }
 
   // Method to get a PaymentMethod by criteria

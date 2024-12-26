@@ -140,19 +140,25 @@ export class ReleaseModel {
     return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
-  // Method to get a User by criteria
-  static async get(): Promise<ReleaseModel[]> {
-    const instance = new ReleaseModel(null)
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    let models
 
     if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-
-      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const userModels = await Promise.all(models.map(async (model: ReleaseModel) => {
+      const instance = new ReleaseModel(model)
 
-    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+      return model
+    }))
+
+    return userModels
   }
 
   // Method to get a Release by criteria

@@ -1805,23 +1805,27 @@ export async function generateModelString(
         return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }
 
-      // Method to get a User by criteria
-      static async get(): Promise<${modelName}Model[]> {
-        const instance = new ${modelName}Model(null)
+      static async get(): Promise<UserModel[]> {
+        const instance = new UserModel(null)
+      
+        let models
 
         if (instance.hasSelect) {
-         ${instanceSoftDeleteStatementsSelectFrom}
-
-          const model = await instance.selectFromQuery.execute()
-
-          return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+          models = await instance.selectFromQuery.execute()
+        } else {
+          models = await instance.selectFromQuery.selectAll().execute()
         }
-
-        ${instanceSoftDeleteStatementsSelectFrom}
-
-        const model = await instance.selectFromQuery.selectAll().execute()
-
-       return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+      
+        const userModels = await Promise.all(models.map(async (model: ${modelName}Model) => {
+          const instance = new ${modelName}Model(model)
+      
+          ${relationStringMany}
+          ${relationStringBelong}
+      
+          return model
+        }))
+        
+        return userModels
       }
 
 

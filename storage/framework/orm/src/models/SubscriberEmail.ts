@@ -158,27 +158,25 @@ export class SubscriberEmailModel {
     return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
-  // Method to get a User by criteria
-  static async get(): Promise<SubscriberEmailModel[]> {
-    const instance = new SubscriberEmailModel(null)
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    let models
 
     if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
-      const model = await instance.selectFromQuery.execute()
-
-      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
+    const userModels = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
+      const instance = new SubscriberEmailModel(model)
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+      return model
+    }))
 
-    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+    return userModels
   }
 
   // Method to get a SubscriberEmail by criteria

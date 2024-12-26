@@ -178,19 +178,27 @@ export class DeploymentModel {
     return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
-  // Method to get a User by criteria
-  static async get(): Promise<DeploymentModel[]> {
-    const instance = new DeploymentModel(null)
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    let models
 
     if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-
-      return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const userModels = await Promise.all(models.map(async (model: DeploymentModel) => {
+      const instance = new DeploymentModel(model)
 
-    return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+      model.user = await instance.userBelong()
+
+      return model
+    }))
+
+    return userModels
   }
 
   // Method to get a Deployment by criteria

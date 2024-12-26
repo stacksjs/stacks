@@ -187,19 +187,27 @@ export class SubscriptionModel {
     return model.map(modelItem => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
-  // Method to get a User by criteria
-  static async get(): Promise<SubscriptionModel[]> {
-    const instance = new SubscriptionModel(null)
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    let models
 
     if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-
-      return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const userModels = await Promise.all(models.map(async (model: SubscriptionModel) => {
+      const instance = new SubscriptionModel(model)
 
-    return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+      model.user = await instance.userBelong()
+
+      return model
+    }))
+
+    return userModels
   }
 
   // Method to get a Subscription by criteria

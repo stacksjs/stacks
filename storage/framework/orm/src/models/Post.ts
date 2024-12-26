@@ -159,19 +159,27 @@ export class PostModel {
     return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
   }
 
-  // Method to get a User by criteria
-  static async get(): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    let models
 
     if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-
-      return model.map((modelItem: PostModel) => new PostModel(modelItem))
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const userModels = await Promise.all(models.map(async (model: PostModel) => {
+      const instance = new PostModel(model)
 
-    return model.map((modelItem: PostModel) => new PostModel(modelItem))
+      model.user = await instance.userBelong()
+
+      return model
+    }))
+
+    return userModels
   }
 
   // Method to get a Post by criteria
