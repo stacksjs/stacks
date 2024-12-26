@@ -158,20 +158,20 @@ export class SubscriptionModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriptionModel> {
-    let query = db.selectFrom('subscriptions').where('id', '=', id)
-
-    const instance = new SubscriptionModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriptionModel(model))
+    const instance = new SubscriptionModel(model as SubscriptionType)
+
+    model.user = await instance.userBelong()
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {

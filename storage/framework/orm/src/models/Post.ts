@@ -130,20 +130,20 @@ export class PostModel {
   }
 
   static async findOrFail(id: number): Promise<PostModel> {
-    let query = db.selectFrom('posts').where('id', '=', id)
-
-    const instance = new PostModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No PostModel results for ${id}`)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PostModel(model))
+    const instance = new PostModel(model as PostType)
+
+    model.user = await instance.userBelong()
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {

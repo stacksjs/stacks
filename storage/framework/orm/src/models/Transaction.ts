@@ -156,20 +156,22 @@ export class TransactionModel {
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {
-    let query = db.selectFrom('transactions').where('id', '=', id)
-
-    const instance = new TransactionModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No TransactionModel results for ${id}`)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TransactionModel(model))
+    const instance = new TransactionModel(model as TransactionType)
+
+    model.user = await instance.userBelong()
+
+    model.payment_method = await instance.paymentMethodBelong()
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {

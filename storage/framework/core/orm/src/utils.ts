@@ -1771,22 +1771,22 @@ export async function generateModelString(
 
 
       static async findOrFail(id: number): Promise<${modelName}Model> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id)
-
-        const instance = new ${modelName}Model(null)
+        const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
 
         ${instanceSoftDeleteStatements}
-
-        query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
 
         if (model === undefined)
           throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return instance.parseResult(new ${modelName}Model(model))
+        ${relationDeclare}
+        ${relationStringMany}
+        ${relationStringBelong}
+
+        const data = new ${modelName}Model(model as ${modelName}Type)
+
+        return data
       }
 
       static async findMany(ids: number[]): Promise<${modelName}Model[]> {

@@ -112,20 +112,16 @@ export class ReleaseModel {
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
-    let query = db.selectFrom('releases').where('id', '=', id)
-
-    const instance = new ReleaseModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No ReleaseModel results for ${id}`)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ReleaseModel(model))
+    const data = new ReleaseModel(model as ReleaseType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {

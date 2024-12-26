@@ -159,20 +159,22 @@ export class PaymentMethodModel {
   }
 
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
-    let query = db.selectFrom('payment_methods').where('id', '=', id)
-
-    const instance = new PaymentMethodModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No PaymentMethodModel results for ${id}`)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PaymentMethodModel(model))
+    const instance = new PaymentMethodModel(model as PaymentMethodType)
+
+    model.transactions = await instance.transactionsHasMany()
+
+    model.user = await instance.userBelong()
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {

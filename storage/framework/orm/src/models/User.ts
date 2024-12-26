@@ -186,20 +186,26 @@ export class UserModel {
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
-    let query = db.selectFrom('users').where('id', '=', id)
-
-    const instance = new UserModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new UserModel(model))
+    const instance = new UserModel(model as UserType)
+
+    model.deployments = await instance.deploymentsHasMany()
+
+    model.subscriptions = await instance.subscriptionsHasMany()
+
+    model.payment_methods = await instance.paymentMethodsHasMany()
+
+    model.transactions = await instance.transactionsHasMany()
+
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {

@@ -149,20 +149,20 @@ export class DeploymentModel {
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
-    let query = db.selectFrom('deployments').where('id', '=', id)
-
-    const instance = new DeploymentModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new DeploymentModel(model))
+    const instance = new DeploymentModel(model as DeploymentType)
+
+    model.user = await instance.userBelong()
+
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {

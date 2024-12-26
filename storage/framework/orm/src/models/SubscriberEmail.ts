@@ -122,24 +122,20 @@ export class SubscriberEmailModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    let query = db.selectFrom('subscriber_emails').where('id', '=', id)
-
-    const instance = new SubscriberEmailModel(null)
+    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No SubscriberEmailModel results for ${id}`)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriberEmailModel(model))
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {

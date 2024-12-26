@@ -137,20 +137,16 @@ export class TeamModel {
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {
-    let query = db.selectFrom('teams').where('id', '=', id)
-
-    const instance = new TeamModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TeamModel(model))
+    const data = new TeamModel(model as TeamType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {

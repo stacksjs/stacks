@@ -121,20 +121,16 @@ export class ProjectModel {
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {
-    let query = db.selectFrom('projects').where('id', '=', id)
-
-    const instance = new ProjectModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProjectModel(model))
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
