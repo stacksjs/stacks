@@ -167,11 +167,11 @@ export class ErrorModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: ErrorModel) => {
+    const data = await Promise.all(models.map(async (model: ErrorModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Error by criteria

@@ -189,7 +189,7 @@ export class DeploymentModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: DeploymentModel) => {
+    const data = await Promise.all(models.map(async (model: DeploymentModel) => {
       const instance = new DeploymentModel(model as DeploymentType)
 
       model.user = await instance.userBelong()
@@ -197,7 +197,7 @@ export class DeploymentModel {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Deployment by criteria

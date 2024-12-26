@@ -198,7 +198,7 @@ export class SubscriptionModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: SubscriptionModel) => {
+    const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
       const instance = new SubscriptionModel(model as SubscriptionType)
 
       model.user = await instance.userBelong()
@@ -206,7 +206,7 @@ export class SubscriptionModel {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Subscription by criteria

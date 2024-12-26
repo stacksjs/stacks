@@ -174,11 +174,11 @@ export class ProductModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: ProductModel) => {
+    const data = await Promise.all(models.map(async (model: ProductModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Product by criteria

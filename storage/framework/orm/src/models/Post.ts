@@ -170,7 +170,7 @@ export class PostModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: PostModel) => {
+    const data = await Promise.all(models.map(async (model: PostModel) => {
       const instance = new PostModel(model as PostType)
 
       model.user = await instance.userBelong()
@@ -178,7 +178,7 @@ export class PostModel {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Post by criteria

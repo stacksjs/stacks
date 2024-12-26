@@ -161,11 +161,11 @@ export class ProjectModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: ProjectModel) => {
+    const data = await Promise.all(models.map(async (model: ProjectModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Project by criteria

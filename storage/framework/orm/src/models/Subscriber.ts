@@ -152,11 +152,11 @@ export class SubscriberModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: SubscriberModel) => {
+    const data = await Promise.all(models.map(async (model: SubscriberModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Subscriber by criteria

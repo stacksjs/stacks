@@ -164,17 +164,25 @@ export class SubscriberEmailModel {
     let models
 
     if (instance.hasSelect) {
+      if (instance.softDeletes) {
+        query = query.where('deleted_at', 'is', null)
+      }
+
       models = await instance.selectFromQuery.execute()
     }
     else {
+      if (instance.softDeletes) {
+        query = query.where('deleted_at', 'is', null)
+      }
+
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
+    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a SubscriberEmail by criteria

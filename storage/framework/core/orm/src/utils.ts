@@ -1809,16 +1809,20 @@ export async function generateModelString(
 
       static async get(): Promise<${modelName}Model[]> {
         const instance = new ${modelName}Model(null)
-      
-        let models
 
+        let models
+      
         if (instance.hasSelect) {
+          ${instanceSoftDeleteStatements}
+
           models = await instance.selectFromQuery.execute()
         } else {
+          ${instanceSoftDeleteStatements}
+
           models = await instance.selectFromQuery.selectAll().execute()
         }
-      
-        const userModels = await Promise.all(models.map(async (model: ${modelName}Model) => {
+
+        const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
           ${relationDeclare}
       
           ${relationStringMany}
@@ -1827,7 +1831,7 @@ export async function generateModelString(
           return model
         }))
         
-        return userModels
+        return data
       }
 
 

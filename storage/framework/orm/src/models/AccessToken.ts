@@ -163,11 +163,11 @@ export class AccessTokenModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: AccessTokenModel) => {
+    const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a AccessToken by criteria

@@ -202,7 +202,7 @@ export class PaymentMethodModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: PaymentMethodModel) => {
+    const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
       const instance = new PaymentMethodModel(model as PaymentMethodType)
 
       model.transactions = await instance.transactionsHasMany()
@@ -212,7 +212,7 @@ export class PaymentMethodModel {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a PaymentMethod by criteria

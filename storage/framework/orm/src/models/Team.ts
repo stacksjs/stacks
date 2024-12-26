@@ -177,11 +177,11 @@ export class TeamModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: TeamModel) => {
+    const data = await Promise.all(models.map(async (model: TeamModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Team by criteria

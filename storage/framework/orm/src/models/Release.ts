@@ -152,11 +152,11 @@ export class ReleaseModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: ReleaseModel) => {
+    const data = await Promise.all(models.map(async (model: ReleaseModel) => {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Release by criteria

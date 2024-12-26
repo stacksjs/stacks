@@ -202,7 +202,7 @@ export class TransactionModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: TransactionModel) => {
+    const data = await Promise.all(models.map(async (model: TransactionModel) => {
       const instance = new TransactionModel(model as TransactionType)
 
       model.user = await instance.userBelong()
@@ -212,7 +212,7 @@ export class TransactionModel {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a Transaction by criteria

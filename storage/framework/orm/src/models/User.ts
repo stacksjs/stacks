@@ -226,7 +226,7 @@ export class UserModel {
       models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const userModels = await Promise.all(models.map(async (model: UserModel) => {
+    const data = await Promise.all(models.map(async (model: UserModel) => {
       const instance = new UserModel(model as UserType)
 
       model.deployments = await instance.deploymentsHasMany()
@@ -240,7 +240,7 @@ export class UserModel {
       return model
     }))
 
-    return userModels
+    return data
   }
 
   // Method to get a User by criteria
