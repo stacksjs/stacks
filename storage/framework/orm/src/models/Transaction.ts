@@ -13,9 +13,7 @@ import User from './User'
 export interface TransactionsTable {
   id?: number
   user_id?: number
-  paymentmethod_id?: number
   user?: UserModel
-  user_id?: number
   paymentmethod_id?: number
   payment_method?: PaymentMethodModel
   name?: string
@@ -68,9 +66,7 @@ export class TransactionModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   public user_id: number | undefined
-  public paymentmethod_id: number | undefined
   public user: UserModel | undefined
-  public user_id: number | undefined
   public paymentmethod_id: number | undefined
   public payment_method: PaymentMethodModel | undefined
   public id: number
@@ -86,9 +82,7 @@ export class TransactionModel {
 
   constructor(transaction: Partial<TransactionType> | null) {
     this.user_id = transaction?.user_id
-    this.paymentmethod_id = transaction?.paymentmethod_id
     this.user = transaction?.user
-    this.user_id = transaction?.user_id
     this.paymentmethod_id = transaction?.paymentmethod_id
     this.payment_method = transaction?.payment_method
     this.id = transaction?.id || 1

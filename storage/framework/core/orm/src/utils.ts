@@ -1190,16 +1190,12 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
-      const otherModelRelations = await fetchOtherModelRelations(modelName)
-
-      for (const otherModelRelation of otherModelRelations) {
-        fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
-        declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
-        constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
-      }
-
       hasRelations = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
+
+      fieldString += ` ${relation.modelKey}?: number \n`
+      declareFields += `public ${relation.modelKey}: number | undefined \n   `
+      constructorFields += `this.${relation.modelKey} = ${formattedModelName}?.${relation.modelKey}\n   `
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
