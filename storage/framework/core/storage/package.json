@@ -51,7 +51,7 @@
     "@aws-sdk/client-s3": "^3.717.0",
     "@flystorage/aws-s3": "^0.1.8",
     "@flystorage/chaos": "^0.1.2",
-    "@flystorage/file-storage": "^0.1.7",
+    "@flystorage/file-storage": "^1.0.0",
     "@flystorage/in-memory": "^1.0.0",
     "@flystorage/local-fs": "^0.1.10",
     "@stacksjs/arrays": "workspace:*",
