@@ -158,8 +158,8 @@ export class SubscriberEmailModel {
     return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<SubscriberEmailModel[]> {
+    const instance = new SubscriberEmailModel(null)
 
     let models
 
@@ -171,8 +171,6 @@ export class SubscriberEmailModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
-      const instance = new SubscriberEmailModel(model)
-
       return model
     }))
 

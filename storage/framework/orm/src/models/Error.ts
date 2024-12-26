@@ -155,8 +155,8 @@ export class ErrorModel {
     return model.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<ErrorModel[]> {
+    const instance = new ErrorModel(null)
 
     let models
 
@@ -168,8 +168,6 @@ export class ErrorModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: ErrorModel) => {
-      const instance = new ErrorModel(model)
-
       return model
     }))
 

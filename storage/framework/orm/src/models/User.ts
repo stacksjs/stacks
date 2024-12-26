@@ -227,7 +227,7 @@ export class UserModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: UserModel) => {
-      const instance = new UserModel(model)
+      const instance = new UserModel(model as UserType)
 
       model.deployments = await instance.deploymentsHasMany()
 
@@ -364,12 +364,12 @@ export class UserModel {
   static async remove(id: number): Promise<any> {
     const model = await instance.find(Number(id))
 
+    if (model)
+      dispatch('user:deleted', model)
+
     return await db.deleteFrom('users')
       .where('id', '=', id)
       .execute()
-
-    if (model)
-      dispatch('user:deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {

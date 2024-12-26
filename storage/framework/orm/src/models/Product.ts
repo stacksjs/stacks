@@ -162,8 +162,8 @@ export class ProductModel {
     return model.map(modelItem => instance.parseResult(new ProductModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<ProductModel[]> {
+    const instance = new ProductModel(null)
 
     let models
 
@@ -175,8 +175,6 @@ export class ProductModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: ProductModel) => {
-      const instance = new ProductModel(model)
-
       return model
     }))
 

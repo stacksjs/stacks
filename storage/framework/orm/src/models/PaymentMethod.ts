@@ -190,8 +190,8 @@ export class PaymentMethodModel {
     return model.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<PaymentMethodModel[]> {
+    const instance = new PaymentMethodModel(null)
 
     let models
 
@@ -203,7 +203,7 @@ export class PaymentMethodModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: PaymentMethodModel) => {
-      const instance = new PaymentMethodModel(model)
+      const instance = new PaymentMethodModel(model as PaymentMethodType)
 
       model.transactions = await instance.transactionsHasMany()
 

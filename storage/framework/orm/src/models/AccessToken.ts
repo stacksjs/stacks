@@ -151,8 +151,8 @@ export class AccessTokenModel {
     return model.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<AccessTokenModel[]> {
+    const instance = new AccessTokenModel(null)
 
     let models
 
@@ -164,8 +164,6 @@ export class AccessTokenModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: AccessTokenModel) => {
-      const instance = new AccessTokenModel(model)
-
       return model
     }))
 

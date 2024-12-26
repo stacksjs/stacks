@@ -177,8 +177,8 @@ export class DeploymentModel {
     return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<DeploymentModel[]> {
+    const instance = new DeploymentModel(null)
 
     let models
 
@@ -190,7 +190,7 @@ export class DeploymentModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: DeploymentModel) => {
-      const instance = new DeploymentModel(model)
+      const instance = new DeploymentModel(model as DeploymentType)
 
       model.user = await instance.userBelong()
 

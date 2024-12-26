@@ -149,8 +149,8 @@ export class ProjectModel {
     return model.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<ProjectModel[]> {
+    const instance = new ProjectModel(null)
 
     let models
 
@@ -162,8 +162,6 @@ export class ProjectModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: ProjectModel) => {
-      const instance = new ProjectModel(model)
-
       return model
     }))
 

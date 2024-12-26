@@ -1807,8 +1807,8 @@ export async function generateModelString(
         return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }
 
-      static async get(): Promise<UserModel[]> {
-        const instance = new UserModel(null)
+      static async get(): Promise<${modelName}Model[]> {
+        const instance = new ${modelName}Model(null)
       
         let models
 
@@ -1819,7 +1819,7 @@ export async function generateModelString(
         }
       
         const userModels = await Promise.all(models.map(async (model: ${modelName}Model) => {
-          const instance = new ${modelName}Model(model)
+          ${relationDeclare}
       
           ${relationStringMany}
           ${relationStringBelong}
@@ -1959,12 +1959,12 @@ export async function generateModelString(
         ${mittDeleteStaticFindStatement}
 
         ${instanceSoftDeleteStatementsUpdateFrom}
-        
+
+        ${mittDeleteStatement}
+      
         return await db.deleteFrom('${tableName}')
           .where('id', '=', id)
           .execute()
-
-        ${mittDeleteStatement}
       }
 
       where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
@@ -2267,7 +2267,7 @@ export async function generateModelString(
         if (this.id === undefined)
           this.deleteFromQuery.execute()
           ${mittDeleteFindStatement}
-           ${mittDeleteStatement}
+          ${mittDeleteStatement}
           ${thisSoftDeleteStatementsUpdateFrom}
 
           return await db.deleteFrom('${tableName}')

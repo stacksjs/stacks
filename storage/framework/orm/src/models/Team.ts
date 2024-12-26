@@ -1,5 +1,4 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
-import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -166,8 +165,8 @@ export class TeamModel {
     return model.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<TeamModel[]> {
+    const instance = new TeamModel(null)
 
     let models
 
@@ -179,8 +178,6 @@ export class TeamModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: TeamModel) => {
-      const instance = new TeamModel(model)
-
       return model
     }))
 

@@ -140,8 +140,8 @@ export class ReleaseModel {
     return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<ReleaseModel[]> {
+    const instance = new ReleaseModel(null)
 
     let models
 
@@ -153,8 +153,6 @@ export class ReleaseModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: ReleaseModel) => {
-      const instance = new ReleaseModel(model)
-
       return model
     }))
 

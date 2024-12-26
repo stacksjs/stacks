@@ -190,8 +190,8 @@ export class TransactionModel {
     return model.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<TransactionModel[]> {
+    const instance = new TransactionModel(null)
 
     let models
 
@@ -203,7 +203,7 @@ export class TransactionModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: TransactionModel) => {
-      const instance = new TransactionModel(model)
+      const instance = new TransactionModel(model as TransactionType)
 
       model.user = await instance.userBelong()
 

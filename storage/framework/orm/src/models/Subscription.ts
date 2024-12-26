@@ -186,8 +186,8 @@ export class SubscriptionModel {
     return model.map(modelItem => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<SubscriptionModel[]> {
+    const instance = new SubscriptionModel(null)
 
     let models
 
@@ -199,7 +199,7 @@ export class SubscriptionModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: SubscriptionModel) => {
-      const instance = new SubscriptionModel(model)
+      const instance = new SubscriptionModel(model as SubscriptionType)
 
       model.user = await instance.userBelong()
 

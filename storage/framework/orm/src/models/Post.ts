@@ -158,8 +158,8 @@ export class PostModel {
     return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
   }
 
-  static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+  static async get(): Promise<PostModel[]> {
+    const instance = new PostModel(null)
 
     let models
 
@@ -171,7 +171,7 @@ export class PostModel {
     }
 
     const userModels = await Promise.all(models.map(async (model: PostModel) => {
-      const instance = new PostModel(model)
+      const instance = new PostModel(model as PostType)
 
       model.user = await instance.userBelong()
 
