@@ -34,7 +34,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "cron": "^3.3.1"
+    "croner": "^9.0.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

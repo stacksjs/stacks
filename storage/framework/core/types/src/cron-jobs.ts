@@ -31,10 +31,10 @@ export type CronJob = Job
 export type CronJobs = Jobs
 
 export enum Every {
-  // Second = '* * * * * *',
-  // FiveSeconds = '*/5 * * * * *',
-  // TenSeconds = '*/10 * * * * *',
-  // ThirtySeconds = '*/30 * * * * *',
+  Second = '* * * * * *',
+  FiveSeconds = '*/5 * * * * *',
+  TenSeconds = '*/10 * * * * *',
+  ThirtySeconds = '*/30 * * * * *',
   Minute = '* * * * *',
   TwoMinutes = '*/2 * * * *',
   FiveMinutes = '*/5 * * * *',

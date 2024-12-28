@@ -1,11 +1,2 @@
-export type {
-  CronCallback,
-  CronCommand,
-  CronContext,
-  CronJobParams,
-  CronOnCompleteCallback,
-  CronOnCompleteCommand,
-  Ranges,
-  TimeUnit,
-} from 'cron'
-export { CronJob, CronTime } from 'cron'
+export type { CatchCallbackFn, CronOptions, ProtectCallbackFn } from 'croner'
+export { Cron, CronDate, CronPattern, scheduledJobs } from 'croner'

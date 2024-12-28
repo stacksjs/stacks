@@ -9,7 +9,7 @@ export default new Job({
   backoff: 3, // optional, defaults to 3-second delays between retries
   rate: Every.Minute, // optional, '* * * * *' in cron syntax
   handle: () => {
-    // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
     log.info('This message logs every minute') // unless triggered via a route.job() call, in which case it logs once
   },
+  // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })
