@@ -1,4 +1,5 @@
 import type { CatchCallbackFn, CronOptions } from './'
+import type { Timezone } from './types'
 import { log, runCommand } from '@stacksjs/cli'
 import { Cron } from './'
 
@@ -11,7 +12,7 @@ interface BaseSchedule {
   withContext: (context: any) => this
   withInterval: (seconds: number) => this
   between: (startAt: string | Date, stopAt: string | Date) => this
-  setTimeZone: (timezone: string) => this
+  setTimeZone: (timezone: Timezone) => this
 }
 
 // Interface for schedule before timing is set
@@ -41,9 +42,8 @@ interface TimedSchedule extends BaseSchedule {
 
 export class Schedule implements UntimedSchedule {
   private static jobs = new Map<string, Cron>()
-
   private cronPattern = ''
-  private timezone = 'America/Los_Angeles'
+  private timezone: Timezone = 'America/Los_Angeles'
   private readonly task: () => void
   private options: {
     timezone?: string
@@ -147,7 +147,7 @@ export class Schedule implements UntimedSchedule {
     return this as TimedSchedule
   }
 
-  setTimeZone(timezone: string): this {
+  setTimeZone(timezone: Timezone): this {
     this.timezone = timezone
     this.options.timezone = timezone
     return this
