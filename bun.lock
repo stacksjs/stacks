@@ -1135,9 +1135,6 @@
     "storage/framework/core/queue": {
       "name": "@stacksjs/queue",
       "version": "0.68.2",
-      "dependencies": {
-        "@poppinss/defer": "^1.1.0",
-      },
       "devDependencies": {
         "@stacksjs/development": "storage/framework/core/development",
       },
@@ -1205,6 +1202,7 @@
         "croner": "^9.0.0",
       },
       "devDependencies": {
+        "@stacksjs/actions": "storage/framework/core/actions",
         "@stacksjs/development": "storage/framework/core/development",
       },
     },
@@ -2388,8 +2386,6 @@
 
     "@polka/url": ["@polka/url@1.0.0-next.28", "", {}, "sha512-8LduaNlMZGwdZ6qWrKlfa+2M4gahzFkprZiAt2TF8uS0qQgBizKXpXURqvTJ4WtmupWxaLqjRb2UCTe72mu+Aw=="],
 
-    "@poppinss/defer": ["@poppinss/defer@1.1.0", "", { "dependencies": { "fastq": "^1.17.1" } }, "sha512-+hkwxhKdxbmfTNo9MJrY2Rz7GrMokgx71zSSnEv6/pftaCQ8+bF5vQkE7KCBIKUn+kCth1cI1d8LWDMvPUIRMw=="],
-
     "@poppinss/macroable": ["@poppinss/macroable@1.0.3", "", {}, "sha512-B4iV6QxW//Fn17+qF1EMZRmoThIUJlCtcO85yoRDJnMyHeAthjz4ig9OTkfGGXKtQhcdPX0me75gU5K9J897+w=="],
 
     "@poppinss/utils": ["@poppinss/utils@6.8.3", "", { "dependencies": { "@lukeed/ms": "^2.0.2", "@types/bytes": "^3.1.4", "@types/pluralize": "^0.0.33", "bytes": "^3.1.2", "case-anything": "^3.1.0", "flattie": "^1.1.1", "pluralize": "^8.0.0", "safe-stable-stringify": "^2.5.0", "secure-json-parse": "^2.7.0", "slash": "^5.1.0", "slugify": "^1.6.6", "truncatise": "^0.0.8" } }, "sha512-YGeH7pIUm9ExONURNH3xN61dBZ0SXgVuPA9E76t7EHeZHXPNrmR8TlbXQaka6kd5n+cpBNcHG4VsVfYf59bZ7g=="],
@@ -2712,7 +2708,7 @@
 
     "@stacksjs/query-builder": ["@stacksjs/query-builder@workspace:storage/framework/core/query-builder", { "dependencies": { "@stacksjs/database": "storage/framework/core/database", "@stacksjs/types": "storage/framework/core/types", "kysely": "^0.27.5", "kysely-bun-worker": "^0.7.0", "mysql2": "^3.12.0", "pg": "^8.13.1" }, "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "@types/pg": "^8.11.10" } }],
 
-    "@stacksjs/queue": ["@stacksjs/queue@workspace:storage/framework/core/queue", { "dependencies": { "@poppinss/defer": "^1.1.0" }, "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
+    "@stacksjs/queue": ["@stacksjs/queue@workspace:storage/framework/core/queue", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
 
     "@stacksjs/radio-group": ["@stacksjs/radio-group@workspace:storage/framework/core/components/radio-group", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.48.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "0.65.3", "unplugin-icons": "^0.22.0" } }],
 
@@ -2726,7 +2722,7 @@
 
     "@stacksjs/rpx": ["@stacksjs/rpx@0.9.1", "", { "bin": { "rpx": "dist/bin/cli.js", "reverse-proxy": "dist/bin/cli.js" } }, "sha512-Lus+Zvn4+0g7InjTtsIC6pZ4lR4sYY/oB4OrBDNNfIedEQOYLgSZoj3lynZlv6A3UJQzDtzZfFMMGoQfTgxXFw=="],
 
-    "@stacksjs/scheduler": ["@stacksjs/scheduler@workspace:storage/framework/core/scheduler", { "dependencies": { "croner": "^9.0.0" }, "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
+    "@stacksjs/scheduler": ["@stacksjs/scheduler@workspace:storage/framework/core/scheduler", { "dependencies": { "croner": "^9.0.0" }, "devDependencies": { "@stacksjs/actions": "storage/framework/core/actions", "@stacksjs/development": "storage/framework/core/development" } }],
 
     "@stacksjs/search-engine": ["@stacksjs/search-engine@workspace:storage/framework/core/search-engine", { "dependencies": { "@opensearch-project/opensearch": "^2.13.0", "meilisearch": "^0.47.0" }, "devDependencies": { "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development" } }],
 

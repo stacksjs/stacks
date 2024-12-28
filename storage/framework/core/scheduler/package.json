@@ -37,6 +37,7 @@
     "croner": "^9.0.0"
   },
   "devDependencies": {
+    "@stacksjs/actions": "workspace:*",
     "@stacksjs/development": "workspace:*"
   }
 }

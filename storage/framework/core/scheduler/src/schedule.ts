@@ -1,44 +1,9 @@
 import type { CatchCallbackFn, CronOptions } from './'
-import type { Timezone } from './types'
+import type { TimedSchedule, Timezone, UntimedSchedule } from './types'
+import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
+import { runJob } from '@stacksjs/queue'
 import { Cron } from './'
-
-// Base interface for common methods
-interface BaseSchedule {
-  withErrorHandler: (handler: CatchCallbackFn) => this
-  withMaxRuns: (runs: number) => this
-  withProtection: (callback?: (job: Cron) => void) => this
-  withName: (name: string) => this
-  withContext: (context: any) => this
-  withInterval: (seconds: number) => this
-  between: (startAt: string | Date, stopAt: string | Date) => this
-  setTimeZone: (timezone: Timezone) => this
-}
-
-// Interface for schedule before timing is set
-interface UntimedSchedule extends BaseSchedule {
-  everySecond: () => TimedSchedule
-  everyMinute: () => TimedSchedule
-  everyTwoMinutes: () => TimedSchedule
-  everyFiveMinutes: () => TimedSchedule
-  everyTenMinutes: () => TimedSchedule
-  everyThirtyMinutes: () => TimedSchedule
-  everyHour: () => TimedSchedule
-  everyDay: () => TimedSchedule
-  hourly: () => TimedSchedule
-  daily: () => TimedSchedule
-  weekly: () => TimedSchedule
-  monthly: () => TimedSchedule
-  yearly: () => TimedSchedule
-  annually: () => TimedSchedule
-  onDays: (days: number[]) => TimedSchedule
-  at: (time: string) => TimedSchedule
-}
-
-// Interface for schedule after timing is set
-interface TimedSchedule extends BaseSchedule {
-  // Only includes the configuration methods, no timing methods
-}
 
 export class Schedule implements UntimedSchedule {
   private static jobs = new Map<string, Cron>()
@@ -212,7 +177,7 @@ export class Schedule implements UntimedSchedule {
     return new Schedule(async () => {
       log.info(`Running job: ${name}`)
       try {
-        await runCommand(`node path/to/jobs/${name}.js`)
+        await runJob(name)
       }
       catch (error) {
         log.error(`Job ${name} failed:`, error)
@@ -225,7 +190,7 @@ export class Schedule implements UntimedSchedule {
     return new Schedule(async () => {
       log.info(`Running action: ${name}`)
       try {
-        await runCommand(`node path/to/actions/${name}.js`)
+        await runAction(name)
       }
       catch (error) {
         log.error(`Action ${name} failed:`, error)

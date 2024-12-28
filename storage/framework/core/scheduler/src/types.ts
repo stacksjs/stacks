@@ -1,3 +1,12 @@
+import type { CatchCallbackFn, CronOptions, ProtectCallbackFn } from 'croner'
+import type { Cron } from './cron'
+
+export type {
+  CatchCallbackFn,
+  CronOptions,
+  ProtectCallbackFn,
+}
+
 export type IntRange<Min extends number, Max extends number> = number extends Min | Max
   ? never
   : number | [Min | number, Max | number]
@@ -69,3 +78,40 @@ export type Timezone =
   | 'Pacific/Fiji'
   | 'Pacific/Honolulu'
   | 'UTC'
+
+// Base interface for common methods
+export interface BaseSchedule {
+  withErrorHandler: (handler: CatchCallbackFn) => this
+  withMaxRuns: (runs: number) => this
+  withProtection: (callback?: (job: Cron) => void) => this
+  withName: (name: string) => this
+  withContext: (context: any) => this
+  withInterval: (seconds: number) => this
+  between: (startAt: string | Date, stopAt: string | Date) => this
+  setTimeZone: (timezone: Timezone) => this
+}
+
+// Interface for schedule after timing is set
+export interface TimedSchedule extends BaseSchedule {
+  // Only includes the configuration methods, no timing methods
+}
+
+// Interface for schedule before timing is set
+export interface UntimedSchedule extends BaseSchedule {
+  everySecond: () => TimedSchedule
+  everyMinute: () => TimedSchedule
+  everyTwoMinutes: () => TimedSchedule
+  everyFiveMinutes: () => TimedSchedule
+  everyTenMinutes: () => TimedSchedule
+  everyThirtyMinutes: () => TimedSchedule
+  everyHour: () => TimedSchedule
+  everyDay: () => TimedSchedule
+  hourly: () => TimedSchedule
+  daily: () => TimedSchedule
+  weekly: () => TimedSchedule
+  monthly: () => TimedSchedule
+  yearly: () => TimedSchedule
+  annually: () => TimedSchedule
+  onDays: (days: number[]) => TimedSchedule
+  at: (time: string) => TimedSchedule
+}
