@@ -342,6 +342,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+Untimed
 Updateable
 upstash
 vclass
