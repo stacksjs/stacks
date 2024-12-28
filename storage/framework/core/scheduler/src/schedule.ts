@@ -1,12 +1,24 @@
-import type { DateTime } from 'luxon'
+import type { CatchCallbackFn, CronOptions } from './'
 import { log, runCommand } from '@stacksjs/cli'
-import { CronJob, CronTime } from './'
+import { Cron } from './'
 
 export class Schedule {
+  private static jobs = new Map<string, Cron>()
+
   private cronPattern = ''
   private timezone = 'America/Los_Angeles'
   private readonly task: () => void
-  // private cmd?: string
+  private options: {
+    timezone?: string
+    catch?: CatchCallbackFn
+    maxRuns?: number
+    protect?: boolean | ((job: Cron) => void)
+    name?: string
+    context?: any
+    interval?: number
+    startAt?: string | Date
+    stopAt?: string | Date
+  } = {}
 
   constructor(task: () => void) {
     this.task = task
@@ -77,18 +89,16 @@ export class Schedule {
     return this
   }
 
+  annually(): Schedule {
+    this.cronPattern = '0 0 0 1 1 *'
+    return this
+  }
+
   onDays(days: number[]): Schedule {
     const dayPattern = days.join(',')
     this.cronPattern = `0 0 0 * * ${dayPattern}`
     return this
   }
-
-  // between(startTime: string, endTime: string) {
-  //   // This method is a placeholder. Actual implementation will vary based on requirements.
-  //   // Cron does not directly support "between" times without additional logic.
-  //   console.warn('The "between" method is not directly supported by cron patterns and requires additional logic.')
-  //   return this
-  // }
 
   at(time: string): Schedule {
     // Assuming time is in "HH:MM" format
@@ -99,52 +109,161 @@ export class Schedule {
 
   setTimeZone(timezone: string): Schedule {
     this.timezone = timezone
+    this.options.timezone = timezone
     return this
   }
 
-  start(): void {
-    // eslint-disable-next-line no-new
-    new CronJob(this.cronPattern, this.task, null, true, this.timezone)
+  withErrorHandler(handler: CatchCallbackFn): Schedule {
+    this.options.catch = handler
+    return this
+  }
+
+  withMaxRuns(runs: number): Schedule {
+    this.options.maxRuns = runs
+    return this
+  }
+
+  withProtection(callback?: (job: Cron) => void): Schedule {
+    this.options.protect = callback || true
+    return this
+  }
+
+  withName(name: string): Schedule {
+    this.options.name = name
+    return this
+  }
+
+  withContext(context: any): Schedule {
+    this.options.context = context
+    return this
+  }
+
+  withInterval(seconds: number): Schedule {
+    this.options.interval = seconds
+    return this
+  }
+
+  between(startAt: string | Date, stopAt: string | Date): Schedule {
+    this.options.startAt = startAt
+    this.options.stopAt = stopAt
+    return this
+  }
+
+  start(): Cron {
+    const job = new Cron(
+      this.cronPattern,
+      this.options,
+      this.task,
+    )
+
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
+    return job
   }
 
   // job and action methods need to be added and they accept a path string param
-  job(path: string): Schedule {
-    log.info(`Scheduling job: ${path}`)
-    return this
+  static job(name: string): Schedule {
+    // Here we create a task that will run the job by name
+    return new Schedule(async () => {
+      log.info(`Running job: ${name}`)
+      try {
+        // Here you'd implement the actual job running logic
+        await runCommand(`node path/to/jobs/${name}.js`)
+      }
+      catch (error) {
+        log.error(`Job ${name} failed:`, error)
+      }
+    }).withName(name)
   }
 
-  action(path: string): Schedule {
-    log.info(`Scheduling action: ${path}`)
-    return this
+  static action(name: string): Schedule {
+    return new Schedule(async () => {
+      log.info(`Running action: ${name}`)
+      try {
+        // Here you'd implement the actual action running logic
+        await runCommand(`node path/to/actions/${name}.js`)
+      }
+      catch (error) {
+        log.error(`Action ${name} failed:`, error)
+      }
+    }).withName(name)
   }
 
   static command(cmd: string): Schedule {
     log.info(`Executing command: ${cmd}`)
     return new Schedule(async () => {
-      log.info(`Executing command: ${cmd}`)
+      try {
+        log.info(`Executing command: ${cmd}`)
+        const result = await runCommand(cmd)
 
-      const result = await runCommand(cmd)
+        if (result.isErr()) {
+          log.error(result.error)
+          return
+        }
 
-      if (result.isErr()) {
-        log.error(result.error)
-        return
+        log.info(result.value)
       }
-
-      log.info(result.value)
+      catch (error) {
+        log.error(`Command execution failed: ${error}`)
+        throw error // This will be caught by the error handler if one is set
+      }
     })
+  }
+
+  /**
+   * Gracefully shutdown all scheduled jobs.
+   * This method should be called when the application is shutting down.
+   * It will stop all running jobs and clear the jobs map.
+   * @returns Promise<void>
+   * @static
+   * @memberof Schedule
+   * @example
+   * ```typescript
+   * process.on('SIGINT', () => {
+   *  schedule.gracefulShutdown().then(() => process.exit(0))
+   * })
+   */
+  static async gracefulShutdown(): Promise<void> {
+    log.info('Gracefully shutting down scheduled jobs...')
+
+    const shutdownPromises = []
+
+    // Stop all running jobs
+    for (const [name, job] of Schedule.jobs) {
+      log.info(`Stopping job: ${name}`)
+      shutdownPromises.push(
+        new Promise<void>((resolve) => {
+          job.stop()
+          resolve()
+        }),
+      )
+    }
+
+    // Clear the jobs map
+    await Promise.all(shutdownPromises)
+    Schedule.jobs.clear()
+
+    log.info('All jobs have been stopped')
   }
 }
 
-export class Job extends Schedule {}
+export class Job extends Schedule { }
 
-export function sendAt(cronTime: string | Date | DateTime): DateTime {
-  return new CronTime(cronTime).sendAt()
+export function sendAt(cronTime: string | Date): Date | null {
+  const cron = new Cron(cronTime)
+  return cron.nextRun()
 }
 
-export function timeout(cronTime: string | Date | DateTime): number {
-  return new CronTime(cronTime).getTimeout()
+export function timeout(cronTime: string | Date): number {
+  const cron = new Cron(cronTime)
+  const nextDate = cron.nextRun()
+
+  if (!nextDate)
+    return -1
+
+  return nextDate.getTime() - Date.now()
 }
+
+export const schedule: typeof Schedule = Schedule
 
 export type Scheduler = typeof Schedule
 
