@@ -9,8 +9,9 @@ import { schedule } from '@stacksjs/scheduler'
  * questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default function () {
-  schedule.job('name').everyFiveMinutes()
+  schedule.job('name').everyMinute()
   schedule.action('name').everyFiveMinutes()
+  schedule.command('echo "Hello, world!"').daily()
 }
 
 process.on('SIGINT', () => {

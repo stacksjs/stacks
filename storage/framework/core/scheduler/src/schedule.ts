@@ -22,6 +22,9 @@ export class Schedule {
 
   constructor(task: () => void) {
     this.task = task
+    // Start job automatically when constructor is called
+    // We need to use setTimeout to ensure all chain methods are called first
+    setTimeout(() => this.start(), 0)
   }
 
   everySecond(): Schedule {
@@ -149,12 +152,19 @@ export class Schedule {
     return this
   }
 
-  start(): Cron {
+  private start(): Cron {
     const job = new Cron(
       this.cronPattern,
-      this.options,
+      {
+        ...this.options,
+        timezone: this.timezone,
+      } as CronOptions,
       this.task,
     )
+
+    if (this.options.name) {
+      Schedule.jobs.set(this.options.name, job)
+    }
 
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
     return job
@@ -162,15 +172,14 @@ export class Schedule {
 
   // job and action methods need to be added and they accept a path string param
   static job(name: string): Schedule {
-    // Here we create a task that will run the job by name
     return new Schedule(async () => {
       log.info(`Running job: ${name}`)
       try {
-        // Here you'd implement the actual job running logic
         await runCommand(`node path/to/jobs/${name}.js`)
       }
       catch (error) {
         log.error(`Job ${name} failed:`, error)
+        throw error // This will be caught by the error handler if one is set
       }
     }).withName(name)
   }
@@ -179,17 +188,16 @@ export class Schedule {
     return new Schedule(async () => {
       log.info(`Running action: ${name}`)
       try {
-        // Here you'd implement the actual action running logic
         await runCommand(`node path/to/actions/${name}.js`)
       }
       catch (error) {
         log.error(`Action ${name} failed:`, error)
+        throw error
       }
     }).withName(name)
   }
 
   static command(cmd: string): Schedule {
-    log.info(`Executing command: ${cmd}`)
     return new Schedule(async () => {
       try {
         log.info(`Executing command: ${cmd}`)
@@ -197,16 +205,16 @@ export class Schedule {
 
         if (result.isErr()) {
           log.error(result.error)
-          return
+          throw result.error
         }
 
         log.info(result.value)
       }
       catch (error) {
         log.error(`Command execution failed: ${error}`)
-        throw error // This will be caught by the error handler if one is set
+        throw error
       }
-    })
+    }).withName(`command-${cmd}`)
   }
 
   /**
@@ -227,7 +235,6 @@ export class Schedule {
 
     const shutdownPromises = []
 
-    // Stop all running jobs
     for (const [name, job] of Schedule.jobs) {
       log.info(`Stopping job: ${name}`)
       shutdownPromises.push(
@@ -238,7 +245,6 @@ export class Schedule {
       )
     }
 
-    // Clear the jobs map
     await Promise.all(shutdownPromises)
     Schedule.jobs.clear()
 
