@@ -1,22 +1,22 @@
 {
-  "name": "@stacksjs/scheduler",
+  "name": "@stacksjs/cron",
   "type": "module",
   "version": "0.68.2",
-  "description": "The Stacks scheduler.",
+  "description": "The Stacks cron.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/scheduler#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/cron#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/scheduler"
+    "directory": "./storage/framework/core/cron"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["scheduler", "node-cron", "jobs", "bun", "stacks"],
+  "keywords": ["cron", "croner", "jobs", "bun", "stacks"],
   "exports": {
     ".": {
       "import": "./dist/index.js"
@@ -33,11 +33,8 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "@stacksjs/cron": "workspace:*"
-  },
   "devDependencies": {
-    "@stacksjs/actions": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "croner": "^9.0.0"
   }
 }

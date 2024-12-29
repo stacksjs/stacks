@@ -1,9 +1,9 @@
-import type { CatchCallbackFn, CronOptions } from './'
+import type { CatchCallbackFn, CronOptions } from '@stacksjs/cron'
 import type { TimedSchedule, Timezone, UntimedSchedule } from './types'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
+import { Cron } from '@stacksjs/cron'
 import { runJob } from '@stacksjs/queue'
-import { Cron } from './'
 
 /**
  * This class is used to create and manage scheduled jobs. It provides methods for
