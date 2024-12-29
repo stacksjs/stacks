@@ -1,15 +1,4 @@
-import type { CatchCallbackFn, CronOptions, ProtectCallbackFn } from 'croner'
-import type { Cron } from './cron'
-
-export type {
-  CatchCallbackFn,
-  CronOptions,
-  ProtectCallbackFn,
-}
-
-export type IntRange<Min extends number, Max extends number> = number extends Min | Max
-  ? never
-  : number | [Min | number, Max | number]
+import type { CatchCallbackFn, Cron } from '@stacksjs/cron'
 
 // IANA Timezone
 export type Timezone =

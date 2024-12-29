@@ -1,4 +1,4 @@
-import type { IntRange } from '@stacksjs/scheduler'
+import type { IntRange } from '@stacksjs/cron'
 
 /**
  * Cron Job Options.
