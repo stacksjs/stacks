@@ -5,6 +5,31 @@ import { log, runCommand } from '@stacksjs/cli'
 import { runJob } from '@stacksjs/queue'
 import { Cron } from './'
 
+/**
+ * This class is used to create and manage scheduled jobs. It provides methods for
+ * defining the schedule pattern, timezone, error handling, and job protection.
+ * @class Schedule
+ * @implements {UntimedSchedule}
+ * @example
+ * ```typescript
+ * import { schedule } from '@stacksjs/scheduler'
+ *
+ * schedule
+ *   .job('my-job')
+ *   .everyMinute()
+ *   .withErrorHandler((error) => {
+ *     console.error('Job failed:', error)
+ *   })
+ *   .withMaxRuns(10)
+ *   .withProtection((job) => {
+ *     console.log('Job is protected:', job)
+ *   })
+ *   .withName('my-job')
+ *   .withContext({ key: 'value' })
+ *   .withInterval(60)
+ *   .between('2024-01-01', '2024-12-31')
+ * ```
+ */
 export class Schedule implements UntimedSchedule {
   private static jobs = new Map<string, Cron>()
   private cronPattern = ''
