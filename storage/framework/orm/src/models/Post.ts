@@ -52,6 +52,7 @@ export class PostModel {
   private fillable = ['title', 'body', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -75,6 +76,7 @@ export class PostModel {
 
     this.updated_at = post?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('posts')
     this.updateFromQuery = db.updateTable('posts')
     this.deleteFromQuery = db.deleteFrom('posts')
@@ -290,6 +292,8 @@ export class PostModel {
 
   // Method to remove a Post
   static async remove(id: number): Promise<any> {
+    const instance = new PostModel(null)
+
     return await db.deleteFrom('posts')
       .where('id', '=', id)
       .execute()
@@ -499,6 +503,12 @@ export class PostModel {
     const data = new PostModel(model as PostType)
 
     return data
+  }
+
+  with(relations: string[]): PostModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<PostType | undefined> {

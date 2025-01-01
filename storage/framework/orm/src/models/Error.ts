@@ -51,6 +51,7 @@ export class ErrorModel {
   private fillable = ['type', 'message', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -78,6 +79,7 @@ export class ErrorModel {
 
     this.updated_at = error?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('errors')
     this.updateFromQuery = db.updateTable('errors')
     this.deleteFromQuery = db.deleteFrom('errors')
@@ -275,6 +277,8 @@ export class ErrorModel {
 
   // Method to remove a Error
   static async remove(id: number): Promise<any> {
+    const instance = new ErrorModel(null)
+
     return await db.deleteFrom('errors')
       .where('id', '=', id)
       .execute()
@@ -510,6 +514,12 @@ export class ErrorModel {
     const data = new ErrorModel(model as ErrorType)
 
     return data
+  }
+
+  with(relations: string[]): ErrorModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<ErrorType | undefined> {

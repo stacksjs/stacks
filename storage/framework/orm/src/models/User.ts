@@ -82,6 +82,7 @@ export class UserModel {
   private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id', 'paymentmethod_id', 'transaction_id', 'subscription_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -119,6 +120,7 @@ export class UserModel {
 
     this.updated_at = user?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('users')
     this.updateFromQuery = db.updateTable('users')
     this.deleteFromQuery = db.deleteFrom('users')
@@ -376,6 +378,8 @@ export class UserModel {
 
   // Method to remove a User
   static async remove(id: number): Promise<any> {
+    const instance = new UserModel(null)
+
     const model = await instance.find(Number(id))
 
     if (model)
@@ -618,6 +622,12 @@ export class UserModel {
     const data = new UserModel(model as UserType)
 
     return data
+  }
+
+  with(relations: string[]): UserModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<UserType | undefined> {

@@ -59,6 +59,7 @@ export class DeploymentModel {
   private fillable = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -94,6 +95,7 @@ export class DeploymentModel {
 
     this.updated_at = deployment?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('deployments')
     this.updateFromQuery = db.updateTable('deployments')
     this.deleteFromQuery = db.deleteFrom('deployments')
@@ -315,6 +317,8 @@ export class DeploymentModel {
 
   // Method to remove a Deployment
   static async remove(id: number): Promise<any> {
+    const instance = new DeploymentModel(null)
+
     return await db.deleteFrom('deployments')
       .where('id', '=', id)
       .execute()
@@ -564,6 +568,12 @@ export class DeploymentModel {
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
+  }
+
+  with(relations: string[]): DeploymentModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<DeploymentType | undefined> {

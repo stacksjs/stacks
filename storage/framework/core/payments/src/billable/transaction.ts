@@ -4,6 +4,7 @@ import { Transaction, type TransactionModel } from '../../../../orm/src/models/T
 
 export interface ManageTransaction {
   store: (user: UserModel, productId: number) => Promise<TransactionModel>
+  list: (user: UserModel) => Promise<TransactionModel[]> 
 }
 
 export const manageTransaction: ManageTransaction = (() => {

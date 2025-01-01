@@ -46,6 +46,7 @@ export class ReleaseModel {
   private fillable = ['version', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -63,6 +64,7 @@ export class ReleaseModel {
 
     this.updated_at = release?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('releases')
     this.updateFromQuery = db.updateTable('releases')
     this.deleteFromQuery = db.deleteFrom('releases')
@@ -260,6 +262,8 @@ export class ReleaseModel {
 
   // Method to remove a Release
   static async remove(id: number): Promise<any> {
+    const instance = new ReleaseModel(null)
+
     return await db.deleteFrom('releases')
       .where('id', '=', id)
       .execute()
@@ -455,6 +459,12 @@ export class ReleaseModel {
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
+  }
+
+  with(relations: string[]): ReleaseModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<ReleaseType | undefined> {

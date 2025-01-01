@@ -62,6 +62,7 @@ export class TransactionModel {
   private fillable = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -97,6 +98,7 @@ export class TransactionModel {
 
     this.updated_at = transaction?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('transactions')
     this.updateFromQuery = db.updateTable('transactions')
     this.deleteFromQuery = db.deleteFrom('transactions')
@@ -328,6 +330,8 @@ export class TransactionModel {
 
   // Method to remove a Transaction
   static async remove(id: number): Promise<any> {
+    const instance = new TransactionModel(null)
+
     return await db.deleteFrom('transactions')
       .where('id', '=', id)
       .execute()
@@ -565,6 +569,12 @@ export class TransactionModel {
     const data = new TransactionModel(model as TransactionType)
 
     return data
+  }
+
+  with(relations: string[]): TransactionModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<TransactionType | undefined> {

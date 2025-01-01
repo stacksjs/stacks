@@ -51,6 +51,7 @@ export class AccessTokenModel {
   private fillable = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -74,6 +75,7 @@ export class AccessTokenModel {
 
     this.updated_at = accesstoken?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('personal_access_tokens')
     this.updateFromQuery = db.updateTable('personal_access_tokens')
     this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
@@ -271,6 +273,8 @@ export class AccessTokenModel {
 
   // Method to remove a AccessToken
   static async remove(id: number): Promise<any> {
+    const instance = new AccessTokenModel(null)
+
     return await db.deleteFrom('personal_access_tokens')
       .where('id', '=', id)
       .execute()
@@ -490,6 +494,12 @@ export class AccessTokenModel {
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
+  }
+
+  with(relations: string[]): AccessTokenModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<AccessTokenType | undefined> {

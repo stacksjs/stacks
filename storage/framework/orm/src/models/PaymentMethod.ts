@@ -63,6 +63,7 @@ export class PaymentMethodModel {
   private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id', 'transaction_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -100,6 +101,7 @@ export class PaymentMethodModel {
 
     this.updated_at = paymentmethod?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('payment_methods')
     this.updateFromQuery = db.updateTable('payment_methods')
     this.deleteFromQuery = db.deleteFrom('payment_methods')
@@ -331,6 +333,8 @@ export class PaymentMethodModel {
 
   // Method to remove a PaymentMethod
   static async remove(id: number): Promise<any> {
+    const instance = new PaymentMethodModel(null)
+
     return await db.deleteFrom('payment_methods')
       .where('id', '=', id)
       .execute()
@@ -584,6 +588,12 @@ export class PaymentMethodModel {
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
+  }
+
+  with(relations: string[]): PaymentMethodModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<PaymentMethodType | undefined> {

@@ -57,6 +57,7 @@ export class TeamModel {
   private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'accesstoken_id', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -88,6 +89,7 @@ export class TeamModel {
 
     this.updated_at = team?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('teams')
     this.updateFromQuery = db.updateTable('teams')
     this.deleteFromQuery = db.deleteFrom('teams')
@@ -285,6 +287,8 @@ export class TeamModel {
 
   // Method to remove a Team
   static async remove(id: number): Promise<any> {
+    const instance = new TeamModel(null)
+
     return await db.deleteFrom('teams')
       .where('id', '=', id)
       .execute()
@@ -536,6 +540,12 @@ export class TeamModel {
     const data = new TeamModel(model as TeamType)
 
     return data
+  }
+
+  with(relations: string[]): TeamModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<TeamType | undefined> {

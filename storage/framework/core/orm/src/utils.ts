@@ -1706,6 +1706,7 @@ export async function generateModelString(
       private fillable = ${fillable}
       private softDeletes = ${useSoftDeletes}
       protected selectFromQuery: any
+      protected withRelations: string[]
       protected updateFromQuery: any
       protected deleteFromQuery: any
       protected hasSelect: boolean
@@ -1713,6 +1714,7 @@ export async function generateModelString(
       constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
         ${constructorFields}
 
+        this.withRelations = []
         this.selectFromQuery = db.selectFrom('${tableName}')
         this.updateFromQuery = db.updateTable('${tableName}')
         this.deleteFromQuery = db.deleteFrom('${tableName}')
@@ -1958,6 +1960,8 @@ export async function generateModelString(
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<any> {
+       const instance = new ${modelName}Model(null)
+       
         ${mittDeleteStaticFindStatement}
 
         ${instanceSoftDeleteStatementsUpdateFrom}
@@ -2156,6 +2160,12 @@ export async function generateModelString(
         const data = new ${modelName}Model(model as ${modelName}Type)
 
         return data
+      }
+
+      with(relations: string[]): ${modelName}Model {
+        this.withRelations = relations
+        
+        return this
       }
 
       async last(): Promise<${modelName}Type | undefined> {

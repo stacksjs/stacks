@@ -49,6 +49,7 @@ export class ProjectModel {
   private fillable = ['name', 'description', 'url', 'status', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -72,6 +73,7 @@ export class ProjectModel {
 
     this.updated_at = project?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('projects')
     this.updateFromQuery = db.updateTable('projects')
     this.deleteFromQuery = db.deleteFrom('projects')
@@ -269,6 +271,8 @@ export class ProjectModel {
 
   // Method to remove a Project
   static async remove(id: number): Promise<any> {
+    const instance = new ProjectModel(null)
+
     return await db.deleteFrom('projects')
       .where('id', '=', id)
       .execute()
@@ -488,6 +492,12 @@ export class ProjectModel {
     const data = new ProjectModel(model as ProjectType)
 
     return data
+  }
+
+  with(relations: string[]): ProjectModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<ProjectType | undefined> {

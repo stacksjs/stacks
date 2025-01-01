@@ -48,6 +48,7 @@ export class SubscriberEmailModel {
   private fillable = ['email', 'uuid']
   private softDeletes = true
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -69,6 +70,7 @@ export class SubscriberEmailModel {
 
     this.deleted_at = subscriberemail?.deleted_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscriber_emails')
     this.updateFromQuery = db.updateTable('subscriber_emails')
     this.deleteFromQuery = db.deleteFrom('subscriber_emails')
@@ -300,6 +302,8 @@ export class SubscriberEmailModel {
   static async remove(id: number): Promise<any> {
     const instance = new SubscriberEmailModel(null)
 
+    const instance = new SubscriberEmailModel(null)
+
     if (instance.softDeletes) {
       return await db.updateTable('transactions')
         .set({
@@ -504,6 +508,12 @@ export class SubscriberEmailModel {
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
+  }
+
+  with(relations: string[]): SubscriberEmailModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {

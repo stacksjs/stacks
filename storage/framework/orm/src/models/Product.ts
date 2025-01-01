@@ -54,6 +54,7 @@ export class ProductModel {
   private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -85,6 +86,7 @@ export class ProductModel {
 
     this.updated_at = product?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('products')
     this.updateFromQuery = db.updateTable('products')
     this.deleteFromQuery = db.deleteFrom('products')
@@ -288,6 +290,8 @@ export class ProductModel {
 
   // Method to remove a Product
   static async remove(id: number): Promise<any> {
+    const instance = new ProductModel(null)
+
     return await db.deleteFrom('products')
       .where('id', '=', id)
       .execute()
@@ -531,6 +535,12 @@ export class ProductModel {
     const data = new ProductModel(model as ProductType)
 
     return data
+  }
+
+  with(relations: string[]): ProductModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<ProductType | undefined> {

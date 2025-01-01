@@ -62,6 +62,7 @@ export class SubscriptionModel {
   private fillable = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -103,6 +104,7 @@ export class SubscriptionModel {
 
     this.updated_at = subscription?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscriptions')
     this.updateFromQuery = db.updateTable('subscriptions')
     this.deleteFromQuery = db.deleteFrom('subscriptions')
@@ -324,6 +326,8 @@ export class SubscriptionModel {
 
   // Method to remove a Subscription
   static async remove(id: number): Promise<any> {
+    const instance = new SubscriptionModel(null)
+
     return await db.deleteFrom('subscriptions')
       .where('id', '=', id)
       .execute()
@@ -597,6 +601,12 @@ export class SubscriptionModel {
     const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
+  }
+
+  with(relations: string[]): SubscriptionModel {
+    this.withRelations = relations
+
+    return this
   }
 
   async last(): Promise<SubscriptionType | undefined> {
