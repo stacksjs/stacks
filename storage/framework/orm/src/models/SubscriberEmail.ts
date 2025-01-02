@@ -100,11 +100,19 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: SubscriberEmailType): Promise<SubscriberEmailType> {
+    return model
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {

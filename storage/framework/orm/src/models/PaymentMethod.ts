@@ -135,17 +135,23 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const instance = new PaymentMethodModel(model as PaymentMethodType)
+    const instance = new PaymentMethodModel(null)
 
-    model.transactions = await instance.transactionsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.user = await instance.userBelong()
-
-    const data = new PaymentMethodModel(model as PaymentMethodType)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: PaymentMethodType): Promise<PaymentMethodType> {
+    model.transactions = await this.transactionsHasMany()
+
+    model.user = await this.userBelong()
+
+    return model
   }
 
   static async all(): Promise<PaymentMethodModel[]> {

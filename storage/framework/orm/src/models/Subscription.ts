@@ -136,15 +136,21 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(model as SubscriptionType)
+    const instance = new SubscriptionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: SubscriptionType): Promise<SubscriptionType> {
+    model.user = await this.userBelong()
+
+    return model
   }
 
   static async all(): Promise<SubscriptionModel[]> {

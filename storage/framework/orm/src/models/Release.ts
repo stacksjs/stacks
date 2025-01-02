@@ -94,11 +94,19 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: ReleaseType): Promise<ReleaseType> {
+    return model
   }
 
   static async all(): Promise<ReleaseModel[]> {

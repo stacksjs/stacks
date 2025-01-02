@@ -94,11 +94,19 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: SubscriberType): Promise<SubscriberType> {
+    return model
   }
 
   static async all(): Promise<SubscriberModel[]> {

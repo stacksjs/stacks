@@ -127,15 +127,21 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(model as DeploymentType)
+    const instance = new DeploymentModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: DeploymentType): Promise<DeploymentType> {
+    model.user = await this.userBelong()
+
+    return model
   }
 
   static async all(): Promise<DeploymentModel[]> {

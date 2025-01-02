@@ -105,11 +105,19 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: AccessTokenType): Promise<AccessTokenType> {
+    return model
   }
 
   static async all(): Promise<AccessTokenModel[]> {

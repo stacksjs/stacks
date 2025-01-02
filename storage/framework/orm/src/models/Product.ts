@@ -116,11 +116,19 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: ProductType): Promise<ProductType> {
+    return model
   }
 
   static async all(): Promise<ProductModel[]> {

@@ -158,21 +158,27 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(model as UserType)
+    const instance = new UserModel(null)
 
-    model.deployments = await instance.deploymentsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.subscriptions = await instance.subscriptionsHasMany()
-
-    model.payment_methods = await instance.paymentMethodsHasMany()
-
-    model.transactions = await instance.transactionsHasMany()
-
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(result as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async mapWith(model: UserType): Promise<UserType> {
+    model.deployments = await this.deploymentsHasMany()
+
+    model.subscriptions = await this.subscriptionsHasMany()
+
+    model.payment_methods = await this.paymentMethodsHasMany()
+
+    model.transactions = await this.transactionsHasMany()
+
+    return model
   }
 
   static async all(): Promise<UserModel[]> {

@@ -1749,15 +1749,22 @@ export async function generateModelString(
         if (!model)
           return undefined
         
-        ${relationDeclare}
-        ${relationStringMany}
-        ${relationStringBelong}
+        const instance = new ${modelName}Model(null)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
         return data
+      }
+
+      async mapWith(model: ${modelName}Type): Promise<${modelName}Type> {
+        ${relationStringThisMany}
+        ${relationStringThisBelong}
+
+        return model
       }
 
       static async all(): Promise<${modelName}Model[]> {
