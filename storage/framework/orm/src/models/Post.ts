@@ -537,7 +537,18 @@ export class PostModel {
   }
 
   static async last(): Promise<PostType | undefined> {
-    return await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
   }
 
   static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {

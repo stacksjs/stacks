@@ -635,7 +635,18 @@ export class SubscriptionModel {
   }
 
   static async last(): Promise<SubscriptionType | undefined> {
-    return await db.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
   }
 
   static orderBy(column: keyof SubscriptionType, order: 'asc' | 'desc'): SubscriptionModel {

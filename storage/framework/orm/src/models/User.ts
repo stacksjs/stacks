@@ -652,7 +652,18 @@ export class UserModel {
   }
 
   static async last(): Promise<UserType | undefined> {
-    return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
   }
 
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {

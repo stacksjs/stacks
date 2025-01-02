@@ -554,7 +554,18 @@ export class ErrorModel {
   }
 
   static async last(): Promise<ErrorType | undefined> {
-    return await db.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
   }
 
   static orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {

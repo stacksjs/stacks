@@ -580,7 +580,18 @@ export class TeamModel {
   }
 
   static async last(): Promise<TeamType | undefined> {
-    return await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
   }
 
   static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {

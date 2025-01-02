@@ -620,7 +620,18 @@ export class PaymentMethodModel {
   }
 
   static async last(): Promise<PaymentMethodType | undefined> {
-    return await db.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PaymentMethodModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
   }
 
   static orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {

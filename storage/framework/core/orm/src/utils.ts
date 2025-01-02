@@ -2200,7 +2200,18 @@ export async function generateModelString(
       }
 
       static async last(): Promise<${modelName}Type | undefined> {
-        return await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+        const model = await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+          if (!model)
+            return undefined
+          
+        const instance = new ${modelName}Model(null)
+
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
       }
 
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {

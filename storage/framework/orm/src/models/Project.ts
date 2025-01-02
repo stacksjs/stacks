@@ -532,7 +532,18 @@ export class ProjectModel {
   }
 
   static async last(): Promise<ProjectType | undefined> {
-    return await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
   }
 
   static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {

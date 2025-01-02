@@ -601,7 +601,18 @@ export class TransactionModel {
   }
 
   static async last(): Promise<TransactionType | undefined> {
-    return await db.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
   }
 
   static orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {

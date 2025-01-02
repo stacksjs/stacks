@@ -602,7 +602,18 @@ export class DeploymentModel {
   }
 
   static async last(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new DeploymentModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
   }
 
   static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {

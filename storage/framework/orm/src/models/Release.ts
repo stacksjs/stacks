@@ -499,7 +499,18 @@ export class ReleaseModel {
   }
 
   static async last(): Promise<ReleaseType | undefined> {
-    return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
   }
 
   static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {

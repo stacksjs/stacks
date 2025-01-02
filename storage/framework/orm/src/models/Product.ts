@@ -575,7 +575,18 @@ export class ProductModel {
   }
 
   static async last(): Promise<ProductType | undefined> {
-    return await db.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
   }
 
   static orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
