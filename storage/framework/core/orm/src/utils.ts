@@ -1149,7 +1149,9 @@ export async function generateModelString(
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
 
       relationStringThisMany += `
-        model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
+        if (this.withRelations.includes('${snakeCase(relationName)}')) {
+          model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
+        }
       `
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
@@ -1197,7 +1199,9 @@ export async function generateModelString(
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
 
       relationStringThisBelong += `
-        model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
+        if (this.withRelations.includes('${snakeCase(relationName)}')) {
+          model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
+        }
       `
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 

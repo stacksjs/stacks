@@ -148,7 +148,9 @@ export class SubscriptionModel {
   }
 
   async mapWith(model: SubscriptionType): Promise<SubscriptionType> {
-    model.user = await this.userBelong()
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
 
     return model
   }

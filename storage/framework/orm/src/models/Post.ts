@@ -120,7 +120,9 @@ export class PostModel {
   }
 
   async mapWith(model: PostType): Promise<PostType> {
-    model.user = await this.userBelong()
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
 
     return model
   }

@@ -193,7 +193,7 @@ export class Router implements RouterInterface {
         // Add middleware if any
         if (middleware.length)
           r.middleware = middleware
-      
+
         // Add the prefix to the route path
 
         if (options.prefix) {
@@ -201,7 +201,7 @@ export class Router implements RouterInterface {
           r.uri = `${options.prefix}/${r.uri}`
           r.url = `${options.prefix}/${r.uri}`
         }
-      
+
         // Push the modified route to the original routes array
         originalRoutes.push(r)
 
@@ -223,12 +223,12 @@ export class Router implements RouterInterface {
   //       // Add middleware if any
   //       if (middleware.length)
   //         r.middleware = middleware
-      
+
   //       // Add the prefix to the route path
   //       if (options.prefix) {
   //         r.path = `/${options.prefix}${r.path}`
   //       }
-      
+
   //       // Push the modified route to the original routes array
   //       originalRoutes.push(r)
   //       return this
@@ -238,7 +238,7 @@ export class Router implements RouterInterface {
   //   }
 
   //   if (typeof options === 'string') {
-  
+
   //     return
   //   }
   // }

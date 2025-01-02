@@ -164,13 +164,21 @@ export class UserModel {
   }
 
   async mapWith(model: UserType): Promise<UserType> {
-    model.deployments = await this.deploymentsHasMany()
+    if (this.withRelations.includes('deployments')) {
+      model.deployments = await this.deploymentsHasMany()
+    }
 
-    model.subscriptions = await this.subscriptionsHasMany()
+    if (this.withRelations.includes('subscriptions')) {
+      model.subscriptions = await this.subscriptionsHasMany()
+    }
 
-    model.payment_methods = await this.paymentMethodsHasMany()
+    if (this.withRelations.includes('payment_methods')) {
+      model.payment_methods = await this.paymentMethodsHasMany()
+    }
 
-    model.transactions = await this.transactionsHasMany()
+    if (this.withRelations.includes('transactions')) {
+      model.transactions = await this.transactionsHasMany()
+    }
 
     return model
   }

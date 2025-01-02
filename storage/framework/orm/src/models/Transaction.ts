@@ -142,9 +142,13 @@ export class TransactionModel {
   }
 
   async mapWith(model: TransactionType): Promise<TransactionType> {
-    model.user = await this.userBelong()
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
 
-    model.payment_method = await this.paymentMethodBelong()
+    if (this.withRelations.includes('payment_method')) {
+      model.payment_method = await this.paymentMethodBelong()
+    }
 
     return model
   }
