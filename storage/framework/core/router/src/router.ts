@@ -12,7 +12,6 @@ type ActionPath = string
 
 export class Router implements RouterInterface {
   private routes: Route[] = []
-  private groupPrefix = ''
   private path = ''
 
   private addRoute(
@@ -168,8 +167,6 @@ export class Router implements RouterInterface {
 
     let cb: () => void
 
-    this.prepareGroupPrefix(options)
-
     if (typeof options === 'function') {
       cb = options
       options = {}
@@ -191,20 +188,60 @@ export class Router implements RouterInterface {
     // Execute the callback. This will add routes to the new this.routes array
     cb()
 
-    // For each route added by the callback, adjust the URI and add to the original routes array
-    this.routes.forEach((r) => {
-      if (middleware.length)
-        r.middleware = middleware
+    if (typeof options === 'object') {
+      this.routes.forEach((r) => {
+        // Add middleware if any
+        if (middleware.length)
+          r.middleware = middleware
+      
+        // Add the prefix to the route path
 
-      originalRoutes.push(r)
-      return this
-    })
+        if (options.prefix) {
+          r.path = `${options.prefix}/${r.uri}`
+          r.uri = `${options.prefix}/${r.uri}`
+          r.url = `${options.prefix}/${r.uri}`
+        }
+      
+        // Push the modified route to the original routes array
+        originalRoutes.push(r)
+
+        return this
+      })
+    }
+
+    // this.prepareGroupPrefix(this.routes, options, middleware)
 
     // Restore the original routes array.
     this.routes = originalRoutes
 
     return this
   }
+
+  // private prepareGroupPrefix(routes: Route[], options: string | RouteGroupOptions, middleware: string | string[]): void {
+  //   if (typeof options !== 'string') {
+  //     routes.forEach((r) => {
+  //       // Add middleware if any
+  //       if (middleware.length)
+  //         r.middleware = middleware
+      
+  //       // Add the prefix to the route path
+  //       if (options.prefix) {
+  //         r.path = `/${options.prefix}${r.path}`
+  //       }
+      
+  //       // Push the modified route to the original routes array
+  //       originalRoutes.push(r)
+  //       return this
+  //     })
+
+  //     return
+  //   }
+
+  //   if (typeof options === 'string') {
+  
+  //     return
+  //   }
+  // }
 
   public name(name: string): this {
     this.routes[this.routes.length - 1].name = name
@@ -229,33 +266,6 @@ export class Router implements RouterInterface {
     await import('../../../orm/routes') // auto-generated routes
 
     return this.routes
-  }
-
-  private setGroupPrefix(prefix: string, options: RouteGroupOptions = {}) {
-    if (prefix !== '') {
-      prefix = `/${this.groupPrefix}/${prefix}`.replace(/\/\//g, '/') // remove double slashes in case there are any
-      this.groupPrefix = prefix
-      return
-    }
-
-    // Ensure options is always treated as an object, even if it's undefined or a function
-    const effectiveOptions = typeof options === 'object' ? options : {}
-
-    this.groupPrefix = effectiveOptions.prefix ?? prefix ?? ''
-  }
-
-  private prepareGroupPrefix(options: string | RouteGroupOptions): void {
-    if (this.groupPrefix !== '' && typeof options !== 'string') {
-      this.setGroupPrefix(this.groupPrefix, options)
-      return
-    }
-
-    if (typeof options === 'string') {
-      this.setGroupPrefix(options)
-      return
-    }
-
-    this.setGroupPrefix('', options)
   }
 
   public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
@@ -377,8 +387,7 @@ export class Router implements RouterInterface {
     if (path.startsWith('/'))
       path = path.slice(1)
 
-    path = `${this.groupPrefix}/${path}`
-
+    path = `/${path}`
     // if path ends in "/", then remove it
     // e.g. triggered when route is "/"
     return path.endsWith('/') ? path.slice(0, -1) : path
