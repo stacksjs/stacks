@@ -984,11 +984,8 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
-  let relationDeclare = ''
-  let relationStringBelong = ''
   let relationStringThisBelong = ''
 
-  let relationStringMany = ''
   let relationStringThisMany = ''
 
   let instanceSoftDeleteStatements = ''
@@ -998,7 +995,6 @@ export async function generateModelString(
   let thisSoftDeleteStatementsUpdateFrom = ''
 
   let fieldString = ''
-  let hasRelations = false
   let constructorFields = ''
   let jsonFields = '{\n'
   let declareFields = ''
@@ -1146,15 +1142,12 @@ export async function generateModelString(
     }
 
     if (relationType === 'hasType' && relationCount === 'many') {
-      hasRelations = true
       const relationName = camelCase(relation.relationName || tableRelation)
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
-      relationStringMany += `
-        model.${snakeCase(relationName)} = await instance.${relationName}HasMany()\n
-      `
+
       relationStringThisMany += `
         model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
       `
@@ -1193,7 +1186,6 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
-      hasRelations = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
       fieldString += ` ${relation.modelKey}?: number \n`
@@ -1203,9 +1195,7 @@ export async function generateModelString(
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
-      relationStringBelong += `
-        model.${snakeCase(relationName)} = await instance.${relationName}Belong()\n
-      `
+
       relationStringThisBelong += `
         model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
       `
@@ -1251,12 +1241,6 @@ export async function generateModelString(
           return relationResults
       }\n\n`
     }
-  }
-
-  if (hasRelations) {
-    relationDeclare += `
-      const instance = new ${modelName}Model(model as ${modelName}Type)\n
-    `
   }
 
   declareFields += `public id: number \n   `
