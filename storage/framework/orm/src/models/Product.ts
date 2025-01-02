@@ -102,7 +102,9 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 

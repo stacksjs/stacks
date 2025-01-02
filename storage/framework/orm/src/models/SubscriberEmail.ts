@@ -86,7 +86,9 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 

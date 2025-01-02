@@ -105,7 +105,9 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 

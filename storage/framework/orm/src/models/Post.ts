@@ -92,9 +92,9 @@ export class PostModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 

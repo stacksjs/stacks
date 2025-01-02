@@ -95,7 +95,9 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 

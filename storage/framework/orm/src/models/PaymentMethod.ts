@@ -117,11 +117,9 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    model.transactions = await this.transactionsHasMany()
+    const result = await this.mapWith(model)
 
-    model.user = await this.userBelong()
-
-    const data = new PaymentMethodModel(model as PaymentMethodType)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 

@@ -136,15 +136,9 @@ export class UserModel {
     if (!model)
       return undefined
 
-    model.deployments = await this.deploymentsHasMany()
+    const result = await this.mapWith(model)
 
-    model.subscriptions = await this.subscriptionsHasMany()
-
-    model.payment_methods = await this.paymentMethodsHasMany()
-
-    model.transactions = await this.transactionsHasMany()
-
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(result as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 

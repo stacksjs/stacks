@@ -80,7 +80,9 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 

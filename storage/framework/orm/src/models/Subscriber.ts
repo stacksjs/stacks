@@ -80,7 +80,9 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 

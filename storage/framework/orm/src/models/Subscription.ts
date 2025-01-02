@@ -120,9 +120,9 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 

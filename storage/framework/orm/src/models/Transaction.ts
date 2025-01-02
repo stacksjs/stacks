@@ -114,11 +114,9 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    model.payment_method = await this.paymentMethodBelong()
-
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(result as TransactionType)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
