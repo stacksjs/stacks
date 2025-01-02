@@ -166,11 +166,11 @@ export class DeploymentModel {
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    const instance = new DeploymentModel(model as DeploymentType)
+    const instance = new DeploymentModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     return data
   }
@@ -535,9 +535,9 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     return data
   }

@@ -140,7 +140,11 @@ export class AccessTokenModel {
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     return data
   }
@@ -471,7 +475,9 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     return data
   }

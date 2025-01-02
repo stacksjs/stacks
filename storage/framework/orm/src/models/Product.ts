@@ -151,7 +151,11 @@ export class ProductModel {
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    const data = new ProductModel(model as ProductType)
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     return data
   }
@@ -512,7 +516,9 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     return data
   }

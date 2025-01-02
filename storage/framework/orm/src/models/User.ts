@@ -203,17 +203,11 @@ export class UserModel {
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    const instance = new UserModel(model as UserType)
+    const instance = new UserModel(null)
 
-    model.deployments = await instance.deploymentsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.subscriptions = await instance.subscriptionsHasMany()
-
-    model.payment_methods = await instance.paymentMethodsHasMany()
-
-    model.transactions = await instance.transactionsHasMany()
-
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(result as UserType)
 
     return data
   }
@@ -573,15 +567,9 @@ export class UserModel {
     if (!model)
       return undefined
 
-    model.deployments = await this.deploymentsHasMany()
+    const result = await this.mapWith(model)
 
-    model.subscriptions = await this.subscriptionsHasMany()
-
-    model.payment_methods = await this.paymentMethodsHasMany()
-
-    model.transactions = await this.transactionsHasMany()
-
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(result as UserType)
 
     return data
   }

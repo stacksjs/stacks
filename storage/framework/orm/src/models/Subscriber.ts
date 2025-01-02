@@ -129,7 +129,11 @@ export class SubscriberModel {
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     return data
   }
@@ -436,7 +440,9 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     return data
   }

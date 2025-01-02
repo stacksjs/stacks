@@ -175,11 +175,11 @@ export class SubscriptionModel {
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    const instance = new SubscriptionModel(model as SubscriptionType)
+    const instance = new SubscriptionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     return data
   }
@@ -568,9 +568,9 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     return data
   }

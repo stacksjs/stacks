@@ -129,7 +129,11 @@ export class ReleaseModel {
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     return data
   }
@@ -436,7 +440,9 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     return data
   }

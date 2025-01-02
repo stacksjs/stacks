@@ -1794,11 +1794,11 @@ export async function generateModelString(
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        ${relationDeclare}
-        ${relationStringMany}
-        ${relationStringBelong}
+        const instance = new ${modelName}Model(null)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         return data
       }
@@ -2132,10 +2132,9 @@ export async function generateModelString(
          if (! model)
           return undefined
 
-        ${relationStringThisMany}
-        ${relationStringThisBelong}
+        const result = await this.mapWith(model)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         return data
       }

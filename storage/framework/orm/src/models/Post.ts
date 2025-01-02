@@ -147,11 +147,11 @@ export class PostModel {
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    const instance = new PostModel(model as PostType)
+    const instance = new PostModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     return data
   }
@@ -470,9 +470,9 @@ export class PostModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     return data
   }
