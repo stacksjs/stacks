@@ -445,7 +445,13 @@ export class SubscriberModel {
     if (model === undefined)
       throw new HttpError(404, 'No SubscriberModel results found for query')
 
-    return this.parseResult(new SubscriberModel(model))
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

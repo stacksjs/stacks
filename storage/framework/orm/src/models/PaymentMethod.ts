@@ -566,7 +566,13 @@ export class PaymentMethodModel {
     if (model === undefined)
       throw new HttpError(404, 'No PaymentMethodModel results found for query')
 
-    return this.parseResult(new PaymentMethodModel(model))
+    const instance = new PaymentMethodModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

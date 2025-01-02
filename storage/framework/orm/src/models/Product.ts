@@ -521,7 +521,13 @@ export class ProductModel {
     if (model === undefined)
       throw new HttpError(404, 'No ProductModel results found for query')
 
-    return this.parseResult(new ProductModel(model))
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

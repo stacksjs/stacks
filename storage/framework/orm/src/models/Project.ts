@@ -478,7 +478,13 @@ export class ProjectModel {
     if (model === undefined)
       throw new HttpError(404, 'No ProjectModel results found for query')
 
-    return this.parseResult(new ProjectModel(model))
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

@@ -494,7 +494,13 @@ export class SubscriberEmailModel {
     if (model === undefined)
       throw new HttpError(404, 'No SubscriberEmailModel results found for query')
 
-    return this.parseResult(new SubscriberEmailModel(model))
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

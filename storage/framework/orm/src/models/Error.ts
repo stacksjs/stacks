@@ -500,7 +500,13 @@ export class ErrorModel {
     if (model === undefined)
       throw new HttpError(404, 'No ErrorModel results found for query')
 
-    return this.parseResult(new ErrorModel(model))
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

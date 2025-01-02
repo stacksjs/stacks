@@ -480,7 +480,13 @@ export class AccessTokenModel {
     if (model === undefined)
       throw new HttpError(404, 'No AccessTokenModel results found for query')
 
-    return this.parseResult(new AccessTokenModel(model))
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

@@ -526,7 +526,13 @@ export class TeamModel {
     if (model === undefined)
       throw new HttpError(404, 'No TeamModel results found for query')
 
-    return this.parseResult(new TeamModel(model))
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

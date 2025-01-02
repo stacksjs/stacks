@@ -445,7 +445,13 @@ export class ReleaseModel {
     if (model === undefined)
       throw new HttpError(404, 'No ReleaseModel results found for query')
 
-    return this.parseResult(new ReleaseModel(model))
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

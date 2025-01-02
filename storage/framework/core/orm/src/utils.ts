@@ -2146,7 +2146,13 @@ export async function generateModelString(
         if (model === undefined)
           throw new HttpError(404, 'No ${modelName}Model results found for query')
 
-        return this.parseResult(new ${modelName}Model(model))
+        const instance = new ${modelName}Model(null)
+
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
       }
 
       async exists(): Promise<boolean> {

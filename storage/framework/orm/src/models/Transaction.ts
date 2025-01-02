@@ -547,7 +547,13 @@ export class TransactionModel {
     if (model === undefined)
       throw new HttpError(404, 'No TransactionModel results found for query')
 
-    return this.parseResult(new TransactionModel(model))
+    const instance = new TransactionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

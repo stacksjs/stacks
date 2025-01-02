@@ -483,7 +483,13 @@ export class PostModel {
     if (model === undefined)
       throw new HttpError(404, 'No PostModel results found for query')
 
-    return this.parseResult(new PostModel(model))
+    const instance = new PostModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

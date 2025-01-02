@@ -598,7 +598,13 @@ export class UserModel {
     if (model === undefined)
       throw new HttpError(404, 'No UserModel results found for query')
 
-    return this.parseResult(new UserModel(model))
+    const instance = new UserModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {

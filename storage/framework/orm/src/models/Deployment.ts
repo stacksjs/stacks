@@ -548,7 +548,13 @@ export class DeploymentModel {
     if (model === undefined)
       throw new HttpError(404, 'No DeploymentModel results found for query')
 
-    return this.parseResult(new DeploymentModel(model))
+    const instance = new DeploymentModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
