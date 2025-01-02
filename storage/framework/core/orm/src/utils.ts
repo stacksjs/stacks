@@ -2163,11 +2163,11 @@ export async function generateModelString(
         if (! model)
           return undefined
 
-        ${relationDeclare}
-        ${relationStringMany}
-        ${relationStringBelong}
+        const instance = new ${modelName}Model(null)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         return data
       }

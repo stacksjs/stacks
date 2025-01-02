@@ -543,7 +543,11 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
 
     return data
   }

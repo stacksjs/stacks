@@ -497,7 +497,11 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     return data
   }

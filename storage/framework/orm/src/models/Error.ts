@@ -517,7 +517,11 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
 
     return data
   }

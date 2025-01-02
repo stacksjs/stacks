@@ -462,7 +462,11 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     return data
   }

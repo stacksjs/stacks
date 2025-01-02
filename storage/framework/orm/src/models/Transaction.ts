@@ -564,13 +564,11 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(model as TransactionType)
+    const instance = new TransactionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    model.payment_method = await instance.paymentMethodBelong()
-
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(result as TransactionType)
 
     return data
   }

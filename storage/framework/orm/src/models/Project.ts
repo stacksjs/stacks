@@ -495,7 +495,11 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const data = new ProjectModel(model as ProjectType)
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
 
     return data
   }

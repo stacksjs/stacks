@@ -565,11 +565,11 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(model as DeploymentType)
+    const instance = new DeploymentModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     return data
   }

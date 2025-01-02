@@ -511,7 +511,11 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     return data
   }
