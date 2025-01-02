@@ -271,8 +271,6 @@ export class ProjectModel {
 
   // Method to remove a Project
   static async remove(id: number): Promise<any> {
-    const instance = new ProjectModel(null)
-
     return await db.deleteFrom('projects')
       .where('id', '=', id)
       .execute()
@@ -498,6 +496,14 @@ export class ProjectModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ProjectType | undefined> {

@@ -1006,17 +1006,18 @@ export async function generateModelString(
   let uuidQueryMany = ''
   let whereStatements = ''
   let whereFunctionStatements = ''
-  let relationMethods = ``
-  let relationImports = ``
-  let paymentImports = ``
+  let relationMethods = ''
+  let relationImports = ''
+  let paymentImports = ''
   let twoFactorStatements = ''
   let billableStatements = ''
   let displayableStatements = ''
-  let mittCreateStatement = ``
-  let mittUpdateStatement = ``
-  let mittDeleteStatement = ``
-  let mittDeleteStaticFindStatement = ``
-  let mittDeleteFindStatement = ``
+  let removeInstanceStatment = ''
+  let mittCreateStatement = ''
+  let mittUpdateStatement = ''
+  let mittDeleteStatement = ''
+  let mittDeleteStaticFindStatement = ''
+  let mittDeleteFindStatement = ''
 
   const relations = await getRelations(model, modelName)
 
@@ -1077,6 +1078,7 @@ export async function generateModelString(
 
   if (typeof observer === 'boolean') {
     if (observer) {
+      removeInstanceStatment += `const instance = new ${modelName}Model(null)`
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model)`
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
@@ -1087,6 +1089,7 @@ export async function generateModelString(
   }
 
   if (Array.isArray(observer)) {
+    removeInstanceStatment += `const instance = new ${modelName}Model(null)`
     // Iterate through the array and append statements based on its contents
     if (observer.includes('create')) {
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model);`
@@ -1960,8 +1963,8 @@ export async function generateModelString(
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<any> {
-       const instance = new ${modelName}Model(null)
-       
+        ${removeInstanceStatment}
+
         ${mittDeleteStaticFindStatement}
 
         ${instanceSoftDeleteStatementsUpdateFrom}
@@ -2166,6 +2169,14 @@ export async function generateModelString(
         this.withRelations = relations
         
         return this
+      }
+
+      static with(relations: string[]): ${modelName}Model {
+       const instance = new ${modelName}Model(null)
+
+        instance.withRelations = relations
+        
+        return instance
       }
 
       async last(): Promise<${modelName}Type | undefined> {

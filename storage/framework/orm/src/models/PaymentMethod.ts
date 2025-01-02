@@ -333,8 +333,6 @@ export class PaymentMethodModel {
 
   // Method to remove a PaymentMethod
   static async remove(id: number): Promise<any> {
-    const instance = new PaymentMethodModel(null)
-
     return await db.deleteFrom('payment_methods')
       .where('id', '=', id)
       .execute()
@@ -594,6 +592,14 @@ export class PaymentMethodModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<PaymentMethodType | undefined> {

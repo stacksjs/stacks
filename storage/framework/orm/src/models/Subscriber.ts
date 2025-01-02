@@ -262,8 +262,6 @@ export class SubscriberModel {
 
   // Method to remove a Subscriber
   static async remove(id: number): Promise<any> {
-    const instance = new SubscriberModel(null)
-
     return await db.deleteFrom('subscribers')
       .where('id', '=', id)
       .execute()
@@ -465,6 +463,14 @@ export class SubscriberModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<SubscriberType | undefined> {

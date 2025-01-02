@@ -292,8 +292,6 @@ export class PostModel {
 
   // Method to remove a Post
   static async remove(id: number): Promise<any> {
-    const instance = new PostModel(null)
-
     return await db.deleteFrom('posts')
       .where('id', '=', id)
       .execute()
@@ -509,6 +507,14 @@ export class PostModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): PostModel {
+    const instance = new PostModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<PostType | undefined> {

@@ -273,8 +273,6 @@ export class AccessTokenModel {
 
   // Method to remove a AccessToken
   static async remove(id: number): Promise<any> {
-    const instance = new AccessTokenModel(null)
-
     return await db.deleteFrom('personal_access_tokens')
       .where('id', '=', id)
       .execute()
@@ -500,6 +498,14 @@ export class AccessTokenModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<AccessTokenType | undefined> {

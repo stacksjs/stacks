@@ -277,8 +277,6 @@ export class ErrorModel {
 
   // Method to remove a Error
   static async remove(id: number): Promise<any> {
-    const instance = new ErrorModel(null)
-
     return await db.deleteFrom('errors')
       .where('id', '=', id)
       .execute()
@@ -520,6 +518,14 @@ export class ErrorModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ErrorType | undefined> {

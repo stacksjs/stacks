@@ -630,6 +630,14 @@ export class UserModel {
     return this
   }
 
+  static with(relations: string[]): UserModel {
+    const instance = new UserModel(null)
+
+    instance.withRelations = relations
+
+    return instance
+  }
+
   async last(): Promise<UserType | undefined> {
     return await db.selectFrom('users')
       .selectAll()

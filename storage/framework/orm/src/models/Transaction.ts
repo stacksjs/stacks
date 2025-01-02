@@ -330,8 +330,6 @@ export class TransactionModel {
 
   // Method to remove a Transaction
   static async remove(id: number): Promise<any> {
-    const instance = new TransactionModel(null)
-
     return await db.deleteFrom('transactions')
       .where('id', '=', id)
       .execute()
@@ -575,6 +573,14 @@ export class TransactionModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<TransactionType | undefined> {

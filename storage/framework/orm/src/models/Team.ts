@@ -287,8 +287,6 @@ export class TeamModel {
 
   // Method to remove a Team
   static async remove(id: number): Promise<any> {
-    const instance = new TeamModel(null)
-
     return await db.deleteFrom('teams')
       .where('id', '=', id)
       .execute()
@@ -546,6 +544,14 @@ export class TeamModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<TeamType | undefined> {

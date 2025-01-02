@@ -317,8 +317,6 @@ export class DeploymentModel {
 
   // Method to remove a Deployment
   static async remove(id: number): Promise<any> {
-    const instance = new DeploymentModel(null)
-
     return await db.deleteFrom('deployments')
       .where('id', '=', id)
       .execute()
@@ -574,6 +572,14 @@ export class DeploymentModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<DeploymentType | undefined> {

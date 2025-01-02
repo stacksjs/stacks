@@ -290,8 +290,6 @@ export class ProductModel {
 
   // Method to remove a Product
   static async remove(id: number): Promise<any> {
-    const instance = new ProductModel(null)
-
     return await db.deleteFrom('products')
       .where('id', '=', id)
       .execute()
@@ -541,6 +539,14 @@ export class ProductModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ProductType | undefined> {

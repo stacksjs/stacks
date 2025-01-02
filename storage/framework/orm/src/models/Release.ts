@@ -262,8 +262,6 @@ export class ReleaseModel {
 
   // Method to remove a Release
   static async remove(id: number): Promise<any> {
-    const instance = new ReleaseModel(null)
-
     return await db.deleteFrom('releases')
       .where('id', '=', id)
       .execute()
@@ -465,6 +463,14 @@ export class ReleaseModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ReleaseType | undefined> {

@@ -302,8 +302,6 @@ export class SubscriberEmailModel {
   static async remove(id: number): Promise<any> {
     const instance = new SubscriberEmailModel(null)
 
-    const instance = new SubscriberEmailModel(null)
-
     if (instance.softDeletes) {
       return await db.updateTable('transactions')
         .set({
@@ -514,6 +512,14 @@ export class SubscriberEmailModel {
     this.withRelations = relations
 
     return this
+  }
+
+  static with(relations: string[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {
