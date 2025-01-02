@@ -124,7 +124,11 @@ export class ProjectModel {
     const models = await db.selectFrom('projects').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ProjectType) => {
-      return new ProjectModel(model)
+      const instance = new ProjectModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ProjectModel(results)
     }))
 
     return data
@@ -133,12 +137,12 @@ export class ProjectModel {
   static async findOrFail(id: number): Promise<ProjectModel> {
     const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new ProjectModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    const instance = new ProjectModel(null)
 
     const result = await instance.mapWith(model)
 

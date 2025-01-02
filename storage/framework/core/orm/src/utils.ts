@@ -1771,21 +1771,20 @@ export async function generateModelString(
         const models = await db.selectFrom('${tableName}').selectAll().execute()
 
         const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
-          ${relationDeclare}
-      
-          ${relationStringMany}
-          ${relationStringBelong}
+          const instance = new ${modelName}Model(model)
 
-          return new ${modelName}Model(model)
+          const results = await instance.mapWith(model)
+
+          return new ${modelName}Model(results)
         }))
 
         return data
       }
 
-
-
       static async findOrFail(id: number): Promise<${modelName}Model> {
         const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
+
+        const instance = new ${modelName}Model(null)
 
         ${instanceSoftDeleteStatements}
 
@@ -1793,8 +1792,6 @@ export async function generateModelString(
           throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
-
-        const instance = new ${modelName}Model(null)
 
         const result = await instance.mapWith(model)
 

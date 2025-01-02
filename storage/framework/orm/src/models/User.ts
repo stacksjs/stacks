@@ -179,17 +179,11 @@ export class UserModel {
     const models = await db.selectFrom('users').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: UserType) => {
-      const instance = new UserModel(model as UserType)
+      const instance = new UserModel(model)
 
-      model.deployments = await instance.deploymentsHasMany()
+      const results = await instance.mapWith(model)
 
-      model.subscriptions = await instance.subscriptionsHasMany()
-
-      model.payment_methods = await instance.paymentMethodsHasMany()
-
-      model.transactions = await instance.transactionsHasMany()
-
-      return new UserModel(model)
+      return new UserModel(results)
     }))
 
     return data
@@ -198,12 +192,12 @@ export class UserModel {
   static async findOrFail(id: number): Promise<UserModel> {
     const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new UserModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
-
-    const instance = new UserModel(null)
 
     const result = await instance.mapWith(model)
 

@@ -137,7 +137,11 @@ export class ProductModel {
     const models = await db.selectFrom('products').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
-      return new ProductModel(model)
+      const instance = new ProductModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ProductModel(results)
     }))
 
     return data
@@ -146,12 +150,12 @@ export class ProductModel {
   static async findOrFail(id: number): Promise<ProductModel> {
     const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new ProductModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No ProductModel results for ${id}`)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
-
-    const instance = new ProductModel(null)
 
     const result = await instance.mapWith(model)
 

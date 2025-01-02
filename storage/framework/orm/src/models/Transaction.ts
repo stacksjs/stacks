@@ -153,13 +153,11 @@ export class TransactionModel {
     const models = await db.selectFrom('transactions').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
-      const instance = new TransactionModel(model as TransactionType)
+      const instance = new TransactionModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      model.payment_method = await instance.paymentMethodBelong()
-
-      return new TransactionModel(model)
+      return new TransactionModel(results)
     }))
 
     return data
@@ -168,12 +166,12 @@ export class TransactionModel {
   static async findOrFail(id: number): Promise<TransactionModel> {
     const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new TransactionModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No TransactionModel results for ${id}`)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
-
-    const instance = new TransactionModel(null)
 
     const result = await instance.mapWith(model)
 

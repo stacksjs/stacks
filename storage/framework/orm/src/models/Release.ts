@@ -115,7 +115,11 @@ export class ReleaseModel {
     const models = await db.selectFrom('releases').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
-      return new ReleaseModel(model)
+      const instance = new ReleaseModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ReleaseModel(results)
     }))
 
     return data
@@ -124,12 +128,12 @@ export class ReleaseModel {
   static async findOrFail(id: number): Promise<ReleaseModel> {
     const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new ReleaseModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No ReleaseModel results for ${id}`)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
-
-    const instance = new ReleaseModel(null)
 
     const result = await instance.mapWith(model)
 

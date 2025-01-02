@@ -130,7 +130,11 @@ export class ErrorModel {
     const models = await db.selectFrom('errors').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ErrorType) => {
-      return new ErrorModel(model)
+      const instance = new ErrorModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ErrorModel(results)
     }))
 
     return data
@@ -139,12 +143,12 @@ export class ErrorModel {
   static async findOrFail(id: number): Promise<ErrorModel> {
     const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new ErrorModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No ErrorModel results for ${id}`)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
-
-    const instance = new ErrorModel(null)
 
     const result = await instance.mapWith(model)
 

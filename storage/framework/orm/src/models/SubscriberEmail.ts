@@ -121,7 +121,11 @@ export class SubscriberEmailModel {
     const models = await db.selectFrom('subscriber_emails').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
-      return new SubscriberEmailModel(model)
+      const instance = new SubscriberEmailModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new SubscriberEmailModel(results)
     }))
 
     return data
@@ -129,6 +133,8 @@ export class SubscriberEmailModel {
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
     const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
+
+    const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
@@ -138,8 +144,6 @@ export class SubscriberEmailModel {
       throw new HttpError(404, `No SubscriberEmailModel results for ${id}`)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
-
-    const instance = new SubscriberEmailModel(null)
 
     const result = await instance.mapWith(model)
 

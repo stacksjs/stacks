@@ -140,7 +140,11 @@ export class TeamModel {
     const models = await db.selectFrom('teams').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
-      return new TeamModel(model)
+      const instance = new TeamModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new TeamModel(results)
     }))
 
     return data
@@ -149,12 +153,12 @@ export class TeamModel {
   static async findOrFail(id: number): Promise<TeamModel> {
     const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new TeamModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
-
-    const instance = new TeamModel(null)
 
     const result = await instance.mapWith(model)
 

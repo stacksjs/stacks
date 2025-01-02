@@ -156,13 +156,11 @@ export class PaymentMethodModel {
     const models = await db.selectFrom('payment_methods').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
-      const instance = new PaymentMethodModel(model as PaymentMethodType)
+      const instance = new PaymentMethodModel(model)
 
-      model.transactions = await instance.transactionsHasMany()
+      const results = await instance.mapWith(model)
 
-      model.user = await instance.userBelong()
-
-      return new PaymentMethodModel(model)
+      return new PaymentMethodModel(results)
     }))
 
     return data
@@ -171,12 +169,12 @@ export class PaymentMethodModel {
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
     const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new PaymentMethodModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No PaymentMethodModel results for ${id}`)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
-
-    const instance = new PaymentMethodModel(null)
 
     const result = await instance.mapWith(model)
 

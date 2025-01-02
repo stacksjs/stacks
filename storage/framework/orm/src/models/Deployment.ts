@@ -148,11 +148,11 @@ export class DeploymentModel {
     const models = await db.selectFrom('deployments').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
-      const instance = new DeploymentModel(model as DeploymentType)
+      const instance = new DeploymentModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      return new DeploymentModel(model)
+      return new DeploymentModel(results)
     }))
 
     return data
@@ -161,12 +161,12 @@ export class DeploymentModel {
   static async findOrFail(id: number): Promise<DeploymentModel> {
     const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new DeploymentModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
-
-    const instance = new DeploymentModel(null)
 
     const result = await instance.mapWith(model)
 

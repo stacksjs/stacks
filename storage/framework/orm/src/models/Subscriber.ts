@@ -115,7 +115,11 @@ export class SubscriberModel {
     const models = await db.selectFrom('subscribers').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
-      return new SubscriberModel(model)
+      const instance = new SubscriberModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new SubscriberModel(results)
     }))
 
     return data
@@ -124,12 +128,12 @@ export class SubscriberModel {
   static async findOrFail(id: number): Promise<SubscriberModel> {
     const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new SubscriberModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No SubscriberModel results for ${id}`)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
-
-    const instance = new SubscriberModel(null)
 
     const result = await instance.mapWith(model)
 

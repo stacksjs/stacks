@@ -126,7 +126,11 @@ export class AccessTokenModel {
     const models = await db.selectFrom('personal_access_tokens').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
-      return new AccessTokenModel(model)
+      const instance = new AccessTokenModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new AccessTokenModel(results)
     }))
 
     return data
@@ -135,12 +139,12 @@ export class AccessTokenModel {
   static async findOrFail(id: number): Promise<AccessTokenModel> {
     const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new AccessTokenModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No AccessTokenModel results for ${id}`)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
-
-    const instance = new AccessTokenModel(null)
 
     const result = await instance.mapWith(model)
 

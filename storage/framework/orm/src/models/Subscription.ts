@@ -157,11 +157,11 @@ export class SubscriptionModel {
     const models = await db.selectFrom('subscriptions').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriptionType) => {
-      const instance = new SubscriptionModel(model as SubscriptionType)
+      const instance = new SubscriptionModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      return new SubscriptionModel(model)
+      return new SubscriptionModel(results)
     }))
 
     return data
@@ -170,12 +170,12 @@ export class SubscriptionModel {
   static async findOrFail(id: number): Promise<SubscriptionModel> {
     const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new SubscriptionModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
-
-    const instance = new SubscriptionModel(null)
 
     const result = await instance.mapWith(model)
 

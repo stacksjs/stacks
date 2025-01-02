@@ -129,11 +129,11 @@ export class PostModel {
     const models = await db.selectFrom('posts').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PostType) => {
-      const instance = new PostModel(model as PostType)
+      const instance = new PostModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      return new PostModel(model)
+      return new PostModel(results)
     }))
 
     return data
@@ -142,12 +142,12 @@ export class PostModel {
   static async findOrFail(id: number): Promise<PostModel> {
     const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
+    const instance = new PostModel(null)
+
     if (model === undefined)
       throw new HttpError(404, `No PostModel results for ${id}`)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
-
-    const instance = new PostModel(null)
 
     const result = await instance.mapWith(model)
 
