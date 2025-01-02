@@ -167,7 +167,11 @@ export class ReleaseModel {
     }
 
     const data = await Promise.all(models.map(async (model: ReleaseModel) => {
-      return model
+      const instance = new ReleaseModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ReleaseModel(results)
     }))
 
     return data

@@ -1830,12 +1830,11 @@ export async function generateModelString(
         }
 
         const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
-          ${relationDeclare}
-      
-          ${relationStringMany}
-          ${relationStringBelong}
-      
-          return model
+          const instance = new ${modelName}Model(model)
+
+          const results = await instance.mapWith(model)
+
+          return new ${modelName}Model(results)
         }))
         
         return data

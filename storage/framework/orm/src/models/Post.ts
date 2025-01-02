@@ -181,11 +181,11 @@ export class PostModel {
     }
 
     const data = await Promise.all(models.map(async (model: PostModel) => {
-      const instance = new PostModel(model as PostType)
+      const instance = new PostModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      return model
+      return new PostModel(results)
     }))
 
     return data

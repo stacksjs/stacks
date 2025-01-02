@@ -189,7 +189,11 @@ export class SubscriberEmailModel {
     }
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
-      return model
+      const instance = new SubscriberEmailModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new SubscriberEmailModel(results)
     }))
 
     return data

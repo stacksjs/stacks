@@ -176,7 +176,11 @@ export class ProjectModel {
     }
 
     const data = await Promise.all(models.map(async (model: ProjectModel) => {
-      return model
+      const instance = new ProjectModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ProjectModel(results)
     }))
 
     return data

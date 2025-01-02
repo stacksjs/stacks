@@ -231,17 +231,11 @@ export class UserModel {
     }
 
     const data = await Promise.all(models.map(async (model: UserModel) => {
-      const instance = new UserModel(model as UserType)
+      const instance = new UserModel(model)
 
-      model.deployments = await instance.deploymentsHasMany()
+      const results = await instance.mapWith(model)
 
-      model.subscriptions = await instance.subscriptionsHasMany()
-
-      model.payment_methods = await instance.paymentMethodsHasMany()
-
-      model.transactions = await instance.transactionsHasMany()
-
-      return model
+      return new UserModel(results)
     }))
 
     return data

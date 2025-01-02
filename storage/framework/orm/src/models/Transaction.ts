@@ -205,13 +205,11 @@ export class TransactionModel {
     }
 
     const data = await Promise.all(models.map(async (model: TransactionModel) => {
-      const instance = new TransactionModel(model as TransactionType)
+      const instance = new TransactionModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      model.payment_method = await instance.paymentMethodBelong()
-
-      return model
+      return new TransactionModel(results)
     }))
 
     return data

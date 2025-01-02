@@ -178,7 +178,11 @@ export class AccessTokenModel {
     }
 
     const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
-      return model
+      const instance = new AccessTokenModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new AccessTokenModel(results)
     }))
 
     return data

@@ -182,7 +182,11 @@ export class ErrorModel {
     }
 
     const data = await Promise.all(models.map(async (model: ErrorModel) => {
-      return model
+      const instance = new ErrorModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ErrorModel(results)
     }))
 
     return data

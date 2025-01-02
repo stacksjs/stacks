@@ -200,11 +200,11 @@ export class DeploymentModel {
     }
 
     const data = await Promise.all(models.map(async (model: DeploymentModel) => {
-      const instance = new DeploymentModel(model as DeploymentType)
+      const instance = new DeploymentModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      return model
+      return new DeploymentModel(results)
     }))
 
     return data

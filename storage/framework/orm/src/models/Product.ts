@@ -189,7 +189,11 @@ export class ProductModel {
     }
 
     const data = await Promise.all(models.map(async (model: ProductModel) => {
-      return model
+      const instance = new ProductModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ProductModel(results)
     }))
 
     return data

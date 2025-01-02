@@ -192,7 +192,11 @@ export class TeamModel {
     }
 
     const data = await Promise.all(models.map(async (model: TeamModel) => {
-      return model
+      const instance = new TeamModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new TeamModel(results)
     }))
 
     return data

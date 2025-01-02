@@ -209,11 +209,11 @@ export class SubscriptionModel {
     }
 
     const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
-      const instance = new SubscriptionModel(model as SubscriptionType)
+      const instance = new SubscriptionModel(model)
 
-      model.user = await instance.userBelong()
+      const results = await instance.mapWith(model)
 
-      return model
+      return new SubscriptionModel(results)
     }))
 
     return data
