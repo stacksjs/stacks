@@ -249,9 +249,11 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
-      const { status, ...rest } = await foundCallback
+      const { body } = await foundCallback
 
-      return new Response(JSON.stringify(rest), {
+      const { error } = JSON.parse(body)
+
+      return new Response(error, {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
@@ -262,11 +264,9 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 404) {
-      const { status, ...rest } = await foundCallback
+      const { body } = await foundCallback
 
-      const { errors } = rest
-
-      return new Response(JSON.stringify(errors), {
+      return new Response(body, {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
@@ -277,9 +277,11 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     }
 
     if (foundCallback.status === 403) {
-      const { status, ...rest } = await foundCallback
-      const { errors } = rest
-      return new Response(JSON.stringify(errors), {
+      const { body } = await foundCallback
+
+      const { error } = JSON.parse(body)
+
+      return new Response(`<html><body><h1>${error}</h1<pre></pre></body></html>`, {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',

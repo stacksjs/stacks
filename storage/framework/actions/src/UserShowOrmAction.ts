@@ -10,8 +10,8 @@ export default new Action({
   async handle(request: UserRequestType) {
     const id = await request.getParam('id')
 
-    const user = await User.with(['transactions', 'test', 'deployments']).find(Number(id))
+    const user = await User.with(['transactions', 'test', 'deployments']).findOrFail(Number(id))
 
-    return response.json(user, 201)
+    return response.json(user)
   },
 })

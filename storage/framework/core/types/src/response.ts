@@ -5,6 +5,7 @@ export interface ResponseInstance {
   noContent: () => ResponseData
   error: (message: string, status: number) => ResponseData
   forbidden: (message: string) => ResponseData
+  unauthorized: (message: string) => ResponseData
   notFound: (message: string) => ResponseData
 }
 
