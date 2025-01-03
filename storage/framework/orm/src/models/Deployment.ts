@@ -785,6 +785,7 @@ export class DeploymentModel {
 
   toJSON() {
     const output: Partial<DeploymentType> = {
+      user_id: this.user_id,
       user: this.user,
 
       id: this.id,

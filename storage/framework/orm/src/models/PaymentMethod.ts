@@ -808,6 +808,7 @@ export class PaymentMethodModel {
 
   toJSON() {
     const output: Partial<PaymentMethodType> = {
+      user_id: this.user_id,
       user: this.user,
       transactions: this.transactions,
 

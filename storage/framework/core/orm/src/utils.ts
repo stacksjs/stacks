@@ -1193,6 +1193,7 @@ export async function generateModelString(
       fieldString += ` ${relation.modelKey}?: number \n`
       declareFields += `public ${relation.modelKey}: number | undefined \n   `
       constructorFields += `this.${relation.modelKey} = ${formattedModelName}?.${relation.modelKey}\n   `
+      jsonFields += `${relation.modelKey}: this.${relation.modelKey},\n   `
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`

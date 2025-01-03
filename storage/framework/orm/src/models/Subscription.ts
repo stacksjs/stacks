@@ -818,6 +818,7 @@ export class SubscriptionModel {
 
   toJSON() {
     const output: Partial<SubscriptionType> = {
+      user_id: this.user_id,
       user: this.user,
 
       id: this.id,

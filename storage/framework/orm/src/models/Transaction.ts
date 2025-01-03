@@ -790,7 +790,9 @@ export class TransactionModel {
 
   toJSON() {
     const output: Partial<TransactionType> = {
+      user_id: this.user_id,
       user: this.user,
+      paymentmethod_id: this.paymentmethod_id,
       payment_method: this.payment_method,
 
       id: this.id,

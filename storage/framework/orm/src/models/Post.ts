@@ -720,6 +720,7 @@ export class PostModel {
 
   toJSON() {
     const output: Partial<PostType> = {
+      user_id: this.user_id,
       user: this.user,
 
       id: this.id,

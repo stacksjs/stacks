@@ -246,7 +246,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       },
     })
   }
-  
+
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
       const { body } = await foundCallback
