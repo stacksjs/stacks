@@ -83,9 +83,8 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const table = getTableName(model, modelPath)
-        const modelRelationName = getModelName(modelRelation, modelRelationPath)
+        const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
         const formattedModelName = modelName.toLowerCase()
-        const formattedModelRelationName = modelRelationName.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -93,7 +92,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           table: modelRelationTable as TableNames,
           relationTable: table as TableNames,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          modelKey: `${formattedModelRelationName}_id`,
+          modelKey: `${modelRelationName}_id`,
           relationName: relationInstance.relationName || '',
           relationModel: modelName,
           throughModel: relationInstance.through || '',

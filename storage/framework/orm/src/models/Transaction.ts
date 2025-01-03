@@ -14,7 +14,7 @@ export interface TransactionsTable {
   id?: number
   user_id?: number
   user?: UserModel
-  paymentmethod_id?: number
+  payment_method_id?: number
   payment_method?: PaymentMethodModel
   name?: string
   description?: string
@@ -68,7 +68,7 @@ export class TransactionModel {
   protected hasSelect: boolean
   public user_id: number | undefined
   public user: UserModel | undefined
-  public paymentmethod_id: number | undefined
+  public payment_method_id: number | undefined
   public payment_method: PaymentMethodModel | undefined
   public id: number
   public uuid: string | undefined
@@ -84,7 +84,7 @@ export class TransactionModel {
   constructor(transaction: Partial<TransactionType> | null) {
     this.user_id = transaction?.user_id
     this.user = transaction?.user
-    this.paymentmethod_id = transaction?.paymentmethod_id
+    this.payment_method_id = transaction?.payment_method_id
     this.payment_method = transaction?.payment_method
     this.id = transaction?.id || 1
     this.uuid = transaction?.uuid
@@ -739,11 +739,11 @@ export class TransactionModel {
   }
 
   async paymentMethodBelong(): Promise<PaymentMethodModel> {
-    if (this.paymentmethod_id === undefined)
+    if (this.payment_method_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
     const model = await PaymentMethod
-      .where('id', '=', this.paymentmethod_id)
+      .where('id', '=', this.payment_method_id)
       .first()
 
     if (!model)
@@ -792,7 +792,7 @@ export class TransactionModel {
     const output: Partial<TransactionType> = {
       user_id: this.user_id,
       user: this.user,
-      paymentmethod_id: this.paymentmethod_id,
+      payment_method_id: this.payment_method_id,
       payment_method: this.payment_method,
 
       id: this.id,
