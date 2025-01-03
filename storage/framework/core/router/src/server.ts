@@ -246,7 +246,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
       },
     })
   }
-
+  
   if (isObject(foundCallback) && foundCallback.status) {
     if (foundCallback.status === 401) {
       const { status, ...rest } = await foundCallback
@@ -328,13 +328,17 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isObject(foundCallback)) {
-    return new Response(JSON.stringify(foundCallback), {
+    const { body, status } = await foundCallback
+
+    const output = isString(body) ? body : JSON.stringify(body)
+
+    return new Response(output, {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
       },
-      status: 200,
+      status: status || 200,
     })
   }
 

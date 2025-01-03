@@ -1,5 +1,6 @@
 import type { UserRequestType } from '../../types/requests'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import User from '../../orm/src/models/User'
 
 export default new Action({
@@ -9,6 +10,8 @@ export default new Action({
   async handle(request: UserRequestType) {
     const id = await request.getParam('id')
 
-    return await User.with(['transactions']).find(Number(id))
+    const user = await User.with(['transactions', 'test', 'deployments']).find(Number(id))
+
+    return response.json(user, 201)
   },
 })
