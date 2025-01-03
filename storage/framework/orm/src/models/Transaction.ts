@@ -184,6 +184,21 @@ export class TransactionModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<TransactionModel> {
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No TransactionModel results for ${id}`)
+
+    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
     let query = db.selectFrom('transactions').where('id', 'in', ids)
 

@@ -158,6 +158,21 @@ export class PostModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<PostModel> {
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No PostModel results for ${id}`)
+
+    cache.getOrSet(`post:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<PostModel[]> {
     let query = db.selectFrom('posts').where('id', 'in', ids)
 

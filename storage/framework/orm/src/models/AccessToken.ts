@@ -153,6 +153,21 @@ export class AccessTokenModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<AccessTokenModel> {
+    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No AccessTokenModel results for ${id}`)
+
+    cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
     let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
 

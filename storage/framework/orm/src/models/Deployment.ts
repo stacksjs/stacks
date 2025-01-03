@@ -177,6 +177,21 @@ export class DeploymentModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<DeploymentModel> {
+    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No DeploymentModel results for ${id}`)
+
+    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
     let query = db.selectFrom('deployments').where('id', 'in', ids)
 

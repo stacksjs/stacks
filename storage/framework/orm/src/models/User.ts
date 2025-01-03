@@ -214,6 +214,21 @@ export class UserModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<UserModel> {
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No UserModel results for ${id}`)
+
+    cache.getOrSet(`user:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<UserModel[]> {
     let query = db.selectFrom('users').where('id', 'in', ids)
 

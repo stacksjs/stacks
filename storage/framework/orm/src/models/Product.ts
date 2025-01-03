@@ -164,6 +164,21 @@ export class ProductModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<ProductModel> {
+    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No ProductModel results for ${id}`)
+
+    cache.getOrSet(`product:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<ProductModel[]> {
     let query = db.selectFrom('products').where('id', 'in', ids)
 

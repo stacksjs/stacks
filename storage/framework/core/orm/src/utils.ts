@@ -1788,6 +1788,23 @@ export async function generateModelString(
         return data
       }
 
+      async findOrFail(id: number): Promise<${modelName}Model> {
+        const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
+
+        ${thisSoftDeleteStatements}
+
+        if (model === undefined)
+          throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
+
+        cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
+
+        const result = await this.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
+      }
+
       static async findMany(ids: number[]): Promise<${modelName}Model[]> {
         let query = db.selectFrom('${tableName}').where('id', 'in', ids)
 

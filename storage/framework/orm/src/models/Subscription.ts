@@ -186,6 +186,21 @@ export class SubscriptionModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<SubscriptionModel> {
+    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No SubscriptionModel results for ${id}`)
+
+    cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {
     let query = db.selectFrom('subscriptions').where('id', 'in', ids)
 

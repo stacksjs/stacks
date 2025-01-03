@@ -187,6 +187,21 @@ export class PaymentMethodModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<PaymentMethodModel> {
+    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No PaymentMethodModel results for ${id}`)
+
+    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
     let query = db.selectFrom('payment_methods').where('id', 'in', ids)
 

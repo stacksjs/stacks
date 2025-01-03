@@ -157,6 +157,21 @@ export class ErrorModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<ErrorModel> {
+    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No ErrorModel results for ${id}`)
+
+    cache.getOrSet(`error:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
     let query = db.selectFrom('errors').where('id', 'in', ids)
 

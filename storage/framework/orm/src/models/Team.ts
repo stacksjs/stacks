@@ -167,6 +167,21 @@ export class TeamModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<TeamModel> {
+    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No TeamModel results for ${id}`)
+
+    cache.getOrSet(`team:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
   static async findMany(ids: number[]): Promise<TeamModel[]> {
     let query = db.selectFrom('teams').where('id', 'in', ids)
 
