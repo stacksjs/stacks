@@ -44,7 +44,7 @@
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.7.0",
     "clean-css": "^5.3.3",
-    "sass": "^1.83.0",
+    "sass": "^1.83.1",
     "unplugin-icons": "^0.22.0"
   }
 }
