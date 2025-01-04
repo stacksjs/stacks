@@ -49,6 +49,7 @@ export class ProjectModel {
   private fillable = ['name', 'description', 'url', 'status', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -72,6 +73,7 @@ export class ProjectModel {
 
     this.updated_at = project?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('projects')
     this.updateFromQuery = db.updateTable('projects')
     this.deleteFromQuery = db.deleteFrom('projects')
@@ -87,7 +89,9 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const data = new ProjectModel(model as ProjectType)
+    const result = await this.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -96,45 +100,70 @@ export class ProjectModel {
 
   // Method to find a Project by ID
   static async find(id: number): Promise<ProjectModel | undefined> {
-    const query = db.selectFrom('projects').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new ProjectModel(model as ProjectType)
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: ProjectType): Promise<ProjectType> {
+    return model
+  }
+
   static async all(): Promise<ProjectModel[]> {
-    const query = db.selectFrom('projects').selectAll()
+    const models = await db.selectFrom('projects').selectAll().execute()
 
-    const instance = new ProjectModel(null)
+    const data = await Promise.all(models.map(async (model: ProjectType) => {
+      const instance = new ProjectModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
+      return new ProjectModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {
-    let query = db.selectFrom('projects').where('id', '=', id)
+    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ProjectModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProjectModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<ProjectModel> {
+    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No ProjectModel results for ${id}`)
+
+    cache.getOrSet(`project:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
@@ -149,19 +178,27 @@ export class ProjectModel {
     return model.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<ProjectModel[]> {
     const instance = new ProjectModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: ProjectModel) => {
+      const instance = new ProjectModel(model)
 
-    return model.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new ProjectModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Project by criteria
@@ -459,7 +496,9 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const data = new ProjectModel(model as ProjectType)
+    const result = await this.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
 
     return data
   }
@@ -470,7 +509,13 @@ export class ProjectModel {
     if (model === undefined)
       throw new HttpError(404, 'No ProjectModel results found for query')
 
-    return this.parseResult(new ProjectModel(model))
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -487,9 +532,27 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const data = new ProjectModel(model as ProjectType)
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
 
     return data
+  }
+
+  with(relations: string[]): ProjectModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ProjectType | undefined> {
@@ -500,7 +563,18 @@ export class ProjectModel {
   }
 
   static async last(): Promise<ProjectType | undefined> {
-    return await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
   }
 
   static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {

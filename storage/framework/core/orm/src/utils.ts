@@ -83,9 +83,8 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const table = getTableName(model, modelPath)
-        const modelRelationName = getModelName(modelRelation, modelRelationPath)
+        const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
         const formattedModelName = modelName.toLowerCase()
-        const formattedModelRelationName = modelRelationName.toLowerCase()
 
         relationships.push({
           relationship: relation,
@@ -93,7 +92,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           table: modelRelationTable as TableNames,
           relationTable: table as TableNames,
           foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          modelKey: `${formattedModelRelationName}_id`,
+          modelKey: `${modelRelationName}_id`,
           relationName: relationInstance.relationName || '',
           relationModel: modelName,
           throughModel: relationInstance.through || '',
@@ -984,11 +983,8 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
-  let relationDeclare = ''
-  let relationStringBelong = ''
   let relationStringThisBelong = ''
 
-  let relationStringMany = ''
   let relationStringThisMany = ''
 
   let instanceSoftDeleteStatements = ''
@@ -998,7 +994,6 @@ export async function generateModelString(
   let thisSoftDeleteStatementsUpdateFrom = ''
 
   let fieldString = ''
-  let hasRelations = false
   let constructorFields = ''
   let jsonFields = '{\n'
   let declareFields = ''
@@ -1006,17 +1001,18 @@ export async function generateModelString(
   let uuidQueryMany = ''
   let whereStatements = ''
   let whereFunctionStatements = ''
-  let relationMethods = ``
-  let relationImports = ``
-  let paymentImports = ``
+  let relationMethods = ''
+  let relationImports = ''
+  let paymentImports = ''
   let twoFactorStatements = ''
   let billableStatements = ''
   let displayableStatements = ''
-  let mittCreateStatement = ``
-  let mittUpdateStatement = ``
-  let mittDeleteStatement = ``
-  let mittDeleteStaticFindStatement = ``
-  let mittDeleteFindStatement = ``
+  let removeInstanceStatment = ''
+  let mittCreateStatement = ''
+  let mittUpdateStatement = ''
+  let mittDeleteStatement = ''
+  let mittDeleteStaticFindStatement = ''
+  let mittDeleteFindStatement = ''
 
   const relations = await getRelations(model, modelName)
 
@@ -1077,6 +1073,7 @@ export async function generateModelString(
 
   if (typeof observer === 'boolean') {
     if (observer) {
+      removeInstanceStatment += `const instance = new ${modelName}Model(null)`
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model)`
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
@@ -1087,6 +1084,7 @@ export async function generateModelString(
   }
 
   if (Array.isArray(observer)) {
+    removeInstanceStatment += `const instance = new ${modelName}Model(null)`
     // Iterate through the array and append statements based on its contents
     if (observer.includes('create')) {
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model);`
@@ -1143,17 +1141,16 @@ export async function generateModelString(
     }
 
     if (relationType === 'hasType' && relationCount === 'many') {
-      hasRelations = true
-      const relationName = relation.relationName || tableRelation
+      const relationName = camelCase(relation.relationName || tableRelation)
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
-      relationStringMany += `
-        model.${snakeCase(relationName)} = await instance.${relationName}HasMany()\n
-      `
+
       relationStringThisMany += `
-        model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
+        if (this.withRelations.includes('${snakeCase(relationName)}')) {
+          model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
+        }
       `
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
@@ -1164,6 +1161,7 @@ export async function generateModelString(
 
         const results = await db.selectFrom('${tableRelation}')
           .where('${foreignKeyRelation}', '=', this.id)
+          .limit(5)
           .selectAll()
           .execute()
 
@@ -1189,17 +1187,21 @@ export async function generateModelString(
     }
 
     if (relationType === 'belongsType' && !relationCount) {
-      hasRelations = true
       const relationName = camelCase(relation.relationName || formattedModelRelation)
+
+      fieldString += ` ${relation.modelKey}?: number \n`
+      declareFields += `public ${relation.modelKey}: number | undefined \n   `
+      constructorFields += `this.${relation.modelKey} = ${formattedModelName}?.${relation.modelKey}\n   `
+      jsonFields += `${relation.modelKey}: this.${relation.modelKey},\n   `
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
-      relationStringBelong += `
-        model.${snakeCase(relationName)} = await instance.${relationName}Belong()\n
-      `
+
       relationStringThisBelong += `
-        model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
+        if (this.withRelations.includes('${snakeCase(relationName)}')) {
+          model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
+        }
       `
       jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
@@ -1243,12 +1245,6 @@ export async function generateModelString(
           return relationResults
       }\n\n`
     }
-  }
-
-  if (hasRelations) {
-    relationDeclare += `
-      const instance = new ${modelName}Model(model as ${modelName}Type)\n
-    `
   }
 
   declareFields += `public id: number \n   `
@@ -1622,12 +1618,6 @@ export async function generateModelString(
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
 
-  for (const otherModelRelation of otherModelRelations) {
-    fieldString += ` ${otherModelRelation.foreignKey}?: number \n`
-    declareFields += `public ${otherModelRelation.foreignKey}: number | undefined \n   `
-    constructorFields += `this.${otherModelRelation.foreignKey} = ${formattedModelName}?.${otherModelRelation.foreignKey}\n   `
-  }
-
   if (useTwoFactor && tableName === 'users')
     fieldString += 'two_factor_secret?: string \n'
 
@@ -1707,6 +1697,7 @@ export async function generateModelString(
       private fillable = ${fillable}
       private softDeletes = ${useSoftDeletes}
       protected selectFromQuery: any
+      protected withRelations: string[]
       protected updateFromQuery: any
       protected deleteFromQuery: any
       protected hasSelect: boolean
@@ -1714,6 +1705,7 @@ export async function generateModelString(
       constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
         ${constructorFields}
 
+        this.withRelations = []
         this.selectFromQuery = db.selectFrom('${tableName}')
         this.updateFromQuery = db.updateTable('${tableName}')
         this.deleteFromQuery = db.deleteFrom('${tableName}')
@@ -1729,9 +1721,9 @@ export async function generateModelString(
         if (!model)
           return undefined
 
-        ${relationStringThisBelong}
+        const result = await this.mapWith(model)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
@@ -1740,54 +1732,77 @@ export async function generateModelString(
 
       // Method to find a ${modelName} by ID
       static async find(id: number): Promise<${modelName}Model | undefined> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
-
-        const model = await query.executeTakeFirst()
+        const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
 
         if (!model)
           return undefined
         
-        ${relationDeclare}
-        ${relationStringMany}
-        ${relationStringBelong}
+        const instance = new ${modelName}Model(null)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
         return data
       }
 
-      static async all(): Promise<${modelName}Model[]> {
-        let query = db.selectFrom('${tableName}').selectAll()
+      async mapWith(model: ${modelName}Type): Promise<${modelName}Type> {
+        ${relationStringThisMany}
+        ${relationStringThisBelong}
 
-        const instance = new ${modelName}Model(null)
-
-       ${instanceSoftDeleteStatements}
-
-        const results = await query.execute();
-
-        return results.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)));
+        return model
       }
 
+      static async all(): Promise<${modelName}Model[]> {
+        const models = await db.selectFrom('${tableName}').selectAll().execute()
+
+        const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
+          const instance = new ${modelName}Model(model)
+
+          const results = await instance.mapWith(model)
+
+          return new ${modelName}Model(results)
+        }))
+
+        return data
+      }
 
       static async findOrFail(id: number): Promise<${modelName}Model> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id)
+        const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
 
         const instance = new ${modelName}Model(null)
 
         ${instanceSoftDeleteStatements}
-
-        query = query.selectAll()
-
-        const model = await query.executeTakeFirst()
 
         if (model === undefined)
           throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
 
         cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-        return instance.parseResult(new ${modelName}Model(model))
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
+      }
+
+      async findOrFail(id: number): Promise<${modelName}Model> {
+        const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
+
+        ${thisSoftDeleteStatements}
+
+        if (model === undefined)
+          throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
+
+        cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
+
+        const result = await this.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
       }
 
       static async findMany(ids: number[]): Promise<${modelName}Model[]> {
@@ -1804,23 +1819,30 @@ export async function generateModelString(
         return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
       }
 
-      // Method to get a User by criteria
       static async get(): Promise<${modelName}Model[]> {
         const instance = new ${modelName}Model(null)
 
+        let models
+      
         if (instance.hasSelect) {
-         ${instanceSoftDeleteStatementsSelectFrom}
+          ${instanceSoftDeleteStatements}
 
-          const model = await instance.selectFromQuery.execute()
+          models = await instance.selectFromQuery.execute()
+        } else {
+          ${instanceSoftDeleteStatements}
 
-          return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+          models = await instance.selectFromQuery.selectAll().execute()
         }
 
-        ${instanceSoftDeleteStatementsSelectFrom}
+        const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
+          const instance = new ${modelName}Model(model)
 
-        const model = await instance.selectFromQuery.selectAll().execute()
+          const results = await instance.mapWith(model)
 
-       return model.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+          return new ${modelName}Model(results)
+        }))
+        
+        return data
       }
 
 
@@ -1949,15 +1971,17 @@ export async function generateModelString(
 
       // Method to remove a ${modelName}
       static async remove(id: number): Promise<any> {
+        ${removeInstanceStatment}
+
         ${mittDeleteStaticFindStatement}
 
         ${instanceSoftDeleteStatementsUpdateFrom}
-        
+
+        ${mittDeleteStatement}
+      
         return await db.deleteFrom('${tableName}')
           .where('id', '=', id)
           .execute()
-
-        ${mittDeleteStatement}
       }
 
       where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
@@ -2109,9 +2133,9 @@ export async function generateModelString(
          if (! model)
           return undefined
 
-        ${relationStringThisBelong}
+        const result = await this.mapWith(model)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         return data
       }
@@ -2122,7 +2146,13 @@ export async function generateModelString(
         if (model === undefined)
           throw new HttpError(404, 'No ${modelName}Model results found for query')
 
-        return this.parseResult(new ${modelName}Model(model))
+        const instance = new ${modelName}Model(null)
+
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
       }
 
       async exists(): Promise<boolean> {
@@ -2139,13 +2169,27 @@ export async function generateModelString(
         if (! model)
           return undefined
 
-        ${relationDeclare}
-        ${relationStringMany}
-        ${relationStringBelong}
+        const instance = new ${modelName}Model(null)
 
-        const data = new ${modelName}Model(model as ${modelName}Type)
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
 
         return data
+      }
+
+      with(relations: string[]): ${modelName}Model {
+        this.withRelations = relations
+        
+        return this
+      }
+
+      static with(relations: string[]): ${modelName}Model {
+       const instance = new ${modelName}Model(null)
+
+        instance.withRelations = relations
+        
+        return instance
       }
 
       async last(): Promise<${modelName}Type | undefined> {
@@ -2156,7 +2200,18 @@ export async function generateModelString(
       }
 
       static async last(): Promise<${modelName}Type | undefined> {
-        return await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+        const model = await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+          if (!model)
+            return undefined
+
+        const instance = new ${modelName}Model(null)
+
+        const result = await instance.mapWith(model)
+
+        const data = new ${modelName}Model(result as ${modelName}Type)
+
+        return data
       }
 
       static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
@@ -2259,14 +2314,12 @@ export async function generateModelString(
         if (this.id === undefined)
           this.deleteFromQuery.execute()
           ${mittDeleteFindStatement}
-
+          ${mittDeleteStatement}
           ${thisSoftDeleteStatementsUpdateFrom}
 
           return await db.deleteFrom('${tableName}')
             .where('id', '=', this.id)
             .execute()
-
-        ${mittDeleteStatement}
       }
 
       ${relationMethods}

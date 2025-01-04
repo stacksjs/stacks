@@ -6,7 +6,6 @@ import { HttpError } from '@stacksjs/error-handling'
 export interface SubscribersTable {
   id?: number
   subscribed?: boolean
-  user_id?: number
 
   created_at?: Date
 
@@ -47,6 +46,7 @@ export class SubscriberModel {
   private fillable = ['subscribed', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -55,7 +55,6 @@ export class SubscriberModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(subscriber: Partial<SubscriberType> | null) {
     this.id = subscriber?.id || 1
@@ -65,8 +64,7 @@ export class SubscriberModel {
 
     this.updated_at = subscriber?.updated_at
 
-    this.user_id = subscriber?.user_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscribers')
     this.updateFromQuery = db.updateTable('subscribers')
     this.deleteFromQuery = db.deleteFrom('subscribers')
@@ -82,7 +80,9 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -91,45 +91,70 @@ export class SubscriberModel {
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
-    const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: SubscriberType): Promise<SubscriberType> {
+    return model
+  }
+
   static async all(): Promise<SubscriberModel[]> {
-    const query = db.selectFrom('subscribers').selectAll()
+    const models = await db.selectFrom('subscribers').selectAll().execute()
 
-    const instance = new SubscriberModel(null)
+    const data = await Promise.all(models.map(async (model: SubscriberType) => {
+      const instance = new SubscriberModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
+      return new SubscriberModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {
-    let query = db.selectFrom('subscribers').where('id', '=', id)
+    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new SubscriberModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No SubscriberModel results for ${id}`)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriberModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<SubscriberModel> {
+    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No SubscriberModel results for ${id}`)
+
+    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {
@@ -144,19 +169,27 @@ export class SubscriberModel {
     return model.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<SubscriberModel[]> {
     const instance = new SubscriberModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: SubscriberModel) => {
+      const instance = new SubscriberModel(model)
 
-    return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new SubscriberModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Subscriber by criteria
@@ -430,7 +463,9 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     return data
   }
@@ -441,7 +476,13 @@ export class SubscriberModel {
     if (model === undefined)
       throw new HttpError(404, 'No SubscriberModel results found for query')
 
-    return this.parseResult(new SubscriberModel(model))
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -458,9 +499,27 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
 
     return data
+  }
+
+  with(relations: string[]): SubscriberModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<SubscriberType | undefined> {
@@ -471,7 +530,18 @@ export class SubscriberModel {
   }
 
   static async last(): Promise<SubscriberType | undefined> {
-    return await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
+
+    return data
   }
 
   static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {

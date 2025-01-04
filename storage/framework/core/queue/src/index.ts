@@ -22,4 +22,4 @@ export class Job {
   }
 }
 
-export { DeferQueue } from '@poppinss/defer'
+export { runJob } from './run'

@@ -12,6 +12,7 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   transactions?: TransactionModel[] | undefined
   type?: string
@@ -21,8 +22,6 @@ export interface PaymentMethodsTable {
   exp_year?: number
   is_default?: boolean
   provider_id?: string
-  user_id?: number
-  transaction_id?: number
   uuid?: string
 
   created_at?: Date
@@ -64,9 +63,11 @@ export class PaymentMethodModel {
   private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id', 'transaction_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public transactions: TransactionModel[] | undefined
   public id: number
@@ -81,10 +82,9 @@ export class PaymentMethodModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
-  public transaction_id: number | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
+    this.user_id = paymentmethod?.user_id
     this.user = paymentmethod?.user
     this.transactions = paymentmethod?.transactions
     this.id = paymentmethod?.id || 1
@@ -101,9 +101,7 @@ export class PaymentMethodModel {
 
     this.updated_at = paymentmethod?.updated_at
 
-    this.user_id = paymentmethod?.user_id
-    this.transaction_id = paymentmethod?.transaction_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('payment_methods')
     this.updateFromQuery = db.updateTable('payment_methods')
     this.deleteFromQuery = db.deleteFrom('payment_methods')
@@ -119,9 +117,9 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new PaymentMethodModel(model as PaymentMethodType)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
@@ -130,51 +128,78 @@ export class PaymentMethodModel {
 
   // Method to find a PaymentMethod by ID
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
-    const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new PaymentMethodModel(model as PaymentMethodType)
+    const instance = new PaymentMethodModel(null)
 
-    model.transactions = await instance.transactionsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.user = await instance.userBelong()
-
-    const data = new PaymentMethodModel(model as PaymentMethodType)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: PaymentMethodType): Promise<PaymentMethodType> {
+    if (this.withRelations.includes('transactions')) {
+      model.transactions = await this.transactionsHasMany()
+    }
+
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
+
+    return model
+  }
+
   static async all(): Promise<PaymentMethodModel[]> {
-    const query = db.selectFrom('payment_methods').selectAll()
+    const models = await db.selectFrom('payment_methods').selectAll().execute()
 
-    const instance = new PaymentMethodModel(null)
+    const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
+      const instance = new PaymentMethodModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
+      return new PaymentMethodModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
-    let query = db.selectFrom('payment_methods').where('id', '=', id)
+    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new PaymentMethodModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No PaymentMethodModel results for ${id}`)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PaymentMethodModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<PaymentMethodModel> {
+    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No PaymentMethodModel results for ${id}`)
+
+    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
@@ -189,19 +214,27 @@ export class PaymentMethodModel {
     return model.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<PaymentMethodModel[]> {
     const instance = new PaymentMethodModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
+      const instance = new PaymentMethodModel(model)
 
-    return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new PaymentMethodModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a PaymentMethod by criteria
@@ -529,9 +562,9 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new PaymentMethodModel(model as PaymentMethodType)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     return data
   }
@@ -542,7 +575,13 @@ export class PaymentMethodModel {
     if (model === undefined)
       throw new HttpError(404, 'No PaymentMethodModel results found for query')
 
-    return this.parseResult(new PaymentMethodModel(model))
+    const instance = new PaymentMethodModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -559,15 +598,27 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const instance = new PaymentMethodModel(model as PaymentMethodType)
+    const instance = new PaymentMethodModel(null)
 
-    model.transactions = await instance.transactionsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.user = await instance.userBelong()
-
-    const data = new PaymentMethodModel(model as PaymentMethodType)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     return data
+  }
+
+  with(relations: string[]): PaymentMethodModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
@@ -578,7 +629,18 @@ export class PaymentMethodModel {
   }
 
   static async last(): Promise<PaymentMethodType | undefined> {
-    return await db.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PaymentMethodModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
   }
 
   static orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
@@ -701,6 +763,7 @@ export class PaymentMethodModel {
 
     const results = await db.selectFrom('transactions')
       .where('paymentmethod_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
@@ -745,6 +808,7 @@ export class PaymentMethodModel {
 
   toJSON() {
     const output: Partial<PaymentMethodType> = {
+      user_id: this.user_id,
       user: this.user,
       transactions: this.transactions,
 

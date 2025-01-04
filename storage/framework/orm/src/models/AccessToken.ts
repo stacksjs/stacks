@@ -11,7 +11,6 @@ export interface PersonalAccessTokensTable {
   token?: string
   plain_text_token?: string
   abilities?: string[]
-  team_id?: number
 
   created_at?: Date
 
@@ -52,6 +51,7 @@ export class AccessTokenModel {
   private fillable = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -63,7 +63,6 @@ export class AccessTokenModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public team_id: number | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
     this.id = accesstoken?.id || 1
@@ -76,8 +75,7 @@ export class AccessTokenModel {
 
     this.updated_at = accesstoken?.updated_at
 
-    this.team_id = accesstoken?.team_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('personal_access_tokens')
     this.updateFromQuery = db.updateTable('personal_access_tokens')
     this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
@@ -93,7 +91,9 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -102,45 +102,70 @@ export class AccessTokenModel {
 
   // Method to find a AccessToken by ID
   static async find(id: number): Promise<AccessTokenModel | undefined> {
-    const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: AccessTokenType): Promise<AccessTokenType> {
+    return model
+  }
+
   static async all(): Promise<AccessTokenModel[]> {
-    const query = db.selectFrom('personal_access_tokens').selectAll()
+    const models = await db.selectFrom('personal_access_tokens').selectAll().execute()
 
-    const instance = new AccessTokenModel(null)
+    const data = await Promise.all(models.map(async (model: AccessTokenType) => {
+      const instance = new AccessTokenModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
+      return new AccessTokenModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {
-    let query = db.selectFrom('personal_access_tokens').where('id', '=', id)
+    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new AccessTokenModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No AccessTokenModel results for ${id}`)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new AccessTokenModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<AccessTokenModel> {
+    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No AccessTokenModel results for ${id}`)
+
+    cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
@@ -155,19 +180,27 @@ export class AccessTokenModel {
     return model.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
+      const instance = new AccessTokenModel(model)
 
-    return model.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new AccessTokenModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a AccessToken by criteria
@@ -465,7 +498,9 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     return data
   }
@@ -476,7 +511,13 @@ export class AccessTokenModel {
     if (model === undefined)
       throw new HttpError(404, 'No AccessTokenModel results found for query')
 
-    return this.parseResult(new AccessTokenModel(model))
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -493,9 +534,27 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
 
     return data
+  }
+
+  with(relations: string[]): AccessTokenModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<AccessTokenType | undefined> {
@@ -506,7 +565,18 @@ export class AccessTokenModel {
   }
 
   static async last(): Promise<AccessTokenType | undefined> {
-    return await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
   }
 
   static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {

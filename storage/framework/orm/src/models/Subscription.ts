@@ -9,6 +9,7 @@ import User from './User'
 
 export interface SubscriptionsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   type?: string
   provider_id?: string
@@ -20,7 +21,6 @@ export interface SubscriptionsTable {
   trial_ends_at?: string
   ends_at?: string
   last_used_at?: string
-  user_id?: number
   uuid?: string
 
   created_at?: Date
@@ -62,9 +62,11 @@ export class SubscriptionModel {
   private fillable = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
   public uuid: string | undefined
@@ -81,9 +83,9 @@ export class SubscriptionModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
+    this.user_id = subscription?.user_id
     this.user = subscription?.user
     this.id = subscription?.id || 1
     this.uuid = subscription?.uuid
@@ -102,8 +104,7 @@ export class SubscriptionModel {
 
     this.updated_at = subscription?.updated_at
 
-    this.user_id = subscription?.user_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscriptions')
     this.updateFromQuery = db.updateTable('subscriptions')
     this.deleteFromQuery = db.deleteFrom('subscriptions')
@@ -119,9 +120,9 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
@@ -130,49 +131,74 @@ export class SubscriptionModel {
 
   // Method to find a Subscription by ID
   static async find(id: number): Promise<SubscriptionModel | undefined> {
-    const query = db.selectFrom('subscriptions').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(model as SubscriptionType)
+    const instance = new SubscriptionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: SubscriptionType): Promise<SubscriptionType> {
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
+
+    return model
+  }
+
   static async all(): Promise<SubscriptionModel[]> {
-    const query = db.selectFrom('subscriptions').selectAll()
+    const models = await db.selectFrom('subscriptions').selectAll().execute()
 
-    const instance = new SubscriptionModel(null)
+    const data = await Promise.all(models.map(async (model: SubscriptionType) => {
+      const instance = new SubscriptionModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new SubscriptionModel(modelItem)))
+      return new SubscriptionModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<SubscriptionModel> {
-    let query = db.selectFrom('subscriptions').where('id', '=', id)
+    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new SubscriptionModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriptionModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<SubscriptionModel> {
+    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No SubscriptionModel results for ${id}`)
+
+    cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {
@@ -187,19 +213,27 @@ export class SubscriptionModel {
     return model.map(modelItem => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
+      const instance = new SubscriptionModel(model)
 
-    return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new SubscriptionModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Subscription by criteria
@@ -551,9 +585,9 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     return data
   }
@@ -564,7 +598,13 @@ export class SubscriptionModel {
     if (model === undefined)
       throw new HttpError(404, 'No SubscriptionModel results found for query')
 
-    return this.parseResult(new SubscriptionModel(model))
+    const instance = new SubscriptionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -581,13 +621,27 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(model as SubscriptionType)
+    const instance = new SubscriptionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(result as SubscriptionType)
 
     return data
+  }
+
+  with(relations: string[]): SubscriptionModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<SubscriptionType | undefined> {
@@ -598,7 +652,18 @@ export class SubscriptionModel {
   }
 
   static async last(): Promise<SubscriptionType | undefined> {
-    return await db.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
   }
 
   static orderBy(column: keyof SubscriptionType, order: 'asc' | 'desc'): SubscriptionModel {
@@ -753,6 +818,7 @@ export class SubscriptionModel {
 
   toJSON() {
     const output: Partial<SubscriptionType> = {
+      user_id: this.user_id,
       user: this.user,
 
       id: this.id,

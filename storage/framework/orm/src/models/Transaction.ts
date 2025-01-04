@@ -12,15 +12,15 @@ import User from './User'
 
 export interface TransactionsTable {
   id?: number
+  user_id?: number
   user?: UserModel
+  payment_method_id?: number
   payment_method?: PaymentMethodModel
   name?: string
   description?: string
   amount?: number
   type?: string
   provider_id?: string
-  user_id?: number
-  paymentmethod_id?: number
   uuid?: string
 
   created_at?: Date
@@ -62,10 +62,13 @@ export class TransactionModel {
   private fillable = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
+  public payment_method_id: number | undefined
   public payment_method: PaymentMethodModel | undefined
   public id: number
   public uuid: string | undefined
@@ -77,11 +80,11 @@ export class TransactionModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
-  public paymentmethod_id: number | undefined
 
   constructor(transaction: Partial<TransactionType> | null) {
+    this.user_id = transaction?.user_id
     this.user = transaction?.user
+    this.payment_method_id = transaction?.payment_method_id
     this.payment_method = transaction?.payment_method
     this.id = transaction?.id || 1
     this.uuid = transaction?.uuid
@@ -95,9 +98,7 @@ export class TransactionModel {
 
     this.updated_at = transaction?.updated_at
 
-    this.user_id = transaction?.user_id
-    this.paymentmethod_id = transaction?.paymentmethod_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('transactions')
     this.updateFromQuery = db.updateTable('transactions')
     this.deleteFromQuery = db.deleteFrom('transactions')
@@ -113,11 +114,9 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    model.payment_method = await this.paymentMethodBelong()
-
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(result as TransactionType)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
@@ -126,51 +125,78 @@ export class TransactionModel {
 
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
-    const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(model as TransactionType)
+    const instance = new TransactionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    model.payment_method = await instance.paymentMethodBelong()
-
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(result as TransactionType)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: TransactionType): Promise<TransactionType> {
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
+
+    if (this.withRelations.includes('payment_method')) {
+      model.payment_method = await this.paymentMethodBelong()
+    }
+
+    return model
+  }
+
   static async all(): Promise<TransactionModel[]> {
-    const query = db.selectFrom('transactions').selectAll()
+    const models = await db.selectFrom('transactions').selectAll().execute()
 
-    const instance = new TransactionModel(null)
+    const data = await Promise.all(models.map(async (model: TransactionType) => {
+      const instance = new TransactionModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
+      return new TransactionModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {
-    let query = db.selectFrom('transactions').where('id', '=', id)
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new TransactionModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No TransactionModel results for ${id}`)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TransactionModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<TransactionModel> {
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No TransactionModel results for ${id}`)
+
+    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
@@ -185,19 +211,27 @@ export class TransactionModel {
     return model.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<TransactionModel[]> {
     const instance = new TransactionModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: TransactionModel) => {
+      const instance = new TransactionModel(model)
 
-    return model.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new TransactionModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Transaction by criteria
@@ -509,11 +543,9 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    model.payment_method = await this.paymentMethodBelong()
-
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(result as TransactionType)
 
     return data
   }
@@ -524,7 +556,13 @@ export class TransactionModel {
     if (model === undefined)
       throw new HttpError(404, 'No TransactionModel results found for query')
 
-    return this.parseResult(new TransactionModel(model))
+    const instance = new TransactionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -541,15 +579,27 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(model as TransactionType)
+    const instance = new TransactionModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    model.payment_method = await instance.paymentMethodBelong()
-
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(result as TransactionType)
 
     return data
+  }
+
+  with(relations: string[]): TransactionModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<TransactionType | undefined> {
@@ -560,7 +610,18 @@ export class TransactionModel {
   }
 
   static async last(): Promise<TransactionType | undefined> {
-    return await db.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
   }
 
   static orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
@@ -678,11 +739,11 @@ export class TransactionModel {
   }
 
   async paymentMethodBelong(): Promise<PaymentMethodModel> {
-    if (this.paymentmethod_id === undefined)
+    if (this.payment_method_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
     const model = await PaymentMethod
-      .where('id', '=', this.paymentmethod_id)
+      .where('id', '=', this.payment_method_id)
       .first()
 
     if (!model)
@@ -729,7 +790,9 @@ export class TransactionModel {
 
   toJSON() {
     const output: Partial<TransactionType> = {
+      user_id: this.user_id,
       user: this.user,
+      payment_method_id: this.payment_method_id,
       payment_method: this.payment_method,
 
       id: this.id,

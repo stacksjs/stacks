@@ -31,6 +31,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
       }
     }
 
+    log.info(modelOption)
     return ok('Successfully imported models to search engine!')
   }
   catch (err: any) {

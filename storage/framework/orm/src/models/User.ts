@@ -39,12 +39,6 @@ export interface UsersTable {
   email?: string
   job_title?: string
   password?: string
-  team_id?: number
-  deployment_id?: number
-  post_id?: number
-  paymentmethod_id?: number
-  transaction_id?: number
-  subscription_id?: number
   public_passkey?: string
   stripe_id?: string
   uuid?: string
@@ -88,6 +82,7 @@ export class UserModel {
   private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id', 'paymentmethod_id', 'transaction_id', 'subscription_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -106,12 +101,6 @@ export class UserModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public team_id: number | undefined
-  public deployment_id: number | undefined
-  public post_id: number | undefined
-  public paymentmethod_id: number | undefined
-  public transaction_id: number | undefined
-  public subscription_id: number | undefined
 
   constructor(user: Partial<UserType> | null) {
     this.deployments = user?.deployments
@@ -131,13 +120,7 @@ export class UserModel {
 
     this.updated_at = user?.updated_at
 
-    this.team_id = user?.team_id
-    this.deployment_id = user?.deployment_id
-    this.post_id = user?.post_id
-    this.paymentmethod_id = user?.paymentmethod_id
-    this.transaction_id = user?.transaction_id
-    this.subscription_id = user?.subscription_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('users')
     this.updateFromQuery = db.updateTable('users')
     this.deleteFromQuery = db.deleteFrom('users')
@@ -153,7 +136,9 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const data = new UserModel(model as UserType)
+    const result = await this.mapWith(model)
+
+    const data = new UserModel(result as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -162,55 +147,86 @@ export class UserModel {
 
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
-    const query = db.selectFrom('users').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new UserModel(model as UserType)
+    const instance = new UserModel(null)
 
-    model.deployments = await instance.deploymentsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.subscriptions = await instance.subscriptionsHasMany()
-
-    model.payment_methods = await instance.payment_methodsHasMany()
-
-    model.transactions = await instance.transactionsHasMany()
-
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(result as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: UserType): Promise<UserType> {
+    if (this.withRelations.includes('deployments')) {
+      model.deployments = await this.deploymentsHasMany()
+    }
+
+    if (this.withRelations.includes('subscriptions')) {
+      model.subscriptions = await this.subscriptionsHasMany()
+    }
+
+    if (this.withRelations.includes('payment_methods')) {
+      model.payment_methods = await this.paymentMethodsHasMany()
+    }
+
+    if (this.withRelations.includes('transactions')) {
+      model.transactions = await this.transactionsHasMany()
+    }
+
+    return model
+  }
+
   static async all(): Promise<UserModel[]> {
-    const query = db.selectFrom('users').selectAll()
+    const models = await db.selectFrom('users').selectAll().execute()
 
-    const instance = new UserModel(null)
+    const data = await Promise.all(models.map(async (model: UserType) => {
+      const instance = new UserModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new UserModel(modelItem)))
+      return new UserModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
-    let query = db.selectFrom('users').where('id', '=', id)
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new UserModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new UserModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<UserModel> {
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No UserModel results for ${id}`)
+
+    cache.getOrSet(`user:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {
@@ -225,19 +241,27 @@ export class UserModel {
     return model.map(modelItem => instance.parseResult(new UserModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<UserModel[]> {
     const instance = new UserModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: UserModel) => new UserModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: UserModel) => {
+      const instance = new UserModel(model)
 
-    return model.map((modelItem: UserModel) => new UserModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new UserModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a User by criteria
@@ -359,14 +383,16 @@ export class UserModel {
 
   // Method to remove a User
   static async remove(id: number): Promise<any> {
+    const instance = new UserModel(null)
+
     const model = await instance.find(Number(id))
+
+    if (model)
+      dispatch('user:deleted', model)
 
     return await db.deleteFrom('users')
       .where('id', '=', id)
       .execute()
-
-    if (model)
-      dispatch('user:deleted', model)
   }
 
   where(...args: (string | number | boolean | undefined | null)[]): UserModel {
@@ -552,7 +578,9 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const data = new UserModel(model as UserType)
+    const result = await this.mapWith(model)
+
+    const data = new UserModel(result as UserType)
 
     return data
   }
@@ -563,7 +591,13 @@ export class UserModel {
     if (model === undefined)
       throw new HttpError(404, 'No UserModel results found for query')
 
-    return this.parseResult(new UserModel(model))
+    const instance = new UserModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -580,19 +614,27 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(model as UserType)
+    const instance = new UserModel(null)
 
-    model.deployments = await instance.deploymentsHasMany()
+    const result = await instance.mapWith(model)
 
-    model.subscriptions = await instance.subscriptionsHasMany()
-
-    model.payment_methods = await instance.payment_methodsHasMany()
-
-    model.transactions = await instance.transactionsHasMany()
-
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(result as UserType)
 
     return data
+  }
+
+  with(relations: string[]): UserModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): UserModel {
+    const instance = new UserModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<UserType | undefined> {
@@ -603,7 +645,18 @@ export class UserModel {
   }
 
   static async last(): Promise<UserType | undefined> {
-    return await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
   }
 
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
@@ -707,13 +760,12 @@ export class UserModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+    if (model)
+      dispatch('user:deleted', model)
 
     return await db.deleteFrom('users')
       .where('id', '=', this.id)
       .execute()
-
-    if (model)
-      dispatch('user:deleted', model)
   }
 
   async post() {
@@ -750,6 +802,7 @@ export class UserModel {
 
     const results = await db.selectFrom('deployments')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
@@ -762,18 +815,20 @@ export class UserModel {
 
     const results = await db.selectFrom('subscriptions')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
     return results.map(modelItem => new Subscription(modelItem))
   }
 
-  async payment_methodsHasMany(): Promise<PaymentMethodModel[]> {
+  async paymentMethodsHasMany(): Promise<PaymentMethodModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('payment_methods')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
@@ -786,6 +841,7 @@ export class UserModel {
 
     const results = await db.selectFrom('transactions')
       .where('user_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 

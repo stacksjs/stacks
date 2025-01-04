@@ -49,6 +49,6 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "vite": "^6.0.4"
+    "vite": "^6.0.6"
   }
 }

@@ -46,6 +46,7 @@ export class ReleaseModel {
   private fillable = ['version', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -63,6 +64,7 @@ export class ReleaseModel {
 
     this.updated_at = release?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('releases')
     this.updateFromQuery = db.updateTable('releases')
     this.deleteFromQuery = db.deleteFrom('releases')
@@ -78,7 +80,9 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -87,45 +91,70 @@ export class ReleaseModel {
 
   // Method to find a Release by ID
   static async find(id: number): Promise<ReleaseModel | undefined> {
-    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: ReleaseType): Promise<ReleaseType> {
+    return model
+  }
+
   static async all(): Promise<ReleaseModel[]> {
-    const query = db.selectFrom('releases').selectAll()
+    const models = await db.selectFrom('releases').selectAll().execute()
 
-    const instance = new ReleaseModel(null)
+    const data = await Promise.all(models.map(async (model: ReleaseType) => {
+      const instance = new ReleaseModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
+      return new ReleaseModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
-    let query = db.selectFrom('releases').where('id', '=', id)
+    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ReleaseModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No ReleaseModel results for ${id}`)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ReleaseModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<ReleaseModel> {
+    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No ReleaseModel results for ${id}`)
+
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
@@ -140,19 +169,27 @@ export class ReleaseModel {
     return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<ReleaseModel[]> {
     const instance = new ReleaseModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: ReleaseModel) => {
+      const instance = new ReleaseModel(model)
 
-    return model.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new ReleaseModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Release by criteria
@@ -426,7 +463,9 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     return data
   }
@@ -437,7 +476,13 @@ export class ReleaseModel {
     if (model === undefined)
       throw new HttpError(404, 'No ReleaseModel results found for query')
 
-    return this.parseResult(new ReleaseModel(model))
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -454,9 +499,27 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
 
     return data
+  }
+
+  with(relations: string[]): ReleaseModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ReleaseType | undefined> {
@@ -467,7 +530,18 @@ export class ReleaseModel {
   }
 
   static async last(): Promise<ReleaseType | undefined> {
-    return await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
   }
 
   static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {

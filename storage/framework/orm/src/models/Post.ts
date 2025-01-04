@@ -8,10 +8,10 @@ import User from './User'
 
 export interface PostsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   title?: string
   body?: string
-  user_id?: number
 
   created_at?: Date
 
@@ -52,9 +52,11 @@ export class PostModel {
   private fillable = ['title', 'body', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
   public title: string | undefined
@@ -62,9 +64,9 @@ export class PostModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(post: Partial<PostType> | null) {
+    this.user_id = post?.user_id
     this.user = post?.user
     this.id = post?.id || 1
     this.title = post?.title
@@ -74,8 +76,7 @@ export class PostModel {
 
     this.updated_at = post?.updated_at
 
-    this.user_id = post?.user_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('posts')
     this.updateFromQuery = db.updateTable('posts')
     this.deleteFromQuery = db.deleteFrom('posts')
@@ -91,9 +92,9 @@ export class PostModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -102,49 +103,74 @@ export class PostModel {
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new PostModel(model as PostType)
+    const instance = new PostModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: PostType): Promise<PostType> {
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
+
+    return model
+  }
+
   static async all(): Promise<PostModel[]> {
-    const query = db.selectFrom('posts').selectAll()
+    const models = await db.selectFrom('posts').selectAll().execute()
 
-    const instance = new PostModel(null)
+    const data = await Promise.all(models.map(async (model: PostType) => {
+      const instance = new PostModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new PostModel(modelItem)))
+      return new PostModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<PostModel> {
-    let query = db.selectFrom('posts').where('id', '=', id)
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new PostModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No PostModel results for ${id}`)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new PostModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<PostModel> {
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No PostModel results for ${id}`)
+
+    cache.getOrSet(`post:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
@@ -159,19 +185,27 @@ export class PostModel {
     return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<PostModel[]> {
     const instance = new PostModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: PostModel) => new PostModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: PostModel) => {
+      const instance = new PostModel(model)
 
-    return model.map((modelItem: PostModel) => new PostModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new PostModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Post by criteria
@@ -453,9 +487,9 @@ export class PostModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     return data
   }
@@ -466,7 +500,13 @@ export class PostModel {
     if (model === undefined)
       throw new HttpError(404, 'No PostModel results found for query')
 
-    return this.parseResult(new PostModel(model))
+    const instance = new PostModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -483,13 +523,27 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const instance = new PostModel(model as PostType)
+    const instance = new PostModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(result as PostType)
 
     return data
+  }
+
+  with(relations: string[]): PostModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): PostModel {
+    const instance = new PostModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<PostType | undefined> {
@@ -500,7 +554,18 @@ export class PostModel {
   }
 
   static async last(): Promise<PostType | undefined> {
-    return await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
   }
 
   static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
@@ -655,6 +720,7 @@ export class PostModel {
 
   toJSON() {
     const output: Partial<PostType> = {
+      user_id: this.user_id,
       user: this.user,
 
       id: this.id,

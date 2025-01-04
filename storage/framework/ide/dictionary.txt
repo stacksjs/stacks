@@ -1,4 +1,6 @@
+Ababa
 Abellanosa
+Addis
 adelino
 alefragnani
 alrighty
@@ -85,6 +87,7 @@ Descryption
 dessant
 destructurable
 devs
+Dispatchable
 DMARC
 dmarcreports
 docgen
@@ -342,6 +345,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+Untimed
 Updateable
 upstash
 vclass

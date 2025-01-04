@@ -48,6 +48,7 @@ export class SubscriberEmailModel {
   private fillable = ['email', 'uuid']
   private softDeletes = true
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -69,6 +70,7 @@ export class SubscriberEmailModel {
 
     this.deleted_at = subscriberemail?.deleted_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscriber_emails')
     this.updateFromQuery = db.updateTable('subscriber_emails')
     this.deleteFromQuery = db.deleteFrom('subscriber_emails')
@@ -84,7 +86,9 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -93,53 +97,78 @@ export class SubscriberEmailModel {
 
   // Method to find a SubscriberEmail by ID
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: SubscriberEmailType): Promise<SubscriberEmailType> {
+    return model
+  }
+
   static async all(): Promise<SubscriberEmailModel[]> {
-    let query = db.selectFrom('subscriber_emails').selectAll()
+    const models = await db.selectFrom('subscriber_emails').selectAll().execute()
 
-    const instance = new SubscriberEmailModel(null)
+    const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
+      const instance = new SubscriberEmailModel(model)
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
-    }
+      const results = await instance.mapWith(model)
 
-    const results = await query.execute()
+      return new SubscriberEmailModel(results)
+    }))
 
-    return results.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return data
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    let query = db.selectFrom('subscriber_emails').where('id', '=', id)
+    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No SubscriberEmailModel results for ${id}`)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new SubscriberEmailModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (this.softDeletes) {
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+    }
+
+    if (model === undefined)
+      throw new HttpError(404, `No SubscriberEmailModel results for ${id}`)
+
+    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
@@ -158,27 +187,35 @@ export class SubscriberEmailModel {
     return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(null)
 
+    let models
+
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
+        query = query.where('deleted_at', 'is', null)
       }
 
-      const model = await instance.selectFromQuery.execute()
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      if (instance.softDeletes) {
+        query = query.where('deleted_at', 'is', null)
+      }
 
-      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
+    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
+      const instance = new SubscriberEmailModel(model)
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+      const results = await instance.mapWith(model)
 
-    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+      return new SubscriberEmailModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a SubscriberEmail by criteria
@@ -479,7 +516,9 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     return data
   }
@@ -490,7 +529,13 @@ export class SubscriberEmailModel {
     if (model === undefined)
       throw new HttpError(404, 'No SubscriberEmailModel results found for query')
 
-    return this.parseResult(new SubscriberEmailModel(model))
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -507,9 +552,27 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     return data
+  }
+
+  with(relations: string[]): SubscriberEmailModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {
@@ -520,7 +583,18 @@ export class SubscriberEmailModel {
   }
 
   static async last(): Promise<SubscriberEmailType | undefined> {
-    return await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
   }
 
   static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {

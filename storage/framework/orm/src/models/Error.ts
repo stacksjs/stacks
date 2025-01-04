@@ -51,6 +51,7 @@ export class ErrorModel {
   private fillable = ['type', 'message', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -78,6 +79,7 @@ export class ErrorModel {
 
     this.updated_at = error?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('errors')
     this.updateFromQuery = db.updateTable('errors')
     this.deleteFromQuery = db.deleteFrom('errors')
@@ -93,7 +95,9 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
@@ -102,45 +106,70 @@ export class ErrorModel {
 
   // Method to find a Error by ID
   static async find(id: number): Promise<ErrorModel | undefined> {
-    const query = db.selectFrom('errors').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: ErrorType): Promise<ErrorType> {
+    return model
+  }
+
   static async all(): Promise<ErrorModel[]> {
-    const query = db.selectFrom('errors').selectAll()
+    const models = await db.selectFrom('errors').selectAll().execute()
 
-    const instance = new ErrorModel(null)
+    const data = await Promise.all(models.map(async (model: ErrorType) => {
+      const instance = new ErrorModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
+      return new ErrorModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<ErrorModel> {
-    let query = db.selectFrom('errors').where('id', '=', id)
+    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ErrorModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No ErrorModel results for ${id}`)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ErrorModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<ErrorModel> {
+    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No ErrorModel results for ${id}`)
+
+    cache.getOrSet(`error:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
@@ -155,19 +184,27 @@ export class ErrorModel {
     return model.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<ErrorModel[]> {
     const instance = new ErrorModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: ErrorModel) => {
+      const instance = new ErrorModel(model)
 
-    return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new ErrorModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Error by criteria
@@ -481,7 +518,9 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
 
     return data
   }
@@ -492,7 +531,13 @@ export class ErrorModel {
     if (model === undefined)
       throw new HttpError(404, 'No ErrorModel results found for query')
 
-    return this.parseResult(new ErrorModel(model))
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -509,9 +554,27 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
 
     return data
+  }
+
+  with(relations: string[]): ErrorModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ErrorType | undefined> {
@@ -522,7 +585,18 @@ export class ErrorModel {
   }
 
   static async last(): Promise<ErrorType | undefined> {
-    return await db.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
   }
 
   static orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {

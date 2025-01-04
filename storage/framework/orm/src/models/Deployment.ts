@@ -9,6 +9,7 @@ import User from './User'
 
 export interface DeploymentsTable {
   id?: number
+  user_id?: number
   user?: UserModel
   commit_sha?: string
   commit_message?: string
@@ -17,7 +18,6 @@ export interface DeploymentsTable {
   execution_time?: number
   deploy_script?: string
   terminal_output?: string
-  user_id?: number
   uuid?: string
 
   created_at?: Date
@@ -59,9 +59,11 @@ export class DeploymentModel {
   private fillable = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
   public uuid: string | undefined
@@ -75,9 +77,9 @@ export class DeploymentModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public user_id: number | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
+    this.user_id = deployment?.user_id
     this.user = deployment?.user
     this.id = deployment?.id || 1
     this.uuid = deployment?.uuid
@@ -93,8 +95,7 @@ export class DeploymentModel {
 
     this.updated_at = deployment?.updated_at
 
-    this.user_id = deployment?.user_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('deployments')
     this.updateFromQuery = db.updateTable('deployments')
     this.deleteFromQuery = db.deleteFrom('deployments')
@@ -110,9 +111,9 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -121,49 +122,74 @@ export class DeploymentModel {
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(model as DeploymentType)
+    const instance = new DeploymentModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: DeploymentType): Promise<DeploymentType> {
+    if (this.withRelations.includes('user')) {
+      model.user = await this.userBelong()
+    }
+
+    return model
+  }
+
   static async all(): Promise<DeploymentModel[]> {
-    const query = db.selectFrom('deployments').selectAll()
+    const models = await db.selectFrom('deployments').selectAll().execute()
 
-    const instance = new DeploymentModel(null)
+    const data = await Promise.all(models.map(async (model: DeploymentType) => {
+      const instance = new DeploymentModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
+      return new DeploymentModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
-    let query = db.selectFrom('deployments').where('id', '=', id)
+    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new DeploymentModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new DeploymentModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<DeploymentModel> {
+    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No DeploymentModel results for ${id}`)
+
+    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
@@ -178,19 +204,27 @@ export class DeploymentModel {
     return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: DeploymentModel) => {
+      const instance = new DeploymentModel(model)
 
-    return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new DeploymentModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Deployment by criteria
@@ -518,9 +552,9 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    model.user = await this.userBelong()
+    const result = await this.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     return data
   }
@@ -531,7 +565,13 @@ export class DeploymentModel {
     if (model === undefined)
       throw new HttpError(404, 'No DeploymentModel results found for query')
 
-    return this.parseResult(new DeploymentModel(model))
+    const instance = new DeploymentModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -548,13 +588,27 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(model as DeploymentType)
+    const instance = new DeploymentModel(null)
 
-    model.user = await instance.userBelong()
+    const result = await instance.mapWith(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(result as DeploymentType)
 
     return data
+  }
+
+  with(relations: string[]): DeploymentModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<DeploymentType | undefined> {
@@ -565,7 +619,18 @@ export class DeploymentModel {
   }
 
   static async last(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new DeploymentModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
   }
 
   static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
@@ -720,6 +785,7 @@ export class DeploymentModel {
 
   toJSON() {
     const output: Partial<DeploymentType> = {
+      user_id: this.user_id,
       user: this.user,
 
       id: this.id,

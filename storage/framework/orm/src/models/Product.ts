@@ -54,6 +54,7 @@ export class ProductModel {
   private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -85,6 +86,7 @@ export class ProductModel {
 
     this.updated_at = product?.updated_at
 
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('products')
     this.updateFromQuery = db.updateTable('products')
     this.deleteFromQuery = db.deleteFrom('products')
@@ -100,7 +102,9 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
@@ -109,45 +113,70 @@ export class ProductModel {
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
-    const query = db.selectFrom('products').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: ProductType): Promise<ProductType> {
+    return model
+  }
+
   static async all(): Promise<ProductModel[]> {
-    const query = db.selectFrom('products').selectAll()
+    const models = await db.selectFrom('products').selectAll().execute()
 
-    const instance = new ProductModel(null)
+    const data = await Promise.all(models.map(async (model: ProductType) => {
+      const instance = new ProductModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new ProductModel(modelItem)))
+      return new ProductModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {
-    let query = db.selectFrom('products').where('id', '=', id)
+    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ProductModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No ProductModel results for ${id}`)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new ProductModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<ProductModel> {
+    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No ProductModel results for ${id}`)
+
+    cache.getOrSet(`product:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<ProductModel[]> {
@@ -162,19 +191,27 @@ export class ProductModel {
     return model.map(modelItem => instance.parseResult(new ProductModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<ProductModel[]> {
     const instance = new ProductModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: ProductModel) => new ProductModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: ProductModel) => {
+      const instance = new ProductModel(model)
 
-    return model.map((modelItem: ProductModel) => new ProductModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new ProductModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Product by criteria
@@ -502,7 +539,9 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     return data
   }
@@ -513,7 +552,13 @@ export class ProductModel {
     if (model === undefined)
       throw new HttpError(404, 'No ProductModel results found for query')
 
-    return this.parseResult(new ProductModel(model))
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -530,9 +575,27 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
 
     return data
+  }
+
+  with(relations: string[]): ProductModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<ProductType | undefined> {
@@ -543,7 +606,18 @@ export class ProductModel {
   }
 
   static async last(): Promise<ProductType | undefined> {
-    return await db.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
   }
 
   static orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {

@@ -17,8 +17,6 @@ export interface TeamsTable {
   description?: string
   path?: string
   is_personal?: boolean
-  accesstoken_id?: number
-  user_id?: number
 
   created_at?: Date
 
@@ -59,6 +57,7 @@ export class TeamModel {
   private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'accesstoken_id', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
+  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -74,8 +73,6 @@ export class TeamModel {
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
-  public accesstoken_id: number | undefined
-  public user_id: number | undefined
 
   constructor(team: Partial<TeamType> | null) {
     this.id = team?.id || 1
@@ -92,9 +89,7 @@ export class TeamModel {
 
     this.updated_at = team?.updated_at
 
-    this.accesstoken_id = team?.accesstoken_id
-    this.user_id = team?.user_id
-
+    this.withRelations = []
     this.selectFromQuery = db.selectFrom('teams')
     this.updateFromQuery = db.updateTable('teams')
     this.deleteFromQuery = db.deleteFrom('teams')
@@ -110,7 +105,9 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -119,45 +116,70 @@ export class TeamModel {
 
   // Method to find a Team by ID
   static async find(id: number): Promise<TeamModel | undefined> {
-    const query = db.selectFrom('teams').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
     return data
   }
 
+  async mapWith(model: TeamType): Promise<TeamType> {
+    return model
+  }
+
   static async all(): Promise<TeamModel[]> {
-    const query = db.selectFrom('teams').selectAll()
+    const models = await db.selectFrom('teams').selectAll().execute()
 
-    const instance = new TeamModel(null)
+    const data = await Promise.all(models.map(async (model: TeamType) => {
+      const instance = new TeamModel(model)
 
-    const results = await query.execute()
+      const results = await instance.mapWith(model)
 
-    return results.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
+      return new TeamModel(results)
+    }))
+
+    return data
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {
-    let query = db.selectFrom('teams').where('id', '=', id)
+    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new TeamModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.executeTakeFirst()
 
     if (model === undefined)
       throw new HttpError(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    return instance.parseResult(new TeamModel(model))
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<TeamModel> {
+    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new HttpError(404, `No TeamModel results for ${id}`)
+
+    cache.getOrSet(`team:${id}`, JSON.stringify(model))
+
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
   }
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {
@@ -172,19 +194,27 @@ export class TeamModel {
     return model.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
   }
 
-  // Method to get a User by criteria
   static async get(): Promise<TeamModel[]> {
     const instance = new TeamModel(null)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
+    let models
 
-      return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
+    if (instance.hasSelect) {
+      models = await instance.selectFromQuery.execute()
+    }
+    else {
+      models = await instance.selectFromQuery.selectAll().execute()
     }
 
-    const model = await instance.selectFromQuery.selectAll().execute()
+    const data = await Promise.all(models.map(async (model: TeamModel) => {
+      const instance = new TeamModel(model)
 
-    return model.map((modelItem: TeamModel) => new TeamModel(modelItem))
+      const results = await instance.mapWith(model)
+
+      return new TeamModel(results)
+    }))
+
+    return data
   }
 
   // Method to get a Team by criteria
@@ -514,7 +544,9 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
 
     return data
   }
@@ -525,7 +557,13 @@ export class TeamModel {
     if (model === undefined)
       throw new HttpError(404, 'No TeamModel results found for query')
 
-    return this.parseResult(new TeamModel(model))
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
   }
 
   async exists(): Promise<boolean> {
@@ -542,9 +580,27 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
 
     return data
+  }
+
+  with(relations: string[]): TeamModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.withRelations = relations
+
+    return instance
   }
 
   async last(): Promise<TeamType | undefined> {
@@ -555,7 +611,18 @@ export class TeamModel {
   }
 
   static async last(): Promise<TeamType | undefined> {
-    return await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
   }
 
   static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
