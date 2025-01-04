@@ -48,7 +48,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.717.0",
+    "@aws-sdk/client-s3": "^3.722.0",
     "@flystorage/aws-s3": "^1.0.0",
     "@flystorage/chaos": "^1.0.0",
     "@flystorage/file-storage": "^1.0.0",
