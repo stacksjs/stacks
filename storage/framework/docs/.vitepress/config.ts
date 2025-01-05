@@ -1,8 +1,8 @@
+import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 import { pwaDocs as pwa } from '@stacksjs/docs'
 import { path as p } from '@stacksjs/path'
 import { withPwa } from '@vite-pwa/vitepress'
 import { defineConfig } from 'vitepress'
-import { transformerTwoslash } from 'vitepress-plugin-twoslash'
 import userConfig from '../../../../docs/config'
 import viteConfig from './vite.config'
 

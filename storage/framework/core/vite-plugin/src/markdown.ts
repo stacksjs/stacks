@@ -16,6 +16,7 @@ export function markdown(): Plugin {
           rel: 'noopener',
         },
       })
+
       md.use(
         await Shiki({
           defaultColor: false,

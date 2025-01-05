@@ -1,4 +1,4 @@
-import { transformerTwoslash } from 'vitepress-plugin-twoslash'
-import TwoSlashFloatingVue from 'vitepress-plugin-twoslash/client'
+import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
+import TwoSlashFloatingVue from '@shikijs/vitepress-twoslash/client'
 
 export { transformerTwoslash, TwoSlashFloatingVue }

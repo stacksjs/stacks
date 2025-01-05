@@ -16,7 +16,7 @@ const result = await Bun.build({
     '@vitejs/plugin-vue',
     '@vite-pwa/vitepress',
     'vitepress',
-    'vitepress-plugin-twoslash',
+    '@shikijs/vitepress-twoslash',
     '@stacksjs/config',
     '@stacksjs/alias',
     '@stacksjs/path',
