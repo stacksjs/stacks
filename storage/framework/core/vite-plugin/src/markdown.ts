@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
+import Shiki from '@shikijs/markdown-it'
 import LinkAttributes from 'markdown-it-link-attributes'
-import Shiki from 'markdown-it-shikiji'
 import Markdown from 'unplugin-vue-markdown/vite'
 
 export function markdown(): Plugin {
@@ -20,8 +20,8 @@ export function markdown(): Plugin {
         await Shiki({
           defaultColor: false,
           themes: {
-            light: 'vitesse-light',
-            dark: 'vitesse-dark',
+            light: 'github-light',
+            dark: 'github-dark',
           },
         }),
       )

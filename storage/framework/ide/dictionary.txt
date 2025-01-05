@@ -288,6 +288,7 @@ sfc
 sfcs
 shiki
 shikiji
+shikijs
 showcaseable
 sigv
 singleline

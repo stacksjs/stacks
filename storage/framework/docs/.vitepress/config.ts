@@ -24,8 +24,8 @@ export default withPwa(
 
     markdown: {
       theme: {
-        light: 'vitesse-light',
-        dark: 'vitesse-dark',
+        light: 'github-light',
+        dark: 'github-dark',
       },
 
       codeTransformers: [
