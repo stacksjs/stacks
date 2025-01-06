@@ -1,10 +1,13 @@
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
+  createMigration,
   createModel,
   createNotification,
+  createPage,
   invoke,
   makeAction,
+  makeCertificate,
   makeComponent,
   makeDatabase,
   makeFunction,
@@ -13,10 +16,9 @@ import {
   makeQueueTable,
   makeStack,
 } from '@stacksjs/actions'
-import { intro, italic, outro, runCommand } from '@stacksjs/cli'
-import { localUrl } from '@stacksjs/config'
+import { intro, italic, outro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
-import { path as p } from '@stacksjs/path'
+
 import { ExitCode } from '@stacksjs/types'
 
 export function make(buddy: CLI): void {
@@ -41,21 +43,21 @@ export function make(buddy: CLI): void {
   }
 
   buddy
-    .command('make', 'The make command')
+    .command('make [make]', 'The make command')
     .option('-a, --action [action]', descriptions.action, { default: false })
-    .option('-m, --model [model]', descriptions.model, { default: false })
     .option('-c, --component [component]', descriptions.component, { default: false })
-    .option('-p, --page [page]', descriptions.page, { default: false })
+    .option('-d, --database [database]', descriptions.database, { default: false })
+    .option('-f, --factory [factory]', descriptions.factory, { default: false })
     .option('-f, --function [function]', descriptions.function, { default: false })
     .option('-l, --language [language]', descriptions.language, { default: false })
-    .option('-d, --database [database]', descriptions.database, { default: false })
+    .option('-m, --model [model]', descriptions.model, { default: false })
+    .option('-p, --page [page]', descriptions.page, { default: false })
     .option('-m, --migration [migration]', descriptions.migration, { default: false })
-    .option('-f, --factory [factory]', descriptions.factory, { default: false })
     .option('-n, --notification [notification]', descriptions.notification, { default: false })
     .option('-qt, --queue-table', descriptions.queue, { default: false })
     .option('-s, --stack [stack]', descriptions.stack, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action(async (make: string | undefined, options: MakeOptions) => {
       log.debug('Running `buddy make` ...', options)
 
       const name = buddy.args[0]
@@ -63,6 +65,47 @@ export function make(buddy: CLI): void {
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
         process.exit()
+      }
+
+      switch (make) {
+        case 'action':
+          await makeAction(options)
+          break
+        case 'certificate':
+          await makeCertificate()
+          break
+        case 'component':
+          await makeComponent(options)
+          break
+        case 'database':
+          makeDatabase(options)
+          break
+        case 'function':
+          await makeFunction(options)
+          break
+        case 'language':
+          await makeLanguage(options)
+          break
+        case 'migration':
+          await createMigration(options)
+          break
+        case 'model':
+          await createModel(options)
+          break
+        case 'page':
+          await createPage(options)
+          break
+        case 'notification':
+          await createNotification(options)
+          break
+        case 'queue:table':
+          await makeQueueTable()
+          break
+        case 'stack':
+          await makeStack(options)
+          break
+
+        default:
       }
 
       // TODO: uncomment this when prompt is ready
@@ -95,6 +138,36 @@ export function make(buddy: CLI): void {
       await invoke(options)
 
       process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('make:action [name]', descriptions.action)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: MakeOptions) => {
+      log.info('Running `buddy make:action` ...')
+      log.debug('Running `buddy make:action` ...', name, options)
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name. Read more about the documentation here.')
+        process.exit()
+      }
+
+      await makeAction(options)
+    })
+
+  buddy
+    .command('make:certificate', descriptions.certificate)
+    .alias('make:cert')
+    .example('buddy make:certificate')
+    .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make:certificate` ...', options)
+
+      await makeCertificate()
     })
 
   buddy
@@ -158,26 +231,6 @@ export function make(buddy: CLI): void {
     })
 
   buddy
-    .command('make:view [name]', descriptions.page)
-    .alias('make:page [name]')
-    .option('-n, --name [name]', descriptions.name, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name: string, options: MakeOptions) => {
-      log.debug('Running `buddy make:view` ...', options)
-
-      name = name ?? options.name
-      options.name = name
-
-      if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
-      }
-
-      await makePage(options)
-    })
-
-  buddy
     .command('make:function [name]', descriptions.function)
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
@@ -205,6 +258,44 @@ export function make(buddy: CLI): void {
       }
 
       await makeLanguage(options)
+    })
+
+  buddy
+    .command('make:migration [name]', descriptions.migration)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action((name: string, options: MakeOptions) => {
+      log.debug('Running `buddy make:migration` ...', options)
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a migration name')
+        process.exit()
+      }
+
+      // log.info(path)
+    })
+
+  buddy
+    .command('make:model [name]', descriptions.model)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: MakeOptions) => {
+      log.debug('Running `buddy make:model` ...', options)
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a model name')
+        process.exit()
+      }
+
+      await createModel(options)
     })
 
   buddy
@@ -246,6 +337,16 @@ export function make(buddy: CLI): void {
     })
 
   buddy
+    .command('make:queue-table', descriptions.migration)
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make queue:table` ...', options)
+
+      await makeQueueTable()
+    })
+
+  buddy
     .command('make:stack [name]', descriptions.stack)
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
@@ -265,13 +366,13 @@ export function make(buddy: CLI): void {
     })
 
   buddy
-    .command('make:action [name]', descriptions.action)
+    .command('make:view [name]', descriptions.page)
+    .alias('make:page [name]')
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (name: string, options: MakeOptions) => {
-      log.info('Running `buddy make:action` ...')
-      log.debug('Running `buddy make:action` ...', name, options)
+      log.debug('Running `buddy make:view` ...', options)
 
       name = name ?? options.name
       options.name = name
@@ -281,77 +382,7 @@ export function make(buddy: CLI): void {
         process.exit()
       }
 
-      await makeAction(options)
-    })
-
-  buddy
-    .command('make:model [name]', descriptions.model)
-    .option('-n, --name [name]', descriptions.name, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (name: string, options: MakeOptions) => {
-      log.debug('Running `buddy make:model` ...', options)
-
-      name = name ?? options.name
-      options.name = name
-
-      if (!name) {
-        log.error('You need to specify a model name')
-        process.exit()
-      }
-
-      await createModel(options)
-    })
-
-  buddy
-    .command('make:migration [name]', descriptions.migration)
-    .option('-n, --name [name]', descriptions.name, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action((name: string, options: MakeOptions) => {
-      log.debug('Running `buddy make:migration` ...', options)
-
-      name = name ?? options.name
-      options.name = name
-
-      if (!name) {
-        log.error('You need to specify a migration name')
-        process.exit()
-      }
-
-      // log.info(path)
-    })
-
-  buddy
-    .command('make:certificate', descriptions.certificate)
-    .alias('make:cert')
-    .example('buddy make:certificate')
-    .action(async (options: MakeOptions) => {
-      log.debug('Running `buddy make:certificate` ...', options)
-
-      const domain = await localUrl()
-
-      log.info(`Creating SSL certificate...`)
-      await runCommand(`tlsx ${domain}`, {
-        cwd: p.storagePath('keys'),
-      })
-      log.success('Certificate created')
-
-      log.info(`Installing SSL certificate...`)
-      await runCommand(`tlsx -install`, {
-        cwd: p.storagePath('keys'),
-      })
-      log.success('Certificate installed')
-    })
-
-  buddy
-    .command('make:queue-table', descriptions.migration)
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
-      log.debug('Running `buddy make queue:table` ...', options)
-
-      await makeQueueTable()
+      await makePage(options)
     })
 
   buddy.on('make:*', () => {

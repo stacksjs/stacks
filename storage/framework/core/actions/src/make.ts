@@ -1,6 +1,7 @@
 import type { MakeOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { italic } from '@stacksjs/cli'
+import { italic, runCommand } from '@stacksjs/cli'
+import { localUrl } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -313,6 +314,24 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 export async function makeQueueTable(): Promise<void> {
   await runAction(Action.QueueTable)
+}
+
+export async function makeCertificate(): Promise<void> {
+  const domain = await localUrl()
+
+  log.info(`Creating SSL certificate...`)
+  await runCommand(`tlsx ${domain}`, {
+    cwd: p.storagePath('keys'),
+  })
+
+  log.success('Certificate created')
+
+  log.info(`Installing SSL certificate...`)
+  await runCommand(`tlsx -install`, {
+    cwd: p.storagePath('keys'),
+  })
+
+  log.success('Certificate installed')
 }
 
 export async function createModel(options: MakeOptions): Promise<void> {

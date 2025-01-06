@@ -18,6 +18,7 @@ export {
   createNotification,
   createPage,
   makeAction,
+  makeCertificate,
   makeComponent,
   makeDatabase,
   makeFunction,
