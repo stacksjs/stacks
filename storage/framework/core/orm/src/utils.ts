@@ -41,15 +41,12 @@ export function getTableName(model: Model, modelPath: string): string {
 }
 
 export function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  // Create an array of the model names
   const models = [formattedModelName, modelRelationTable]
 
-  // Sort the array alphabetically
   models.sort()
 
   models[0] = singular(models[0] || '')
 
-  // Join the sorted array with an underscore
   const pivotTableName = models.join('_')
 
   return pivotTableName

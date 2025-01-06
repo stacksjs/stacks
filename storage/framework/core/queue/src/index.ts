@@ -22,4 +22,4 @@ export class Job {
   }
 }
 
-export { runJob } from './run'
+export { runJob } from './job'
