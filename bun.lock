@@ -1095,7 +1095,6 @@
       "dependencies": {
         "@stacksjs/utils": "storage/framework/core/utils",
         "@stripe/stripe-js": "^5.4.0",
-        "@types/stripe": "^8.0.417",
         "@vue-stripe/vue-stripe": "^4.5.0",
         "stripe": "^17.5.0",
       },
@@ -2719,7 +2718,7 @@
 
     "@stacksjs/payment": ["@stacksjs/payment@workspace:storage/framework/core/components/payment", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.48.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^0.22.0" } }],
 
-    "@stacksjs/payments": ["@stacksjs/payments@workspace:storage/framework/core/payments", { "dependencies": { "@stacksjs/utils": "storage/framework/core/utils", "@stripe/stripe-js": "^5.4.0", "@types/stripe": "^8.0.417", "@vue-stripe/vue-stripe": "^4.5.0", "stripe": "^17.5.0" }, "devDependencies": { "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development" } }],
+    "@stacksjs/payments": ["@stacksjs/payments@workspace:storage/framework/core/payments", { "dependencies": { "@stacksjs/utils": "storage/framework/core/utils", "@stripe/stripe-js": "^5.4.0", "@vue-stripe/vue-stripe": "^4.5.0", "stripe": "^17.5.0" }, "devDependencies": { "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development" } }],
 
     "@stacksjs/popover": ["@stacksjs/popover@workspace:storage/framework/core/components/popover", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.48.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "0.65.3", "unplugin-icons": "^0.22.0" } }],
 
@@ -2910,8 +2909,6 @@
     "@types/sinon": ["@types/sinon@17.0.3", "", { "dependencies": { "@types/sinonjs__fake-timers": "*" } }, "sha512-j3uovdn8ewky9kRBG19bOwaZbexJu/XjtkHyjvUgt4xfPFz18dcORIMqnYh66Fx3Powhcr85NT5+er3+oViapw=="],
 
     "@types/sinonjs__fake-timers": ["@types/sinonjs__fake-timers@8.1.5", "", {}, "sha512-mQkU2jY8jJEF7YHjHvsQO8+3ughTL1mcnn96igfhONmR+fUPSKIkefQYpSe8bsly2Ep7oQbn/6VG5/9/0qcArQ=="],
-
-    "@types/stripe": ["@types/stripe@8.0.417", "", { "dependencies": { "stripe": "*" } }, "sha512-PTuqskh9YKNENnOHGVJBm4sM0zE8B1jZw1JIskuGAPkMB+OH236QeN8scclhYGPA4nG6zTtPXgwpXdp+HPDTVw=="],
 
     "@types/tar": ["@types/tar@6.1.13", "", { "dependencies": { "@types/node": "*", "minipass": "^4.0.0" } }, "sha512-IznnlmU5f4WcGTh2ltRu/Ijpmk8wiWXfF0VA4s+HPjHZgvFggk1YaIkbo5krX/zUCzWF8N/l4+W/LNxnvAJ8nw=="],
 
