@@ -10,6 +10,7 @@ import {
   makeFunction,
   makeLanguage,
   makePage,
+  makeQueueTable,
   makeStack,
 } from '@stacksjs/actions'
 import { intro, italic, outro, runCommand } from '@stacksjs/cli'
@@ -31,6 +32,7 @@ export function make(buddy: CLI): void {
     factory: 'Create a new factory',
     notification: 'Create a new notification',
     name: 'The name of the action',
+    queue: 'Make queue migration',
     stack: 'Create a new stack',
     certificate: 'Create a new SSL Certificate',
     select: 'What are you trying to make?',
@@ -50,6 +52,7 @@ export function make(buddy: CLI): void {
     .option('-m, --migration [migration]', descriptions.migration, { default: false })
     .option('-f, --factory [factory]', descriptions.factory, { default: false })
     .option('-n, --notification [notification]', descriptions.notification, { default: false })
+    .option('-qt, --queue-table', descriptions.queue, { default: false })
     .option('-s, --stack [stack]', descriptions.stack, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
@@ -339,6 +342,16 @@ export function make(buddy: CLI): void {
         cwd: p.storagePath('keys'),
       })
       log.success('Certificate installed')
+    })
+
+  buddy
+    .command('make:queue-table', descriptions.migration)
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: MakeOptions) => {
+      log.debug('Running `buddy make queue:table` ...', options)
+
+      await makeQueueTable()
     })
 
   buddy.on('make:*', () => {

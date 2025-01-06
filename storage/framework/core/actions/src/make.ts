@@ -1,10 +1,12 @@
 import type { MakeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { italic } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { frameworkPath, path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
+import { runAction } from './helpers'
 
 export async function invoke(options: MakeOptions): Promise<void> {
   if (options.component)
@@ -307,6 +309,10 @@ export async function up(db: Kysely<any>): Promise<void> {
   catch (error: any) {
     log.error(error)
   }
+}
+
+export async function makeQueueTable(): Promise<void> {
+  await runAction(Action.QueueTable)
 }
 
 export async function createModel(options: MakeOptions): Promise<void> {

@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
-import { appPath, projectPath } from '@stacksjs/path'
+import { appPath } from '@stacksjs/path'
 
 interface JobConfig {
   handle?: () => Promise<void>

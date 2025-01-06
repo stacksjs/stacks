@@ -24,6 +24,7 @@ export {
   makeLanguage,
   makeNotification,
   makePage,
+  makeQueueTable,
   makeStack,
   make as runMake,
 } from './make'
