@@ -34,11 +34,11 @@ export async function createJobsMigration(): Promise<Result<MigrationResult[] | 
 
         await Bun.write(migrationFilePath, migrationContent) // Ensure the write operation is awaited
 
-        log.success('Created jobs table')
+        log.success('Created jobs migration')
       }
     }
 
-    return ok('Database migration completed with no new migrations.')
+    return ok('Migration created.')
   }
   catch (error) {
     return err(handleError('Error creating migration', error))

@@ -67,45 +67,48 @@ export function make(buddy: CLI): void {
         process.exit()
       }
 
-      switch (make) {
-        case 'action':
-          await makeAction(options)
-          break
-        case 'certificate':
-          await makeCertificate()
-          break
-        case 'component':
-          await makeComponent(options)
-          break
-        case 'database':
-          makeDatabase(options)
-          break
-        case 'function':
-          await makeFunction(options)
-          break
-        case 'language':
-          await makeLanguage(options)
-          break
-        case 'migration':
-          await createMigration(options)
-          break
-        case 'model':
-          await createModel(options)
-          break
-        case 'page':
-          await createPage(options)
-          break
-        case 'notification':
-          await createNotification(options)
-          break
-        case 'queue:table':
-          await makeQueueTable()
-          break
-        case 'stack':
-          await makeStack(options)
-          break
-
-        default:
+      if (make) {
+        options.name = buddy.args[1]
+        
+        switch (make) {
+          case 'action':
+            await makeAction(options)
+            break
+          case 'certificate':
+            await makeCertificate()
+            break
+          case 'component':
+            await makeComponent(options)
+            break
+          case 'database':
+            makeDatabase(options)
+            break
+          case 'function':
+            await makeFunction(options)
+            break
+          case 'language':
+            await makeLanguage(options)
+            break
+          case 'migration':
+            await createMigration(options)
+            break
+          case 'model':
+            await createModel(options)
+            break
+          case 'page':
+            await createPage(options)
+            break
+          case 'notification':
+            await createNotification(options)
+            break
+          case 'queue-table':
+            await makeQueueTable()
+            break
+          case 'stack':
+            await makeStack(options)
+            break
+          default:
+        }
       }
 
       // TODO: uncomment this when prompt is ready
