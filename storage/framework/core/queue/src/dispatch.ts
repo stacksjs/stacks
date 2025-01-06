@@ -87,7 +87,7 @@ export async function runJob(name: string, options: JobOptions = {}): Promise<vo
   }
 }
 
-export class Job implements Dispatchable {
+export class Dispatch implements Dispatchable {
   protected options: JobOptions = {}
 
   constructor(
@@ -196,31 +196,31 @@ export class Job implements Dispatchable {
 }
 
 export class JobFactory {
-  static make(name: string, payload?: any): Job {
-    return new Job(name, payload)
+  static make(name: string, payload?: any): Dispatch {
+    return new Dispatch(name, payload)
   }
 
-  static dispatch(name: string, payload?: any): Job {
-    const job = new Job(name, payload)
+  static dispatch(name: string, payload?: any): Dispatch {
+    const job = new Dispatch(name, payload)
     job.dispatch()
     return job
   }
 
   static async dispatchNow(name: string, payload?: any): Promise<void> {
-    await new Job(name, payload).dispatchNow()
+    await new Dispatch(name, payload).dispatchNow()
   }
 
-  static later(delay: number, name: string, payload?: any): Job {
-    return new Job(name, payload).delay(delay)
+  static later(delay: number, name: string, payload?: any): Dispatch {
+    return new Dispatch(name, payload).delay(delay)
   }
 
-  static chain(jobs: Job[]): Job {
+  static chain(jobs: Dispatch[]): Dispatch {
     const firstJob = jobs[0]
     return firstJob.chain(jobs.slice(1))
   }
 }
 
-export function job(name: string, payload?: any): Job {
+export function job(name: string, payload?: any): Dispatch {
   return JobFactory.make(name, payload)
 }
 
