@@ -3,14 +3,14 @@ import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
 import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { hasTableBeenMigrated } from '../drivers'
+import { hasMigrationBeenCreated } from '../drivers'
 
 const driver = database.default || ''
 
 export async function createJobsMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
     if (['sqlite', 'mysql'].includes(driver)) {
-      const hasBeenMigrated = await hasTableBeenMigrated('jobs')
+      const hasBeenMigrated = await hasMigrationBeenCreated('jobs')
 
       if (!hasBeenMigrated) {
         let migrationContent = `import type { Database } from '@stacksjs/database'\nimport { sql } from '@stacksjs/database'\n\n`
@@ -35,6 +35,8 @@ export async function createJobsMigration(): Promise<Result<MigrationResult[] | 
         await Bun.write(migrationFilePath, migrationContent) // Ensure the write operation is awaited
 
         log.success('Created jobs migration')
+      } else {
+        log.success('Jobs migration already created')
       }
     }
 
