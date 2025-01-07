@@ -58,7 +58,7 @@
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^12.3.0",
     "@vueuse/shared": "^12.3.0",
-    "ace-builds": "^1.37.2",
+    "ace-builds": "^1.37.3",
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
