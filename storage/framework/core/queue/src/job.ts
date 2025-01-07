@@ -4,6 +4,8 @@ import { log } from '@stacksjs/cli'
 import { appPath } from '@stacksjs/path'
 import { storeJob } from './utils'
 
+const queueDriver = 'database'
+
 interface JobConfig {
   handle?: () => Promise<void>
   action?: string | (() => Promise<void>)
@@ -115,16 +117,19 @@ export class Queue implements Dispatchable {
     const queueName = this.options.queue || 'default'
 
     try {
-      // TODO: if stored in the DB, do not proceed  
-      storeJob(this.name, {
-        queue: queueName,
-        payload: this.payload,
-        context: this.options.context,
-        maxTries: this.options.maxTries,
-        timeout: this.options.timeout,
-        backoff: this.options.backoff,
-      })
-
+      if (['database', 'redis'].includes(queueDriver)) {
+        await storeJob(this.name, {
+          queue: queueName,
+          payload: this.payload,
+          context: this.options.context,
+          maxTries: this.options.maxTries,
+          timeout: this.options.timeout,
+          backoff: this.options.backoff,
+        })
+ 
+        process.exit(0)
+      }
+   
       await runJob(this.name, {
         queue: queueName,
         payload: this.payload,

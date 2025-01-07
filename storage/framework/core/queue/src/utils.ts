@@ -1,4 +1,5 @@
 import type { JobOptions } from "./job"
+import process from 'node:process'
 import Job from "../../../orm/src/models/Job"
 
 export async function storeJob(name: string, options: JobOptions): Promise<void> {
@@ -17,5 +18,5 @@ export async function storeJob(name: string, options: JobOptions): Promise<void>
     attempts: 0,
   }
 
-  Job.create(job)
+  await Job.create(job)
 }
