@@ -8,6 +8,6 @@ export async function up(db: Database<any>) {
     .addColumn('email', 'varchar(255)', col => col.unique())
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
-    .addColumn('deleted_at', 'text')
+    .addColumn('deleted_at', 'timestamp')
     .execute()
 }

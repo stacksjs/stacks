@@ -35,7 +35,8 @@ export async function createJobsMigration(): Promise<Result<MigrationResult[] | 
         await Bun.write(migrationFilePath, migrationContent) // Ensure the write operation is awaited
 
         log.success('Created jobs migration')
-      } else {
+      }
+      else {
         log.success('Jobs migration already created')
       }
     }

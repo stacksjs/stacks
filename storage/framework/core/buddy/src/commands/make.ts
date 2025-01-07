@@ -69,7 +69,7 @@ export function make(buddy: CLI): void {
 
       if (make) {
         options.name = buddy.args[1]
-        
+
         switch (make) {
           case 'action':
             await makeAction(options)

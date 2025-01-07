@@ -1,4 +1,4 @@
-import type { ErrorRequestType } from '../types/requests'
+import type { JobRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -10,23 +10,27 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataError {
+interface RequestDataJob {
   id: number
-  type: string
+  queue: string
   payload: string
+  attempts: number
+  reserved_at: date
   created_at?: Date
   updated_at?: Date
 }
-export class ErrorRequest extends Request<RequestDataError> implements ErrorRequestType {
+export class JobRequest extends Request<RequestDataJob> implements JobRequestType {
   public id = 1
-  public type = ''
+  public queue = ''
   public payload = ''
+  public attempts = 0
+  public reserved_at = ''
   public created_at = new Date()
   public updated_at = new Date()
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Error', this.all())
+      await validateField('Job', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -34,4 +38,4 @@ export class ErrorRequest extends Request<RequestDataError> implements ErrorRequ
   }
 }
 
-export const request = new ErrorRequest()
+export const request = new JobRequest()

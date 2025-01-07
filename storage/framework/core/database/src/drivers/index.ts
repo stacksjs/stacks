@@ -48,8 +48,8 @@ export async function hasMigrationBeenCreated(tableName: string): Promise<boolea
   log.debug(`hasTableBeenMigrated for table: ${tableName}`)
 
   const migrations = globSync([path.userMigrationsPath('*.ts')], { absolute: true })
-  
-  return migrations.some(path => path.includes("create-jobs-"))
+
+  return migrations.some(path => path.includes('create-jobs-'))
 }
 
 export async function getExecutedMigrations(): Promise<{ name: string }[]> {

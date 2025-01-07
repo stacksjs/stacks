@@ -326,6 +326,29 @@ export interface TransactionRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataJob {
+  id: number
+  queue: string
+  payload: string
+  attempts: number
+  reserved_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface JobRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'queue' | 'payload') => string) & ((key: 'attempts') => number) & ((key: 'reserved_at') => date)
+
+  all: () => RequestDataJob
+  id: number
+  queue: string
+  payload: string
+  attempts: number
+  reserved_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataSubscription {
   id: number
   type: string
@@ -365,17 +388,21 @@ export interface SubscriptionRequestType extends Request {
 
 interface RequestDataError {
   id: number
+  type: string
+  payload: string
   created_at?: Date
   updated_at?: Date
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: (key: 'id') => number
+  get: ((key: 'id') => number) & ((key: 'type' | 'payload') => string)
 
   all: () => RequestDataError
   id: number
+  type: string
+  payload: string
   created_at?: Date
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeSubscriptionRequestTypeErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType

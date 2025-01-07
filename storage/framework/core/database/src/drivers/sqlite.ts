@@ -257,7 +257,7 @@ async function createTableMigration(modelPath: string) {
   }
 
   if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'text')\n`
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`

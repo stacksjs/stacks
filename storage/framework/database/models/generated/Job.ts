@@ -3,8 +3,8 @@ import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'Error',
-  table: 'errors',
+  name: 'Job',
+  table: 'jobs',
   primaryKey: 'id',
   autoIncrement: true,
 
@@ -13,13 +13,13 @@ export default {
   },
 
   attributes: {
-    type: {
+    queue: {
       required: true,
       fillable: true,
       validation: {
         rule: schema.string().maxLength(255),
         message: {
-          maxLength: 'Queue must have a maximum characters of 255',
+          maxLength: 'Queue must have a maximum of 255 characters',
         },
       },
       factory: () => 'default',
@@ -34,30 +34,25 @@ export default {
       factory: () => faker.lorem.sentence(),
     },
 
-    stack: {
-      order: 3,
+    attempts: {
       fillable: true,
-      factory: () => faker.system.filePath(),
+      validation: {
+        rule: schema.number(),
+        message: {
+          number: 'attempts must be a number',
+        },
+      },
+      factory: () => faker.number.int({ min: 0, max: 10 }),
     },
 
-    status: {
+    reserved_at: {
       required: true,
       order: 4,
       fillable: true,
-
-      factory: () => faker.number.int({ min: 100, max: 599 }),
-    },
-
-    user_id: {
-      order: 5,
-      fillable: true,
-      factory: () => faker.number.int({ min: 1, max: 100 }),
-    },
-
-    additional_info: {
-      order: 6,
-      fillable: true,
-      factory: () => faker.lorem.paragraph(),
+      validation: {
+        rule: schema.date(),
+      },
+      factory: () => '2024-12-23 13:32:19',
     },
   },
 } satisfies Model

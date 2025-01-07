@@ -1,6 +1,7 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
+import type { JobsTable } from '../src/models/Job'
 import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
@@ -65,6 +66,7 @@ export interface Database {
   products: ProductsTable
   payment_methods: PaymentMethodsTable
   transactions: TransactionsTable
+  jobs: JobsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
   passkeys: PasskeysTable

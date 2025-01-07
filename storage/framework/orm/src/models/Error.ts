@@ -5,8 +5,8 @@ import { HttpError } from '@stacksjs/error-handling'
 
 export interface ErrorsTable {
   id?: number
-  type?: undefined
-  message?: undefined
+  type?: string
+  payload?: string
   stack?: undefined
   status?: undefined
   user_id?: undefined
@@ -48,7 +48,7 @@ interface QueryOptions {
 
 export class ErrorModel {
   private hidden = []
-  private fillable = ['type', 'message', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
+  private fillable = ['type', 'payload', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -56,8 +56,8 @@ export class ErrorModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   public id: number
-  public type: undefined | undefined
-  public message: undefined | undefined
+  public type: string | undefined
+  public payload: string | undefined
   public stack: undefined | undefined
   public status: undefined | undefined
   public user_id: undefined | undefined
@@ -69,7 +69,7 @@ export class ErrorModel {
   constructor(error: Partial<ErrorType> | null) {
     this.id = error?.id || 1
     this.type = error?.type
-    this.message = error?.message
+    this.payload = error?.payload
     this.stack = error?.stack
     this.status = error?.status
     this.user_id = error?.user_id
@@ -460,10 +460,10 @@ export class ErrorModel {
     return instance
   }
 
-  static whereMessage(value: string): ErrorModel {
+  static wherePayload(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('message', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
     return instance
   }
@@ -740,7 +740,7 @@ export class ErrorModel {
 
       id: this.id,
       type: this.type,
-      message: this.message,
+      payload: this.payload,
       stack: this.stack,
       status: this.status,
       user_id: this.user_id,
@@ -801,15 +801,15 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereType(value: undefined): Promise<ErrorModel[]> {
+export async function whereType(value: string): Promise<ErrorModel[]> {
   const query = db.selectFrom('errors').where('type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
-export async function whereMessage(value: undefined): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('message', '=', value)
+export async function wherePayload(value: string): Promise<ErrorModel[]> {
+  const query = db.selectFrom('errors').where('payload', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
