@@ -40,13 +40,9 @@ export interface JobOptions {
 export async function runJob(name: string, options: JobOptions = {}): Promise<void> {
   log.info(`Running job: ${name}`)
 
-  storeJob(name, options)
-
   try {
     const jobModule = await import(appPath(`Jobs/${name}.ts`))
     const job = jobModule.default as JobConfig
-
- 
 
     if (options.payload) {
       // Attach payload to the job instance if it exists
@@ -119,6 +115,16 @@ export class Queue implements Dispatchable {
     const queueName = this.options.queue || 'default'
 
     try {
+      // TODO: if stored in the DB, do not proceed  
+      storeJob(this.name, {
+        queue: queueName,
+        payload: this.payload,
+        context: this.options.context,
+        maxTries: this.options.maxTries,
+        timeout: this.options.timeout,
+        backoff: this.options.backoff,
+      })
+
       await runJob(this.name, {
         queue: queueName,
         payload: this.payload,

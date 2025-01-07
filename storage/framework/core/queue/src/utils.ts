@@ -1,14 +1,11 @@
-import type { JobOptions } from "@stacksjs/types"
-import { appPath } from "@stacksjs/path"
+import type { JobOptions } from "./job"
 import Job from "../../../orm/src/models/Job"
 
 export async function storeJob(name: string, options: JobOptions): Promise<void> {
   const queue = 'default'
 
-  const path = appPath(`Jobs/${name}.ts`, { relative: true })
-
   const payloadJson = JSON.stringify({
-    displayName: path,
+    displayName: `app/Jobs/${name}.ts`,
     maxTries: options.tries || 1,
     timeout: null,
     timeoutAt: null
