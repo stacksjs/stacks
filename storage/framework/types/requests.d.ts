@@ -389,18 +389,24 @@ export interface SubscriptionRequestType extends Request {
 interface RequestDataError {
   id: number
   type: string
-  payload: string
+  message: string
+  stack: string
+  status: boolean
+  additional_info: string
   created_at?: Date
   updated_at?: Date
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'type' | 'payload') => string)
+  get: ((key: 'id') => number) & ((key: 'type' | 'message' | 'stack' | 'additional_info') => string) & ((key: 'status') => boolean)
 
   all: () => RequestDataError
   id: number
   type: string
-  payload: string
+  message: string
+  stack: string
+  status: boolean
+  additional_info: string
   created_at?: Date
   updated_at?: Date
 }

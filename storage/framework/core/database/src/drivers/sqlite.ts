@@ -65,7 +65,6 @@ export async function dropSqliteTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('errors').ifExists().execute()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -140,7 +139,7 @@ export async function generateSqliteMigration(modelPath: string): Promise<void> 
   // if the fields have not changed, we need to migrate the table
 
   // we need to check if this tableName has already been migrated
-  const hasBeenMigrated = await hasTableBeenMigrated(tableName)
+  const hasBeenMigrated = false
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 

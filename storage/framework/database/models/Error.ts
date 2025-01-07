@@ -19,44 +19,55 @@ export default {
       validation: {
         rule: schema.string().maxLength(255),
         message: {
-          maxLength: 'Queue must have a maximum characters of 255',
+          maxLength: 'type must have a maximum of 255 characters',
         },
       },
-      factory: () => 'default',
+      factory: () => faker.system.fileType(),
     },
 
-    payload: {
+    message: {
       required: true,
       fillable: true,
       validation: {
         rule: schema.string(),
+        message: {
+          string: 'message must be a string',
+        },
       },
       factory: () => faker.lorem.sentence(),
     },
 
     stack: {
-      order: 3,
       fillable: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'stack must be a text',
+        },
+      },
       factory: () => faker.system.filePath(),
     },
 
     status: {
       required: true,
-      order: 4,
       fillable: true,
-
-      factory: () => faker.number.int({ min: 100, max: 599 }),
-    },
-
-    user_id: {
-      order: 5,
-      fillable: true,
-      factory: () => faker.number.int({ min: 1, max: 100 }),
+      validation: {
+        rule: schema.boolean(),
+        message: {
+          string: 'stack must be a boolean',
+        },
+      },
+      factory: () => faker.number.int({ min: 0, max: 1 }),
     },
 
     additional_info: {
-      order: 6,
       fillable: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'additional_info must be a text',
+        },
+      },
       factory: () => faker.lorem.paragraph(),
     },
   },

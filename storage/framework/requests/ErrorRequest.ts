@@ -13,14 +13,20 @@ interface CustomAttributes {
 interface RequestDataError {
   id: number
   type: string
-  payload: string
+  message: string
+  stack: string
+  status: boolean
+  additional_info: string
   created_at?: Date
   updated_at?: Date
 }
 export class ErrorRequest extends Request<RequestDataError> implements ErrorRequestType {
   public id = 1
   public type = ''
-  public payload = ''
+  public message = ''
+  public stack = ''
+  public status = false
+  public additional_info = ''
   public created_at = new Date()
   public updated_at = new Date()
 

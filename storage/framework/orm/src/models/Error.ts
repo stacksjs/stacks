@@ -6,11 +6,10 @@ import { HttpError } from '@stacksjs/error-handling'
 export interface ErrorsTable {
   id?: number
   type?: string
-  payload?: string
-  stack?: undefined
-  status?: undefined
-  user_id?: undefined
-  additional_info?: undefined
+  message?: string
+  stack?: string
+  status?: boolean
+  additional_info?: string
 
   created_at?: Date
 
@@ -48,7 +47,7 @@ interface QueryOptions {
 
 export class ErrorModel {
   private hidden = []
-  private fillable = ['type', 'payload', 'stack', 'status', 'user_id', 'additional_info', 'uuid']
+  private fillable = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -57,11 +56,10 @@ export class ErrorModel {
   protected hasSelect: boolean
   public id: number
   public type: string | undefined
-  public payload: string | undefined
-  public stack: undefined | undefined
-  public status: undefined | undefined
-  public user_id: undefined | undefined
-  public additional_info: undefined | undefined
+  public message: string | undefined
+  public stack: string | undefined
+  public status: boolean | undefined
+  public additional_info: string | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
@@ -69,10 +67,9 @@ export class ErrorModel {
   constructor(error: Partial<ErrorType> | null) {
     this.id = error?.id || 1
     this.type = error?.type
-    this.payload = error?.payload
+    this.message = error?.message
     this.stack = error?.stack
     this.status = error?.status
-    this.user_id = error?.user_id
     this.additional_info = error?.additional_info
 
     this.created_at = error?.created_at
@@ -460,10 +457,10 @@ export class ErrorModel {
     return instance
   }
 
-  static wherePayload(value: string): ErrorModel {
+  static whereMessage(value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('message', '=', value)
 
     return instance
   }
@@ -480,14 +477,6 @@ export class ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
-
-    return instance
-  }
-
-  static whereUserId(value: string): ErrorModel {
-    const instance = new ErrorModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('user_id', '=', value)
 
     return instance
   }
@@ -740,10 +729,9 @@ export class ErrorModel {
 
       id: this.id,
       type: this.type,
-      payload: this.payload,
+      message: this.message,
       stack: this.stack,
       status: this.status,
-      user_id: this.user_id,
       additional_info: this.additional_info,
 
       created_at: this.created_at,
@@ -808,35 +796,28 @@ export async function whereType(value: string): Promise<ErrorModel[]> {
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
-export async function wherePayload(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('payload', '=', value)
+export async function whereMessage(value: string): Promise<ErrorModel[]> {
+  const query = db.selectFrom('errors').where('message', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
-export async function whereStack(value: undefined): Promise<ErrorModel[]> {
+export async function whereStack(value: string): Promise<ErrorModel[]> {
   const query = db.selectFrom('errors').where('stack', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
-export async function whereStatus(value: undefined): Promise<ErrorModel[]> {
+export async function whereStatus(value: boolean): Promise<ErrorModel[]> {
   const query = db.selectFrom('errors').where('status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
-export async function whereUserId(value: undefined): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('user_id', '=', value)
-  const results = await query.execute()
-
-  return results.map(modelItem => new ErrorModel(modelItem))
-}
-
-export async function whereAdditionalInfo(value: undefined): Promise<ErrorModel[]> {
+export async function whereAdditionalInfo(value: string): Promise<ErrorModel[]> {
   const query = db.selectFrom('errors').where('additional_info', '=', value)
   const results = await query.execute()
 
