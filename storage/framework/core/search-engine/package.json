@@ -46,7 +46,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@opensearch-project/opensearch": "^2.13.0",
+    "@opensearch-project/opensearch": "^3.0.0",
     "meilisearch": "^0.47.0"
   },
   "devDependencies": {
