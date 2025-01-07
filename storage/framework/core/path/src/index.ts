@@ -306,8 +306,13 @@ export function arraysPath(path?: string): string {
  * console.log(appPath('Actions/DummyAction.ts')) // Outputs the absolute path to 'Actions/DummyAction.ts' within the app directory.
  * ```
  */
-export function appPath(path?: string): string {
-  return projectPath(`app/${path || ''}`)
+export function appPath(path?: string, options?: { relative?: boolean, cwd?: string }): string {
+  const absolutePath = projectPath(`app/${path || ''}`)
+
+  if (options?.relative)
+    return relative(options.cwd || process.cwd(), absolutePath)
+
+  return absolutePath
 }
 
 /**

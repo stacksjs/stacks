@@ -2,6 +2,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
 import { appPath } from '@stacksjs/path'
+import { storeJob } from './utils'
 
 interface JobConfig {
   handle?: () => Promise<void>
@@ -38,9 +39,14 @@ export interface JobOptions {
 
 export async function runJob(name: string, options: JobOptions = {}): Promise<void> {
   log.info(`Running job: ${name}`)
+
+  storeJob(name, options)
+
   try {
     const jobModule = await import(appPath(`Jobs/${name}.ts`))
     const job = jobModule.default as JobConfig
+
+ 
 
     if (options.payload) {
       // Attach payload to the job instance if it exists

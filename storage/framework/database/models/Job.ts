@@ -46,7 +46,6 @@ export default {
     },
 
     reserved_at: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
