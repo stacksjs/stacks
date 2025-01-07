@@ -50,7 +50,7 @@
     "@rollup/pluginutils": "^5.1.4",
     "@stacksjs/validation": "workspace:*",
     "@types/aws4": "^1.11.6",
-    "@types/bun": "^1.1.14",
+    "@types/bun": "^1.1.15",
     "@types/crypto-js": "^4.2.2",
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.5",
@@ -73,7 +73,7 @@
     "vue": "^3.5.13"
   },
   "devDependencies": {
-    "aws-cdk-lib": "^2.174.0",
+    "aws-cdk-lib": "^2.174.1",
     "typescript": "^5.7.2"
   }
 }
