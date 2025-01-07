@@ -5,7 +5,6 @@ import { type Err, err, handleError, type Ok, ok, type Result } from '@stacksjs/
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, type MigrationResult, Migrator } from 'kysely'
-import { createErrorsTable } from './custom/errors'
 import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { db } from './utils'
 
@@ -83,6 +82,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
     log.info('Generating migrations...')
 
     const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+    const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
 
     for (const file of modelFiles) {
       log.debug('Generating migration for:', file)
@@ -90,7 +90,11 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
       await generateMigration(file)
     }
 
-    await createErrorsTable()
+    for (const coreFile of coreModelFiles) {
+      log.debug('Generating migration for:', coreFile)
+
+      await generateMigration(coreFile)
+    }
 
     log.success('Migrations generated')
     return ok('Migrations generated')

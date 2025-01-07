@@ -196,13 +196,6 @@ async function createTableMigration(modelPath: string) {
   if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
-  if (useBillable && tableName === 'users') {
-    await createTableMigration(path.storagePath('framework/database/models/generated/Subscription.ts'))
-    await createTableMigration(path.storagePath('framework/database/models/generated/PaymentMethod.ts'))
-    await createTableMigration(path.storagePath('framework/database/models/generated/Transaction.ts'))
-    await createTableMigration(path.storagePath('framework/database/models/generated/Product.ts'))
-  }
-
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
