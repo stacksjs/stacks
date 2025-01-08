@@ -1,6 +1,6 @@
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { Job, type JobModel } from '../../../orm/src/models/Job'
+import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -20,12 +20,9 @@ export async function processJobs(queue: string | undefined): Promise<Ok<string,
 }
 
 async function executeJobs(queue: string | undefined): Promise<void> {
-  let jobs: JobModel[]
-
-  if (queue)
-    jobs = await Job.whereQueue(queue).get()
-  else
-    jobs = await Job.all()
+  const jobs = await Job.when(queue !== undefined, (query: any) => {
+    return query.where('queue', queue)
+  }).get()
 
   for (const job of jobs) {
     if (job.payload) {

@@ -1557,7 +1557,7 @@ export async function generateModelString(
 
   jsonFields += '\nid: this.id,\n'
   for (const attribute of attributes) {
-    const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+    const entity = mapEntity(attribute)
 
     fieldString += ` ${snakeCase(attribute.field)}?: ${entity}\n     `
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
@@ -2445,6 +2445,14 @@ export async function generateModelString(
 
     export default ${modelName}
     `
+}
+
+function mapEntity(attribute: ModelElement): string | undefined {
+  const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+
+  const mapEntity = entity === 'date' ? 'Date' : entity
+
+  return mapEntity
 }
 
 export async function generateModelFiles(modelStringFile?: string): Promise<void> {

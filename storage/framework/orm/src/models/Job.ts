@@ -9,7 +9,7 @@ export interface JobsTable {
   payload?: string
   attempts?: number
   available_at?: number
-  reserved_at?: date
+  reserved_at?: Date
 
   created_at?: Date
 
@@ -59,7 +59,7 @@ export class JobModel {
   public payload: string | undefined
   public attempts: number | undefined
   public available_at: number | undefined
-  public reserved_at: date | undefined
+  public reserved_at: Date | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
@@ -840,7 +840,7 @@ export async function whereAvailableAt(value: number): Promise<JobModel[]> {
   return results.map(modelItem => new JobModel(modelItem))
 }
 
-export async function whereReservedAt(value: date): Promise<JobModel[]> {
+export async function whereReservedAt(value: Date): Promise<JobModel[]> {
   const query = db.selectFrom('jobs').where('reserved_at', '=', value)
   const results = await query.execute()
 
