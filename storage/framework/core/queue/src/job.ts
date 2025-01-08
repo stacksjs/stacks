@@ -98,6 +98,22 @@ export class Queue implements Dispatchable {
   ) { }
 
   async dispatch(): Promise<void> {
+    const queueName = this.options.queue || 'default'
+
+    if (['database', 'redis'].includes(queueDriver)) {
+      await storeJob(this.name, {
+        queue: queueName,
+        payload: this.payload,
+        context: this.options.context,
+        maxTries: this.options.maxTries,
+        timeout: this.options.timeout,
+        backoff: this.options.backoff,
+        delay: this.options.delay
+      })
+
+      process.exit(0)
+    }
+
     if (this.options.afterResponse) {
       process.on('beforeExit', async () => {
         await this.dispatchNow()
@@ -112,21 +128,7 @@ export class Queue implements Dispatchable {
       return
     }
 
-    const queueName = this.options.queue || 'default'
-
     try {
-      if (['database', 'redis'].includes(queueDriver)) {
-        await storeJob(this.name, {
-          queue: queueName,
-          payload: this.payload,
-          context: this.options.context,
-          maxTries: this.options.maxTries,
-          timeout: this.options.timeout,
-          backoff: this.options.backoff,
-        })
-
-        process.exit(0)
-      }
 
       await runJob(this.name, {
         queue: queueName,
