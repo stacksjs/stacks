@@ -464,16 +464,25 @@ export class PaymentMethodModel {
 
   static when(
     condition: boolean,
-    callback: () => void,
+    callback: (query: any) => void,
   ): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     // Execute callback if condition is true
-    if (condition) {
-      callback(instance.query)
-    }
+    if (condition)
+      callback(instance.selectFromQuery)
 
     return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => void,
+  ): PaymentMethodModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
   }
 
   static whereNull(column: string): PaymentMethodModel {
