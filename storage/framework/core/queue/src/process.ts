@@ -1,6 +1,6 @@
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { Job } from '../../../orm/src/models/Job'
+import { Job, type JobModel } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -11,16 +11,21 @@ interface QueuePayload {
   timeOutAt: Date | null
 }
 
-export async function processJobs(): Promise<Ok<string, never>> {
+export async function processJobs(queue: string | undefined): Promise<Ok<string, never>> {
   setInterval(async () => {
-    await executeJobs()
+    await executeJobs(queue)
   }, 1000)
 
   return ok('All jobs processed successfully!')
 }
 
-async function executeJobs(): Promise<void> {
-  const jobs = await Job.all()
+async function executeJobs(queue: string | undefined): Promise<void> {
+  let jobs: JobModel[]
+
+  if (queue)
+    jobs = await Job.whereQueue(queue).get()
+  else
+    jobs = await Job.all()
 
   for (const job of jobs) {
     if (job.payload) {
@@ -29,9 +34,10 @@ async function executeJobs(): Promise<void> {
 
       const payload: QueuePayload = JSON.parse(job.payload)
       const currentAttempts = job.attempts || 0
+
       log.info(`Running ${payload.displayName}`)
 
-      job.update({ attempts: currentAttempts + 1 })
+      await job.update({ attempts: currentAttempts + 1 })
 
       try {
         await runJob(payload.name, {

@@ -7,14 +7,15 @@ import { ExitCode } from '@stacksjs/types'
 
 export function queue(buddy: CLI): void {
   const descriptions = {
-    queue: 'Runs the queue worker',
     project: 'Target a specific project',
+    queue: 'Run a specific queue',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('queue:work', descriptions.queue)
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-q, --queue [queue]', descriptions.queue, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: QueueOptions) => {
       log.debug('Running `buddy queue:work` ...', options)
