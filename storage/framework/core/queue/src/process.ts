@@ -12,6 +12,15 @@ interface QueuePayload {
 }
 
 export async function processJobs(): Promise<Ok<string, never>> {
+  setInterval( async () => {
+    await executeJobs()
+  }, 1000)
+
+
+  return ok('All jobs processed successfully!')
+}
+
+async function executeJobs() {
   const jobs = await Job.all()
 
   for (const job of jobs) {
@@ -41,6 +50,4 @@ export async function processJobs(): Promise<Ok<string, never>> {
       log.info(`Successfully ran ${payload.displayName}`)
     }
   }
-
-  return ok('All jobs processed successfully!')
 }
