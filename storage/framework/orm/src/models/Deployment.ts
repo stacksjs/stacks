@@ -452,6 +452,20 @@ export class DeploymentModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 

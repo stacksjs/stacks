@@ -423,6 +423,20 @@ export class ErrorModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): ErrorModel {
     const instance = new ErrorModel(null)
 

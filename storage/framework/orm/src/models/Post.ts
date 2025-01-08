@@ -427,6 +427,20 @@ export class PostModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): PostModel {
+    const instance = new PostModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): PostModel {
     const instance = new PostModel(null)
 

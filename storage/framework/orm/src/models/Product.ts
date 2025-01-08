@@ -439,6 +439,20 @@ export class ProductModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): ProductModel {
+    const instance = new ProductModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): ProductModel {
     const instance = new ProductModel(null)
 

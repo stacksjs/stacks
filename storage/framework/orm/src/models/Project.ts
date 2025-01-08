@@ -420,6 +420,20 @@ export class ProjectModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): ProjectModel {
     const instance = new ProjectModel(null)
 

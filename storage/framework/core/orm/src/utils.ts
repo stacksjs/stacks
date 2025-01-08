@@ -2084,6 +2084,20 @@ export async function generateModelString(
         return instance
       }
 
+      static when(
+        condition: boolean,
+        callback: () => void
+      ): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        // Execute callback if condition is true
+        if (condition) {
+          callback(instance.query)
+        }
+
+        return instance
+      }
+
       static whereNull(column: string): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 

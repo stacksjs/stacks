@@ -436,6 +436,20 @@ export class TeamModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): TeamModel {
+    const instance = new TeamModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): TeamModel {
     const instance = new TeamModel(null)
 

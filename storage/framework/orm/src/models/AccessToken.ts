@@ -422,6 +422,20 @@ export class AccessTokenModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 

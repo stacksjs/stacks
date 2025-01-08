@@ -411,6 +411,20 @@ export class SubscriberModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 

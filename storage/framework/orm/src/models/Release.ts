@@ -411,6 +411,20 @@ export class ReleaseModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 

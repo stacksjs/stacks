@@ -502,6 +502,20 @@ export class UserModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: () => void,
+  ): UserModel {
+    const instance = new UserModel(null)
+
+    // Execute callback if condition is true
+    if (condition) {
+      callback(instance.query)
+    }
+
+    return instance
+  }
+
   static whereNull(column: string): UserModel {
     const instance = new UserModel(null)
 
