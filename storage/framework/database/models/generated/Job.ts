@@ -45,8 +45,14 @@ export default {
       factory: () => faker.number.int({ min: 0, max: 10 }),
     },
 
+    available_at: {
+      fillable: true,
+      validation: {
+        rule: schema.number(),
+      },
+      factory: () => faker.number.int({ min: 1000000, max: 1999999 }),
+    },
     reserved_at: {
-      order: 4,
       fillable: true,
       validation: {
         rule: schema.date(),

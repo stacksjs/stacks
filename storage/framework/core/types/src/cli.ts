@@ -411,7 +411,6 @@ export interface SearchCommandOptions extends CliOptions {
 export interface TinkerOptions extends CliOptions {}
 export interface TypesOptions extends CliOptions {}
 
-
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
 
 export type { CAC as CLI } from 'cac'

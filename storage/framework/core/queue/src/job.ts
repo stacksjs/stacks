@@ -124,10 +124,10 @@ export class Queue implements Dispatchable {
           timeout: this.options.timeout,
           backoff: this.options.backoff,
         })
- 
+
         process.exit(0)
       }
-   
+
       await runJob(this.name, {
         queue: queueName,
         payload: this.payload,

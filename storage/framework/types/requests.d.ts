@@ -331,19 +331,21 @@ interface RequestDataJob {
   queue: string
   payload: string
   attempts: number
+  available_at: number
   reserved_at: date
   created_at?: Date
   updated_at?: Date
 }
 export interface JobRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'queue' | 'payload') => string) & ((key: 'attempts') => number) & ((key: 'reserved_at') => date)
+  get: ((key: 'id') => number) & ((key: 'queue' | 'payload') => string) & ((key: 'attempts' | 'available_at') => number) & ((key: 'reserved_at') => date)
 
   all: () => RequestDataJob
   id: number
   queue: string
   payload: string
   attempts: number
+  available_at: number
   reserved_at: date
   created_at?: Date
   updated_at?: Date

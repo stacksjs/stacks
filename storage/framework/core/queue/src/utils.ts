@@ -1,5 +1,5 @@
-import type { JobOptions } from "./job"
-import Job from "../../../orm/src/models/Job"
+import type { JobOptions } from './job'
+import Job from '../../../orm/src/models/Job'
 
 export async function storeJob(name: string, options: JobOptions): Promise<void> {
   const payloadJson = JSON.stringify({
@@ -7,7 +7,7 @@ export async function storeJob(name: string, options: JobOptions): Promise<void>
     name,
     maxTries: options.tries || 1,
     timeout: null,
-    timeoutAt: null
+    timeoutAt: null,
   })
 
   const job = {

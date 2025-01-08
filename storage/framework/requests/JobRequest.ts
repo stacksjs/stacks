@@ -15,6 +15,7 @@ interface RequestDataJob {
   queue: string
   payload: string
   attempts: number
+  available_at: number
   reserved_at: date
   created_at?: Date
   updated_at?: Date
@@ -24,6 +25,7 @@ export class JobRequest extends Request<RequestDataJob> implements JobRequestTyp
   public queue = ''
   public payload = ''
   public attempts = 0
+  public available_at = 0
   public reserved_at = ''
   public created_at = new Date()
   public updated_at = new Date()

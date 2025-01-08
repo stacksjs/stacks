@@ -1,16 +1,17 @@
+import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { Job } from "../../../orm/src/models/Job"
-import { runJob } from "./job"
+import { Job } from '../../../orm/src/models/Job'
+import { runJob } from './job'
 
-interface QueuePayload  {
-  displayName: string,
-  name: string,
-  maxTries: number,
-  timeOut: number | null,
+interface QueuePayload {
+  displayName: string
+  name: string
+  maxTries: number
+  timeOut: number | null
   timeOutAt: Date | null
 }
 
-export async function processJobs(): Promise<void> {
+export async function processJobs(): Promise<Ok<string, never>> {
   const jobs = await Job.all()
 
   for (const job of jobs) {
@@ -19,7 +20,7 @@ export async function processJobs(): Promise<void> {
       const currentAttempts = job.attempts || 0
       log.info(`Running ${payload.displayName}`)
 
-      job.update({attempts: currentAttempts + 1 })
+      job.update({ attempts: currentAttempts + 1 })
 
       try {
         await runJob(payload.name, {
@@ -29,7 +30,10 @@ export async function processJobs(): Promise<void> {
           maxTries: payload.maxTries,
           timeout: 60,
         })
-      } catch (error) {
+
+        await job.delete()
+      }
+      catch (error) {
         log.info(`${payload.displayName} failed`)
         log.error(error)
       }
@@ -37,4 +41,6 @@ export async function processJobs(): Promise<void> {
       log.info(`Successfully ran ${payload.displayName}`)
     }
   }
+
+  return ok('All jobs processed successfully!')
 }

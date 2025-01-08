@@ -8,6 +8,7 @@ export interface JobsTable {
   queue?: string
   payload?: string
   attempts?: number
+  available_at?: number
   reserved_at?: date
 
   created_at?: Date
@@ -46,7 +47,7 @@ interface QueryOptions {
 
 export class JobModel {
   private hidden = []
-  private fillable = ['queue', 'payload', 'attempts', 'reserved_at', 'uuid']
+  private fillable = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -57,6 +58,7 @@ export class JobModel {
   public queue: string | undefined
   public payload: string | undefined
   public attempts: number | undefined
+  public available_at: number | undefined
   public reserved_at: date | undefined
 
   public created_at: Date | undefined
@@ -67,6 +69,7 @@ export class JobModel {
     this.queue = job?.queue
     this.payload = job?.payload
     this.attempts = job?.attempts
+    this.available_at = job?.available_at
     this.reserved_at = job?.reserved_at
 
     this.created_at = job?.created_at
@@ -470,6 +473,14 @@ export class JobModel {
     return instance
   }
 
+  static whereAvailableAt(value: string): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
+
+    return instance
+  }
+
   static whereReservedAt(value: string): JobModel {
     const instance = new JobModel(null)
 
@@ -720,6 +731,7 @@ export class JobModel {
       queue: this.queue,
       payload: this.payload,
       attempts: this.attempts,
+      available_at: this.available_at,
       reserved_at: this.reserved_at,
 
       created_at: this.created_at,
@@ -793,6 +805,13 @@ export async function wherePayload(value: string): Promise<JobModel[]> {
 
 export async function whereAttempts(value: number): Promise<JobModel[]> {
   const query = db.selectFrom('jobs').where('attempts', '=', value)
+  const results = await query.execute()
+
+  return results.map(modelItem => new JobModel(modelItem))
+}
+
+export async function whereAvailableAt(value: number): Promise<JobModel[]> {
+  const query = db.selectFrom('jobs').where('available_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new JobModel(modelItem))
