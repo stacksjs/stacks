@@ -18,7 +18,7 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
     queue: options.queue,
     payload: payloadJson,
     attempts: 0,
-    available_at: generateUnixTimestamp(options.delay || 0)
+    available_at: generateUnixTimestamp(options.delay || 0),
   }
 
   await Job.create(job)

@@ -12,19 +12,21 @@ interface QueuePayload {
 }
 
 export async function processJobs(): Promise<Ok<string, never>> {
-  setInterval( async () => {
+  setInterval(async () => {
     await executeJobs()
   }, 1000)
-
 
   return ok('All jobs processed successfully!')
 }
 
-async function executeJobs() {
+async function executeJobs(): Promise<void> {
   const jobs = await Job.all()
 
   for (const job of jobs) {
     if (job.payload) {
+      if (job.available_at && job.available_at > timestampNow())
+        return
+
       const payload: QueuePayload = JSON.parse(job.payload)
       const currentAttempts = job.attempts || 0
       log.info(`Running ${payload.displayName}`)
@@ -50,4 +52,9 @@ async function executeJobs() {
       log.info(`Successfully ran ${payload.displayName}`)
     }
   }
+}
+
+function timestampNow(): number {
+  const now = Date.now()
+  return Math.floor(now / 1000)
 }

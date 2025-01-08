@@ -100,54 +100,75 @@ export class Queue implements Dispatchable {
   async dispatch(): Promise<void> {
     const queueName = this.options.queue || 'default'
 
-    if (['database', 'redis'].includes(queueDriver)) {
-      await storeJob(this.name, {
-        queue: queueName,
-        payload: this.payload,
-        context: this.options.context,
-        maxTries: this.options.maxTries,
-        timeout: this.options.timeout,
-        backoff: this.options.backoff,
-        delay: this.options.delay
-      })
+    const jobPayload = this.createJobPayload(queueName)
 
-      process.exit(0)
+    if (this.isQueuedDriver()) {
+      await this.storeQueuedJob(jobPayload)
+      return
     }
 
     if (this.options.afterResponse) {
-      process.on('beforeExit', async () => {
-        await this.dispatchNow()
-      })
+      this.deferAfterResponse()
       return
     }
 
     if (this.options.delay) {
-      setTimeout(async () => {
-        await this.dispatchNow()
-      }, this.options.delay * 1000)
+      this.deferWithDelay()
       return
     }
 
+    await this.runJobImmediately(jobPayload)
+  }
+
+  private isQueuedDriver(): boolean {
+    return ['database', 'redis'].includes(queueDriver)
+  }
+
+  private createJobPayload(queueName: string): any {
+    return {
+      queue: queueName,
+      payload: this.payload,
+      context: this.options.context,
+      maxTries: this.options.maxTries,
+      timeout: this.options.timeout,
+      backoff: this.options.backoff,
+      delay: this.options.delay,
+    }
+  }
+
+  private async storeQueuedJob(jobPayload: any): Promise<void> {
+    await storeJob(this.name, jobPayload)
+  }
+
+  private deferAfterResponse(): void {
+    process.on('beforeExit', async () => {
+      await this.dispatchNow()
+    })
+  }
+
+  private deferWithDelay(): void {
+    setTimeout(async () => {
+      await this.dispatchNow()
+    }, this.options.delay * 1000)
+  }
+
+  private async runJobImmediately(jobPayload: any): Promise<void> {
     try {
-
-      await runJob(this.name, {
-        queue: queueName,
-        payload: this.payload,
-        context: this.options.context,
-        maxTries: this.options.maxTries,
-        timeout: this.options.timeout,
-        backoff: this.options.backoff,
-      })
-
-      if (this.options.chainedJobs?.length) {
-        for (const job of this.options.chainedJobs) {
-          await job.dispatch()
-        }
-      }
+      await runJob(this.name, jobPayload)
+      await this.runChainedJobs()
     }
     catch (error) {
       log.error(`Failed to dispatch job ${this.name}:`, error)
       throw error
+    }
+  }
+
+  private async runChainedJobs(): Promise<void> {
+    if (!this.options.chainedJobs?.length)
+      return
+
+    for (const job of this.options.chainedJobs) {
+      await job.dispatch()
     }
   }
 
