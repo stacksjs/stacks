@@ -40,8 +40,6 @@ export interface JobOptions {
 }
 
 export async function runJob(name: string, options: JobOptions = {}): Promise<void> {
-  log.info(`Running job: ${name}`)
-
   try {
     const jobModule = await import(appPath(`Jobs/${name}.ts`))
     const job = jobModule.default as JobConfig

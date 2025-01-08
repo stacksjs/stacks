@@ -1,10 +1,10 @@
 import type { JobOptions } from "./job"
-import process from 'node:process'
 import Job from "../../../orm/src/models/Job"
 
 export async function storeJob(name: string, options: JobOptions): Promise<void> {
   const payloadJson = JSON.stringify({
     displayName: `app/Jobs/${name}.ts`,
+    name,
     maxTries: options.tries || 1,
     timeout: null,
     timeoutAt: null
