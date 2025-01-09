@@ -44,7 +44,7 @@
     "unplugin-vue-router": "^0.10.9",
     "vite": "^6.0.7",
     "vite-bundle-visualizer": "^1.2.1",
-    "vite-plugin-inspect": "^0.10.6",
+    "vite-plugin-inspect": "^10.0.6",
     "vite-plugin-pwa": "^0.21.1",
     "vite-plugin-vue-devtools": "^7.7.0",
     "vite-plugin-vue-layouts": "^0.11.0",
