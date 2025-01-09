@@ -99,7 +99,7 @@
     "vite-plugin-inspect": "^10.0.6",
     "vite-plugin-pages": "^0.32.4",
     "vite-plugin-pwa": "^0.21.1",
-    "vite-ssg": "^0.24.3",
+    "vite-ssg": "^25.0.0",
     "vite-ssg-sitemap": "^0.8.1"
   },
   "devDependencies": {
