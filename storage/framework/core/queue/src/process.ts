@@ -1,5 +1,7 @@
+import type { JobModel } from '../../../orm/src/models/Job'
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
+import FailedJob from '../../../orm/src/models/FailedJob'
 import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
@@ -33,6 +35,7 @@ async function executeJobs(queue: string | undefined): Promise<void> {
   const jobs = await Job.when(queue !== undefined, (query: any) => query.where('queue', queue)).get()
 
   for (const job of jobs) {
+    storeFailedJob(job, 'test')
     if (!job.payload)
       continue
 
@@ -59,9 +62,37 @@ async function executeJobs(queue: string | undefined): Promise<void> {
       log.info(`Successfully ran job: ${body.displayName}`)
     }
     catch (error) {
-      log.error(`Job failed: ${body.displayName}`, error)
+      const stringifiedError = JSON.stringify(error)
+
+      storeFailedJob(job, stringifiedError)
+      log.error(`Job failed: ${body.displayName}`, stringifiedError)
     }
   }
+}
+
+async function storeFailedJob(job: JobModel, exception: string) {
+  const data = {
+    connection: 'database',
+    queue: job.queue,
+    payload: job.payload,
+    exception,
+    failed_at: now(),
+  }
+
+  await FailedJob.create(data)
+}
+
+function now(): string {
+  const date = new Date()
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 async function updateJobAttempts(job: any, currentAttempts: number): Promise<void> {
