@@ -429,20 +429,19 @@ export class PostModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => PostModel,
   ): PostModel {
-    const instance = new PostModel(null)
+    let instance = new PostModel(null)
 
-    // Execute callback if condition is true
     if (condition)
-      callback(instance.selectFromQuery)
+      instance = callback(instance)
 
     return instance
   }
 
   when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => PostModel,
   ): PostModel {
     if (condition)
       callback(this.selectFromQuery)

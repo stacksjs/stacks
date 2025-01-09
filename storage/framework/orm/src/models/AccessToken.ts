@@ -424,20 +424,19 @@ export class AccessTokenModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => AccessTokenModel,
   ): AccessTokenModel {
-    const instance = new AccessTokenModel(null)
+    let instance = new AccessTokenModel(null)
 
-    // Execute callback if condition is true
     if (condition)
-      callback(instance.selectFromQuery)
+      instance = callback(instance)
 
     return instance
   }
 
   when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => AccessTokenModel,
   ): AccessTokenModel {
     if (condition)
       callback(this.selectFromQuery)

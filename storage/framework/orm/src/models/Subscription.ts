@@ -463,20 +463,19 @@ export class SubscriptionModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => SubscriptionModel,
   ): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    let instance = new SubscriptionModel(null)
 
-    // Execute callback if condition is true
     if (condition)
-      callback(instance.selectFromQuery)
+      instance = callback(instance)
 
     return instance
   }
 
   when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => SubscriptionModel,
   ): SubscriptionModel {
     if (condition)
       callback(this.selectFromQuery)

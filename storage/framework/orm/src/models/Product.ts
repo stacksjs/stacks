@@ -441,20 +441,19 @@ export class ProductModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => ProductModel,
   ): ProductModel {
-    const instance = new ProductModel(null)
+    let instance = new ProductModel(null)
 
-    // Execute callback if condition is true
     if (condition)
-      callback(instance.selectFromQuery)
+      instance = callback(instance)
 
     return instance
   }
 
   when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => ProductModel,
   ): ProductModel {
     if (condition)
       callback(this.selectFromQuery)

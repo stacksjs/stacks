@@ -425,20 +425,19 @@ export class ErrorModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => ErrorModel,
   ): ErrorModel {
-    const instance = new ErrorModel(null)
+    let instance = new ErrorModel(null)
 
-    // Execute callback if condition is true
     if (condition)
-      callback(instance.selectFromQuery)
+      instance = callback(instance)
 
     return instance
   }
 
   when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => ErrorModel,
   ): ErrorModel {
     if (condition)
       callback(this.selectFromQuery)

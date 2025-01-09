@@ -2086,22 +2086,20 @@ export async function generateModelString(
 
       static when(
         condition: boolean,
-        callback: (query: any) => void
+        callback: (query: any) => ${modelName}Model,
       ): ${modelName}Model {
-        const instance = new ${modelName}Model(null)
+        let instance = new ${modelName}Model(null)
 
-        // Execute callback if condition is true
         if (condition)
-          callback(instance.selectFromQuery)
+          instance = callback(instance)
 
         return instance
       }
 
       when(
         condition: boolean,
-        callback: (query: any) => void
+        callback: (query: any) => ${modelName}Model,
       ): ${modelName}Model {
-
         if (condition)
           callback(this.selectFromQuery)
 

@@ -425,20 +425,19 @@ export class JobModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => JobModel,
   ): JobModel {
-    const instance = new JobModel(null)
+    let instance = new JobModel(null)
 
-    // Execute callback if condition is true
     if (condition)
-      callback(instance.selectFromQuery)
+      instance = callback(instance)
 
     return instance
   }
 
   when(
     condition: boolean,
-    callback: (query: any) => void,
+    callback: (query: any) => JobModel,
   ): JobModel {
     if (condition)
       callback(this.selectFromQuery)
