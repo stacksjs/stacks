@@ -62,7 +62,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
-      for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
+      for (const relationInstance of model[relation]) {
         let relationModel = relationInstance.model
         let modelRelation: Model
         if (isString(relationInstance)) {
