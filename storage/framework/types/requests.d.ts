@@ -235,6 +235,31 @@ export interface PostRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataFailedJob {
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface FailedJobRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'connection' | 'queue' | 'payload' | 'exception') => string) & ((key: 'failed_at') => date)
+
+  all: () => RequestDataFailedJob
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataProduct {
   id: number
   name: string
@@ -413,4 +438,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeFailedJobRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType

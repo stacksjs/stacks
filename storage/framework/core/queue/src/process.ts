@@ -1,6 +1,6 @@
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { Job, type JobModel } from '../../../orm/src/models/Job'
+import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -16,7 +16,8 @@ export async function processJobs(queue: string | undefined): Promise<Ok<string,
   async function process() {
     try {
       await executeJobs(queue)
-    } catch (error) {
+    }
+    catch (error) {
       log.error('Error processing jobs:', error)
     }
 
@@ -32,10 +33,11 @@ async function executeJobs(queue: string | undefined): Promise<void> {
   const jobs = await Job.when(queue !== undefined, (query: any) => query.where('queue', queue)).get()
 
   for (const job of jobs) {
+    if (!job.payload)
+      continue
 
-    if (!job.payload) continue
-
-    if (job.available_at && job.available_at > timestampNow()) continue
+    if (job.available_at && job.available_at > timestampNow())
+      continue
 
     const body: QueuePayload = JSON.parse(job.payload)
     const currentAttempts = job.attempts || 0
@@ -55,7 +57,8 @@ async function executeJobs(queue: string | undefined): Promise<void> {
 
       await job.delete()
       log.info(`Successfully ran job: ${body.displayName}`)
-    } catch (error) {
+    }
+    catch (error) {
       log.error(`Job failed: ${body.displayName}`, error)
     }
   }
@@ -64,7 +67,8 @@ async function executeJobs(queue: string | undefined): Promise<void> {
 async function updateJobAttempts(job: any, currentAttempts: number): Promise<void> {
   try {
     await job.update({ attempts: currentAttempts + 1 })
-  } catch (error) {
+  }
+  catch (error) {
     log.error('Failed to update job attempts:', error)
   }
 }

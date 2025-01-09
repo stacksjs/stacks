@@ -25,7 +25,7 @@ export default {
       },
       factory: () => 'default',
     },
-    
+
     queue: {
       required: true,
       fillable: true,
@@ -62,6 +62,6 @@ export default {
         rule: schema.date(),
       },
       factory: () => '2024-12-23 13:32:19',
-    }
+    },
   },
 } satisfies Model
