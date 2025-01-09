@@ -9,8 +9,6 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
-  hasOne: ['Team'],
-
   traits: {
     useTimestamps: true, // defaults to true
     useSeeder: {

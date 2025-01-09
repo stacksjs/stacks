@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -9,6 +10,8 @@ import User from './User'
 
 export interface TeamsTable {
   id?: number
+  access_token_id?: number
+  access_token?: AccessTokenModel
   name?: string
   company_name?: string
   email?: string
@@ -61,6 +64,8 @@ export class TeamModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public access_token_id: number | undefined
+  public access_token: AccessTokenModel | undefined
   public id: number
   public name: string | undefined
   public company_name: string | undefined
@@ -75,6 +80,8 @@ export class TeamModel {
   public updated_at: Date | undefined
 
   constructor(team: Partial<TeamType> | null) {
+    this.access_token_id = team?.access_token_id
+    this.access_token = team?.access_token
     this.id = team?.id || 1
     this.name = team?.name
     this.company_name = team?.company_name
@@ -133,6 +140,10 @@ export class TeamModel {
   }
 
   async mapWith(model: TeamType): Promise<TeamType> {
+    if (this.withRelations.includes('access_token')) {
+      model.access_token = await this.accessTokenBelong()
+    }
+
     return model
   }
 
@@ -747,23 +758,18 @@ export class TeamModel {
       .execute()
   }
 
-  async teamAccessTokens() {
-    if (this.id === undefined)
+  async accessTokenBelong(): Promise<AccessTokenModel> {
+    if (this.access_token_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('personal_access_token_teams')
-      .where('team_id', '=', this.id)
-      .selectAll()
-      .execute()
+    const model = await AccessToken
+      .where('id', '=', this.access_token_id)
+      .first()
 
-    const tableRelationIds = results.map(result => result.personal_access_token_id)
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-    if (!tableRelationIds.length)
-      throw new HttpError(500, 'Relation Error!')
-
-    const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
-
-    return relationResults
+    return model
   }
 
   async teamUsers() {
@@ -823,6 +829,8 @@ export class TeamModel {
 
   toJSON() {
     const output: Partial<TeamType> = {
+      access_token_id: this.access_token_id,
+      access_token: this.access_token,
 
       id: this.id,
       name: this.name,

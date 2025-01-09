@@ -13,10 +13,9 @@ export async function up(db: Database<any>) {
     .addColumn('description', 'varchar(255)')
     .addColumn('path', 'varchar(255)')
     .addColumn('is_personal', 'boolean')
-    .addColumn('accesstoken_id', 'integer', col =>
-      col.references('personal_access_tokens.id').onDelete('cascade'))
-    .addColumn('user_id', 'integer', col =>
-      col.references('users.id').onDelete('cascade'))
+    .addColumn('user_id', 'integer', (col) =>
+        col.references('users.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

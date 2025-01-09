@@ -15,12 +15,6 @@ import type { TeamsTable } from '../src/models/Team'
 import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
 
-export interface PersonalAccessTokenTeamsTable {
-  id?: number
-  team_id: number
-  personal_access_token_id: number
-}
-
 export interface TeamUsersTable {
   id?: number
   team_id: number
@@ -56,7 +50,6 @@ export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  personal_access_token_teams: TeamUsersTable
   team_users: TeamUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable

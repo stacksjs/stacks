@@ -11,6 +11,8 @@ export default {
 
   belongsToMany: ['User'],
 
+  hasMany: ['AccessToken'],
+  
   traits: {
     useTimestamps: true, // defaults to true
     useSeeder: {
