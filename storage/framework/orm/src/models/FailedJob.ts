@@ -9,7 +9,7 @@ export interface FailedJobsTable {
   queue?: string
   payload?: string
   exception?: string
-  failed_at?: Date
+  failed_at?: Date | string
 
   created_at?: Date
 
@@ -59,7 +59,7 @@ export class FailedJobModel {
   public queue: string | undefined
   public payload: string | undefined
   public exception: string | undefined
-  public failed_at: Date | undefined
+  public failed_at: Date | string | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
@@ -839,7 +839,7 @@ export async function whereException(value: string): Promise<FailedJobModel[]> {
   return results.map(modelItem => new FailedJobModel(modelItem))
 }
 
-export async function whereFailedAt(value: Date): Promise<FailedJobModel[]> {
+export async function whereFailedAt(value: Date | string): Promise<FailedJobModel[]> {
   const query = db.selectFrom('failed_jobs').where('failed_at', '=', value)
   const results = await query.execute()
 

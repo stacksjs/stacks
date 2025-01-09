@@ -2448,7 +2448,7 @@ export async function generateModelString(
 function mapEntity(attribute: ModelElement): string | undefined {
   const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
 
-  const mapEntity = entity === 'date' ? 'Date' : entity
+  const mapEntity = entity === 'date' ? 'Date | string' : entity
 
   return mapEntity
 }

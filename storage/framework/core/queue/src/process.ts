@@ -32,10 +32,9 @@ export async function processJobs(queue: string | undefined): Promise<Ok<string,
 }
 
 async function executeJobs(queue: string | undefined): Promise<void> {
-  const jobs = await Job.when(queue !== undefined, (query: any) => query.where('queue', queue)).get()
+  const jobs = await Job.when(queue !== undefined, (query: JobModel) => query.where('queue', queue)).get()
 
   for (const job of jobs) {
-    storeFailedJob(job, 'test')
     if (!job.payload)
       continue
 
