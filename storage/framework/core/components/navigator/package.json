@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@iconify-json/ic": "^1.2.2",
-    "@microsoft/api-extractor": "^7.48.1",
+    "@microsoft/api-extractor": "^7.49.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@types/clean-css": "^4.2.11",

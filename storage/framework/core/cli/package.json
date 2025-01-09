@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@antfu/install-pkg": "^1.0.0",
-    "@clack/core": "^0.4.0",
+    "@clack/core": "^0.4.1",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
