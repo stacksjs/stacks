@@ -27,7 +27,6 @@ interface HasOneThrough<T = string> extends Array<{
   relationName?: string
 }> {}
 
-
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -64,7 +63,6 @@ interface ActivityLogOption {
   include: LogAttribute[] // default to “*”
   logOnly: LogAttribute[]
 }
-
 
 export interface Relations {
   hasOne?: HasOne<ModelNames> | string[]
