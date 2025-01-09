@@ -13,6 +13,7 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
     maxTries: options.tries || 1,
     timeout: null,
     timeoutAt: null,
+    payload: options.payload || {}
   })
 
   const job = {

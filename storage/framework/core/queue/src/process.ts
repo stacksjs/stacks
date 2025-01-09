@@ -9,6 +9,7 @@ interface QueuePayload {
   maxTries: number
   timeOut: number | null
   timeOutAt: Date | null
+  payload: any
 }
 
 export async function processJobs(queue: string | undefined): Promise<Ok<string, never>> {
@@ -36,26 +37,26 @@ async function executeJobs(queue: string | undefined): Promise<void> {
 
     if (job.available_at && job.available_at > timestampNow()) continue
 
-    const payload: QueuePayload = JSON.parse(job.payload)
+    const body: QueuePayload = JSON.parse(job.payload)
     const currentAttempts = job.attempts || 0
 
-    log.info(`Running job: ${payload.displayName}`)
+    log.info(`Running job: ${body.displayName}`)
 
     await updateJobAttempts(job, currentAttempts)
 
     try {
-      await runJob(payload.name, {
+      await runJob(body.name, {
         queue: job.queue,
-        payload: {},
+        payload: body.payload,
         context: '',
-        maxTries: payload.maxTries,
+        maxTries: body.maxTries,
         timeout: 60,
       })
 
       await job.delete()
-      log.info(`Successfully ran job: ${payload.displayName}`)
+      log.info(`Successfully ran job: ${body.displayName}`)
     } catch (error) {
-      log.error(`Job failed: ${payload.displayName}`, error)
+      log.error(`Job failed: ${body.displayName}`, error)
     }
   }
 }
