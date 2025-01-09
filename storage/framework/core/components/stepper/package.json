@@ -60,6 +60,6 @@
     "@vue/tsconfig": "^0.7.0",
     "clean-css": "^5.3.3",
     "unocss": "0.65.3",
-    "unplugin-icons": "^0.22.0"
+    "unplugin-icons": "^22.0.0"
   }
 }
