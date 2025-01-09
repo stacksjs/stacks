@@ -7,8 +7,8 @@ export default new Job({
   tries: 3, // optional, defaults to 3 retries, in case of failures
   backoff: 3, // optional, defaults to 3-second delays between retries
   rate: Every.Minute, // optional, '* * * * *' in cron syntax
-  handle: () => {
-    console.log('hello world')
+  handle: (payload: any) => {
+    console.log(payload)
   },
   // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })

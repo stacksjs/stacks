@@ -1,6 +1,6 @@
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { Job } from '../../../orm/src/models/Job'
+import { Job, type JobModel } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -12,48 +12,59 @@ interface QueuePayload {
 }
 
 export async function processJobs(queue: string | undefined): Promise<Ok<string, never>> {
-  setInterval(async () => {
-    await executeJobs(queue)
-  }, 1000)
+  async function process() {
+    try {
+      await executeJobs(queue)
+    } catch (error) {
+      log.error('Error processing jobs:', error)
+    }
 
-  return ok('All jobs processed successfully!')
+    setTimeout(process, 1000)
+  }
+
+  process()
+
+  return ok('Job processing has started successfully!')
 }
 
 async function executeJobs(queue: string | undefined): Promise<void> {
-  const jobs = await Job.when(queue !== undefined, (query: any) => {
-    return query.where('queue', queue)
-  }).get()
+  const jobs = await Job.when(queue !== undefined, (query: any) => query.where('queue', queue)).get()
 
   for (const job of jobs) {
-    if (job.payload) {
-      if (job.available_at && job.available_at > timestampNow())
-        return
 
-      const payload: QueuePayload = JSON.parse(job.payload)
-      const currentAttempts = job.attempts || 0
+    if (!job.payload) continue
 
-      log.info(`Running ${payload.displayName}`)
+    if (job.available_at && job.available_at > timestampNow()) continue
 
-      await job.update({ attempts: currentAttempts + 1 })
+    const payload: QueuePayload = JSON.parse(job.payload)
+    const currentAttempts = job.attempts || 0
 
-      try {
-        await runJob(payload.name, {
-          queue: job.queue,
-          payload: {},
-          context: '',
-          maxTries: payload.maxTries,
-          timeout: 60,
-        })
+    log.info(`Running job: ${payload.displayName}`)
 
-        await job.delete()
-      }
-      catch (error) {
-        log.info(`${payload.displayName} failed`)
-        log.error(error)
-      }
+    await updateJobAttempts(job, currentAttempts)
 
-      log.info(`Successfully ran ${payload.displayName}`)
+    try {
+      await runJob(payload.name, {
+        queue: job.queue,
+        payload: {},
+        context: '',
+        maxTries: payload.maxTries,
+        timeout: 60,
+      })
+
+      await job.delete()
+      log.info(`Successfully ran job: ${payload.displayName}`)
+    } catch (error) {
+      log.error(`Job failed: ${payload.displayName}`, error)
     }
+  }
+}
+
+async function updateJobAttempts(job: any, currentAttempts: number): Promise<void> {
+  try {
+    await job.update({ attempts: currentAttempts + 1 })
+  } catch (error) {
+    log.error('Failed to update job attempts:', error)
   }
 }
 

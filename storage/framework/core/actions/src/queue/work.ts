@@ -6,8 +6,6 @@ const options = parseArgs()
 
 const queue = options.queue
 
-console.log(queue)
-
 const result = await processJobs(queue)
 
 if (result?.isErr()) {

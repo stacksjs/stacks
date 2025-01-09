@@ -7,7 +7,7 @@ import { storeJob } from './utils'
 const queueDriver = 'database'
 
 interface JobConfig {
-  handle?: () => Promise<void>
+  handle?: (payload?: any) => Promise<void>
   action?: string | (() => Promise<void>)
 }
 
@@ -66,7 +66,7 @@ export async function runJob(name: string, options: JobOptions = {}): Promise<vo
     }
     // If handle is defined, execute it
     else if (job.handle) {
-      await job.handle()
+      await job.handle(options.payload)
     }
     // If no handle or action, try to execute the module directly
     else if (typeof jobModule.default === 'function') {
