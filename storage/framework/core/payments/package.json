@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^5.4.0",
+    "@stripe/stripe-js": "^5.5.0",
     "@vue-stripe/vue-stripe": "^4.5.0",
     "stripe": "^17.5.0"
   },

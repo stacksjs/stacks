@@ -44,7 +44,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@happy-dom/global-registrator": "^16.3.0",
+    "@happy-dom/global-registrator": "^16.5.3",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/development": "workspace:*"
