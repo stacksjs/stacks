@@ -56,7 +56,7 @@ interface QueryOptions {
 
 export class TeamModel {
   private hidden = []
-  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'user_id']
+  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -773,7 +773,7 @@ export class TeamModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
-      .where('team_id', '=', this.id)
+      .where('', '=', this.id)
       .selectAll()
       .execute()
 

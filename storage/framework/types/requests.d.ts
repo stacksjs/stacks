@@ -87,13 +87,12 @@ interface RequestDataTeam {
   description: string
   path: string
   is_personal: boolean
-  user_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface TeamRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'company_name' | 'email' | 'billing_email' | 'status' | 'description' | 'path') => string) & ((key: 'is_personal') => boolean) & ((key: 'user_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'company_name' | 'email' | 'billing_email' | 'status' | 'description' | 'path') => string) & ((key: 'is_personal') => boolean)
 
   all: () => RequestDataTeam
   id: number
@@ -105,7 +104,6 @@ export interface TeamRequestType extends Request {
   description: string
   path: string
   is_personal: boolean
-  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -183,13 +181,12 @@ interface RequestDataUser {
   email: string
   job_title: string
   password: string
-  team_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface UserRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string) & ((key: 'team_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string)
 
   all: () => RequestDataUser
   id: number
@@ -197,7 +194,6 @@ export interface UserRequestType extends Request {
   email: string
   job_title: string
   password: string
-  team_id: number
   created_at?: Date
   updated_at?: Date
 }

@@ -99,7 +99,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
             || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
         }
 
-        if (relation === 'belongsTo')
+        if (['belongsToMany', 'belongsTo'].includes(relation))
           relationshipData.foreignKey = ''
 
         relationships.push(relationshipData)
