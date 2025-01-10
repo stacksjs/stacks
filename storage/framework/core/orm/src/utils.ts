@@ -83,7 +83,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
         const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
         const formattedModelName = modelName.toLowerCase()
 
-        relationships.push({
+        const relationshipData: RelationConfig = {
           relationship: relation,
           model: relationModel,
           table: modelRelationTable as TableNames,
@@ -97,7 +97,12 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           pivotTable:
             relationInstance?.pivotTable
             || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
-        })
+        }
+
+        if (relation === 'belongsTo')
+          relationshipData.foreignKey = ''
+
+        relationships.push(relationshipData)
       }
     }
   }
@@ -241,7 +246,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
   if (usePasskey)
     additionalCols.push(...['two_factor_secret', 'public_key'])
 
-  const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey)
+  const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey).filter(relation => relation)
 
   return [
     ...Object.keys(attributes)
@@ -425,6 +430,9 @@ export async function writeModelRequest(): Promise<void> {
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 
     for (const otherModel of otherModelRelations) {
+      if (!otherModel.foreignKey)
+        continue
+
       fieldString += ` ${otherModel.foreignKey}: number\n     `
       fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`

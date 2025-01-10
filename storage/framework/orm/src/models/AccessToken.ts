@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { TeamModel } from './Team'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -7,6 +8,8 @@ import Team from './Team'
 
 export interface PersonalAccessTokensTable {
   id?: number
+  team_id?: number
+  team?: TeamModel
   name?: string
   token?: string
   plain_text_token?: string
@@ -55,6 +58,8 @@ export class AccessTokenModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public team_id: number | undefined
+  public team: TeamModel | undefined
   public id: number
   public name: string | undefined
   public token: string | undefined
@@ -65,6 +70,8 @@ export class AccessTokenModel {
   public updated_at: Date | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
+    this.team_id = accesstoken?.team_id
+    this.team = accesstoken?.team
     this.id = accesstoken?.id || 1
     this.name = accesstoken?.name
     this.token = accesstoken?.token
@@ -119,6 +126,10 @@ export class AccessTokenModel {
   }
 
   async mapWith(model: AccessTokenType): Promise<AccessTokenType> {
+    if (this.withRelations.includes('team')) {
+      model.team = await this.teamBelong()
+    }
+
     return model
   }
 
@@ -701,12 +712,12 @@ export class AccessTokenModel {
       .execute()
   }
 
-  async team() {
-    if (this.id === undefined)
+  async teamBelong(): Promise<TeamModel> {
+    if (this.team_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = Team
-      .where('accesstoken_id', '=', this.id)
+    const model = await Team
+      .where('id', '=', this.team_id)
       .first()
 
     if (!model)
@@ -753,6 +764,8 @@ export class AccessTokenModel {
 
   toJSON() {
     const output: Partial<AccessTokenType> = {
+      team_id: this.team_id,
+      team: this.team,
 
       id: this.id,
       name: this.name,

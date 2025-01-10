@@ -79,7 +79,7 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id', 'paymentmethod_id', 'transaction_id', 'subscription_id']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]

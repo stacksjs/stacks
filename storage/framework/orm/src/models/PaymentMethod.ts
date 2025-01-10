@@ -60,7 +60,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id', 'transaction_id']
+  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
