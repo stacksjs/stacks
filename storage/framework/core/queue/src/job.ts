@@ -1,10 +1,13 @@
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
-import { projectPath } from '@stacksjs/path'
+import { appPath } from '@stacksjs/path'
+import { storeJob } from './utils'
+
+const queueDriver = 'database'
 
 interface JobConfig {
-  handle?: () => Promise<void>
+  handle?: (payload?: any) => Promise<void>
   action?: string | (() => Promise<void>)
 }
 
@@ -37,9 +40,8 @@ export interface JobOptions {
 }
 
 export async function runJob(name: string, options: JobOptions = {}): Promise<void> {
-  log.info(`Running job: ${name}`)
   try {
-    const jobModule = await import(projectPath(`Jobs/${name}.ts`))
+    const jobModule = await import(appPath(`Jobs/${name}.ts`))
     const job = jobModule.default as JobConfig
 
     if (options.payload) {
@@ -64,7 +66,7 @@ export async function runJob(name: string, options: JobOptions = {}): Promise<vo
     }
     // If handle is defined, execute it
     else if (job.handle) {
-      await job.handle()
+      await job.handle(options.payload)
     }
     // If no handle or action, try to execute the module directly
     else if (typeof jobModule.default === 'function') {
@@ -87,7 +89,7 @@ export async function runJob(name: string, options: JobOptions = {}): Promise<vo
   }
 }
 
-export class Job implements Dispatchable {
+export class Queue implements Dispatchable {
   protected options: JobOptions = {}
 
   constructor(
@@ -96,41 +98,77 @@ export class Job implements Dispatchable {
   ) { }
 
   async dispatch(): Promise<void> {
+    const queueName = this.options.queue || 'default'
+
+    const jobPayload = this.createJobPayload(queueName)
+
+    if (this.isQueuedDriver()) {
+      await this.storeQueuedJob(jobPayload)
+      return
+    }
+
     if (this.options.afterResponse) {
-      process.on('beforeExit', async () => {
-        await this.dispatchNow()
-      })
+      this.deferAfterResponse()
       return
     }
 
     if (this.options.delay) {
-      setTimeout(async () => {
-        await this.dispatchNow()
-      }, this.options.delay * 1000)
+      this.deferWithDelay()
       return
     }
 
-    const queueName = this.options.queue || 'default'
+    await this.runJobImmediately(jobPayload)
+  }
 
+  private isQueuedDriver(): boolean {
+    return ['database', 'redis'].includes(queueDriver)
+  }
+
+  private createJobPayload(queueName: string): any {
+    return {
+      queue: queueName,
+      payload: this.payload,
+      context: this.options.context,
+      maxTries: this.options.maxTries,
+      timeout: this.options.timeout,
+      backoff: this.options.backoff,
+      delay: this.options.delay,
+    }
+  }
+
+  private async storeQueuedJob(jobPayload: any): Promise<void> {
+    await storeJob(this.name, jobPayload)
+  }
+
+  private deferAfterResponse(): void {
+    process.on('beforeExit', async () => {
+      await this.dispatchNow()
+    })
+  }
+
+  private deferWithDelay(): void {
+    setTimeout(async () => {
+      await this.dispatchNow()
+    }, this.options.delay * 1000)
+  }
+
+  private async runJobImmediately(jobPayload: any): Promise<void> {
     try {
-      await runJob(this.name, {
-        queue: queueName,
-        payload: this.payload,
-        context: this.options.context,
-        maxTries: this.options.maxTries,
-        timeout: this.options.timeout,
-        backoff: this.options.backoff,
-      })
-
-      if (this.options.chainedJobs?.length) {
-        for (const job of this.options.chainedJobs) {
-          await job.dispatch()
-        }
-      }
+      await runJob(this.name, jobPayload)
+      await this.runChainedJobs()
     }
     catch (error) {
       log.error(`Failed to dispatch job ${this.name}:`, error)
       throw error
+    }
+  }
+
+  private async runChainedJobs(): Promise<void> {
+    if (!this.options.chainedJobs?.length)
+      return
+
+    for (const job of this.options.chainedJobs) {
+      await job.dispatch()
     }
   }
 
@@ -196,31 +234,31 @@ export class Job implements Dispatchable {
 }
 
 export class JobFactory {
-  static make(name: string, payload?: any): Job {
-    return new Job(name, payload)
+  static make(name: string, payload?: any): Queue {
+    return new Queue(name, payload)
   }
 
-  static dispatch(name: string, payload?: any): Job {
-    const job = new Job(name, payload)
+  static dispatch(name: string, payload?: any): Queue {
+    const job = new Queue(name, payload)
     job.dispatch()
     return job
   }
 
   static async dispatchNow(name: string, payload?: any): Promise<void> {
-    await new Job(name, payload).dispatchNow()
+    await new Queue(name, payload).dispatchNow()
   }
 
-  static later(delay: number, name: string, payload?: any): Job {
-    return new Job(name, payload).delay(delay)
+  static later(delay: number, name: string, payload?: any): Queue {
+    return new Queue(name, payload).delay(delay)
   }
 
-  static chain(jobs: Job[]): Job {
+  static chain(jobs: Queue[]): Queue {
     const firstJob = jobs[0]
     return firstJob.chain(jobs.slice(1))
   }
 }
 
-export function job(name: string, payload?: any): Job {
+export function job(name: string, payload?: any): Queue {
   return JobFactory.make(name, payload)
 }
 

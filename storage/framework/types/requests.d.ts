@@ -87,14 +87,12 @@ interface RequestDataTeam {
   description: string
   path: string
   is_personal: boolean
-  accesstoken_id: number
-  user_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface TeamRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'company_name' | 'email' | 'billing_email' | 'status' | 'description' | 'path') => string) & ((key: 'is_personal') => boolean) & ((key: 'accesstoken_id') => string) & ((key: 'user_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'company_name' | 'email' | 'billing_email' | 'status' | 'description' | 'path') => string) & ((key: 'is_personal') => boolean)
 
   all: () => RequestDataTeam
   id: number
@@ -106,8 +104,6 @@ export interface TeamRequestType extends Request {
   description: string
   path: string
   is_personal: boolean
-  accesstoken_id: number
-  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -185,18 +181,12 @@ interface RequestDataUser {
   email: string
   job_title: string
   password: string
-  team_id: number
-  deployment_id: number
-  post_id: number
-  paymentmethod_id: number
-  transaction_id: number
-  subscription_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface UserRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string) & ((key: 'team_id') => string) & ((key: 'deployment_id') => string) & ((key: 'post_id') => string) & ((key: 'paymentmethod_id') => string) & ((key: 'transaction_id') => string) & ((key: 'subscription_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string)
 
   all: () => RequestDataUser
   id: number
@@ -204,12 +194,6 @@ export interface UserRequestType extends Request {
   email: string
   job_title: string
   password: string
-  team_id: number
-  deployment_id: number
-  post_id: number
-  paymentmethod_id: number
-  transaction_id: number
-  subscription_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -231,6 +215,31 @@ export interface PostRequestType extends Request {
   title: string
   body: string
   user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataFailedJob {
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface FailedJobRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'connection' | 'queue' | 'payload' | 'exception') => string) & ((key: 'failed_at') => date)
+
+  all: () => RequestDataFailedJob
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
   created_at?: Date
   updated_at?: Date
 }
@@ -274,13 +283,12 @@ interface RequestDataPaymentMethod {
   is_default: boolean
   provider_id: string
   user_id: number
-  transaction_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface PaymentMethodRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'type' | 'brand' | 'provider_id') => string) & ((key: 'last_four' | 'exp_month' | 'exp_year') => number) & ((key: 'is_default') => boolean) & ((key: 'user_id') => string) & ((key: 'transaction_id') => string)
+  get: ((key: 'id') => number) & ((key: 'type' | 'brand' | 'provider_id') => string) & ((key: 'last_four' | 'exp_month' | 'exp_year') => number) & ((key: 'is_default') => boolean) & ((key: 'user_id') => string)
 
   all: () => RequestDataPaymentMethod
   id: number
@@ -292,7 +300,6 @@ export interface PaymentMethodRequestType extends Request {
   is_default: boolean
   provider_id: string
   user_id: number
-  transaction_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -322,6 +329,31 @@ export interface TransactionRequestType extends Request {
   provider_id: string
   user_id: number
   paymentmethod_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataJob {
+  id: number
+  queue: string
+  payload: string
+  attempts: number
+  available_at: number
+  reserved_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface JobRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'queue' | 'payload') => string) & ((key: 'attempts' | 'available_at') => number) & ((key: 'reserved_at') => date)
+
+  all: () => RequestDataJob
+  id: number
+  queue: string
+  payload: string
+  attempts: number
+  available_at: number
+  reserved_at: date
   created_at?: Date
   updated_at?: Date
 }
@@ -365,17 +397,27 @@ export interface SubscriptionRequestType extends Request {
 
 interface RequestDataError {
   id: number
+  type: string
+  message: string
+  stack: string
+  status: boolean
+  additional_info: string
   created_at?: Date
   updated_at?: Date
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: (key: 'id') => number
+  get: ((key: 'id') => number) & ((key: 'type' | 'message' | 'stack' | 'additional_info') => string) & ((key: 'status') => boolean)
 
   all: () => RequestDataError
   id: number
+  type: string
+  message: string
+  stack: string
+  status: boolean
+  additional_info: string
   created_at?: Date
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeSubscriptionRequestTypeErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeFailedJobRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType

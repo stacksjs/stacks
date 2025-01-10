@@ -1,4 +1,5 @@
 import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -9,6 +10,7 @@ import User from './User'
 
 export interface TeamsTable {
   id?: number
+  personal_access_tokens?: AccessTokenModel[] | undefined
   name?: string
   company_name?: string
   email?: string
@@ -54,13 +56,14 @@ interface QueryOptions {
 
 export class TeamModel {
   private hidden = []
-  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'accesstoken_id', 'user_id']
+  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  public personal_access_tokens: AccessTokenModel[] | undefined
   public id: number
   public name: string | undefined
   public company_name: string | undefined
@@ -75,6 +78,7 @@ export class TeamModel {
   public updated_at: Date | undefined
 
   constructor(team: Partial<TeamType> | null) {
+    this.personal_access_tokens = team?.personal_access_tokens
     this.id = team?.id || 1
     this.name = team?.name
     this.company_name = team?.company_name
@@ -133,6 +137,10 @@ export class TeamModel {
   }
 
   async mapWith(model: TeamType): Promise<TeamType> {
+    if (this.withRelations.includes('personal_access_tokens')) {
+      model.personal_access_tokens = await this.personalAccessTokensHasMany()
+    }
+
     return model
   }
 
@@ -436,6 +444,28 @@ export class TeamModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: (query: any) => TeamModel,
+  ): TeamModel {
+    let instance = new TeamModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => TeamModel,
+  ): TeamModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
+  }
+
   static whereNull(column: string): TeamModel {
     const instance = new TeamModel(null)
 
@@ -725,23 +755,17 @@ export class TeamModel {
       .execute()
   }
 
-  async teamAccessTokens() {
+  async personalAccessTokensHasMany(): Promise<AccessTokenModel[]> {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('personal_access_token_teams')
+    const results = await db.selectFrom('personal_access_tokens')
       .where('team_id', '=', this.id)
+      .limit(5)
       .selectAll()
       .execute()
 
-    const tableRelationIds = results.map(result => result.personal_access_token_id)
-
-    if (!tableRelationIds.length)
-      throw new HttpError(500, 'Relation Error!')
-
-    const relationResults = await AccessToken.whereIn('id', tableRelationIds).get()
-
-    return relationResults
+    return results.map(modelItem => new AccessToken(modelItem))
   }
 
   async teamUsers() {
@@ -749,7 +773,7 @@ export class TeamModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
-      .where('team_id', '=', this.id)
+      .where('', '=', this.id)
       .selectAll()
       .execute()
 
@@ -801,6 +825,7 @@ export class TeamModel {
 
   toJSON() {
     const output: Partial<TeamType> = {
+      personal_access_tokens: this.personal_access_tokens,
 
       id: this.id,
       name: this.name,

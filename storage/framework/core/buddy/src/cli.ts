@@ -65,6 +65,7 @@ async function main() {
   cmd.make(buddy)
   cmd.migrate(buddy)
   cmd.outdated(buddy)
+  cmd.queue(buddy)
   cmd.release(buddy)
   cmd.route(buddy)
   cmd.saas(buddy)

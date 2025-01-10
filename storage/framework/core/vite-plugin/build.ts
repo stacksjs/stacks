@@ -49,7 +49,7 @@ const result = await Bun.build({
     'unplugin-vue-router/vite',
     '@intlify/unplugin-vue-i18n/vite',
     'defu',
-    'markdown-it-shikiji',
+    '@shikijs/markdown-it',
     'markdown-it-link-attributes',
     'unocss/vite',
     '@unhead/vue',

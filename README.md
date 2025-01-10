@@ -35,7 +35,7 @@ It’s incredibly easy to get started with this framework. Simply run the follow
 ```bash
 curl -Ssf stacksjs.org/install | sh # wip
 
-# alternatively, if Bun >= v1.1.39 is installed already,
+# alternatively, if Bun >= v1.1.42 is installed already,
 # you may also get started via:
 bunx --bun stacks new my-project
 ```
@@ -260,7 +260,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🖥️ **Desktop** _transforms your web app into a desktop app, plus more_
 - 📝 **Documentation** _markdown-based documentation, auto-generated_
 - 📚 **Library** _auto-builds & manages component & function libraries_
-- ⚡️ Powered by Bun, Nitro, Tauri, UnoCSS, Vite & Vue
+- ⚡️ Powered by Bun, Tauri, UnoCSS, Vite, VitePress and Vue
 
 ### Backend Development
 

@@ -16,12 +16,6 @@ interface RequestDataUser {
   email: string
   job_title: string
   password: string
-  team_id: number
-  deployment_id: number
-  post_id: number
-  paymentmethod_id: number
-  transaction_id: number
-  subscription_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -31,12 +25,6 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   public email = ''
   public job_title = ''
   public password = ''
-  public team_id = 0
-  public deployment_id = 0
-  public post_id = 0
-  public paymentmethod_id = 0
-  public transaction_id = 0
-  public subscription_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

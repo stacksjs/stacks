@@ -1,4 +1,3 @@
-import { log } from '@stacksjs/cli'
 import { Job } from '@stacksjs/queue'
 import { Every } from '@stacksjs/types'
 
@@ -8,8 +7,8 @@ export default new Job({
   tries: 3, // optional, defaults to 3 retries, in case of failures
   backoff: 3, // optional, defaults to 3-second delays between retries
   rate: Every.Minute, // optional, '* * * * *' in cron syntax
-  handle: () => {
-    log.info('This message logs every minute') // unless triggered via a route.job() call, in which case it logs once
+  handle: (payload: any) => {
+    return payload
   },
   // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })

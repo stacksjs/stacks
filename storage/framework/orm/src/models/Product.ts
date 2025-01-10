@@ -439,6 +439,28 @@ export class ProductModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: (query: any) => ProductModel,
+  ): ProductModel {
+    let instance = new ProductModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => ProductModel,
+  ): ProductModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
+  }
+
   static whereNull(column: string): ProductModel {
     const instance = new ProductModel(null)
 

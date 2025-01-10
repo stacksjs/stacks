@@ -84,6 +84,8 @@ export enum Action {
   Lint = 'lint/index',
   LintFix = 'lint/fix',
   Prepublish = 'prepublish',
+  QueueTable = 'queue/table',
+  QueueWork = 'queue/work',
   Release = 'release', // ✅
   RouteList = 'route/list', // ✅
   StripeSetup = 'saas/setup',

@@ -79,7 +79,7 @@ interface QueryOptions {
 
 export class UserModel {
   private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id', 'deployment_id', 'post_id', 'paymentmethod_id', 'transaction_id', 'subscription_id']
+  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -502,6 +502,28 @@ export class UserModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: (query: any) => UserModel,
+  ): UserModel {
+    let instance = new UserModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => UserModel,
+  ): UserModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
+  }
+
   static whereNull(column: string): UserModel {
     const instance = new UserModel(null)
 
@@ -853,7 +875,7 @@ export class UserModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
-      .where('user_id', '=', this.id)
+      .where('', '=', this.id)
       .selectAll()
       .execute()
 

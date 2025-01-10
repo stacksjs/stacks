@@ -20,24 +20,15 @@ import {
 } from '.'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
-  const tables = await fetchTables()
+  await dropMysqlTables()
+  await deleteMigrationFiles()
+  await deleteFrameworkModels()
 
-  for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
+  return ok('All tables dropped successfully!')
+}
 
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
-  await db.schema.dropTable('migrations').ifExists().execute()
-
-  const files = await fs.readdir(path.userMigrationsPath())
+export async function deleteFrameworkModels(): Promise<void> {
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-
-  for (const userModel of userModelFiles) {
-    const model = (await import(userModel)).default as Model
-    const pivotTables = await getPivotTables(model, userModel)
-
-    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
-  }
 
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
@@ -49,6 +40,10 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
       }
     }
   }
+}
+
+export async function deleteMigrationFiles(): Promise<void> {
+  const files = await fs.readdir(path.userMigrationsPath())
 
   if (files.length) {
     for (const file of files) {
@@ -60,8 +55,23 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
       }
     }
   }
+}
 
-  return ok('All tables dropped successfully!')
+export async function dropMysqlTables(): Promise<void> {
+  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const tables = await fetchTables()
+
+  for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
+  await db.schema.dropTable('migrations').ifExists().execute()
+  await db.schema.dropTable('migration_locks').ifExists().execute()
+  await db.schema.dropTable('passkeys').ifExists().execute()
+
+  for (const userModel of userModelFiles) {
+    const userModelPath = (await import(userModel)).default
+    const pivotTables = await getPivotTables(userModelPath, userModel)
+
+    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
+  }
 }
 
 export async function generateMysqlMigration(modelPath: string): Promise<void> {
@@ -189,6 +199,9 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
       migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
         col.references('${modelRelation.relationTable}.id').onDelete('cascade')
       ) \n`

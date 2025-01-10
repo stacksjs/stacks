@@ -363,13 +363,6 @@ export type DomainsOptions = CliOptions & {
 
 export interface CleanOptions extends CliOptions {}
 
-export interface SaasOptions extends CliOptions {}
-
-export interface SearchCommandOptions extends CliOptions {
-  model: string
-  settings: boolean
-  flush: boolean
-}
 export interface CloudCliOptions extends CliOptions {
   ssh?: boolean
   connect?: boolean
@@ -379,16 +372,24 @@ export interface CloudCliOptions extends CliOptions {
   diff?: boolean
 }
 export interface CommitOptions extends CliOptions {}
-export interface KeyOptions extends CliOptions {}
 export interface FreshOptions extends CliOptions {
   dryRun?: boolean
   quiet?: boolean
 }
+
+export interface InspireOptions extends CliOptions {}
+export interface InstallOptions extends CliOptions {}
+
+export interface KeyOptions extends CliOptions {}
+
 export interface MigrateOptions extends CliOptions {
   diff?: boolean
 }
-export interface InspireOptions extends CliOptions {}
-export interface InstallOptions extends CliOptions {}
+
+export interface QueueOptions extends CliOptions {
+  queue?: string
+}
+
 export interface ReleaseOptions extends CliOptions {
   dryRun?: boolean
 }
@@ -400,6 +401,15 @@ export interface PrepublishOptions extends CliOptions {}
 export interface PortsOptions extends CliOptions {
   ports?: Partial<Ports>
 }
+
+export interface SaasOptions extends CliOptions {}
+
+export interface SearchCommandOptions extends CliOptions {
+  model: string
+  settings: boolean
+  flush: boolean
+}
+
 export interface TinkerOptions extends CliOptions {}
 export interface TypesOptions extends CliOptions {}
 

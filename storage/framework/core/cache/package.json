@@ -41,7 +41,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.716.0",
+    "@aws-sdk/client-dynamodb": "^3.724.0",
     "@stacksjs/config": "workspace:*",
     "bentocache": "^1.0.0-beta.9",
     "ioredis": "^5.4.2"

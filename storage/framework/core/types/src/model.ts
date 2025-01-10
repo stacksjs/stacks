@@ -5,6 +5,28 @@ import type { SearchOptions } from './search-engine'
 
 export type Model = Partial<ModelOptions>
 
+interface BaseRelation {
+  foreignKey?: string
+  relationName?: string
+}
+
+interface Relation<T = string> extends BaseRelation {
+  model: T
+}
+
+interface HasOne<T = string> extends Array<Relation<T>> {}
+interface HasMany<T = string> extends Array<Relation<T>> {}
+interface BelongsTo<T = string> extends Array<Relation<T>> {}
+interface BelongsToMany<T = string> extends Array<T> {}
+
+interface HasOneThrough<T = string> extends Array<{
+  model: T
+  through: T
+  foreignKey?: string
+  throughForeignKey?: string
+  relationName?: string
+}> {}
+
 export interface FieldArrayElement {
   entity: string
   charValue?: string | null
@@ -42,12 +64,12 @@ interface ActivityLogOption {
   logOnly: LogAttribute[]
 }
 
-interface BelongsToManyType {
-  model: ModelNames
-  firstForeignKey?: string
-  secondForeignKey?: string
-  pivotTable?: string
-  relationName?: string
+export interface Relations {
+  hasOne?: HasOne<ModelNames> | string[]
+  hasMany?: HasMany<ModelNames> | ModelNames[]
+  belongsTo?: BelongsTo<ModelNames> | ModelNames[]
+  belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
+  hasOneThrough?: HasOneThrough<ModelNames>
 }
 
 export interface ApiSettings {
@@ -118,35 +140,15 @@ export interface ModelOptions extends Base {
   attributes?: Attributes
 
   // relationships
-  hasOne?:
-    | {
-      model: ModelNames
-      foreignKey?: string
-      relationName?: string
-    }[]
-    | string[]
-  hasMany?:
-    | {
-      model: ModelNames // should be typed as ModelName
-      foreignKey?: string
-      relationName?: string
-    }[]
-    | ModelNames[]
-  belongsTo?:
-    | {
-      model: ModelNames // should be typed as ModelName
-      foreignKey?: string
-      relationName?: string
-    }[]
-    | ModelNames[] // belongsTo: 'User'
-  belongsToMany?: BelongsToManyType[] | ModelNames[]
-  hasOneThrough?: {
-    model: ModelNames
-    through: ModelNames
-    foreignKey?: string
-    throughForeignKey?: string
-    relationName?: string
-  }[]
+  hasOne?: HasOne<ModelNames> | string[]
+
+  hasMany?: HasMany<ModelNames> | ModelNames[]
+
+  belongsTo?: BelongsTo<ModelNames> | ModelNames[]
+
+  belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
+
+  hasOneThrough?: HasOneThrough<ModelNames>
 
   scopes?: {
     [key: string]: (value: any) => any

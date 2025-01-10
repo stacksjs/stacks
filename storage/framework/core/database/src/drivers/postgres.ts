@@ -1,3 +1,4 @@
+import type { Ok } from '@stacksjs/error-handling'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -15,7 +16,7 @@ import {
   pluckChanges,
 } from '.'
 
-export async function resetPostgresDatabase() {
+export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   const tables = await fetchPostgresTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()

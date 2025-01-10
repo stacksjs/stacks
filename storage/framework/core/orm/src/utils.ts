@@ -41,15 +41,12 @@ export function getTableName(model: Model, modelPath: string): string {
 }
 
 export function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  // Create an array of the model names
   const models = [formattedModelName, modelRelationTable]
 
-  // Sort the array alphabetically
   models.sort()
 
   models[0] = singular(models[0] || '')
 
-  // Join the sorted array with an underscore
   const pivotTableName = models.join('_')
 
   return pivotTableName
@@ -65,7 +62,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
-      for (const relationInstance of (model[relation as keyof Model] as any[]) || []) {
+      for (const relationInstance of model[relation]) {
         let relationModel = relationInstance.model
         let modelRelation: Model
         if (isString(relationInstance)) {
@@ -86,7 +83,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
         const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
         const formattedModelName = modelName.toLowerCase()
 
-        relationships.push({
+        const relationshipData: RelationConfig = {
           relationship: relation,
           model: relationModel,
           table: modelRelationTable as TableNames,
@@ -100,7 +97,12 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           pivotTable:
             relationInstance?.pivotTable
             || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
-        })
+        }
+
+        if (['belongsToMany', 'belongsTo'].includes(relation))
+          relationshipData.foreignKey = ''
+
+        relationships.push(relationshipData)
       }
     }
   }
@@ -244,7 +246,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
   if (usePasskey)
     additionalCols.push(...['two_factor_secret', 'public_key'])
 
-  const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey)
+  const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey).filter(relation => relation)
 
   return [
     ...Object.keys(attributes)
@@ -428,6 +430,9 @@ export async function writeModelRequest(): Promise<void> {
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 
     for (const otherModel of otherModelRelations) {
+      if (!otherModel.foreignKey)
+        continue
+
       fieldString += ` ${otherModel.foreignKey}: number\n     `
       fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
@@ -1560,7 +1565,7 @@ export async function generateModelString(
 
   jsonFields += '\nid: this.id,\n'
   for (const attribute of attributes) {
-    const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+    const entity = mapEntity(attribute)
 
     fieldString += ` ${snakeCase(attribute.field)}?: ${entity}\n     `
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
@@ -2087,6 +2092,28 @@ export async function generateModelString(
         return instance
       }
 
+      static when(
+        condition: boolean,
+        callback: (query: any) => ${modelName}Model,
+      ): ${modelName}Model {
+        let instance = new ${modelName}Model(null)
+
+        if (condition)
+          instance = callback(instance)
+
+        return instance
+      }
+
+      when(
+        condition: boolean,
+        callback: (query: any) => ${modelName}Model,
+      ): ${modelName}Model {
+        if (condition)
+          callback(this.selectFromQuery)
+
+        return this
+      }
+
       static whereNull(column: string): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
@@ -2424,6 +2451,14 @@ export async function generateModelString(
 
     export default ${modelName}
     `
+}
+
+function mapEntity(attribute: ModelElement): string | undefined {
+  const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+
+  const mapEntity = entity === 'date' ? 'Date | string' : entity
+
+  return mapEntity
 }
 
 export async function generateModelFiles(modelStringFile?: string): Promise<void> {

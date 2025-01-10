@@ -8,7 +8,6 @@ import { ExitCode } from '@stacksjs/types'
 export function migrate(buddy: CLI): void {
   const descriptions = {
     migrate: 'Migrates your database',
-    dns: 'Writes the DNS records for a domain to ./config/dns.ts',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }

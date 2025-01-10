@@ -464,6 +464,28 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: (query: any) => SubscriberEmailModel,
+  ): SubscriberEmailModel {
+    let instance = new SubscriberEmailModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => SubscriberEmailModel,
+  ): SubscriberEmailModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
+  }
+
   static whereNull(column: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 

@@ -60,7 +60,7 @@ interface QueryOptions {
 
 export class PaymentMethodModel {
   private hidden = []
-  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id', 'transaction_id']
+  private fillable = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -460,6 +460,28 @@ export class PaymentMethodModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
+  }
+
+  static when(
+    condition: boolean,
+    callback: (query: any) => PaymentMethodModel,
+  ): PaymentMethodModel {
+    let instance = new PaymentMethodModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => PaymentMethodModel,
+  ): PaymentMethodModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
   }
 
   static whereNull(column: string): PaymentMethodModel {

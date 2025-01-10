@@ -1,1 +1,1 @@
-export type ModelNames = 'Project' | 'SubscriberEmail' | 'AccessToken' | 'Team' | 'Subscriber' | 'Deployment' | 'Release' | 'User' | 'Post' | 'Product' | 'PaymentMethod' | 'Transaction' | 'Subscription' | 'Error'
+export type ModelNames = 'Project' | 'SubscriberEmail' | 'AccessToken' | 'Team' | 'Subscriber' | 'Deployment' | 'Release' | 'User' | 'Post' | 'FailedJob' | 'Product' | 'PaymentMethod' | 'Transaction' | 'Job' | 'Subscription' | 'Error'

@@ -1,6 +1,8 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
+import type { FailedJobsTable } from '../src/models/FailedJob'
+import type { JobsTable } from '../src/models/Job'
 import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
@@ -12,12 +14,6 @@ import type { SubscriptionsTable } from '../src/models/Subscription'
 import type { TeamsTable } from '../src/models/Team'
 import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
-
-export interface PersonalAccessTokenTeamsTable {
-  id?: number
-  team_id: number
-  personal_access_token_id: number
-}
 
 export interface TeamUsersTable {
   id?: number
@@ -54,7 +50,6 @@ export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  personal_access_token_teams: TeamUsersTable
   team_users: TeamUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable
@@ -62,9 +57,11 @@ export interface Database {
   releases: ReleasesTable
   users: UsersTable
   posts: PostsTable
+  failed_jobs: FailedJobsTable
   products: ProductsTable
   payment_methods: PaymentMethodsTable
   transactions: TransactionsTable
+  jobs: JobsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
   passkeys: PasskeysTable

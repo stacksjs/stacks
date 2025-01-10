@@ -459,6 +459,28 @@ export class TransactionModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: (query: any) => TransactionModel,
+  ): TransactionModel {
+    let instance = new TransactionModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => TransactionModel,
+  ): TransactionModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
+  }
+
   static whereNull(column: string): TransactionModel {
     const instance = new TransactionModel(null)
 

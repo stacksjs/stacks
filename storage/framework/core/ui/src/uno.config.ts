@@ -1,11 +1,13 @@
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
+import presetWebFonts from '@unocss/preset-web-fonts'
+import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 import {
   presetAttributify,
   presetIcons,
   presetTypography,
   presetUno,
-  presetWebFonts,
+  // presetWebFonts,
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
@@ -47,8 +49,18 @@ const config: UnoConfig = {
       fonts: {
         sans: 'Inter',
         serif: 'Inter',
-        // mono: 'Inter',
+        mono: 'Fira Code',
       },
+      processors: createLocalFontProcessor({
+        // Directory to cache the fonts
+        cacheDir: 'node_modules/.cache/unocss/fonts',
+
+        // Directory to save the fonts assets
+        fontAssetsDir: 'public/assets/fonts',
+
+        // Base URL to serve the fonts from the client
+        fontServeBaseUrl: '/assets/fonts',
+      }),
     }),
   ],
 

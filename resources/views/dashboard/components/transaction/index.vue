@@ -65,10 +65,6 @@ function getUnitPrice(lineData: LineItem[]) {
 function getLastDigits(paymentIntent: any) {
   return paymentIntent.payment_method.card.last4
 }
-
-function getBrand(paymentIntent: any) {
-  return 'visa'
-}
 </script>
 
 <template>

@@ -461,6 +461,28 @@ export class SubscriptionModel {
     return instance
   }
 
+  static when(
+    condition: boolean,
+    callback: (query: any) => SubscriptionModel,
+  ): SubscriptionModel {
+    let instance = new SubscriptionModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: any) => SubscriptionModel,
+  ): SubscriptionModel {
+    if (condition)
+      callback(this.selectFromQuery)
+
+    return this
+  }
+
   static whereNull(column: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 

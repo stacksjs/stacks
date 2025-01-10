@@ -13,7 +13,7 @@ import {
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
-  hasTableBeenMigrated,
+  hasMigrationBeenCreated,
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
@@ -65,7 +65,6 @@ export async function dropSqliteTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('errors').ifExists().execute()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -140,7 +139,7 @@ export async function generateSqliteMigration(modelPath: string): Promise<void> 
   // if the fields have not changed, we need to migrate the table
 
   // we need to check if this tableName has already been migrated
-  const hasBeenMigrated = await hasTableBeenMigrated(tableName)
+  const hasBeenMigrated = false
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
@@ -196,13 +195,6 @@ async function createTableMigration(modelPath: string) {
   if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
-  if (useBillable && tableName === 'users') {
-    await createTableMigration(path.storagePath('framework/database/models/generated/Subscription.ts'))
-    await createTableMigration(path.storagePath('framework/database/models/generated/PaymentMethod.ts'))
-    await createTableMigration(path.storagePath('framework/database/models/generated/Transaction.ts'))
-    await createTableMigration(path.storagePath('framework/database/models/generated/Product.ts'))
-  }
-
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
@@ -240,6 +232,9 @@ async function createTableMigration(modelPath: string) {
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
       migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
         col.references('${modelRelation.relationTable}.id').onDelete('cascade')
       ) \n`
@@ -257,7 +252,7 @@ async function createTableMigration(modelPath: string) {
   }
 
   if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'text')\n`
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
   migrationContent += `}\n`
@@ -305,7 +300,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 }
 
 async function createPasskeyMigration() {
-  const hasBeenMigrated = await hasTableBeenMigrated('users')
+  const hasBeenMigrated = await hasMigrationBeenCreated('users')
 
   if (hasBeenMigrated)
     return
@@ -336,7 +331,7 @@ async function createPasskeyMigration() {
 
   Bun.write(migrationFilePath, migrationContent)
 
-  log.success('Created passkey table')
+  log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
 async function createAlterTableMigration(modelPath: string) {
