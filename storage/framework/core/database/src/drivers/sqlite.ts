@@ -13,6 +13,7 @@ import {
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
+  hasMigrationBeenCreated,
   hasTableBeenMigrated,
   isArrayEqual,
   mapFieldTypeToColumnType,
@@ -297,7 +298,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 }
 
 async function createPasskeyMigration() {
-  const hasBeenMigrated = await hasTableBeenMigrated('users')
+  const hasBeenMigrated = await hasMigrationBeenCreated('users')
 
   if (hasBeenMigrated)
     return
@@ -328,7 +329,7 @@ async function createPasskeyMigration() {
 
   Bun.write(migrationFilePath, migrationContent)
 
-  log.success('Created passkey table')
+  log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
 async function createAlterTableMigration(modelPath: string) {
