@@ -57,7 +57,7 @@
     "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.7.0",
     "clean-css": "^5.3.3",
-    "unocss": "0.65.4",
+    "unocss": "65.4.0",
     "unplugin-icons": "^22.0.0"
   }
 }
