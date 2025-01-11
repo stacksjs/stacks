@@ -42,11 +42,9 @@
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
     "node-fetch": "^3.3.2",
     "socks": "^2.8.3"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

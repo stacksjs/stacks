@@ -33,14 +33,12 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

@@ -44,7 +44,7 @@
     "prepublishOnly": "bun run build",
     "size": "bun scripts/export-size.ts"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
@@ -74,9 +74,7 @@
     "pretty-bytes": "^6.1.1",
     "resize-observer-polyfill": "^1.5.1",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.7.0"
-  },
-  "devDependencies": {
+    "yaml": "^2.7.0",
     "@stacksjs/development": "workspace:*",
     "@types/js-yaml": "^4.0.9",
     "markdown-table": "^3.0.4",

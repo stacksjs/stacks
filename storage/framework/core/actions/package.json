@@ -41,11 +41,12 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/api": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
@@ -59,8 +60,5 @@
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
     "vue-component-meta": "^2.2.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

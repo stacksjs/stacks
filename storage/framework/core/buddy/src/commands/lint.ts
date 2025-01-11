@@ -24,7 +24,7 @@ export function lint(buddy: CLI): void {
 
       if (options.fix)
         await runAction(Action.LintFix, { ...options })
-      else await runCommand('bunx --bun eslint --flag unstable_ts_config .')
+      else await runCommand('bunx --bun eslint .')
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })

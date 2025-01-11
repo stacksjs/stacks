@@ -39,11 +39,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "@stacksjs/browser": "workspace:*",
-    "@stacksjs/security": "workspace:*"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/browser": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/security": "workspace:*"
   }
 }

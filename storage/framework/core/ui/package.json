@@ -56,7 +56,7 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@headlessui/vue": "^1.7.23",
     "@iconify-json/heroicons": "^1.2.2",
     "@iconify-json/heroicons-outline": "^1.2.1",
@@ -65,6 +65,7 @@
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@unhead/vue": "^1.11.15",
     "pinia": "^2.3.0",
@@ -74,8 +75,5 @@
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.5.13",
     "vue-tsc": "^2.2.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

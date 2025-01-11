@@ -41,12 +41,10 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "ofetch": "^1.4.1",
     "openapi-typescript": "^7.5.2"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

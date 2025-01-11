@@ -41,10 +41,8 @@
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "@stacksjs/utils": "workspace:*"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
   }
 }

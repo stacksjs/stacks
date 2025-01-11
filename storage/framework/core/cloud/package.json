@@ -44,7 +44,7 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@aws-sdk/client-bedrock": "^3.726.1",
     "@aws-sdk/client-cloudformation": "^3.726.1",
     "@aws-sdk/client-cloudfront": "^3.726.1",
@@ -70,9 +70,7 @@
     "aws-cdk": "^2.175.1",
     "aws-cdk-lib": "^2.175.1",
     "aws4fetch": "^1.0.20",
-    "constructs": "^10.4.2"
-  },
-  "devDependencies": {
+    "constructs": "^10.4.2",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/env": "workspace:*",

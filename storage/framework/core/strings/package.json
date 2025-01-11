@@ -51,14 +51,12 @@
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "macroable": "^7.0.2",
-    "validator": "^13.12.0"
-  },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/validator": "^13.12.2"
+    "@types/validator": "^13.12.2",
+    "macroable": "^7.0.2",
+    "validator": "^13.12.0"
   }
 }

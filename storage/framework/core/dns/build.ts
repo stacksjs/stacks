@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dtsx'
 import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -25,6 +26,8 @@ const result = await Bun.build({
     '@stacksjs/whois',
     '@stacksjs/types',
   ],
+
+  plugins: [dts()],
 })
 
 await outro({

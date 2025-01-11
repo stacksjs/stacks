@@ -32,13 +32,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "fs-extra": "^11.2.0",
     "std-env": "^3.8.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/path": "workspace:*"
   }
 }
