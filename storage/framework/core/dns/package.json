@@ -45,8 +45,8 @@
   "devDependencies": {
     "@aws-sdk/client-route-53": "^3.726.1",
     "@stacksjs/actions": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/development": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",

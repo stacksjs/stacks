@@ -59,8 +59,11 @@
     "@aws-sdk/client-ses": "^3.726.1",
     "@aws-sdk/client-sesv2": "^3.726.1",
     "@aws-sdk/client-ssm": "^3.726.1",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/dns": "workspace:*",
+    "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
@@ -71,9 +74,6 @@
     "aws-cdk-lib": "^2.175.1",
     "aws4fetch": "^1.0.20",
     "constructs": "^10.4.2",
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/env": "workspace:*",
     "source-map-support": "^0.5.21"
   }
 }

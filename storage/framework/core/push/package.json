@@ -36,7 +36,7 @@
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*"
   }
 }
