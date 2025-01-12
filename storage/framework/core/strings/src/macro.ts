@@ -40,13 +40,13 @@ export const Str = {
 
   detectIndent(str: string): {
     amount: number
-    type: string | undefined
     indent: string
+    type?: string | undefined
   } {
     return u.detectIndent(str)
   },
 
-  detectNewline(str: string): '\r\n' | '\n' | undefined {
+  detectNewline(str: string): string | undefined {
     return u.detectNewline(str)
   },
 
