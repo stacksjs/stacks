@@ -1,5 +1,5 @@
 import * as c from './case'
-import * as p from './pluralize'
+import p from './pluralize'
 import * as u from './utils'
 
 export const Str = {
