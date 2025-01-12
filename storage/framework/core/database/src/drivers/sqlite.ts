@@ -27,7 +27,7 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   return ok('All tables dropped successfully!')
 }
 
-export async function deleteMigrationFiles(): Promise<void> {
+async function deleteMigrationFiles(): Promise<void> {
   const files = await fs.readdir(path.userMigrationsPath())
 
   if (files.length) {
@@ -42,7 +42,7 @@ export async function deleteMigrationFiles(): Promise<void> {
   }
 }
 
-export async function deleteFrameworkModels(): Promise<void> {
+async function deleteFrameworkModels(): Promise<void> {
   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
 
   if (modelFiles.length) {
