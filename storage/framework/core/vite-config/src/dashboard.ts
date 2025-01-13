@@ -49,29 +49,6 @@ export const dashboardConfig: ViteConfig = {
     }),
 
     autoImports(),
-    // AutoImport({
-    //   include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
-    //   imports: [
-    //     'pinia',
-    //     'vue',
-    //     'vue-i18n',
-    //     // '@vueuse/core',
-    //     // 'vitepress'
-    //     // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-    //     // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-    //     // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-    //     VueHeadImports,
-    //     VueRouterAutoImports,
-    //     {
-    //       'vue-router/auto': ['useLink'],
-    //     },
-    //   ],
-
-    //   dts: p.frameworkPath('types/auto-imports.d.ts'),
-    //   dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores')],
-    //   vueTemplate: true,
-    // }),
-
     components(),
     cssEngine(),
     // markdown(),
