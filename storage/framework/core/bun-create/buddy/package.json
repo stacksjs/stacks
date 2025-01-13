@@ -110,7 +110,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx --bun eslint --flag unstable_ts_config . --fix"
+    "*": "bunx --bun eslint . --fix"
   },
   "config": {
     "commitizen": {

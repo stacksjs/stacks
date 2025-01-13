@@ -33,16 +33,14 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
+    "@types/pg": "^8.11.10",
     "kysely": "^0.27.5",
     "kysely-bun-worker": "^0.7.0",
     "mysql2": "^3.12.0",
     "pg": "^8.13.1"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@types/pg": "^8.11.10"
   }
 }

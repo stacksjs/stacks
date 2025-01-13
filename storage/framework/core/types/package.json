@@ -43,7 +43,7 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@mdit-vue/plugin-component": "^2.1.3",
     "@mdit-vue/plugin-frontmatter": "^2.1.3",
     "@mdit-vue/types": "^2.1.0",
@@ -57,12 +57,14 @@
     "@types/minimatch": "^5.1.2",
     "@types/nprogress": "^0.2.3",
     "@vinejs/vine": "^3.0.0",
+    "aws-cdk-lib": "^2.175.1",
     "cac": "^6.7.14",
     "markdown-it": "^14.1.0",
     "meilisearch": "^0.47.0",
     "neverthrow": "^8.1.1",
     "ora": "^8.1.1",
-    "unocss": "0.65.4",
+    "typescript": "^5.7.3",
+    "unocss": "65.4.0",
     "unplugin-auto-import": "^19.0.0",
     "unplugin-vue-components": "^28.0.0",
     "vite": "^6.0.7",
@@ -71,9 +73,5 @@
     "vite-ssg": "^25.0.0",
     "vitepress": "1.5.0",
     "vue": "^3.5.13"
-  },
-  "devDependencies": {
-    "aws-cdk-lib": "^2.174.1",
-    "typescript": "^5.7.3"
   }
 }

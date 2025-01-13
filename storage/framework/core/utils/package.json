@@ -44,20 +44,22 @@
     "prepublishOnly": "bun run build",
     "size": "bun scripts/export-size.ts"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^12.3.0",
+    "@types/js-yaml": "^4.0.9",
+    "@vueuse/core": "^12.4.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^12.3.0",
-    "@vueuse/shared": "^12.3.0",
+    "@vueuse/math": "^12.4.0",
+    "@vueuse/shared": "^12.4.0",
     "ace-builds": "^1.37.4",
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
@@ -70,16 +72,12 @@
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
     "magic-regexp": "^0.8.0",
+    "markdown-table": "^3.0.4",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
     "resize-observer-polyfill": "^1.5.1",
+    "vue-starport": "^0.4.0",
     "vue3-ace-editor": "^2.2.4",
     "yaml": "^2.7.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@types/js-yaml": "^4.0.9",
-    "markdown-table": "^3.0.4",
-    "vue-starport": "^0.4.0"
   }
 }

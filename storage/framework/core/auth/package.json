@@ -33,11 +33,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "@simplewebauthn/browser": "^13.0.0",
-    "@simplewebauthn/server": "^13.0.0"
-  },
   "devDependencies": {
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.0",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/router": "workspace:*",

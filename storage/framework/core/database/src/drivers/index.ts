@@ -16,6 +16,36 @@ interface Range {
   max: number
 }
 
+export async function deleteMigrationFiles(): Promise<void> {
+  const files = await fs.readdir(path.userMigrationsPath())
+
+  if (files.length) {
+    for (const file of files) {
+      if (file.endsWith('.ts')) {
+        const migrationPath = path.userMigrationsPath(`${file}`)
+
+        if (fs.existsSync(migrationPath))
+          await Bun.$`rm ${migrationPath}`
+      }
+    }
+  }
+}
+
+export async function deleteFrameworkModels(): Promise<void> {
+  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+
+  if (modelFiles.length) {
+    for (const modelFile of modelFiles) {
+      if (modelFile.endsWith('.ts')) {
+        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
+
+        if (fs.existsSync(modelPath))
+          await Bun.$`rm ${modelPath}`
+      }
+    }
+  }
+}
+
 export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
   const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
   const model = (await import(oldModelPath)).default as Model

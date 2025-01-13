@@ -238,6 +238,10 @@ export function trainCase(input: string, options?: CaseOptions): string {
   return capitalCase(input, { delimiter: '-', ...options })
 }
 
+export function paramCase(input: string, options?: CaseOptions): string {
+  return kebabCase(input, options)
+}
+
 function lowerFactory(locale: Locale): (input: string) => string {
   return locale === false
     ? (input: string) => input.toLowerCase()

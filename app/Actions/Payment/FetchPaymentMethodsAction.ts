@@ -1,5 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -12,6 +13,6 @@ export default new Action({
 
     const paymentMethods = await user?.paymentMethods()
 
-    return paymentMethods
+    return response.json(paymentMethods)
   },
 })

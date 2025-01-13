@@ -25,11 +25,9 @@
     "lint": "ray lint",
     "publish": "bunx --bun @raycast/api@latest publish"
   },
-  "dependencies": {
-    "@raycast/api": "^1.88.4",
-    "@raycast/utils": "^1.18.1"
-  },
   "devDependencies": {
+    "@raycast/api": "^1.88.4",
+    "@raycast/utils": "^1.18.1",
     "@stacksjs/development": "workspace:*",
     "typescript": "^5.7.3"
   }

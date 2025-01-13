@@ -33,11 +33,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "@formkit/tempo": "^0.1.2",
-    "@stacksjs/utils": "workspace:*"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@formkit/tempo": "^0.1.2",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
   }
 }

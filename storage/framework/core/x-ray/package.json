@@ -36,11 +36,9 @@
     "prepublishOnly": "bun run build",
     "typecheck": "bun tsc --noEmit"
   },
-  "dependencies": {
-    "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/logging": "workspace:*"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/desktop": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/logging": "workspace:*"
   }
 }

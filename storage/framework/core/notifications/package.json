@@ -45,17 +45,15 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/email": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/push": "workspace:*",
     "@stacksjs/sms": "workspace:*",
     "@stacksjs/types": "workspace:*"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

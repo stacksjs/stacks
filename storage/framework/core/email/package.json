@@ -34,15 +34,13 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "aws-sdk": "^2.1692.0",
     "vue-email": "^0.8.11"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

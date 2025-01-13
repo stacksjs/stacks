@@ -78,9 +78,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@babel/preset-typescript": "latest",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -101,9 +103,5 @@
     "vite-plugin-pwa": "^0.21.1",
     "vite-ssg": "^25.0.0",
     "vite-ssg-sitemap": "^0.8.1"
-  },
-  "devDependencies": {
-    "@babel/preset-typescript": "latest",
-    "@stacksjs/development": "workspace:*"
   }
 }

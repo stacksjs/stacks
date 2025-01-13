@@ -1,5 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -23,6 +24,6 @@ export default new Action({
       success_url: 'https://google.com',
     })
 
-    return checkout
+    return response.json(checkout)
   },
 })

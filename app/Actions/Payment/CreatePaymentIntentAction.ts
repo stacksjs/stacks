@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { HttpError } from '@stacksjs/error-handling'
+import { response } from '@stacksjs/router'
 import Product from '../../../storage/framework/orm/src/models/Product.ts'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
@@ -26,6 +27,6 @@ export default new Action({
       payment_method_types: ['card'],
     })
 
-    return paymentIntent
+    return response.json(paymentIntent)
   },
 })

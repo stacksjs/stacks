@@ -292,6 +292,7 @@ shikiji
 shikijs
 showcaseable
 sigv
+simplewebauthn
 singleline
 singlestore
 sisteransi
@@ -304,6 +305,7 @@ spreadsheetml
 Squeezy
 stackblitz
 stacksjs
+starport
 stedolan
 stepfunctions
 strikethrough

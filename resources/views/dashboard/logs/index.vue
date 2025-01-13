@@ -1,205 +1,419 @@
-<script lang="ts" setup>
+<script setup lang="ts">
+useHead({
+  title: 'Dashboard - Logs',
+})
+
+interface Log {
+  id: string
+  timestamp: string
+  type: 'info' | 'error' | 'success'
+  source: 'CLI' | 'File' | 'System'
+  message: string
+  metadata: Record<string, any>
+  project?: string // Added project field
+}
+
+interface Project {
+  id: string
+  name: string
+  color: string
+}
+
+const logs = ref<Log[]>([])
+const filter = ref('all')
+const searchTerm = ref('')
+const autoRefresh = ref(true)
+const selectedLog = ref<Log | null>(null)
+const selectedProjects = ref<string[]>([])
+
+// Sample projects
+const projects: Project[] = [
+  { id: 'stacks', name: 'Stacks', color: 'blue' },
+  { id: 'rpx', name: 'rpx', color: 'purple' },
+  { id: 'tlsx', name: 'tlsx', color: 'green' },
+  { id: 'dtsx', name: 'dtsx', color: 'indigo' },
+  { id: 'ts-collect', name: 'ts-collect', color: 'rose' },
+  { id: 'vite-plugin-local', name: 'vite-plugin-local', color: 'amber' },
+]
+
+// Updated sample logs with project information
+const sampleLogs: Log[] = [
+  {
+    id: '1',
+    timestamp: new Date().toISOString(),
+    type: 'info',
+    source: 'CLI',
+    message: 'buddy build started',
+    metadata: { user: 'chris@stacksjs.org', command: 'buddy build' },
+    project: 'stacks'
+  },
+  {
+    id: '2',
+    timestamp: new Date(Date.now() - 5000).toISOString(),
+    type: 'error',
+    source: 'File',
+    message: 'Failed to compile component',
+    metadata: { file: './components/Header.vue', line: 42 },
+    project: 'rpx'
+  },
+  {
+    id: '3',
+    timestamp: new Date(Date.now() - 15000).toISOString(),
+    type: 'success',
+    source: 'System',
+    message: 'Production deployment successful',
+    metadata: {
+      deployment_id: 'dep_abc123',
+      environment: 'production',
+      branch: 'main',
+      commit: '7829abc',
+      duration: '45s'
+    },
+    project: 'stacks'
+  },
+  {
+    id: '4',
+    timestamp: new Date(Date.now() - 60000).toISOString(),
+    type: 'info',
+    source: 'CLI',
+    message: 'Starting database migration',
+    metadata: {
+      migration: 'create_users_table',
+      database: 'production',
+      user: 'deploy@stacksjs.org'
+    },
+    project: 'stacks'
+  },
+  {
+    id: '5',
+    timestamp: new Date(Date.now() - 120000).toISOString(),
+    type: 'error',
+    source: 'System',
+    message: 'Failed to connect to Redis cache',
+    metadata: {
+      error: 'Connection timeout',
+      host: 'redis.internal',
+      port: 6379,
+      attempt: 3
+    },
+    project: 'stacks'
+  },
+  {
+    id: '6',
+    timestamp: new Date(Date.now() - 180000).toISOString(),
+    type: 'success',
+    source: 'CLI',
+    message: 'Assets compiled successfully',
+    metadata: {
+      duration: '12.5s',
+      assets: ['main.js', 'vendor.js', 'app.css'],
+      size: '2.3MB'
+    },
+    project: 'stacks'
+  },
+  {
+    id: '7',
+    timestamp: new Date(Date.now() - 240000).toISOString(),
+    type: 'info',
+    source: 'System',
+    message: 'Auto-scaling triggered',
+    metadata: {
+      reason: 'High CPU usage',
+      current_instances: 3,
+      target_instances: 5,
+      region: 'us-east-1'
+    },
+    project: 'stacks'
+  },
+  {
+    id: '8',
+    timestamp: new Date(Date.now() - 300000).toISOString(),
+    type: 'success',
+    source: 'File',
+    message: 'Configuration cache cleared',
+    metadata: {
+      triggered_by: 'deployment',
+      cache_size: '156KB',
+      duration: '0.8s'
+    },
+    project: 'stacks'
+  },
+  {
+    id: '9',
+    timestamp: new Date(Date.now() - 360000).toISOString(),
+    type: 'info',
+    source: 'CLI',
+    message: 'Running test suite',
+    metadata: {
+      suite: 'Integration Tests',
+      total_tests: 156,
+      parallel: true,
+      ci: true
+    },
+    project: 'stacks'
+  },
+  {
+    id: '10',
+    timestamp: new Date(Date.now() - 420000).toISOString(),
+    type: 'error',
+    source: 'System',
+    message: 'SSL certificate expiring soon',
+    metadata: {
+      domain: 'api.stacksjs.org',
+      expires_in: '7 days',
+      certificate_id: 'cert_xyz789'
+    },
+    project: 'stacks'
+  }
+]
+
+const filteredLogs = computed(() => {
+  return logs.value.filter(log => {
+    const matchesSearch = log.message.toLowerCase().includes(searchTerm.value.toLowerCase())
+    const matchesSource = filter.value === 'all' || log.source.toLowerCase() === filter.value.toLowerCase()
+    const matchesProject = selectedProjects.value.length === 0 ||
+      (log.project && selectedProjects.value.includes(log.project))
+
+    return matchesSearch && matchesSource && matchesProject
+  })
+})
+
+const getProjectClasses = (projectId: string): { bg: string, text: string, ring: string } => {
+  switch (projectId) {
+    case 'stacks':
+      return { bg: 'bg-blue-100', text: 'text-blue-800', ring: 'ring-blue-500' }
+    case 'rpx':
+      return { bg: 'bg-purple-100', text: 'text-purple-800', ring: 'ring-purple-500' }
+    case 'tlsx':
+      return { bg: 'bg-green-100', text: 'text-green-800', ring: 'ring-green-500' }
+    case 'dtsx':
+      return { bg: 'bg-indigo-100', text: 'text-indigo-800', ring: 'ring-indigo-500' }
+    case 'ts-collect':
+      return { bg: 'bg-rose-100', text: 'text-rose-800', ring: 'ring-rose-500' }
+    case 'vite-plugin-local':
+      return { bg: 'bg-amber-100', text: 'text-amber-800', ring: 'ring-amber-500' }
+    default:
+      return { bg: 'bg-gray-100', text: 'text-gray-800', ring: 'ring-gray-500' }
+  }
+}
+
+const toggleProject = (projectId: string) => {
+  const index = selectedProjects.value.indexOf(projectId)
+  if (index === -1) {
+    selectedProjects.value.push(projectId)
+  } else {
+    selectedProjects.value.splice(index, 1)
+  }
+}
+
+const getLogIcon = (type: Log['type']) => {
+  switch (type) {
+    case 'error':
+      return 'i-heroicons-outline-exclamation-circle'
+    case 'info':
+      return 'i-heroicons-outline-information-circle'
+    case 'success':
+      return 'i-heroicons-outline-check-circle'
+    default:
+      return 'i-heroicons-outline-terminal'
+  }
+}
+
+const getLogIconColor = (type: Log['type']) => {
+  switch (type) {
+    case 'error':
+      return 'text-red-500'
+    case 'info':
+      return 'text-blue-500'
+    case 'success':
+      return 'text-green-500'
+    default:
+      return 'text-gray-500'
+  }
+}
+
+const getLogRowClass = (type: Log['type']) => {
+  switch (type) {
+    case 'error':
+      return 'bg-red-50'
+    case 'success':
+      return 'bg-green-50'
+    default:
+      return ''
+  }
+}
+
+let refreshInterval: number | undefined
+
+onMounted(() => {
+  logs.value = sampleLogs
+  startAutoRefresh()
+})
+
+onUnmounted(() => {
+  stopAutoRefresh()
+})
+
+const startAutoRefresh = () => {
+  if (autoRefresh.value) {
+    refreshInterval = window.setInterval(() => {
+      // In reality, this would fetch new logs
+      // fetchNewLogs()
+    }, 2000)
+  }
+}
+
+const stopAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+    refreshInterval = undefined
+  }
+}
+
+const toggleAutoRefresh = () => {
+  autoRefresh.value = !autoRefresh.value
+  if (autoRefresh.value) {
+    startAutoRefresh()
+  } else {
+    stopAutoRefresh()
+  }
+}
 </script>
 
 <template>
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
-    <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div>
-        <h3 class="text-base text-gray-900 font-semibold leading-6">
-          Last 30 days
-        </h3>
-
-        <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                </svg>
-              </div>
-              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
-                Total Logs
-              </p>
-            </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 font-semibold">
-                71,897
-              </p>
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                122
-              </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Deployments</span></a>
-                </div>
-              </div> -->
-            </dd>
-          </div>
-
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
-                </svg>
-              </div>
-              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
-                Avg. Queue Time
-              </p>
-            </dt>
-
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 font-semibold">
-                365 ms
-              </p>
-
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                12 s
-              </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Average Deploy Time</span></a>
-                </div>
-              </div> -->
-            </dd>
-          </div>
-
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
-                </svg>
-              </div>
-              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
-                Success Rate
-              </p>
-            </dt>
-
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 font-semibold">
-                94.57%
-              </p>
-
-              <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
-                <svg class="h-5 w-5 flex-shrink-0 self-center text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Decreased by </span>
-                3.2%
-              </p>
-
-              <!-- <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
-                <div class="text-sm">
-                  <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Success Rate</span></a>
-                </div>
-              </div> -->
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </div>
-
-    <div class="px-4 pt-12 lg:px-8 sm:px-6">
+    <div class="px-4 lg:px-8 sm:px-6">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base text-gray-900 font-semibold leading-6">
-            Logs
+            System Logs
           </h1>
           <p class="mt-2 text-sm text-gray-700">
-            A list of all your logs.
+            A list of all system logs. Monitor system activities and events in real-time.
           </p>
         </div>
-
-        <!-- <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-            Log
-          </button>
-        </div> -->
       </div>
 
       <div class="mt-8 flow-root">
+        <!-- Control Panel -->
+        <div class="mb-6 space-y-4">
+          <!-- Search and Filters Row -->
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[200px]">
+              <input
+                v-model="searchTerm"
+                type="text"
+                placeholder="Search logs..."
+                class="w-full px-4 py-2 border rounded-lg"
+              >
+            </div>
+
+            <select
+              v-model="filter"
+              class="px-4 py-2 border rounded-lg bg-white min-w-[140px]"
+            >
+              <option value="all">All Sources</option>
+              <option value="cli">CLI</option>
+              <option value="file">File</option>
+              <option value="system">System</option>
+            </select>
+
+            <button
+              class="flex items-center gap-2 px-4 py-2 rounded-lg"
+              :class="autoRefresh ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
+              @click="toggleAutoRefresh"
+            >
+              <i
+                class="i-heroicons-outline-refresh h-4 w-4"
+                :class="{ 'animate-spin': autoRefresh }"
+                aria-hidden="true"
+              />
+              {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
+            </button>
+          </div>
+
+          <!-- Project Filters -->
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="project in projects"
+              :key="project.id"
+              @click="toggleProject(project.id)"
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors"
+              :class="[
+                selectedProjects.includes(project.id)
+                  ? [...Object.values(getProjectClasses(project.id)), 'ring-2']
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ]"
+            >
+              {{ project.name }}
+              <span
+                v-if="selectedProjects.includes(project.id)"
+                class="ml-2 text-xs"
+              >×</span>
+            </button>
+          </div>
+        </div>
+
         <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
           <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <table class="min-w-full divide-y divide-gray-300">
+              <!-- Logs Table -->
+              <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
-                      When
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Triggered By
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Commit
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Branch
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                      Status
-                    </th>
-
-                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span class="sr-only">Edit</span>
-                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                   </tr>
                 </thead>
-
                 <tbody class="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                      Moments ago
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <tr
+                    v-for="log in filteredLogs"
+                    :key="log.id"
+                    :class="[getLogRowClass(log.type), 'hover:bg-gray-50 cursor-pointer']"
+                    @click="selectedLog = log"
+                  >
+                    <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="h-10 w-10 flex-shrink-0">
-                          <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
-                            alt=""
-                            class="h-10 w-10 rounded-full"
-                          >
-                        </div>
-                        <div class="ml-4">
-                          <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
-                            Chris Breuer
-                          </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-300 dark:text-gray-400">
-                            chris@stacksjs.org
-                          </div>
-                        </div>
+                        <i
+                          :class="[getLogIcon(log.type), getLogIconColor(log.type), 'h-5 w-5']"
+                          aria-hidden="true"
+                        />
                       </div>
                     </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {{ log.source }}
+                      </span>
                     </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                      <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
+                    <td class="px-6 py-4">
+                      <div class="text-sm text-gray-900">{{ log.message }}</div>
                     </td>
-
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      Deployed
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        v-if="log.project"
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        :class="[getProjectClasses(log.project).bg, getProjectClasses(log.project).text]"
+                      >
+                        {{ projects.find(p => p.id === log.project)?.name }}
+                      </span>
                     </td>
-
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Queue</span></a>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                      <div class="text-sm text-gray-900">
+                        <i
+                          class="i-heroicons-outline-clock h-4 w-4 mr-2 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        {{ new Date(log.timestamp).toLocaleTimeString() }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                      <button class="text-blue-600 hover:text-blue-900">
+                        View
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -207,6 +421,56 @@
             </div>
           </div>
         </div>
+
+        <!-- Log Detail Modal -->
+        <Teleport to="body">
+          <div
+            v-if="selectedLog"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+            @click.self="selectedLog = null"
+          >
+            <div class="bg-white rounded-lg max-w-2xl w-full p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Log Details</h3>
+                <button
+                  @click="selectedLog = null"
+                  class="text-gray-500 hover:text-gray-700"
+                >
+                  <i
+                    class="i-heroicons-outline-x h-5 w-5"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Timestamp</label>
+                  <p class="mt-1 text-sm text-gray-900">
+                    {{ new Date(selectedLog.timestamp).toLocaleString() }}
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Type</label>
+                  <p class="mt-1 text-sm text-gray-900">{{ selectedLog.type }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Project</label>
+                  <p class="mt-1 text-sm text-gray-900">
+                    {{ projects.find(p => p.id === selectedLog?.project)?.name || 'N/A' }}
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Message</label>
+                  <p class="mt-1 text-sm text-gray-900">{{ selectedLog.message }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Metadata</label>
+                  <pre class="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded">{{ JSON.stringify(selectedLog.metadata, null, 2) }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Teleport>
       </div>
     </div>
   </div>

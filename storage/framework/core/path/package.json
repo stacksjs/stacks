@@ -30,11 +30,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/validation": "workspace:*"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

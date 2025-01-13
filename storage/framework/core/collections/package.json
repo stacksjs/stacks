@@ -42,10 +42,8 @@
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "ts-collect": "^0.4.0"
-  },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "ts-collect": "^0.4.0"
   }
 }

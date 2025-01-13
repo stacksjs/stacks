@@ -34,20 +34,18 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "unplugin-vue-router": "^0.10.9",
     "vue-router": "^4.5.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/types": "workspace:*"
   }
 }

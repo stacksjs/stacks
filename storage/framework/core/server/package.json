@@ -41,14 +41,12 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*",
+    "@stacksjs/validation": "workspace:*",
     "vite": "^6.0.7"
   }
 }

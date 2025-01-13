@@ -56,26 +56,24 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@headlessui/vue": "^1.7.23",
     "@iconify-json/heroicons": "^1.2.2",
     "@iconify-json/heroicons-outline": "^1.2.1",
     "@iconify-json/heroicons-solid": "^1.2.1",
-    "@iconify/json": "^2.2.293",
+    "@iconify/json": "^2.2.294",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@unhead/vue": "^1.11.15",
+    "@unhead/vue": "^1.11.16",
     "pinia": "^2.3.0",
-    "unhead": "^1.11.15",
-    "unocss": "0.65.4",
+    "unhead": "^1.11.16",
+    "unocss": "65.4.0",
     "unocss-preset-primitives": "0.0.2-beta.1",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.5.13",
     "vue-tsc": "^2.2.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }

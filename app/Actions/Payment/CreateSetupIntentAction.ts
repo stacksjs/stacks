@@ -1,5 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -14,6 +15,6 @@ export default new Action({
       payment_method_types: ['card', 'link', 'us_bank_account'],
     })
 
-    return setupIntent
+    return response.json(setupIntent)
   },
 })

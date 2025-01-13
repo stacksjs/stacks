@@ -10,6 +10,8 @@ import { snakeCase } from '@stacksjs/strings'
 import {
   arrangeColumns,
   checkPivotMigration,
+  deleteFrameworkModels,
+  deleteMigrationFiles,
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
@@ -25,36 +27,6 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
 
   return ok('All tables dropped successfully!')
-}
-
-export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
-
-  if (modelFiles.length) {
-    for (const modelFile of modelFiles) {
-      if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
-
-        if (fs.existsSync(modelPath))
-          await Bun.$`rm ${modelPath}`
-      }
-    }
-  }
-}
-
-export async function deleteMigrationFiles(): Promise<void> {
-  const files = await fs.readdir(path.userMigrationsPath())
-
-  if (files.length) {
-    for (const file of files) {
-      if (file.endsWith('.ts')) {
-        const migrationPath = path.userMigrationsPath(`${file}`)
-
-        if (fs.existsSync(migrationPath))
-          await Bun.$`rm ${migrationPath}`
-      }
-    }
-  }
 }
 
 export async function dropMysqlTables(): Promise<void> {

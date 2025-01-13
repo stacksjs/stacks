@@ -42,16 +42,14 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__traverse": "^7.20.6",
     "bun-plugin-dtsx": "^0.21.9",
     "vue-docgen-web-types": "^0.1.8"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "@types/babel__generator": "^7.6.8",
-    "@types/babel__traverse": "^7.20.6"
   }
 }

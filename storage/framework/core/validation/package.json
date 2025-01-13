@@ -36,12 +36,10 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@vinejs/vine": "^3.0.0"
-  },
-  "devDependencies": {
-    "@stacksjs/development": "workspace:*"
   }
 }
