@@ -48,7 +48,7 @@ watch(theme, (currentVal) => {
           class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
         >
           <span class="sr-only">View Errors</span>
-          <RouterLink to="/health">
+          <RouterLink to="/errors">
             <div class="i-heroicons-exclamation-triangle h-6 w-6 transition duration-150 ease-in-out" />
           </RouterLink>
         </button>
