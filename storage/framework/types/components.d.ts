@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ActivePlan: typeof import('./../../../resources/components/Billing/ActivePlan.vue')['default']
     ActivityFeed: typeof import('./../../../resources/components/Dashboard/Deployments/ActivityFeed.vue')['default']
     AIForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/AIForm.vue')['default']
     Alert: typeof import('./../../../resources/components/Dashboard/Modals/Popups/Alert.vue')['default']
@@ -18,6 +19,8 @@ declare module 'vue' {
     Button: typeof import('./../../../resources/components/Button.vue')['default']
     CacheForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/CacheForm.vue')['default']
     CallToAction: typeof import('./../../../resources/components/Marketing/CallToAction.vue')['default']
+    CardBrands: typeof import('./../../../resources/components/Billing/CardBrands.vue')['default']
+    CardForm: typeof import('./../../../resources/components/Billing/CardForm.vue')['default']
     CLIForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/CLIForm.vue')['default']
     CloudForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/CloudForm.vue')['default']
     CodeEditor: typeof import('./../../../resources/components/CodeEditor.vue')['default']
@@ -48,12 +51,19 @@ declare module 'vue' {
     Layout: typeof import('./../../../resources/components/Marketing/Layout.vue')['default']
     LibraryForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/LibraryForm.vue')['default']
     LiveTerminalOutput: typeof import('./../../../resources/components/Dashboard/Deployments/LiveTerminalOutput.vue')['default']
+    LoadingCard: typeof import('./../../../resources/components/Skeleton/loading-card.vue')['default']
+    LoadingDetails: typeof import('./../../../resources/components/Skeleton/loading-details.vue')['default']
     Logo: typeof import('./../../../resources/components/Logo.vue')['default']
     MobileSidebar: typeof import('./../../../resources/components/Dashboard/MobileSidebar.vue')['default']
     Navbar: typeof import('./../../../resources/components/Dashboard/Navbar.vue')['default']
     NavLink: typeof import('./../../../resources/components/Marketing/NavLink.vue')['default']
+    OneTimePayment: typeof import('./../../../resources/components/Billing/OneTimePayment.vue')['default']
     Pagination: typeof import('./../../../resources/components/Dashboard/Pagination.vue')['default']
+    PaymentForm: typeof import('./../../../resources/components/Billing/PaymentForm.vue')['default']
+    PaymentMethod: typeof import('./../../../resources/components/Billing/PaymentMethod.vue')['default']
+    PaymentMethodList: typeof import('./../../../resources/components/Billing/PaymentMethodList.vue')['default']
     Plan: typeof import('./../../../resources/components/Marketing/Plan.vue')['default']
+    Plans: typeof import('./../../../resources/components/Billing/plans.vue')['default']
     Playground: typeof import('./../../../resources/components/Playground.vue')['default']
     Pricing: typeof import('./../../../resources/components/Marketing/Pricing.vue')['default']
     PrimaryFeatures: typeof import('./../../../resources/components/Marketing/PrimaryFeatures.vue')['default']
@@ -81,5 +91,7 @@ declare module 'vue' {
     Toast: typeof import('./../../../resources/components/Dashboard/Modals/Popups/Toast.vue')['default']
     ToastWrapper: typeof import('./../../../resources/components/Dashboard/Modals/ToastWrapper.vue')['default']
     ToggleDark: typeof import('./../../../resources/components/Buttons/ToggleDark.vue')['default']
+    Transaction: typeof import('./../../../resources/components/Transaction/index.vue')['default']
+    Undefined: typeof import('./../../../resources/components/index.vue')['default']
   }
 }
