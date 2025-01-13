@@ -261,7 +261,7 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
               </div>
               <div class="i-heroicons-cube h-6 w-6 text-blue-500" />
             </div>
-            <p class="mt-2 text-sm text-gray-600">{{ pkg.description }}</p>
+            <p class="mt-2 text-sm text-gray-600 truncate max-w-[310px]">{{ pkg.description }}</p>
           </div>
 
           <!-- Card Content -->
