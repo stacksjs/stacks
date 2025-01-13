@@ -251,17 +251,28 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
            target="_blank"
            rel="noopener"
            class="group block overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-md">
-          <!-- Card Header -->
-          <div class="border-b border-gray-100 bg-gray-50 p-4 group-hover:bg-gray-100">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-lg text-gray-900 font-semibold">{{ pkg.name }}</h3>
-                <p class="text-sm text-gray-500">{{ pkg.version }}</p>
-                <p v-if="pkg.codename" class="text-sm text-gray-500">{{ pkg.codename }}</p>
+          <!-- Card Header with Background Image -->
+          <div class="relative border-b border-gray-100 bg-gray-50 p-4 group-hover:bg-gray-100">
+            <div
+              class="absolute inset-0 bg-cover bg-center opacity-2 group-hover:opacity-5 transition-opacity"
+              :style="{
+                backgroundImage: `url('https://repository-images.githubusercontent.com/767342709/66064336-425f-42d4-8c9f-9d6a937cfa98')`
+              }"
+            />
+            <div class="relative z-10">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg text-gray-900 font-semibold">{{ pkg.name }}</h3>
+                  <p class="text-sm text-gray-500">
+                    {{ pkg.version }}
+                    <span class="mx-2 text-gray-300">•</span>
+                    {{ pkg.codename }}
+                  </p>
+                </div>
+                <div class="i-heroicons-cube h-6 w-6 text-blue-500" />
               </div>
-              <div class="i-heroicons-cube h-6 w-6 text-blue-500" />
+              <p class="mt-2 text-sm text-gray-600 truncate max-w-[310px]">{{ pkg.description }}</p>
             </div>
-            <p class="mt-2 text-sm text-gray-600 truncate max-w-[310px]">{{ pkg.description }}</p>
           </div>
 
           <!-- Card Content -->
