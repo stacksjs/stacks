@@ -5,6 +5,19 @@ useHead({
 
 const packages = [
   {
+    name: 'stacks',
+    version: 'v0.68.2',
+    downloads: 1001897,
+    issues: 12,
+    contributors: 24,
+    size: '5.2kb',
+    path: './packages/stacks/*',
+    createdAt: '2024-01-15',
+    codename: 'Playa Vista',
+    description: 'A modern Full Stack TypeScript framework',
+    stars: Math.floor(Math.random() * 1000) + 100
+  },
+  {
     name: 'qrx',
     version: 'v1.0.0',
     downloads: 71897,
@@ -235,6 +248,8 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
         <a v-for="pkg in packages"
            :key="pkg.name"
            :href="getPackageUrl(pkg.name)"
+           target="_blank"
+           rel="noopener"
            class="group block overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-md">
           <!-- Card Header -->
           <div class="border-b border-gray-100 bg-gray-50 p-4 group-hover:bg-gray-100">
@@ -254,22 +269,22 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
             <!-- Metrics -->
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1">
-                <div class="i-heroicons-arrow-down-tray h-4 w-4 text-blue-500" />
+                <div class="i-heroicons-arrow-down-tray h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                 <p class="font-semibold">{{ pkg.downloads.toLocaleString() }}</p>
               </div>
 
               <div class="flex items-center gap-1">
-                <div class="i-heroicons-bug-ant h-4 w-4 text-orange-500" />
+                <div class="i-heroicons-bug-ant h-4 w-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
                 <p class="font-semibold">{{ pkg.issues }}</p>
               </div>
 
               <div class="flex items-center gap-1">
-                <div class="i-heroicons-users h-4 w-4 text-green-500" />
+                <div class="i-heroicons-users h-4 w-4 text-gray-400 group-hover:text-green-500 transition-colors" />
                 <p class="font-semibold">{{ pkg.contributors }}</p>
               </div>
 
               <div class="flex items-center gap-1">
-                <div class="i-heroicons-star h-4 w-4 text-yellow-500" />
+                <div class="i-heroicons-star h-4 w-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />
                 <p class="font-semibold">{{ pkg.stars.toLocaleString() }}</p>
               </div>
             </div>
