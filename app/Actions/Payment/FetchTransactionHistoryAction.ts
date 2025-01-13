@@ -1,5 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import Transaction from '../../../storage/framework/orm/src/models/Transaction.ts'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
@@ -13,6 +14,6 @@ export default new Action({
 
     const transactions = await Transaction.where('user_id', user?.id).get()
 
-    return transactions
+    return response.json(transactions)
   },
 })

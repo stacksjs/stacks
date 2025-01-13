@@ -1,5 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
@@ -8,10 +9,10 @@ export default new Action({
   method: 'GET',
   async handle(request: RequestInstance) {
     const userId = Number(request.getParam('id'))
-    const user = await User.find(userId)
+    const user = await User.with(['subscriptions']).find(userId)
 
-    const subscriptions = await user?.subscriptions()
+    const subscriptions = await user?.subscriptions
 
-    return subscriptions
+    return response.json(subscriptions)
   },
 })
