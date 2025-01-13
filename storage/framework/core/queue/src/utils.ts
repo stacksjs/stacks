@@ -17,7 +17,7 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
     timeout: null,
     timeoutAt: null,
     payload: options.payload || {},
-    classElements: JSON.stringify(importedJob)
+    classPayload: JSON.stringify(importedJob)
   })
 
   const job = {
