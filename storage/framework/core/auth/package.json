@@ -34,8 +34,8 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@simplewebauthn/browser": "^13.0.0",
-    "@simplewebauthn/server": "^13.0.0",
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.0",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/router": "workspace:*",
