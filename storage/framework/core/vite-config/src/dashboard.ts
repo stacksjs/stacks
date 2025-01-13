@@ -2,11 +2,8 @@ import type { ViteConfig } from '@stacksjs/types'
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import { components, cssEngine, i18n, layouts } from '@stacksjs/vite-plugin'
-import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
+import { autoImports, components, cssEngine, fonts, i18n, layouts } from '@stacksjs/vite-plugin'
 import Vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
 import VueRouter from 'unplugin-vue-router/vite'
 import generateSitemap from 'vite-ssg-sitemap'
 
@@ -17,36 +14,12 @@ import generateSitemap from 'vite-ssg-sitemap'
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
 
 export const dashboardConfig: ViteConfig = {
-  build: {
-    rollupOptions: {
-      external: [
-        'path',
-        'fs',
-        'net',
-        'tls',
-        'stream',
-        'node:process',
-        'constants',
-        'node:dns/promises',
-        'node:util',
-        '@stacksjs/cli',
-        'unplugin-icons',
-        '@iconify/utils',
-        '@jsdevtools/ez-spawn',
-      ],
-    },
-  },
-
   root: p.frameworkPath('views/dashboard'),
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
   assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
-
-  optimizeDeps: {
-    exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],
-  },
 
   server: {
     hmr: {
@@ -75,29 +48,29 @@ export const dashboardConfig: ViteConfig = {
       layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
     }),
 
-    // autoImports(),
-    AutoImport({
-      include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
-      imports: [
-        'pinia',
-        'vue',
-        'vue-i18n',
-        // '@vueuse/core',
-        // 'vitepress'
-        // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
-        // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
-        // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
-        VueHeadImports,
-        VueRouterAutoImports,
-        {
-          'vue-router/auto': ['useLink'],
-        },
-      ],
+    autoImports(),
+    // AutoImport({
+    //   include: /\.(stx|vue|js|ts|mdx?|elm|html)($|\?)/,
+    //   imports: [
+    //     'pinia',
+    //     'vue',
+    //     'vue-i18n',
+    //     // '@vueuse/core',
+    //     // 'vitepress'
+    //     // { '@stacksjs/ui': ['CssEngine', 'UiEngine', 'Store', 'presetForms', 'transformerCompileClass'] },
+    //     // { '@stacksjs/logging': ['dd', 'dump'] }, // we also export `log` in st stacks/cli
+    //     // { '@stacksjs/validation': ['validate', 'validateAll', 'validateSync', 'validateAllSync'] },
+    //     VueHeadImports,
+    //     VueRouterAutoImports,
+    //     {
+    //       'vue-router/auto': ['useLink'],
+    //     },
+    //   ],
 
-      dts: p.frameworkPath('types/auto-imports.d.ts'),
-      dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores')],
-      vueTemplate: true,
-    }),
+    //   dts: p.frameworkPath('types/auto-imports.d.ts'),
+    //   dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores')],
+    //   vueTemplate: true,
+    // }),
 
     components(),
     cssEngine(),
@@ -108,7 +81,6 @@ export const dashboardConfig: ViteConfig = {
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
     // fonts(),
-    // webfontDownload(),
   ],
 
   // https://github.com/antfu/vite-ssg

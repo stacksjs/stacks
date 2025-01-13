@@ -65,7 +65,6 @@ export const systemTrayConfig: ViteConfig = {
 
     // https://github.com/feat-agency/vite-plugin-webfont-dl
     // fonts(),
-    // webfontDownload(),
   ],
 
   // https://github.com/antfu/vite-ssg
