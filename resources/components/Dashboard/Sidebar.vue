@@ -155,7 +155,6 @@
 
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                   <RouterLink to="/models/users" class="sidebar-links">
                     <span
                       class="h-6 w-6 flex shrink-0 items-center justify-center border border-gray-200 rounded-lg bg-white text-[0.625rem] text-gray-400 font-medium dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span>
@@ -193,7 +192,6 @@
 
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                   <RouterLink to="/dns" class="sidebar-links">
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div
@@ -203,7 +201,6 @@
                 </li>
 
                 <li>
-                  <!-- Current: "bg-gray-50 text-blue-600", Default: "text-gray-700 hover:text-blue-600 hover:bg-gray-50" -->
                   <RouterLink to="/emails" class="sidebar-links">
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div
@@ -263,6 +260,21 @@
 
 <style scoped>
 .sidebar-links {
-  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold
+  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold;
+}
+
+/* Add styles for active state */
+.router-link-active {
+  @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
+}
+
+/* Style for the icons when link is active */
+.router-link-active div[class^="i-hugeicons"] {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+/* Style for the model section letters when active */
+.router-link-active span.h-6 {
+  @apply border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400;
 }
 </style>
