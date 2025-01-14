@@ -143,13 +143,11 @@ const selectConversation = (id: number) => {
 
 const isActive = computed(() => (id: number) => activeConversation.value === id)
 </script>
-
 <template>
-  <div class="h-screen flex bg-gray-100">
-    <!-- Sidebar -->
+  <div class="h-screen flex bg-gray-100 overflow-hidden">
     <div class="w-80 bg-white border-r border-gray-200 flex flex-col">
       <!-- Sidebar Header -->
-      <div class="p-4 border-b border-gray-200">
+      <div class="flex-none p-4 border-b border-gray-200">
         <h2 class="text-lg font-semibold text-gray-900">Conversations</h2>
         <p class="text-sm text-gray-500">Ask any question you may have.</p>
       </div>
@@ -190,7 +188,7 @@ const isActive = computed(() => (id: number) => activeConversation.value === id)
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
       <!-- Chat Header -->
-      <div class="bg-white border-b border-gray-200 p-4">
+      <div class="flex-none bg-white border-b border-gray-200 p-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
@@ -205,7 +203,7 @@ const isActive = computed(() => (id: number) => activeConversation.value === id)
       </div>
 
       <!-- Chat Area -->
-      <div class="flex-1 overflow-y-auto p-4 bg-gray-50" style="height: calc(100vh - 136px);">
+      <div class="flex-1 overflow-y-auto p-4 bg-gray-50">
         <div class="flex flex-col space-y-4 max-w-3xl mx-auto">
           <div v-for="message in messages"
                :key="message.id"
@@ -245,7 +243,7 @@ const isActive = computed(() => (id: number) => activeConversation.value === id)
       </div>
 
       <!-- Message Input -->
-      <div class="bg-white border-t border-gray-200 p-4">
+      <div class="flex-none bg-white border-t border-gray-200 p-4">
         <div class="max-w-3xl mx-auto">
           <div class="flex items-center space-x-4">
             <input v-model="newMessage"
@@ -267,6 +265,7 @@ const isActive = computed(() => (id: number) => activeConversation.value === id)
 <style scoped>
 .h-screen {
   height: 100vh;
+  max-height: 100vh;
 }
 
 .line-clamp-1 {
