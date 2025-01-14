@@ -45,30 +45,44 @@ watch(theme, (currentVal) => {
       <div class="flex items-center gap-x-4 lg:gap-x-6">
         <button
           type="button"
-          class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
+          class="header-icon-button"
         >
           <span class="sr-only">View Errors</span>
-          <RouterLink to="/errors">
+          <RouterLink
+            to="/errors"
+            class="header-link"
+            :class="{ 'active-header-link': $route.path === '/errors' }"
+          >
             <div class="i-hugeicons-alert-01 h-6 w-6 transition duration-150 ease-in-out" />
           </RouterLink>
         </button>
 
         <button
           type="button"
-          class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
+          class="header-icon-button"
         >
           <span class="sr-only">View Health Page</span>
-          <RouterLink to="/health">
+          <RouterLink
+            to="/health"
+            class="header-link"
+            :class="{ 'active-header-link': $route.path === '/health' }"
+          >
             <div class="i-hugeicons-favourite h-6 w-6 transition duration-150 ease-in-out" />
           </RouterLink>
         </button>
 
         <button
           type="button"
-          class="p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
+          class="header-icon-button"
         >
           <span class="sr-only">View notifications</span>
-          <div class="i-hugeicons-notification-02 h-6 w-6" />
+          <RouterLink
+            to="/notifications"
+            class="header-link"
+            :class="{ 'active-header-link': $route.path === '/notifications' }"
+          >
+            <div class="i-hugeicons-notification-02 h-6 w-6" />
+          </RouterLink>
         </button>
 
         <!-- Separator -->
@@ -130,3 +144,34 @@ watch(theme, (currentVal) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.header-icon-button {
+  @apply p-2.5 -m-2.5;
+}
+
+.header-link {
+  @apply text-gray-400 hover:text-blue-gray-500 transition-colors duration-150;
+}
+
+.header-link div {
+  @apply transition-colors duration-150;
+}
+
+.active-header-link {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+.active-header-link div {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+/* Update dropdown menu items */
+.user-menu-item {
+  @apply block px-4 py-2 text-sm text-gray-700 hover:bg-blue-gray-50 hover:text-blue-gray-600;
+}
+
+.user-menu-item.active {
+  @apply bg-blue-gray-50 text-blue-600;
+}
+</style>

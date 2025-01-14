@@ -221,32 +221,36 @@
 
             <li class="mt-auto flex items-center justify-between space-x-4">
               <div class="flex items-center">
-                <RouterLink to="/buddy"
-                  class="flex items-center justify-center px-3 py-3 text-sm text-gray-900 font-semibold leading-6 transition-all duration-150 ease-in-out dark:text-gray-200"
-                  active-class="active">
+                <RouterLink
+                  to="/buddy"
+                  class="sidebar-bottom-link"
+                  :class="{ 'active-bottom-link': $route.path === '/buddy' }"
+                >
                   <div
-                    class="i-hugeicons-bubble-chat h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
+                    class="i-hugeicons-bubble-chat h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"
+                  />
                 </RouterLink>
 
-                <RouterLink to="/environment"
-                  class="flex items-center justify-center px-3 py-3 text-sm text-gray-900 font-semibold leading-6 transition-all duration-150 ease-in-out dark:text-gray-200"
-                  active-class="active">
+                <RouterLink
+                  to="/environment"
+                  class="sidebar-bottom-link"
+                  :class="{ 'active-bottom-link': $route.path === '/environment' }"
+                >
                   <div
-                    class="i-hugeicons-key-01 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
+                    class="i-hugeicons-key-01 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"
+                  />
                 </RouterLink>
 
-                <RouterLink to="/settings/ai"
-                  class="flex items-center justify-center px-3 py-3 text-sm text-gray-900 font-semibold leading-6 transition-all duration-150 ease-in-out dark:text-gray-200"
-                  active-class="active">
+                <RouterLink
+                  to="/settings/ai"
+                  class="sidebar-bottom-link"
+                  :class="{ 'active-bottom-link': $route.path.startsWith('/settings/ai') }"
+                >
                   <div
-                    class="i-hugeicons-settings-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
+                    class="i-hugeicons-settings-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"
+                  />
                 </RouterLink>
               </div>
-              <!-- <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Production</span> -->
-              <!-- red for production -->
-              <!-- blue for staging -->
-              <!-- green for development -->
-              <!-- gray for local -->
               <div class="flex-none rounded-full bg-red-400/10 p-1 text-red-400">
                 <div class="h-2 w-2 animate-pulse rounded-full bg-current" />
               </div>
@@ -276,5 +280,23 @@
 /* Style for the model section letters when active */
 .router-link-active span.h-6 {
   @apply border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400;
+}
+
+.sidebar-bottom-link {
+  @apply flex items-center justify-center px-3 py-3 text-sm font-semibold leading-6
+         transition-all duration-150 ease-in-out rounded-lg
+         hover:bg-blue-gray-50 dark:hover:bg-gray-700;
+}
+
+.sidebar-bottom-link div {
+  @apply group-hover:text-blue-600 dark:group-hover:text-blue-400;
+}
+
+.active-bottom-link {
+  @apply bg-blue-gray-50 dark:bg-gray-700;
+}
+
+.active-bottom-link div {
+  @apply text-blue-600 dark:text-blue-400 !important;
 }
 </style>
