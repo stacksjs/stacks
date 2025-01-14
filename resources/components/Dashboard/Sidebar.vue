@@ -67,6 +67,14 @@
                 </li>
 
                 <li>
+                  <RouterLink to="/functions" class="sidebar-links group">
+                    <div
+                      class="i-hugeicons-function-square h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    Functions
+                  </RouterLink>
+                </li>
+
+                <li>
                   <RouterLink to="/releases" class="sidebar-links group">
                     <div class="i-hugeicons-right-to-left-list-number h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Releases
