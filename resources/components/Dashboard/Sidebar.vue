@@ -24,7 +24,9 @@ const toggleSection = (section: keyof typeof sections.value) => {
       <div
         class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900">
         <div class="h-16 flex shrink-0 items-center justify-between">
-          <img class="mt-4 h-12 w-auto rounded-lg" src="/images/logos/logo.svg" alt="Stacks">
+          <RouterLink to="/">
+            <img class="mt-4 h-12 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
+          </RouterLink>
 
           <div
             class="i-hugeicons-ellipsis-horizontal mt-4 h-6 w-6 cursor-pointer text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:text-gray-200 group-hover:text-gray-700 dark:hover:bg-blue-gray-100" />
