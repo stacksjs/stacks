@@ -93,10 +93,8 @@ const showModal = ref(false)
     </div>
 
     <DeployScript />
-
-    <LiveTerminalOutput />
-
     <DeploymentHistory />
+    <LiveTerminalOutput />
   </div>
 
   <BaseModal v-if="showModal">
