@@ -661,7 +661,7 @@ const config: StacksOptions = {
     classPrefix: 'stx-',
     reset: 'tailwind',
 
-    icons: ['heroicons'],
+    icons: ['hugeicons'],
 
     fonts: {
       email: {

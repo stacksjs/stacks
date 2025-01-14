@@ -2,7 +2,7 @@ import type { UserConfig } from '@unocss/core'
 import type { UserShortcuts } from 'unocss'
 
 export type Font = 'inter' | 'mona' | 'hubot'
-export type Icon = 'heroicons'
+export type Icon = 'heroicons' | 'hugeicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
 export type Shortcuts = UserShortcuts
 
