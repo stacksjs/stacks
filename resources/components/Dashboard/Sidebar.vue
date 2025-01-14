@@ -1,6 +1,20 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 // import IconButton from './Buttons/IconButton.vue'
 // import Dropdown from './Elements/Dropdown.vue'
+
+// State for each section's collapse status
+const sections = ref({
+  library: true,
+  app: true,
+  models: true,
+  management: true
+})
+
+// Toggle function for sections
+const toggleSection = (section: keyof typeof sections.value) => {
+  sections.value[section] = !sections.value[section]
+}
 </script>
 
 <template>
@@ -30,34 +44,20 @@
             </li>
 
             <li>
-              <!-- <Dropdown
-                label="Library"
-                open
-                :elements="[
-                  { to: '/', label: 'Components' },
-                  { to: '/', label: 'Functions' },
-                  { to: '/', label: 'Composability' },
-                  { to: '/', label: 'Publishing' },
-                ]"/> -->
-            </li>
-
-            <li>
-              <div class="flex items-center justify-between">
+              <!-- Library Section -->
+              <div class="flex items-center justify-between cursor-pointer" @click="toggleSection('library')">
                 <div class="text-xs text-gray-400 font-semibold leading-6">
                   Library
                 </div>
 
                 <div
-                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  :class="[
+                    'i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
+                    { 'transform -rotate-90': !sections.library }
+                  ]" />
               </div>
 
-              <ul role="list" class="mt-2 -mx-2 space-y-1">
-                <li>
-                  <!-- <IconButton to="/functions">
-                    Functions
-                  </IconButton> -->
-                </li>
-
+              <ul role="list" class="mt-2 -mx-2 space-y-1 section-content" :class="sections.library ? 'expanded' : 'collapsed'">
                 <li>
                   <RouterLink to="/components" class="sidebar-links group">
                     <div
@@ -92,16 +92,20 @@
             </li>
 
             <li>
-              <div class="flex items-center justify-between">
+              <!-- App Section -->
+              <div class="flex items-center justify-between cursor-pointer" @click="toggleSection('app')">
                 <div class="text-xs text-gray-400 font-semibold leading-6">
                   App
                 </div>
 
                 <div
-                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  :class="[
+                    'i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
+                    { 'transform -rotate-90': !sections.app }
+                  ]" />
               </div>
 
-              <ul role="list" class="mt-2 -mx-2 space-y-1">
+              <ul role="list" class="mt-2 -mx-2 space-y-1 section-content" :class="sections.app ? 'expanded' : 'collapsed'">
                 <li>
                   <RouterLink to="/deployments" class="sidebar-links group">
                     <div
@@ -152,16 +156,20 @@
             </li>
 
             <li>
-              <div class="flex items-center justify-between">
+              <!-- Models Section -->
+              <div class="flex items-center justify-between cursor-pointer" @click="toggleSection('models')">
                 <div class="text-xs text-gray-400 font-semibold leading-6">
                   Models
                 </div>
 
                 <div
-                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  :class="[
+                    'i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
+                    { 'transform -rotate-90': !sections.models }
+                  ]" />
               </div>
 
-              <ul role="list" class="mt-2 -mx-2 space-y-1">
+              <ul role="list" class="mt-2 -mx-2 space-y-1 section-content" :class="sections.models ? 'expanded' : 'collapsed'">
                 <li>
                   <RouterLink to="/models/users" class="sidebar-links">
                     <span
@@ -189,19 +197,22 @@
             </li>
 
             <li>
-              <div class="flex items-center justify-between">
+              <!-- Management Section -->
+              <div class="flex items-center justify-between cursor-pointer" @click="toggleSection('management')">
                 <div class="text-xs text-gray-400 font-semibold leading-6">
                   Management
                 </div>
 
                 <div
-                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  :class="[
+                    'i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
+                    { 'transform -rotate-90': !sections.management }
+                  ]" />
               </div>
 
-              <ul role="list" class="mt-2 -mx-2 space-y-1">
+              <ul role="list" class="mt-2 -mx-2 space-y-1 section-content" :class="sections.management ? 'expanded' : 'collapsed'">
                 <li>
                   <RouterLink to="/dns" class="sidebar-links">
-                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div
                       class="i-hugeicons-global-search h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     <span class="truncate">DNS</span>
@@ -210,7 +221,6 @@
 
                 <li>
                   <RouterLink to="/emails" class="sidebar-links">
-                    <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div
                       class="i-hugeicons-at h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     <span class="truncate">Emails</span>
@@ -285,17 +295,14 @@
   @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800 duration-150 ease-in-out transition dark-hover:bg-gray-700 hover:bg-blue-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold;
 }
 
-/* Add styles for active state */
 .router-link-active {
   @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
 }
 
-/* Style for the icons when link is active */
 .router-link-active div[class^="i-hugeicons"] {
   @apply text-blue-600 dark:text-blue-400;
 }
 
-/* Style for the model section letters when active */
 .router-link-active span.h-6 {
   @apply border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400;
 }
@@ -316,5 +323,17 @@
 
 .active-bottom-link div {
   @apply text-blue-600 dark:text-blue-400 !important;
+}
+
+.section-content {
+  @apply overflow-hidden transition-all duration-300 ease-in-out;
+}
+
+.collapsed {
+  @apply max-h-0;
+}
+
+.expanded {
+  @apply max-h-96;
 }
 </style>
