@@ -13,7 +13,7 @@
           <img class="mt-4 h-12 w-auto rounded-lg" src="/images/logos/logo.svg" alt="Stacks">
 
           <div
-            class="i-heroicons-ellipsis-horizontal mt-4 h-6 w-6 cursor-pointer text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:text-gray-200 group-hover:text-gray-700 dark:hover:bg-blue-gray-100" />
+            class="i-hugeicons-ellipsis-horizontal mt-4 h-6 w-6 cursor-pointer text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:text-gray-200 group-hover:text-gray-700 dark:hover:bg-blue-gray-100" />
         </div>
         <nav class="flex flex-1 flex-col">
           <ul role="list" class="flex flex-1 flex-col gap-y-8">
@@ -22,7 +22,7 @@
                 <li>
                   <RouterLink to="/" class="group sidebar-links">
                     <div
-                      class="i-heroicons-home h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-home-05 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Dashboard
                   </RouterLink>
                 </li>
@@ -48,7 +48,7 @@
                 </div>
 
                 <div
-                  class="i-heroicons-chevron-down h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
               </div>
 
               <ul role="list" class="mt-2 -mx-2 space-y-1">
@@ -61,14 +61,14 @@
                 <li>
                   <RouterLink to="/components" class="sidebar-links group">
                     <div
-                      class="i-heroicons-puzzle-piece h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-puzzle h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Components
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/releases" class="sidebar-links group">
-                    <div class="i-heroicons-numbered-list h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-right-to-left-list-number h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Releases
                   </RouterLink>
                 </li>
@@ -76,7 +76,7 @@
                 <li>
                   <RouterLink to="/packages" class="sidebar-links group">
                     <div
-                      class="i-heroicons-cube h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-package h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Packages
                   </RouterLink>
                 </li>
@@ -90,14 +90,14 @@
                 </div>
 
                 <div
-                  class="i-heroicons-chevron-down h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
               </div>
 
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
                   <RouterLink to="/deployments" class="sidebar-links group">
                     <div
-                      class="i-heroicons-rocket-launch h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-rocket h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Deployments
                   </RouterLink>
                 </li>
@@ -105,15 +105,14 @@
                 <li>
                   <RouterLink to="/requests" class="sidebar-links group">
                     <div
-                      class="i-heroicons-magnifying-glass h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-search-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Requests
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/actions" class="sidebar-links group">
-                    <div
-                      class="i-heroicons-bolt h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-function-of-x h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Actions
                   </RouterLink>
                 </li>
@@ -121,7 +120,7 @@
                 <li>
                   <RouterLink to="/commands" class="sidebar-links group">
                     <div
-                      class="i-heroicons-command-line h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-command-line h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Commands
                   </RouterLink>
                 </li>
@@ -129,7 +128,7 @@
                 <li>
                   <RouterLink to="/jobs" class="sidebar-links group">
                     <div
-                      class="i-heroicons-queue-list h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-queue-02 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Jobs
                   </RouterLink>
                 </li>
@@ -137,7 +136,7 @@
                 <li>
                   <RouterLink to="/notifications" class="sidebar-links group">
                     <div
-                      class="i-heroicons-envelope h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-notification-square h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Notifications
                   </RouterLink>
                 </li>
@@ -151,7 +150,7 @@
                 </div>
 
                 <div
-                  class="i-heroicons-chevron-down h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
               </div>
 
               <ul role="list" class="mt-2 -mx-2 space-y-1">
@@ -189,7 +188,7 @@
                 </div>
 
                 <div
-                  class="i-heroicons-chevron-down h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                  class="i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
               </div>
 
               <ul role="list" class="mt-2 -mx-2 space-y-1">
@@ -198,7 +197,7 @@
                   <RouterLink to="/dns" class="sidebar-links">
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div
-                      class="i-heroicons-document-magnifying-glass h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-global-search h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     <span class="truncate">DNS</span>
                   </RouterLink>
                 </li>
@@ -208,7 +207,7 @@
                   <RouterLink to="/emails" class="sidebar-links">
                     <!-- <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white text-gray-400 border-gray-200 dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">U</span> -->
                     <div
-                      class="i-heroicons-at-symbol h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-at h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     <span class="truncate">Emails</span>
                   </RouterLink>
                 </li>
@@ -216,7 +215,7 @@
                 <li>
                   <RouterLink to="/logs" class="sidebar-links group">
                     <div
-                      class="i-heroicons-document-text h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-search-list-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
                     Logs
                   </RouterLink>
                 </li>
@@ -229,21 +228,21 @@
                   class="flex items-center justify-center px-3 py-3 text-sm text-gray-900 font-semibold leading-6 transition-all duration-150 ease-in-out dark:text-gray-200"
                   active-class="active">
                   <div
-                    class="i-heroicons-chat-bubble-left-ellipsis h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
+                    class="i-hugeicons-bubble-chat h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
                 </RouterLink>
 
                 <RouterLink to="/environment"
                   class="flex items-center justify-center px-3 py-3 text-sm text-gray-900 font-semibold leading-6 transition-all duration-150 ease-in-out dark:text-gray-200"
                   active-class="active">
                   <div
-                    class="i-heroicons-key h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
+                    class="i-hugeicons-key-01 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
                 </RouterLink>
 
                 <RouterLink to="/settings/ai"
                   class="flex items-center justify-center px-3 py-3 text-sm text-gray-900 font-semibold leading-6 transition-all duration-150 ease-in-out dark:text-gray-200"
                   active-class="active">
                   <div
-                    class="i-heroicons-cog-8-tooth h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
+                    class="i-hugeicons-settings-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200" />
                 </RouterLink>
               </div>
               <!-- <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/20">Production</span> -->

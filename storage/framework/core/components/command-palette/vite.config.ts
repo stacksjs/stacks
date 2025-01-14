@@ -1,7 +1,6 @@
 import type { UserConfig } from 'vite'
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
-
 import { path as p } from '@stacksjs/path'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'

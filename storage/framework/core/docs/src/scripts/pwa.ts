@@ -58,6 +58,6 @@ export const pwaDocs: PwaOptions = {
   },
   injectManifest: {
     globPatterns: ['**/*.{css,js,html,svg,png,ico,txt,woff2}', 'hashmap.json'],
-    globIgnores: ['og-*.png'],
+    globIgnores: ['og-*.{png,jpg,jpeg}'],
   },
 }

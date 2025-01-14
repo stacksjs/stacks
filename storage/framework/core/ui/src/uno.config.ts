@@ -36,7 +36,7 @@ const config: UnoConfig = {
       prefix: 'i-',
       warn: true,
       collections: {
-        heroicons: () => import('@iconify-json/heroicons/icons.json').then(i => i.default as any),
+        hugeicons: () => import('@iconify-json/hugeicons/icons.json').then(i => i.default as any),
       },
       extraProperties: {
         'display': 'inline-block',
