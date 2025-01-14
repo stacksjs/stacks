@@ -144,7 +144,7 @@ useHead({
                       IP Address
                     </th>
 
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold text-right">
                       Memory Usage
                     </th>
 
@@ -180,7 +180,7 @@ useHead({
                       127.0.0.1
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
                       128MB
                     </td>
 
@@ -214,7 +214,7 @@ useHead({
                       127.0.0.1
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 text-right">
                       98MB
                     </td>
 

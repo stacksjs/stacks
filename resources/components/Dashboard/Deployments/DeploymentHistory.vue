@@ -36,10 +36,6 @@
                   </th>
 
                   <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                    Branch
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
                     Status
                   </th>
 
@@ -75,11 +71,13 @@
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                    <a href="github.com/stacksjs/stacks/commit/342afe5a" class="text-blue-600 hover:text-blue-900">342afe5a</a>
-                  </td>
+                    <div class="flex gap-x-3">
+                      <div class="font-mono text-sm/6 text-gray-700">
+                        <a href="github.com/stacksjs/stacks/commit/342afe5a" class="hover:text-gray-800 transition ease-in-out duration-150">342afe5a</a>
+                      </div>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                    <a href="github.com/stacksjs/stacks" class="text-blue-600 hover:text-blue-900">main</a>
+                      <div class="rounded-md bg-gray-400/40 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-white/10">main</div>
+                    </div>
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

@@ -115,6 +115,7 @@ fairshare
 Fargate
 favourite
 filesize
+Fira
 flareapp
 flowconfig
 FLUSHALL
