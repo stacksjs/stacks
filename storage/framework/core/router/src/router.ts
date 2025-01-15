@@ -198,7 +198,7 @@ export class Router implements RouterInterface {
         // Add the prefix to the route path
 
         const prefix = options.prefix || '/'
-        const formattedPrefix = prefix.startsWith("/") ? prefix : `/${prefix}`;
+        const formattedPrefix = prefix.startsWith('/') ? prefix : `/${prefix}`
         console.log(r.uri)
         if (options.prefix) {
           r.path = formattedPrefix + r.uri

@@ -11,7 +11,7 @@ interface QueuePayload {
   maxTries: number
   timeOut: number | null
   timeOutAt: Date | null
-  params: any,
+  params: any
   classPayload: string
 }
 

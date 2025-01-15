@@ -20,13 +20,13 @@ export const usePaymentStore = defineStore('payment', () => {
   const getTransactionHistory = computed(() => transactionHistory.value)
 
   const isLoading = computed(() => loadingStates.value.size)
-  
-  const hasPaymentMethods = computed(() => 
-    paymentMethods.value.length > 0 ||
-    !(defaultPaymentMethod.value == null ||
-      (typeof defaultPaymentMethod.value === 'object' && Object.keys(defaultPaymentMethod.value).length === 0))
+
+  const hasPaymentMethods = computed(() =>
+    paymentMethods.value.length > 0
+    || !(defaultPaymentMethod.value == null
+      || (typeof defaultPaymentMethod.value === 'object' && Object.keys(defaultPaymentMethod.value).length === 0)),
   )
-  
+
   const getDefaultPaymentMethod = computed(() => defaultPaymentMethod.value)
   const getStripeCustomer = computed(() => stripeCustomer.value)
   const getPlanState = computed(() => planState.value)
@@ -48,7 +48,7 @@ export const usePaymentStore = defineStore('payment', () => {
     return clientSecret
   }
 
-   async function fetchPaymentIntent(id: number, productId: number): Promise<string> {
+  async function fetchPaymentIntent(id: number, productId: number): Promise<string> {
     const body = { productId }
 
     const url = `http://localhost:3008/payments/create-payment-intent/${id}`
@@ -454,7 +454,7 @@ export const usePaymentStore = defineStore('payment', () => {
     fetchProduct,
     isStateLoading,
     fetchUserActivePlan,
-    
+
   }
 })
 

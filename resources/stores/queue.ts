@@ -11,30 +11,29 @@ interface Queue {
   updated_at?: string | null
 }
 
-
 export const useQueueStore = defineStore('queue', () => {
-    const queues: Ref<Queue[]> = ref([])
+  const queues: Ref<Queue[]> = ref([])
 
-    async function fetchQueues(): Promise<void> {
-      const url = `http://localhost:3008/queues`
+  async function fetchQueues(): Promise<void> {
+    const url = `http://localhost:3008/queues`
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      })
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    })
 
-      const res = await response.json() as Queue[]
-      
-      queues.value = res
-    }
+    const res = await response.json() as Queue[]
 
-    return {
-      queues,
-      fetchQueues
-    }
+    queues.value = res
+  }
+
+  return {
+    queues,
+    fetchQueues,
+  }
 })
 
 if (import.meta.hot)

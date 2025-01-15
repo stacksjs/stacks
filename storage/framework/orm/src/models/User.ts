@@ -298,7 +298,7 @@ export class UserModel {
   }
 
   // Method to get all users
-  static async paginate(options: QueryOptions = { limit: 5, offset: 0, page: 1 }): Promise<UserResponse> {
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
     const totalRecordsResult = await db.selectFrom('users')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -314,7 +314,6 @@ export class UserModel {
       .execute()
 
     let nextCursor = null
-    
     if (usersWithExtra.length > (options.limit ?? 10))
       nextCursor = usersWithExtra.pop()?.id ?? null
 

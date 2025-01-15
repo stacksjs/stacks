@@ -7,7 +7,7 @@ export default new Action({
   description: 'User Index ORM Action',
   method: 'GET',
   async handle() {
-    const results =  await User.paginate()
+    const results = await User.paginate()
 
     return response.json(results)
   },
