@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useBillable } from '../../../functions/billing/payments'
 
-import ActivePlan from '../components/billing/active-plan.vue'
+import ActivePlan from '../../../components/billing/ActivePlan.vue'
 
-import PaymentMethod from '../components/billing/payment-method.vue'
+import PaymentMethod from '../../../components/billing/PaymentMethod.vue'
 import Plans from '../components/billing/plans.vue'
 
 import LoadingDetails from '../components/skeleton/loading-card.vue'

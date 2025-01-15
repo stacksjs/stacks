@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import LoadingCard from '../skeleton/loading-card.vue'
-import CardBrands from './card-brands.vue'
+import LoadingCard from '../Skeleton/LoadingCard.vue'
+import CardBrands from './CardBrands.vue'
 
 const props = defineProps<Props>()
 
