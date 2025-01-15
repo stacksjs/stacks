@@ -267,6 +267,63 @@ export class SubscriberEmailModel {
     return results.length
   }
 
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
+    const totalRecordsResult = await db.selectFrom('subscriber_emails')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    if (this.hasSelect) {
+      if (this.softDeletes) {
+        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+      }
+
+      const subscriber_emailsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+        .limit((options.limit ?? 10) + 1)
+        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+        .execute()
+
+      let nextCursor = null
+      if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
+        nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
+
+      return {
+        data: subscriber_emailsWithExtra,
+        paging: {
+          total_records: totalRecords,
+          page: options.page || 1,
+          total_pages: totalPages,
+        },
+        next_cursor: nextCursor,
+      }
+    }
+
+    if (this.softDeletes) {
+      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+    }
+
+    const subscriber_emailsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
+      nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
+
+    return {
+      data: subscriber_emailsWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
   // Method to get all subscriber_emails
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
     const totalRecordsResult = await db.selectFrom('subscriber_emails')
