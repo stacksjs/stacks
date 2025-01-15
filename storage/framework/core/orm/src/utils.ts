@@ -94,6 +94,8 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           relationModel: modelName,
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
+          pivotForeign: relationInstance.foreignKey || `${formattedModelName}_id`,
+          pivotKey: `${modelRelationName}_id`,
           pivotTable:
             relationInstance?.pivotTable
             || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
@@ -101,6 +103,11 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
         if (['belongsToMany', 'belongsTo'].includes(relation))
           relationshipData.foreignKey = ''
+
+        if (['belongsToMany'].includes(relation)) {
+          relationshipData.pivotForeign = relationInstance.foreignKey || `${formattedModelName}_id`
+          relationshipData.pivotKey = `${modelRelationName}_id`
+        }
 
         relationships.push(relationshipData)
       }

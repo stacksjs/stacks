@@ -190,6 +190,8 @@ export interface RelationConfig {
   relationTable?: string
   foreignKey: string
   modelKey: string
+  pivotKey?: string,
+  pivotForeign?: string,
   relationName?: string
   throughModel?: string
   throughForeignKey?: string

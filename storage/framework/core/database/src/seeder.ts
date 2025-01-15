@@ -90,8 +90,8 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const relationalModelUuid = relationModelInstance.traits?.useUuid || false
   const relationTable = relation.table
   const pivotTable = relation.pivotTable
-  const modelKey = `${singular(relationTable)}_id`
-  const foreignKey = relation.foreignKey
+  const modelKey =  relation.pivotForeign || ''
+  const foreignKey = relation.pivotKey || ''
 
   for (const fieldName in relationModelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
@@ -122,7 +122,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
   const relationData = data.insertId || 1
   const modelData = data2.insertId || 1
-
+  
   pivotRecord[foreignKey] = relationData
   pivotRecord[modelKey] = modelData
 
