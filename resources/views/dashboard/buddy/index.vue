@@ -248,7 +248,7 @@ const isActive = computed(() => (id: number) => activeConversation.value === id)
           <div class="flex items-center space-x-4">
             <input v-model="newMessage"
                    type="text"
-                   placeholder="Ask anything about Stacks.js..."
+                   placeholder="Ask anything about your project..."
                    @keyup.enter="sendMessage"
                    class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
             <button @click="sendMessage"
