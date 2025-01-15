@@ -1068,6 +1068,7 @@ declare global {
   const usePreferredReducedMotion: typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']
   const usePrevious: typeof import('../core/browser/src/utils/vendors')['usePrevious']
   const useProjection: typeof import('../core/browser/src/utils/math')['useProjection']
+  const useQueueStore: typeof import('../../../resources/stores/queue')['useQueueStore']
   const useRafFn: typeof import('../core/browser/src/utils/vendors')['useRafFn']
   const useRefHistory: typeof import('../core/browser/src/utils/vendors')['useRefHistory']
   const useResizeObserver: typeof import('../core/browser/src/utils/vendors')['useResizeObserver']
@@ -1566,6 +1567,7 @@ declare module 'vue' {
     readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']>
     readonly usePrevious: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePrevious']>
     readonly useProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['useProjection']>
+    readonly useQueueStore: UnwrapRef<typeof import('../../../resources/stores/queue')['useQueueStore']>
     readonly useRafFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRafFn']>
     readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useResizeObserver']>
