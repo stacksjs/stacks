@@ -11,12 +11,12 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
   const importedJob = (await import(path.appPath(`Jobs/${name}.ts`))).default
 
   const payloadJson = JSON.stringify({
-    displayName: `app/Jobs/${name}.ts`,
+    path: `app/Jobs/${name}.ts`,
     name,
     maxTries: options.tries || 1,
     timeout: null,
     timeoutAt: null,
-    payload: options.payload || {},
+    params: options.payload || {},
     classPayload: JSON.stringify(importedJob),
   })
 

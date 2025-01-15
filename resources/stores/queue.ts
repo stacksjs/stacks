@@ -1,3 +1,5 @@
+import { ref, type Ref } from 'vue'
+
 interface Queue {
   id?: number
   queue: string
@@ -9,19 +11,11 @@ interface Queue {
   updated_at?: string | null
 }
 
-interface State {
-  queues: Queue[]
-}
 
-export const useQueueStore = defineStore('queue', {
-  state: (): State => {
-    return {
-      queues: [],
-    }
-  },
+export const useQueueStore = defineStore('queue', () => {
+    const queues: Ref<Queue[]> = ref([])
 
-  actions: {
-    async fetchQueues(): Promise<void> {
+    async function fetchQueues(): Promise<void> {
       const url = `http://localhost:3008/queues`
 
       const response = await fetch(url, {
@@ -32,15 +26,15 @@ export const useQueueStore = defineStore('queue', {
         },
       })
 
-      const queues = await response.json() as Queue[]
+      const res = await response.json() as Queue[]
       
-      this.queues = queues
-    },
-  },
+      queues.value = res
+    }
 
-  getters: {
-    getQueues: state => state.queues
-  },
+    return {
+      queues,
+      fetchQueues
+    }
 })
 
 if (import.meta.hot)

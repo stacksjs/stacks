@@ -6,12 +6,13 @@ import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {
-  displayName: string
+  path: string
   name: string
   maxTries: number
   timeOut: number | null
   timeOutAt: Date | null
-  payload: any
+  params: any,
+  classPayload: string
 }
 
 export async function processJobs(queue: string | undefined): Promise<Ok<string, never>> {
@@ -44,27 +45,27 @@ async function executeJobs(queue: string | undefined): Promise<void> {
     const body: QueuePayload = JSON.parse(job.payload)
     const currentAttempts = job.attempts || 0
 
-    log.info(`Running job: ${body.displayName}`)
+    log.info(`Running job: ${body.path}`)
 
     await updateJobAttempts(job, currentAttempts)
 
     try {
       await runJob(body.name, {
         queue: job.queue,
-        payload: body.payload,
+        payload: body.params,
         context: '',
         maxTries: body.maxTries,
         timeout: 60,
       })
 
       await job.delete()
-      log.info(`Successfully ran job: ${body.displayName}`)
+      log.info(`Successfully ran job: ${body.path}`)
     }
     catch (error) {
       const stringifiedError = JSON.stringify(error)
 
       storeFailedJob(job, stringifiedError)
-      log.error(`Job failed: ${body.displayName}`, stringifiedError)
+      log.error(`Job failed: ${body.path}`, stringifiedError)
     }
   }
 }

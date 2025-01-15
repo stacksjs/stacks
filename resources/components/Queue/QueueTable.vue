@@ -1,9 +1,78 @@
 <script setup lang="ts">
 const queueStore = useQueueStore()
 
+interface QueuePayload {
+  path: string
+  name: string
+  maxTries: number
+  timeOut: number | null
+  timeOutAt: Date | null
+  params: any
+  classPayload: string
+}
+
 onMounted(async () => {
   await queueStore.fetchQueues()
 })
+
+function parseName(payload: string): string {
+  try {
+    const parsedPayload = JSON.parse(payload) as QueuePayload
+
+    return parsedPayload.name
+
+  } catch (e) {
+    console.error('Error parsing classPayload:', e)
+
+    return ''
+  }
+}
+
+function parseDescription(payload: string): string {
+  try {
+    const parsedPayload = JSON.parse(payload) as QueuePayload
+
+    const parsedClassPayload = JSON.parse(parsedPayload.classPayload) as any
+
+    return parsedClassPayload.description
+
+  } catch (e) {
+    console.error('Error parsing classPayload:', e)
+
+    return ''
+  }
+}
+
+function parseTries(payload: string): number {
+  try {
+    const parsedPayload = JSON.parse(payload) as QueuePayload
+
+    const parsedClassPayload = JSON.parse(parsedPayload.classPayload) as any
+
+    return Number(parsedClassPayload.tries)
+
+  } catch (e) {
+    console.error('Error parsing classPayload:', e)
+
+    return 0
+  }
+}
+
+
+
+function parsePath(payload: string): string {
+  try {
+    const parsedPayload = JSON.parse(payload) as QueuePayload
+
+    return parsedPayload.path
+
+  } catch (e) {
+    console.error('Error parsing classPayload:', e)
+
+    return ''
+  }
+}
+
 </script>
 <template>
   <div class="px-4 pt-12 lg:px-8 sm:px-6">
@@ -62,29 +131,29 @@ onMounted(async () => {
               </thead>
 
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr>
+                <tr v-for="queue in queueStore.queues" :key="queue.id">
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                    Example Job
+                    {{  parseName(queue.payload)  }}
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    Demo job that runs every minute
+                    {{ parseDescription(queue.payload) }}
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                    ./app/Jobs/ExampleJob.ts
+                    {{ parsePath(queue.payload) }}
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    3
+                    {{ parseTries(queue.payload) }}
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                    01-03-2023 08:23:15
+                    {{ queue.created_at }}
                   </td>
 
                   <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                    04-19-2022 09:04:20
+                    {{ queue.updated_at }}
                   </td>
 
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
