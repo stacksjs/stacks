@@ -464,7 +464,7 @@ export class PaymentMethodModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => PaymentMethodModel,
+    callback: (query: PaymentMethodModel) => PaymentMethodModel,
   ): PaymentMethodModel {
     let instance = new PaymentMethodModel(null)
 
@@ -476,7 +476,7 @@ export class PaymentMethodModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => PaymentMethodModel,
+    callback: (query: PaymentMethodModel) => PaymentMethodModel,
   ): PaymentMethodModel {
     if (condition)
       callback(this.selectFromQuery)

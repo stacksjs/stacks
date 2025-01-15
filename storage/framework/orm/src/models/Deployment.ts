@@ -454,7 +454,7 @@ export class DeploymentModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => DeploymentModel,
+    callback: (query: DeploymentModel) => DeploymentModel,
   ): DeploymentModel {
     let instance = new DeploymentModel(null)
 
@@ -466,7 +466,7 @@ export class DeploymentModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => DeploymentModel,
+    callback: (query: DeploymentModel) => DeploymentModel,
   ): DeploymentModel {
     if (condition)
       callback(this.selectFromQuery)

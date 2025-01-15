@@ -461,7 +461,7 @@ export class TransactionModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => TransactionModel,
+    callback: (query: TransactionModel) => TransactionModel,
   ): TransactionModel {
     let instance = new TransactionModel(null)
 
@@ -473,7 +473,7 @@ export class TransactionModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => TransactionModel,
+    callback: (query: TransactionModel) => TransactionModel,
   ): TransactionModel {
     if (condition)
       callback(this.selectFromQuery)

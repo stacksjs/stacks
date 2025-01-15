@@ -422,7 +422,7 @@ export class ProjectModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => ProjectModel,
+    callback: (query: ProjectModel) => ProjectModel,
   ): ProjectModel {
     let instance = new ProjectModel(null)
 
@@ -434,7 +434,7 @@ export class ProjectModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => ProjectModel,
+    callback: (query: ProjectModel) => ProjectModel,
   ): ProjectModel {
     if (condition)
       callback(this.selectFromQuery)

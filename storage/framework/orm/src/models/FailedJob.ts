@@ -425,7 +425,7 @@ export class FailedJobModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => FailedJobModel,
+    callback: (query: FailedJobModel) => FailedJobModel,
   ): FailedJobModel {
     let instance = new FailedJobModel(null)
 
@@ -437,7 +437,7 @@ export class FailedJobModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => FailedJobModel,
+    callback: (query: FailedJobModel) => FailedJobModel,
   ): FailedJobModel {
     if (condition)
       callback(this.selectFromQuery)

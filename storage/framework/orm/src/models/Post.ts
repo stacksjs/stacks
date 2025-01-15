@@ -429,7 +429,7 @@ export class PostModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => PostModel,
+    callback: (query: PostModel) => PostModel,
   ): PostModel {
     let instance = new PostModel(null)
 
@@ -441,7 +441,7 @@ export class PostModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => PostModel,
+    callback: (query: PostModel) => PostModel,
   ): PostModel {
     if (condition)
       callback(this.selectFromQuery)

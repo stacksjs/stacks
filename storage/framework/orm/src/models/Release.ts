@@ -413,7 +413,7 @@ export class ReleaseModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => ReleaseModel,
+    callback: (query: ReleaseModel) => ReleaseModel,
   ): ReleaseModel {
     let instance = new ReleaseModel(null)
 
@@ -425,7 +425,7 @@ export class ReleaseModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => ReleaseModel,
+    callback: (query: ReleaseModel) => ReleaseModel,
   ): ReleaseModel {
     if (condition)
       callback(this.selectFromQuery)

@@ -413,7 +413,7 @@ export class SubscriberModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => SubscriberModel,
+    callback: (query: SubscriberModel) => SubscriberModel,
   ): SubscriberModel {
     let instance = new SubscriberModel(null)
 
@@ -425,7 +425,7 @@ export class SubscriberModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => SubscriberModel,
+    callback: (query: SubscriberModel) => SubscriberModel,
   ): SubscriberModel {
     if (condition)
       callback(this.selectFromQuery)

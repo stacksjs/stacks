@@ -446,7 +446,7 @@ export class TeamModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => TeamModel,
+    callback: (query: TeamModel) => TeamModel,
   ): TeamModel {
     let instance = new TeamModel(null)
 
@@ -458,7 +458,7 @@ export class TeamModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => TeamModel,
+    callback: (query: TeamModel) => TeamModel,
   ): TeamModel {
     if (condition)
       callback(this.selectFromQuery)

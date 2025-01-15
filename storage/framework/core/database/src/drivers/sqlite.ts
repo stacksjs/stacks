@@ -29,7 +29,6 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   return ok('All tables dropped successfully!')
 }
 
-
 export async function dropSqliteTables(): Promise<void> {
   const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
   const tables = await fetchTables()

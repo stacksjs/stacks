@@ -425,7 +425,7 @@ export class JobModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => JobModel,
+    callback: (query: JobModel) => JobModel,
   ): JobModel {
     let instance = new JobModel(null)
 
@@ -437,7 +437,7 @@ export class JobModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => JobModel,
+    callback: (query: JobModel) => JobModel,
   ): JobModel {
     if (condition)
       callback(this.selectFromQuery)

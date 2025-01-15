@@ -2094,7 +2094,7 @@ export async function generateModelString(
 
       static when(
         condition: boolean,
-        callback: (query: any) => ${modelName}Model,
+        callback: (query: ${modelName}Model) => ${modelName}Model,
       ): ${modelName}Model {
         let instance = new ${modelName}Model(null)
 
@@ -2106,7 +2106,7 @@ export async function generateModelString(
 
       when(
         condition: boolean,
-        callback: (query: any) => ${modelName}Model,
+        callback: (query: ${modelName}Model) => ${modelName}Model,
       ): ${modelName}Model {
         if (condition)
           callback(this.selectFromQuery)

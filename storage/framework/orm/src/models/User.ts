@@ -504,7 +504,7 @@ export class UserModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => UserModel,
+    callback: (query: UserModel) => UserModel,
   ): UserModel {
     let instance = new UserModel(null)
 
@@ -516,7 +516,7 @@ export class UserModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => UserModel,
+    callback: (query: UserModel) => UserModel,
   ): UserModel {
     if (condition)
       callback(this.selectFromQuery)

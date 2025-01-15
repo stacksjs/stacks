@@ -441,7 +441,7 @@ export class ProductModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => ProductModel,
+    callback: (query: ProductModel) => ProductModel,
   ): ProductModel {
     let instance = new ProductModel(null)
 
@@ -453,7 +453,7 @@ export class ProductModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => ProductModel,
+    callback: (query: ProductModel) => ProductModel,
   ): ProductModel {
     if (condition)
       callback(this.selectFromQuery)

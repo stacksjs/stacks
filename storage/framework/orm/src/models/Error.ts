@@ -425,7 +425,7 @@ export class ErrorModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => ErrorModel,
+    callback: (query: ErrorModel) => ErrorModel,
   ): ErrorModel {
     let instance = new ErrorModel(null)
 
@@ -437,7 +437,7 @@ export class ErrorModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => ErrorModel,
+    callback: (query: ErrorModel) => ErrorModel,
   ): ErrorModel {
     if (condition)
       callback(this.selectFromQuery)

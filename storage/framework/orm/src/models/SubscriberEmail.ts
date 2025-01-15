@@ -466,7 +466,7 @@ export class SubscriberEmailModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => SubscriberEmailModel,
+    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
   ): SubscriberEmailModel {
     let instance = new SubscriberEmailModel(null)
 
@@ -478,7 +478,7 @@ export class SubscriberEmailModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => SubscriberEmailModel,
+    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
   ): SubscriberEmailModel {
     if (condition)
       callback(this.selectFromQuery)

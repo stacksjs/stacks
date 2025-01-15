@@ -1,7 +1,7 @@
 import type { JobOptions } from './job'
 import process from 'node:process'
-import Job from '../../../orm/src/models/Job'
 import { path } from '@stacksjs/path'
+import Job from '../../../orm/src/models/Job'
 
 interface QueueOption extends JobOptions {
   delay: number
@@ -17,7 +17,7 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
     timeout: null,
     timeoutAt: null,
     payload: options.payload || {},
-    classPayload: JSON.stringify(importedJob)
+    classPayload: JSON.stringify(importedJob),
   })
 
   const job = {
