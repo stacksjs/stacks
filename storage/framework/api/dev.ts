@@ -45,7 +45,7 @@ async function watchFolders() {
           cwd: path.corePath(dir.name),
         })
       })
-    }
+  }
   })
 
   watch(path.routesPath(), (event: string, filename: string | null) => {

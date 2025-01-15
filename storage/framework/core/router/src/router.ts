@@ -58,6 +58,7 @@ export class Router implements RouterInterface {
     log.debug(`Normalized Path: ${this.path}`)
 
     const uri = this.prepareUri(this.path)
+
     log.debug(`Prepared URI: ${uri}`)
 
     return this.addRoute('GET', uri, callback, 200)
@@ -196,10 +197,13 @@ export class Router implements RouterInterface {
 
         // Add the prefix to the route path
 
+        const prefix = options.prefix || '/'
+        const formattedPrefix = prefix.startsWith("/") ? prefix : `/${prefix}`;
+        console.log(r.uri)
         if (options.prefix) {
-          r.path = `${options.prefix}/${r.uri}`
-          r.uri = `${options.prefix}/${r.uri}`
-          r.url = `${options.prefix}/${r.uri}`
+          r.path = formattedPrefix + r.uri
+          r.uri = formattedPrefix + r.uri
+          r.url = r.uri
         }
 
         // Push the modified route to the original routes array
