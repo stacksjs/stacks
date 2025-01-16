@@ -57,7 +57,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/dialog": "workspace:*",
     "@vue/tsconfig": "^0.7.0",
-    "unocss": "65.4.0",
+    "unocss": "65.4.2",
     "unplugin-icons": "^22.0.0"
   }
 }
