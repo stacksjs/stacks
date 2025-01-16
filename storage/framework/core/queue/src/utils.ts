@@ -10,7 +10,6 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
   const payloadJson = JSON.stringify({
     path: `app/Jobs/${name}.ts`,
     name,
-    maxTries: options.tries || 1,
     timeout: null,
     timeoutAt: null,
     params: options.payload || {},

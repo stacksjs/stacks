@@ -4,6 +4,7 @@ import { log } from '@stacksjs/logging'
 import FailedJob from '../../../orm/src/models/FailedJob'
 import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
+import type { JobOptions } from '@stacksjs/types'
 
 interface QueuePayload {
   path: string
@@ -36,36 +37,51 @@ async function executeJobs(queue: string | undefined): Promise<void> {
   const jobs = await Job.when(queue !== undefined, (query: JobModel) => query.where('queue', queue)).get()
 
   for (const job of jobs) {
-    if (!job.payload)
-      continue
+    let currentAttempts = job.attempts || 1  // Assuming the job has an `attempts` field tracking its attempts
 
-    if (job.available_at && job.available_at > timestampNow())
-      continue
+    if (!job.payload) continue
+
+    if (job.available_at && job.available_at > timestampNow()) continue
 
     const body: QueuePayload = JSON.parse(job.payload)
-    const currentAttempts = job.attempts || 0
+    const classPayload = JSON.parse(job.payload) as JobOptions
+
+    const maxTries = Number(classPayload.tries || 3)
 
     log.info(`Running job: ${body.path}`)
 
+    // Increment attempts before running the job
     await updateJobAttempts(job, currentAttempts)
 
     try {
+      // Run the job
       await runJob(body.name, {
         queue: job.queue,
         payload: body.params,
         context: '',
-        maxTries: body.maxTries,
+        maxTries,
         timeout: 60,
       })
 
+      // If job is successful, delete it
       await job.delete()
       log.info(`Successfully ran job: ${body.path}`)
     }
     catch (error) {
-      const stringifiedError = JSON.stringify(error)
+      // Increment the attempt count
+      currentAttempts++
 
-      storeFailedJob(job, stringifiedError)
-      log.error(`Job failed: ${body.path}`, stringifiedError)
+      if (currentAttempts > maxTries) {
+        // If attempts exceed maxTries, store as failed job and delete
+        const stringifiedError = JSON.stringify(error)
+        storeFailedJob(job, stringifiedError)
+        await job.delete()  // Delete job only after exceeding maxTries
+        log.error(`Job failed after ${maxTries} attempts: ${body.path}`, stringifiedError)
+      } else {
+        // If attempts are below maxTries, just update the job's attempt count
+        await updateJobAttempts(job, currentAttempts)
+        log.error(`Job failed, retrying... Attempt ${currentAttempts}/${maxTries}: ${body.path}`)
+      }
     }
   }
 }
@@ -95,9 +111,9 @@ function now(): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-async function updateJobAttempts(job: any, currentAttempts: number): Promise<void> {
+async function updateJobAttempts(job: JobModel, currentAttempts: number): Promise<void> {
   try {
-    await job.update({ attempts: currentAttempts + 1 })
+    await job.update({ attempts: currentAttempts })
   }
   catch (error) {
     log.error('Failed to update job attempts:', error)
