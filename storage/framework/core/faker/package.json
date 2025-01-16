@@ -35,7 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.3.0",
+    "@faker-js/faker": "^9.4.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*"
