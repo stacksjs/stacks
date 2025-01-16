@@ -12,7 +12,7 @@ interface JobSchedule {
   path: string,
 }
 
-const scheduleFile = path.appPath('jobSchedule.json')
+const scheduleFile = path.storagePath('framework/core/scheduler/src/schedules/jobSchedule.json')
 
 export async function runScheduler(threshold = 3, regenerationCount = 10): Promise<void> {
   const now = new Date().toISOString()
