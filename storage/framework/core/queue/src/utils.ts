@@ -1,11 +1,8 @@
-import type { JobOptions } from './job'
 import process from 'node:process'
 import { path } from '@stacksjs/path'
 import Job from '../../../orm/src/models/Job'
+import type { QueueOption } from '@stacksjs/types'
 
-interface QueueOption extends JobOptions {
-  delay: number
-}
 
 export async function storeJob(name: string, options: QueueOption): Promise<void> {
   const importedJob = (await import(path.appPath(`Jobs/${name}.ts`))).default
