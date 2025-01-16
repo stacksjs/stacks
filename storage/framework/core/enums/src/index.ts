@@ -93,6 +93,7 @@ export enum Action {
   SearchEngineFlush = 'search/flush',
   SearchEngineListSettings = 'search/settings-list',
   SearchEnginePushSettings = 'search/settings',
+  ScheduleRun = 'schedule/run',
   Test = 'test/index',
   TestUi = 'test/ui',
   TestUnit = 'test/unit',
