@@ -24,7 +24,7 @@ export function schedule(buddy: CLI): void {
 
       if (result.isErr()) {
         await outro(
-          'While running the queue:work command, there was an issue',
+          'While running the schedule:run command, there was an issue',
           { startTime: perf, useSeconds: true },
           result.error,
         )

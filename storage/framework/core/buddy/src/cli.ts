@@ -72,6 +72,7 @@ async function main() {
   cmd.search(buddy)
   cmd.seed(buddy)
   cmd.setup(buddy)
+  cmd.schedule(buddy)
   cmd.test(buddy)
   cmd.tinker(buddy)
   cmd.version(buddy)
