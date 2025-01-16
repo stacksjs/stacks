@@ -1,16 +1,17 @@
-import type { StripePaymentMethod } from '../types/billing'
+import type { PaymentMethod, TransactionHistory, Product, Subscription } from '../types/billing'
+
 
 const apiUrl = `http://localhost:3008`
 
 export const usePaymentStore = defineStore('payment', () => {
   // TODO: update the any types
   const loadingStates = ref<Record<string, boolean>>({})
-  const paymentMethods = ref<StripePaymentMethod[]>([])
-  const transactionHistory = ref<any[]>([])
-  const defaultPaymentMethod = ref<StripePaymentMethod>({} as StripePaymentMethod)
-  const product = ref<any>({})
-  const activeSubscription = ref<any>({} as any)
-  const subscriptions = ref<any[]>([])
+  const paymentMethods = ref<PaymentMethod[]>([])
+  const transactionHistory = ref<TransactionHistory[]>([])
+  const defaultPaymentMethod = ref<PaymentMethod>({} as PaymentMethod)
+  const product = ref<Product>({} as Product)
+  const activeSubscription = ref<Subscription>({} as Subscription)
+  const subscriptions = ref<Subscription[]>([])
   const stripeCustomer = ref<any>({} as any)
   const planState = ref<boolean>(false)
 
