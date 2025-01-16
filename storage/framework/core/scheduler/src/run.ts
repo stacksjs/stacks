@@ -4,7 +4,6 @@ import type { JobOptions } from '@stacksjs/types'
 import { Every } from '@stacksjs/types'
 import { snakeCase } from '@stacksjs/strings'
 
-
 interface JobSchedule {
   jobName: string
   times: string[]
@@ -18,7 +17,6 @@ export async function runScheduler(threshold = 3, regenerationCount = 10): Promi
   const now = new Date().toISOString()
   let schedules = loadSchedule()
 
-  // Fetch job files and prefill missing schedules
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
   for (const jobFile of jobFiles) {
     try {
@@ -29,7 +27,6 @@ export async function runScheduler(threshold = 3, regenerationCount = 10): Promi
 
       if (job.rate) {
         if (!schedules.some(schedule => schedule.jobName === jobName)) {
-          console.log(`Prefilling schedule for job: ${jobName}`)
           const initialSchedule = generateSchedule(jobName || '', getJobInterval(job.rate), regenerationCount)
 
           schedules.push({
@@ -39,8 +36,6 @@ export async function runScheduler(threshold = 3, regenerationCount = 10): Promi
             path: jobFile
           })
         }
-      } else {
-        console.log(`Skipping job: ${jobName} as it has no schedule rate`)
       }
     } catch (error) {
       console.error(`Failed to process job file: ${jobFile}`, error)
@@ -98,8 +93,9 @@ async function runJob(path: string): Promise<void> {
   const jobFile = await import(path)
   const job = jobFile.default as JobOptions
   
-  if (job)
-    await job?.handle()
+  if (job && typeof job.handle === 'function') {
+    await job.handle()
+  }
 }
 
 // Save the schedule to a file
