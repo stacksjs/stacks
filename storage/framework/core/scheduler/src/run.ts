@@ -24,7 +24,7 @@ export async function runScheduler(): Promise<void> {
     try {
       const jobModule = await import(jobFile)
       const job = jobModule.default as JobOptions
-      const jobName = snakeCase(job.name || 'UnknownJob')
+      const jobName = snakeCase(getJobName(job, jobFile))
 
       if (job.rate) {
         const existingSchedule = schedules.find(schedule => schedule.jobName === jobName)
@@ -120,4 +120,13 @@ function saveSchedule(schedule: JobSchedule[]): void {
 function loadSchedule(): JobSchedule[] {
   if (!fs.existsSync(scheduleFile)) return []
   return JSON.parse(fs.readFileSync(scheduleFile, 'utf-8'))
+}
+
+function getJobName(job: JobOptions, jobPath: string): string {
+  if (job.name)
+    return job.name
+
+  const baseName = path.basename(jobPath)
+
+  return baseName.replace(/\.ts$/, '')
 }
