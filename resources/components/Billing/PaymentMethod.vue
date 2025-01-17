@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Notification } from '@stacksjs/notification'
-import { useBillable } from '../../../../functions/billing/payments'
-import LoadingCard from '../skeleton/loading-card.vue'
-import CardBrands from './card-brands.vue'
-import CardForm from './card-form.vue'
+import { useBillable } from '../../functions/billing/payments'
+import LoadingCard from '../Skeleton/LoadingCard.vue'
+import CardBrands from './CardBrands.vue'
+import CardForm from './CardForm.vue'
 
 import PaymentMethodList from './payment-method-list.vue'
 

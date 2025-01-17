@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBillable } from '../../../../functions/billing/payments'
+import { useBillable } from '../../functions/billing/payments'
 
 import CardBrands from '../billing/card-brands.vue'
 

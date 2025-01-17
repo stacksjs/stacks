@@ -247,6 +247,55 @@ export class AccessTokenModel {
     return results.length
   }
 
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
+    const totalRecordsResult = await db.selectFrom('personal_access_tokens')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    if (this.hasSelect) {
+      const personal_access_tokensWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+        .limit((options.limit ?? 10) + 1)
+        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+        .execute()
+
+      let nextCursor = null
+      if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
+        nextCursor = personal_access_tokensWithExtra.pop()?.id ?? null
+
+      return {
+        data: personal_access_tokensWithExtra,
+        paging: {
+          total_records: totalRecords,
+          page: options.page || 1,
+          total_pages: totalPages,
+        },
+        next_cursor: nextCursor,
+      }
+    }
+
+    const personal_access_tokensWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
+      nextCursor = personal_access_tokensWithExtra.pop()?.id ?? null
+
+    return {
+      data: personal_access_tokensWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
   // Method to get all personal_access_tokens
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
     const totalRecordsResult = await db.selectFrom('personal_access_tokens')
@@ -435,7 +484,7 @@ export class AccessTokenModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => AccessTokenModel,
+    callback: (query: AccessTokenModel) => AccessTokenModel,
   ): AccessTokenModel {
     let instance = new AccessTokenModel(null)
 
@@ -447,7 +496,7 @@ export class AccessTokenModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => AccessTokenModel,
+    callback: (query: AccessTokenModel) => AccessTokenModel,
   ): AccessTokenModel {
     if (condition)
       callback(this.selectFromQuery)

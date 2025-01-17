@@ -94,6 +94,8 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           relationModel: modelName,
           throughModel: relationInstance.through || '',
           throughForeignKey: relationInstance.throughForeignKey || '',
+          pivotForeign: relationInstance.foreignKey || `${formattedModelName}_id`,
+          pivotKey: `${modelRelationName}_id`,
           pivotTable:
             relationInstance?.pivotTable
             || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
@@ -101,6 +103,11 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
         if (['belongsToMany', 'belongsTo'].includes(relation))
           relationshipData.foreignKey = ''
+
+        if (['belongsToMany'].includes(relation)) {
+          relationshipData.pivotForeign = relationInstance.foreignKey || `${formattedModelName}_id`
+          relationshipData.pivotKey = `${modelRelationName}_id`
+        }
 
         relationships.push(relationshipData)
       }
@@ -524,12 +531,15 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
 
   let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
+  actionString += `import { response } from '@stacksjs/router'\n`
   actionString += `import ${modelName} from '../../orm/src/models/${modelName}'\n`
   let handleString = ``
 
   if (apiRoute === 'index') {
     handleString += `async handle() {
-        return await ${modelName}.all()
+        const results = ${modelName}.all()
+
+        return json.response(response)
       },`
 
     method = 'GET'
@@ -1894,6 +1904,57 @@ export async function generateModelString(
         return results.length
       }
 
+      async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
+        const totalRecordsResult = await db.selectFrom('${tableName}')
+          .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+          .executeTakeFirst()
+
+        const totalRecords = Number(totalRecordsResult?.total) || 0
+        const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+        if (this.hasSelect) {
+          ${thisSoftDeleteStatements}
+
+          const ${tableName}WithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+            .limit((options.limit ?? 10) + 1)
+            .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+            .execute()
+
+          let nextCursor = null
+          if (${tableName}WithExtra.length > (options.limit ?? 10)) nextCursor = ${tableName}WithExtra.pop()?.id ?? null
+
+          return {
+            data: ${tableName}WithExtra,
+            paging: {
+              total_records: totalRecords,
+              page: options.page || 1,
+              total_pages: totalPages,
+            },
+            next_cursor: nextCursor,
+          }
+        }
+
+        ${thisSoftDeleteStatements}
+
+        const ${tableName}WithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+          .limit((options.limit ?? 10) + 1)
+          .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+          .execute()
+
+        let nextCursor = null
+        if (${tableName}WithExtra.length > (options.limit ?? 10)) nextCursor = ${tableName}WithExtra.pop()?.id ?? null
+
+        return {
+          data: ${tableName}WithExtra,
+          paging: {
+            total_records: totalRecords,
+            page: options.page || 1,
+            total_pages: totalPages,
+          },
+          next_cursor: nextCursor,
+        }
+      }
+
       // Method to get all ${tableName}
       static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
         const totalRecordsResult = await db.selectFrom('${tableName}')
@@ -2094,7 +2155,7 @@ export async function generateModelString(
 
       static when(
         condition: boolean,
-        callback: (query: any) => ${modelName}Model,
+        callback: (query: ${modelName}Model) => ${modelName}Model,
       ): ${modelName}Model {
         let instance = new ${modelName}Model(null)
 
@@ -2106,7 +2167,7 @@ export async function generateModelString(
 
       when(
         condition: boolean,
-        callback: (query: any) => ${modelName}Model,
+        callback: (query: ${modelName}Model) => ${modelName}Model,
       ): ${modelName}Model {
         if (condition)
           callback(this.selectFromQuery)

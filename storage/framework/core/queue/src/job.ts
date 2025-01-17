@@ -3,6 +3,7 @@ import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
 import { appPath } from '@stacksjs/path'
 import { storeJob } from './utils'
+import type { QueueOption } from '@stacksjs/types'
 
 const queueDriver = 'database'
 
@@ -20,26 +21,7 @@ interface Dispatchable {
   onQueue: (queue: string) => this
 }
 
-export interface JobOptions {
-  /** Queue to run the job on */
-  queue?: string
-  /** Data to be passed to the job */
-  payload?: any
-  /** Additional context for the job */
-  context?: any
-  /** Maximum number of retry attempts */
-  maxTries?: number
-  /** Timeout in seconds */
-  timeout?: number
-  /** Backoff timing between retries in seconds */
-  backoff?: number[]
-  /** Whether to execute immediately */
-  immediate?: boolean
-  /** Custom job options */
-  [key: string]: any
-}
-
-export async function runJob(name: string, options: JobOptions = {}): Promise<void> {
+export async function runJob(name: string, options: QueueOption = {}): Promise<void> {
   try {
     const jobModule = await import(appPath(`Jobs/${name}.ts`))
     const job = jobModule.default as JobConfig
@@ -90,7 +72,7 @@ export async function runJob(name: string, options: JobOptions = {}): Promise<vo
 }
 
 export class Queue implements Dispatchable {
-  protected options: JobOptions = {}
+  protected options: QueueOption = {}
 
   constructor(
     protected name: string,
@@ -124,7 +106,7 @@ export class Queue implements Dispatchable {
     return ['database', 'redis'].includes(queueDriver)
   }
 
-  private createJobPayload(queueName: string): any {
+  private createJobPayload(queueName: string): QueueOption {
     return {
       queue: queueName,
       payload: this.payload,
@@ -149,7 +131,7 @@ export class Queue implements Dispatchable {
   private deferWithDelay(): void {
     setTimeout(async () => {
       await this.dispatchNow()
-    }, this.options.delay * 1000)
+    }, this.options.delay || 0 * 1000)
   }
 
   private async runJobImmediately(jobPayload: any): Promise<void> {

@@ -113,7 +113,9 @@ eventstream
 execa
 fairshare
 Fargate
+favourite
 filesize
+Fira
 flareapp
 flowconfig
 FLUSHALL
@@ -147,6 +149,7 @@ hookable
 htmlnanorc
 httpie
 hubot
+hugeicons
 huggingface
 huskyrc
 iconify

@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 import User from '../../orm/src/models/User'
 
 export default new Action({
@@ -6,6 +7,8 @@ export default new Action({
   description: 'User Index ORM Action',
   method: 'GET',
   async handle() {
-    return await User.all()
+    const results = await User.paginate()
+
+    return response.json(results)
   },
 })

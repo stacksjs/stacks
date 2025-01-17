@@ -1,5 +1,6 @@
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
+import { path } from '@stacksjs/path'
 import presetWebFonts from '@unocss/preset-web-fonts'
 import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 import {
@@ -36,7 +37,7 @@ const config: UnoConfig = {
       prefix: 'i-',
       warn: true,
       collections: {
-        heroicons: () => import('@iconify-json/heroicons/icons.json').then(i => i.default as any),
+        hugeicons: () => import('@iconify-json/hugeicons/icons.json').then(i => i.default as any),
       },
       extraProperties: {
         'display': 'inline-block',
@@ -51,15 +52,16 @@ const config: UnoConfig = {
         serif: 'Inter',
         mono: 'Fira Code',
       },
+
       processors: createLocalFontProcessor({
         // Directory to cache the fonts
-        cacheDir: 'node_modules/.cache/unocss/fonts',
+        cacheDir: path.projectPath('node_modules/.cache/unocss/fonts'),
 
         // Directory to save the fonts assets
-        fontAssetsDir: 'public/assets/fonts',
+        fontAssetsDir: path.resourcesPath('assets/fonts'),
 
         // Base URL to serve the fonts from the client
-        fontServeBaseUrl: '/assets/fonts',
+        fontServeBaseUrl: path.resourcesPath('assets/fonts'),
       }),
     }),
   ],

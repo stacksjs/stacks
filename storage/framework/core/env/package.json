@@ -36,7 +36,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "fs-extra": "^11.2.0",
+    "fs-extra": "^11.3.0",
     "std-env": "^3.8.0"
   }
 }

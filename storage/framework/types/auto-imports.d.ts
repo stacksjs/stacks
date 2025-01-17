@@ -1068,6 +1068,7 @@ declare global {
   const usePreferredReducedMotion: typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']
   const usePrevious: typeof import('../core/browser/src/utils/vendors')['usePrevious']
   const useProjection: typeof import('../core/browser/src/utils/math')['useProjection']
+  const useQueueStore: typeof import('../../../resources/stores/queue')['useQueueStore']
   const useRafFn: typeof import('../core/browser/src/utils/vendors')['useRafFn']
   const useRefHistory: typeof import('../core/browser/src/utils/vendors')['useRefHistory']
   const useResizeObserver: typeof import('../core/browser/src/utils/vendors')['useResizeObserver']
@@ -1299,6 +1300,24 @@ declare module 'vue' {
     readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly usePaymentStore: UnwrapRef<typeof import('../../../resources/stores/payment')['usePaymentStore']>
+    readonly usePerformanceObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePerformanceObserver']>
+    readonly usePermission: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePermission']>
+    readonly usePointer: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointer']>
+    readonly usePointerLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointerLock']>
+    readonly usePointerSwipe: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointerSwipe']>
+    readonly usePrecision: UnwrapRef<typeof import('../core/browser/src/utils/math')['usePrecision']>
+    readonly usePreferredColorScheme: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredColorScheme']>
+    readonly usePreferredContrast: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredContrast']>
+    readonly usePreferredDark: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredDark']>
+    readonly usePreferredLanguages: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredLanguages']>
+    readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']>
+    readonly usePrevious: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePrevious']>
+    readonly useProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['useProjection']>
+    readonly useQueueStore: UnwrapRef<typeof import('../../../resources/stores/queue')['useQueueStore']>
+    readonly useRafFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRafFn']>
+    readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRefHistory']>
+    readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useResizeObserver']>
+    readonly useRound: UnwrapRef<typeof import('../core/browser/src/utils/math')['useRound']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>

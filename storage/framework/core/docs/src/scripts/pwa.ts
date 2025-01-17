@@ -6,7 +6,7 @@ export const pwaDocs: PwaOptions = {
   outDir: frameworkPath('docs/dist'),
   registerType: 'autoUpdate',
   strategies: 'injectManifest',
-  srcDir: '.vitepress/',
+  srcDir: frameworkPath('docs/.vitepress'),
   filename: 'sw.ts',
   injectRegister: 'inline',
   manifest: {
@@ -53,11 +53,11 @@ export const pwaDocs: PwaOptions = {
       src: 'og.png',
       sizes: '1281x641',
       type: 'image/png',
-      label: `Screenshot of VueUse`,
+      label: `Screenshot of Stacks`,
     }],
   },
   injectManifest: {
     globPatterns: ['**/*.{css,js,html,svg,png,ico,txt,woff2}', 'hashmap.json'],
-    globIgnores: ['og-*.png'],
+    globIgnores: ['og-*.{png,jpg,jpeg}'],
   },
 }

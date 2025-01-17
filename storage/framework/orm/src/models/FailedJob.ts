@@ -237,6 +237,55 @@ export class FailedJobModel {
     return results.length
   }
 
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<FailedJobResponse> {
+    const totalRecordsResult = await db.selectFrom('failed_jobs')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    if (this.hasSelect) {
+      const failed_jobsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+        .limit((options.limit ?? 10) + 1)
+        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+        .execute()
+
+      let nextCursor = null
+      if (failed_jobsWithExtra.length > (options.limit ?? 10))
+        nextCursor = failed_jobsWithExtra.pop()?.id ?? null
+
+      return {
+        data: failed_jobsWithExtra,
+        paging: {
+          total_records: totalRecords,
+          page: options.page || 1,
+          total_pages: totalPages,
+        },
+        next_cursor: nextCursor,
+      }
+    }
+
+    const failed_jobsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (failed_jobsWithExtra.length > (options.limit ?? 10))
+      nextCursor = failed_jobsWithExtra.pop()?.id ?? null
+
+    return {
+      data: failed_jobsWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
   // Method to get all failed_jobs
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<FailedJobResponse> {
     const totalRecordsResult = await db.selectFrom('failed_jobs')
@@ -425,7 +474,7 @@ export class FailedJobModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => FailedJobModel,
+    callback: (query: FailedJobModel) => FailedJobModel,
   ): FailedJobModel {
     let instance = new FailedJobModel(null)
 
@@ -437,7 +486,7 @@ export class FailedJobModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => FailedJobModel,
+    callback: (query: FailedJobModel) => FailedJobModel,
   ): FailedJobModel {
     if (condition)
       callback(this.selectFromQuery)

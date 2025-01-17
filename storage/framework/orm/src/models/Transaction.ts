@@ -267,6 +267,55 @@ export class TransactionModel {
     return results.length
   }
 
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TransactionResponse> {
+    const totalRecordsResult = await db.selectFrom('transactions')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    if (this.hasSelect) {
+      const transactionsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+        .limit((options.limit ?? 10) + 1)
+        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+        .execute()
+
+      let nextCursor = null
+      if (transactionsWithExtra.length > (options.limit ?? 10))
+        nextCursor = transactionsWithExtra.pop()?.id ?? null
+
+      return {
+        data: transactionsWithExtra,
+        paging: {
+          total_records: totalRecords,
+          page: options.page || 1,
+          total_pages: totalPages,
+        },
+        next_cursor: nextCursor,
+      }
+    }
+
+    const transactionsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (transactionsWithExtra.length > (options.limit ?? 10))
+      nextCursor = transactionsWithExtra.pop()?.id ?? null
+
+    return {
+      data: transactionsWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
   // Method to get all transactions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TransactionResponse> {
     const totalRecordsResult = await db.selectFrom('transactions')
@@ -461,7 +510,7 @@ export class TransactionModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => TransactionModel,
+    callback: (query: TransactionModel) => TransactionModel,
   ): TransactionModel {
     let instance = new TransactionModel(null)
 
@@ -473,7 +522,7 @@ export class TransactionModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => TransactionModel,
+    callback: (query: TransactionModel) => TransactionModel,
   ): TransactionModel {
     if (condition)
       callback(this.selectFromQuery)

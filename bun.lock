@@ -387,9 +387,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -404,9 +402,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -421,9 +417,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -438,9 +432,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -452,13 +444,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -473,14 +463,11 @@
         "ts-collect": "^0.4.0",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
-        "sass": "^1.83.1",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -492,13 +479,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -511,13 +496,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -533,9 +516,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -566,13 +547,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -586,13 +565,11 @@
         "vue": "^3.5.13",
       },
       "devDependencies": {
-        "@iconify-json/ic": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -604,13 +581,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -622,13 +597,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -640,13 +613,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -659,13 +630,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -681,9 +650,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -695,14 +662,12 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
         "@stacksjs/dialog": "storage/framework/core/components/dialog",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -715,13 +680,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -745,13 +708,11 @@
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
-        "@iconify-json/heroicons": "^1.2.2",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unocss": "65.4.0",
         "unplugin-icons": "^22.0.0",
       },
@@ -767,9 +728,7 @@
         "@microsoft/api-extractor": "^7.49.1",
         "@stacksjs/alias": "storage/framework/core/alias",
         "@stacksjs/development": "storage/framework/core/development",
-        "@types/clean-css": "^4.2.11",
         "@vue/tsconfig": "^0.7.0",
-        "clean-css": "^5.3.3",
         "unplugin-icons": "^22.0.0",
       },
     },
@@ -982,7 +941,7 @@
         "@stacksjs/development": "storage/framework/core/development",
         "@stacksjs/eslint-config": "^3.13.1-beta.2",
         "lint-staged": "^15.3.0",
-        "publint": "^0.3.1",
+        "publint": "^0.3.2",
         "simple-git-hooks": "^2.11.1",
       },
     },
@@ -1317,9 +1276,7 @@
       "version": "0.68.2",
       "devDependencies": {
         "@headlessui/vue": "^1.7.23",
-        "@iconify-json/heroicons": "^1.2.2",
-        "@iconify-json/heroicons-outline": "^1.2.1",
-        "@iconify-json/heroicons-solid": "^1.2.1",
+        "@iconify-json/hugeicons": "^1.2.3",
         "@iconify/json": "^2.2.294",
         "@julr/unocss-preset-forms": "^0.1.0",
         "@stacksjs/build": "storage/framework/core/build",
@@ -2145,13 +2102,7 @@
 
     "@iconify-json/carbon": ["@iconify-json/carbon@1.2.5", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-aI3TEzOrUDGhs74zIT3ym/ZQBUEziyu8JifntX2Hb4siVzsP5sQ/QEfVdmcCUj37kQUYT3TYBSeAw2vTfCJx9w=="],
 
-    "@iconify-json/heroicons": ["@iconify-json/heroicons@1.2.2", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-qoW4pXr5kTTL6juEjgTs83OJIwpePu7q1tdtKVEdj+i0zyyVHgg/dd9grsXJQnpTpBt6/VwNjrXBvFjRsKPENg=="],
-
-    "@iconify-json/heroicons-outline": ["@iconify-json/heroicons-outline@1.2.1", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-QNYV4/KsW8Ww9a3B+hxDntS5BwLLbErKpL1V3MkvB8X+ZVTX5VLxjlj8rAEih+GCDWzaiZJOrdO/pagvsuBkXg=="],
-
-    "@iconify-json/heroicons-solid": ["@iconify-json/heroicons-solid@1.2.1", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-sRZ6U1FT1lkxtIuL+iQ9Fpm5IZxvJCDaKdLpP5elgZ6OkQn6j8HVJpxgFIcuJbHC/EeoNp3tHldMEELqN9pZDQ=="],
-
-    "@iconify-json/ic": ["@iconify-json/ic@1.2.2", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-QmjwS3lYiOmVWgTCEOTFyGODaR/+689+ajep/VsrCcsUN0Gdle5PmIcibDsdmRyrOsW/E77G41UUijdbjQUofw=="],
+    "@iconify-json/hugeicons": ["@iconify-json/hugeicons@1.2.3", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-EujzAC9jlyJY+iFA2ehXoTgGfjKxMMD9xWGQbbo0MlqZelkg/dmENlqIMJjLy9B1sZltw1ol5eYhhzY69TwkQw=="],
 
     "@iconify-json/simple-icons": ["@iconify-json/simple-icons@1.2.19", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-5ntmhLBUEKiakX3quPPXft+WfXIVfDINzTm3djZzzewah9ACxsCVaxoa4QVxlW8PMoF8jndXOqyHYZGCxwxoZw=="],
 
@@ -2327,7 +2278,7 @@
 
     "@poppinss/utils": ["@poppinss/utils@6.9.2", "", { "dependencies": { "@poppinss/exception": "^1.2.0", "@poppinss/object-builder": "^1.1.0", "@poppinss/string": "^1.1.0", "flattie": "^1.1.1", "safe-stable-stringify": "^2.5.0", "secure-json-parse": "^3.0.1" } }, "sha512-ypVszZxhwiehhklM5so2BI+nClQJwp7mBUSJh/R1GepeUH1vvD5GtxMz8Lp9dO9oAbKyDmq1jc4g/4E0dv8r2g=="],
 
-    "@publint/pack": ["@publint/pack@0.1.0", "", {}, "sha512-NvV5jPAQIMCoHvaJ0ZhfouBJ2woFYYf+o6B7dCHGh/tLKSPVoxhjffi35xPuMHgOv65aTOKUzML5XwQF9EkDAA=="],
+    "@publint/pack": ["@publint/pack@0.1.1", "", {}, "sha512-TvCl79Y8v18ZhFGd5mjO1kYPovSBq3+4LVCi5Nfl1JI8fS8i8kXbgQFGwBJRXczim8GlW8c2LMBKTtExYXOy/A=="],
 
     "@raycast/api": ["@raycast/api@1.88.4", "", { "dependencies": { "@oclif/core": "^4.0.33", "@oclif/plugin-autocomplete": "^3.2.10", "@oclif/plugin-help": "^6.2.18", "@oclif/plugin-not-found": "^3.2.28", "@types/node": "20.8.10", "@types/react": "18.3.3", "esbuild": "^0.24.0", "react": "18.3.1" }, "peerDependencies": { "react-devtools": "5.2.0" }, "optionalPeers": ["react-devtools"], "bin": { "ray": "bin/run.js" } }, "sha512-NlRiXORYKUAk1b8K50kJHgkyij380mNg6ZjADswRQpPJeBAte0WXRWMnTIMqUpN2UAObusxGvJV4wvr/eqvZJg=="],
 
@@ -2399,23 +2350,23 @@
 
     "@shikijs/core": ["@shikijs/core@1.26.1", "", { "dependencies": { "@shikijs/engine-javascript": "1.26.1", "@shikijs/engine-oniguruma": "1.26.1", "@shikijs/types": "1.26.1", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-yeo7sG+WZQblKPclUOKRPwkv1PyoHYkJ4gP9DzhFJbTdueKR7wYTI1vfF/bFi1NTgc545yG/DzvVhZgueVOXMA=="],
 
-    "@shikijs/engine-javascript": ["@shikijs/engine-javascript@1.27.2", "", { "dependencies": { "@shikijs/types": "1.27.2", "@shikijs/vscode-textmate": "^10.0.1", "oniguruma-to-es": "^2.0.0" } }, "sha512-0JB7U5vJc16NShBdxv9hSSJYSKX79+32O7F4oXIxJLdYfomyFvx4B982ackUI9ftO9T3WwagkiiD3nOxOOLiGA=="],
+    "@shikijs/engine-javascript": ["@shikijs/engine-javascript@1.27.0", "", { "dependencies": { "@shikijs/types": "1.27.0", "@shikijs/vscode-textmate": "^10.0.1", "oniguruma-to-es": "^1.0.0" } }, "sha512-1nzz37go+wb6uR97QSRtU4GEwx99efuucB6QI4R682wmPbti6LeWe5VcMNy8LJJt02GEYcZeJK6Lvq8YXBVNXA=="],
 
-    "@shikijs/engine-oniguruma": ["@shikijs/engine-oniguruma@1.27.2", "", { "dependencies": { "@shikijs/types": "1.27.2", "@shikijs/vscode-textmate": "^10.0.1" } }, "sha512-FZYKD1KN7srvpkz4lbGLOYWlyDU4Rd+2RtuKfABTkafAPOFr+J6umfIwY/TzOQqfNtWjL7SAwPAO0dcOraRLaQ=="],
+    "@shikijs/engine-oniguruma": ["@shikijs/engine-oniguruma@1.27.0", "", { "dependencies": { "@shikijs/types": "1.27.0", "@shikijs/vscode-textmate": "^10.0.1" } }, "sha512-x1XMJvQuToX2KhESav2cnaTFDEwpJ1bcczaXy8wlRWhPVVAGR/MxlWnJbhHFe+ETerQgdpLZN8l+EgO0rVfEFQ=="],
 
-    "@shikijs/langs": ["@shikijs/langs@1.27.2", "", { "dependencies": { "@shikijs/types": "1.27.2" } }, "sha512-MSrknKL0DbeXvhtSigMLIzjPOOQfvK7fsbcRv2NUUB0EvuTTomY8/U+lAkczYrXY2+dygKOapJKk8ScFYbtoNw=="],
+    "@shikijs/langs": ["@shikijs/langs@1.27.0", "", { "dependencies": { "@shikijs/types": "1.27.0" } }, "sha512-6fBE0OL17XGYlNj8IuHfKtTALLk6+CVAXw8Rj2y/K8NP646/hows9+XwzIFcvFo3wZ0fPAcPKQ9pwG6a1FBevw=="],
 
-    "@shikijs/markdown-it": ["@shikijs/markdown-it@1.27.2", "", { "dependencies": { "markdown-it": "^14.1.0", "shiki": "1.27.2" } }, "sha512-jZfsrLhqqettpsRjKSiD+2AgIt7PfBQIX8X3qyiwSZrIjtcP6adb/hopj5tCXKYCbXA1bPe1T5QwNfylKSUvkw=="],
+    "@shikijs/markdown-it": ["@shikijs/markdown-it@1.26.2", "", { "dependencies": { "markdown-it": "^14.1.0", "shiki": "1.26.2" } }, "sha512-5RCfBSpXuHkfWs+q1s7iJ8bjsPWZkoxgzcXQ7fz2XrfO9Ldp2Bo0IpLZZwcMt6WR5zMx1dV1YM9tAUOmhWIgPw=="],
 
-    "@shikijs/themes": ["@shikijs/themes@1.27.2", "", { "dependencies": { "@shikijs/types": "1.27.2" } }, "sha512-Yw/uV7EijjWavIIZLoWneTAohcbBqEKj6XMX1bfMqO3llqTKsyXukPp1evf8qPqzUHY7ibauqEaQchhfi857mg=="],
+    "@shikijs/themes": ["@shikijs/themes@1.27.0", "", { "dependencies": { "@shikijs/types": "1.27.0" } }, "sha512-L21LFq8hdsrBUXLh0fxKRURwE1brSlofK3Onutpwk71/EddfPqv60PG+Cg/KawPi8B04Mwp66EWw1shQjcYfBQ=="],
 
     "@shikijs/transformers": ["@shikijs/transformers@1.26.1", "", { "dependencies": { "shiki": "1.26.1" } }, "sha512-IRLJEP7YxkRMsHo367+7qDlpWjsUu6O79pdlUlkcbF1A5TrF1Ln0FBNrgHA/i9p+IKXiiKNATURa6WXh3iq7Uw=="],
 
-    "@shikijs/twoslash": ["@shikijs/twoslash@1.27.2", "", { "dependencies": { "@shikijs/core": "1.27.2", "@shikijs/types": "1.27.2", "twoslash": "^0.2.12" } }, "sha512-hi/ysuEzEkHua3qdc/6hOTVdxS1s6SUFs985NB4t5/5qLyF+ST7GwLHPRyRZmT1TJ2IhPX8dg8McVU+oeDJmwA=="],
+    "@shikijs/twoslash": ["@shikijs/twoslash@1.27.0", "", { "dependencies": { "@shikijs/core": "1.27.0", "@shikijs/types": "1.27.0", "twoslash": "^0.2.12" } }, "sha512-zsr2KrigPOAraHUwnZmPecm3N9ZmK9Cgrxe5TS8a++t6nM8SBUf4LprrXI49t2TwLQCbaItiCu45WGs3GTGAUQ=="],
 
     "@shikijs/types": ["@shikijs/types@1.26.1", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-d4B00TKKAMaHuFYgRf3L0gwtvqpW4hVdVwKcZYbBfAAQXspgkbWqnFfuFl3MDH6gLbsubOcr+prcnsqah3ny7Q=="],
 
-    "@shikijs/vitepress-twoslash": ["@shikijs/vitepress-twoslash@1.27.2", "", { "dependencies": { "@shikijs/twoslash": "", "floating-vue": "^5.2.2", "mdast-util-from-markdown": "^2.0.2", "mdast-util-gfm": "^3.0.0", "mdast-util-to-hast": "^13.2.0", "shiki": "1.27.2", "twoslash": "^0.2.12", "twoslash-vue": "^0.2.12", "vue": "^3.5.13" } }, "sha512-EAhSa5mXWNeiucgm4dYzLLKshigxZrBP56KKIkp8oecMyavtJEPcmSStncWGiztl2WqEdqhPz5Qm42DmDVEPMw=="],
+    "@shikijs/vitepress-twoslash": ["@shikijs/vitepress-twoslash@1.26.2", "", { "dependencies": { "@shikijs/twoslash": "", "floating-vue": "^5.2.2", "mdast-util-from-markdown": "^2.0.2", "mdast-util-gfm": "^3.0.0", "mdast-util-to-hast": "^13.2.0", "shiki": "1.26.2", "twoslash": "^0.2.12", "twoslash-vue": "^0.2.12", "vue": "^3.5.13" } }, "sha512-qPUXe3zcnaK1oNJfBkk+mlClObg6UZCUN1mKKRWvNb0fnpfSwQ0xjnl4xmDO8/Hu6gv00ghMQcmj2awDvZK6cA=="],
 
     "@shikijs/vscode-textmate": ["@shikijs/vscode-textmate@10.0.1", "", {}, "sha512-fTIQwLF+Qhuws31iw7Ncl1R3HUDtGwIipiJ9iU+UsDUwMhegFcQKQHd51nZjb7CArq0MvON8rbgCGQYWHUKAdg=="],
 
@@ -2545,11 +2496,11 @@
 
     "@stacksjs/arrays": ["@stacksjs/arrays@workspace:storage/framework/core/arrays", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "@stacksjs/utils": "storage/framework/core/utils" } }],
 
-    "@stacksjs/audio": ["@stacksjs/audio@workspace:storage/framework/core/components/audio", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/audio": ["@stacksjs/audio@workspace:storage/framework/core/components/audio", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/auth": ["@stacksjs/auth@workspace:storage/framework/core/auth", { "devDependencies": { "@simplewebauthn/browser": "^13.1.0", "@simplewebauthn/server": "^13.1.0", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/error-handling": "storage/framework/core/error-handling", "@stacksjs/router": "storage/framework/core/router", "@types/qrcode": "^1.5.5", "otplib": "^12.0.1", "qrcode": "^1.5.4" } }],
 
-    "@stacksjs/auths": ["@stacksjs/auths@workspace:storage/framework/core/components/auth", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/auths": ["@stacksjs/auths@workspace:storage/framework/core/components/auth", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/browser": ["@stacksjs/browser@workspace:storage/framework/core/browser", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "@stacksjs/utils": "storage/framework/core/utils" } }],
 
@@ -2557,11 +2508,11 @@
 
     "@stacksjs/build": ["@stacksjs/build@workspace:storage/framework/core/build", { "devDependencies": { "@stacksjs/cli": "storage/framework/core/cli", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/storage": "storage/framework/core/storage", "@types/babel__generator": "^7.6.8", "@types/babel__traverse": "^7.20.6", "bun-plugin-dtsx": "^0.21.9", "vue-docgen-web-types": "^0.1.8" } }],
 
-    "@stacksjs/button": ["@stacksjs/button@workspace:storage/framework/core/components/button", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/button": ["@stacksjs/button@workspace:storage/framework/core/components/button", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/cache": ["@stacksjs/cache@workspace:storage/framework/core/cache", { "devDependencies": { "@aws-sdk/client-dynamodb": "^3.726.1", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "bentocache": "^1.0.0-beta.9", "dynamodb-tooling": "^0.3.2", "ioredis": "^5.4.2" } }],
 
-    "@stacksjs/calendar": ["@stacksjs/calendar@workspace:storage/framework/core/components/calendar", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/calendar": ["@stacksjs/calendar@workspace:storage/framework/core/components/calendar", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/calendar-api": ["@stacksjs/calendar-api@workspace:storage/framework/core/calendar", { "devDependencies": { "@stacksjs/browser": "storage/framework/core/browser", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/security": "storage/framework/core/security" } }],
 
@@ -2573,9 +2524,9 @@
 
     "@stacksjs/collections": ["@stacksjs/collections@workspace:storage/framework/core/collections", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "ts-collect": "^0.4.0" } }],
 
-    "@stacksjs/combobox": ["@stacksjs/combobox@workspace:storage/framework/core/components/combobox", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/combobox": ["@stacksjs/combobox@workspace:storage/framework/core/components/combobox", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
-    "@stacksjs/command-palette": ["@stacksjs/command-palette@workspace:storage/framework/core/components/command-palette", { "dependencies": { "@stacksjs/strings": "storage/framework/core/strings", "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1", "ts-collect": "^0.4.0" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "sass": "^1.83.1", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/command-palette": ["@stacksjs/command-palette@workspace:storage/framework/core/components/command-palette", { "dependencies": { "@stacksjs/strings": "storage/framework/core/strings", "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1", "ts-collect": "^0.4.0" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/commerce": ["@stacksjs/commerce@workspace:storage/framework/core/commerce", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
 
@@ -2593,13 +2544,13 @@
 
     "@stacksjs/development": ["@stacksjs/development@workspace:storage/framework/core/development", { "dependencies": { "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/build": "storage/framework/core/build", "@stacksjs/lint": "storage/framework/core/lint", "@stacksjs/logging": "storage/framework/core/logging", "@stacksjs/rpx": "^0.9.1", "@stacksjs/testing": "storage/framework/core/testing", "@stacksjs/tinker": "storage/framework/core/tinker", "@stacksjs/tunnel": "storage/framework/core/tunnel", "@stacksjs/types": "storage/framework/core/types", "bun-plugin-dtsx": "^0.21.9", "typescript": "^5.7.3" }, "devDependencies": { "@total-typescript/ts-reset": "^0.6.1" } }],
 
-    "@stacksjs/dialog": ["@stacksjs/dialog@workspace:storage/framework/core/components/dialog", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/dialog": ["@stacksjs/dialog@workspace:storage/framework/core/components/dialog", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/dns": ["@stacksjs/dns@workspace:storage/framework/core/dns", { "devDependencies": { "@aws-sdk/client-route-53": "^3.726.1", "@stacksjs/actions": "storage/framework/core/actions", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/error-handling": "storage/framework/core/error-handling", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/storage": "storage/framework/core/storage", "@stacksjs/strings": "storage/framework/core/strings", "@stacksjs/whois": "storage/framework/core/whois", "aws-cdk-lib": "^2.175.1" } }],
 
     "@stacksjs/docs": ["@stacksjs/docs@workspace:storage/framework/core/docs", { "devDependencies": { "@shikijs/vitepress-twoslash": "^1.26.2", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/server": "storage/framework/core/server", "@vite-pwa/assets-generator": "^0.2.6", "@vite-pwa/vitepress": "^0.5.3", "vitepress": "1.5.0" } }],
 
-    "@stacksjs/dropdown": ["@stacksjs/dropdown@workspace:storage/framework/core/components/dropdown", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/dropdown": ["@stacksjs/dropdown@workspace:storage/framework/core/components/dropdown", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/dtsx": ["@stacksjs/dtsx@0.8.0", "", { "bin": { "dtsx": "dist/cli.js" } }, "sha512-x7HxXTRZTrwvpSTZlxL5lu4F1sFHnDynAQBNr3UIkrctCKQbe7dYM21SfEozBx5+qBk+Mv1yZUvrUL/aA1bQwg=="],
 
@@ -2629,19 +2580,17 @@
 
     "@stacksjs/http": ["@stacksjs/http@workspace:storage/framework/core/http", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
 
-    "@stacksjs/image": ["@stacksjs/image@workspace:storage/framework/core/components/image", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/image": ["@stacksjs/image@workspace:storage/framework/core/components/image", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
-    "@stacksjs/input": ["@stacksjs/input@workspace:storage/framework/core/components/input", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "@vee-validate/zod": "^4.15.0", "vee-validate": "^4.15.0", "zod": "^3.24.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/lint": ["@stacksjs/lint@workspace:storage/framework/core/lint", { "devDependencies": { "@commitlint/cli": "^19.6.1", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/eslint-config": "^3.13.1-beta.2", "lint-staged": "^15.3.0", "publint": "^0.3.2", "simple-git-hooks": "^2.11.1" } }],
 
-    "@stacksjs/lint": ["@stacksjs/lint@workspace:storage/framework/core/lint", { "devDependencies": { "@commitlint/cli": "^19.6.1", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/eslint-config": "^3.13.1-beta.2", "lint-staged": "^15.3.0", "publint": "^0.3.1", "simple-git-hooks": "^2.11.1" } }],
-
-    "@stacksjs/listbox": ["@stacksjs/listbox@workspace:storage/framework/core/components/listbox", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/listbox": ["@stacksjs/listbox@workspace:storage/framework/core/components/listbox", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/logging": ["@stacksjs/logging@workspace:storage/framework/core/logging", { "devDependencies": { "@stacksjs/cli": "storage/framework/core/cli", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/error-handling": "storage/framework/core/error-handling", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/storage": "storage/framework/core/storage", "@stacksjs/validation": "storage/framework/core/validation", "typescript": "^5.7.3" } }],
 
-    "@stacksjs/navigator": ["@stacksjs/navigator@workspace:storage/framework/core/components/navigator", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1", "vue": "^3.5.13" }, "devDependencies": { "@iconify-json/ic": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/navigator": ["@stacksjs/navigator@workspace:storage/framework/core/components/navigator", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1", "vue": "^3.5.13" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
-    "@stacksjs/notification": ["@stacksjs/notification@workspace:storage/framework/core/components/notification", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/notification": ["@stacksjs/notification@workspace:storage/framework/core/components/notification", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/notifications": ["@stacksjs/notifications@workspace:storage/framework/core/notifications", { "devDependencies": { "@stacksjs/chat": "storage/framework/core/chat", "@stacksjs/cli": "storage/framework/core/cli", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/email": "storage/framework/core/email", "@stacksjs/error-handling": "storage/framework/core/error-handling", "@stacksjs/push": "storage/framework/core/push", "@stacksjs/sms": "storage/framework/core/sms", "@stacksjs/types": "storage/framework/core/types" } }],
 
@@ -2651,11 +2600,11 @@
 
     "@stacksjs/path": ["@stacksjs/path@workspace:storage/framework/core/path", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "@stacksjs/logging": "storage/framework/core/logging", "@stacksjs/validation": "storage/framework/core/validation" } }],
 
-    "@stacksjs/payment": ["@stacksjs/payment@workspace:storage/framework/core/components/payment", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/payment": ["@stacksjs/payment@workspace:storage/framework/core/components/payment", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/payments": ["@stacksjs/payments@workspace:storage/framework/core/payments", { "devDependencies": { "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/utils": "storage/framework/core/utils", "@stripe/stripe-js": "^5.5.0", "@vue-stripe/vue-stripe": "^4.5.0", "stripe": "^17.5.0" } }],
 
-    "@stacksjs/popover": ["@stacksjs/popover@workspace:storage/framework/core/components/popover", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/popover": ["@stacksjs/popover@workspace:storage/framework/core/components/popover", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/push": ["@stacksjs/push@workspace:storage/framework/core/push", { "devDependencies": { "@stacksjs/cli": "storage/framework/core/cli", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/error-handling": "storage/framework/core/error-handling" } }],
 
@@ -2663,7 +2612,7 @@
 
     "@stacksjs/queue": ["@stacksjs/queue@workspace:storage/framework/core/queue", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
 
-    "@stacksjs/radio-group": ["@stacksjs/radio-group@workspace:storage/framework/core/components/radio-group", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/radio-group": ["@stacksjs/radio-group@workspace:storage/framework/core/components/radio-group", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/realtime": ["@stacksjs/realtime@workspace:storage/framework/core/realtime", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
 
@@ -2681,7 +2630,7 @@
 
     "@stacksjs/security": ["@stacksjs/security@workspace:storage/framework/core/security", { "devDependencies": { "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/env": "storage/framework/core/env", "@stacksjs/types": "storage/framework/core/types", "@stacksjs/validation": "storage/framework/core/validation", "crypto-js": "^4.2.0", "js-base64": "^3.7.7" } }],
 
-    "@stacksjs/select": ["@stacksjs/select@workspace:storage/framework/core/components/select", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/select": ["@stacksjs/select@workspace:storage/framework/core/components/select", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/server": ["@stacksjs/server@workspace:storage/framework/core/server", { "devDependencies": { "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/router": "storage/framework/core/router", "@stacksjs/validation": "storage/framework/core/validation", "vite": "^6.0.7" } }],
 
@@ -2693,13 +2642,13 @@
 
     "@stacksjs/sms": ["@stacksjs/sms@workspace:storage/framework/core/sms", { "devDependencies": { "@stacksjs/cli": "storage/framework/core/cli", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/error-handling": "storage/framework/core/error-handling", "@stacksjs/types": "storage/framework/core/types" } }],
 
-    "@stacksjs/stepper": ["@stacksjs/stepper@workspace:storage/framework/core/components/stepper", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/dialog": "storage/framework/core/components/dialog", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/stepper": ["@stacksjs/stepper@workspace:storage/framework/core/components/stepper", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/dialog": "storage/framework/core/components/dialog", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/storage": ["@stacksjs/storage@workspace:storage/framework/core/storage", { "devDependencies": { "@aws-sdk/client-s3": "^3.726.1", "@flystorage/aws-s3": "^1.0.0", "@flystorage/chaos": "^1.0.0", "@flystorage/file-storage": "^1.0.0", "@flystorage/in-memory": "^1.0.0", "@flystorage/local-fs": "^1.0.0", "@stacksjs/arrays": "storage/framework/core/arrays", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/error-handling": "storage/framework/core/error-handling", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/strings": "storage/framework/core/strings", "@stacksjs/types": "storage/framework/core/types", "@types/archiver": "^6.0.3", "archiver": "^7.0.1", "fs-extra": "^11.2.0", "tinyglobby": "^0.2.10" } }],
 
     "@stacksjs/strings": ["@stacksjs/strings@workspace:storage/framework/core/strings", { "devDependencies": { "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/types": "storage/framework/core/types", "@types/validator": "^13.12.2", "macroable": "^7.0.2", "validator": "^13.12.0" } }],
 
-    "@stacksjs/switch": ["@stacksjs/switch@workspace:storage/framework/core/components/switch", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/switch": ["@stacksjs/switch@workspace:storage/framework/core/components/switch", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/table": ["@stacksjs/table@workspace:storage/framework/core/components/table", { "dependencies": { "@vueform/multiselect": "^2.6.11" }, "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "vite": "^6.0.7" } }],
 
@@ -2709,19 +2658,19 @@
 
     "@stacksjs/tlsx": ["@stacksjs/tlsx@0.10.0", "", { "bin": { "tlsx": "dist/bin/cli.js" } }, "sha512-3fwv7wTRgRumQhbzsXEnDYTRTeNq/OgNX62HTnJHBJW8m4DTvjrpDY59f38XDixD5jMUTbse3xSjEcUr6lZetQ=="],
 
-    "@stacksjs/transition": ["@stacksjs/transition@workspace:storage/framework/core/components/transition", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/heroicons": "^1.2.2", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/transition": ["@stacksjs/transition@workspace:storage/framework/core/components/transition", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@iconify-json/hugeicons": "^1.2.3", "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unocss": "65.4.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/tunnel": ["@stacksjs/tunnel@workspace:storage/framework/core/tunnel", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development" } }],
 
     "@stacksjs/types": ["@stacksjs/types@workspace:storage/framework/core/types", { "devDependencies": { "@mdit-vue/plugin-component": "^2.1.3", "@mdit-vue/plugin-frontmatter": "^2.1.3", "@mdit-vue/types": "^2.1.0", "@rollup/pluginutils": "^5.1.4", "@stacksjs/validation": "storage/framework/core/validation", "@types/aws4": "^1.11.6", "@types/bun": "^1.1.16", "@types/crypto-js": "^4.2.2", "@types/fs-extra": "^11.0.4", "@types/markdown-it-link-attributes": "^3.0.5", "@types/minimatch": "^5.1.2", "@types/nprogress": "^0.2.3", "@vinejs/vine": "^3.0.0", "aws-cdk-lib": "^2.175.1", "cac": "^6.7.14", "markdown-it": "^14.1.0", "meilisearch": "^0.47.0", "neverthrow": "^8.1.1", "ora": "^8.1.1", "typescript": "^5.7.3", "unocss": "65.4.0", "unplugin-auto-import": "^19.0.0", "unplugin-vue-components": "^28.0.0", "vite": "^6.0.7", "vite-plugin-inspect": "^10.0.6", "vite-plugin-pwa": "^0.21.1", "vite-ssg": "^25.0.0", "vitepress": "1.5.0", "vue": "^3.5.13" } }],
 
-    "@stacksjs/ui": ["@stacksjs/ui@workspace:storage/framework/core/ui", { "devDependencies": { "@headlessui/vue": "^1.7.23", "@iconify-json/heroicons": "^1.2.2", "@iconify-json/heroicons-outline": "^1.2.1", "@iconify-json/heroicons-solid": "^1.2.1", "@iconify/json": "^2.2.294", "@julr/unocss-preset-forms": "^0.1.0", "@stacksjs/build": "storage/framework/core/build", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/router": "storage/framework/core/router", "@unhead/vue": "^1.11.16", "pinia": "^2.3.0", "unhead": "^1.11.16", "unocss": "65.4.0", "unocss-preset-primitives": "0.0.2-beta.1", "vite-plugin-vue-layouts": "^0.11.0", "vue": "^3.5.13", "vue-tsc": "^2.2.0" } }],
+    "@stacksjs/ui": ["@stacksjs/ui@workspace:storage/framework/core/ui", { "devDependencies": { "@headlessui/vue": "^1.7.23", "@iconify-json/hugeicons": "^1.2.3", "@iconify/json": "^2.2.294", "@julr/unocss-preset-forms": "^0.1.0", "@stacksjs/build": "storage/framework/core/build", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/router": "storage/framework/core/router", "@unhead/vue": "^1.11.16", "pinia": "^2.3.0", "unhead": "^1.11.16", "unocss": "65.4.0", "unocss-preset-primitives": "0.0.2-beta.1", "vite-plugin-vue-layouts": "^0.11.0", "vue": "^3.5.13", "vue-tsc": "^2.2.0" } }],
 
     "@stacksjs/utils": ["@stacksjs/utils@workspace:storage/framework/core/utils", { "devDependencies": { "@stacksjs/actions": "storage/framework/core/actions", "@stacksjs/arrays": "storage/framework/core/arrays", "@stacksjs/cli": "storage/framework/core/cli", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/lint": "storage/framework/core/lint", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/storage": "storage/framework/core/storage", "@stacksjs/strings": "storage/framework/core/strings", "@stacksjs/types": "storage/framework/core/types", "@types/js-yaml": "^4.0.9", "@vueuse/core": "^12.4.0", "@vueuse/head": "^2.0.0", "@vueuse/math": "^12.4.0", "@vueuse/shared": "^12.4.0", "ace-builds": "^1.37.4", "bun-plugin-env": "^0.4.1", "bun-plugin-yml": "^0.3.1", "defu": "^6.1.4", "detect-indent": "^7.0.1", "detect-newline": "^4.0.1", "export-size": "^0.7.0", "jiti": "^2.4.2", "js-yaml": "^4.1.0", "kolorist": "1.8.0", "macroable": "^7.0.2", "magic-regexp": "^0.8.0", "markdown-table": "^3.0.4", "perfect-debounce": "^1.0.0", "pretty-bytes": "^6.1.1", "resize-observer-polyfill": "^1.5.1", "vue-starport": "^0.4.0", "vue3-ace-editor": "^2.2.4", "yaml": "^2.7.0" } }],
 
     "@stacksjs/validation": ["@stacksjs/validation@workspace:storage/framework/core/validation", { "devDependencies": { "@stacksjs/development": "storage/framework/core/development", "@stacksjs/strings": "storage/framework/core/strings", "@stacksjs/types": "storage/framework/core/types", "@vinejs/vine": "^3.0.0" } }],
 
-    "@stacksjs/video": ["@stacksjs/video@workspace:storage/framework/core/components/video", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@types/clean-css": "^4.2.11", "@vue/tsconfig": "^0.7.0", "clean-css": "^5.3.3", "unplugin-icons": "^22.0.0" } }],
+    "@stacksjs/video": ["@stacksjs/video@workspace:storage/framework/core/components/video", { "dependencies": { "@stacksjs/ui": "storage/framework/core/ui", "highlight.js": "^11.11.1" }, "devDependencies": { "@microsoft/api-extractor": "^7.49.1", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/development": "storage/framework/core/development", "@vue/tsconfig": "^0.7.0", "unplugin-icons": "^22.0.0" } }],
 
     "@stacksjs/vite-config": ["@stacksjs/vite-config@workspace:storage/framework/core/vite-config", { "devDependencies": { "@babel/preset-typescript": "latest", "@stacksjs/alias": "storage/framework/core/alias", "@stacksjs/config": "storage/framework/core/config", "@stacksjs/development": "storage/framework/core/development", "@stacksjs/docs": "storage/framework/core/docs", "@stacksjs/env": "storage/framework/core/env", "@stacksjs/path": "storage/framework/core/path", "@stacksjs/server": "storage/framework/core/server", "@stacksjs/storage": "storage/framework/core/storage", "@stacksjs/types": "storage/framework/core/types", "@stacksjs/utils": "storage/framework/core/utils", "@stacksjs/vite-plugin": "storage/framework/core/vite-plugin", "@vitejs/plugin-vue": "^5.2.1", "markdown-it-link-attributes": "^4.0.1", "markdown-it-shiki": "^0.9.0", "unplugin-auto-import": "^19.0.0", "unplugin-vue-components": "^28.0.0", "unplugin-vue-markdown": "^28.0.0", "vite": "^6.0.7", "vite-plugin-full-reload": "^1.2.0", "vite-plugin-inspect": "^10.0.6", "vite-plugin-local": "^0.4.1", "vite-plugin-pages": "^0.32.4", "vite-plugin-pwa": "^0.21.1", "vite-ssg": "^25.0.0", "vite-ssg-sitemap": "^0.8.1 " } }],
 
@@ -2784,8 +2733,6 @@
     "@types/bun": ["@types/bun@1.1.16", "", { "dependencies": { "bun-types": "1.1.43" } }, "sha512-E+ue6NMcn4FXC5bDRE1W/BXUVs01h5Mt02qH8/8HGCox9akuh8KNOFdwvaQS9TDgT2RmUyJYFRRqA60WtTnm2g=="],
 
     "@types/bytes": ["@types/bytes@3.1.5", "", {}, "sha512-VgZkrJckypj85YxEsEavcMmmSOIzkUHqWmM4CCyia5dc54YwsXzJ5uT4fYxBQNEXx+oF1krlhgCbvfubXqZYsQ=="],
-
-    "@types/clean-css": ["@types/clean-css@4.2.11", "", { "dependencies": { "@types/node": "*", "source-map": "^0.6.0" } }, "sha512-Y8n81lQVTAfP2TOdtJJEsCoYl1AnOkqDqMvXb9/7pfgZZ7r8YrEyurrAvAoAjHOGXKRybay+5CsExqIH6liccw=="],
 
     "@types/conventional-commits-parser": ["@types/conventional-commits-parser@5.0.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-7uz5EHdzz2TqoMfV7ee61Egf5y6NkcO4FB/1iCCQnbeiI1F3xzv3vK5dBCXUCLQgGYS+mUeigK1iKQzvED+QnQ=="],
 
@@ -3423,7 +3370,7 @@
 
     "detect-indent": ["detect-indent@7.0.1", "", {}, "sha512-Mc7QhQ8s+cLrnUfU/Ji94vG/r8M26m8f++vyres4ZoojaRDpZ1eSIh/EpzLNwlWuvzSZ3UbDFspjFvTDXe6e/g=="],
 
-    "detect-libc": ["detect-libc@1.0.3", "", { "bin": { "detect-libc": "./bin/detect-libc.js" } }, "sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg=="],
+    "detect-libc": ["detect-libc@2.0.3", "", {}, "sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw=="],
 
     "detect-newline": ["detect-newline@4.0.1", "", {}, "sha512-qE3Veg1YXzGHQhlA6jzebZN2qVf6NX+A7m7qlhCGG30dJixrAQhYOsJjsnBjJkCSmuOPpCk30145fr8FV0bzog=="],
 
@@ -4259,7 +4206,7 @@
 
     "node-abi": ["node-abi@3.71.0", "", { "dependencies": { "semver": "^7.3.5" } }, "sha512-SZ40vRiy/+wRTf21hxkkEjPJZpARzUMVcJoQse2EF8qkUWbbO2z7vd5oA/H6bVH6SZQ5STGcu0KRDS7biNRfxw=="],
 
-    "node-addon-api": ["node-addon-api@7.1.1", "", {}, "sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ=="],
+    "node-addon-api": ["node-addon-api@6.1.0", "", {}, "sha512-+eawOlIgy680F0kBzPUNFhMZGtJ1YmqM6l4+Crf4IkImjYrO/mqPwRMh352g23uIaQKFItcQ64I7KMaJxHgAVA=="],
 
     "node-domexception": ["node-domexception@1.0.0", "", {}, "sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ=="],
 
@@ -4309,7 +4256,7 @@
 
     "onetime": ["onetime@6.0.0", "", { "dependencies": { "mimic-fn": "^4.0.0" } }, "sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ=="],
 
-    "oniguruma-to-es": ["oniguruma-to-es@2.1.0", "", { "dependencies": { "emoji-regex-xs": "^1.0.0", "regex": "^5.1.1", "regex-recursion": "^5.1.1" } }, "sha512-Iq/949c5IueVC5gQR7OYXs0uHsDIePcgZFlVRIVGfQcWwbKG+nsyWfthswdytShlRdkZADY+bWSi+BRyUL81gA=="],
+    "oniguruma-to-es": ["oniguruma-to-es@1.0.0", "", { "dependencies": { "emoji-regex-xs": "^1.0.0", "regex": "^5.1.1", "regex-recursion": "^5.1.1" } }, "sha512-kihvp0O4lFwf5tZMkfanwQLIZ9ORe9OeOFgZonH0BQeThgwfJiaZFeOfvvJVnJIM9TiVmx0RDD35hUJDR0++rQ=="],
 
     "open": ["open@10.1.0", "", { "dependencies": { "default-browser": "^5.2.1", "define-lazy-prop": "^3.0.0", "is-inside-container": "^1.0.0", "is-wsl": "^3.1.0" } }, "sha512-mnkeQ1qP5Ue2wd+aivTD3NHd/lZ96Lu0jgf0pwktLPtx6cTZiH7tyeGRRHs0zX0rbrahXPnXlUnbeXyaBBuIaw=="],
 
@@ -4471,7 +4418,7 @@
 
     "proxy-from-env": ["proxy-from-env@1.1.0", "", {}, "sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg=="],
 
-    "publint": ["publint@0.3.1", "", { "dependencies": { "@publint/pack": "^0.1.0", "package-manager-detector": "^0.2.8", "picocolors": "^1.1.1", "sade": "^1.8.1" }, "bin": { "publint": "src/cli.js" } }, "sha512-kZo30Y7aRyF/KmXMiGjkQFuhqQ7+dS6msPUoMUhhCYpVd1bEO3LC2tYueJxzscFAM7P+ayJ5vWGUeoj1xDCmHw=="],
+    "publint": ["publint@0.3.2", "", { "dependencies": { "@publint/pack": "^0.1.1", "package-manager-detector": "^0.2.8", "picocolors": "^1.1.1", "sade": "^1.8.1" }, "bin": { "publint": "src/cli.js" } }, "sha512-fPs7QUbUvwixxPYUUTn0Kqp0rbH5rbiAOZwQOXMkIj+4Nopby1AngodSQmzTkJWTJ5R4uVV8oYmgVIjj+tgv1w=="],
 
     "pug": ["pug@3.0.3", "", { "dependencies": { "pug-code-gen": "^3.0.3", "pug-filters": "^4.0.0", "pug-lexer": "^5.0.1", "pug-linker": "^4.0.0", "pug-load": "^3.0.0", "pug-parser": "^6.0.0", "pug-runtime": "^3.0.1", "pug-strip-comments": "^2.0.0" } }, "sha512-uBi6kmc9f3SZ3PXxqcHiUZLmIXgfgWooKWXcwSGwQd2Zi5Rb0bT14+8CJjJgI8AB+nndLaNgHGrcc6bPIB665g=="],
 
@@ -4665,7 +4612,7 @@
 
     "shebang-regex": ["shebang-regex@3.0.0", "", {}, "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A=="],
 
-    "shiki": ["shiki@1.27.2", "", { "dependencies": { "@shikijs/core": "1.27.2", "@shikijs/engine-javascript": "1.27.2", "@shikijs/engine-oniguruma": "1.27.2", "@shikijs/langs": "1.27.2", "@shikijs/themes": "1.27.2", "@shikijs/types": "1.27.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-QtA1C41oEVixKog+V8I3ia7jjGls7oCZ8Yul8vdHrVBga5uPoyTtMvFF4lMMXIyAZo5A5QbXq91bot2vA6Q+eQ=="],
+    "shiki": ["shiki@1.27.0", "", { "dependencies": { "@shikijs/core": "1.27.0", "@shikijs/engine-javascript": "1.27.0", "@shikijs/engine-oniguruma": "1.27.0", "@shikijs/langs": "1.27.0", "@shikijs/themes": "1.27.0", "@shikijs/types": "1.27.0", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-PdrOqs36vGmftWETJJF6IJAUDS0ERYOYofHCBTHpLTvWLC8E/E6lyh+Xm1lMIZ/sBWT5uJSmri6NNW5ZDglMqQ=="],
 
     "side-channel": ["side-channel@1.1.0", "", { "dependencies": { "es-errors": "^1.3.0", "object-inspect": "^1.13.3", "side-channel-list": "^1.0.0", "side-channel-map": "^1.0.1", "side-channel-weakmap": "^1.0.2" } }, "sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw=="],
 
@@ -5303,6 +5250,10 @@
 
     "@oclif/core/supports-color": ["supports-color@8.1.1", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q=="],
 
+    "@parcel/watcher/detect-libc": ["detect-libc@1.0.3", "", { "bin": { "detect-libc": "./bin/detect-libc.js" } }, "sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg=="],
+
+    "@parcel/watcher/node-addon-api": ["node-addon-api@7.1.1", "", {}, "sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ=="],
+
     "@poppinss/utils/secure-json-parse": ["secure-json-parse@3.0.2", "", {}, "sha512-H6nS2o8bWfpFEV6U38sOSjS7bTbdgbCGU9wEM6W14P5H0QOsz94KCusifV44GpHDTu2nqZbuDNhTzu+mjDSw1w=="],
 
     "@raycast/api/@types/node": ["@types/node@20.8.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-TlgT8JntpcbmKUFzjhsyhGfP2fsiz1Mv56im6enJ905xG1DAYesxJaeSbGqQmAw8OWPdhyJGhGSQGKRNJ45u9w=="],
@@ -5335,19 +5286,23 @@
 
     "@shikijs/core/@shikijs/engine-oniguruma": ["@shikijs/engine-oniguruma@1.26.1", "", { "dependencies": { "@shikijs/types": "1.26.1", "@shikijs/vscode-textmate": "^10.0.1" } }, "sha512-F5XuxN1HljLuvfXv7d+mlTkV7XukC1cawdtOo+7pKgPD83CAB1Sf8uHqP3PK0u7njFH0ZhoXE1r+0JzEgAQ+kg=="],
 
-    "@shikijs/engine-javascript/@shikijs/types": ["@shikijs/types@1.27.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-DM9OWUyjmdYdnKDpaGB/GEn9XkToyK1tqxuqbmc5PV+5K8WjjwfygL3+cIvbkSw2v1ySwHDgqATq/+98pJ4Kyg=="],
+    "@shikijs/engine-javascript/@shikijs/types": ["@shikijs/types@1.27.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-oOJdIeOnGo+hbM7MH+Ejpksse2ASex4DVHdvBoKyY3+26GEzG9PwM85BeXNGxUZuVxtVKo43sZl0qtJs/K2Zow=="],
 
-    "@shikijs/engine-oniguruma/@shikijs/types": ["@shikijs/types@1.27.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-DM9OWUyjmdYdnKDpaGB/GEn9XkToyK1tqxuqbmc5PV+5K8WjjwfygL3+cIvbkSw2v1ySwHDgqATq/+98pJ4Kyg=="],
+    "@shikijs/engine-oniguruma/@shikijs/types": ["@shikijs/types@1.27.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-oOJdIeOnGo+hbM7MH+Ejpksse2ASex4DVHdvBoKyY3+26GEzG9PwM85BeXNGxUZuVxtVKo43sZl0qtJs/K2Zow=="],
 
-    "@shikijs/langs/@shikijs/types": ["@shikijs/types@1.27.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-DM9OWUyjmdYdnKDpaGB/GEn9XkToyK1tqxuqbmc5PV+5K8WjjwfygL3+cIvbkSw2v1ySwHDgqATq/+98pJ4Kyg=="],
+    "@shikijs/langs/@shikijs/types": ["@shikijs/types@1.27.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-oOJdIeOnGo+hbM7MH+Ejpksse2ASex4DVHdvBoKyY3+26GEzG9PwM85BeXNGxUZuVxtVKo43sZl0qtJs/K2Zow=="],
 
-    "@shikijs/themes/@shikijs/types": ["@shikijs/types@1.27.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-DM9OWUyjmdYdnKDpaGB/GEn9XkToyK1tqxuqbmc5PV+5K8WjjwfygL3+cIvbkSw2v1ySwHDgqATq/+98pJ4Kyg=="],
+    "@shikijs/markdown-it/shiki": ["shiki@1.26.2", "", { "dependencies": { "@shikijs/core": "1.26.2", "@shikijs/engine-javascript": "1.26.2", "@shikijs/engine-oniguruma": "1.26.2", "@shikijs/langs": "1.26.2", "@shikijs/themes": "1.26.2", "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-iP7u2NA9A6JwRRCkIUREEX2cMhlYV5EBmbbSlfSRvPThwca8HBRbVkWuNWW+kw9+i6BSUZqqG6YeUs5dC2SjZw=="],
+
+    "@shikijs/themes/@shikijs/types": ["@shikijs/types@1.27.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-oOJdIeOnGo+hbM7MH+Ejpksse2ASex4DVHdvBoKyY3+26GEzG9PwM85BeXNGxUZuVxtVKo43sZl0qtJs/K2Zow=="],
 
     "@shikijs/transformers/shiki": ["shiki@1.26.1", "", { "dependencies": { "@shikijs/core": "1.26.1", "@shikijs/engine-javascript": "1.26.1", "@shikijs/engine-oniguruma": "1.26.1", "@shikijs/langs": "1.26.1", "@shikijs/themes": "1.26.1", "@shikijs/types": "1.26.1", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-Gqg6DSTk3wYqaZ5OaYtzjcdxcBvX5kCy24yvRJEgjT5U+WHlmqCThLuBUx0juyxQBi+6ug53IGeuQS07DWwpcw=="],
 
-    "@shikijs/twoslash/@shikijs/core": ["@shikijs/core@1.27.2", "", { "dependencies": { "@shikijs/engine-javascript": "1.27.2", "@shikijs/engine-oniguruma": "1.27.2", "@shikijs/types": "1.27.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-ns1dokDr0KE1lQ9mWd4rqaBkhSApk0qGCK1+lOqwnkQSkVZ08UGqXj1Ef8dAcTMZNFkN6PSNjkL5TYNX7pyPbQ=="],
+    "@shikijs/twoslash/@shikijs/core": ["@shikijs/core@1.27.0", "", { "dependencies": { "@shikijs/engine-javascript": "1.27.0", "@shikijs/engine-oniguruma": "1.27.0", "@shikijs/types": "1.27.0", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-2RkIwaXVWxJQQw8JvqikTVe4gBxS3elH3qF3b7Ews1KdJc+TH9/nsVEftrtPn0bLOkdlMaGj5H2RBHpfWmRIcA=="],
 
-    "@shikijs/twoslash/@shikijs/types": ["@shikijs/types@1.27.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-DM9OWUyjmdYdnKDpaGB/GEn9XkToyK1tqxuqbmc5PV+5K8WjjwfygL3+cIvbkSw2v1ySwHDgqATq/+98pJ4Kyg=="],
+    "@shikijs/twoslash/@shikijs/types": ["@shikijs/types@1.27.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-oOJdIeOnGo+hbM7MH+Ejpksse2ASex4DVHdvBoKyY3+26GEzG9PwM85BeXNGxUZuVxtVKo43sZl0qtJs/K2Zow=="],
+
+    "@shikijs/vitepress-twoslash/shiki": ["shiki@1.26.2", "", { "dependencies": { "@shikijs/core": "1.26.2", "@shikijs/engine-javascript": "1.26.2", "@shikijs/engine-oniguruma": "1.26.2", "@shikijs/langs": "1.26.2", "@shikijs/themes": "1.26.2", "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-iP7u2NA9A6JwRRCkIUREEX2cMhlYV5EBmbbSlfSRvPThwca8HBRbVkWuNWW+kw9+i6BSUZqqG6YeUs5dC2SjZw=="],
 
     "@sinonjs/samsam/type-detect": ["type-detect@4.1.0", "", {}, "sha512-Acylog8/luQ8L7il+geoSxhEkazvkslg7PSNKOX59mbB9cOveP5aq9h74Y7YU8yDpJwetzQQrfIwtf4Wp4LKcw=="],
 
@@ -5617,8 +5572,6 @@
 
     "postcss-css-variables/escape-string-regexp": ["escape-string-regexp@1.0.5", "", {}, "sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg=="],
 
-    "prebuild-install/detect-libc": ["detect-libc@2.0.3", "", {}, "sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw=="],
-
     "prebuild-install/minimist": ["minimist@1.2.8", "", {}, "sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA=="],
 
     "prebuild-install/tar-fs": ["tar-fs@2.1.2", "", { "dependencies": { "chownr": "^1.1.1", "mkdirp-classic": "^0.5.2", "pump": "^3.0.0", "tar-stream": "^2.1.4" } }, "sha512-EsaAXwxmx8UB7FRKqeozqEPop69DXcmYwTQwXvyAPF352HJsPdkVhvTaDPYqfNgruveJIJy3TA2l+2zj8LJIJA=="],
@@ -5665,11 +5618,11 @@
 
     "semver/lru-cache": ["lru-cache@6.0.0", "", { "dependencies": { "yallist": "^4.0.0" } }, "sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA=="],
 
-    "sharp/detect-libc": ["detect-libc@2.0.3", "", {}, "sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw=="],
-
-    "sharp/node-addon-api": ["node-addon-api@6.1.0", "", {}, "sha512-+eawOlIgy680F0kBzPUNFhMZGtJ1YmqM6l4+Crf4IkImjYrO/mqPwRMh352g23uIaQKFItcQ64I7KMaJxHgAVA=="],
-
     "sharp/semver": ["semver@7.6.3", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A=="],
+
+    "shiki/@shikijs/core": ["@shikijs/core@1.27.0", "", { "dependencies": { "@shikijs/engine-javascript": "1.27.0", "@shikijs/engine-oniguruma": "1.27.0", "@shikijs/types": "1.27.0", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-2RkIwaXVWxJQQw8JvqikTVe4gBxS3elH3qF3b7Ews1KdJc+TH9/nsVEftrtPn0bLOkdlMaGj5H2RBHpfWmRIcA=="],
+
+    "shiki/@shikijs/types": ["@shikijs/types@1.27.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-oOJdIeOnGo+hbM7MH+Ejpksse2ASex4DVHdvBoKyY3+26GEzG9PwM85BeXNGxUZuVxtVKo43sZl0qtJs/K2Zow=="],
 
     "shiki/@shikijs/core": ["@shikijs/core@1.27.2", "", { "dependencies": { "@shikijs/engine-javascript": "1.27.2", "@shikijs/engine-oniguruma": "1.27.2", "@shikijs/types": "1.27.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-ns1dokDr0KE1lQ9mWd4rqaBkhSApk0qGCK1+lOqwnkQSkVZ08UGqXj1Ef8dAcTMZNFkN6PSNjkL5TYNX7pyPbQ=="],
 
@@ -5897,6 +5850,18 @@
 
     "@shikijs/core/@shikijs/engine-javascript/oniguruma-to-es": ["oniguruma-to-es@0.10.0", "", { "dependencies": { "emoji-regex-xs": "^1.0.0", "regex": "^5.1.1", "regex-recursion": "^5.1.1" } }, "sha512-zapyOUOCJxt+xhiNRPPMtfJkHGsZ98HHB9qJEkdT8BGytO/+kpe4m1Ngf0MzbzTmhacn11w9yGeDP6tzDhnCdg=="],
 
+    "@shikijs/markdown-it/shiki/@shikijs/core": ["@shikijs/core@1.26.2", "", { "dependencies": { "@shikijs/engine-javascript": "1.26.2", "@shikijs/engine-oniguruma": "1.26.2", "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-ORyu3MrY7dCC7FDLDsFSkBM9b/AT9/Y8rH+UQ07Rtek48pp0ZhQOMPTKolqszP4bBCas6FqTZQYt18BBamVl/g=="],
+
+    "@shikijs/markdown-it/shiki/@shikijs/engine-javascript": ["@shikijs/engine-javascript@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1", "oniguruma-to-es": "^1.0.0" } }, "sha512-ngkIu9swLVo9Zt5QBtz5Sk08vmPcwuj01r7pPK/Zjmo2U2WyKMK4WMUMmkdQiUacdcLth0zt8u1onp4zhkFXKQ=="],
+
+    "@shikijs/markdown-it/shiki/@shikijs/engine-oniguruma": ["@shikijs/engine-oniguruma@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1" } }, "sha512-mlN7Qrs+w60nKrd7at7XkXSwz6728Pe34taDmHrG6LRHjzCqQ+ysg+/AT6/D2LMk0s2lsr71DjpI73430QP4/w=="],
+
+    "@shikijs/markdown-it/shiki/@shikijs/langs": ["@shikijs/langs@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2" } }, "sha512-o5cdPycB2Kw3IgncHxWopWPiTkjAj7dG01fLkkUyj3glb5ftxL/Opecq9F54opMlrgXy7ZIqDERvFLlUzsCOuA=="],
+
+    "@shikijs/markdown-it/shiki/@shikijs/themes": ["@shikijs/themes@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2" } }, "sha512-y4Pn6PM5mODz/e3yF6jAUG7WLKJzqL2tJ5qMJCUkMUB1VRgtQVvoa1cHh7NScryGXyrYGJ8nPnRDhdv2rw0xpA=="],
+
+    "@shikijs/markdown-it/shiki/@shikijs/types": ["@shikijs/types@1.26.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-PO2jucx2FIdlLBPYbIUlMtWSLs5ulcRcuV93cR3T65lkK5SJP4MGBRt9kmWGXiQc0f7+FHj/0BEawditZcI/fQ=="],
+
     "@shikijs/transformers/shiki/@shikijs/engine-javascript": ["@shikijs/engine-javascript@1.26.1", "", { "dependencies": { "@shikijs/types": "1.26.1", "@shikijs/vscode-textmate": "^10.0.1", "oniguruma-to-es": "0.10.0" } }, "sha512-CRhA0b8CaSLxS0E9A4Bzcb3LKBNpykfo9F85ozlNyArxjo2NkijtiwrJZ6eHa+NT5I9Kox2IXVdjUsP4dilsmw=="],
 
     "@shikijs/transformers/shiki/@shikijs/engine-oniguruma": ["@shikijs/engine-oniguruma@1.26.1", "", { "dependencies": { "@shikijs/types": "1.26.1", "@shikijs/vscode-textmate": "^10.0.1" } }, "sha512-F5XuxN1HljLuvfXv7d+mlTkV7XukC1cawdtOo+7pKgPD83CAB1Sf8uHqP3PK0u7njFH0ZhoXE1r+0JzEgAQ+kg=="],
@@ -5904,6 +5869,18 @@
     "@shikijs/transformers/shiki/@shikijs/langs": ["@shikijs/langs@1.26.1", "", { "dependencies": { "@shikijs/types": "1.26.1" } }, "sha512-oz/TQiIqZejEIZbGtn68hbJijAOTtYH4TMMSWkWYozwqdpKR3EXgILneQy26WItmJjp3xVspHdiUxUCws4gtuw=="],
 
     "@shikijs/transformers/shiki/@shikijs/themes": ["@shikijs/themes@1.26.1", "", { "dependencies": { "@shikijs/types": "1.26.1" } }, "sha512-JDxVn+z+wgLCiUhBGx2OQrLCkKZQGzNH3nAxFir4PjUcYiyD8Jdms9izyxIogYmSwmoPTatFTdzyrRKbKlSfPA=="],
+
+    "@shikijs/vitepress-twoslash/shiki/@shikijs/core": ["@shikijs/core@1.26.2", "", { "dependencies": { "@shikijs/engine-javascript": "1.26.2", "@shikijs/engine-oniguruma": "1.26.2", "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.4" } }, "sha512-ORyu3MrY7dCC7FDLDsFSkBM9b/AT9/Y8rH+UQ07Rtek48pp0ZhQOMPTKolqszP4bBCas6FqTZQYt18BBamVl/g=="],
+
+    "@shikijs/vitepress-twoslash/shiki/@shikijs/engine-javascript": ["@shikijs/engine-javascript@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1", "oniguruma-to-es": "^1.0.0" } }, "sha512-ngkIu9swLVo9Zt5QBtz5Sk08vmPcwuj01r7pPK/Zjmo2U2WyKMK4WMUMmkdQiUacdcLth0zt8u1onp4zhkFXKQ=="],
+
+    "@shikijs/vitepress-twoslash/shiki/@shikijs/engine-oniguruma": ["@shikijs/engine-oniguruma@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2", "@shikijs/vscode-textmate": "^10.0.1" } }, "sha512-mlN7Qrs+w60nKrd7at7XkXSwz6728Pe34taDmHrG6LRHjzCqQ+ysg+/AT6/D2LMk0s2lsr71DjpI73430QP4/w=="],
+
+    "@shikijs/vitepress-twoslash/shiki/@shikijs/langs": ["@shikijs/langs@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2" } }, "sha512-o5cdPycB2Kw3IgncHxWopWPiTkjAj7dG01fLkkUyj3glb5ftxL/Opecq9F54opMlrgXy7ZIqDERvFLlUzsCOuA=="],
+
+    "@shikijs/vitepress-twoslash/shiki/@shikijs/themes": ["@shikijs/themes@1.26.2", "", { "dependencies": { "@shikijs/types": "1.26.2" } }, "sha512-y4Pn6PM5mODz/e3yF6jAUG7WLKJzqL2tJ5qMJCUkMUB1VRgtQVvoa1cHh7NScryGXyrYGJ8nPnRDhdv2rw0xpA=="],
+
+    "@shikijs/vitepress-twoslash/shiki/@shikijs/types": ["@shikijs/types@1.26.2", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.1", "@types/hast": "^3.0.4" } }, "sha512-PO2jucx2FIdlLBPYbIUlMtWSLs5ulcRcuV93cR3T65lkK5SJP4MGBRt9kmWGXiQc0f7+FHj/0BEawditZcI/fQ=="],
 
     "@typescript-eslint/typescript-estree/minimatch/brace-expansion": ["brace-expansion@2.0.1", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
 

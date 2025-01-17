@@ -38,9 +38,7 @@
     "@microsoft/api-extractor": "^7.49.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@types/clean-css": "^4.2.11",
     "@vue/tsconfig": "^0.7.0",
-    "clean-css": "^5.3.3",
     "unplugin-icons": "^22.0.0"
   }
 }

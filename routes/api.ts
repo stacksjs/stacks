@@ -51,6 +51,10 @@ route.group({ prefix: '/payments' }, async () => {
   route.post('/store-transaction/{id}', 'Actions/Payment/StoreTransactionAction')
 })
 
+route.group({ prefix: '/queues' }, async () => {
+  route.get('/', 'Actions/Queue/FetchQueuesAction')
+})
+
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // route.action('Dashboard/GetProjects')
 // route.action('Dashboard/Settings/UpdateAiConfig')

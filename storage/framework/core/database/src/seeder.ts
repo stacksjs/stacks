@@ -6,7 +6,7 @@ import { fetchOtherModelRelations, getModelName, getRelationType, getTableName }
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
-import { singular, snakeCase } from '@stacksjs/strings'
+import { snakeCase } from '@stacksjs/strings'
 
 async function seedModel(name: string, modelPath: string, model: Model) {
   if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {
@@ -90,8 +90,8 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const relationalModelUuid = relationModelInstance.traits?.useUuid || false
   const relationTable = relation.table
   const pivotTable = relation.pivotTable
-  const modelKey = `${singular(relationTable)}_id`
-  const foreignKey = relation.foreignKey
+  const modelKey = relation.pivotForeign || ''
+  const foreignKey = relation.pivotKey || ''
 
   for (const fieldName in relationModelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)

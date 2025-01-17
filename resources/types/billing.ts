@@ -1,47 +1,60 @@
-export interface StripePaymentMethod {
-  id: string
-  object: string
-  allow_redisplay: string
-  billing_details: {
-    address: {
-      city: string | null
-      country: string | null
-      line1: string | null
-      line2: string | null
-      postal_code: string | null
-      state: string | null
-    }
-    email: string | null
-    name: string | null
-    phone: string | null
-  }
-  card: {
-    brand: string
-    checks: {
-      address_line1_check: string | null
-      address_postal_code_check: string | null
-      cvc_check: string
-    }
-    country: string
-    display_brand: string
-    exp_month: number
-    exp_year: number
-    fingerprint: string
-    funding: string
-    generated_from: string | null
-    last4: string
-    networks: {
-      available: string[]
-      preferred: string | null
-    }
-    three_d_secure_usage: {
-      supported: boolean
-    }
-    wallet: string | null
-  }
-  created: number
-  customer: string
-  livemode: boolean
-  metadata: Record<string, string>
+export interface TransactionHistory {
+  id?: number
+  uuid?: string
+  name: string
+  description?: string
+  amount: number
   type: string
+  provider_id?: string
+  user_id?: number
+  paymentmethod_id?: number
+  created_at: string
+  updated_at?: string
+}
+
+export interface PaymentMethod {
+  id?: number
+  uuid?: string
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default?: boolean
+  provider_id?: string
+  user_id?: number
+  created_at: string
+  updated_at?: string
+}
+
+export interface Product {
+  id?: number
+  uuid?: string
+  name: string
+  description?: number
+  key: number
+  unit_price?: number
+  status?: string
+  image?: string
+  provider_id?: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface Subscription {
+  id?: number
+  uuid?: string
+  type: string
+  provider_id: string
+  provider_status: string
+  unit_price?: number
+  provider_type: string
+  provider_price_id?: string
+  quantity?: number
+  trial_ends_at?: string
+  ends_at?: string
+  last_used_at?: string
+  user_id?: number
+  created_at: string
+  updated_at?: string
 }

@@ -234,6 +234,55 @@ export class ProjectModel {
     return results.length
   }
 
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
+    const totalRecordsResult = await db.selectFrom('projects')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    if (this.hasSelect) {
+      const projectsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+        .limit((options.limit ?? 10) + 1)
+        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+        .execute()
+
+      let nextCursor = null
+      if (projectsWithExtra.length > (options.limit ?? 10))
+        nextCursor = projectsWithExtra.pop()?.id ?? null
+
+      return {
+        data: projectsWithExtra,
+        paging: {
+          total_records: totalRecords,
+          page: options.page || 1,
+          total_pages: totalPages,
+        },
+        next_cursor: nextCursor,
+      }
+    }
+
+    const projectsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (projectsWithExtra.length > (options.limit ?? 10))
+      nextCursor = projectsWithExtra.pop()?.id ?? null
+
+    return {
+      data: projectsWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
   // Method to get all projects
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
     const totalRecordsResult = await db.selectFrom('projects')
@@ -422,7 +471,7 @@ export class ProjectModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => ProjectModel,
+    callback: (query: ProjectModel) => ProjectModel,
   ): ProjectModel {
     let instance = new ProjectModel(null)
 
@@ -434,7 +483,7 @@ export class ProjectModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => ProjectModel,
+    callback: (query: ProjectModel) => ProjectModel,
   ): ProjectModel {
     if (condition)
       callback(this.selectFromQuery)

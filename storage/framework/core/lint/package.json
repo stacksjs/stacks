@@ -51,8 +51,8 @@
     "@commitlint/cli": "^19.6.1",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/eslint-config": "^3.13.1-beta.2",
-    "lint-staged": "^15.3.0",
-    "publint": "^0.3.1",
+    "lint-staged": "^15.4.1",
+    "publint": "^0.3.2",
     "simple-git-hooks": "^2.11.1"
   }
 }

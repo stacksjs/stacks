@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBillable } from '../../../../functions/billing/payments'
+import { useBillable } from '../../functions/billing/payments'
 
 interface Props {
   productId: number

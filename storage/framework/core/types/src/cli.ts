@@ -410,6 +410,8 @@ export interface SearchCommandOptions extends CliOptions {
   flush: boolean
 }
 
+export interface ScheduleOptions extends CliOptions {}
+
 export interface TinkerOptions extends CliOptions {}
 export interface TypesOptions extends CliOptions {}
 

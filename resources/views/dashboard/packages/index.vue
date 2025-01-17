@@ -254,7 +254,7 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
           <!-- Card Header with Background Image -->
           <div class="relative border-b border-gray-100 bg-gray-50 p-4 group-hover:bg-gray-100">
             <div
-              class="absolute inset-0 bg-cover bg-center opacity-2 group-hover:opacity-5 transition-opacity"
+              class="absolute inset-0 bg-cover bg-center opacity-4 blur-sm group-hover:opacity-5 group-hover:blur-none transition-all"
               :style="{
                 backgroundImage: `url('https://repository-images.githubusercontent.com/767342709/66064336-425f-42d4-8c9f-9d6a937cfa98')`
               }"

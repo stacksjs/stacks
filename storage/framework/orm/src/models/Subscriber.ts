@@ -225,6 +225,55 @@ export class SubscriberModel {
     return results.length
   }
 
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
+    const totalRecordsResult = await db.selectFrom('subscribers')
+      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    if (this.hasSelect) {
+      const subscribersWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+        .limit((options.limit ?? 10) + 1)
+        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+        .execute()
+
+      let nextCursor = null
+      if (subscribersWithExtra.length > (options.limit ?? 10))
+        nextCursor = subscribersWithExtra.pop()?.id ?? null
+
+      return {
+        data: subscribersWithExtra,
+        paging: {
+          total_records: totalRecords,
+          page: options.page || 1,
+          total_pages: totalPages,
+        },
+        next_cursor: nextCursor,
+      }
+    }
+
+    const subscribersWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (subscribersWithExtra.length > (options.limit ?? 10))
+      nextCursor = subscribersWithExtra.pop()?.id ?? null
+
+    return {
+      data: subscribersWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
   // Method to get all subscribers
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
     const totalRecordsResult = await db.selectFrom('subscribers')
@@ -413,7 +462,7 @@ export class SubscriberModel {
 
   static when(
     condition: boolean,
-    callback: (query: any) => SubscriberModel,
+    callback: (query: SubscriberModel) => SubscriberModel,
   ): SubscriberModel {
     let instance = new SubscriberModel(null)
 
@@ -425,7 +474,7 @@ export class SubscriberModel {
 
   when(
     condition: boolean,
-    callback: (query: any) => SubscriberModel,
+    callback: (query: SubscriberModel) => SubscriberModel,
   ): SubscriberModel {
     if (condition)
       callback(this.selectFromQuery)

@@ -443,6 +443,7 @@
     "SaasOption": true,
     "SingletonPromiseReturn": true,
     "StringCapturedBy": true,
-    "WaitOptions": true
+    "WaitOptions": true,
+    "useQueueStore": true
   }
 }
