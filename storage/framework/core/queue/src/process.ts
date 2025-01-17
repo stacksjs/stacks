@@ -51,7 +51,7 @@ async function executeJobs(queue: string | undefined): Promise<void> {
     log.info(`Running job: ${body.path}`)
 
     // Increment attempts before running the job
-    await updateJobAttempts(job, currentAttempts)
+    await updateJobAttempts(job, currentAttempts, null)
 
     try {
       // Run the job
@@ -79,11 +79,23 @@ async function executeJobs(queue: string | undefined): Promise<void> {
         log.error(`Job failed after ${maxTries} attempts: ${body.path}`, stringifiedError)
       } else {
         // If attempts are below maxTries, just update the job's attempt count
-        await updateJobAttempts(job, currentAttempts)
+        const backOff = classPayload.backoff || 0
+        let addedDelay = null
+        if (backOff > 0 && job.available_at) {
+           addedDelay = addDelay(job.available_at, currentAttempts, backOff)
+        }
+
+        await updateJobAttempts(job, currentAttempts, addedDelay)
         log.error(`Job failed, retrying... Attempt ${currentAttempts}/${maxTries}: ${body.path}`)
       }
     }
   }
+}
+
+function addDelay(timestamp: number, currentAttempts: number, backOff: number): number {
+  const backoffInMilliseconds = currentAttempts ** backOff
+
+  return timestamp + backoffInMilliseconds
 }
 
 async function storeFailedJob(job: JobModel, exception: string) {
@@ -111,9 +123,16 @@ function now(): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-async function updateJobAttempts(job: JobModel, currentAttempts: number): Promise<void> {
+async function updateJobAttempts(job: JobModel, currentAttempts: number, delay: number | null): Promise<void> {
   try {
-    await job.update({ attempts: currentAttempts })
+    const currentDelay = job.available_at
+
+    if (currentDelay && delay){
+      await job.update({ attempts: currentAttempts, available_at: delay })
+    } else {
+      await job.update({ attempts: currentAttempts })
+    }
+   
   }
   catch (error) {
     log.error('Failed to update job attempts:', error)

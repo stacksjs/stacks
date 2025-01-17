@@ -19,7 +19,7 @@ export interface JobOptions {
    * Number of tries. Must be between 0 and 185.
    */
   tries?: IntRange<0, 185>
-  backoff?: number | number[]
+  backoff?: number
   rate?: string | Every
   enabled?: boolean
 }
