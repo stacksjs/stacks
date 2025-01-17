@@ -3,6 +3,7 @@ import { path } from '@stacksjs/path'
 import type { JobOptions } from '@stacksjs/types'
 import { Every } from '@stacksjs/types'
 import { snakeCase } from '@stacksjs/strings'
+import { err, ok, type Err, type Ok } from '@stacksjs/error-handling'
 
 interface JobSchedule {
   jobName: string
@@ -13,7 +14,7 @@ interface JobSchedule {
 
 const scheduleFile = path.storagePath('framework/core/scheduler/src/schedules/jobSchedule.json')
 
-export async function runScheduler(): Promise<void> {
+export async function runScheduler(): Promise<Ok<string, never> | Err<string, any>> {
   const now = new Date()
   let schedules = loadSchedule()
 
@@ -43,7 +44,7 @@ export async function runScheduler(): Promise<void> {
         }
       }
     } catch (error) {
-      console.error(`Failed to process job file: ${jobFile}`, error)
+      return err(`Scheduler failed execute job: ${jobFile}`)
     }
   }
 
@@ -65,6 +66,8 @@ export async function runScheduler(): Promise<void> {
 
   // Save updated schedules
   saveSchedule(schedules)
+
+  return ok('Schedules ran successfully')
 }
 
 function isDueToRun(nextRunTime: Date, currentDate: Date): boolean {

@@ -4,9 +4,9 @@ import { runScheduler } from '@stacksjs/scheduler'
 
 const result = await runScheduler()
 
-// if (result?.isErr()) {
-//   console.error(result.error)
-//   log.error('Schedule run failed', result.error)
-// }
+if (result?.isErr()) {
+  console.error(result.error)
+  log.error('Schedule run failed', result.error)
+}
 
-// process.exit(0)
+process.exit(0)
