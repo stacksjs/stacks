@@ -6,34 +6,39 @@ import { snakeCase } from '@stacksjs/strings'
 
 interface JobSchedule {
   jobName: string
-  times: string[]
-  rate: string,
-  path: string,
+  rate: string
+  path: string
+  nextRunTime: string | null
 }
 
 const scheduleFile = path.storagePath('framework/core/scheduler/src/schedules/jobSchedule.json')
 
-export async function runScheduler(threshold = 3, regenerationCount = 10): Promise<void> {
-  const now = new Date().toISOString()
+export async function runScheduler(): Promise<void> {
+  const now = new Date()
   let schedules = loadSchedule()
 
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
+
+  // Process job files and initialize schedules if missing
   for (const jobFile of jobFiles) {
     try {
       const jobModule = await import(jobFile)
       const job = jobModule.default as JobOptions
-
-      const jobName = snakeCase(job.name || 'UnkownJob')
+      const jobName = snakeCase(job.name || 'UnknownJob')
 
       if (job.rate) {
-        if (!schedules.some(schedule => schedule.jobName === jobName)) {
-          const initialSchedule = generateSchedule(jobName || '', getJobInterval(job.rate), regenerationCount)
+        const existingSchedule = schedules.find(schedule => schedule.jobName === jobName)
+
+        if (!existingSchedule) {
+          // Prefill: Set the initial nextRunTime based on job's rate and current time
+          const intervalMinutes = getJobInterval(job.rate)
+          const nextRunTime = new Date(now.getTime() + intervalMinutes * 60000).toISOString()
 
           schedules.push({
-            jobName: jobName || '',
+            jobName,
             rate: job.rate,
-            times: initialSchedule.times,
-            path: jobFile
+            nextRunTime, // Set nextRunTime here
+            path: jobFile,
           })
         }
       }
@@ -42,31 +47,28 @@ export async function runScheduler(threshold = 3, regenerationCount = 10): Promi
     }
   }
 
+  // Process schedules and run jobs as needed
   for (const schedule of schedules) {
-    const dueTimes = schedule.times.filter(time => time <= now)
+    const nextRunTime = new Date(schedule.nextRunTime || now.toISOString())
+    const intervalMinutes = getJobInterval(schedule.rate)
 
-    // Run due jobs
-    for (const time of dueTimes) {
-      console.log(`Running job: ${schedule.jobName} at scheduled time: ${time}`)
+    const isDue = isDueToRun(nextRunTime, now)
+
+    if (isDue) {
+      console.log(`Running job: ${schedule.jobName} at ${now.toISOString()}`)
       await runJob(schedule.path)
-    }
-
-    // Remove executed times
-    schedule.times = schedule.times.filter(time => time > now)
-
-    // Regenerate schedule if below threshold
-    if (schedule.times.length < threshold) {
-      console.log(`Regenerating schedule for job: ${schedule.jobName}`)
-      const lastTime = new Date(schedule.times[schedule.times.length - 1] || now)
-      const intervalMinutes = getJobInterval(schedule.rate)
-      const newSchedule = generateSchedule(schedule.jobName, intervalMinutes, regenerationCount, lastTime)
-
-      schedule.times.push(...newSchedule.times)
+      
+      // Refresh the next run time based on the interval
+      schedule.nextRunTime = new Date(nextRunTime.getTime() + intervalMinutes * 60000).toISOString()
     }
   }
 
-  // Save updated schedule
-  saveSchedule(schedules.filter(schedule => schedule.times.length > 0))
+  // Save updated schedules
+  saveSchedule(schedules)
+}
+
+function isDueToRun(nextRunTime: Date, currentDate: Date): boolean {
+  return currentDate >= nextRunTime
 }
 
 export function getJobInterval(rate: string): number {
@@ -83,6 +85,18 @@ export function getJobInterval(rate: string): number {
       return 15
     case Every.ThirtyMinutes:
       return 30
+    case Every.HalfHour:
+      return 30
+    case Every.Hour:
+      return 60
+    case Every.Day:
+      return 60 * 24 // 1 day
+    case Every.Week:
+      return 60 * 24 * 7 // 1 week
+    case Every.Month:
+      return 60 * 24 * 30 // Approximate 1 month (30 days)
+    case Every.Year:
+      return 60 * 24 * 365 // Approximate 1 year (365 days)
     default:
       throw new Error(`Unsupported rate: ${rate}`)
   }
@@ -106,16 +120,4 @@ function saveSchedule(schedule: JobSchedule[]): void {
 function loadSchedule(): JobSchedule[] {
   if (!fs.existsSync(scheduleFile)) return []
   return JSON.parse(fs.readFileSync(scheduleFile, 'utf-8'))
-}
-
-export function generateSchedule(jobName: string, intervalMinutes: number, count: number, startTime = new Date()): { jobName: string; times: string[] } {
-  const times: string[] = []
-  let nextTime = new Date(startTime)
-
-  for (let i = 0; i < count; i++) {
-    nextTime.setMinutes(nextTime.getMinutes() + intervalMinutes)
-    times.push(nextTime.toISOString())
-  }
-
-  return { jobName, times }
 }
