@@ -1,0 +1,48 @@
+{
+  "name": "@stacksjs/input",
+  "type": "module",
+  "version": "0.68.2",
+  "description": "Opinionated Input components for Stacks.",
+  "author": "Adelino Ngomacha",
+  "contributors": ["Adelino Ngomacha <adelinob335@gmail.com>"],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/input#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/components/select"
+  },
+  "sideEffects": ["**/*.css"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["README.md", "dist"],
+  "scripts": {
+    "dev": "bunx --bun vite",
+    "build": "echo 'wip'",
+    "build:lib": "vite build --mode lib && bun run build:types",
+    "build:types": "bunx vue-tsc -p tsconfig.build.json && bunx api-extractor run",
+    "preview": "bunx --bun vite preview"
+  },
+  "dependencies": {
+    "@stacksjs/ui": "workspace:*",
+    "@vee-validate/zod": "^4.15.0",
+    "vee-validate": "^4.15.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.49.1",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@types/clean-css": "^4.2.11",
+    "@vue/tsconfig": "^0.7.0",
+    "clean-css": "^5.3.3",
+    "unplugin-icons": "^22.0.0"
+  }
+}
