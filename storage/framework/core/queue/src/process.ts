@@ -99,9 +99,14 @@ function addDelay(
   const backOff = classPayload.backoff
   const backoffConfig = classPayload.backoffConfig
 
-  // Fixed backoff strategy logic
   if (backoffConfig && backoffConfig.strategy === 'fixed') {
     return effectiveTimestamp + convertSecondsToTimeStamp(backoffConfig.initialDelay)
+  }
+
+  // Exponential backoff logic
+  if (backoffConfig && backoffConfig.strategy === 'exponential' && backoffConfig.factor) {
+    const delay = backoffConfig.initialDelay * (backoffConfig.factor ** (currentAttempts - 1))
+    return effectiveTimestamp + convertSecondsToTimeStamp(delay)
   }
 
   // Backoff as an array of delays (in seconds), convert to milliseconds
@@ -112,8 +117,8 @@ function addDelay(
 
   // Backoff as a single number (exponential or linear backoff), convert to milliseconds
   if (typeof backOff === 'number') {
-    const backoffInSeconds = currentAttempts ** backOff
-    return effectiveTimestamp + convertSecondsToTimeStamp(backoffInSeconds)
+    const backoffInMilliseconds = currentAttempts ** backOff
+    return effectiveTimestamp + convertSecondsToTimeStamp(backoffInMilliseconds)
   }
 
   return 0
