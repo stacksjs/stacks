@@ -91,6 +91,7 @@ devs
 Dispatchable
 DMARC
 dmarcreports
+dnsx
 docgen
 doesnt
 domainkey
