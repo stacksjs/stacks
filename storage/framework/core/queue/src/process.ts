@@ -78,12 +78,8 @@ async function executeJobs(queue: string | undefined): Promise<void> {
         await job.delete()  // Delete job only after exceeding maxTries
         log.error(`Job failed after ${maxTries} attempts: ${body.path}`, stringifiedError)
       } else {
-        // If attempts are below maxTries, just update the job's attempt count
-        const backOff = classPayload.backoff || 0
-        let addedDelay = null
-        if (backOff > 0 && job.available_at) {
-           addedDelay = addDelay(job.available_at, currentAttempts, backOff)
-        }
+       
+        const addedDelay = addDelay(job.available_at, currentAttempts, classPayload)
 
         await updateJobAttempts(job, currentAttempts, addedDelay)
         log.error(`Job failed, retrying... Attempt ${currentAttempts}/${maxTries}: ${body.path}`)
@@ -92,10 +88,27 @@ async function executeJobs(queue: string | undefined): Promise<void> {
   }
 }
 
-function addDelay(timestamp: number, currentAttempts: number, backOff: number): number {
-  const backoffInMilliseconds = currentAttempts ** backOff
+function addDelay(
+  timestamp: number | undefined,
+  currentAttempts: number,
+  classPayload: JobOptions
+): number {
+  const now = Math.floor(Date.now() / 1000)
+  const effectiveTimestamp = timestamp ?? now
 
-  return timestamp + backoffInMilliseconds
+  const backOff = classPayload.backoff
+
+  if (Array.isArray(backOff)) {
+    const backoffValue = backOff[currentAttempts] || 0
+    return effectiveTimestamp + backoffValue
+  }
+
+  if (typeof backOff === 'number') {
+    const backoffInMilliseconds = currentAttempts ** backOff
+    return effectiveTimestamp + backoffInMilliseconds
+  }
+
+  return 0
 }
 
 async function storeFailedJob(job: JobModel, exception: string) {
