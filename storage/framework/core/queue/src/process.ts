@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import FailedJob from '../../../orm/src/models/FailedJob'
 import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
-import type { JobOptions } from '@stacksjs/types'
+import type { JitterConfig, JobOptions } from '@stacksjs/types'
 
 interface QueuePayload {
   path: string
@@ -98,36 +98,73 @@ function addDelay(
 
   const backOff = classPayload.backoff
   const backoffConfig = classPayload.backoffConfig
+  const jitter = backoffConfig?.jitter
 
+  // Fixed backoff strategy logic
   if (backoffConfig && backoffConfig.strategy === 'fixed') {
-    return effectiveTimestamp + convertSecondsToTimeStamp(backoffConfig.initialDelay)
+    let delay = backoffConfig.initialDelay
+    if (jitter?.enabled) {
+      delay = applyJitter(delay, jitter)
+    }
+    return effectiveTimestamp + convertSecondsToTimeStamp(delay)
   }
 
   // Exponential backoff logic
   if (backoffConfig && backoffConfig.strategy === 'exponential' && backoffConfig.factor) {
-    const delay = backoffConfig.initialDelay * (backoffConfig.factor ** (currentAttempts - 1))
+    let delay = backoffConfig.initialDelay * (backoffConfig.factor ** (currentAttempts - 1))
+    if (jitter?.enabled) {
+      delay = applyJitter(delay, jitter)
+    }
     return effectiveTimestamp + convertSecondsToTimeStamp(delay)
   }
 
   // Linear backoff logic
   if (backoffConfig && backoffConfig.strategy === 'linear' && backoffConfig.factor) {
-    const delay = backoffConfig.initialDelay + backoffConfig.factor * (currentAttempts - 1)
+    let delay = backoffConfig.initialDelay + backoffConfig.factor * (currentAttempts - 1)
+    if (jitter?.enabled) {
+      delay = applyJitter(delay, jitter)
+    }
     return effectiveTimestamp + convertSecondsToTimeStamp(delay)
   }
 
   // Backoff as an array of delays (in seconds), convert to milliseconds
   if (Array.isArray(backOff)) {
     const backoffValueInSeconds = backOff[currentAttempts] || 0
+    if (jitter?.enabled) {
+      const delayWithJitter = applyJitter(backoffValueInSeconds, jitter)
+      return effectiveTimestamp + convertSecondsToTimeStamp(delayWithJitter)
+    }
     return effectiveTimestamp + convertSecondsToTimeStamp(backoffValueInSeconds)
   }
 
   // Backoff as a single number (exponential or linear backoff), convert to milliseconds
   if (typeof backOff === 'number') {
     const backoffInMilliseconds = currentAttempts ** backOff
+    if (jitter?.enabled) {
+      const delayWithJitter = applyJitter(backoffInMilliseconds, jitter)
+      return effectiveTimestamp + convertSecondsToTimeStamp(delayWithJitter)
+    }
     return effectiveTimestamp + convertSecondsToTimeStamp(backoffInMilliseconds)
   }
 
   return 0
+}
+
+// Function to apply jitter with minDelay and maxDelay
+function applyJitter(delay: number, jitterConfig: JitterConfig): number {
+  const factor = jitterConfig.factor || 0.5 // Default factor if not specified
+  const randomJitter = Math.random() * delay * factor
+  let jitteredDelay = delay + randomJitter
+
+  // Apply minDelay and maxDelay if defined
+  if (jitterConfig.minDelay !== undefined) {
+    jitteredDelay = Math.max(jitteredDelay, jitterConfig.minDelay)
+  }
+  if (jitterConfig.maxDelay !== undefined) {
+    jitteredDelay = Math.min(jitteredDelay, jitterConfig.maxDelay)
+  }
+
+  return Math.floor(jitteredDelay)
 }
 
 function convertSecondsToTimeStamp(seconds: number): number {
