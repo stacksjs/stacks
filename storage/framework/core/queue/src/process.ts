@@ -109,6 +109,12 @@ function addDelay(
     return effectiveTimestamp + convertSecondsToTimeStamp(delay)
   }
 
+  // Linear backoff logic
+  if (backoffConfig && backoffConfig.strategy === 'linear' && backoffConfig.factor) {
+    const delay = backoffConfig.initialDelay + backoffConfig.factor * (currentAttempts - 1)
+    return effectiveTimestamp + convertSecondsToTimeStamp(delay)
+  }
+
   // Backoff as an array of delays (in seconds), convert to milliseconds
   if (Array.isArray(backOff)) {
     const backoffValueInSeconds = backOff[currentAttempts] || 0
@@ -127,6 +133,7 @@ function addDelay(
 function convertSecondsToTimeStamp(seconds: number): number {
   return seconds * 1000
 }
+
 
 async function storeFailedJob(job: JobModel, exception: string) {
   const data = {
