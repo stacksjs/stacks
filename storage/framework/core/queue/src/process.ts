@@ -93,22 +93,34 @@ function addDelay(
   currentAttempts: number,
   classPayload: JobOptions
 ): number {
-  const now = Math.floor(Date.now() / 1000)
+  const now = timestampNow()
   const effectiveTimestamp = timestamp ?? now
 
   const backOff = classPayload.backoff
+  const backoffConfig = classPayload.backoffConfig
 
-  if (Array.isArray(backOff)) {
-    const backoffValue = backOff[currentAttempts] || 0
-    return effectiveTimestamp + backoffValue
+  // Fixed backoff strategy logic
+  if (backoffConfig && backoffConfig.strategy === 'fixed') {
+    return effectiveTimestamp + convertSecondsToTimeStamp(backoffConfig.initialDelay)
   }
 
+  // Backoff as an array of delays (in seconds), convert to milliseconds
+  if (Array.isArray(backOff)) {
+    const backoffValueInSeconds = backOff[currentAttempts] || 0
+    return effectiveTimestamp + convertSecondsToTimeStamp(backoffValueInSeconds)
+  }
+
+  // Backoff as a single number (exponential or linear backoff), convert to milliseconds
   if (typeof backOff === 'number') {
-    const backoffInMilliseconds = currentAttempts ** backOff
-    return effectiveTimestamp + backoffInMilliseconds
+    const backoffInSeconds = currentAttempts ** backOff
+    return effectiveTimestamp + convertSecondsToTimeStamp(backoffInSeconds)
   }
 
   return 0
+}
+
+function convertSecondsToTimeStamp(seconds: number): number {
+  return seconds * 1000
 }
 
 async function storeFailedJob(job: JobModel, exception: string) {
