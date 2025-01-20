@@ -2575,6 +2575,8 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await generateApiRoutes(coreModelFiles)
     log.success('Generated API Routes')
 
+    await writeModelOrmImports([...modelFiles, ...coreModelFiles])
+
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile)
         continue
@@ -2626,6 +2628,24 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     // throw error
     handleError('Error while generating model files', error)
   }
+}
+
+async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
+  let ormImportString = ``
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default as Model
+
+    const modelName = getModelName(model, modelFile)
+
+    ormImportString += `export { default as ${modelName} } from '../../../orm/src/models/${modelName}'\n\n`
+  }
+
+  const file = Bun.file(path.frameworkPath(`core/orm/src/models.ts`))
+  const writer = file.writer()
+
+  writer.write(ormImportString)
+
+  await writer.end()
 }
 
 export async function extractAttributesFromModel(filePath: string): Promise<Attributes> {

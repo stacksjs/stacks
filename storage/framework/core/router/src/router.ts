@@ -199,7 +199,7 @@ export class Router implements RouterInterface {
 
         const prefix = options.prefix || '/'
         const formattedPrefix = prefix.startsWith('/') ? prefix : `/${prefix}`
-        
+
         if (options.prefix) {
           r.path = formattedPrefix + r.uri
           r.uri = formattedPrefix + r.uri
