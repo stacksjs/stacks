@@ -1,5 +1,6 @@
 import { Job } from '@stacksjs/queue'
 import { Every } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
 
 export default new Job({
   name: 'Example Job', // optional, defaults to the file name
@@ -9,10 +10,10 @@ export default new Job({
   rate: Every.Minute, // optional, '* * * * *' in cron syntax
   backoffConfig: {
     strategy: 'fixed',
-    initialDelay: 10,
+    initialDelay: 10000,
   },
   handle: (payload: any) => {
-    console.log('hello from example job')
+    throw new HttpError(500, 'test')
   },
   // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })

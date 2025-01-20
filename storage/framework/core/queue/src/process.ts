@@ -18,12 +18,7 @@ interface QueuePayload {
 
 export async function processJobs(queue: string | undefined): Promise<Ok<string, never>> {
   async function process() {
-    try {
-      await executeJobs(queue)
-    }
-    catch (error) {
-      log.error('Error processing jobs:', error)
-    }
+    await executeJobs(queue)
 
     setTimeout(process, 1000)
   }
@@ -38,7 +33,7 @@ async function executeJobs(queue: string | undefined): Promise<void> {
 
   for (const job of jobs) {
     let currentAttempts = job.attempts || 1 // Assuming the job has an `attempts` field tracking its attempts
-
+    
     if (!job.payload)
       continue
 
@@ -70,6 +65,7 @@ async function executeJobs(queue: string | undefined): Promise<void> {
       log.info(`Successfully ran job: ${body.path}`)
     }
     catch (error) {
+      console.log(error)
       // Increment the attempt count
       currentAttempts++
 
@@ -78,13 +74,11 @@ async function executeJobs(queue: string | undefined): Promise<void> {
         const stringifiedError = JSON.stringify(error)
         storeFailedJob(job, stringifiedError)
         await job.delete() // Delete job only after exceeding maxTries
-        log.error(`Job failed after ${maxTries} attempts: ${body.path}`, stringifiedError)
       }
       else {
         const addedDelay = addDelay(job.available_at, currentAttempts, classPayload)
 
         await updateJobAttempts(job, currentAttempts, addedDelay)
-        log.error(`Job failed, retrying... Attempt ${currentAttempts}/${maxTries}: ${body.path}`)
       }
     }
   }
@@ -104,54 +98,68 @@ function addDelay(
 
   // Fixed backoff strategy logic
   if (backoffConfig && backoffConfig.strategy === 'fixed') {
-    let delay = backoffConfig.initialDelay
+    let delay = meilisecondsToSeconds(backoffConfig.initialDelay)
+
     if (jitter?.enabled) {
       delay = applyJitter(delay, jitter)
     }
+
     return effectiveTimestamp + delay
   }
 
   // Exponential backoff logic
   if (backoffConfig && backoffConfig.strategy === 'exponential' && backoffConfig.factor) {
-    let delay = backoffConfig.initialDelay * (backoffConfig.factor ** (currentAttempts - 1))
+    let delay = meilisecondsToSeconds(backoffConfig.initialDelay) * (backoffConfig.factor ** (currentAttempts - 1))
+
     if (jitter?.enabled) {
       delay = applyJitter(delay, jitter)
     }
+
     return effectiveTimestamp + delay
   }
 
   // Linear backoff logic
   if (backoffConfig && backoffConfig.strategy === 'linear' && backoffConfig.factor) {
-    let delay = backoffConfig.initialDelay + backoffConfig.factor * (currentAttempts - 1)
+    let delay = meilisecondsToSeconds(backoffConfig.initialDelay) + backoffConfig.factor * (currentAttempts - 1)
+
     if (jitter?.enabled) {
       delay = applyJitter(delay, jitter)
     }
+
     return effectiveTimestamp + delay
   }
 
   // Backoff as an array of delays (in seconds), convert to milliseconds
   if (Array.isArray(backOff)) {
-    const backoffValueInSeconds = backOff[currentAttempts] || 0
+    const backOffValueInMeliseconds = backOff[currentAttempts] || 0
+
     if (jitter?.enabled) {
-      const delayWithJitter = applyJitter(backoffValueInSeconds, jitter)
+      const delayWithJitter = applyJitter(backOffValueInMeliseconds, jitter)
       return effectiveTimestamp + delayWithJitter
     }
-    return effectiveTimestamp + backoffValueInSeconds
+
+    return effectiveTimestamp + meilisecondsToSeconds(backOffValueInMeliseconds)
   }
 
   // Backoff as a single number (exponential or linear backoff), convert to milliseconds
   if (typeof backOff === 'number') {
     const backoffInMilliseconds = currentAttempts ** backOff
+
     if (jitter?.enabled) {
       const delayWithJitter = applyJitter(backoffInMilliseconds, jitter)
       return effectiveTimestamp + delayWithJitter
     }
-    return effectiveTimestamp + backoffInMilliseconds
+    
+    return effectiveTimestamp + meilisecondsToSeconds(backoffInMilliseconds)
   }
 
-  return 0
+  // let's default the retry delay to 3 seconds if no backoff is configured
+  return effectiveTimestamp + 10
 }
 
+function meilisecondsToSeconds(meiliseconds: number): number {
+  return (meiliseconds / 1000) || 1
+}
 // Function to apply jitter with minDelay and maxDelay
 function applyJitter(delay: number, jitterConfig: JitterConfig): number {
   const factor = jitterConfig.factor || 0.5 // Default factor if not specified

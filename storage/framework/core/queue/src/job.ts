@@ -66,7 +66,6 @@ export async function runJob(name: string, options: QueueOption = {}): Promise<v
     }
   }
   catch (error) {
-    log.error(`Job ${name} failed:`, error)
     throw error
   }
 }
