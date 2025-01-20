@@ -5,7 +5,7 @@ import {
   getUserPasskeys,
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@stacksjs/auth'
-import User from '../../../storage/framework/orm/src/models/User.ts'
+import { User } from '@stacksjs/orm'
 
 export default new Action({
   name: 'PasskeyRegistrationAction',

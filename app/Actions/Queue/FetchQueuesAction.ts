@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { Job } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import Job from '../../../storage/framework/orm/src/models/Job.ts'
 
 export default new Action({
   name: 'FetchQueuesAction',

@@ -1,10 +1,10 @@
+import type { JitterConfig, JobOptions } from '@stacksjs/types'
 import type { JobModel } from '../../../orm/src/models/Job'
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import FailedJob from '../../../orm/src/models/FailedJob'
 import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
-import type { JitterConfig, JobOptions } from '@stacksjs/types'
 
 interface QueuePayload {
   path: string
@@ -37,11 +37,13 @@ async function executeJobs(queue: string | undefined): Promise<void> {
   const jobs = await Job.when(queue !== undefined, (query: JobModel) => query.where('queue', queue)).get()
 
   for (const job of jobs) {
-    let currentAttempts = job.attempts || 1  // Assuming the job has an `attempts` field tracking its attempts
+    let currentAttempts = job.attempts || 1 // Assuming the job has an `attempts` field tracking its attempts
 
-    if (!job.payload) continue
+    if (!job.payload)
+      continue
 
-    if (job.available_at && job.available_at > timestampNow()) continue
+    if (job.available_at && job.available_at > timestampNow())
+      continue
 
     const body: QueuePayload = JSON.parse(job.payload)
     const classPayload = JSON.parse(job.payload) as JobOptions
@@ -75,10 +77,10 @@ async function executeJobs(queue: string | undefined): Promise<void> {
         // If attempts exceed maxTries, store as failed job and delete
         const stringifiedError = JSON.stringify(error)
         storeFailedJob(job, stringifiedError)
-        await job.delete()  // Delete job only after exceeding maxTries
+        await job.delete() // Delete job only after exceeding maxTries
         log.error(`Job failed after ${maxTries} attempts: ${body.path}`, stringifiedError)
-      } else {
-       
+      }
+      else {
         const addedDelay = addDelay(job.available_at, currentAttempts, classPayload)
 
         await updateJobAttempts(job, currentAttempts, addedDelay)
@@ -91,7 +93,7 @@ async function executeJobs(queue: string | undefined): Promise<void> {
 function addDelay(
   timestamp: number | undefined,
   currentAttempts: number,
-  classPayload: JobOptions
+  classPayload: JobOptions,
 ): number {
   const now = timestampNow()
   const effectiveTimestamp = timestamp ?? now
@@ -171,7 +173,6 @@ function convertSecondsToTimeStamp(seconds: number): number {
   return seconds * 1000
 }
 
-
 async function storeFailedJob(job: JobModel, exception: string) {
   const data = {
     connection: 'database',
@@ -201,12 +202,12 @@ async function updateJobAttempts(job: JobModel, currentAttempts: number, delay: 
   try {
     const currentDelay = job.available_at
 
-    if (currentDelay && delay){
+    if (currentDelay && delay) {
       await job.update({ attempts: currentAttempts, available_at: delay })
-    } else {
+    }
+    else {
       await job.update({ attempts: currentAttempts })
     }
-   
   }
   catch (error) {
     log.error('Failed to update job attempts:', error)

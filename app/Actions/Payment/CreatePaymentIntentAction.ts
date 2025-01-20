@@ -1,9 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { HttpError } from '@stacksjs/error-handling'
+import { Product, User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import Product from '../../../storage/framework/orm/src/models/Product.ts'
-import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
   name: 'CreatePaymentIntentAction',

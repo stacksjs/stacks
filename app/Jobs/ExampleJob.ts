@@ -12,7 +12,7 @@ export default new Job({
     initialDelay: 10,
   },
   handle: (payload: any) => {
-   console.log('hello from example job')
+    console.log('hello from example job')
   },
   // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })

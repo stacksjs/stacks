@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { Product } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import Product from '../../../storage/framework/orm/src/models/Product.ts'
 
 export default new Action({
   name: 'FetchProductAction',

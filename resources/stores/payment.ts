@@ -1,5 +1,4 @@
-import type { PaymentMethod, TransactionHistory, Product, Subscription } from '../types/billing'
-
+import type { PaymentMethod, Product, Subscription, TransactionHistory } from '../types/billing'
 
 const apiUrl = `http://localhost:3008`
 

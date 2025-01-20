@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import User from '../../../storage/framework/orm/src/models/User.ts'
+import { User } from '@stacksjs/orm'
 
 export default new Action({
   name: 'DeleteDefaultPaymentAction',

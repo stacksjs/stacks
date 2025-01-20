@@ -1,8 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { Transaction, User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import Transaction from '../../../storage/framework/orm/src/models/Transaction.ts'
-import User from '../../../storage/framework/orm/src/models/User.ts'
 
 export default new Action({
   name: 'FetchTransactionHistoryAction',

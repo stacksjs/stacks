@@ -1,9 +1,9 @@
+import type { QueueOption } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
 import { appPath } from '@stacksjs/path'
 import { storeJob } from './utils'
-import type { QueueOption } from '@stacksjs/types'
 
 const queueDriver = 'database'
 

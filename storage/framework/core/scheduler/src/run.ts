@@ -1,9 +1,10 @@
-import { globSync, fs } from '@stacksjs/storage'
-import { path } from '@stacksjs/path'
 import type { JobOptions } from '@stacksjs/types'
-import { Every } from '@stacksjs/types'
+import { err, type Err, ok, type Ok } from '@stacksjs/error-handling'
+import { path } from '@stacksjs/path'
+import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { err, ok, type Err, type Ok } from '@stacksjs/error-handling'
+import { Every } from '@stacksjs/types'
+import { log } from '@stacksjs/logging'
 
 interface JobSchedule {
   jobName: string
@@ -16,7 +17,7 @@ const scheduleFile = path.storagePath('framework/core/scheduler/src/schedules/jo
 
 export async function runScheduler(): Promise<Ok<string, never> | Err<string, any>> {
   const now = new Date()
-  let schedules = loadSchedule()
+  const schedules = loadSchedule()
 
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
 
@@ -43,7 +44,9 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
           })
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
+      log.error(error)
       return err(`Scheduler failed execute job: ${jobFile}`)
     }
   }
@@ -58,7 +61,7 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
     if (isDue) {
       console.log(`Running job: ${schedule.jobName} at ${now.toISOString()}`)
       await runJob(schedule.path)
-      
+
       // Refresh the next run time based on the interval
       schedule.nextRunTime = new Date(nextRunTime.getTime() + intervalMinutes * 60000).toISOString()
     }
@@ -109,7 +112,7 @@ export function getJobInterval(rate: string): number {
 async function runJob(path: string): Promise<void> {
   const jobFile = await import(path)
   const job = jobFile.default as JobOptions
-  
+
   if (job && typeof job.handle === 'function') {
     await job.handle()
   }
@@ -119,9 +122,10 @@ async function runJob(path: string): Promise<void> {
 function saveSchedule(schedule: JobSchedule[]): void {
   fs.writeFileSync(scheduleFile, JSON.stringify(schedule, null, 2))
 }
-  
+
 function loadSchedule(): JobSchedule[] {
-  if (!fs.existsSync(scheduleFile)) return []
+  if (!fs.existsSync(scheduleFile))
+    return []
   return JSON.parse(fs.readFileSync(scheduleFile, 'utf-8'))
 }
 

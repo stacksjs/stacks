@@ -35,7 +35,6 @@ export interface QueueOptions {
   }
 }
 
-
 export interface JobOptions {
   /** Queue to run the job on */
   queue?: string
@@ -58,6 +57,5 @@ export interface JobOptions {
 export interface QueueOption extends JobOptions {
   delay?: number
 }
-
 
 export type QueueConfig = DeepPartial<QueueOptions>

@@ -1,6 +1,5 @@
 import type { IntRange } from '@stacksjs/cron'
 
-
 export type Job = JobOptions
 export type Jobs = Job[]
 export type CronJob = Job
@@ -50,7 +49,6 @@ export interface JitterConfig {
    */
   maxDelay?: number
 }
-
 
 export interface BackoffConfig {
   /**
