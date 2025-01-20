@@ -1,1 +1,1 @@
-export * from '../../../types/requests'
+export type * from '../../../types/requests.d.ts'
