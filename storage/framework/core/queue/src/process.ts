@@ -33,7 +33,7 @@ async function executeJobs(queue: string | undefined): Promise<void> {
 
   for (const job of jobs) {
     let currentAttempts = job.attempts || 1 // Assuming the job has an `attempts` field tracking its attempts
-    
+
     if (!job.payload)
       continue
 

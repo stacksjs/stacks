@@ -8,7 +8,7 @@ export interface ErrorsTable {
   type?: string
   message?: string
   stack?: string
-  status?: boolean
+  status?: number
   additional_info?: string
 
   created_at?: Date
@@ -58,7 +58,7 @@ export class ErrorModel {
   public type: string | undefined
   public message: string | undefined
   public stack: string | undefined
-  public status: boolean | undefined
+  public status: number | undefined
   public additional_info: string | undefined
 
   public created_at: Date | undefined
@@ -881,7 +881,7 @@ export async function whereStack(value: string): Promise<ErrorModel[]> {
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
-export async function whereStatus(value: boolean): Promise<ErrorModel[]> {
+export async function whereStatus(value: number): Promise<ErrorModel[]> {
   const query = db.selectFrom('errors').where('status', '=', value)
   const results = await query.execute()
 

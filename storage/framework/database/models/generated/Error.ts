@@ -52,12 +52,12 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.number(),
         message: {
-          string: 'stack must be a boolean',
+          string: 'status must be a number',
         },
       },
-      factory: () => faker.number.int({ min: 0, max: 1 }),
+      factory: () => faker.number.int({ min: 400, max: 500 }),
     },
 
     additional_info: {

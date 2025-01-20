@@ -15,7 +15,7 @@ interface RequestDataError {
   type: string
   message: string
   stack: string
-  status: boolean
+  status: number
   additional_info: string
   created_at?: Date
   updated_at?: Date
@@ -25,7 +25,7 @@ export class ErrorRequest extends Request<RequestDataError> implements ErrorRequ
   public type = ''
   public message = ''
   public stack = ''
-  public status = false
+  public status = 0
   public additional_info = ''
   public created_at = new Date()
   public updated_at = new Date()

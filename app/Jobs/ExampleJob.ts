@@ -1,6 +1,6 @@
+import { HttpError } from '@stacksjs/error-handling'
 import { Job } from '@stacksjs/queue'
 import { Every } from '@stacksjs/types'
-import { HttpError } from '@stacksjs/error-handling'
 
 export default new Job({
   name: 'Example Job', // optional, defaults to the file name
