@@ -63,7 +63,7 @@ declare module 'vue' {
     PaymentMethod: typeof import('./../../../resources/components/Billing/PaymentMethod.vue')['default']
     PaymentMethodList: typeof import('./../../../resources/components/Billing/PaymentMethodList.vue')['default']
     Plan: typeof import('./../../../resources/components/Marketing/Plan.vue')['default']
-    Plans: typeof import('../../../resources/components/Billing/Plans.vue')['default']
+    Plans: typeof import('./../../../resources/components/Billing/Plans.vue')['default']
     Playground: typeof import('./../../../resources/components/Playground.vue')['default']
     Pricing: typeof import('./../../../resources/components/Marketing/Pricing.vue')['default']
     PrimaryFeatures: typeof import('./../../../resources/components/Marketing/PrimaryFeatures.vue')['default']

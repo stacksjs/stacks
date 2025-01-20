@@ -2,8 +2,13 @@ import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { exists, glob } from '@stacksjs/storage'
 
-const dirs = await glob([p.resolve('./', '*')], { onlyDirectories: true, absolute: true })
+const componentsDir = p.resolve('./components')
+const componentsDirs = p.resolve('./components/*')
+const dirs = await glob([p.resolve('./', '*'), `!${componentsDir}`, `!${componentsDirs}`], { onlyDirectories: true, absolute: true })
 dirs.sort((a, b) => a.localeCompare(b))
+
+const components = await glob([componentsDir], { onlyDirectories: true, absolute: true })
+dirs.push(...components) // Add components directories to the end
 
 const startTime = Date.now()
 
