@@ -1,4 +1,4 @@
-import type { SubscriberEmailRequestType } from '../../storage/framework/types/requests'
+import type { SubscriberEmailRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 // import { schema } from '@stacksjs/validation'
 // import { epmailSubscribeRequest } from '@stacksjs/validation'

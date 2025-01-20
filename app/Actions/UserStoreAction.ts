@@ -1,4 +1,4 @@
-import type { UserRequestType } from '../../storage/framework/types/requests'
+import type { UserRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { User } from '@stacksjs/orm'
 

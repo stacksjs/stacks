@@ -1,4 +1,4 @@
-import type { UserRequestType } from '../../types/requests'
+import type { UserRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import User from '../../orm/src/models/User'
 
