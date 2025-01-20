@@ -108,7 +108,7 @@ function addDelay(
     if (jitter?.enabled) {
       delay = applyJitter(delay, jitter)
     }
-    return effectiveTimestamp + convertSecondsToTimeStamp(delay)
+    return effectiveTimestamp + delay
   }
 
   // Exponential backoff logic
@@ -117,7 +117,7 @@ function addDelay(
     if (jitter?.enabled) {
       delay = applyJitter(delay, jitter)
     }
-    return effectiveTimestamp + convertSecondsToTimeStamp(delay)
+    return effectiveTimestamp + delay
   }
 
   // Linear backoff logic
@@ -126,7 +126,7 @@ function addDelay(
     if (jitter?.enabled) {
       delay = applyJitter(delay, jitter)
     }
-    return effectiveTimestamp + convertSecondsToTimeStamp(delay)
+    return effectiveTimestamp + delay
   }
 
   // Backoff as an array of delays (in seconds), convert to milliseconds
@@ -134,9 +134,9 @@ function addDelay(
     const backoffValueInSeconds = backOff[currentAttempts] || 0
     if (jitter?.enabled) {
       const delayWithJitter = applyJitter(backoffValueInSeconds, jitter)
-      return effectiveTimestamp + convertSecondsToTimeStamp(delayWithJitter)
+      return effectiveTimestamp + delayWithJitter
     }
-    return effectiveTimestamp + convertSecondsToTimeStamp(backoffValueInSeconds)
+    return effectiveTimestamp + backoffValueInSeconds
   }
 
   // Backoff as a single number (exponential or linear backoff), convert to milliseconds
@@ -144,9 +144,9 @@ function addDelay(
     const backoffInMilliseconds = currentAttempts ** backOff
     if (jitter?.enabled) {
       const delayWithJitter = applyJitter(backoffInMilliseconds, jitter)
-      return effectiveTimestamp + convertSecondsToTimeStamp(delayWithJitter)
+      return effectiveTimestamp + delayWithJitter
     }
-    return effectiveTimestamp + convertSecondsToTimeStamp(backoffInMilliseconds)
+    return effectiveTimestamp + backoffInMilliseconds
   }
 
   return 0
@@ -167,10 +167,6 @@ function applyJitter(delay: number, jitterConfig: JitterConfig): number {
   }
 
   return Math.floor(jitteredDelay)
-}
-
-function convertSecondsToTimeStamp(seconds: number): number {
-  return seconds * 1000
 }
 
 async function storeFailedJob(job: JobModel, exception: string) {

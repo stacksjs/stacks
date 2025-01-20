@@ -131,7 +131,7 @@ export class Queue implements Dispatchable {
   private deferWithDelay(): void {
     setTimeout(async () => {
       await this.dispatchNow()
-    }, this.options.delay || 0 * 1000)
+    }, this.options.delay || 0)
   }
 
   private async runJobImmediately(jobPayload: any): Promise<void> {
