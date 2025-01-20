@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/components/select"
+    "directory": "./storage/framework/core/components/input"
   },
   "sideEffects": ["**/*.css"],
   "exports": {
