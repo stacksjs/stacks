@@ -86,6 +86,10 @@ async function executeJobs(queue: string | undefined): Promise<void> {
   }
 }
 
+function enforceMaxDelay(maxDelay: number | undefined, delay: number): number {
+  return maxDelay !== undefined ? Math.min(delay, maxDelay) : delay
+}
+
 function addDelay(
   timestamp: number | undefined,
   currentAttempts: number,
@@ -97,6 +101,7 @@ function addDelay(
   const backOff = classPayload.backoff
   const backoffConfig = classPayload.backoffConfig
   const jitter = backoffConfig?.jitter
+  const maxDelay = backoffConfig?.maxDelay ? meilisecondsToSeconds(backoffConfig.maxDelay) : undefined
 
   // Fixed backoff strategy logic
   if (backoffConfig && backoffConfig.strategy === 'fixed') {
@@ -106,7 +111,7 @@ function addDelay(
       delay = applyJitter(delay, jitter)
     }
 
-    return effectiveTimestamp + delay
+    return effectiveTimestamp + enforceMaxDelay(maxDelay, delay)
   }
 
   // Exponential backoff logic
@@ -117,7 +122,7 @@ function addDelay(
       delay = applyJitter(delay, jitter)
     }
 
-    return effectiveTimestamp + delay
+    return effectiveTimestamp + enforceMaxDelay(maxDelay, delay)
   }
 
   // Linear backoff logic
@@ -128,19 +133,19 @@ function addDelay(
       delay = applyJitter(delay, jitter)
     }
 
-    return effectiveTimestamp + delay
+    return effectiveTimestamp + enforceMaxDelay(maxDelay, delay)
   }
 
   // Backoff as an array of delays (in seconds), convert to milliseconds
   if (Array.isArray(backOff)) {
-    const backOffValueInMeliseconds = backOff[currentAttempts] || 0
+    const backOffValueInMilliseconds = backOff[currentAttempts] || 0
 
     if (jitter?.enabled) {
-      const delayWithJitter = applyJitter(backOffValueInMeliseconds, jitter)
-      return effectiveTimestamp + delayWithJitter
+      const delayWithJitter = applyJitter(backOffValueInMilliseconds, jitter)
+      return effectiveTimestamp + enforceMaxDelay(maxDelay, delayWithJitter)
     }
 
-    return effectiveTimestamp + meilisecondsToSeconds(backOffValueInMeliseconds)
+    return effectiveTimestamp + enforceMaxDelay(maxDelay, meilisecondsToSeconds(backOffValueInMilliseconds))
   }
 
   // Backoff as a single number (exponential or linear backoff), convert to milliseconds
@@ -149,14 +154,14 @@ function addDelay(
 
     if (jitter?.enabled) {
       const delayWithJitter = applyJitter(backoffInMilliseconds, jitter)
-      return effectiveTimestamp + delayWithJitter
+      return effectiveTimestamp + enforceMaxDelay(maxDelay, delayWithJitter)
     }
-    
-    return effectiveTimestamp + meilisecondsToSeconds(backoffInMilliseconds)
+
+    return effectiveTimestamp + enforceMaxDelay(maxDelay, meilisecondsToSeconds(backoffInMilliseconds))
   }
 
-  // let's default the retry delay to 3 seconds if no backoff is configured
-  return effectiveTimestamp + 10
+  // Default to a 10-second retry delay if no backoff is configured
+  return effectiveTimestamp + enforceMaxDelay(maxDelay, 10)
 }
 
 function meilisecondsToSeconds(meiliseconds: number): number {

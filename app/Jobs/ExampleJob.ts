@@ -9,8 +9,9 @@ export default new Job({
   backoff: 3, // optional, defaults to 3-second delays between retries
   rate: Every.Minute, // optional, '* * * * *' in cron syntax
   backoffConfig: {
-    strategy: 'fixed',
-    initialDelay: 20000,
+    strategy: 'linear',
+    initialDelay: 5000,
+    factor: 3,
   },
   handle: (payload: any) => {
     throw new HttpError(500, 'test')
