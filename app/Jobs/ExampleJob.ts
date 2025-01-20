@@ -10,7 +10,7 @@ export default new Job({
   rate: Every.Minute, // optional, '* * * * *' in cron syntax
   backoffConfig: {
     strategy: 'fixed',
-    initialDelay: 10000,
+    initialDelay: 20000,
   },
   handle: (payload: any) => {
     throw new HttpError(500, 'test')

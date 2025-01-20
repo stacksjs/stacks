@@ -41,7 +41,9 @@ async function executeJobs(queue: string | undefined): Promise<void> {
       continue
 
     const body: QueuePayload = JSON.parse(job.payload)
-    const classPayload = JSON.parse(job.payload) as JobOptions
+    const jobPayload = JSON.parse(job.payload) as QueuePayload
+
+    const classPayload = JSON.parse(jobPayload.classPayload) as JobOptions
 
     const maxTries = Number(classPayload.tries || 3)
 
