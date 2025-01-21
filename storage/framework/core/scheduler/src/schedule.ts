@@ -234,8 +234,6 @@ export class Schedule implements UntimedSchedule {
           log.error(result.error)
           throw result.error
         }
-
-        log.info(result.value)
       }
       catch (error) {
         log.error(`Command execution failed: ${error}`)
