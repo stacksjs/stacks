@@ -21,15 +21,13 @@ const toggleSection = (section: keyof typeof sections.value) => {
   <div>
     <!-- Static sidebar for desktop -->
     <div class="hidden lg:fixed lg:inset-y-0 lg:w-64 lg:flex lg:flex-col">
-      <div
-        class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900">
-        <div class="h-16 flex shrink-0 items-center justify-between">
+      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900">
+        <div class="pt-4 h-12 flex shrink-0 items-center justify-between rounded-lg">
           <RouterLink to="/">
-            <img class="mt-4 h-12 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
+            <img class="h-12 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
           </RouterLink>
 
-          <div
-            class="i-hugeicons-ellipsis-horizontal mt-4 h-6 w-6 cursor-pointer text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:text-gray-200 group-hover:text-gray-700 dark:hover:bg-blue-gray-100" />
+          <div class="i-hugeicons-more-horizontal h-6 w-6 cursor-pointer text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:text-gray-200 group-hover:text-gray-700 dark:hover:bg-blue-gray-100" />
         </div>
         <nav class="flex flex-1 flex-col">
           <ul role="list" class="flex flex-1 flex-col gap-y-8">
