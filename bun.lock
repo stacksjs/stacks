@@ -39,7 +39,7 @@
         "@stacksjs/enums": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
-        "@stacksjs/eslint-config": "^3.15.1-beta.3",
+        "@stacksjs/eslint-config": "^3.15.1-beta.4",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/faker": "workspace:*",
         "@stacksjs/git": "workspace:*",
@@ -924,7 +924,7 @@
       "devDependencies": {
         "@commitlint/cli": "^19.6.1",
         "@stacksjs/development": "workspace:*",
-        "@stacksjs/eslint-config": "^3.15.1-beta.3",
+        "@stacksjs/eslint-config": "^3.15.1-beta.4",
         "lint-staged": "^15.4.1",
         "publint": "^0.3.2",
         "simple-git-hooks": "^2.11.1",
@@ -2548,7 +2548,7 @@
 
     "@stacksjs/error-handling": ["@stacksjs/error-handling@workspace:storage/framework/core/error-handling"],
 
-    "@stacksjs/eslint-config": ["@stacksjs/eslint-config@3.15.1-beta.3", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.9.1", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.2.1", "@stacksjs/eslint-plugin": "^0.1.5", "@stylistic/eslint-plugin": "^2.13.0", "@typescript-eslint/eslint-plugin": "^8.20.0", "@typescript-eslint/parser": "^8.20.0", "@vitest/eslint-plugin": "^1.1.25", "eslint-config-flat-gitignore": "^1.0.0", "eslint-flat-config-utils": "^1.0.0", "eslint-merge-processors": "^1.0.0", "eslint-plugin-antfu": "^2.7.0", "eslint-plugin-command": "^2.1.0", "eslint-plugin-import-x": "^4.6.1", "eslint-plugin-jsdoc": "^50.6.2", "eslint-plugin-jsonc": "^2.18.2", "eslint-plugin-n": "^17.15.1", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.6.0", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^56.0.1", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^9.32.0", "eslint-plugin-yml": "^1.16.0", "eslint-processor-vue-blocks": "^1.0.0", "globals": "^15.14.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.0.0", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^9.4.3", "yaml-eslint-parser": "^1.2.3" } }, "sha512-YlE0dbfKcRBBckx99UrjM9ZaYT/Uwdp4Jzgvy2AWby6CnpuxUCF4doAkYUneTUMjz+QJ1Cm0qC50WaB53n3jcQ=="],
+    "@stacksjs/eslint-config": ["@stacksjs/eslint-config@3.15.1-beta.4", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.9.1", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.2.1", "@stacksjs/eslint-plugin": "^0.1.5", "@stylistic/eslint-plugin": "^2.13.0", "@typescript-eslint/eslint-plugin": "^8.20.0", "@typescript-eslint/parser": "^8.20.0", "@vitest/eslint-plugin": "^1.1.25", "eslint-config-flat-gitignore": "^1.0.0", "eslint-flat-config-utils": "^1.0.0", "eslint-merge-processors": "^1.0.0", "eslint-plugin-antfu": "^2.7.0", "eslint-plugin-command": "^2.1.0", "eslint-plugin-import-x": "^4.6.1", "eslint-plugin-jsdoc": "^50.6.2", "eslint-plugin-jsonc": "^2.18.2", "eslint-plugin-n": "^17.15.1", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.6.0", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^56.0.1", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^9.32.0", "eslint-plugin-yml": "^1.16.0", "eslint-processor-vue-blocks": "^1.0.0", "globals": "^15.14.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.0.0", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^9.4.3", "yaml-eslint-parser": "^1.2.3" } }, "sha512-rPIguQT3bsirw6+5OFAO7IYCQ8633Wy8FhcelDrmum/K0z64cWlxsTTSWb1lDfDZOgAu/Wk5lrr0lwSl/HH3ow=="],
 
     "@stacksjs/eslint-plugin": ["@stacksjs/eslint-plugin@0.1.5", "", { "dependencies": { "@stacksjs/eslint-config": "^3.15.1-beta.1", "@typescript-eslint/utils": "^8.21.0", "@unocss/config": "65.4.2", "@unocss/core": "65.4.2", "magic-string": "^0.30.17", "synckit": "^0.9.2", "unocss": "^65.4.2" } }, "sha512-MeJVcuvWccAzc8cR7pmgDeUsK+Lc99bnTp9bt32Cod5/wrVWwaPB+JnYIxcjef9kqwqkG7Xax2h1vClI/XC3nA=="],
 
@@ -5300,6 +5300,8 @@
 
     "@stacksjs/eslint-config/local-pkg": ["local-pkg@1.0.0", "", { "dependencies": { "mlly": "^1.7.3", "pkg-types": "^1.3.0" } }, "sha512-bbgPw/wmroJsil/GgL4qjDzs5YLTBMQ99weRsok1XCDccQeehbHA/I1oRvk2NPtr7KGZgT/Y5tPRnAtMqeG2Kg=="],
 
+    "@stacksjs/eslint-plugin/@stacksjs/eslint-config": ["@stacksjs/eslint-config@3.15.1-beta.3", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.9.1", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.2.1", "@stacksjs/eslint-plugin": "^0.1.5", "@stylistic/eslint-plugin": "^2.13.0", "@typescript-eslint/eslint-plugin": "^8.20.0", "@typescript-eslint/parser": "^8.20.0", "@vitest/eslint-plugin": "^1.1.25", "eslint-config-flat-gitignore": "^1.0.0", "eslint-flat-config-utils": "^1.0.0", "eslint-merge-processors": "^1.0.0", "eslint-plugin-antfu": "^2.7.0", "eslint-plugin-command": "^2.1.0", "eslint-plugin-import-x": "^4.6.1", "eslint-plugin-jsdoc": "^50.6.2", "eslint-plugin-jsonc": "^2.18.2", "eslint-plugin-n": "^17.15.1", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.6.0", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^56.0.1", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^9.32.0", "eslint-plugin-yml": "^1.16.0", "eslint-processor-vue-blocks": "^1.0.0", "globals": "^15.14.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.0.0", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^9.4.3", "yaml-eslint-parser": "^1.2.3" } }, "sha512-YlE0dbfKcRBBckx99UrjM9ZaYT/Uwdp4Jzgvy2AWby6CnpuxUCF4doAkYUneTUMjz+QJ1Cm0qC50WaB53n3jcQ=="],
+
     "@stacksjs/eslint-plugin/synckit": ["synckit@0.9.2", "", { "dependencies": { "@pkgr/core": "^0.1.0", "tslib": "^2.6.2" } }, "sha512-vrozgXDQwYO72vHjUb/HnFbQx1exDjoKzqx23aXEg2a9VIg2TSFZ8FmeZpTjUCFMYw7mpX4BE2SFu8wI7asYsw=="],
 
     "@stylistic/eslint-plugin/@typescript-eslint/utils": ["@typescript-eslint/utils@8.19.1", "", { "dependencies": { "@eslint-community/eslint-utils": "^4.4.0", "@typescript-eslint/scope-manager": "8.19.1", "@typescript-eslint/types": "8.19.1", "@typescript-eslint/typescript-estree": "8.19.1" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0", "typescript": ">=4.8.4 <5.8.0" } }, "sha512-IxG5gLO0Ne+KaUc8iW1A+XuKLd63o4wlbI1Zp692n1xojCl/THvgIKXJXBZixTh5dd5+yTJ/VXH7GJaaw21qXA=="],
@@ -5942,6 +5944,8 @@
 
     "@stacksjs/eslint-config/local-pkg/mlly": ["mlly@1.7.3", "", { "dependencies": { "acorn": "^8.14.0", "pathe": "^1.1.2", "pkg-types": "^1.2.1", "ufo": "^1.5.4" } }, "sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A=="],
 
+    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/local-pkg": ["local-pkg@1.0.0", "", { "dependencies": { "mlly": "^1.7.3", "pkg-types": "^1.3.0" } }, "sha512-bbgPw/wmroJsil/GgL4qjDzs5YLTBMQ99weRsok1XCDccQeehbHA/I1oRvk2NPtr7KGZgT/Y5tPRnAtMqeG2Kg=="],
+
     "@stylistic/eslint-plugin/@typescript-eslint/utils/@typescript-eslint/types": ["@typescript-eslint/types@8.19.1", "", {}, "sha512-JBVHMLj7B1K1v1051ZaMMgLW4Q/jre5qGK0Ew6UgXz1Rqh+/xPzV1aW581OM00X6iOfyr1be+QyW8LOUf19BbA=="],
 
     "@types/bun/bun-types/@types/node": ["@types/node@20.12.14", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg=="],
@@ -6381,6 +6385,8 @@
     "@redocly/openapi-core/node-fetch/whatwg-url/tr46": ["tr46@0.0.3", "", {}, "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="],
 
     "@redocly/openapi-core/node-fetch/whatwg-url/webidl-conversions": ["webidl-conversions@3.0.1", "", {}, "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="],
+
+    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/local-pkg/mlly": ["mlly@1.7.3", "", { "dependencies": { "acorn": "^8.14.0", "pathe": "^1.1.2", "pkg-types": "^1.2.1", "ufo": "^1.5.4" } }, "sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A=="],
 
     "@types/bun/bun-types/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
 
