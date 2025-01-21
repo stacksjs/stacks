@@ -2,8 +2,7 @@ import type { JitterConfig, JobOptions } from '@stacksjs/types'
 import type { JobModel } from '../../../orm/src/models/Job'
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import FailedJob from '../../../orm/src/models/FailedJob'
-import { Job } from '../../../orm/src/models/Job'
+import { Job, FailedJob } from '@stacksjs/orm'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -26,6 +25,73 @@ export async function processJobs(queue: string | undefined): Promise<Ok<string,
   process()
 
   return ok('Job processing has started successfully!')
+}
+
+export async function executeFailedJobs(): Promise<void> {
+  const failedJobs =  await FailedJob.all()
+
+  for (const job of failedJobs) {
+    if (!job.payload)
+      continue
+
+    const body: QueuePayload = JSON.parse(job.payload)
+    const jobPayload = JSON.parse(job.payload) as QueuePayload
+
+    const classPayload = JSON.parse(jobPayload.classPayload) as JobOptions
+
+    const maxTries = Number(classPayload.tries || 3)
+
+    log.info(`Retrying job: ${body.path}`)
+
+    try {
+      await runJob(body.name, {
+        queue: job.queue,
+        payload: body.params,
+        context: '',
+        maxTries,
+        timeout: 60,
+      })
+
+      await job.delete()
+
+      log.info(`Successfully ran job: ${body.path}`)
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
+}
+
+export async function retryFailedJob(id: number): Promise<void> {
+  const failedJob = await FailedJob.find(id)
+
+  if (failedJob && failedJob.payload) {
+    const body: QueuePayload = JSON.parse(failedJob.payload)
+    const jobPayload = JSON.parse(failedJob.payload) as QueuePayload
+
+    const classPayload = JSON.parse(jobPayload.classPayload) as JobOptions
+
+    const maxTries = Number(classPayload.tries || 3)
+
+    log.info(`Retrying job: ${body.path}`)
+
+    try {
+      await runJob(body.name, {
+        queue: failedJob.queue,
+        payload: body.params,
+        context: '',
+        maxTries,
+        timeout: 60,
+      })
+
+      await failedJob.delete()
+      
+      log.info(`Successfully ran job: ${body.path}`)
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
 }
 
 async function executeJobs(queue: string | undefined): Promise<void> {
