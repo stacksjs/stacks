@@ -366,7 +366,7 @@ useHead({
             <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
               <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
                 <img
-                  src="https://tailwindui.com/img/logos/48x48/tuple.svg"
+                  src="https://tailwindui.com/plus/img/logos/48x48/tuple.svg"
                   alt="Tuple"
                   class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 >
@@ -430,7 +430,7 @@ useHead({
             <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
               <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
                 <img
-                  src="https://tailwindui.com/img/logos/48x48/savvycal.svg"
+                  src="https://tailwindui.com/plus/img/logos/48x48/savvycal.svg"
                   alt="SavvyCal"
                   class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 >
@@ -488,7 +488,7 @@ useHead({
             <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
               <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
                 <img
-                  src="https://tailwindui.com/img/logos/48x48/reform.svg"
+                  src="https://tailwindui.com/plus/img/logos/48x48/reform.svg"
                   alt="Reform"
                   class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 >
