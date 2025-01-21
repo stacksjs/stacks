@@ -1,5 +1,5 @@
 export * from './base'
-export * from './billlable'
+export * from './billable'
 export * from './debounce'
 export * from './function'
 export * from './guards'

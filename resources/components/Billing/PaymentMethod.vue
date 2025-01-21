@@ -4,8 +4,7 @@ import { useBillable } from '../../functions/billing/payments'
 import LoadingCard from '../Skeleton/LoadingCard.vue'
 import CardBrands from './CardBrands.vue'
 import CardForm from './CardForm.vue'
-
-import PaymentMethodList from './payment-method-list.vue'
+import PaymentMethodList from './PaymentMethodList.vue'
 
 const paymentStore = usePaymentStore()
 

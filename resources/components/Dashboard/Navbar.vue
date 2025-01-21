@@ -19,7 +19,7 @@ watch(theme, (currentVal) => {
   <div class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6">
     <button type="button" class="p-2.5 text-gray-700 -m-2.5 lg:hidden">
       <span class="sr-only">Open sidebar</span>
-      <div class="i-hugeicons-bars-3 h-6 w-6" />
+      <div class="i-hugeicons-menu-01 h-6 w-6" />
     </button>
 
     <!-- Separator -->
@@ -33,7 +33,7 @@ watch(theme, (currentVal) => {
       >
         <label for="search-field" class="sr-only">Search</label>
 
-        <div class="i-hugeicons-magnifying-glass pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
+        <div class="i-hugeicons-search-01 pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
         <input
           id="search-field"
           class="block h-full w-full border-none py-0 pl-8 pr-0 text-gray-900 dark:bg-blue-gray-900 sm:text-sm dark:text-gray-100 placeholder:text-gray-400 focus:ring-0"

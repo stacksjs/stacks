@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useBillable } from '../../functions/billing/payments'
-
-import CardBrands from '../billing/card-brands.vue'
+import CardBrands from '../Billing/CardBrands.vue'
 
 interface Recurring {
   aggregate_usage: string | null

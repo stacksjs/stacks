@@ -52,7 +52,7 @@ declare module 'vue' {
     LibraryForm: typeof import('./../../../resources/components/Dashboard/Settings/Forms/LibraryForm.vue')['default']
     LiveTerminalOutput: typeof import('./../../../resources/components/Dashboard/Deployments/LiveTerminalOutput.vue')['default']
     LoadingCard: typeof import('./../../../resources/components/Skeleton/LoadingCard.vue')['default']
-    LoadingDetails: typeof import('./../../../resources/components/Skeleton/loading-details.vue')['default']
+    LoadingDetails: typeof import('./../../../resources/components/Skeleton/LoadingDetails.vue')['default']
     Logo: typeof import('./../../../resources/components/Logo.vue')['default']
     MobileSidebar: typeof import('./../../../resources/components/Dashboard/MobileSidebar.vue')['default']
     Navbar: typeof import('./../../../resources/components/Dashboard/Navbar.vue')['default']
@@ -93,6 +93,5 @@ declare module 'vue' {
     ToastWrapper: typeof import('./../../../resources/components/Dashboard/Modals/ToastWrapper.vue')['default']
     ToggleDark: typeof import('./../../../resources/components/Buttons/ToggleDark.vue')['default']
     Transaction: typeof import('./../../../resources/components/Transaction/index.vue')['default']
-    Undefined: typeof import('./../../../resources/components/index.vue')['default']
   }
 }

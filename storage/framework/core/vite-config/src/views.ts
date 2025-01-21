@@ -28,6 +28,16 @@ export const viewsConfig: ViteConfig = {
   build: {
     rollupOptions: {
       external: [
+        'fs',
+        'node:fs',
+        'node:fs/promises',
+        'node:module',
+        'node:path',
+        'node:process',
+        'node:url',
+        'node:assert',
+        'node:v8',
+        'node:util',
         '@iconify/utils',
         '@antfu/install-pkg',
       ],

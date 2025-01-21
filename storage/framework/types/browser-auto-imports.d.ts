@@ -35,9 +35,9 @@ declare global {
   const computedEager: typeof import('../core/browser/src/utils/vendors')['computedEager']
   const computedInject: typeof import('../core/browser/src/utils/vendors')['computedInject']
   const computedWithControl: typeof import('../core/browser/src/utils/vendors')['computedWithControl']
-  const confirmCardPayment: typeof import('../core/browser/src/utils/billlable')['confirmCardPayment']
-  const confirmCardSetup: typeof import('../core/browser/src/utils/billlable')['confirmCardSetup']
-  const confirmPayment: typeof import('../core/browser/src/utils/billlable')['confirmPayment']
+  const confirmCardPayment: typeof import('../core/browser/src/utils/billable')['confirmCardPayment']
+  const confirmCardSetup: typeof import('../core/browser/src/utils/billable')['confirmCardSetup']
+  const confirmPayment: typeof import('../core/browser/src/utils/billable')['confirmPayment']
   const controlledComputed: typeof import('../core/browser/src/utils/vendors')['controlledComputed']
   const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
   const count: typeof import('../../../resources/functions/counter')['count']
@@ -49,7 +49,7 @@ declare global {
   const createGlobalState: typeof import('../core/browser/src/utils/vendors')['createGlobalState']
   const createHead: typeof import('../core/browser/src/utils/vendors')['createHead']
   const createInjectionState: typeof import('../core/browser/src/utils/vendors')['createInjectionState']
-  const createPaymentMethod: typeof import('../core/browser/src/utils/billlable')['createPaymentMethod']
+  const createPaymentMethod: typeof import('../core/browser/src/utils/billable')['createPaymentMethod']
   const createPinia: typeof import('pinia')['createPinia']
   const createProjection: typeof import('../core/browser/src/utils/math')['createProjection']
   const createPromiseLock: typeof import('../core/browser/src/utils/promise')['createPromiseLock']
@@ -105,8 +105,8 @@ declare global {
   const lazy: typeof import('../core/browser/src/utils/lazy')['lazy']
   const letter: typeof import('../core/browser/src/utils/regex')['letter']
   const linefeed: typeof import('../core/browser/src/utils/regex')['linefeed']
-  const loadCardElement: typeof import('../core/browser/src/utils/billlable')['loadCardElement']
-  const loadPaymentElement: typeof import('../core/browser/src/utils/billlable')['loadPaymentElement']
+  const loadCardElement: typeof import('../core/browser/src/utils/billable')['loadCardElement']
+  const loadPaymentElement: typeof import('../core/browser/src/utils/billable')['loadPaymentElement']
   const logicNot: typeof import('../core/browser/src/utils/math')['logicNot']
   const logicOr: typeof import('../core/browser/src/utils/math')['logicOr']
   const loop: typeof import('../core/browser/src/utils/base')['loop']
@@ -154,7 +154,7 @@ declare global {
   const preferredDark: typeof import('../../../resources/functions/dark')['preferredDark']
   const provide: typeof import('vue')['provide']
   const provideLocal: typeof import('../core/browser/src/utils/vendors')['provideLocal']
-  const publishableKey: typeof import('../core/browser/src/utils/billlable')['publishableKey']
+  const publishableKey: typeof import('../core/browser/src/utils/billable')['publishableKey']
   const rand: typeof import('../core/browser/src/utils/math')['rand']
   const random: typeof import('../core/browser/src/utils/random')['random']
   const randomNonSecure: typeof import('../core/browser/src/utils/random')['randomNonSecure']
@@ -479,9 +479,9 @@ declare module 'vue' {
     readonly computedEager: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['computedWithControl']>
-    readonly confirmCardPayment: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['confirmCardPayment']>
-    readonly confirmCardSetup: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['confirmCardSetup']>
-    readonly confirmPayment: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['confirmPayment']>
+    readonly confirmCardPayment: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmCardPayment']>
+    readonly confirmCardSetup: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmCardSetup']>
+    readonly confirmPayment: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmPayment']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
@@ -493,7 +493,7 @@ declare module 'vue' {
     readonly createGlobalState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createGlobalState']>
     readonly createHead: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createHead']>
     readonly createInjectionState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createInjectionState']>
-    readonly createPaymentMethod: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['createPaymentMethod']>
+    readonly createPaymentMethod: UnwrapRef<typeof import('../core/browser/src/utils/billable')['createPaymentMethod']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['createProjection']>
     readonly createPromiseLock: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createPromiseLock']>
@@ -549,8 +549,8 @@ declare module 'vue' {
     readonly lazy: UnwrapRef<typeof import('../core/browser/src/utils/lazy')['lazy']>
     readonly letter: UnwrapRef<typeof import('../core/browser/src/utils/regex')['letter']>
     readonly linefeed: UnwrapRef<typeof import('../core/browser/src/utils/regex')['linefeed']>
-    readonly loadCardElement: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['loadCardElement']>
-    readonly loadPaymentElement: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['loadPaymentElement']>
+    readonly loadCardElement: UnwrapRef<typeof import('../core/browser/src/utils/billable')['loadCardElement']>
+    readonly loadPaymentElement: UnwrapRef<typeof import('../core/browser/src/utils/billable')['loadPaymentElement']>
     readonly logicNot: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicNot']>
     readonly logicOr: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicOr']>
     readonly loop: UnwrapRef<typeof import('../core/browser/src/utils/base')['loop']>
@@ -598,7 +598,7 @@ declare module 'vue' {
     readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['provideLocal']>
-    readonly publishableKey: UnwrapRef<typeof import('../core/browser/src/utils/billlable')['publishableKey']>
+    readonly publishableKey: UnwrapRef<typeof import('../core/browser/src/utils/billable')['publishableKey']>
     readonly rand: UnwrapRef<typeof import('../core/browser/src/utils/math')['rand']>
     readonly random: UnwrapRef<typeof import('../core/browser/src/utils/random')['random']>
     readonly randomNonSecure: UnwrapRef<typeof import('../core/browser/src/utils/random')['randomNonSecure']>
