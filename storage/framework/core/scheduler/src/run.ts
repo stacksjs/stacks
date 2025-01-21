@@ -17,7 +17,7 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
       const jobName = snakeCase(getJobName(job, jobFile))
 
       if (job.rate)
-        schedule.job(jobName).at(job.rate)
+        executeJobRate(jobName, job.rate)
     }
     catch (error) {
       console.error(error)
@@ -36,32 +36,41 @@ async function runSchedulerInstance(): Promise<void> {
   scheduleInstance.default()
 }
 
-export function getJobInterval(rate: string): number {
+function executeJobRate(jobName: string, rate: string): void {
   switch (rate) {
     case Every.Minute:
-      return 1
+      schedule.job(jobName).everyMinute()
+      break
     case Every.TwoMinutes:
-      return 2
+      schedule.job(jobName).everyTwoMinutes()
+      break
     case Every.FiveMinutes:
-      return 5
+      schedule.job(jobName).everyFiveMinutes()
+      break
     case Every.TenMinutes:
-      return 10
-    case Every.FifteenMinutes:
-      return 15
+      schedule.job(jobName).everyTenMinutes()
+      break
     case Every.ThirtyMinutes:
-      return 30
+      schedule.job(jobName).everyThirtyMinutes()
+      break
     case Every.HalfHour:
-      return 30
+      schedule.job(jobName).everyThirtyMinutes()
+      break
     case Every.Hour:
-      return 60
+      schedule.job(jobName).everyHour()
+      break
     case Every.Day:
-      return 60 * 24 // 1 day
+      schedule.job(jobName).everyDay()
+      break
     case Every.Week:
-      return 60 * 24 * 7 // 1 week
+      schedule.job(jobName).weekly()
+      break
     case Every.Month:
-      return 60 * 24 * 30 // Approximate 1 month (30 days)
+      schedule.job(jobName).monthly()
+      break
     case Every.Year:
-      return 60 * 24 * 365 // Approximate 1 year (365 days)
+      schedule.job(jobName).yearly()
+      break
     default:
       throw new Error(`Unsupported rate: ${rate}`)
   }

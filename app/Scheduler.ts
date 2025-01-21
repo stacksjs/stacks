@@ -9,8 +9,7 @@ import { schedule } from '@stacksjs/scheduler'
  * questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default function () {
-  schedule.action('ExampleScheduledAction').everyMinute()
-  schedule.command('echo "Hello, world!"').everyMinute()
+  schedule.action('ExampleScheduledAction').everyMinute().setTimeZone('Asia/Tokyo')
 }
 
 process.on('SIGINT', () => {
