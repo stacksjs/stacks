@@ -29,7 +29,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
     vueTemplate: true,
 
     eslintrc: {
-      enabled: true, // Default `false`
+      enabled: true,
       filepath: p.frameworkPath('.eslintrc-auto-import.json'),
     },
 

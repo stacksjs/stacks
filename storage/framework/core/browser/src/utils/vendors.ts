@@ -243,7 +243,6 @@ export {
 } from '@vueuse/core'
 
 export type {
-  // Head,
   HeadObject,
   HeadObjectPlain,
 } from '@vueuse/head'
