@@ -2,7 +2,7 @@ import type { JitterConfig, JobOptions } from '@stacksjs/types'
 import type { JobModel } from '../../../orm/src/models/Job'
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { Job, FailedJob } from '@stacksjs/orm'
+import { FailedJob, Job } from '@stacksjs/orm'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -28,7 +28,7 @@ export async function processJobs(queue: string | undefined): Promise<Ok<string,
 }
 
 export async function executeFailedJobs(): Promise<void> {
-  const failedJobs =  await FailedJob.all()
+  const failedJobs = await FailedJob.all()
 
   for (const job of failedJobs) {
     if (!job.payload)
@@ -85,7 +85,7 @@ export async function retryFailedJob(id: number): Promise<void> {
       })
 
       await failedJob.delete()
-      
+
       log.info(`Successfully ran job: ${body.path}`)
     }
     catch (error) {
