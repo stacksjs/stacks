@@ -21,6 +21,23 @@ const options: AutoImportsOptions = {
     { name: 'Team', from: '@stackjs/orm' },
     { name: 'Transaction', from: '@stackjs/orm' },
     { name: 'User', from: '@stackjs/orm' },
+
+    { name: 'ProjectRequestType', from: '@stackjs/orm' },
+    { name: 'SubscriberEmailRequestType', from: '@stackjs/orm' },
+    { name: 'AccessTokenRequestType', from: '@stackjs/orm' },
+    { name: 'TeamRequestType', from: '@stackjs/orm' },
+    { name: 'SubscriberRequestType', from: '@stackjs/orm' },
+    { name: 'DeploymentRequestType', from: '@stackjs/orm' },
+    { name: 'ReleaseRequestType', from: '@stackjs/orm' },
+    { name: 'UserRequestType', from: '@stackjs/orm' },
+    { name: 'PostRequestType', from: '@stackjs/orm' },
+    { name: 'FailedJobRequestType', from: '@stackjs/orm' },
+    { name: 'ProductRequestType', from: '@stackjs/orm' },
+    { name: 'PaymentMethodRequestType', from: '@stackjs/orm' },
+    { name: 'TransactionRequestType', from: '@stackjs/orm' },
+    { name: 'JobRequestType', from: '@stackjs/orm' },
+    { name: 'SubscriptionRequestType', from: '@stackjs/orm' },
+    { name: 'ErrorRequestType', from: '@stackjs/orm' },
   ],
   dts: `./src/auto-import.d.ts`, // default is `./auto-import.d.ts`
 }
