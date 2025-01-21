@@ -212,6 +212,7 @@ export class Schedule implements UntimedSchedule {
   }
 
   static action(name: string): UntimedSchedule {
+    console.log('running action')
     return new Schedule(async () => {
       log.info(`Running action: ${name}`)
       try {

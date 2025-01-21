@@ -45,4 +45,3 @@ const options: AutoImportsOptions = {
 export function initiateImports(): void {
   plugin(autoImports(options))
 }
-
