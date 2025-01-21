@@ -1130,7 +1130,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/router": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "bun-plugin-auto-imports": "^0.1.5",
+        "bun-plugin-auto-imports": "^0.3.1",
         "vite": "^6.0.9",
       },
     },
@@ -3114,7 +3114,7 @@
 
     "bumpp": ["bumpp@9.10.1", "", { "dependencies": { "c12": "^2.0.1", "cac": "^6.7.14", "escalade": "^3.2.0", "js-yaml": "^4.1.0", "jsonc-parser": "^3.3.1", "package-manager-detector": "^0.2.8", "prompts": "^2.4.2", "semver": "^7.6.3", "tinyexec": "^0.3.2", "tinyglobby": "^0.2.10" }, "bin": { "bumpp": "bin/bumpp.js" } }, "sha512-KG7oQmv6cz7QQwOvM3x/yPcF8+VBEtuLEEecmohNyb4+bLbtSVpJp8brjzcZYQN7UOyR4i0qIIYThnsBgP8uCA=="],
 
-    "bun-plugin-auto-imports": ["bun-plugin-auto-imports@0.1.5", "", { "dependencies": { "unimport": "^3.14.6" } }, "sha512-aUYPxelgHEqGQ3ZwiJd0yDW3WwqwjlFug8yZGGIKVKCJyhbZlY2XrpO2MSJBybW84UaeBkjB2zhMhwaMJl+WUA=="],
+    "bun-plugin-auto-imports": ["bun-plugin-auto-imports@0.3.1", "", { "dependencies": { "unimport": "^3.14.6" } }, "sha512-rWgCe/C4yQ31R1MIwhtVgKWwpGN2OFUIkAdvAgX0TxbS2X8kt5Tc5QN8d7NpaeNjbT/v/rEJ1NmqauQjIB9WLQ=="],
 
     "bun-plugin-dtsx": ["bun-plugin-dtsx@0.21.9", "", { "dependencies": { "@stacksjs/dtsx": "^0.8.0" } }, "sha512-ZEGVuJllTxvTGGa+fcKst0/FvShPsdll209PVWgGalEeLxsp5NfGbmmPAHsHHLxNlffxizdY+cGwI7ZmmWUpRw=="],
 

@@ -90,7 +90,8 @@ export async function buildDockerImage() {
   await Bun.$`rm -rf .DS_Store`.nothrow()
   await Bun.$`rm -rf **/README.md`.nothrow()
   await Bun.$`rm -rf **/.DS_Store`.nothrow()
-  await Bun.$`rm -rf **/.eslintrc-auto-import.json`.nothrow()
+  await Bun.$`rm -rf **/browser-auto-imports.json`.nothrow()
+  await Bun.$`rm -rf **/server-auto-imports.json`.nothrow()
 
   log.success('Optimized Docker Image size')
   log.success('Server ready to be built')

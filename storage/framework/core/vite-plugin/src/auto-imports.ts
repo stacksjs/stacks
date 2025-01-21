@@ -24,13 +24,13 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
       },
     ],
 
-    dts: p.frameworkPath('types/auto-imports.d.ts'),
+    dts: p.frameworkPath('types/browser-auto-imports.d.ts'),
     dirs: [p.userLibsPath('components'), p.userLibsPath('functions'), p.resourcesPath('stores'), p.browserPath('src')],
     vueTemplate: true,
 
     eslintrc: {
       enabled: true,
-      filepath: p.frameworkPath('.eslintrc-auto-import.json'),
+      filepath: p.frameworkPath('browser-auto-imports.json'),
     },
 
     ...options,

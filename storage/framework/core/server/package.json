@@ -47,7 +47,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bun-plugin-auto-imports": "^0.1.5",
+    "bun-plugin-auto-imports": "^0.3.1",
     "vite": "^6.0.9"
   }
 }
