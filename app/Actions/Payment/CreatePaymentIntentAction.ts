@@ -1,7 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { HttpError } from '@stacksjs/error-handling'
-import { Product, User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({

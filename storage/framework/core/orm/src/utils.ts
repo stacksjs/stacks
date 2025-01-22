@@ -548,7 +548,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   if (apiRoute === 'show') {
     actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
-        const id = await request.getParam('id')
+        const id = request.getParam('id')
 
         return await ${modelName}.findOrFail(Number(id))
       },`
