@@ -40,4 +40,4 @@ export class FailedJobRequest extends Request<RequestDataFailedJob> implements F
   }
 }
 
-export const request = new FailedJobRequest()
+export const FailedJobRequest = new FailedJobRequest()

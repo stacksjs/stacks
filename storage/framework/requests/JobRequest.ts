@@ -40,4 +40,4 @@ export class JobRequest extends Request<RequestDataJob> implements JobRequestTyp
   }
 }
 
-export const request = new JobRequest()
+export const JobRequest = new JobRequest()

@@ -44,4 +44,4 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   }
 }
 
-export const request = new TransactionRequest()
+export const TransactionRequest = new TransactionRequest()

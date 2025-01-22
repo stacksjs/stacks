@@ -46,4 +46,4 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   }
 }
 
-export const request = new DeploymentRequest()
+export const DeploymentRequest = new DeploymentRequest()

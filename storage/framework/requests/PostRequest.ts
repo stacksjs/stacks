@@ -36,4 +36,4 @@ export class PostRequest extends Request<RequestDataPost> implements PostRequest
   }
 }
 
-export const request = new PostRequest()
+export const PostRequest = new PostRequest()

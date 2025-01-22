@@ -40,4 +40,4 @@ export class ErrorRequest extends Request<RequestDataError> implements ErrorRequ
   }
 }
 
-export const request = new ErrorRequest()
+export const ErrorRequest = new ErrorRequest()

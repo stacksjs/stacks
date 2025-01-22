@@ -38,4 +38,4 @@ export class ProjectRequest extends Request<RequestDataProject> implements Proje
   }
 }
 
-export const request = new ProjectRequest()
+export const ProjectRequest = new ProjectRequest()

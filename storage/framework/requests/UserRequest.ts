@@ -38,4 +38,4 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   }
 }
 
-export const request = new UserRequest()
+export const UserRequest = new UserRequest()

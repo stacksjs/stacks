@@ -532,7 +532,6 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   let method = 'GET'
   let actionString = `import { Action } from '@stacksjs/actions'\n`
   actionString += `import { response } from '@stacksjs/router'\n`
-  actionString += `import ${modelName} from '../../orm/src/models/${modelName}'\n`
   let handleString = ``
 
   if (apiRoute === 'index') {
