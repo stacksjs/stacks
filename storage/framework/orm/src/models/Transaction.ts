@@ -861,10 +861,6 @@ export class TransactionModel {
 
   toJSON() {
     const output: Partial<TransactionType> = {
-      user_id: this.user_id,
-      user: this.user,
-      payment_method_id: this.payment_method_id,
-      payment_method: this.payment_method,
 
       id: this.id,
       name: this.name,
@@ -877,6 +873,10 @@ export class TransactionModel {
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
+      payment_method_id: this.payment_method_id,
+      payment_method: this.payment_method,
     }
 
         type Transaction = Omit<TransactionType, 'password'>

@@ -791,8 +791,6 @@ export class PostModel {
 
   toJSON() {
     const output: Partial<PostType> = {
-      user_id: this.user_id,
-      user: this.user,
 
       id: this.id,
       title: this.title,
@@ -802,6 +800,8 @@ export class PostModel {
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
     }
 
         type Post = Omit<PostType, 'password'>

@@ -1228,10 +1228,6 @@ export class UserModel {
 
   toJSON() {
     const output: Partial<UserType> = {
-      deployments: this.deployments,
-      subscriptions: this.subscriptions,
-      payment_methods: this.payment_methods,
-      transactions: this.transactions,
 
       id: this.id,
       name: this.name,
@@ -1243,6 +1239,10 @@ export class UserModel {
 
       updated_at: this.updated_at,
 
+      deployments: this.deployments,
+      subscriptions: this.subscriptions,
+      payment_methods: this.payment_methods,
+      transactions: this.transactions,
     }
 
         type User = Omit<UserType, 'password'>

@@ -856,8 +856,6 @@ export class DeploymentModel {
 
   toJSON() {
     const output: Partial<DeploymentType> = {
-      user_id: this.user_id,
-      user: this.user,
 
       id: this.id,
       commit_sha: this.commit_sha,
@@ -872,6 +870,8 @@ export class DeploymentModel {
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
     }
 
         type Deployment = Omit<DeploymentType, 'password'>

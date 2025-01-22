@@ -813,8 +813,6 @@ export class AccessTokenModel {
 
   toJSON() {
     const output: Partial<AccessTokenType> = {
-      team_id: this.team_id,
-      team: this.team,
 
       id: this.id,
       name: this.name,
@@ -826,6 +824,8 @@ export class AccessTokenModel {
 
       updated_at: this.updated_at,
 
+      team_id: this.team_id,
+      team: this.team,
     }
 
         type AccessToken = Omit<AccessTokenType, 'password'>

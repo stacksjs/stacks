@@ -279,7 +279,6 @@ export class Router implements RouterInterface {
       actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
     else actionModule = await import(importPathFunction(modulePath))
 
-   
     // Use custom path from action module if available
     const newPath = actionModule.default.path ?? originalPath
     this.updatePathIfNeeded(newPath, originalPath)
@@ -304,7 +303,6 @@ export class Router implements RouterInterface {
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
-      
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {

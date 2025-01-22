@@ -874,7 +874,6 @@ export class TeamModel {
 
   toJSON() {
     const output: Partial<TeamType> = {
-      personal_access_tokens: this.personal_access_tokens,
 
       id: this.id,
       name: this.name,
@@ -890,6 +889,7 @@ export class TeamModel {
 
       updated_at: this.updated_at,
 
+      personal_access_tokens: this.personal_access_tokens,
     }
 
         type Team = Omit<TeamType, 'password'>

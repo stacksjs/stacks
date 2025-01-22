@@ -889,8 +889,6 @@ export class SubscriptionModel {
 
   toJSON() {
     const output: Partial<SubscriptionType> = {
-      user_id: this.user_id,
-      user: this.user,
 
       id: this.id,
       type: this.type,
@@ -908,6 +906,8 @@ export class SubscriptionModel {
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
     }
 
         type Subscription = Omit<SubscriptionType, 'password'>

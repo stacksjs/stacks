@@ -879,9 +879,6 @@ export class PaymentMethodModel {
 
   toJSON() {
     const output: Partial<PaymentMethodType> = {
-      user_id: this.user_id,
-      user: this.user,
-      transactions: this.transactions,
 
       id: this.id,
       type: this.type,
@@ -896,6 +893,9 @@ export class PaymentMethodModel {
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
+      transactions: this.transactions,
     }
 
         type PaymentMethod = Omit<PaymentMethodType, 'password'>

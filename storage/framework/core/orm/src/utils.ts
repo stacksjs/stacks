@@ -1011,6 +1011,7 @@ export async function generateModelString(
   let fieldString = ''
   let constructorFields = ''
   let jsonFields = '{\n'
+  let jsonRelations = ''
   let declareFields = ''
   let uuidQuery = ''
   let uuidQueryMany = ''
@@ -1167,7 +1168,7 @@ export async function generateModelString(
           model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
         }
       `
-      jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
+      jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
       relationMethods += `
       async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
@@ -1207,7 +1208,7 @@ export async function generateModelString(
       fieldString += ` ${relation.modelKey}?: number \n`
       declareFields += `public ${relation.modelKey}: number | undefined \n   `
       constructorFields += `this.${relation.modelKey} = ${formattedModelName}?.${relation.modelKey}\n   `
-      jsonFields += `${relation.modelKey}: this.${relation.modelKey},\n   `
+      jsonRelations += `${relation.modelKey}: this.${relation.modelKey},\n   `
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
@@ -1218,7 +1219,7 @@ export async function generateModelString(
           model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
         }
       `
-      jsonFields += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
+      jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
       relationMethods += `
       async ${relationName}Belong(): Promise<${modelRelation}Model> {
@@ -1629,6 +1630,8 @@ export async function generateModelString(
       deleted_at: this.deleted_at,\n
     `
   }
+
+  jsonFields += jsonRelations
 
   jsonFields += '}'
 
