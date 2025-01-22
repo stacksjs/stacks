@@ -8,7 +8,9 @@ import { extname, path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
 import { route } from '.'
+
 import { middlewares } from './middleware'
+
 import { request as RequestParam } from './request'
 
 interface ServeOptions {

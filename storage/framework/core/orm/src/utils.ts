@@ -383,7 +383,7 @@ export async function writeModelRequest(): Promise<void> {
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
-    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField } from '@stacksjs/validation'\nimport { customValidate } from '@stacksjs/validation'\n\n`
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField, customValidate, type } from '@stacksjs/validation'\n`
 
     const modeFileElement = allModelFiles[i] as string
 
@@ -511,7 +511,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    export const request = new ${modelName}Request()
+    export const ${modelName}Request = new ${modelName}Request()
     `
 
     const writer = requestFile.writer()
