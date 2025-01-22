@@ -61,8 +61,6 @@ if (globalThis.counter === 1)
   watchFolders().catch(log.error)
 else log.debug(`Skipping watching folders`)
 
-initiateImports()
-
 serve({
   port: ports.api || 3008,
   timezone: app.timezone || 'UTC',

@@ -1,7 +1,5 @@
 import type { SubscriberEmailRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-// import { schema } from '@stacksjs/validation'
-// import { epmailSubscribeRequest } from '@stacksjs/validation'
 import { SubscriberEmail } from '@stacksjs/orm'
 
 export default new Action({

@@ -161,4 +161,5 @@ declare global {
   const UserUpdate: typeof import('./../orm/src/models')['UserUpdate']
   const Users: typeof import('./../orm/src/models')['Users']
   const UsersTable: typeof import('./../orm/src/models')['UsersTable']
+  const default: typeof import('./../orm/src/models')['default']
 }

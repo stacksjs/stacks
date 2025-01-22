@@ -159,6 +159,7 @@
     "UserType": true,
     "UserUpdate": true,
     "Users": true,
-    "UsersTable": true
+    "UsersTable": true,
+    "default": true
   }
 }
