@@ -1238,6 +1238,7 @@ export async function generateModelString(
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const pivotTable = pivotTableRelation || tableRelation
+      const pivotKey = relation.pivotKey || tableRelation
       const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
 
       relationMethods += `
@@ -1246,7 +1247,7 @@ export async function generateModelString(
           throw new HttpError(500, 'Relation Error!')
 
         const results = await db.selectFrom('${pivotTable}')
-          .where('${foreignKeyRelation}', '=', this.id)
+          .where('${pivotKey}', '=', this.id)
           .selectAll()
           .execute()
 

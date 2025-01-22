@@ -924,7 +924,7 @@ export class UserModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
-      .where('', '=', this.id)
+      .where('team_id', '=', this.id)
       .selectAll()
       .execute()
 

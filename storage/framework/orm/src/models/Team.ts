@@ -822,7 +822,7 @@ export class TeamModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('team_users')
-      .where('', '=', this.id)
+      .where('user_id', '=', this.id)
       .selectAll()
       .execute()
 
