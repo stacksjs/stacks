@@ -8,11 +8,12 @@ const options = parseOptions()
 
 log.debug('Running API dev server via', `bunx --bun vite --config ${p.viteConfigPath('src/api.ts')}`, options)
 
+initiateImports()
+
 serve({
   port: config.ports?.api, // defaults to 3008
 })
 
-initiateImports()
 
 // the reason we start a Vite dev server next is because we need the Bun server proxied by vite
 await runCommand(`bunx --bun vite --config ${p.viteConfigPath('src/api.ts')}`, {
