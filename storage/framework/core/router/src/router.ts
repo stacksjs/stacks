@@ -213,39 +213,11 @@ export class Router implements RouterInterface {
       })
     }
 
-    // this.prepareGroupPrefix(this.routes, options, middleware)
-
     // Restore the original routes array.
     this.routes = originalRoutes
 
     return this
   }
-
-  // private prepareGroupPrefix(routes: Route[], options: string | RouteGroupOptions, middleware: string | string[]): void {
-  //   if (typeof options !== 'string') {
-  //     routes.forEach((r) => {
-  //       // Add middleware if any
-  //       if (middleware.length)
-  //         r.middleware = middleware
-
-  //       // Add the prefix to the route path
-  //       if (options.prefix) {
-  //         r.path = `/${options.prefix}${r.path}`
-  //       }
-
-  //       // Push the modified route to the original routes array
-  //       originalRoutes.push(r)
-  //       return this
-  //     })
-
-  //     return
-  //   }
-
-  //   if (typeof options === 'string') {
-
-  //     return
-  //   }
-  // }
 
   public name(name: string): this {
     this.routes[this.routes.length - 1].name = name
@@ -307,6 +279,7 @@ export class Router implements RouterInterface {
       actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
     else actionModule = await import(importPathFunction(modulePath))
 
+   
     // Use custom path from action module if available
     const newPath = actionModule.default.path ?? originalPath
     this.updatePathIfNeeded(newPath, originalPath)
@@ -331,6 +304,7 @@ export class Router implements RouterInterface {
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
+      
       return await actionModule.default.handle(requestInstance)
     }
     catch (error: any) {
