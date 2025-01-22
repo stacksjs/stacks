@@ -1,4 +1,4 @@
-import type { CLI, QueueOptions } from '@stacksjs/types'
+import type { CLI, CliQueueOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
@@ -17,7 +17,7 @@ export function queue(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-q, --queue [queue]', descriptions.queue, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: QueueOptions) => {
+    .action(async (options: CliQueueOptions) => {
       log.debug('Running `buddy queue:work` ...', options)
 
       const perf = await intro('buddy queue:work')
