@@ -2,7 +2,6 @@ import type { JitterConfig, JobOptions } from '@stacksjs/types'
 import type { JobModel } from '../../../orm/src/models/Job'
 import { ok, type Ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { FailedJob, Job } from '@stacksjs/orm'
 import { runJob } from './job'
 
 interface QueuePayload {
