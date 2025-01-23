@@ -2269,6 +2269,36 @@ export async function generateModelString(
         return data
       }
 
+      static async firstOrCreate(
+        condition: Partial<${modelName}Type>,
+        new${modelName}: New${modelName},
+      ): Promise<${modelName}Model> {
+        // Get the key and value from the condition object
+        const key = Object.keys(condition)[0] as keyof ${modelName}Type
+
+        if (!key) {
+          throw new Error('Condition must contain at least one key-value pair')
+        }
+
+        const value = condition[key]
+
+        // Attempt to find the first record matching the condition
+        const existing${modelName} = await db.selectFrom('${tableName}')
+          .selectAll()
+          .where(key, '=', value)
+          .executeTakeFirst()
+
+        if (existing${modelName}) {
+          const instance = new ${modelName}Model(null)
+          const result = await instance.mapWith(existing${modelName})
+          return new ${modelName}Model(result as ${modelName}Type)
+        }
+        else {
+          // If not found, create a new user
+          return await this.create(new${modelName})
+        }
+      }
+
       with(relations: string[]): ${modelName}Model {
         this.withRelations = relations
         

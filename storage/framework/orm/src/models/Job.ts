@@ -623,6 +623,36 @@ export class JobModel {
     return data
   }
 
+  static async firstOrCreate(
+    condition: Partial<JobType>,
+    newJob: NewJob,
+  ): Promise<JobModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof JobType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingJob = await db.selectFrom('jobs')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingJob) {
+      const instance = new JobModel(null)
+      const result = await instance.mapWith(existingJob)
+      return new JobModel(result as JobType)
+    }
+    else {
+      // If not found, create a new user
+      return await this.create(newJob)
+    }
+  }
+
   with(relations: string[]): JobModel {
     this.withRelations = relations
 

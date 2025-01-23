@@ -694,6 +694,36 @@ export class UserModel {
     return data
   }
 
+  static async firstOrCreate(
+    condition: Partial<UserType>,
+    newUser: NewUser,
+  ): Promise<UserModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof UserType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingUser = await db.selectFrom('users')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingUser) {
+      const instance = new UserModel(null)
+      const result = await instance.mapWith(existingUser)
+      return new UserModel(result as UserType)
+    }
+    else {
+      // If not found, create a new user
+      return await this.create(newUser)
+    }
+  }
+
   with(relations: string[]): UserModel {
     this.withRelations = relations
 

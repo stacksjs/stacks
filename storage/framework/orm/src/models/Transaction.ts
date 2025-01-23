@@ -659,6 +659,36 @@ export class TransactionModel {
     return data
   }
 
+  static async firstOrCreate(
+    condition: Partial<TransactionType>,
+    newTransaction: NewTransaction,
+  ): Promise<TransactionModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof TransactionType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingTransaction = await db.selectFrom('transactions')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingTransaction) {
+      const instance = new TransactionModel(null)
+      const result = await instance.mapWith(existingTransaction)
+      return new TransactionModel(result as TransactionType)
+    }
+    else {
+      // If not found, create a new user
+      return await this.create(newTransaction)
+    }
+  }
+
   with(relations: string[]): TransactionModel {
     this.withRelations = relations
 

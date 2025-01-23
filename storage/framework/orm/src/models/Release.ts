@@ -579,6 +579,36 @@ export class ReleaseModel {
     return data
   }
 
+  static async firstOrCreate(
+    condition: Partial<ReleaseType>,
+    newRelease: NewRelease,
+  ): Promise<ReleaseModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof ReleaseType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingRelease = await db.selectFrom('releases')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingRelease) {
+      const instance = new ReleaseModel(null)
+      const result = await instance.mapWith(existingRelease)
+      return new ReleaseModel(result as ReleaseType)
+    }
+    else {
+      // If not found, create a new user
+      return await this.create(newRelease)
+    }
+  }
+
   with(relations: string[]): ReleaseModel {
     this.withRelations = relations
 

@@ -701,6 +701,36 @@ export class SubscriptionModel {
     return data
   }
 
+  static async firstOrCreate(
+    condition: Partial<SubscriptionType>,
+    newSubscription: NewSubscription,
+  ): Promise<SubscriptionModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof SubscriptionType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingSubscription = await db.selectFrom('subscriptions')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingSubscription) {
+      const instance = new SubscriptionModel(null)
+      const result = await instance.mapWith(existingSubscription)
+      return new SubscriptionModel(result as SubscriptionType)
+    }
+    else {
+      // If not found, create a new user
+      return await this.create(newSubscription)
+    }
+  }
+
   with(relations: string[]): SubscriptionModel {
     this.withRelations = relations
 

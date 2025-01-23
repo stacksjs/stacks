@@ -612,6 +612,36 @@ export class ProjectModel {
     return data
   }
 
+  static async firstOrCreate(
+    condition: Partial<ProjectType>,
+    newProject: NewProject,
+  ): Promise<ProjectModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof ProjectType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingProject = await db.selectFrom('projects')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingProject) {
+      const instance = new ProjectModel(null)
+      const result = await instance.mapWith(existingProject)
+      return new ProjectModel(result as ProjectType)
+    }
+    else {
+      // If not found, create a new user
+      return await this.create(newProject)
+    }
+  }
+
   with(relations: string[]): ProjectModel {
     this.withRelations = relations
 
