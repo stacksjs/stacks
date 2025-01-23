@@ -155,7 +155,7 @@ useHead({
                       Function A
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       5kb
                     </td>
 
@@ -181,7 +181,7 @@ useHead({
                       Function B
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       5kb
                     </td>
 
@@ -207,7 +207,7 @@ useHead({
                       Function C
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       5kb
                     </td>
 
