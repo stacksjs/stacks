@@ -59,7 +59,7 @@
   "devDependencies": {
     "@headlessui/vue": "^1.7.23",
     "@iconify-json/hugeicons": "^1.2.3",
-    "@iconify/json": "^2.2.298",
+    "@iconify/json": "^2.2.299",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -68,7 +68,7 @@
     "@unhead/vue": "^1.11.18",
     "pinia": "^2.3.1",
     "unhead": "^1.11.18",
-    "unocss": "65.4.2",
+    "unocss": "65.4.3",
     "unocss-preset-primitives": "0.0.2-beta.1",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vue": "^3.5.13",

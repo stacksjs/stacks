@@ -46,7 +46,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@opensearch-project/opensearch": "^3.1.0",
+    "@opensearch-project/opensearch": "^3.2.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "meilisearch": "^0.48.2"
