@@ -155,7 +155,7 @@ useHead({
                       Component A
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       30kb
                     </td>
 
@@ -181,7 +181,7 @@ useHead({
                       Component B
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       30kb
                     </td>
 
@@ -207,7 +207,7 @@ useHead({
                       Component C
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
                       30kb
                     </td>
 

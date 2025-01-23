@@ -35,8 +35,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
                   <RouterLink to="/" class="group sidebar-links">
-                    <div
-                      class="i-hugeicons-home-05 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-home-05 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Dashboard
                   </RouterLink>
                 </li>
@@ -60,31 +59,28 @@ const toggleSection = (section: keyof typeof sections.value) => {
               <ul role="list" class="mt-2 -mx-2 space-y-1 section-content" :class="sections.library ? 'expanded' : 'collapsed'">
                 <li>
                   <RouterLink to="/components" class="sidebar-links group">
-                    <div
-                      class="i-hugeicons-puzzle h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-puzzle h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Components
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/functions" class="sidebar-links group">
-                    <div
-                      class="i-hugeicons-function-square h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-function-square h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Functions
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/releases" class="sidebar-links group">
-                    <div class="i-hugeicons-right-to-left-list-number h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-right-to-left-list-number h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Releases
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/packages" class="sidebar-links group">
-                    <div
-                      class="i-hugeicons-package h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-package h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Packages
                   </RouterLink>
                 </li>
@@ -108,23 +104,21 @@ const toggleSection = (section: keyof typeof sections.value) => {
               <ul role="list" class="mt-2 -mx-2 space-y-1 section-content" :class="sections.app ? 'expanded' : 'collapsed'">
                 <li>
                   <RouterLink to="/deployments" class="sidebar-links group">
-                    <div
-                      class="i-hugeicons-rocket h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-rocket h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Deployments
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/requests" class="sidebar-links group">
-                    <div
-                      class="i-hugeicons-search-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Requests
                   </RouterLink>
                 </li>
 
                 <li>
                   <RouterLink to="/actions" class="sidebar-links group">
-                    <div class="i-hugeicons-function-of-x h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                    <div class="i-hugeicons-function-of-x h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Actions
                   </RouterLink>
                 </li>
@@ -132,7 +126,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
                 <li>
                   <RouterLink to="/commands" class="sidebar-links group">
                     <div
-                      class="i-hugeicons-command-line h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-command-line h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Commands
                   </RouterLink>
                 </li>
@@ -140,7 +134,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
                 <li>
                   <RouterLink to="/jobs" class="sidebar-links group">
                     <div
-                      class="i-hugeicons-queue-02 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-queue-02 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Jobs
                   </RouterLink>
                 </li>
@@ -148,7 +142,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
                 <li>
                   <RouterLink to="/notifications" class="sidebar-links group">
                     <div
-                      class="i-hugeicons-notification-square h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-notification-square h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Notifications
                   </RouterLink>
                 </li>
@@ -214,7 +208,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
                 <li>
                   <RouterLink to="/dns" class="sidebar-links">
                     <div
-                      class="i-hugeicons-global-search h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-global-search h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     <span class="truncate">DNS</span>
                   </RouterLink>
                 </li>
@@ -222,7 +216,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
                 <li>
                   <RouterLink to="/emails" class="sidebar-links">
                     <div
-                      class="i-hugeicons-at h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-at h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     <span class="truncate">Emails</span>
                   </RouterLink>
                 </li>
@@ -230,7 +224,7 @@ const toggleSection = (section: keyof typeof sections.value) => {
                 <li>
                   <RouterLink to="/logs" class="sidebar-links group">
                     <div
-                      class="i-hugeicons-search-list-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+                      class="i-hugeicons-search-list-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Logs
                   </RouterLink>
                 </li>

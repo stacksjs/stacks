@@ -16,6 +16,7 @@ useHead({
             </dt>
 
             <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
+              <span class="i-hugeicons-user-multiple h-5 w-5 mr-2 mb-1 text-gray-400"></span>
               12,345
             </dd>
           </div>
@@ -26,6 +27,7 @@ useHead({
             </dt>
 
             <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
+              <span class="i-hugeicons-rocket h-5 w-5 mr-2 mb-1 text-gray-400"></span>
               # 206
             </dd>
           </div>
@@ -36,6 +38,7 @@ useHead({
             </dt>
 
             <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
+              <span class="i-hugeicons-download-04 h-5 w-5 mr-2 mb-1 text-gray-400"></span>
               345,678
             </dd>
           </div>
@@ -46,6 +49,7 @@ useHead({
             </dt>
 
             <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
+              <span class="i-hugeicons-user-group h-5 w-5 mr-2 mb-1 text-gray-400"></span>
               45,678
             </dd>
           </div>
