@@ -1332,13 +1332,13 @@ export async function generateModelString(
 
     async setDefaultPaymentMethod(pmId: number): Promise<Stripe.Response<Stripe.Customer>> {
       const updatedCustomer = await managePaymentMethod.setDefaultPaymentMethod(this, pmId)
-    
+
       return updatedCustomer
     }
 
     async setUserDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
       const updatedCustomer = await managePaymentMethod.setUserDefaultPayment(this, paymentMethodId)
-    
+
       return updatedCustomer
     }
 
@@ -1441,11 +1441,11 @@ export async function generateModelString(
     async isIncomplete(type: string): Promise<boolean> {
       return await manageSubscription.isIncomplete(this, type)
     }
-    
+
     async paymentMethods(cardType?: string): Promise<PaymentMethodModel[]> {
       return await managePaymentMethod.listPaymentMethods(this, cardType)
     }
-      
+
     async newSubscriptionInvoice(
       type: string,
       lookupKey: string,
@@ -1466,7 +1466,7 @@ export async function generateModelString(
 
       return { subscription, paymentIntent }
     }
-    
+
     async updateSubscription(
       type: string,
       lookupKey: string,
@@ -1495,10 +1495,10 @@ export async function generateModelString(
       const defaultOptions: Partial<Stripe.SetupIntentCreateParams> = {
         metadata: options.metadata,
       }
-    
+
       // Merge any additional provided options
       const mergedOptions = { ...defaultOptions, ...options }
-    
+
       // Call Stripe to create the SetupIntent
       return await manageSetupIntent.create(this, mergedOptions)
     }
@@ -1691,7 +1691,7 @@ export async function generateModelString(
       }
       next_cursor: number | null
     }
-      
+
     export type ${modelName}Type = Selectable<${formattedTableName}Table>
     export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
     export type ${modelName}Update = Updateable<${formattedTableName}Table>
@@ -1765,7 +1765,7 @@ export async function generateModelString(
 
         if (!model)
           return undefined
-        
+
         const instance = new ${modelName}Model(null)
 
         const result = await instance.mapWith(model)
@@ -1852,7 +1852,7 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
 
         let models
-      
+
         if (instance.hasSelect) {
           ${instanceSoftDeleteStatements}
 
@@ -1870,7 +1870,7 @@ export async function generateModelString(
 
           return new ${modelName}Model(results)
         }))
-        
+
         return data
       }
 
@@ -2031,7 +2031,7 @@ export async function generateModelString(
         )
 
         ${uuidQueryMany}
-        
+
         await db.insertInto('${tableName}')
           .values(filteredValues)
           .executeTakeFirst()
@@ -2058,7 +2058,7 @@ export async function generateModelString(
         ${instanceSoftDeleteStatementsUpdateFrom}
 
         ${mittDeleteStatement}
-      
+
         return await db.deleteFrom('${tableName}')
           .where('id', '=', id)
           .execute()
@@ -2079,7 +2079,7 @@ export async function generateModelString(
         }
 
         this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-        
+
         this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
         this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
 
@@ -2404,7 +2404,7 @@ export async function generateModelString(
 
       with(relations: string[]): ${modelName}Model {
         this.withRelations = relations
-        
+
         return this
       }
 
@@ -2412,7 +2412,7 @@ export async function generateModelString(
        const instance = new ${modelName}Model(null)
 
         instance.withRelations = relations
-        
+
         return instance
       }
 
@@ -2857,7 +2857,7 @@ async function ensureCodeStyle(): Promise<void> {
   const exitCode = await proc.exited
 
   if (exitCode !== 0) {
-    log.debug('There was an error fixing your code style but we are ignoring it because we fixed the auto-generated code already. Run bunx eslint . --fix to fix the rest of the code.')
+    log.debug('There was an error fixing your code style but we are ignoring it because we fixed the auto-generated code already. Run `bunx eslint . --fix` to fix the rest of the code.')
   }
   else {
     log.debug('Code style fixed successfully.')
