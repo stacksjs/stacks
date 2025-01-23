@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -83,7 +83,7 @@ export class PostModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof PostType)[] | Sql): PostModel {
+  static select(params: (keyof PostType)[] | RawBuilder<string>): PostModel {
     const instance = new PostModel(null)
 
     // Initialize a query with the table name and selected fields

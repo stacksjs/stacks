@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -80,7 +80,7 @@ export class ProjectModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof ProjectType)[] | Sql): ProjectModel {
+  static select(params: (keyof ProjectType)[] | RawBuilder<string>): ProjectModel {
     const instance = new ProjectModel(null)
 
     // Initialize a query with the table name and selected fields

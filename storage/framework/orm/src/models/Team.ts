@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -100,7 +100,7 @@ export class TeamModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof TeamType)[] | Sql): TeamModel {
+  static select(params: (keyof TeamType)[] | RawBuilder<string>): TeamModel {
     const instance = new TeamModel(null)
 
     // Initialize a query with the table name and selected fields

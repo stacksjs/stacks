@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
@@ -126,7 +126,7 @@ export class UserModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof UserType)[] | Sql): UserModel {
+  static select(params: (keyof UserType)[] | RawBuilder<string>): UserModel {
     const instance = new UserModel(null)
 
     // Initialize a query with the table name and selected fields

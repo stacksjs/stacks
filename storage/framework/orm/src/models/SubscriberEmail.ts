@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -77,7 +77,7 @@ export class SubscriberEmailModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof SubscriberEmailType)[] | Sql): SubscriberEmailModel {
+  static select(params: (keyof SubscriberEmailType)[] | RawBuilder<string>): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     // Initialize a query with the table name and selected fields

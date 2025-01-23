@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
@@ -93,7 +93,7 @@ export class ProductModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof ProductType)[] | Sql): ProductModel {
+  static select(params: (keyof ProductType)[] | RawBuilder<string>): ProductModel {
     const instance = new ProductModel(null)
 
     // Initialize a query with the table name and selected fields

@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -111,7 +111,7 @@ export class SubscriptionModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof SubscriptionType)[] | Sql): SubscriptionModel {
+  static select(params: (keyof SubscriptionType)[] | RawBuilder<string>): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     // Initialize a query with the table name and selected fields

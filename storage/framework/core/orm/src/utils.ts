@@ -1664,7 +1664,7 @@ export async function generateModelString(
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
 
-  return `import type { Generated, Insertable, Selectable, Updateable } from '@stacksjs/database'
+  return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
     import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
     import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -1730,7 +1730,7 @@ export async function generateModelString(
         this.hasSelect = false
       }
 
-      static select(params: (keyof ${modelName}Type)[] | Sql): ${modelName}Model {
+      static select(params: (keyof ${modelName}Type)[] | RawBuilder<string>): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
         // Initialize a query with the table name and selected fields

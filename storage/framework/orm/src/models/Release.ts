@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -71,7 +71,7 @@ export class ReleaseModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof ReleaseType)[] | Sql): ReleaseModel {
+  static select(params: (keyof ReleaseType)[] | RawBuilder<string>): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     // Initialize a query with the table name and selected fields

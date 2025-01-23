@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { TransactionModel } from './Transaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -108,7 +108,7 @@ export class PaymentMethodModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof PaymentMethodType)[] | Sql): PaymentMethodModel {
+  static select(params: (keyof PaymentMethodType)[] | RawBuilder<string>): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     // Initialize a query with the table name and selected fields

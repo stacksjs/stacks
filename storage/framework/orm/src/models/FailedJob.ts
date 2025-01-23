@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -83,7 +83,7 @@ export class FailedJobModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof FailedJobType)[] | Sql): FailedJobModel {
+  static select(params: (keyof FailedJobType)[] | RawBuilder<string>): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     // Initialize a query with the table name and selected fields

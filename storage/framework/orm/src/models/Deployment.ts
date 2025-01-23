@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -102,7 +102,7 @@ export class DeploymentModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof DeploymentType)[] | Sql): DeploymentModel {
+  static select(params: (keyof DeploymentType)[] | RawBuilder<string>): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     // Initialize a query with the table name and selected fields
