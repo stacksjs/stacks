@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBillable } from '../../../functions/billing/payments'
+import { useBillable } from '../../../../storage/framework/functions/billing/payments'
 import ActivePlan from '../../../components/Billing/ActivePlan.vue'
 import PaymentMethod from '../../../components/Billing/PaymentMethod.vue'
 import Plans from '../../../components/Billing/Plans.vue'
