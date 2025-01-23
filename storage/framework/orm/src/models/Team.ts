@@ -617,6 +617,28 @@ export class TeamModel {
     return instance
   }
 
+  static whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
+
+    return instance
+  }
+
+  whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   async first(): Promise<TeamModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 

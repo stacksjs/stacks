@@ -574,6 +574,28 @@ export class AccessTokenModel {
     return instance
   }
 
+  static whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
+
+    return instance
+  }
+
+  whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   async first(): Promise<AccessTokenModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 

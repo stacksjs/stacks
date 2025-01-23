@@ -528,6 +528,28 @@ export class SubscriberModel {
     return instance
   }
 
+  static whereNotIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
+
+    return instance
+  }
+
+  whereNotIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   async first(): Promise<SubscriberModel | undefined> {
     const model = await this.selectFromQuery.selectAll().executeTakeFirst()
 
