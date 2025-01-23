@@ -216,7 +216,7 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
                 <div class="i-heroicons-bug-ant h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">
-                Total New Issues
+                Total Issues
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
@@ -229,9 +229,8 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
       </div>
     </div>
 
-    <!-- Packages section -->
+    <!-- Packages Table section -->
     <div class="px-4 pt-12 lg:px-8 sm:px-6">
-      <!-- Header -->
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-base text-gray-900 font-semibold leading-6">
@@ -241,82 +240,81 @@ const getPackageUrl = (pkgName: string) => `https://github.com/stacksjs/${pkgNam
             A list of all the packages you are tracking.
           </p>
         </div>
+
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+            Add Package
+          </button>
+        </div>
       </div>
 
-      <!-- Package Grid -->
-      <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <a v-for="pkg in packages"
-           :key="pkg.name"
-           :href="getPackageUrl(pkg.name)"
-           target="_blank"
-           rel="noopener"
-           class="group block overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-md">
-          <!-- Card Header with Background Image -->
-          <div class="relative border-b border-gray-100 bg-gray-50 p-4 group-hover:bg-gray-100">
-            <div
-              class="absolute inset-0 bg-cover bg-center opacity-4 blur-sm group-hover:opacity-5 group-hover:blur-none transition-all"
-              :style="{
-                backgroundImage: `url('https://repository-images.githubusercontent.com/767342709/66064336-425f-42d4-8c9f-9d6a937cfa98')`
-              }"
-            />
-            <div class="relative z-10">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-lg text-gray-900 font-semibold">{{ pkg.name }}</h3>
-                  <p class="text-sm text-gray-500">
-                    {{ pkg.version }}
-                    <span class="mx-2 text-gray-300">•</span>
-                    {{ pkg.codename }}
-                  </p>
-                </div>
-                <div class="i-heroicons-cube h-6 w-6 text-blue-500" />
-              </div>
-              <p class="mt-2 text-sm text-gray-600 truncate max-w-[310px]">{{ pkg.description }}</p>
+      <div class="mt-8 flow-root">
+        <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
+          <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <table class="min-w-full divide-y divide-gray-300">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
+                      Package
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+                      Description
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+                      Version
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+                      Downloads
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+                      Size
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+                      Created At
+                    </th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span class="sr-only">View</span>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="pkg in packages" :key="pkg.name">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                      <div class="flex items-center">
+                        <div>
+                          <div class="font-medium text-gray-900">{{ pkg.name }}</div>
+                          <div class="text-gray-500">{{ pkg.codename }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-md truncate">
+                      {{ pkg.description }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {{ pkg.version }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {{ pkg.downloads.toLocaleString() }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                      {{ pkg.size }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {{ pkg.createdAt }}
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a :href="getPackageUrl(pkg.name)" class="text-blue-600 hover:text-blue-900">
+                        View<span class="sr-only">, {{ pkg.name }} package</span>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-
-          <!-- Card Content -->
-          <div class="p-4">
-            <!-- Metrics -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1">
-                <div class="i-heroicons-arrow-down-tray h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                <p class="font-semibold">{{ pkg.downloads.toLocaleString() }}</p>
-              </div>
-
-              <div class="flex items-center gap-1">
-                <div class="i-heroicons-bug-ant h-4 w-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
-                <p class="font-semibold">{{ pkg.issues }}</p>
-              </div>
-
-              <div class="flex items-center gap-1">
-                <div class="i-heroicons-users h-4 w-4 text-gray-400 group-hover:text-green-500 transition-colors" />
-                <p class="font-semibold">{{ pkg.contributors }}</p>
-              </div>
-
-              <div class="flex items-center gap-1">
-                <div class="i-heroicons-star h-4 w-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />
-                <p class="font-semibold">{{ pkg.stars.toLocaleString() }}</p>
-              </div>
-            </div>
-
-            <!-- Details -->
-            <div class="mt-4 space-y-2">
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-500">Size:</span>
-                <span class="font-mono">{{ pkg.size }}</span>
-              </div>
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-500">Path:</span>
-                <span class="font-mono text-right truncate max-w-[240px]" :title="pkg.path">{{ pkg.path }}</span>
-              </div>
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-500">Created:</span>
-                <span>{{ pkg.createdAt }}</span>
-              </div>
-            </div>
-          </div>
-        </a>
+        </div>
       </div>
     </div>
   </div>
