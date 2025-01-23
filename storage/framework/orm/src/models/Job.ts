@@ -853,7 +853,7 @@ export class JobModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }

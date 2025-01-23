@@ -2512,7 +2512,7 @@ export async function generateModelString(
       }
 
       join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
-        this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
+        this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
         return this
       }

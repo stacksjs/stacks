@@ -809,7 +809,7 @@ export class SubscriberModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }

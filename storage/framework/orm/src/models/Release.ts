@@ -809,7 +809,7 @@ export class ReleaseModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }
