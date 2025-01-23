@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-// import QueueTable from '../../../components/Queue/QueueTable.vue'
-
 useHead({
   title: 'Dashboard - Jobs',
 })
