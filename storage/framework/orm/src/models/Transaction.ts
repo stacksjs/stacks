@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'

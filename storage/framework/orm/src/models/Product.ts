@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'

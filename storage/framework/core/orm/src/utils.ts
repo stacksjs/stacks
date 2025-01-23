@@ -1664,7 +1664,7 @@ export async function generateModelString(
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
 
-  return `import type { Generated, Insertable, Selectable, Updateable } from 'kysely'
+  return `import type { Generated, Insertable, Selectable, Updateable } from '@stacksjs/database'
     import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
     import { db, sql } from '@stacksjs/database'
     import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'

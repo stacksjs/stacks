@@ -1,4 +1,4 @@
-import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'

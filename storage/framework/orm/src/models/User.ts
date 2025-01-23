@@ -1,12 +1,11 @@
+import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-import type { Insertable, Selectable, Updateable } from 'kysely'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-
 import { db, sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
