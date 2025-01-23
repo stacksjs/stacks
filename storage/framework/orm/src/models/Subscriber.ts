@@ -71,6 +71,17 @@ export class SubscriberModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof SubscriberType)[] | Sql): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Subscriber by ID
   async find(id: number): Promise<SubscriberModel | undefined> {
     const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
@@ -746,8 +757,22 @@ export class SubscriberModel {
     return instance
   }
 
+  static groupBy(column: keyof SubscriberType): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof SubscriberType): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

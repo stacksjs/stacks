@@ -1730,6 +1730,17 @@ export async function generateModelString(
         this.hasSelect = false
       }
 
+      static select(params: (keyof ${modelName}Type)[] | Sql): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        // Initialize a query with the table name and selected fields
+        instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+        instance.hasSelect = true
+
+        return instance
+      }
+
       // Method to find a ${modelName} by ID
       async find(id: number): Promise<${modelName}Model | undefined> {
         let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
@@ -2435,8 +2446,22 @@ export async function generateModelString(
         return instance
       }
 
+      static groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+        return instance
+      }
+
       orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
         this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+        return this
+      }
+
+      groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+        this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
         return this
       }

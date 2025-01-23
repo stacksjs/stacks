@@ -111,6 +111,17 @@ export class SubscriptionModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof SubscriptionType)[] | Sql): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Subscription by ID
   async find(id: number): Promise<SubscriptionModel | undefined> {
     const query = db.selectFrom('subscriptions').where('id', '=', id).selectAll()
@@ -868,8 +879,22 @@ export class SubscriptionModel {
     return instance
   }
 
+  static groupBy(column: keyof SubscriptionType): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof SubscriptionType, order: 'asc' | 'desc'): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof SubscriptionType): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

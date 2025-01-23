@@ -105,6 +105,17 @@ export class TransactionModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof TransactionType)[] | Sql): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Transaction by ID
   async find(id: number): Promise<TransactionModel | undefined> {
     const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
@@ -826,8 +837,22 @@ export class TransactionModel {
     return instance
   }
 
+  static groupBy(column: keyof TransactionType): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof TransactionType): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

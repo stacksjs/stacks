@@ -83,6 +83,17 @@ export class JobModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof JobType)[] | Sql): JobModel {
+    const instance = new JobModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Job by ID
   async find(id: number): Promise<JobModel | undefined> {
     const query = db.selectFrom('jobs').where('id', '=', id).selectAll()
@@ -790,8 +801,22 @@ export class JobModel {
     return instance
   }
 
+  static groupBy(column: keyof JobType): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof JobType): JobModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

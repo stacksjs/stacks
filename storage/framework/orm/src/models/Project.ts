@@ -80,6 +80,17 @@ export class ProjectModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof ProjectType)[] | Sql): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Project by ID
   async find(id: number): Promise<ProjectModel | undefined> {
     const query = db.selectFrom('projects').where('id', '=', id).selectAll()
@@ -779,8 +790,22 @@ export class ProjectModel {
     return instance
   }
 
+  static groupBy(column: keyof ProjectType): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof ProjectType): ProjectModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

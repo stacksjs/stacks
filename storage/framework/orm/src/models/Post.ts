@@ -83,6 +83,17 @@ export class PostModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof PostType)[] | Sql): PostModel {
+    const instance = new PostModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Post by ID
   async find(id: number): Promise<PostModel | undefined> {
     const query = db.selectFrom('posts').where('id', '=', id).selectAll()
@@ -770,8 +781,22 @@ export class PostModel {
     return instance
   }
 
+  static groupBy(column: keyof PostType): PostModel {
+    const instance = new PostModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof PostType): PostModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

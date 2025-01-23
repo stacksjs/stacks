@@ -71,6 +71,17 @@ export class ReleaseModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof ReleaseType)[] | Sql): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Release by ID
   async find(id: number): Promise<ReleaseModel | undefined> {
     const query = db.selectFrom('releases').where('id', '=', id).selectAll()
@@ -746,8 +757,22 @@ export class ReleaseModel {
     return instance
   }
 
+  static groupBy(column: keyof ReleaseType): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof ReleaseType): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

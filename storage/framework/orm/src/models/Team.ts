@@ -100,6 +100,17 @@ export class TeamModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof TeamType)[] | Sql): TeamModel {
+    const instance = new TeamModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Team by ID
   async find(id: number): Promise<TeamModel | undefined> {
     const query = db.selectFrom('teams').where('id', '=', id).selectAll()
@@ -835,8 +846,22 @@ export class TeamModel {
     return instance
   }
 
+  static groupBy(column: keyof TeamType): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof TeamType): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

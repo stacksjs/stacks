@@ -89,6 +89,17 @@ export class AccessTokenModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof AccessTokenType)[] | Sql): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a AccessToken by ID
   async find(id: number): Promise<AccessTokenModel | undefined> {
     const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
@@ -792,8 +803,22 @@ export class AccessTokenModel {
     return instance
   }
 
+  static groupBy(column: keyof AccessTokenType): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof AccessTokenType): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

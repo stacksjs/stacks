@@ -83,6 +83,17 @@ export class ErrorModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof ErrorType)[] | Sql): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Error by ID
   async find(id: number): Promise<ErrorModel | undefined> {
     const query = db.selectFrom('errors').where('id', '=', id).selectAll()
@@ -790,8 +801,22 @@ export class ErrorModel {
     return instance
   }
 
+  static groupBy(column: keyof ErrorType): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof ErrorType): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

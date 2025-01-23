@@ -127,6 +127,17 @@ export class UserModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof UserType)[] | Sql): UserModel {
+    const instance = new UserModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a User by ID
   async find(id: number): Promise<UserModel | undefined> {
     const query = db.selectFrom('users').where('id', '=', id).selectAll()
@@ -861,8 +872,22 @@ export class UserModel {
     return instance
   }
 
+  static groupBy(column: keyof UserType): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof UserType): UserModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

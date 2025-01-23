@@ -77,6 +77,17 @@ export class SubscriberEmailModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof SubscriberEmailType)[] | Sql): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a SubscriberEmail by ID
   async find(id: number): Promise<SubscriberEmailModel | undefined> {
     const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
@@ -807,8 +818,22 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  static groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

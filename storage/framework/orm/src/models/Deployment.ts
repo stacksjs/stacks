@@ -102,6 +102,17 @@ export class DeploymentModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof DeploymentType)[] | Sql): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a Deployment by ID
   async find(id: number): Promise<DeploymentModel | undefined> {
     const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
@@ -835,8 +846,22 @@ export class DeploymentModel {
     return instance
   }
 
+  static groupBy(column: keyof DeploymentType): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof DeploymentType): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

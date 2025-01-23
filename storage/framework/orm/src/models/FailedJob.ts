@@ -83,6 +83,17 @@ export class FailedJobModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof FailedJobType)[] | Sql): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a FailedJob by ID
   async find(id: number): Promise<FailedJobModel | undefined> {
     const query = db.selectFrom('failed_jobs').where('id', '=', id).selectAll()
@@ -790,8 +801,22 @@ export class FailedJobModel {
     return instance
   }
 
+  static groupBy(column: keyof FailedJobType): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof FailedJobType): FailedJobModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }

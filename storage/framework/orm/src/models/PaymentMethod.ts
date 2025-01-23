@@ -108,6 +108,17 @@ export class PaymentMethodModel {
     this.hasSelect = false
   }
 
+  static select(params: (keyof PaymentMethodType)[] | Sql): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
   // Method to find a PaymentMethod by ID
   async find(id: number): Promise<PaymentMethodModel | undefined> {
     const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
@@ -845,8 +856,22 @@ export class PaymentMethodModel {
     return instance
   }
 
+  static groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+
+    return instance
+  }
+
   orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
