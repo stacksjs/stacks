@@ -609,6 +609,51 @@ export class ReleaseModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<ReleaseType>,
+    newRelease: NewRelease,
+  ): Promise<ReleaseModel> {
+    const key = Object.keys(condition)[0] as keyof ReleaseType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingRelease = await db.selectFrom('releases')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingRelease) {
+      // If found, update the existing record
+      await db.updateTable('releases')
+        .set(newRelease)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedRelease = await db.selectFrom('releases')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedRelease) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new ReleaseModel(null)
+      const result = await instance.mapWith(updatedRelease)
+      return new ReleaseModel(result as ReleaseType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newRelease)
+    }
+  }
+
   with(relations: string[]): ReleaseModel {
     this.withRelations = relations
 

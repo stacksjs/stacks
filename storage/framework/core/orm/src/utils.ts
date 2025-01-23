@@ -2299,6 +2299,50 @@ export async function generateModelString(
         }
       }
 
+      static async updateOrCreate(
+        condition: Partial<${modelName}Type>,
+        new${modelName}: New${modelName},
+      ): Promise<${modelName}Model> {
+        const key = Object.keys(condition)[0] as keyof ${modelName}Type
+
+        if (!key) {
+          throw new Error('Condition must contain at least one key-value pair')
+        }
+
+        const value = condition[key]
+
+        // Attempt to find the first record matching the condition
+        const existing${modelName} = await db.selectFrom('${tableName}')
+          .selectAll()
+          .where(key, '=', value)
+          .executeTakeFirst()
+
+        if (existing${modelName}) {
+          // If found, update the existing record
+          await db.updateTable('${tableName}')
+            .set(new${modelName})
+            .where(key, '=', value)
+            .executeTakeFirstOrThrow()
+
+          // Fetch and return the updated record
+          const updated${modelName} = await db.selectFrom('${tableName}')
+            .selectAll()
+            .where(key, '=', value)
+            .executeTakeFirst()
+
+          if (!updated${modelName}) {
+            throw new Error('Failed to fetch updated record')
+          }
+
+          const instance = new ${modelName}Model(null)
+          const result = await instance.mapWith(updated${modelName})
+          return new ${modelName}Model(result as ${modelName}Type)
+        } else {
+          // If not found, create a new record
+          return await this.create(new${modelName})
+        }
+      }
+
       with(relations: string[]): ${modelName}Model {
         this.withRelations = relations
         

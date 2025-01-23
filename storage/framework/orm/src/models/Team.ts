@@ -698,6 +698,51 @@ export class TeamModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<TeamType>,
+    newTeam: NewTeam,
+  ): Promise<TeamModel> {
+    const key = Object.keys(condition)[0] as keyof TeamType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingTeam = await db.selectFrom('teams')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingTeam) {
+      // If found, update the existing record
+      await db.updateTable('teams')
+        .set(newTeam)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedTeam = await db.selectFrom('teams')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedTeam) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new TeamModel(null)
+      const result = await instance.mapWith(updatedTeam)
+      return new TeamModel(result as TeamType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newTeam)
+    }
+  }
+
   with(relations: string[]): TeamModel {
     this.withRelations = relations
 

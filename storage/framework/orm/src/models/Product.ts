@@ -685,6 +685,51 @@ export class ProductModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<ProductType>,
+    newProduct: NewProduct,
+  ): Promise<ProductModel> {
+    const key = Object.keys(condition)[0] as keyof ProductType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingProduct = await db.selectFrom('products')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingProduct) {
+      // If found, update the existing record
+      await db.updateTable('products')
+        .set(newProduct)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedProduct = await db.selectFrom('products')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedProduct) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new ProductModel(null)
+      const result = await instance.mapWith(updatedProduct)
+      return new ProductModel(result as ProductType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newProduct)
+    }
+  }
+
   with(relations: string[]): ProductModel {
     this.withRelations = relations
 

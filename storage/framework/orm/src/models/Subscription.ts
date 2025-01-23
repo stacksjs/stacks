@@ -731,6 +731,51 @@ export class SubscriptionModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<SubscriptionType>,
+    newSubscription: NewSubscription,
+  ): Promise<SubscriptionModel> {
+    const key = Object.keys(condition)[0] as keyof SubscriptionType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingSubscription = await db.selectFrom('subscriptions')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingSubscription) {
+      // If found, update the existing record
+      await db.updateTable('subscriptions')
+        .set(newSubscription)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedSubscription = await db.selectFrom('subscriptions')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedSubscription) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new SubscriptionModel(null)
+      const result = await instance.mapWith(updatedSubscription)
+      return new SubscriptionModel(result as SubscriptionType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newSubscription)
+    }
+  }
+
   with(relations: string[]): SubscriptionModel {
     this.withRelations = relations
 

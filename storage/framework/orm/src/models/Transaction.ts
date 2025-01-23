@@ -689,6 +689,51 @@ export class TransactionModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<TransactionType>,
+    newTransaction: NewTransaction,
+  ): Promise<TransactionModel> {
+    const key = Object.keys(condition)[0] as keyof TransactionType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingTransaction = await db.selectFrom('transactions')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingTransaction) {
+      // If found, update the existing record
+      await db.updateTable('transactions')
+        .set(newTransaction)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedTransaction = await db.selectFrom('transactions')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedTransaction) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new TransactionModel(null)
+      const result = await instance.mapWith(updatedTransaction)
+      return new TransactionModel(result as TransactionType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newTransaction)
+    }
+  }
+
   with(relations: string[]): TransactionModel {
     this.withRelations = relations
 

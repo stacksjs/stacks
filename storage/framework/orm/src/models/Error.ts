@@ -653,6 +653,51 @@ export class ErrorModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<ErrorType>,
+    newError: NewError,
+  ): Promise<ErrorModel> {
+    const key = Object.keys(condition)[0] as keyof ErrorType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingError = await db.selectFrom('errors')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingError) {
+      // If found, update the existing record
+      await db.updateTable('errors')
+        .set(newError)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedError = await db.selectFrom('errors')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedError) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new ErrorModel(null)
+      const result = await instance.mapWith(updatedError)
+      return new ErrorModel(result as ErrorType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newError)
+    }
+  }
+
   with(relations: string[]): ErrorModel {
     this.withRelations = relations
 

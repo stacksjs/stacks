@@ -653,6 +653,51 @@ export class FailedJobModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<FailedJobType>,
+    newFailedJob: NewFailedJob,
+  ): Promise<FailedJobModel> {
+    const key = Object.keys(condition)[0] as keyof FailedJobType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingFailedJob = await db.selectFrom('failed_jobs')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingFailedJob) {
+      // If found, update the existing record
+      await db.updateTable('failed_jobs')
+        .set(newFailedJob)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedFailedJob = await db.selectFrom('failed_jobs')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedFailedJob) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new FailedJobModel(null)
+      const result = await instance.mapWith(updatedFailedJob)
+      return new FailedJobModel(result as FailedJobType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newFailedJob)
+    }
+  }
+
   with(relations: string[]): FailedJobModel {
     this.withRelations = relations
 

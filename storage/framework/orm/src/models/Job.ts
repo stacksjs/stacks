@@ -653,6 +653,51 @@ export class JobModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<JobType>,
+    newJob: NewJob,
+  ): Promise<JobModel> {
+    const key = Object.keys(condition)[0] as keyof JobType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingJob = await db.selectFrom('jobs')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingJob) {
+      // If found, update the existing record
+      await db.updateTable('jobs')
+        .set(newJob)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedJob = await db.selectFrom('jobs')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedJob) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new JobModel(null)
+      const result = await instance.mapWith(updatedJob)
+      return new JobModel(result as JobType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newJob)
+    }
+  }
+
   with(relations: string[]): JobModel {
     this.withRelations = relations
 

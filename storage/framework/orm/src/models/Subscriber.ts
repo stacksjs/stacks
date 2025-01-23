@@ -609,6 +609,51 @@ export class SubscriberModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<SubscriberType>,
+    newSubscriber: NewSubscriber,
+  ): Promise<SubscriberModel> {
+    const key = Object.keys(condition)[0] as keyof SubscriberType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingSubscriber = await db.selectFrom('subscribers')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingSubscriber) {
+      // If found, update the existing record
+      await db.updateTable('subscribers')
+        .set(newSubscriber)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedSubscriber = await db.selectFrom('subscribers')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedSubscriber) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new SubscriberModel(null)
+      const result = await instance.mapWith(updatedSubscriber)
+      return new SubscriberModel(result as SubscriberType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newSubscriber)
+    }
+  }
+
   with(relations: string[]): SubscriberModel {
     this.withRelations = relations
 

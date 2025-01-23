@@ -655,6 +655,51 @@ export class AccessTokenModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<AccessTokenType>,
+    newAccessToken: NewAccessToken,
+  ): Promise<AccessTokenModel> {
+    const key = Object.keys(condition)[0] as keyof AccessTokenType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingAccessToken = await db.selectFrom('personal_access_tokens')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingAccessToken) {
+      // If found, update the existing record
+      await db.updateTable('personal_access_tokens')
+        .set(newAccessToken)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedAccessToken = await db.selectFrom('personal_access_tokens')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedAccessToken) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new AccessTokenModel(null)
+      const result = await instance.mapWith(updatedAccessToken)
+      return new AccessTokenModel(result as AccessTokenType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newAccessToken)
+    }
+  }
+
   with(relations: string[]): AccessTokenModel {
     this.withRelations = relations
 

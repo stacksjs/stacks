@@ -724,6 +724,51 @@ export class UserModel {
     }
   }
 
+  static async updateOrCreate(
+    condition: Partial<UserType>,
+    newUser: NewUser,
+  ): Promise<UserModel> {
+    const key = Object.keys(condition)[0] as keyof UserType
+
+    if (!key) {
+      throw new Error('Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingUser = await db.selectFrom('users')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingUser) {
+      // If found, update the existing record
+      await db.updateTable('users')
+        .set(newUser)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedUser = await db.selectFrom('users')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedUser) {
+        throw new Error('Failed to fetch updated record')
+      }
+
+      const instance = new UserModel(null)
+      const result = await instance.mapWith(updatedUser)
+      return new UserModel(result as UserType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newUser)
+    }
+  }
+
   with(relations: string[]): UserModel {
     this.withRelations = relations
 
