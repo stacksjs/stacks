@@ -40,4 +40,4 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   }
 }
 
-export const AccessTokenRequest = new AccessTokenRequest()
+export const accesstokenRequest = new AccessTokenRequest()

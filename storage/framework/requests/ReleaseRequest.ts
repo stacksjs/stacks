@@ -32,4 +32,4 @@ export class ReleaseRequest extends Request<RequestDataRelease> implements Relea
   }
 }
 
-export const ReleaseRequest = new ReleaseRequest()
+export const releaseRequest = new ReleaseRequest()

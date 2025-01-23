@@ -599,14 +599,18 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  static whereBetween(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+  static whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
     const instance = new SubscriberEmailModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'between', values)
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'between', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'between', values)
+    instance.selectFromQuery = instance.selectFromQuery.where(query)
+    instance.updateFromQuery = instance.updateFromQuery.where(query)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(query)
 
     return instance
   }

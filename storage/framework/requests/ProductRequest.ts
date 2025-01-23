@@ -44,4 +44,4 @@ export class ProductRequest extends Request<RequestDataProduct> implements Produ
   }
 }
 
-export const ProductRequest = new ProductRequest()
+export const productRequest = new ProductRequest()

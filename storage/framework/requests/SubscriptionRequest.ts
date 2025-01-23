@@ -52,4 +52,4 @@ export class SubscriptionRequest extends Request<RequestDataSubscription> implem
   }
 }
 
-export const SubscriptionRequest = new SubscriptionRequest()
+export const subscriptionRequest = new SubscriptionRequest()

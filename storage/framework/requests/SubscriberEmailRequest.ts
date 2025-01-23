@@ -35,4 +35,4 @@ export class SubscriberEmailRequest extends Request<RequestDataSubscriberEmail> 
   }
 }
 
-export const SubscriberEmailRequest = new SubscriberEmailRequest()
+export const subscriberemailRequest = new SubscriberEmailRequest()

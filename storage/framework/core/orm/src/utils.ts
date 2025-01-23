@@ -511,7 +511,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    export const ${modelName}Request = new ${modelName}Request()
+    export const ${modelName.toLocaleLowerCase()}Request = new ${modelName}Request()
     `
 
     const writer = requestFile.writer()
@@ -2228,14 +2228,18 @@ export async function generateModelString(
         return instance
       }
 
-      static whereBetween(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+      static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+        if (range.length !== 2) {
+          throw new Error('Range must have exactly two values: [min, max]')
+        }
+
         const instance = new ${modelName}Model(null)
 
-        instance.selectFromQuery = instance.selectFromQuery.where(column, 'between', values)
+        const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
 
-        instance.updateFromQuery = instance.updateFromQuery.where(column, 'between', values)
-
-        instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'between', values)
+        instance.selectFromQuery = instance.selectFromQuery.where(query)
+        instance.updateFromQuery = instance.updateFromQuery.where(query)
+        instance.deleteFromQuery = instance.deleteFromQuery.where(query)
 
         return instance
       }

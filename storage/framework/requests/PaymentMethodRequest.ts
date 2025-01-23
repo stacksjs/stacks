@@ -46,4 +46,4 @@ export class PaymentMethodRequest extends Request<RequestDataPaymentMethod> impl
   }
 }
 
-export const PaymentMethodRequest = new PaymentMethodRequest()
+export const paymentmethodRequest = new PaymentMethodRequest()

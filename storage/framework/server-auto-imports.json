@@ -160,6 +160,22 @@
     "UserUpdate": true,
     "Users": true,
     "UsersTable": true,
-    "default": true
+    "accesstokenRequest": true,
+    "default": true,
+    "deploymentRequest": true,
+    "errorRequest": true,
+    "failedjobRequest": true,
+    "jobRequest": true,
+    "paymentmethodRequest": true,
+    "postRequest": true,
+    "productRequest": true,
+    "projectRequest": true,
+    "releaseRequest": true,
+    "subscriberRequest": true,
+    "subscriberemailRequest": true,
+    "subscriptionRequest": true,
+    "teamRequest": true,
+    "transactionRequest": true,
+    "userRequest": true
   }
 }
