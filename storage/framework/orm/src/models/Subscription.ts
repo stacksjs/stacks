@@ -638,6 +638,16 @@ export class SubscriptionModel {
     return instance
   }
 
+  whereIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
+  }
+
   static whereIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
@@ -646,6 +656,18 @@ export class SubscriptionModel {
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
 
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
+
+    return instance
+  }
+
+  static whereBetween(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'between', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'between', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'between', values)
 
     return instance
   }

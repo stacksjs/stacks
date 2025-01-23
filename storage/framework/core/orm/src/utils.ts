@@ -2206,6 +2206,16 @@ export async function generateModelString(
 
        ${whereStatements}
 
+      whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+        this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+        this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+        return this
+      }
+
       static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
         const instance = new ${modelName}Model(null)
 
@@ -2214,6 +2224,18 @@ export async function generateModelString(
         instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
 
         instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
+
+        return instance
+      }
+
+      static whereBetween(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        const instance = new ${modelName}Model(null)
+
+        instance.selectFromQuery = instance.selectFromQuery.where(column, 'between', values)
+
+        instance.updateFromQuery = instance.updateFromQuery.where(column, 'between', values)
+
+        instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'between', values)
 
         return instance
       }

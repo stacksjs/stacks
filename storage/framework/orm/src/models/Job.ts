@@ -560,6 +560,16 @@ export class JobModel {
     return instance
   }
 
+  whereIn(column: keyof JobType, values: any[]): JobModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
+  }
+
   static whereIn(column: keyof JobType, values: any[]): JobModel {
     const instance = new JobModel(null)
 
@@ -568,6 +578,18 @@ export class JobModel {
     instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
 
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
+
+    return instance
+  }
+
+  static whereBetween(column: keyof JobType, values: any[]): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'between', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'between', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'between', values)
 
     return instance
   }
