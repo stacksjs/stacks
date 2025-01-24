@@ -25,6 +25,10 @@ interface SubscriberEmailResponse {
   next_cursor: number | null
 }
 
+export interface SubscriberEmailJsonResponse extends Omit<SubscriberEmailsTable, 'password'> {
+  [key: string]: any
+}
+
 export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
 export type NewSubscriberEmail = Partial<Insertable<SubscriberEmailsTable>>
 export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
@@ -33,7 +37,7 @@ export type SubscriberEmails = SubscriberEmailType[]
 export type SubscriberEmailColumn = SubscriberEmails
 export type SubscriberEmailColumns = Array<keyof SubscriberEmails>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: SubscriberEmailType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -969,8 +973,8 @@ export class SubscriberEmailModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<SubscriberEmailType> = {
+  toJSON(): Partial<SubscriberEmailJsonResponse> {
+    const output: Partial<SubscriberEmailJsonResponse> = {
 
       id: this.id,
       email: this.email,
@@ -983,9 +987,9 @@ export class SubscriberEmailModel {
 
     }
 
-        type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
+          type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
 
-        return output as SubscriberEmail
+          return output as SubscriberEmail
   }
 
   parseResult(model: SubscriberEmailModel): SubscriberEmailModel {

@@ -708,6 +708,10 @@ export async function generateModelString(
         }
         next_cursor: number | null
       }
+
+      export interface ${modelName}JsonResponse extends Omit<${formattedTableName}Table, 'password'> {
+        [key: string]: any
+      }
         
       export type ${modelName}Type = Selectable<${formattedTableName}Table>
       export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
@@ -1619,8 +1623,8 @@ export async function generateModelString(
           return await sql\`\${rawQuery}\`\.execute(db)
         }
   
-        toJSON() {
-          const output: Partial<${modelName}Type> = ${jsonFields}
+        toJSON(): Partial<${modelName}JsonResponse> {
+          const output: Partial<${modelName}JsonResponse> = ${jsonFields}
   
           type ${modelName} = Omit<${modelName}Type, 'password'>
   

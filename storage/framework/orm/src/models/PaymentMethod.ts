@@ -40,6 +40,10 @@ interface PaymentMethodResponse {
   next_cursor: number | null
 }
 
+export interface PaymentMethodJsonResponse extends Omit<PaymentMethodsTable, 'password'> {
+  [key: string]: any
+}
+
 export type PaymentMethodType = Selectable<PaymentMethodsTable>
 export type NewPaymentMethod = Partial<Insertable<PaymentMethodsTable>>
 export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
@@ -48,7 +52,7 @@ export type PaymentMethods = PaymentMethodType[]
 export type PaymentMethodColumn = PaymentMethods
 export type PaymentMethodColumns = Array<keyof PaymentMethods>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: PaymentMethodType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -1025,8 +1029,8 @@ export class PaymentMethodModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<PaymentMethodType> = {
+  toJSON(): Partial<PaymentMethodJsonResponse> {
+    const output: Partial<PaymentMethodJsonResponse> = {
 
       id: this.id,
       type: this.type,
@@ -1046,9 +1050,9 @@ export class PaymentMethodModel {
       transactions: this.transactions,
     }
 
-        type PaymentMethod = Omit<PaymentMethodType, 'password'>
+          type PaymentMethod = Omit<PaymentMethodType, 'password'>
 
-        return output as PaymentMethod
+          return output as PaymentMethod
   }
 
   parseResult(model: PaymentMethodModel): PaymentMethodModel {

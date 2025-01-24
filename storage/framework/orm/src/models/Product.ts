@@ -31,6 +31,10 @@ interface ProductResponse {
   next_cursor: number | null
 }
 
+export interface ProductJsonResponse extends Omit<ProductsTable, 'password'> {
+  [key: string]: any
+}
+
 export type ProductType = Selectable<ProductsTable>
 export type NewProduct = Partial<Insertable<ProductsTable>>
 export type ProductUpdate = Updateable<ProductsTable>
@@ -39,7 +43,7 @@ export type Products = ProductType[]
 export type ProductColumn = Products
 export type ProductColumns = Array<keyof Products>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ProductType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -975,8 +979,8 @@ export class ProductModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<ProductType> = {
+  toJSON(): Partial<ProductJsonResponse> {
+    const output: Partial<ProductJsonResponse> = {
 
       id: this.id,
       name: this.name,
@@ -993,9 +997,9 @@ export class ProductModel {
 
     }
 
-        type Product = Omit<ProductType, 'password'>
+          type Product = Omit<ProductType, 'password'>
 
-        return output as Product
+          return output as Product
   }
 
   parseResult(model: ProductModel): ProductModel {

@@ -23,6 +23,10 @@ interface ReleaseResponse {
   next_cursor: number | null
 }
 
+export interface ReleaseJsonResponse extends Omit<ReleasesTable, 'password'> {
+  [key: string]: any
+}
+
 export type ReleaseType = Selectable<ReleasesTable>
 export type NewRelease = Partial<Insertable<ReleasesTable>>
 export type ReleaseUpdate = Updateable<ReleasesTable>
@@ -31,7 +35,7 @@ export type Releases = ReleaseType[]
 export type ReleaseColumn = Releases
 export type ReleaseColumns = Array<keyof Releases>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ReleaseType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -899,8 +903,8 @@ export class ReleaseModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<ReleaseType> = {
+  toJSON(): Partial<ReleaseJsonResponse> {
+    const output: Partial<ReleaseJsonResponse> = {
 
       id: this.id,
       version: this.version,
@@ -911,9 +915,9 @@ export class ReleaseModel {
 
     }
 
-        type Release = Omit<ReleaseType, 'password'>
+          type Release = Omit<ReleaseType, 'password'>
 
-        return output as Release
+          return output as Release
   }
 
   parseResult(model: ReleaseModel): ReleaseModel {

@@ -27,6 +27,10 @@ interface JobResponse {
   next_cursor: number | null
 }
 
+export interface JobJsonResponse extends Omit<JobsTable, 'password'> {
+  [key: string]: any
+}
+
 export type JobType = Selectable<JobsTable>
 export type NewJob = Partial<Insertable<JobsTable>>
 export type JobUpdate = Updateable<JobsTable>
@@ -35,7 +39,7 @@ export type Jobs = JobType[]
 export type JobColumn = Jobs
 export type JobColumns = Array<keyof Jobs>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: JobType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -943,8 +947,8 @@ export class JobModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<JobType> = {
+  toJSON(): Partial<JobJsonResponse> {
+    const output: Partial<JobJsonResponse> = {
 
       id: this.id,
       queue: this.queue,
@@ -959,9 +963,9 @@ export class JobModel {
 
     }
 
-        type Job = Omit<JobType, 'password'>
+          type Job = Omit<JobType, 'password'>
 
-        return output as Job
+          return output as Job
   }
 
   parseResult(model: JobModel): JobModel {

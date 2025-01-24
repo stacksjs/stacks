@@ -36,6 +36,10 @@ interface DeploymentResponse {
   next_cursor: number | null
 }
 
+export interface DeploymentJsonResponse extends Omit<DeploymentsTable, 'password'> {
+  [key: string]: any
+}
+
 export type DeploymentType = Selectable<DeploymentsTable>
 export type NewDeployment = Partial<Insertable<DeploymentsTable>>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
@@ -44,7 +48,7 @@ export type Deployments = DeploymentType[]
 export type DeploymentColumn = Deployments
 export type DeploymentColumns = Array<keyof Deployments>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: DeploymentType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -1002,8 +1006,8 @@ export class DeploymentModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<DeploymentType> = {
+  toJSON(): Partial<DeploymentJsonResponse> {
+    const output: Partial<DeploymentJsonResponse> = {
 
       id: this.id,
       commit_sha: this.commit_sha,
@@ -1022,9 +1026,9 @@ export class DeploymentModel {
       user: this.user,
     }
 
-        type Deployment = Omit<DeploymentType, 'password'>
+          type Deployment = Omit<DeploymentType, 'password'>
 
-        return output as Deployment
+          return output as Deployment
   }
 
   parseResult(model: DeploymentModel): DeploymentModel {

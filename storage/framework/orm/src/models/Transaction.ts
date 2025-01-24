@@ -39,6 +39,10 @@ interface TransactionResponse {
   next_cursor: number | null
 }
 
+export interface TransactionJsonResponse extends Omit<TransactionsTable, 'password'> {
+  [key: string]: any
+}
+
 export type TransactionType = Selectable<TransactionsTable>
 export type NewTransaction = Partial<Insertable<TransactionsTable>>
 export type TransactionUpdate = Updateable<TransactionsTable>
@@ -47,7 +51,7 @@ export type Transactions = TransactionType[]
 export type TransactionColumn = Transactions
 export type TransactionColumns = Array<keyof Transactions>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: TransactionType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -1007,8 +1011,8 @@ export class TransactionModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<TransactionType> = {
+  toJSON(): Partial<TransactionJsonResponse> {
+    const output: Partial<TransactionJsonResponse> = {
 
       id: this.id,
       name: this.name,
@@ -1027,9 +1031,9 @@ export class TransactionModel {
       payment_method: this.payment_method,
     }
 
-        type Transaction = Omit<TransactionType, 'password'>
+          type Transaction = Omit<TransactionType, 'password'>
 
-        return output as Transaction
+          return output as Transaction
   }
 
   parseResult(model: TransactionModel): TransactionModel {

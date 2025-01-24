@@ -39,6 +39,10 @@ interface SubscriptionResponse {
   next_cursor: number | null
 }
 
+export interface SubscriptionJsonResponse extends Omit<SubscriptionsTable, 'password'> {
+  [key: string]: any
+}
+
 export type SubscriptionType = Selectable<SubscriptionsTable>
 export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
@@ -47,7 +51,7 @@ export type Subscriptions = SubscriptionType[]
 export type SubscriptionColumn = Subscriptions
 export type SubscriptionColumns = Array<keyof Subscriptions>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: SubscriptionType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -1035,8 +1039,8 @@ export class SubscriptionModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<SubscriptionType> = {
+  toJSON(): Partial<SubscriptionJsonResponse> {
+    const output: Partial<SubscriptionJsonResponse> = {
 
       id: this.id,
       type: this.type,
@@ -1058,9 +1062,9 @@ export class SubscriptionModel {
       user: this.user,
     }
 
-        type Subscription = Omit<SubscriptionType, 'password'>
+          type Subscription = Omit<SubscriptionType, 'password'>
 
-        return output as Subscription
+          return output as Subscription
   }
 
   parseResult(model: SubscriptionModel): SubscriptionModel {

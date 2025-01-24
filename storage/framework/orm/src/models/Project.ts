@@ -26,6 +26,10 @@ interface ProjectResponse {
   next_cursor: number | null
 }
 
+export interface ProjectJsonResponse extends Omit<ProjectsTable, 'password'> {
+  [key: string]: any
+}
+
 export type ProjectType = Selectable<ProjectsTable>
 export type NewProject = Partial<Insertable<ProjectsTable>>
 export type ProjectUpdate = Updateable<ProjectsTable>
@@ -34,7 +38,7 @@ export type Projects = ProjectType[]
 export type ProjectColumn = Projects
 export type ProjectColumns = Array<keyof Projects>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ProjectType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -932,8 +936,8 @@ export class ProjectModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<ProjectType> = {
+  toJSON(): Partial<ProjectJsonResponse> {
+    const output: Partial<ProjectJsonResponse> = {
 
       id: this.id,
       name: this.name,
@@ -947,9 +951,9 @@ export class ProjectModel {
 
     }
 
-        type Project = Omit<ProjectType, 'password'>
+          type Project = Omit<ProjectType, 'password'>
 
-        return output as Project
+          return output as Project
   }
 
   parseResult(model: ProjectModel): ProjectModel {

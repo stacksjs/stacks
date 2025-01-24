@@ -27,6 +27,10 @@ interface ErrorResponse {
   next_cursor: number | null
 }
 
+export interface ErrorJsonResponse extends Omit<ErrorsTable, 'password'> {
+  [key: string]: any
+}
+
 export type ErrorType = Selectable<ErrorsTable>
 export type NewError = Partial<Insertable<ErrorsTable>>
 export type ErrorUpdate = Updateable<ErrorsTable>
@@ -35,7 +39,7 @@ export type Errors = ErrorType[]
 export type ErrorColumn = Errors
 export type ErrorColumns = Array<keyof Errors>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ErrorType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -943,8 +947,8 @@ export class ErrorModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<ErrorType> = {
+  toJSON(): Partial<ErrorJsonResponse> {
+    const output: Partial<ErrorJsonResponse> = {
 
       id: this.id,
       type: this.type,
@@ -959,9 +963,9 @@ export class ErrorModel {
 
     }
 
-        type Error = Omit<ErrorType, 'password'>
+          type Error = Omit<ErrorType, 'password'>
 
-        return output as Error
+          return output as Error
   }
 
   parseResult(model: ErrorModel): ErrorModel {

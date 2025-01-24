@@ -58,6 +58,10 @@ interface UserResponse {
   next_cursor: number | null
 }
 
+export interface UserJsonResponse extends Omit<UsersTable, 'password'> {
+  [key: string]: any
+}
+
 export type UserType = Selectable<UsersTable>
 export type NewUser = Partial<Insertable<UsersTable>>
 export type UserUpdate = Updateable<UsersTable>
@@ -66,7 +70,7 @@ export type Users = UserType[]
 export type UserColumn = Users
 export type UserColumns = Array<keyof Users>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: UserType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -1252,7 +1256,7 @@ export class UserModel {
   async newSubscriptionInvoice(
     type: string,
     lookupKey: string,
-      options: Partial<Stripe.SubscriptionCreateParams> = {},
+        options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     return await this.newSubscription(type, lookupKey, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
   }
@@ -1260,7 +1264,7 @@ export class UserModel {
   async newSubscription(
     type: string,
     lookupKey: string,
-      options: Partial<Stripe.SubscriptionCreateParams> = {},
+        options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
@@ -1273,7 +1277,7 @@ export class UserModel {
   async updateSubscription(
     type: string,
     lookupKey: string,
-      options: Partial<Stripe.SubscriptionUpdateParams> = {},
+        options: Partial<Stripe.SubscriptionUpdateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.update(this, type, lookupKey, options)
 
@@ -1285,7 +1289,7 @@ export class UserModel {
 
   async cancelSubscription(
     providerId: string,
-      options: Partial<Stripe.SubscriptionCreateParams> = {},
+        options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.cancel(providerId, options)
 
@@ -1293,7 +1297,7 @@ export class UserModel {
   }
 
   async createSetupIntent(
-      options: Stripe.SetupIntentCreateParams = {},
+        options: Stripe.SetupIntentCreateParams = {},
   ): Promise<Stripe.Response<Stripe.SetupIntent>> {
     const defaultOptions: Partial<Stripe.SetupIntentCreateParams> = {
       metadata: options.metadata,
@@ -1308,7 +1312,7 @@ export class UserModel {
 
   async checkout(
     priceIds: CheckoutLineItem[],
-      options: CheckoutOptions = {},
+        options: CheckoutOptions = {},
   ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     const newOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}
 
@@ -1373,8 +1377,8 @@ export class UserModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<UserType> = {
+  toJSON(): Partial<UserJsonResponse> {
+    const output: Partial<UserJsonResponse> = {
 
       id: this.id,
       name: this.name,
@@ -1392,9 +1396,9 @@ export class UserModel {
       transactions: this.transactions,
     }
 
-        type User = Omit<UserType, 'password'>
+          type User = Omit<UserType, 'password'>
 
-        return output as User
+          return output as User
   }
 
   parseResult(model: UserModel): UserModel {

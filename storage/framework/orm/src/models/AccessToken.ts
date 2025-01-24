@@ -31,6 +31,10 @@ interface AccessTokenResponse {
   next_cursor: number | null
 }
 
+export interface AccessTokenJsonResponse extends Omit<PersonalAccessTokensTable, 'password'> {
+  [key: string]: any
+}
+
 export type AccessTokenType = Selectable<PersonalAccessTokensTable>
 export type NewAccessToken = Partial<Insertable<PersonalAccessTokensTable>>
 export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
@@ -39,7 +43,7 @@ export type PersonalAccessTokens = AccessTokenType[]
 export type AccessTokenColumn = PersonalAccessTokens
 export type AccessTokenColumns = Array<keyof PersonalAccessTokens>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: AccessTokenType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -959,8 +963,8 @@ export class AccessTokenModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<AccessTokenType> = {
+  toJSON(): Partial<AccessTokenJsonResponse> {
+    const output: Partial<AccessTokenJsonResponse> = {
 
       id: this.id,
       name: this.name,
@@ -976,9 +980,9 @@ export class AccessTokenModel {
       team: this.team,
     }
 
-        type AccessToken = Omit<AccessTokenType, 'password'>
+          type AccessToken = Omit<AccessTokenType, 'password'>
 
-        return output as AccessToken
+          return output as AccessToken
   }
 
   parseResult(model: AccessTokenModel): AccessTokenModel {

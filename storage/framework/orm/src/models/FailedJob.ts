@@ -27,6 +27,10 @@ interface FailedJobResponse {
   next_cursor: number | null
 }
 
+export interface FailedJobJsonResponse extends Omit<FailedJobsTable, 'password'> {
+  [key: string]: any
+}
+
 export type FailedJobType = Selectable<FailedJobsTable>
 export type NewFailedJob = Partial<Insertable<FailedJobsTable>>
 export type FailedJobUpdate = Updateable<FailedJobsTable>
@@ -35,7 +39,7 @@ export type FailedJobs = FailedJobType[]
 export type FailedJobColumn = FailedJobs
 export type FailedJobColumns = Array<keyof FailedJobs>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: FailedJobType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -943,8 +947,8 @@ export class FailedJobModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<FailedJobType> = {
+  toJSON(): Partial<FailedJobJsonResponse> {
+    const output: Partial<FailedJobJsonResponse> = {
 
       id: this.id,
       connection: this.connection,
@@ -959,9 +963,9 @@ export class FailedJobModel {
 
     }
 
-        type FailedJob = Omit<FailedJobType, 'password'>
+          type FailedJob = Omit<FailedJobType, 'password'>
 
-        return output as FailedJob
+          return output as FailedJob
   }
 
   parseResult(model: FailedJobModel): FailedJobModel {

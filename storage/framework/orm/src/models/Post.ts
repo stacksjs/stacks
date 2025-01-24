@@ -29,6 +29,10 @@ interface PostResponse {
   next_cursor: number | null
 }
 
+export interface PostJsonResponse extends Omit<PostsTable, 'password'> {
+  [key: string]: any
+}
+
 export type PostType = Selectable<PostsTable>
 export type NewPost = Partial<Insertable<PostsTable>>
 export type PostUpdate = Updateable<PostsTable>
@@ -37,7 +41,7 @@ export type Posts = PostType[]
 export type PostColumn = Posts
 export type PostColumns = Array<keyof Posts>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: PostType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -937,8 +941,8 @@ export class PostModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<PostType> = {
+  toJSON(): Partial<PostJsonResponse> {
+    const output: Partial<PostJsonResponse> = {
 
       id: this.id,
       title: this.title,
@@ -952,9 +956,9 @@ export class PostModel {
       user: this.user,
     }
 
-        type Post = Omit<PostType, 'password'>
+          type Post = Omit<PostType, 'password'>
 
-        return output as Post
+          return output as Post
   }
 
   parseResult(model: PostModel): PostModel {

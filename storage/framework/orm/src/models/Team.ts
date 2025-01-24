@@ -36,6 +36,10 @@ interface TeamResponse {
   next_cursor: number | null
 }
 
+export interface TeamJsonResponse extends Omit<TeamsTable, 'password'> {
+  [key: string]: any
+}
+
 export type TeamType = Selectable<TeamsTable>
 export type NewTeam = Partial<Insertable<TeamsTable>>
 export type TeamUpdate = Updateable<TeamsTable>
@@ -44,7 +48,7 @@ export type Teams = TeamType[]
 export type TeamColumn = Teams
 export type TeamColumns = Array<keyof Teams>
 
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: TeamType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -1020,8 +1024,8 @@ export class TeamModel {
     return await sql`${rawQuery}`.execute(db)
   }
 
-  toJSON() {
-    const output: Partial<TeamType> = {
+  toJSON(): Partial<TeamJsonResponse> {
+    const output: Partial<TeamJsonResponse> = {
 
       id: this.id,
       name: this.name,
@@ -1040,9 +1044,9 @@ export class TeamModel {
       personal_access_tokens: this.personal_access_tokens,
     }
 
-        type Team = Omit<TeamType, 'password'>
+          type Team = Omit<TeamType, 'password'>
 
-        return output as Team
+          return output as Team
   }
 
   parseResult(model: TeamModel): TeamModel {
