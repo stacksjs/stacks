@@ -3,7 +3,7 @@ import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import User from './User'
 
@@ -195,7 +195,7 @@ export class SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No SubscriptionModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
@@ -210,7 +210,7 @@ export class SubscriptionModel {
     const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No SubscriptionModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
@@ -735,7 +735,7 @@ export class SubscriptionModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No SubscriptionModel results found for query')
+      throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
 
     const instance = new SubscriptionModel(null)
 

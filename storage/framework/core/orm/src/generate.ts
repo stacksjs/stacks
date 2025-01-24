@@ -687,7 +687,7 @@ export async function generateModelString(
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { db, sql } from '@stacksjs/database'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-      import { HttpError } from '@stacksjs/error-handling'
+      import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
       import { generateTwoFactorSecret } from '@stacksjs/auth'
       import { verifyTwoFactorCode } from '@stacksjs/auth'
@@ -834,7 +834,7 @@ export async function generateModelString(
           ${instanceSoftDeleteStatementsSelectFrom}
   
           if (model === undefined)
-            throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
+            throw new ModelNotFoundException(404, \`No ${modelName}Model results for \${id}\`)
   
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
   
@@ -851,7 +851,7 @@ export async function generateModelString(
           ${thisSoftDeleteStatements}
   
           if (model === undefined)
-            throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
+            throw new ModelNotFoundException(404, \`No ${modelName}Model results for \${id}\`)
   
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
   
@@ -1322,7 +1322,7 @@ export async function generateModelString(
           const model = await this.selectFromQuery.executeTakeFirst()
   
           if (model === undefined)
-            throw new HttpError(404, 'No ${modelName}Model results found for query')
+            throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
   
           const instance = new ${modelName}Model(null)
   

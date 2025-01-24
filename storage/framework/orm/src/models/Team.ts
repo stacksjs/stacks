@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import AccessToken from './AccessToken'
 
@@ -184,7 +184,7 @@ export class TeamModel {
     const instance = new TeamModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No TeamModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -199,7 +199,7 @@ export class TeamModel {
     const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No TeamModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -702,7 +702,7 @@ export class TeamModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No TeamModel results found for query')
+      throw new ModelNotFoundException(404, 'No TeamModel results found for query')
 
     const instance = new TeamModel(null)
 

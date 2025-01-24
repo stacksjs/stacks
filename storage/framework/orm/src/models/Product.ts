@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 export interface ProductsTable {
   id?: number
@@ -173,7 +173,7 @@ export class ProductModel {
     const instance = new ProductModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No ProductModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
@@ -188,7 +188,7 @@ export class ProductModel {
     const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No ProductModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
@@ -689,7 +689,7 @@ export class ProductModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No ProductModel results found for query')
+      throw new ModelNotFoundException(404, 'No ProductModel results found for query')
 
     const instance = new ProductModel(null)
 

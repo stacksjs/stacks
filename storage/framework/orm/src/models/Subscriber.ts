@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 export interface SubscribersTable {
   id?: number
@@ -151,7 +151,7 @@ export class SubscriberModel {
     const instance = new SubscriberModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No SubscriberModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No SubscriberModel results for ${id}`)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -166,7 +166,7 @@ export class SubscriberModel {
     const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No SubscriberModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No SubscriberModel results for ${id}`)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -613,7 +613,7 @@ export class SubscriberModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No SubscriberModel results found for query')
+      throw new ModelNotFoundException(404, 'No SubscriberModel results found for query')
 
     const instance = new SubscriberModel(null)
 

@@ -1,5 +1,6 @@
 export * from './handler'
 export * from './http'
+export * from './model'
 export * from './utils'
 export {
   err,

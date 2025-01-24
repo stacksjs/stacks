@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 export interface ProjectsTable {
   id?: number
@@ -160,7 +160,7 @@ export class ProjectModel {
     const instance = new ProjectModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No ProjectModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -175,7 +175,7 @@ export class ProjectModel {
     const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No ProjectModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -646,7 +646,7 @@ export class ProjectModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No ProjectModel results found for query')
+      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
 
     const instance = new ProjectModel(null)
 

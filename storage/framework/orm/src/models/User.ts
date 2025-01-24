@@ -8,7 +8,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
 
@@ -222,7 +222,7 @@ export class UserModel {
     const instance = new UserModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No UserModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -237,7 +237,7 @@ export class UserModel {
     const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No UserModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -727,7 +727,7 @@ export class UserModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No UserModel results found for query')
+      throw new ModelNotFoundException(404, 'No UserModel results found for query')
 
     const instance = new UserModel(null)
 

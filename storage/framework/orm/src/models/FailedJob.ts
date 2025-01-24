@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 export interface FailedJobsTable {
   id?: number
@@ -163,7 +163,7 @@ export class FailedJobModel {
     const instance = new FailedJobModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No FailedJobModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
@@ -178,7 +178,7 @@ export class FailedJobModel {
     const model = await db.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No FailedJobModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
@@ -657,7 +657,7 @@ export class FailedJobModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No FailedJobModel results found for query')
+      throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
 
     const instance = new FailedJobModel(null)
 

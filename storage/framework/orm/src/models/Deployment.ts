@@ -3,7 +3,7 @@ import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import User from './User'
 
@@ -186,7 +186,7 @@ export class DeploymentModel {
     const instance = new DeploymentModel(null)
 
     if (model === undefined)
-      throw new HttpError(404, `No DeploymentModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -201,7 +201,7 @@ export class DeploymentModel {
     const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No DeploymentModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -702,7 +702,7 @@ export class DeploymentModel {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, 'No DeploymentModel results found for query')
+      throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
 
     const instance = new DeploymentModel(null)
 
