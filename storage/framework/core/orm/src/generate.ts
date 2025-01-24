@@ -700,7 +700,7 @@ export async function generateModelString(
       }
   
       interface ${modelName}Response {
-        data: ${formattedTableName}
+        data: ${modelName}JsonResponse[]
         paging: {
           total_records: number
           page: number
@@ -716,10 +716,6 @@ export async function generateModelString(
       export type ${modelName}Type = Selectable<${formattedTableName}Table>
       export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
       export type ${modelName}Update = Updateable<${formattedTableName}Table>
-      export type ${formattedTableName} = ${modelName}Type[]
-  
-      export type ${modelName}Column = ${formattedTableName}
-      export type ${modelName}Columns = Array<keyof ${formattedTableName}>
   
       type SortDirection = 'asc' | 'desc'
       interface SortOptions { column: ${modelName}Type, order: SortDirection }

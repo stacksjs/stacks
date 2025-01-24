@@ -27,7 +27,7 @@ export interface TeamsTable {
 }
 
 interface TeamResponse {
-  data: Teams
+  data: TeamJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -43,10 +43,6 @@ export interface TeamJsonResponse extends Omit<TeamsTable, 'password'> {
 export type TeamType = Selectable<TeamsTable>
 export type NewTeam = Partial<Insertable<TeamsTable>>
 export type TeamUpdate = Updateable<TeamsTable>
-export type Teams = TeamType[]
-
-export type TeamColumn = Teams
-export type TeamColumns = Array<keyof Teams>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: TeamType, order: SortDirection }

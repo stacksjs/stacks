@@ -27,7 +27,7 @@ export interface DeploymentsTable {
 }
 
 interface DeploymentResponse {
-  data: Deployments
+  data: DeploymentJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -43,10 +43,6 @@ export interface DeploymentJsonResponse extends Omit<DeploymentsTable, 'password
 export type DeploymentType = Selectable<DeploymentsTable>
 export type NewDeployment = Partial<Insertable<DeploymentsTable>>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
-export type Deployments = DeploymentType[]
-
-export type DeploymentColumn = Deployments
-export type DeploymentColumns = Array<keyof Deployments>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: DeploymentType, order: SortDirection }

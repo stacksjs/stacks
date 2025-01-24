@@ -31,7 +31,7 @@ export interface PaymentMethodsTable {
 }
 
 interface PaymentMethodResponse {
-  data: PaymentMethods
+  data: PaymentMethodJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -47,10 +47,6 @@ export interface PaymentMethodJsonResponse extends Omit<PaymentMethodsTable, 'pa
 export type PaymentMethodType = Selectable<PaymentMethodsTable>
 export type NewPaymentMethod = Partial<Insertable<PaymentMethodsTable>>
 export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
-export type PaymentMethods = PaymentMethodType[]
-
-export type PaymentMethodColumn = PaymentMethods
-export type PaymentMethodColumns = Array<keyof PaymentMethods>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: PaymentMethodType, order: SortDirection }

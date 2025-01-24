@@ -22,7 +22,7 @@ export interface PersonalAccessTokensTable {
 }
 
 interface AccessTokenResponse {
-  data: PersonalAccessTokens
+  data: AccessTokenJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -38,10 +38,6 @@ export interface AccessTokenJsonResponse extends Omit<PersonalAccessTokensTable,
 export type AccessTokenType = Selectable<PersonalAccessTokensTable>
 export type NewAccessToken = Partial<Insertable<PersonalAccessTokensTable>>
 export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
-export type PersonalAccessTokens = AccessTokenType[]
-
-export type AccessTokenColumn = PersonalAccessTokens
-export type AccessTokenColumns = Array<keyof PersonalAccessTokens>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: AccessTokenType, order: SortDirection }

@@ -49,7 +49,7 @@ export interface UsersTable {
 }
 
 interface UserResponse {
-  data: Users
+  data: UserJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -65,10 +65,6 @@ export interface UserJsonResponse extends Omit<UsersTable, 'password'> {
 export type UserType = Selectable<UsersTable>
 export type NewUser = Partial<Insertable<UsersTable>>
 export type UserUpdate = Updateable<UsersTable>
-export type Users = UserType[]
-
-export type UserColumn = Users
-export type UserColumns = Array<keyof Users>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: UserType, order: SortDirection }

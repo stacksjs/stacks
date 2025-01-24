@@ -18,7 +18,7 @@ export interface JobsTable {
 }
 
 interface JobResponse {
-  data: Jobs
+  data: JobJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -34,10 +34,6 @@ export interface JobJsonResponse extends Omit<JobsTable, 'password'> {
 export type JobType = Selectable<JobsTable>
 export type NewJob = Partial<Insertable<JobsTable>>
 export type JobUpdate = Updateable<JobsTable>
-export type Jobs = JobType[]
-
-export type JobColumn = Jobs
-export type JobColumns = Array<keyof Jobs>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: JobType, order: SortDirection }

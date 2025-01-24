@@ -30,7 +30,7 @@ export interface SubscriptionsTable {
 }
 
 interface SubscriptionResponse {
-  data: Subscriptions
+  data: SubscriptionJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -46,10 +46,6 @@ export interface SubscriptionJsonResponse extends Omit<SubscriptionsTable, 'pass
 export type SubscriptionType = Selectable<SubscriptionsTable>
 export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
-export type Subscriptions = SubscriptionType[]
-
-export type SubscriptionColumn = Subscriptions
-export type SubscriptionColumns = Array<keyof Subscriptions>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: SubscriptionType, order: SortDirection }

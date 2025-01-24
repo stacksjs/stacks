@@ -16,7 +16,7 @@ export interface SubscriberEmailsTable {
 }
 
 interface SubscriberEmailResponse {
-  data: SubscriberEmails
+  data: SubscriberEmailJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -32,10 +32,6 @@ export interface SubscriberEmailJsonResponse extends Omit<SubscriberEmailsTable,
 export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
 export type NewSubscriberEmail = Partial<Insertable<SubscriberEmailsTable>>
 export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
-export type SubscriberEmails = SubscriberEmailType[]
-
-export type SubscriberEmailColumn = SubscriberEmails
-export type SubscriberEmailColumns = Array<keyof SubscriberEmails>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: SubscriberEmailType, order: SortDirection }

@@ -20,7 +20,7 @@ export interface PostsTable {
 }
 
 interface PostResponse {
-  data: Posts
+  data: PostJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -36,10 +36,6 @@ export interface PostJsonResponse extends Omit<PostsTable, 'password'> {
 export type PostType = Selectable<PostsTable>
 export type NewPost = Partial<Insertable<PostsTable>>
 export type PostUpdate = Updateable<PostsTable>
-export type Posts = PostType[]
-
-export type PostColumn = Posts
-export type PostColumns = Array<keyof Posts>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: PostType, order: SortDirection }

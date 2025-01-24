@@ -18,7 +18,7 @@ export interface FailedJobsTable {
 }
 
 interface FailedJobResponse {
-  data: FailedJobs
+  data: FailedJobJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -34,10 +34,6 @@ export interface FailedJobJsonResponse extends Omit<FailedJobsTable, 'password'>
 export type FailedJobType = Selectable<FailedJobsTable>
 export type NewFailedJob = Partial<Insertable<FailedJobsTable>>
 export type FailedJobUpdate = Updateable<FailedJobsTable>
-export type FailedJobs = FailedJobType[]
-
-export type FailedJobColumn = FailedJobs
-export type FailedJobColumns = Array<keyof FailedJobs>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: FailedJobType, order: SortDirection }

@@ -22,7 +22,7 @@ export interface ProductsTable {
 }
 
 interface ProductResponse {
-  data: Products
+  data: ProductJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -38,10 +38,6 @@ export interface ProductJsonResponse extends Omit<ProductsTable, 'password'> {
 export type ProductType = Selectable<ProductsTable>
 export type NewProduct = Partial<Insertable<ProductsTable>>
 export type ProductUpdate = Updateable<ProductsTable>
-export type Products = ProductType[]
-
-export type ProductColumn = Products
-export type ProductColumns = Array<keyof Products>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ProductType, order: SortDirection }

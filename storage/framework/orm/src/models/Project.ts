@@ -17,7 +17,7 @@ export interface ProjectsTable {
 }
 
 interface ProjectResponse {
-  data: Projects
+  data: ProjectJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -33,10 +33,6 @@ export interface ProjectJsonResponse extends Omit<ProjectsTable, 'password'> {
 export type ProjectType = Selectable<ProjectsTable>
 export type NewProject = Partial<Insertable<ProjectsTable>>
 export type ProjectUpdate = Updateable<ProjectsTable>
-export type Projects = ProjectType[]
-
-export type ProjectColumn = Projects
-export type ProjectColumns = Array<keyof Projects>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ProjectType, order: SortDirection }

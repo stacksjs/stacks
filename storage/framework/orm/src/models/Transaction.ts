@@ -30,7 +30,7 @@ export interface TransactionsTable {
 }
 
 interface TransactionResponse {
-  data: Transactions
+  data: TransactionJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -46,10 +46,6 @@ export interface TransactionJsonResponse extends Omit<TransactionsTable, 'passwo
 export type TransactionType = Selectable<TransactionsTable>
 export type NewTransaction = Partial<Insertable<TransactionsTable>>
 export type TransactionUpdate = Updateable<TransactionsTable>
-export type Transactions = TransactionType[]
-
-export type TransactionColumn = Transactions
-export type TransactionColumns = Array<keyof Transactions>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: TransactionType, order: SortDirection }

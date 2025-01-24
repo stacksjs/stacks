@@ -14,7 +14,7 @@ export interface ReleasesTable {
 }
 
 interface ReleaseResponse {
-  data: Releases
+  data: ReleaseJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -30,10 +30,6 @@ export interface ReleaseJsonResponse extends Omit<ReleasesTable, 'password'> {
 export type ReleaseType = Selectable<ReleasesTable>
 export type NewRelease = Partial<Insertable<ReleasesTable>>
 export type ReleaseUpdate = Updateable<ReleasesTable>
-export type Releases = ReleaseType[]
-
-export type ReleaseColumn = Releases
-export type ReleaseColumns = Array<keyof Releases>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ReleaseType, order: SortDirection }

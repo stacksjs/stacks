@@ -18,7 +18,7 @@ export interface ErrorsTable {
 }
 
 interface ErrorResponse {
-  data: Errors
+  data: ErrorJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -34,10 +34,6 @@ export interface ErrorJsonResponse extends Omit<ErrorsTable, 'password'> {
 export type ErrorType = Selectable<ErrorsTable>
 export type NewError = Partial<Insertable<ErrorsTable>>
 export type ErrorUpdate = Updateable<ErrorsTable>
-export type Errors = ErrorType[]
-
-export type ErrorColumn = Errors
-export type ErrorColumns = Array<keyof Errors>
 
       type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ErrorType, order: SortDirection }
