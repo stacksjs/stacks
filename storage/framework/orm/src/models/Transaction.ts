@@ -1031,9 +1031,7 @@ export class TransactionModel {
       payment_method: this.payment_method,
     }
 
-          type Transaction = Omit<TransactionType, 'password'>
-
-          return output as Transaction
+    return output
   }
 
   parseResult(model: TransactionModel): TransactionModel {

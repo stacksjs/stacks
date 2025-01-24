@@ -1062,9 +1062,7 @@ export class SubscriptionModel {
       user: this.user,
     }
 
-          type Subscription = Omit<SubscriptionType, 'password'>
-
-          return output as Subscription
+    return output
   }
 
   parseResult(model: SubscriptionModel): SubscriptionModel {

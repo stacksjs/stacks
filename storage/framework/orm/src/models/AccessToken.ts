@@ -980,9 +980,7 @@ export class AccessTokenModel {
       team: this.team,
     }
 
-          type AccessToken = Omit<AccessTokenType, 'password'>
-
-          return output as AccessToken
+    return output
   }
 
   parseResult(model: AccessTokenModel): AccessTokenModel {

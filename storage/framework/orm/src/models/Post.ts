@@ -956,9 +956,7 @@ export class PostModel {
       user: this.user,
     }
 
-          type Post = Omit<PostType, 'password'>
-
-          return output as Post
+    return output
   }
 
   parseResult(model: PostModel): PostModel {

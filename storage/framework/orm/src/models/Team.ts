@@ -1044,9 +1044,7 @@ export class TeamModel {
       personal_access_tokens: this.personal_access_tokens,
     }
 
-          type Team = Omit<TeamType, 'password'>
-
-          return output as Team
+    return output
   }
 
   parseResult(model: TeamModel): TeamModel {

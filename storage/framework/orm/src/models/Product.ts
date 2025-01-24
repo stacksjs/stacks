@@ -997,9 +997,7 @@ export class ProductModel {
 
     }
 
-          type Product = Omit<ProductType, 'password'>
-
-          return output as Product
+    return output
   }
 
   parseResult(model: ProductModel): ProductModel {

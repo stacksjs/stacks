@@ -963,9 +963,7 @@ export class FailedJobModel {
 
     }
 
-          type FailedJob = Omit<FailedJobType, 'password'>
-
-          return output as FailedJob
+    return output
   }
 
   parseResult(model: FailedJobModel): FailedJobModel {

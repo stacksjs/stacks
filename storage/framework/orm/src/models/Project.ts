@@ -951,9 +951,7 @@ export class ProjectModel {
 
     }
 
-          type Project = Omit<ProjectType, 'password'>
-
-          return output as Project
+    return output
   }
 
   parseResult(model: ProjectModel): ProjectModel {

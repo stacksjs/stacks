@@ -915,9 +915,7 @@ export class ReleaseModel {
 
     }
 
-          type Release = Omit<ReleaseType, 'password'>
-
-          return output as Release
+    return output
   }
 
   parseResult(model: ReleaseModel): ReleaseModel {

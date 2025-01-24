@@ -1626,9 +1626,7 @@ export async function generateModelString(
         toJSON(): Partial<${modelName}JsonResponse> {
           const output: Partial<${modelName}JsonResponse> = ${jsonFields}
   
-          type ${modelName} = Omit<${modelName}Type, 'password'>
-  
-          return output as ${modelName}
+          return output
         }
   
           parseResult(model: ${modelName}Model): ${modelName}Model {

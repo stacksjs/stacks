@@ -963,9 +963,7 @@ export class ErrorModel {
 
     }
 
-          type Error = Omit<ErrorType, 'password'>
-
-          return output as Error
+    return output
   }
 
   parseResult(model: ErrorModel): ErrorModel {

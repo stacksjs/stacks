@@ -1396,9 +1396,7 @@ export class UserModel {
       transactions: this.transactions,
     }
 
-          type User = Omit<UserType, 'password'>
-
-          return output as User
+    return output
   }
 
   parseResult(model: UserModel): UserModel {

@@ -963,9 +963,7 @@ export class JobModel {
 
     }
 
-          type Job = Omit<JobType, 'password'>
-
-          return output as Job
+    return output
   }
 
   parseResult(model: JobModel): JobModel {

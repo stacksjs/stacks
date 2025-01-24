@@ -915,9 +915,7 @@ export class SubscriberModel {
 
     }
 
-          type Subscriber = Omit<SubscriberType, 'password'>
-
-          return output as Subscriber
+    return output
   }
 
   parseResult(model: SubscriberModel): SubscriberModel {

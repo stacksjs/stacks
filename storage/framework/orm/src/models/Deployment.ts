@@ -1026,9 +1026,7 @@ export class DeploymentModel {
       user: this.user,
     }
 
-          type Deployment = Omit<DeploymentType, 'password'>
-
-          return output as Deployment
+    return output
   }
 
   parseResult(model: DeploymentModel): DeploymentModel {
