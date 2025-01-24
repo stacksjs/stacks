@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBillable } from '../../functions/billing/payments'
+import { useBillable } from '../../../functions/billing/payments'
 
 const emit = defineEmits(['cancelPaymentMethodAddition'])
 const { loadCardForm, handleAddPaymentMethod } = useBillable()

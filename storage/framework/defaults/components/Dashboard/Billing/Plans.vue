@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { saas } from '@stacksjs/browser'
-import { useBillable } from '../../functions/billing/payments'
+import { useBillable } from '../../../functions/billing/payments'
 
 const checkedPlanType = ref('monthly')
 const selectedPlan = ref('')

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useBillable } from '../../../../storage/framework/defaults/functions/billing/payments'
-import ActivePlan from '../../../components/Billing/ActivePlan.vue'
-import PaymentMethod from '../../../components/Billing/PaymentMethod.vue'
-import Plans from '../../../components/Billing/Plans.vue'
-import LoadingDetails from '../../../components/Skeleton/LoadingCard.vue'
-import TransactionHistory from '../../../components/Transaction/index.vue'
+import { useBillable } from '../../../functions/billing/payments'
+import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.vue'
+import PaymentMethod from '../../../components/Dashboard/Billing/PaymentMethod.vue'
+import Plans from '../../../components/Dashboard/Billing/Plans.vue'
+import LoadingDetails from '../../../components/Dashboard/Skeleton/LoadingCard.vue'
+import TransactionHistory from '../../../components/Dashboard/Transaction/index.vue'
 
 const { isEmpty, showCurrentPlan } = useBillable()
 
