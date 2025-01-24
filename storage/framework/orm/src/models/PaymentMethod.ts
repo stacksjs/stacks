@@ -746,6 +746,38 @@ export class PaymentMethodModel {
     return data
   }
 
+  static async latest(): Promise<PaymentMethodType | undefined> {
+    const model = await db.selectFrom('payment_methods')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PaymentMethodModel(null)
+    const result = await instance.mapWith(model)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
+  }
+
+  static async oldest(): Promise<PaymentMethodType | undefined> {
+    const model = await db.selectFrom('payment_methods')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PaymentMethodModel(null)
+    const result = await instance.mapWith(model)
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<PaymentMethodType>,
     newPaymentMethod: NewPaymentMethod,
@@ -1008,7 +1040,7 @@ export class PaymentMethodModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('transactions')
-      .where('paymentmethod_id', '=', this.id)
+      .where('transaction_id', '=', this.id)
       .limit(5)
       .selectAll()
       .execute()

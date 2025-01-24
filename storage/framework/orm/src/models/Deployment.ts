@@ -736,6 +736,38 @@ export class DeploymentModel {
     return data
   }
 
+  static async latest(): Promise<DeploymentType | undefined> {
+    const model = await db.selectFrom('deployments')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new DeploymentModel(null)
+    const result = await instance.mapWith(model)
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
+  }
+
+  static async oldest(): Promise<DeploymentType | undefined> {
+    const model = await db.selectFrom('deployments')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new DeploymentModel(null)
+    const result = await instance.mapWith(model)
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<DeploymentType>,
     newDeployment: NewDeployment,

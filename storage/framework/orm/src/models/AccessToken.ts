@@ -693,6 +693,38 @@ export class AccessTokenModel {
     return data
   }
 
+  static async latest(): Promise<AccessTokenType | undefined> {
+    const model = await db.selectFrom('personal_access_tokens')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new AccessTokenModel(null)
+    const result = await instance.mapWith(model)
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
+  static async oldest(): Promise<AccessTokenType | undefined> {
+    const model = await db.selectFrom('personal_access_tokens')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new AccessTokenModel(null)
+    const result = await instance.mapWith(model)
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<AccessTokenType>,
     newAccessToken: NewAccessToken,

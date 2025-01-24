@@ -769,6 +769,38 @@ export class SubscriptionModel {
     return data
   }
 
+  static async latest(): Promise<SubscriptionType | undefined> {
+    const model = await db.selectFrom('subscriptions')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(null)
+    const result = await instance.mapWith(model)
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
+  static async oldest(): Promise<SubscriptionType | undefined> {
+    const model = await db.selectFrom('subscriptions')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(null)
+    const result = await instance.mapWith(model)
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<SubscriptionType>,
     newSubscription: NewSubscription,

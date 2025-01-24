@@ -680,6 +680,38 @@ export class ProjectModel {
     return data
   }
 
+  static async latest(): Promise<ProjectType | undefined> {
+    const model = await db.selectFrom('projects')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
+  static async oldest(): Promise<ProjectType | undefined> {
+    const model = await db.selectFrom('projects')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<ProjectType>,
     newProject: NewProject,

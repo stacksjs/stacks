@@ -691,6 +691,38 @@ export class JobModel {
     return data
   }
 
+  static async latest(): Promise<JobType | undefined> {
+    const model = await db.selectFrom('jobs')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new JobModel(null)
+    const result = await instance.mapWith(model)
+    const data = new JobModel(result as JobType)
+
+    return data
+  }
+
+  static async oldest(): Promise<JobType | undefined> {
+    const model = await db.selectFrom('jobs')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new JobModel(null)
+    const result = await instance.mapWith(model)
+    const data = new JobModel(result as JobType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<JobType>,
     newJob: NewJob,

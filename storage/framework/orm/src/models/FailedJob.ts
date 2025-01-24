@@ -691,6 +691,38 @@ export class FailedJobModel {
     return data
   }
 
+  static async latest(): Promise<FailedJobType | undefined> {
+    const model = await db.selectFrom('failed_jobs')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new FailedJobModel(null)
+    const result = await instance.mapWith(model)
+    const data = new FailedJobModel(result as FailedJobType)
+
+    return data
+  }
+
+  static async oldest(): Promise<FailedJobType | undefined> {
+    const model = await db.selectFrom('failed_jobs')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new FailedJobModel(null)
+    const result = await instance.mapWith(model)
+    const data = new FailedJobModel(result as FailedJobType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<FailedJobType>,
     newFailedJob: NewFailedJob,

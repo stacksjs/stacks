@@ -708,6 +708,38 @@ export class SubscriberEmailModel {
     return data
   }
 
+  static async latest(): Promise<SubscriberEmailType | undefined> {
+    const model = await db.selectFrom('subscriber_emails')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberEmailModel(null)
+    const result = await instance.mapWith(model)
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
+  static async oldest(): Promise<SubscriberEmailType | undefined> {
+    const model = await db.selectFrom('subscriber_emails')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberEmailModel(null)
+    const result = await instance.mapWith(model)
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<SubscriberEmailType>,
     newSubscriberEmail: NewSubscriberEmail,

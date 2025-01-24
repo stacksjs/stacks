@@ -691,6 +691,38 @@ export class ErrorModel {
     return data
   }
 
+  static async latest(): Promise<ErrorType | undefined> {
+    const model = await db.selectFrom('errors')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
+  static async oldest(): Promise<ErrorType | undefined> {
+    const model = await db.selectFrom('errors')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<ErrorType>,
     newError: NewError,

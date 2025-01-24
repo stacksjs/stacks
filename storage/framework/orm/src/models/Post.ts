@@ -671,6 +671,38 @@ export class PostModel {
     return data
   }
 
+  static async latest(): Promise<PostType | undefined> {
+    const model = await db.selectFrom('posts')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(null)
+    const result = await instance.mapWith(model)
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
+  static async oldest(): Promise<PostType | undefined> {
+    const model = await db.selectFrom('posts')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(null)
+    const result = await instance.mapWith(model)
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<PostType>,
     newPost: NewPost,

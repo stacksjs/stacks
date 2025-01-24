@@ -761,6 +761,38 @@ export class UserModel {
     return data
   }
 
+  static async latest(): Promise<UserType | undefined> {
+    const model = await db.selectFrom('users')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(null)
+    const result = await instance.mapWith(model)
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
+  static async oldest(): Promise<UserType | undefined> {
+    const model = await db.selectFrom('users')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(null)
+    const result = await instance.mapWith(model)
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<UserType>,
     newUser: NewUser,

@@ -727,6 +727,38 @@ export class TransactionModel {
     return data
   }
 
+  static async latest(): Promise<TransactionType | undefined> {
+    const model = await db.selectFrom('transactions')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(null)
+    const result = await instance.mapWith(model)
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
+  static async oldest(): Promise<TransactionType | undefined> {
+    const model = await db.selectFrom('transactions')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(null)
+    const result = await instance.mapWith(model)
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<TransactionType>,
     newTransaction: NewTransaction,

@@ -723,6 +723,38 @@ export class ProductModel {
     return data
   }
 
+  static async latest(): Promise<ProductType | undefined> {
+    const model = await db.selectFrom('products')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
+  static async oldest(): Promise<ProductType | undefined> {
+    const model = await db.selectFrom('products')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<ProductType>,
     newProduct: NewProduct,

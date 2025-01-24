@@ -1355,6 +1355,38 @@ export async function generateModelString(
   
           return data
         }
+
+        static async latest(): Promise<${modelName}Type | undefined> {
+          const model = await db.selectFrom('${tableName}')
+            .selectAll()
+            .orderBy('created_at', 'desc')
+            .executeTakeFirst()
+
+          if (!model)
+            return undefined
+
+          const instance = new ${modelName}Model(null)
+          const result = await instance.mapWith(model)
+          const data = new ${modelName}Model(result as ${modelName}Type)
+
+          return data
+        }
+
+        static async oldest(): Promise<${modelName}Type | undefined> {
+          const model = await db.selectFrom('${tableName}')
+            .selectAll()
+            .orderBy('created_at', 'asc')
+            .executeTakeFirst()
+
+          if (!model)
+            return undefined
+
+          const instance = new ${modelName}Model(null)
+          const result = await instance.mapWith(model)
+          const data = new ${modelName}Model(result as ${modelName}Type)
+
+          return data
+        }
   
         static async firstOrCreate(
           condition: Partial<${modelName}Type>,

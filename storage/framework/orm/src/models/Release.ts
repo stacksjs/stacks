@@ -647,6 +647,38 @@ export class ReleaseModel {
     return data
   }
 
+  static async latest(): Promise<ReleaseType | undefined> {
+    const model = await db.selectFrom('releases')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
+  static async oldest(): Promise<ReleaseType | undefined> {
+    const model = await db.selectFrom('releases')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(null)
+    const result = await instance.mapWith(model)
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<ReleaseType>,
     newRelease: NewRelease,

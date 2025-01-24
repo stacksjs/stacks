@@ -736,6 +736,38 @@ export class TeamModel {
     return data
   }
 
+  static async latest(): Promise<TeamType | undefined> {
+    const model = await db.selectFrom('teams')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(null)
+    const result = await instance.mapWith(model)
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
+  static async oldest(): Promise<TeamType | undefined> {
+    const model = await db.selectFrom('teams')
+      .selectAll()
+      .orderBy('created_at', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(null)
+    const result = await instance.mapWith(model)
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
   static async firstOrCreate(
     condition: Partial<TeamType>,
     newTeam: NewTeam,
