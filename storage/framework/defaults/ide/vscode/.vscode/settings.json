@@ -158,7 +158,7 @@
   "cSpell.customDictionaries": {
     "stacks": {
       "name": "stacks-dictionary",
-      "path": "./storage/framework/ide/dictionary.txt",
+      "path": "./storage/framework/defaults/ide/dictionary.txt",
       "scope": "user",
       "addWords": true
     },

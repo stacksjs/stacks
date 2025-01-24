@@ -21,7 +21,7 @@ export const functionsConfig: ViteConfig = {
 
 export function functionsBuildOptions(): ViteBuildOptions {
   return {
-    outDir: frameworkPath('functions/dist'),
+    outDir: frameworkPath('defaults/functions/dist'),
     emptyOutDir: true,
     sourcemap: true,
     // sourcemap: library.functions?.shouldGenerateSourcemap,

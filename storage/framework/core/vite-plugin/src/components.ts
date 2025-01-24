@@ -9,7 +9,7 @@ export function components(options?: ComponentOptions): Plugin {
     include: /\.(stx|vue|md)($|\?)/,
     dirs: [
       p.resourcesPath('components/'),
-      p.frameworkPath('components/'),
+      p.frameworkPath('defaults/components/'),
       // viewsPath(),
     ],
     dts: p.frameworkPath('types/components.d.ts'),

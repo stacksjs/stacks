@@ -1,5 +1,8 @@
 # TODO
 
+"Defaults" are the Stacks way of handling stubs.
+
+- [ ] create `buddy publish:defaults` command
 - [ ] stubs should be customizable when stubs are published
   - [ ] action
   - [ ] command

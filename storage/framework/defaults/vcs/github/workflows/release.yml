@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish VS Code Extension
         run: |
-          cd storage/framework/ide/vscode
+          cd storage/framework/defaults/ide/vscode
           bun install
           bunx --bun vsce publish
           cd ../../../../

@@ -9,11 +9,11 @@
   "sponsor": {
     "url": "https://github.com/sponsors/chrisbbreuer"
   },
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/ide/vscode",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ide/vscode",
   "repository": {
     "type": "git",
     "url": "https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/ide/vscode"
+    "directory": "./storage/framework/defaults/ide/vscode"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
